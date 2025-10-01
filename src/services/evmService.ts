@@ -1,0 +1,183 @@
+import { ethers } from 'ethers';
+import { invoke } from '@tauri-apps/api/tauri';
+
+export interface EVMChain {
+  name: string;
+  chainId: number;
+  rpcUrl: string;
+  nativeToken: {
+    symbol: string;
+    decimals: number;
+  };
+  explorer: string;
+}
+
+export const EVM_CHAINS: Record<string, EVMChain> = {
+  moonbeam: {
+    name: 'Moonbeam',
+    chainId: 1284,
+    rpcUrl: 'https://rpc.api.moonbeam.network',
+    nativeToken: { symbol: 'GLMR', decimals: 18 },
+    explorer: 'https://moonscan.io',
+  },
+  moonriver: {
+    name: 'Moonriver',
+    chainId: 1285,
+    rpcUrl: 'https://rpc.api.moonriver.moonbeam.network',
+    nativeToken: { symbol: 'MOVR', decimals: 18 },
+    explorer: 'https://moonriver.moonscan.io',
+  },
+  astar: {
+    name: 'Astar',
+    chainId: 592,
+    rpcUrl: 'https://evm.astar.network',
+    nativeToken: { symbol: 'ASTR', decimals: 18 },
+    explorer: 'https://blockscout.com/astar',
+  },
+  shiden: {
+    name: 'Shiden',
+    chainId: 336,
+    rpcUrl: 'https://evm.shiden.astar.network',
+    nativeToken: { symbol: 'SDN', decimals: 18 },
+    explorer: 'https://blockscout.com/shiden',
+  },
+  acala: {
+    name: 'Acala',
+    chainId: 787,
+    rpcUrl: 'https://eth-rpc-acala.aca-api.network',
+    nativeToken: { symbol: 'ACA', decimals: 12 },
+    explorer: 'https://blockscout.acala.network',
+  },
+  paseo: {
+    name: 'Polkadot Hub TestNet',
+    chainId: 420420422,
+    rpcUrl: 'https://testnet-passet-hub-eth-rpc.polkadot.io',
+    nativeToken: { symbol: 'PAS', decimals: 18 },
+    explorer: 'https://blockscout-passet-hub.parity-testnet.parity.io',
+  },
+};
+
+export class EVMService {
+  private providers: Map<string, ethers.providers.JsonRpcProvider> = new Map();
+  
+  getProvider(chain: string): ethers.providers.JsonRpcProvider {
+    if (!this.providers.has(chain)) {
+      const config = EVM_CHAINS[chain];
+      if (!config) throw new Error(`Unknown chain: ${chain}`);
+      
+      const provider = new ethers.providers.JsonRpcProvider(config.rpcUrl);
+      this.providers.set(chain, provider);
+    }
+    return this.providers.get(chain)!;
+  }
+  
+  async importFromMetaMask() {
+    if (!window.ethereum) {
+      throw new Error('MetaMask not installed');
+    }
+    
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    await provider.send('eth_requestAccounts', []);
+    const signer = provider.getSigner();
+    const address = await signer.getAddress();
+    const network = await provider.getNetwork();
+    
+    // Find matching chain
+    const chain = Object.entries(EVM_CHAINS).find(
+      ([_, config]) => config.chainId === network.chainId
+    );
+    
+    if (!chain) {
+      throw new Error(`Unsupported network: ${network.chainId}`);
+    }
+    
+    return {
+      address,
+      chain: chain[0],
+      chainId: network.chainId,
+    };
+  }
+  
+  async syncEVMTransactions(chain: string, address: string) {
+    return invoke('sync_evm_transactions', { chain, address });
+  }
+  
+  async getTokenBalances(chain: string, address: string) {
+    return invoke('get_evm_token_balances', { chain, address });
+  }
+  
+  async scanDeFiPositions(chain: string, address: string) {
+    return invoke('scan_defi_positions', { chain, address });
+  }
+  
+  async getBalance(chain: string, address: string) {
+    return invoke('get_evm_balance', { chain, address });
+  }
+  
+  async getTransactions(chain: string, address: string, fromBlock?: number, toBlock?: number) {
+    return invoke('get_evm_transactions', { 
+      chain, 
+      address, 
+      fromBlock: fromBlock || 0,
+      toBlock: toBlock || 'latest'
+    });
+  }
+  
+  async connectToChain(chain: string) {
+    return invoke('connect_evm_chain', { chain });
+  }
+  
+  async getChainInfo(chain: string) {
+    const config = EVM_CHAINS[chain];
+    if (!config) throw new Error(`Unknown chain: ${chain}`);
+    return config;
+  }
+  
+  async switchNetwork(chainId: number) {
+    if (!window.ethereum) {
+      throw new Error('MetaMask not installed');
+    }
+    
+    const hexChainId = `0x${chainId.toString(16)}`;
+    
+    try {
+      await window.ethereum.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: hexChainId }],
+      });
+    } catch (error: any) {
+      // Network doesn't exist, try to add it
+      if (error.code === 4902) {
+        const chain = Object.values(EVM_CHAINS).find(c => c.chainId === chainId);
+        if (chain) {
+          await this.addNetwork(chain);
+        } else {
+          throw new Error(`Unknown chain ID: ${chainId}`);
+        }
+      } else {
+        throw error;
+      }
+    }
+  }
+  
+  private async addNetwork(chain: EVMChain) {
+    if (!window.ethereum) {
+      throw new Error('MetaMask not installed');
+    }
+    
+    await window.ethereum.request({
+      method: 'wallet_addEthereumChain',
+      params: [{
+        chainId: `0x${chain.chainId.toString(16)}`,
+        chainName: chain.name,
+        nativeCurrency: {
+          name: chain.nativeToken.symbol,
+          symbol: chain.nativeToken.symbol,
+          decimals: chain.nativeToken.decimals,
+        },
+        rpcUrls: [chain.rpcUrl],
+        blockExplorerUrls: [chain.explorer],
+      }],
+    });
+  }
+}

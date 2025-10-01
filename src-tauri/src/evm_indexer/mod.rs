@@ -1,4 +1,5 @@
 mod erc20;
+mod defi;
 
 use ethers::prelude::*;
 use ethers::providers::{Provider, Ws, Http};
@@ -8,6 +9,7 @@ use anyhow::Result;
 use crate::core::{Transaction as CoreTransaction, Token};
 
 pub use erc20::{ERC20Scanner, TokenInfo, TokenTransfer};
+pub use defi::{DeFiProtocolScanner, DeFiPosition, AssetAmount, ProtocolType};
 
 pub struct EVMIndexer {
     providers: HashMap<String, Arc<Provider<Ws>>>,
@@ -201,6 +203,10 @@ impl EVMIndexer {
         }
     }
     
+    pub fn get_defi_scanner(&self) -> DeFiProtocolScanner {
+        DeFiProtocolScanner::new()
+    }
+    
     pub async fn scan_erc20_balances(
         &self,
         chain: &str,
@@ -226,6 +232,36 @@ impl EVMIndexer {
         }
         
         Ok(balances)
+    }
+    
+    pub async fn scan_defi_positions(
+        &self,
+        chain: &str,
+        user_address: &str,
+        protocols: Vec<&str>
+    ) -> Result<Vec<DeFiPosition>> {
+        let defi_scanner = self.get_defi_scanner();
+        let user_addr: Address = user_address.parse()?;
+        
+        if let Some(provider) = self.providers.get(chain) {
+            let mut all_positions = Vec::new();
+            
+            for protocol in protocols {
+                match defi_scanner.scan_defi_positions(provider.clone(), protocol, user_addr).await {
+                    Ok(mut positions) => {
+                        all_positions.append(&mut positions);
+                    }
+                    Err(e) => {
+                        // Log error but continue scanning other protocols
+                        eprintln!("Error scanning DeFi positions for {}: {}", protocol, e);
+                    }
+                }
+            }
+            
+            Ok(all_positions)
+        } else {
+            Err(anyhow::anyhow!("Provider not connected for chain: {}", chain))
+        }
     }
     
     fn convert_to_core_transaction(

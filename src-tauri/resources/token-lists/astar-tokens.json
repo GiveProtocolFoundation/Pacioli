@@ -1,0 +1,42 @@
+{
+  "name": "Astar Token List",
+  "tokens": [
+    {
+      "address": "0x6a2d262D56735DbA19Dd70682B39F6bE9a931D98",
+      "symbol": "USDC",
+      "name": "USD Coin",
+      "decimals": 6,
+      "logoURI": "https://raw.githubusercontent.com/moonbeam-foundation/moonbeam-tokens/main/tokens/usdc.png"
+    },
+    {
+      "address": "0x3795C36e7D12A8c252A20C5a7B455f7c57b60283",
+      "symbol": "USDT",
+      "name": "Tether USD",
+      "decimals": 6
+    },
+    {
+      "address": "0x81ECac0D6Be0550A00FF064a4f9dd2400585FE9c",
+      "symbol": "WETH",
+      "name": "Wrapped Ether",
+      "decimals": 18
+    },
+    {
+      "address": "0xad543f18cFf85c77E140E3E5E3c3392f6Ba9d5CA",
+      "symbol": "WBTC",
+      "name": "Wrapped Bitcoin",
+      "decimals": 8
+    },
+    {
+      "address": "0xFFfFfFffFFfffFFfFFfFFFFFffFFFffffFfFFFfF",
+      "symbol": "DOT",
+      "name": "Polkadot (XC-20)",
+      "decimals": 10
+    },
+    {
+      "address": "0xAeaaf0e2c81Af264101B9129C00F4440cCF0F720",
+      "symbol": "WASTR",
+      "name": "Wrapped ASTR",
+      "decimals": 18
+    }
+  ]
+}

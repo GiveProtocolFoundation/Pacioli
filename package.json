@@ -4,21 +4,28 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
+    "dev": "tauri dev",
+    "build": "tauri build",
     "preview": "vite preview",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "lint": "eslint src --ext ts,tsx --report-unused-disable-directives",
+    "format": "prettier --write 'src/**/*.{ts,tsx,css}'",
+    "test": "vitest"
   },
   "dependencies": {
     "@ant-design/icons": "^6.0.2",
     "@metamask/detect-provider": "^2.0.0",
     "@polkadot/api": "^16.4.8",
     "@polkadot/extension-dapp": "^0.62.1",
+    "@polkadot/extension-inject": "^0.62.1",
     "@polkadot/ui-keyring": "^3.16.1",
     "@reduxjs/toolkit": "^2.9.0",
+    "@talismn/connect-ui": "^1.1.4",
+    "@talismn/connect-wallets": "^1.2.8",
     "@tanstack/react-query": "^5.90.2",
     "@tauri-apps/api": "^2",
     "@tauri-apps/plugin-opener": "^2",
+    "@walletconnect/web3-provider": "^1.8.0",
     "antd": "^5.27.4",
     "dayjs": "^1.11.18",
     "decimal.js": "^10.6.0",
@@ -38,10 +45,18 @@
     "@tauri-apps/cli": "^2",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
+    "@typescript-eslint/eslint-plugin": "^8.45.0",
+    "@typescript-eslint/parser": "^8.45.0",
     "@vitejs/plugin-react": "^4.6.0",
+    "autoprefixer": "^10.4.21",
+    "eslint": "^9.36.0",
     "hardhat": "^2.22.0",
+    "postcss": "^8.5.6",
+    "prettier": "^3.6.2",
     "solc": "^0.8.28",
+    "tailwindcss": "^4.1.13",
     "typescript": "~5.8.3",
-    "vite": "^7.0.4"
+    "vite": "^7.0.4",
+    "vitest": "^3.2.4"
   }
 }

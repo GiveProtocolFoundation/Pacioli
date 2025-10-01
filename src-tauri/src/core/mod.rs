@@ -1,7 +1,11 @@
+mod address;
+
 use serde::{Deserialize, Serialize};
 use rust_decimal::Decimal;
 use chrono::{DateTime, Utc};
 use uuid::Uuid;
+
+pub use address::UnifiedAddress;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Transaction {
@@ -48,4 +52,23 @@ pub struct Balance {
     pub chain: String,
     pub amount: Decimal,
     pub updated_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ChainConfig {
+    pub name: String,
+    pub rpc_endpoint: String,
+    pub ws_endpoint: Option<String>,
+    pub explorer_url: Option<String>,
+    pub decimals: u8,
+    pub symbol: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SyncStatus {
+    pub chain: String,
+    pub last_block: i64,
+    pub current_block: i64,
+    pub is_syncing: bool,
+    pub progress: f64,
 }
