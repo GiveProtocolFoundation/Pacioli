@@ -1,4 +1,5 @@
 mod address;
+mod encryption;
 
 use serde::{Deserialize, Serialize};
 use rust_decimal::Decimal;
@@ -6,6 +7,7 @@ use chrono::{DateTime, Utc};
 use uuid::Uuid;
 
 pub use address::UnifiedAddress;
+pub use encryption::Encryptor;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Transaction {
