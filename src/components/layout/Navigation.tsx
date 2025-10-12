@@ -131,7 +131,7 @@ const Navigation: React.FC<NavigationProps> = ({ children, userType = 'organizat
           <ul className="space-y-1">
             {navItems.map((item) => {
               const isActive = location.pathname === item.href ||
-                              (item.subItems && item.subItems.some(sub => location.pathname + location.search === sub.href));
+                              (item.subItems?.some(sub => location.pathname + location.search === sub.href));
 
               return (
                 <li key={item.name}>
@@ -265,7 +265,7 @@ const Navigation: React.FC<NavigationProps> = ({ children, userType = 'organizat
               <ul className="space-y-1">
                 {navItems.map((item) => {
                   const isActive = location.pathname === item.href ||
-                                  (item.subItems && item.subItems.some(sub => location.pathname + location.search === sub.href));
+                                  (item.subItems?.some(sub => location.pathname + location.search === sub.href));
 
                   return (
                     <li key={item.name}>
