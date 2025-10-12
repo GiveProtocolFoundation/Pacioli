@@ -16,6 +16,8 @@ import {
   User,
   HelpCircle
 } from 'lucide-react';
+import NumbersWhiteLogo from '../../assets/Numbers_White.svg';
+import NumbersBlackLogo from '../../assets/Numbers_Black.svg';
 
 interface NavigationProps {
   children: React.ReactNode;
@@ -95,9 +97,11 @@ const Navigation: React.FC<NavigationProps> = ({ children, userType = 'organizat
         {/* Logo */}
         <div className="flex items-center justify-center h-16 px-6 border-b border-gray-200">
           <div className="flex items-center">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">CA</span>
-            </div>
+            <img
+              src={NumbersBlackLogo}
+              alt="Numbers"
+              className="h-10 w-auto"
+            />
             <div className="ml-3 flex flex-col">
               <span className="text-lg font-semibold text-gray-900">Numbers</span>
               <span className="text-xs text-gray-500">Accounting & Analytics</span>
@@ -199,9 +203,11 @@ const Navigation: React.FC<NavigationProps> = ({ children, userType = 'organizat
             {/* Logo and close button */}
             <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
               <div className="flex items-center">
-                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">CA</span>
-                </div>
+                <img
+                  src={NumbersBlackLogo}
+                  alt="Numbers"
+                  className="h-10 w-auto"
+                />
                 <div className="ml-3 flex flex-col">
                   <span className="text-lg font-semibold text-gray-900">Numbers</span>
                   <span className="text-xs text-gray-500">Accounting & Analytics</span>
