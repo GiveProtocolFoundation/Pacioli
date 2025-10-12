@@ -1,0 +1,960 @@
+{
+  "name": "US-GAAP - Individual",
+  "jurisdiction": "us-gaap",
+  "accountType": "individual",
+  "accounts": [
+    {
+      "code": "1000",
+      "name": "Cash - Checking",
+      "type": "Asset",
+      "description": "Primary checking account",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1010",
+      "name": "Cash - Savings",
+      "type": "Asset",
+      "description": "Savings accounts",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1020",
+      "name": "Cash - Money Market",
+      "type": "Asset",
+      "description": "Money market accounts",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1100",
+      "name": "Brokerage Account - Cash",
+      "type": "Asset",
+      "description": "Cash held in brokerage accounts",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1200",
+      "name": "Stocks - Taxable",
+      "type": "Asset",
+      "description": "Publicly traded stocks in taxable accounts",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1210",
+      "name": "Bonds - Taxable",
+      "type": "Asset",
+      "description": "Bonds and fixed income in taxable accounts",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1220",
+      "name": "Mutual Funds - Taxable",
+      "type": "Asset",
+      "description": "Mutual funds in taxable accounts",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1230",
+      "name": "ETFs - Taxable",
+      "type": "Asset",
+      "description": "Exchange-traded funds in taxable accounts",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1300",
+      "name": "Retirement - Traditional IRA",
+      "type": "Asset",
+      "description": "Traditional IRA account holdings",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1310",
+      "name": "Retirement - Roth IRA",
+      "type": "Asset",
+      "description": "Roth IRA account holdings",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1320",
+      "name": "Retirement - 401(k)",
+      "type": "Asset",
+      "description": "401(k) or similar employer retirement plan",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1330",
+      "name": "Retirement - SEP IRA",
+      "type": "Asset",
+      "description": "SEP IRA for self-employed",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1400",
+      "name": "Real Estate - Primary Residence",
+      "type": "Asset",
+      "description": "Value of primary home",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1410",
+      "name": "Real Estate - Investment Property",
+      "type": "Asset",
+      "description": "Investment/rental properties",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1420",
+      "name": "REITs",
+      "type": "Asset",
+      "description": "Real Estate Investment Trusts",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1500",
+      "name": "Alternative Investments",
+      "type": "Asset",
+      "description": "Private equity, hedge funds, etc.",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1510",
+      "name": "Cryptocurrency - Bitcoin",
+      "type": "Asset",
+      "description": "Bitcoin holdings across all wallets",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1511",
+      "name": "Cryptocurrency - Ethereum",
+      "type": "Asset",
+      "description": "Ethereum holdings across all wallets",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1512",
+      "name": "Cryptocurrency - Stablecoins",
+      "type": "Asset",
+      "description": "USDC, USDT, DAI, and other stablecoins",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1513",
+      "name": "Cryptocurrency - Altcoins",
+      "type": "Asset",
+      "description": "Other cryptocurrencies (track by sub-accounts)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1520",
+      "name": "DeFi - Wrapped Tokens",
+      "type": "Asset",
+      "description": "WETH, WBTC, and other wrapped assets",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1530",
+      "name": "DeFi - LP Tokens",
+      "type": "Asset",
+      "description": "Liquidity pool tokens (Uniswap, Curve, etc.)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1531",
+      "name": "DeFi - LP Token Cost Basis Adjustment",
+      "type": "Asset",
+      "description": "Track impermanent loss adjustments",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1540",
+      "name": "DeFi - Staked Assets",
+      "type": "Asset",
+      "description": "Assets locked in staking protocols",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1541",
+      "name": "DeFi - Liquid Staking Tokens",
+      "type": "Asset",
+      "description": "stETH, rETH, and other liquid staking derivatives",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1550",
+      "name": "DeFi - Yield Farming Positions",
+      "type": "Asset",
+      "description": "Active yield farming positions",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1560",
+      "name": "DeFi - Lending Protocol Deposits",
+      "type": "Asset",
+      "description": "Assets deposited in Aave, Compound, etc.",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1561",
+      "name": "DeFi - aTokens/cTokens",
+      "type": "Asset",
+      "description": "Interest-bearing tokens from lending protocols",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1570",
+      "name": "DeFi - Governance Tokens",
+      "type": "Asset",
+      "description": "UNI, AAVE, COMP, and other governance tokens",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1580",
+      "name": "DeFi - NFTs",
+      "type": "Asset",
+      "description": "Non-fungible tokens",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1585",
+      "name": "DeFi - Unclaimed Rewards",
+      "type": "Asset",
+      "description": "Accrued but unclaimed staking/farming rewards",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1590",
+      "name": "Precious Metals",
+      "type": "Asset",
+      "description": "Gold, silver, other precious metals",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1600",
+      "name": "Accounts Receivable",
+      "type": "Asset",
+      "description": "Money owed to you",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1700",
+      "name": "Prepaid Expenses",
+      "type": "Asset",
+      "description": "Insurance, taxes paid in advance",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1800",
+      "name": "Other Assets",
+      "type": "Asset",
+      "description": "Vehicles, collectibles, etc.",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2000",
+      "name": "Credit Card Payable",
+      "type": "Liability",
+      "description": "Credit card balances",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2100",
+      "name": "Mortgage Payable - Primary",
+      "type": "Liability",
+      "description": "Primary residence mortgage",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2110",
+      "name": "Mortgage Payable - Investment",
+      "type": "Liability",
+      "description": "Investment property mortgages",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2200",
+      "name": "Auto Loan Payable",
+      "type": "Liability",
+      "description": "Vehicle loans",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2300",
+      "name": "Student Loan Payable",
+      "type": "Liability",
+      "description": "Education loans",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2400",
+      "name": "Personal Loan Payable",
+      "type": "Liability",
+      "description": "Personal loans",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2500",
+      "name": "Margin Loan Payable",
+      "type": "Liability",
+      "description": "Brokerage margin loans",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2510",
+      "name": "DeFi - Borrowed Assets (Aave)",
+      "type": "Liability",
+      "description": "Outstanding loans from Aave protocol",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2520",
+      "name": "DeFi - Borrowed Assets (Compound)",
+      "type": "Liability",
+      "description": "Outstanding loans from Compound protocol",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2530",
+      "name": "DeFi - Borrowed Assets (MakerDAO)",
+      "type": "Liability",
+      "description": "DAI debt from MakerDAO CDP/Vaults",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2540",
+      "name": "DeFi - Other Protocol Debt",
+      "type": "Liability",
+      "description": "Debt from other DeFi lending protocols",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2550",
+      "name": "DeFi - Impermanent Loss Reserve",
+      "type": "Liability",
+      "description": "Estimated unrealized impermanent loss",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2600",
+      "name": "Taxes Payable",
+      "type": "Liability",
+      "description": "Income and property taxes owed",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2900",
+      "name": "Other Liabilities",
+      "type": "Liability",
+      "description": "Other amounts owed",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "3000",
+      "name": "Net Worth",
+      "type": "Equity",
+      "description": "Opening net worth balance",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "3900",
+      "name": "Current Year Surplus/Deficit",
+      "type": "Equity",
+      "description": "Net income for current year",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4000",
+      "name": "Salary/Wages",
+      "type": "Income",
+      "description": "Employment income",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4100",
+      "name": "Dividend Income - Qualified",
+      "type": "Income",
+      "description": "Qualified dividend income",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4110",
+      "name": "Dividend Income - Ordinary",
+      "type": "Income",
+      "description": "Ordinary dividend income",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4200",
+      "name": "Interest Income - Taxable",
+      "type": "Income",
+      "description": "Interest from savings, bonds, etc.",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4210",
+      "name": "Interest Income - Tax-Exempt",
+      "type": "Income",
+      "description": "Municipal bond interest",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4300",
+      "name": "Capital Gains - Short-term",
+      "type": "Income",
+      "description": "Short-term capital gains",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4310",
+      "name": "Capital Gains - Long-term",
+      "type": "Income",
+      "description": "Long-term capital gains",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4320",
+      "name": "DeFi - Staking Rewards",
+      "type": "Income",
+      "description": "Rewards from staking protocols (taxable as ordinary income)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4325",
+      "name": "DeFi - Liquid Staking Rewards",
+      "type": "Income",
+      "description": "Rewards from liquid staking (Lido, Rocket Pool)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4330",
+      "name": "DeFi - Yield Farming Income",
+      "type": "Income",
+      "description": "Income from yield farming activities",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4335",
+      "name": "DeFi - Liquidity Pool Fees",
+      "type": "Income",
+      "description": "Trading fees earned from LP positions",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4340",
+      "name": "DeFi - Lending Interest Income",
+      "type": "Income",
+      "description": "Interest earned from lending protocols",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4345",
+      "name": "DeFi - Airdrop Income",
+      "type": "Income",
+      "description": "Token airdrops (taxable at FMV upon receipt)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4350",
+      "name": "DeFi - Governance Token Rewards",
+      "type": "Income",
+      "description": "Governance tokens received as rewards",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4355",
+      "name": "DeFi - NFT Sales",
+      "type": "Income",
+      "description": "Proceeds from NFT sales",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4360",
+      "name": "DeFi - Crypto Capital Gains - Short-term",
+      "type": "Income",
+      "description": "Short-term gains on crypto trades (<1 year)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4365",
+      "name": "DeFi - Crypto Capital Gains - Long-term",
+      "type": "Income",
+      "description": "Long-term gains on crypto trades (>1 year)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4370",
+      "name": "DeFi - Realized Gain on LP Exit",
+      "type": "Income",
+      "description": "Gains realized when exiting liquidity pools",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4380",
+      "name": "DeFi - Hard Fork/Chain Split Income",
+      "type": "Income",
+      "description": "New tokens received from chain splits",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4400",
+      "name": "Rental Income",
+      "type": "Income",
+      "description": "Income from rental properties",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4500",
+      "name": "Business Income",
+      "type": "Income",
+      "description": "Self-employment/business income",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4600",
+      "name": "Retirement Distributions",
+      "type": "Income",
+      "description": "IRA, 401(k) distributions",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4700",
+      "name": "Social Security Income",
+      "type": "Income",
+      "description": "Social Security benefits",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4800",
+      "name": "Other Income",
+      "type": "Income",
+      "description": "Miscellaneous income",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5000",
+      "name": "Housing - Mortgage/Rent",
+      "type": "Expense",
+      "description": "Mortgage or rent payments",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5010",
+      "name": "Housing - Property Tax",
+      "type": "Expense",
+      "description": "Real estate taxes",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5020",
+      "name": "Housing - Insurance",
+      "type": "Expense",
+      "description": "Homeowners/renters insurance",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5030",
+      "name": "Housing - Utilities",
+      "type": "Expense",
+      "description": "Electric, gas, water, etc.",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5040",
+      "name": "Housing - Maintenance",
+      "type": "Expense",
+      "description": "Home repairs and maintenance",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5050",
+      "name": "Housing - HOA Fees",
+      "type": "Expense",
+      "description": "Homeowners association fees",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5100",
+      "name": "Transportation - Auto Payment",
+      "type": "Expense",
+      "description": "Car loan or lease payments",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5110",
+      "name": "Transportation - Gas",
+      "type": "Expense",
+      "description": "Fuel expenses",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5120",
+      "name": "Transportation - Insurance",
+      "type": "Expense",
+      "description": "Auto insurance",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5130",
+      "name": "Transportation - Maintenance",
+      "type": "Expense",
+      "description": "Vehicle maintenance and repairs",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5200",
+      "name": "Food - Groceries",
+      "type": "Expense",
+      "description": "Grocery shopping",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5210",
+      "name": "Food - Dining Out",
+      "type": "Expense",
+      "description": "Restaurants and takeout",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5300",
+      "name": "Healthcare - Insurance",
+      "type": "Expense",
+      "description": "Health insurance premiums",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5310",
+      "name": "Healthcare - Medical",
+      "type": "Expense",
+      "description": "Doctor visits, prescriptions",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5320",
+      "name": "Healthcare - Dental",
+      "type": "Expense",
+      "description": "Dental care",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5330",
+      "name": "Healthcare - Vision",
+      "type": "Expense",
+      "description": "Eye care and glasses",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5400",
+      "name": "Insurance - Life",
+      "type": "Expense",
+      "description": "Life insurance premiums",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5410",
+      "name": "Insurance - Disability",
+      "type": "Expense",
+      "description": "Disability insurance",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5420",
+      "name": "Insurance - Umbrella",
+      "type": "Expense",
+      "description": "Umbrella liability insurance",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5500",
+      "name": "Taxes - Federal Income",
+      "type": "Expense",
+      "description": "Federal income tax",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5510",
+      "name": "Taxes - State Income",
+      "type": "Expense",
+      "description": "State income tax",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5520",
+      "name": "Taxes - FICA",
+      "type": "Expense",
+      "description": "Social Security and Medicare",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5530",
+      "name": "Taxes - Self-Employment",
+      "type": "Expense",
+      "description": "Self-employment tax",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5600",
+      "name": "Childcare/Education",
+      "type": "Expense",
+      "description": "Daycare, tuition, supplies",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5700",
+      "name": "Entertainment",
+      "type": "Expense",
+      "description": "Entertainment and recreation",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5710",
+      "name": "Travel/Vacation",
+      "type": "Expense",
+      "description": "Travel expenses",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5800",
+      "name": "Personal Care",
+      "type": "Expense",
+      "description": "Haircuts, clothing, etc.",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5810",
+      "name": "Subscriptions",
+      "type": "Expense",
+      "description": "Streaming, memberships, etc.",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5820",
+      "name": "Charitable Contributions",
+      "type": "Expense",
+      "description": "Donations and charitable giving",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5900",
+      "name": "Investment Fees",
+      "type": "Expense",
+      "description": "Brokerage fees, management fees",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5905",
+      "name": "DeFi - Gas Fees (Ethereum)",
+      "type": "Expense",
+      "description": "Ethereum network gas fees",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5906",
+      "name": "DeFi - Transaction Fees (Other Chains)",
+      "type": "Expense",
+      "description": "Transaction fees on other blockchains",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5910",
+      "name": "DeFi - Protocol Fees",
+      "type": "Expense",
+      "description": "Swap fees, protocol usage fees",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5915",
+      "name": "DeFi - Lending Interest Expense",
+      "type": "Expense",
+      "description": "Interest paid on borrowed assets",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5920",
+      "name": "DeFi - Realized Impermanent Loss",
+      "type": "Expense",
+      "description": "Realized losses from LP position exits",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5925",
+      "name": "DeFi - Crypto Capital Loss - Short-term",
+      "type": "Expense",
+      "description": "Short-term losses on crypto sales",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5930",
+      "name": "DeFi - Crypto Capital Loss - Long-term",
+      "type": "Expense",
+      "description": "Long-term losses on crypto sales",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5935",
+      "name": "DeFi - Liquidation Losses",
+      "type": "Expense",
+      "description": "Losses from protocol liquidations",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5940",
+      "name": "DeFi - NFT Losses",
+      "type": "Expense",
+      "description": "Losses on NFT sales",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5945",
+      "name": "DeFi - Rug Pull/Scam Losses",
+      "type": "Expense",
+      "description": "Losses from scams or failed projects",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5950",
+      "name": "DeFi - Wallet/Security Services",
+      "type": "Expense",
+      "description": "Hardware wallets, security tools",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5960",
+      "name": "Interest Expense",
+      "type": "Expense",
+      "description": "Interest on loans and credit cards",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5970",
+      "name": "Bank Fees",
+      "type": "Expense",
+      "description": "Banking and ATM fees",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5990",
+      "name": "Other Expenses",
+      "type": "Expense",
+      "description": "Miscellaneous expenses",
+      "isActive": true,
+      "editable": true
+    }
+  ],
+  "isTemplate": true
+}

@@ -1,0 +1,1376 @@
+{
+  "name": "IFRS - Sme",
+  "jurisdiction": "ifrs",
+  "accountType": "sme",
+  "accounts": [
+    {
+      "code": "1000",
+      "name": "Cash and Cash Equivalents",
+      "type": "Asset",
+      "description": "Cash, bank balances, short-term deposits (≤3 months)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1010",
+      "name": "Bank - Current Account",
+      "type": "Asset",
+      "description": "Primary operating account",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1020",
+      "name": "Bank - Payroll Account",
+      "type": "Asset",
+      "description": "Dedicated payroll account",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1030",
+      "name": "Cash on Hand",
+      "type": "Asset",
+      "description": "Petty cash and till floats",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1040",
+      "name": "Short-term Deposits",
+      "type": "Asset",
+      "description": "Term deposits ≤3 months",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1045",
+      "name": "Corporate Stablecoin Holdings",
+      "type": "Asset",
+      "description": "USDC/USDT for treasury management",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1046",
+      "name": "DeFi Treasury Yield Positions",
+      "type": "Asset",
+      "description": "Corporate funds in yield protocols",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1100",
+      "name": "Trade and Other Receivables",
+      "type": "Asset",
+      "description": "Amounts due from customers",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1110",
+      "name": "Trade Receivables",
+      "type": "Asset",
+      "description": "Trade debtors",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1120",
+      "name": "Loss Allowance - Trade Receivables",
+      "type": "Asset",
+      "description": "Expected credit losses (contra account)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1130",
+      "name": "Other Receivables",
+      "type": "Asset",
+      "description": "Non-trade receivables",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1135",
+      "name": "Crypto Receivables",
+      "type": "Asset",
+      "description": "Customer payments due in cryptocurrency",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1200",
+      "name": "Inventories",
+      "type": "Asset",
+      "description": "Stock held for sale or production",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1210",
+      "name": "Raw Materials",
+      "type": "Asset",
+      "description": "Raw materials and components",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1220",
+      "name": "Work in Progress",
+      "type": "Asset",
+      "description": "Partially completed goods",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1230",
+      "name": "Finished Goods",
+      "type": "Asset",
+      "description": "Completed products ready for sale",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1235",
+      "name": "Digital Asset Inventory",
+      "type": "Asset",
+      "description": "NFTs or tokens held for sale",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1300",
+      "name": "Contract Assets",
+      "type": "Asset",
+      "description": "Unbilled revenue (IFRS 15)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1400",
+      "name": "Prepayments",
+      "type": "Asset",
+      "description": "Prepaid expenses",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1410",
+      "name": "Prepaid Insurance",
+      "type": "Asset",
+      "description": "Insurance paid in advance",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1420",
+      "name": "Prepaid Rent",
+      "type": "Asset",
+      "description": "Rent paid in advance",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1450",
+      "name": "Other Current Assets",
+      "type": "Asset",
+      "description": "Other short-term assets",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1500",
+      "name": "Property, Plant and Equipment",
+      "type": "Asset",
+      "description": "Tangible fixed assets (IAS 16)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1510",
+      "name": "Land",
+      "type": "Asset",
+      "description": "Freehold land",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1520",
+      "name": "Buildings",
+      "type": "Asset",
+      "description": "Buildings and structures",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1521",
+      "name": "Accumulated Depreciation - Buildings",
+      "type": "Asset",
+      "description": "Cumulative depreciation (contra)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1530",
+      "name": "Leasehold Improvements",
+      "type": "Asset",
+      "description": "Improvements to leased premises",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1531",
+      "name": "Accumulated Depreciation - Leasehold",
+      "type": "Asset",
+      "description": "Cumulative depreciation (contra)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1540",
+      "name": "Plant and Machinery",
+      "type": "Asset",
+      "description": "Manufacturing equipment",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1541",
+      "name": "Accumulated Depreciation - Plant",
+      "type": "Asset",
+      "description": "Cumulative depreciation (contra)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1550",
+      "name": "Furniture and Fittings",
+      "type": "Asset",
+      "description": "Office furniture and fixtures",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1551",
+      "name": "Accumulated Depreciation - Furniture",
+      "type": "Asset",
+      "description": "Cumulative depreciation (contra)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1560",
+      "name": "Motor Vehicles",
+      "type": "Asset",
+      "description": "Company vehicles",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1561",
+      "name": "Accumulated Depreciation - Vehicles",
+      "type": "Asset",
+      "description": "Cumulative depreciation (contra)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1570",
+      "name": "Computer Equipment",
+      "type": "Asset",
+      "description": "IT hardware",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1571",
+      "name": "Accumulated Depreciation - Computers",
+      "type": "Asset",
+      "description": "Cumulative depreciation (contra)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1600",
+      "name": "Right-of-Use Assets",
+      "type": "Asset",
+      "description": "Leased assets (IFRS 16)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1610",
+      "name": "ROU - Property",
+      "type": "Asset",
+      "description": "Leased property",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1611",
+      "name": "Accumulated Depreciation - ROU Property",
+      "type": "Asset",
+      "description": "Cumulative depreciation (contra)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1620",
+      "name": "ROU - Equipment",
+      "type": "Asset",
+      "description": "Leased equipment",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1621",
+      "name": "Accumulated Depreciation - ROU Equipment",
+      "type": "Asset",
+      "description": "Cumulative depreciation (contra)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1700",
+      "name": "Investment Property",
+      "type": "Asset",
+      "description": "Property held for rental income (IAS 40)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1800",
+      "name": "Intangible Assets",
+      "type": "Asset",
+      "description": "Non-physical assets (IAS 38)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1810",
+      "name": "Goodwill",
+      "type": "Asset",
+      "description": "Goodwill from acquisitions",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1820",
+      "name": "Software and Licences",
+      "type": "Asset",
+      "description": "Computer software and licences",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1830",
+      "name": "Patents and Trademarks",
+      "type": "Asset",
+      "description": "Intellectual property",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1840",
+      "name": "Customer Relationships",
+      "type": "Asset",
+      "description": "Acquired customer base",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1845",
+      "name": "Cryptocurrency - Long-term Holdings",
+      "type": "Asset",
+      "description": "Long-term crypto treasury (IAS 38)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1846",
+      "name": "Digital Tokens and Utility Assets",
+      "type": "Asset",
+      "description": "Protocol tokens and digital assets",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1847",
+      "name": "NFT IP and Digital Rights",
+      "type": "Asset",
+      "description": "NFT intellectual property holdings",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1850",
+      "name": "Accumulated Amortisation",
+      "type": "Asset",
+      "description": "Cumulative amortisation (contra)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1900",
+      "name": "Other Non-current Assets",
+      "type": "Asset",
+      "description": "Long-term assets",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1910",
+      "name": "Deferred Tax Assets",
+      "type": "Asset",
+      "description": "Deferred tax benefits (IAS 12)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1920",
+      "name": "Non-current Receivables",
+      "type": "Asset",
+      "description": "Long-term receivables",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1930",
+      "name": "Security Deposits",
+      "type": "Asset",
+      "description": "Long-term deposits",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2000",
+      "name": "Trade and Other Payables",
+      "type": "Asset",
+      "description": "Amounts due to suppliers",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2010",
+      "name": "Trade Payables",
+      "type": "Liability",
+      "description": "Trade creditors",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2020",
+      "name": "Other Payables",
+      "type": "Liability",
+      "description": "Non-trade payables",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2025",
+      "name": "Crypto Payables",
+      "type": "Liability",
+      "description": "Supplier payments due in cryptocurrency",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2050",
+      "name": "Bank Overdrafts",
+      "type": "Liability",
+      "description": "Negative bank balances",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2100",
+      "name": "Contract Liabilities",
+      "type": "Liability",
+      "description": "Deferred revenue (IFRS 15)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2200",
+      "name": "Current Borrowings",
+      "type": "Liability",
+      "description": "Loans due within 12 months",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2210",
+      "name": "Short-term Bank Loans",
+      "type": "Liability",
+      "description": "Bank loans ≤12 months",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2220",
+      "name": "Current Portion - Long-term Debt",
+      "type": "Liability",
+      "description": "Principal due within 12 months",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2230",
+      "name": "Current Lease Liabilities",
+      "type": "Liability",
+      "description": "Lease payments due ≤12 months (IFRS 16)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2235",
+      "name": "DeFi Protocol Loans - Current",
+      "type": "Liability",
+      "description": "DeFi borrowings due within 12 months",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2236",
+      "name": "Collateralized Crypto Debt",
+      "type": "Liability",
+      "description": "Loans against crypto collateral",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2300",
+      "name": "Accruals",
+      "type": "Liability",
+      "description": "Accrued expenses",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2310",
+      "name": "Accrued Salaries and Wages",
+      "type": "Liability",
+      "description": "Unpaid employee remuneration",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2320",
+      "name": "Accrued Interest",
+      "type": "Liability",
+      "description": "Interest payable",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2400",
+      "name": "Tax Liabilities",
+      "type": "Liability",
+      "description": "Tax obligations",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2410",
+      "name": "Income Tax Payable",
+      "type": "Liability",
+      "description": "Current tax liability",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2420",
+      "name": "Value Added Tax Payable",
+      "type": "Liability",
+      "description": "VAT/GST payable",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2430",
+      "name": "Payroll Tax Payable",
+      "type": "Liability",
+      "description": "Social security and withholding taxes",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2450",
+      "name": "Provisions - Current",
+      "type": "Liability",
+      "description": "Short-term provisions (IAS 37)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2460",
+      "name": "Employee Benefits - Current",
+      "type": "Liability",
+      "description": "Holiday pay, bonuses",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2500",
+      "name": "Non-current Borrowings",
+      "type": "Liability",
+      "description": "Long-term debt",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2510",
+      "name": "Long-term Bank Loans",
+      "type": "Liability",
+      "description": "Bank loans >12 months",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2520",
+      "name": "Bonds Payable",
+      "type": "Liability",
+      "description": "Corporate bonds issued",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2530",
+      "name": "Non-current Lease Liabilities",
+      "type": "Liability",
+      "description": "Lease obligations >12 months (IFRS 16)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2535",
+      "name": "DeFi Protocol Loans - Non-current",
+      "type": "Liability",
+      "description": "Long-term DeFi borrowings",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2600",
+      "name": "Deferred Tax Liabilities",
+      "type": "Liability",
+      "description": "Deferred tax (IAS 12)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2700",
+      "name": "Provisions - Non-current",
+      "type": "Liability",
+      "description": "Long-term provisions (IAS 37)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2710",
+      "name": "Provision for Warranties",
+      "type": "Liability",
+      "description": "Product warranty obligations",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2720",
+      "name": "Provision for Restructuring",
+      "type": "Liability",
+      "description": "Restructuring obligations",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2800",
+      "name": "Employee Benefits - Non-current",
+      "type": "Liability",
+      "description": "Long-service leave, pensions (IAS 19)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2900",
+      "name": "Other Non-current Liabilities",
+      "type": "Liability",
+      "description": "Other long-term obligations",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "3000",
+      "name": "Share Capital",
+      "type": "Equity",
+      "description": "Issued share capital",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "3010",
+      "name": "Ordinary Shares",
+      "type": "Equity",
+      "description": "Common stock",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "3020",
+      "name": "Preference Shares",
+      "type": "Equity",
+      "description": "Preferred stock",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "3100",
+      "name": "Share Premium",
+      "type": "Equity",
+      "description": "Amount paid above par value",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "3200",
+      "name": "Retained Earnings",
+      "type": "Equity",
+      "description": "Accumulated profits/(losses)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "3300",
+      "name": "Other Reserves",
+      "type": "Equity",
+      "description": "Various equity reserves",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "3310",
+      "name": "Revaluation Surplus",
+      "type": "Equity",
+      "description": "PPE revaluation gains (IAS 16)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "3320",
+      "name": "Foreign Currency Translation Reserve",
+      "type": "Equity",
+      "description": "FX differences on foreign operations",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "3330",
+      "name": "Cash Flow Hedge Reserve",
+      "type": "Equity",
+      "description": "Effective portion of hedges (IAS 39/IFRS 9)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "3335",
+      "name": "Crypto Asset Revaluation Reserve",
+      "type": "Equity",
+      "description": "Unrealized crypto gains/losses (OCI)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "3400",
+      "name": "Treasury Shares",
+      "type": "Equity",
+      "description": "Own shares repurchased (contra)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "3900",
+      "name": "Profit/(Loss) for the Period",
+      "type": "Equity",
+      "description": "Current year comprehensive income",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4000",
+      "name": "Revenue from Contracts with Customers",
+      "type": "Income",
+      "description": "Sales revenue (IFRS 15)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4010",
+      "name": "Sale of Goods",
+      "type": "Income",
+      "description": "Revenue from product sales",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4020",
+      "name": "Rendering of Services",
+      "type": "Income",
+      "description": "Service revenue",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4030",
+      "name": "Subscription Revenue",
+      "type": "Income",
+      "description": "Recurring subscription income",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4040",
+      "name": "Licence Revenue",
+      "type": "Income",
+      "description": "Licensing fees",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4045",
+      "name": "Cryptocurrency Payment Revenue",
+      "type": "Income",
+      "description": "Revenue received in crypto",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4046",
+      "name": "NFT Sales Revenue",
+      "type": "Income",
+      "description": "Revenue from NFT sales",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4047",
+      "name": "Protocol Revenue - Transaction Fees",
+      "type": "Income",
+      "description": "Revenue from protocol fees",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4100",
+      "name": "Other Revenue",
+      "type": "Income",
+      "description": "Other operating revenue",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4200",
+      "name": "Rental Income",
+      "type": "Income",
+      "description": "Property rental income",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4300",
+      "name": "Finance Income",
+      "type": "Income",
+      "description": "Interest income",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4310",
+      "name": "DeFi Yield Income",
+      "type": "Income",
+      "description": "Interest from DeFi lending protocols",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4311",
+      "name": "Staking Rewards - Corporate",
+      "type": "Income",
+      "description": "Corporate staking income",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4400",
+      "name": "Other Income",
+      "type": "Income",
+      "description": "Non-operating income",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4410",
+      "name": "Foreign Exchange Gains",
+      "type": "Income",
+      "description": "FX gains",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4420",
+      "name": "Gain on Disposal of Assets",
+      "type": "Income",
+      "description": "Profit on asset sales",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4425",
+      "name": "Realised Crypto Gains",
+      "type": "Income",
+      "description": "Gains on crypto asset disposals",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4426",
+      "name": "Unrealised Crypto Gains",
+      "type": "Income",
+      "description": "Fair value gains on crypto holdings",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5000",
+      "name": "Cost of Goods Sold",
+      "type": "Expense",
+      "description": "Direct costs of products sold",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5100",
+      "name": "Raw Materials Consumed",
+      "type": "Expense",
+      "description": "Materials used in production",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5200",
+      "name": "Direct Labour",
+      "type": "Expense",
+      "description": "Manufacturing wages",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5300",
+      "name": "Production Overheads",
+      "type": "Expense",
+      "description": "Manufacturing overhead",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5400",
+      "name": "Subcontractor Costs",
+      "type": "Expense",
+      "description": "External production costs",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5500",
+      "name": "Cost of Services",
+      "type": "Expense",
+      "description": "Direct costs of services",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5600",
+      "name": "Inventory Write-downs",
+      "type": "Expense",
+      "description": "NRV adjustments (IAS 2)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5650",
+      "name": "Cost of Digital Assets Sold",
+      "type": "Expense",
+      "description": "Cost basis of crypto/NFTs sold",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "6000",
+      "name": "Sales and Marketing Salaries",
+      "type": "Expense",
+      "description": "Sales staff costs",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "6010",
+      "name": "Sales Commissions",
+      "type": "Expense",
+      "description": "Commission expense",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "6100",
+      "name": "Advertising and Marketing",
+      "type": "Expense",
+      "description": "Marketing expenses",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "6200",
+      "name": "Freight Out",
+      "type": "Expense",
+      "description": "Shipping to customers",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "6300",
+      "name": "Warehousing and Distribution",
+      "type": "Expense",
+      "description": "Distribution costs",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "6500",
+      "name": "Directors Remuneration",
+      "type": "Expense",
+      "description": "Executive compensation",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "6510",
+      "name": "Salaries and Wages",
+      "type": "Expense",
+      "description": "Administrative staff costs",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "6520",
+      "name": "Social Security Costs",
+      "type": "Expense",
+      "description": "Employer payroll taxes",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "6530",
+      "name": "Pension Costs",
+      "type": "Expense",
+      "description": "Pension contributions (IAS 19)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "6540",
+      "name": "Other Employee Benefits",
+      "type": "Expense",
+      "description": "Benefits and allowances",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "6550",
+      "name": "Share-based Payments",
+      "type": "Expense",
+      "description": "IFRS 2 expense",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "6555",
+      "name": "Token-based Compensation",
+      "type": "Expense",
+      "description": "Employee compensation in tokens",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "6600",
+      "name": "Rent and Rates",
+      "type": "Expense",
+      "description": "Property costs (short-term leases)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "6610",
+      "name": "Utilities",
+      "type": "Expense",
+      "description": "Electricity, gas, water",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "6620",
+      "name": "Repairs and Maintenance",
+      "type": "Expense",
+      "description": "Property and equipment maintenance",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "6700",
+      "name": "Insurance",
+      "type": "Expense",
+      "description": "Insurance premiums",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "6800",
+      "name": "Professional Fees",
+      "type": "Expense",
+      "description": "Legal, accounting, consulting",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "6810",
+      "name": "Legal Fees",
+      "type": "Expense",
+      "description": "Legal services",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "6820",
+      "name": "Audit Fees",
+      "type": "Expense",
+      "description": "External audit costs",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "6830",
+      "name": "Consulting Fees",
+      "type": "Expense",
+      "description": "Management consultancy",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "6900",
+      "name": "Office and Administration",
+      "type": "Expense",
+      "description": "General office costs",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "6910",
+      "name": "Stationery and Supplies",
+      "type": "Expense",
+      "description": "Office supplies",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "6920",
+      "name": "Telephone and Communications",
+      "type": "Expense",
+      "description": "Phone, internet, postage",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "6930",
+      "name": "Information Technology",
+      "type": "Expense",
+      "description": "IT services and subscriptions",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "6935",
+      "name": "Blockchain Infrastructure Costs",
+      "type": "Expense",
+      "description": "Node hosting, API costs",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "6940",
+      "name": "Travel and Entertainment",
+      "type": "Expense",
+      "description": "Business travel and entertaining",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "6950",
+      "name": "Training and Development",
+      "type": "Expense",
+      "description": "Staff training costs",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "6960",
+      "name": "Bad Debt Expense",
+      "type": "Expense",
+      "description": "Impairment loss on receivables (IFRS 9)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "6970",
+      "name": "Depreciation - PPE",
+      "type": "Expense",
+      "description": "Depreciation of property, plant & equipment",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "6975",
+      "name": "Depreciation - Right-of-Use Assets",
+      "type": "Expense",
+      "description": "Depreciation of leased assets",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "6980",
+      "name": "Amortisation - Intangible Assets",
+      "type": "Expense",
+      "description": "Amortisation expense",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "6990",
+      "name": "Other Administrative Expenses",
+      "type": "Expense",
+      "description": "Miscellaneous admin costs",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "7000",
+      "name": "Finance Costs",
+      "type": "Expense",
+      "description": "Interest and finance charges",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "7010",
+      "name": "Interest on Bank Loans",
+      "type": "Expense",
+      "description": "Loan interest",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "7020",
+      "name": "Interest on Lease Liabilities",
+      "type": "Expense",
+      "description": "Lease interest (IFRS 16)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "7025",
+      "name": "DeFi Interest Expense",
+      "type": "Expense",
+      "description": "Interest on DeFi protocol borrowings",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "7026",
+      "name": "Gas and Transaction Fees",
+      "type": "Expense",
+      "description": "Blockchain transaction costs",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "7030",
+      "name": "Bank Charges",
+      "type": "Expense",
+      "description": "Banking fees",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "7100",
+      "name": "Foreign Exchange Losses",
+      "type": "Expense",
+      "description": "FX losses",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "7105",
+      "name": "Realised Crypto Losses",
+      "type": "Expense",
+      "description": "Losses on crypto asset disposals",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "7106",
+      "name": "Unrealised Crypto Losses",
+      "type": "Expense",
+      "description": "Fair value losses on crypto holdings",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "7107",
+      "name": "Crypto Impairment Losses",
+      "type": "Expense",
+      "description": "Impairment of crypto assets (IAS 38)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "7200",
+      "name": "Impairment Losses",
+      "type": "Expense",
+      "description": "Asset impairments (IAS 36)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "7300",
+      "name": "Loss on Disposal of Assets",
+      "type": "Expense",
+      "description": "Losses on asset sales",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "8000",
+      "name": "Current Tax Expense",
+      "type": "Expense",
+      "description": "Current year tax (IAS 12)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "8100",
+      "name": "Deferred Tax Expense/(Income)",
+      "type": "Expense",
+      "description": "Deferred tax movement (IAS 12)",
+      "isActive": true,
+      "editable": true
+    }
+  ],
+  "isTemplate": true
+}

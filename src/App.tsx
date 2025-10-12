@@ -4,6 +4,7 @@ import Navigation from './components/layout/Navigation';
 import Dashboard from './app/dashboard/Dashboard';
 import Transactions from './app/transactions/Transactions';
 import Onboarding from './app/onboarding/Onboarding';
+import ChartOfAccounts from './app/settings/ChartOfAccounts';
 
 const App: React.FC = () => {
   return (
@@ -19,6 +20,7 @@ const App: React.FC = () => {
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/transactions" element={<Transactions />} />
+              <Route path="/chart-of-accounts" element={<ChartOfAccounts />} />
               {/* Add more routes as needed */}
             </Routes>
           </Navigation>

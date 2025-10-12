@@ -1,0 +1,1376 @@
+{
+  "name": "IFRS - Not For-profit",
+  "jurisdiction": "ifrs",
+  "accountType": "not-for-profit",
+  "accounts": [
+    {
+      "code": "1000",
+      "name": "Cash and Cash Equivalents",
+      "type": "Asset",
+      "description": "Cash, bank balances (≤3 months)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1010",
+      "name": "Bank - Unrestricted Funds",
+      "type": "Asset",
+      "description": "Operating cash without restrictions",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1020",
+      "name": "Bank - Restricted Funds",
+      "type": "Asset",
+      "description": "Cash with donor restrictions",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1030",
+      "name": "Bank - Endowment Funds",
+      "type": "Asset",
+      "description": "Permanent endowment cash",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1040",
+      "name": "Cash on Hand",
+      "type": "Asset",
+      "description": "Petty cash",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1045",
+      "name": "Stablecoin Holdings - Operating",
+      "type": "Asset",
+      "description": "USDC/USDT for operations",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1046",
+      "name": "Stablecoin Holdings - Restricted",
+      "type": "Asset",
+      "description": "Restricted stablecoin funds",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1100",
+      "name": "Trade and Other Receivables",
+      "type": "Asset",
+      "description": "Amounts due within 12 months",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1110",
+      "name": "Grants Receivable",
+      "type": "Asset",
+      "description": "Grant revenue receivable",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1120",
+      "name": "Pledges Receivable - Current",
+      "type": "Asset",
+      "description": "Donor pledges due ≤12 months",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1130",
+      "name": "Loss Allowance - Pledges",
+      "type": "Asset",
+      "description": "Expected credit losses (contra)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1140",
+      "name": "Other Receivables",
+      "type": "Asset",
+      "description": "Programme fees and other receivables",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1200",
+      "name": "Inventories",
+      "type": "Asset",
+      "description": "Programme supplies (IAS 2)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1300",
+      "name": "Prepayments",
+      "type": "Asset",
+      "description": "Expenses paid in advance",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1400",
+      "name": "Short-term Investments",
+      "type": "Asset",
+      "description": "Investments <12 months",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1500",
+      "name": "Pledges Receivable - Non-current",
+      "type": "Asset",
+      "description": "Multi-year pledges",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1510",
+      "name": "Discount on Long-term Pledges",
+      "type": "Asset",
+      "description": "Present value adjustment (contra)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1600",
+      "name": "Investments - Non-current",
+      "type": "Asset",
+      "description": "Long-term investments",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1610",
+      "name": "Investments - Unrestricted",
+      "type": "Asset",
+      "description": "Unrestricted investment portfolio",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1620",
+      "name": "Investments - Restricted",
+      "type": "Asset",
+      "description": "Restricted investment funds",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1630",
+      "name": "Investments - Endowment",
+      "type": "Asset",
+      "description": "Permanent endowment investments",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1635",
+      "name": "Cryptocurrency Endowment Holdings",
+      "type": "Asset",
+      "description": "Crypto held in endowment",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1636",
+      "name": "DeFi Yield Positions - Endowment",
+      "type": "Asset",
+      "description": "Endowment funds in DeFi protocols",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1637",
+      "name": "Staked Assets - Endowment",
+      "type": "Asset",
+      "description": "Endowment staking positions",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1640",
+      "name": "Donated Cryptocurrency - Unrestricted",
+      "type": "Asset",
+      "description": "Crypto donations without restrictions",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1641",
+      "name": "Donated Cryptocurrency - Restricted",
+      "type": "Asset",
+      "description": "Crypto donations with purpose restrictions",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1642",
+      "name": "Donated NFTs",
+      "type": "Asset",
+      "description": "NFT donations received",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1700",
+      "name": "Property, Plant and Equipment",
+      "type": "Asset",
+      "description": "Tangible fixed assets (IAS 16)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1710",
+      "name": "Land and Buildings",
+      "type": "Asset",
+      "description": "Freehold property",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1711",
+      "name": "Accumulated Depreciation - Buildings",
+      "type": "Asset",
+      "description": "Cumulative depreciation (contra)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1720",
+      "name": "Leasehold Property",
+      "type": "Asset",
+      "description": "Leasehold improvements",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1721",
+      "name": "Accumulated Depreciation - Leasehold",
+      "type": "Asset",
+      "description": "Cumulative depreciation (contra)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1730",
+      "name": "Furniture and Equipment",
+      "type": "Asset",
+      "description": "Furniture, fixtures, equipment",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1731",
+      "name": "Accumulated Depreciation - F&E",
+      "type": "Asset",
+      "description": "Cumulative depreciation (contra)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1740",
+      "name": "Motor Vehicles",
+      "type": "Asset",
+      "description": "Organisation vehicles",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1741",
+      "name": "Accumulated Depreciation - Vehicles",
+      "type": "Asset",
+      "description": "Cumulative depreciation (contra)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1800",
+      "name": "Right-of-Use Assets",
+      "type": "Asset",
+      "description": "Leased assets (IFRS 16)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1810",
+      "name": "Accumulated Depreciation - ROU Assets",
+      "type": "Asset",
+      "description": "Cumulative depreciation (contra)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1900",
+      "name": "Intangible Assets",
+      "type": "Asset",
+      "description": "Software and licences (IAS 38)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1910",
+      "name": "Accumulated Amortisation",
+      "type": "Asset",
+      "description": "Cumulative amortisation (contra)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1950",
+      "name": "Other Non-current Assets",
+      "type": "Asset",
+      "description": "Long-term deposits, etc.",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2000",
+      "name": "Trade and Other Payables",
+      "type": "Liability",
+      "description": "Amounts due to suppliers",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2010",
+      "name": "Trade Payables",
+      "type": "Liability",
+      "description": "Trade creditors",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2020",
+      "name": "Other Payables",
+      "type": "Liability",
+      "description": "Non-trade payables",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2100",
+      "name": "Accruals",
+      "type": "Liability",
+      "description": "Accrued expenses",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2110",
+      "name": "Accrued Salaries",
+      "type": "Liability",
+      "description": "Unpaid staff costs",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2200",
+      "name": "Deferred Income",
+      "type": "Liability",
+      "description": "Income received in advance",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2210",
+      "name": "Deferred Grant Income",
+      "type": "Liability",
+      "description": "Grant advances",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2220",
+      "name": "Deferred Programme Fees",
+      "type": "Liability",
+      "description": "Advance programme payments",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2225",
+      "name": "Deferred Crypto Donations",
+      "type": "Liability",
+      "description": "Crypto donations for future periods",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2300",
+      "name": "Current Borrowings",
+      "type": "Liability",
+      "description": "Loans due ≤12 months",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2310",
+      "name": "Bank Overdrafts",
+      "type": "Liability",
+      "description": "Negative bank balances",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2320",
+      "name": "Current Portion - Long-term Debt",
+      "type": "Liability",
+      "description": "Principal due ≤12 months",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2330",
+      "name": "Current Lease Liabilities",
+      "type": "Liability",
+      "description": "Lease payments due ≤12 months (IFRS 16)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2400",
+      "name": "Tax Liabilities",
+      "type": "Liability",
+      "description": "Tax payable",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2410",
+      "name": "Value Added Tax Payable",
+      "type": "Liability",
+      "description": "VAT/GST payable",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2420",
+      "name": "Payroll Tax Payable",
+      "type": "Liability",
+      "description": "PAYE and social security",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2450",
+      "name": "Employee Benefits - Current",
+      "type": "Liability",
+      "description": "Annual leave, bonuses",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2500",
+      "name": "Non-current Borrowings",
+      "type": "Liability",
+      "description": "Long-term debt",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2510",
+      "name": "Long-term Loans",
+      "type": "Liability",
+      "description": "Loans >12 months",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2520",
+      "name": "Non-current Lease Liabilities",
+      "type": "Liability",
+      "description": "Lease obligations >12 months (IFRS 16)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2600",
+      "name": "Provisions - Non-current",
+      "type": "Liability",
+      "description": "Long-term provisions (IAS 37)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2700",
+      "name": "Employee Benefits - Non-current",
+      "type": "Liability",
+      "description": "Long-service leave (IAS 19)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "2800",
+      "name": "Deferred Income - Non-current",
+      "type": "Liability",
+      "description": "Long-term deferred income",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "3000",
+      "name": "General Fund",
+      "type": "Equity",
+      "description": "Unrestricted accumulated funds",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "3100",
+      "name": "Designated Funds",
+      "type": "Equity",
+      "description": "Board-designated reserves",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "3110",
+      "name": "Designated - Operating Reserve",
+      "type": "Equity",
+      "description": "Operational reserve fund",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "3120",
+      "name": "Designated - Fixed Assets",
+      "type": "Equity",
+      "description": "Investment in fixed assets",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "3130",
+      "name": "Designated - Projects",
+      "type": "Equity",
+      "description": "Project-specific designations",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "3200",
+      "name": "Revaluation Reserve",
+      "type": "Equity",
+      "description": "Asset revaluation surplus",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "3210",
+      "name": "Crypto Asset Reserve - Unrestricted",
+      "type": "Equity",
+      "description": "Unrealized gains/losses on unrestricted crypto",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "3300",
+      "name": "Restricted Funds - Programme",
+      "type": "Equity",
+      "description": "Programme-restricted donations",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "3310",
+      "name": "Restricted - Programme A",
+      "type": "Equity",
+      "description": "Funds restricted to Programme A",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "3320",
+      "name": "Restricted - Programme B",
+      "type": "Equity",
+      "description": "Funds restricted to Programme B",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "3400",
+      "name": "Restricted Funds - Capital",
+      "type": "Equity",
+      "description": "Capital project restrictions",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "3410",
+      "name": "Crypto Asset Reserve - Restricted",
+      "type": "Equity",
+      "description": "Unrealized gains/losses on restricted crypto",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "3500",
+      "name": "Endowment Funds",
+      "type": "Equity",
+      "description": "Permanent endowments",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "3510",
+      "name": "Permanent Endowment",
+      "type": "Equity",
+      "description": "Capital must be maintained",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "3520",
+      "name": "Expendable Endowment",
+      "type": "Equity",
+      "description": "Quasi-endowment",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "3530",
+      "name": "Crypto Asset Reserve - Endowment",
+      "type": "Equity",
+      "description": "Unrealized gains/losses on endowment crypto",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "3900",
+      "name": "Surplus/(Deficit) for the Period",
+      "type": "Equity",
+      "description": "Current year result",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4000",
+      "name": "Donations and Gifts",
+      "type": "Income",
+      "description": "Individual donations",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4010",
+      "name": "Donations - Unrestricted",
+      "type": "Income",
+      "description": "Unrestricted donations",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4020",
+      "name": "Donations - Restricted",
+      "type": "Income",
+      "description": "Purpose-restricted donations",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4025",
+      "name": "Crypto Donations - Unrestricted",
+      "type": "Income",
+      "description": "Cryptocurrency donations without restrictions",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4026",
+      "name": "Crypto Donations - Restricted",
+      "type": "Income",
+      "description": "Cryptocurrency donations with purpose restrictions",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4027",
+      "name": "NFT Donations",
+      "type": "Income",
+      "description": "NFT donations received at fair value",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4028",
+      "name": "Token Airdrops - Charitable",
+      "type": "Income",
+      "description": "Free tokens received as charity",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4100",
+      "name": "Corporate Donations",
+      "type": "Income",
+      "description": "Corporate giving",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4110",
+      "name": "Corporate Sponsorships",
+      "type": "Income",
+      "description": "Corporate sponsorship income",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4200",
+      "name": "Grants",
+      "type": "Income",
+      "description": "Grant income",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4210",
+      "name": "Government Grants",
+      "type": "Income",
+      "description": "Government funding (IAS 20)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4220",
+      "name": "Foundation Grants",
+      "type": "Income",
+      "description": "Foundation funding",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4230",
+      "name": "Lottery Grants",
+      "type": "Income",
+      "description": "National lottery funding",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4300",
+      "name": "Legacies and Bequests",
+      "type": "Income",
+      "description": "Estate gifts",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4400",
+      "name": "Gifts in Kind",
+      "type": "Income",
+      "description": "Non-cash donations",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4500",
+      "name": "Fundraising Events",
+      "type": "Income",
+      "description": "Event income",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4510",
+      "name": "Fundraising Event Revenue",
+      "type": "Income",
+      "description": "Gross event income",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4520",
+      "name": "Less: Direct Event Costs",
+      "type": "Income",
+      "description": "Direct costs of events (contra)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4600",
+      "name": "Charitable Activities Income",
+      "type": "Income",
+      "description": "Programme service fees",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4610",
+      "name": "Programme Service Fees",
+      "type": "Income",
+      "description": "Fees for services",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4620",
+      "name": "Membership Subscriptions",
+      "type": "Income",
+      "description": "Member dues",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4700",
+      "name": "Trading Income",
+      "type": "Income",
+      "description": "Trading subsidiary income",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4800",
+      "name": "Investment Income",
+      "type": "Income",
+      "description": "Investment returns",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4810",
+      "name": "Interest Income",
+      "type": "Income",
+      "description": "Bank interest",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4820",
+      "name": "Dividend Income",
+      "type": "Income",
+      "description": "Equity dividends",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4830",
+      "name": "Rental Income",
+      "type": "Income",
+      "description": "Property rental income",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4835",
+      "name": "Staking Rewards - Endowment",
+      "type": "Income",
+      "description": "Staking income from endowment",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4836",
+      "name": "DeFi Lending Interest",
+      "type": "Income",
+      "description": "Interest from DeFi lending protocols",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4837",
+      "name": "Liquidity Mining Rewards",
+      "type": "Income",
+      "description": "LP rewards from DeFi protocols",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4838",
+      "name": "Yield Farming Income",
+      "type": "Income",
+      "description": "Yield farming returns",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4840",
+      "name": "Realised Investment Gains",
+      "type": "Income",
+      "description": "Gains on disposal of investments",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4845",
+      "name": "Realised Crypto Gains",
+      "type": "Income",
+      "description": "Gains on crypto asset disposals",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4846",
+      "name": "Realised NFT Gains",
+      "type": "Income",
+      "description": "Gains on NFT sales",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4850",
+      "name": "Unrealised Investment Gains",
+      "type": "Income",
+      "description": "Fair value gains",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4855",
+      "name": "Unrealised Crypto Gains",
+      "type": "Income",
+      "description": "Fair value gains on crypto holdings",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "4900",
+      "name": "Other Income",
+      "type": "Income",
+      "description": "Miscellaneous income",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5000",
+      "name": "Programme A - Staff Costs",
+      "type": "Expense",
+      "description": "Programme A employee costs",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5010",
+      "name": "Programme A - Salaries",
+      "type": "Expense",
+      "description": "Salaries and wages",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5020",
+      "name": "Programme A - Social Security",
+      "type": "Expense",
+      "description": "Employer taxes",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5030",
+      "name": "Programme A - Pensions",
+      "type": "Expense",
+      "description": "Pension contributions",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5100",
+      "name": "Programme A - Direct Costs",
+      "type": "Expense",
+      "description": "Direct programme expenses",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5110",
+      "name": "Programme A - Supplies",
+      "type": "Expense",
+      "description": "Programme materials",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5120",
+      "name": "Programme A - Professional Fees",
+      "type": "Expense",
+      "description": "External consultants",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5130",
+      "name": "Programme A - Travel",
+      "type": "Expense",
+      "description": "Travel expenses",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5200",
+      "name": "Programme A - Support Costs",
+      "type": "Expense",
+      "description": "Allocated overhead",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5210",
+      "name": "Programme A - Occupancy",
+      "type": "Expense",
+      "description": "Rent and utilities allocation",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5220",
+      "name": "Programme A - Depreciation",
+      "type": "Expense",
+      "description": "Allocated depreciation",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5400",
+      "name": "Programme B - Staff Costs",
+      "type": "Expense",
+      "description": "Programme B employee costs",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5410",
+      "name": "Programme B - Salaries",
+      "type": "Expense",
+      "description": "Salaries and wages",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5420",
+      "name": "Programme B - Social Security",
+      "type": "Expense",
+      "description": "Employer taxes",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5430",
+      "name": "Programme B - Pensions",
+      "type": "Expense",
+      "description": "Pension contributions",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5500",
+      "name": "Programme B - Direct Costs",
+      "type": "Expense",
+      "description": "Direct programme expenses",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "5600",
+      "name": "Programme B - Support Costs",
+      "type": "Expense",
+      "description": "Allocated overhead",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "6000",
+      "name": "Governance - Trustee Expenses",
+      "type": "Expense",
+      "description": "Trustee/board costs",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "6100",
+      "name": "Governance - Audit Fees",
+      "type": "Expense",
+      "description": "External audit",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "6200",
+      "name": "Governance - Legal Fees",
+      "type": "Expense",
+      "description": "Legal compliance costs",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "6300",
+      "name": "Governance - Other",
+      "type": "Expense",
+      "description": "Other governance costs",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "7000",
+      "name": "Support - Staff Costs",
+      "type": "Expense",
+      "description": "Administrative staff",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "7010",
+      "name": "Support - Salaries",
+      "type": "Expense",
+      "description": "Admin salaries",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "7020",
+      "name": "Support - Social Security",
+      "type": "Expense",
+      "description": "Employer taxes",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "7030",
+      "name": "Support - Pensions",
+      "type": "Expense",
+      "description": "Pension contributions",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "7100",
+      "name": "Support - Premises Costs",
+      "type": "Expense",
+      "description": "Facility costs",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "7110",
+      "name": "Support - Rent and Rates",
+      "type": "Expense",
+      "description": "Property costs",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "7120",
+      "name": "Support - Utilities",
+      "type": "Expense",
+      "description": "Electricity, gas, water",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "7130",
+      "name": "Support - Repairs",
+      "type": "Expense",
+      "description": "Building maintenance",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "7200",
+      "name": "Support - Office Costs",
+      "type": "Expense",
+      "description": "Office running costs",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "7210",
+      "name": "Support - Stationery",
+      "type": "Expense",
+      "description": "Office supplies",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "7220",
+      "name": "Support - Communications",
+      "type": "Expense",
+      "description": "Phone, internet, postage",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "7230",
+      "name": "Support - IT Costs",
+      "type": "Expense",
+      "description": "IT and software",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "7235",
+      "name": "Support - Blockchain Infrastructure",
+      "type": "Expense",
+      "description": "Wallet management, node costs",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "7300",
+      "name": "Support - Professional Fees",
+      "type": "Expense",
+      "description": "Professional services",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "7400",
+      "name": "Support - Depreciation",
+      "type": "Expense",
+      "description": "Depreciation expense",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "7410",
+      "name": "Support - Amortisation",
+      "type": "Expense",
+      "description": "Amortisation expense",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "7500",
+      "name": "Fundraising - Staff Costs",
+      "type": "Expense",
+      "description": "Fundraising staff",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "7510",
+      "name": "Fundraising - Salaries",
+      "type": "Expense",
+      "description": "Development team salaries",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "7600",
+      "name": "Fundraising - Direct Costs",
+      "type": "Expense",
+      "description": "Campaign costs",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "7610",
+      "name": "Fundraising - Direct Mail",
+      "type": "Expense",
+      "description": "Mailing campaigns",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "7620",
+      "name": "Fundraising - Marketing",
+      "type": "Expense",
+      "description": "Fundraising marketing",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "7630",
+      "name": "Fundraising - Donor Stewardship",
+      "type": "Expense",
+      "description": "Donor relations",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "7635",
+      "name": "Fundraising - Crypto Processing Fees",
+      "type": "Expense",
+      "description": "Gas fees for receiving crypto donations",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "7700",
+      "name": "Fundraising - Support Costs",
+      "type": "Expense",
+      "description": "Allocated overhead",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "8000",
+      "name": "Finance Costs",
+      "type": "Expense",
+      "description": "Interest expense",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "8100",
+      "name": "Realised Investment Losses",
+      "type": "Expense",
+      "description": "Losses on disposal",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "8105",
+      "name": "Realised Crypto Losses",
+      "type": "Expense",
+      "description": "Losses on crypto disposals",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "8106",
+      "name": "Gas and Transaction Fees",
+      "type": "Expense",
+      "description": "Blockchain transaction costs",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "8200",
+      "name": "Unrealised Investment Losses",
+      "type": "Expense",
+      "description": "Fair value losses",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "8205",
+      "name": "Unrealised Crypto Losses",
+      "type": "Expense",
+      "description": "Fair value losses on crypto holdings",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "8300",
+      "name": "Foreign Exchange Losses",
+      "type": "Expense",
+      "description": "FX losses",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "8310",
+      "name": "Crypto Asset Impairment",
+      "type": "Expense",
+      "description": "Impairment of crypto holdings (IAS 38)",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "8400",
+      "name": "Impairment Losses",
+      "type": "Expense",
+      "description": "Asset impairments",
+      "isActive": true,
+      "editable": true
+    }
+  ],
+  "isTemplate": true
+}

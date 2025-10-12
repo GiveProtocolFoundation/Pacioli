@@ -66,7 +66,16 @@ const Navigation: React.FC<NavigationProps> = ({ children, userType = 'organizat
     },
     { name: 'Analytics', href: '/analytics', icon: BarChart3 },
     { name: 'Support', href: '/support', icon: MessageCircle },
-    { name: 'Settings', href: '/settings', icon: Settings },
+    {
+      name: 'Settings',
+      href: '/settings',
+      icon: Settings,
+      subItems: [
+        { name: 'Chart of Accounts', href: '/chart-of-accounts' },
+        { name: 'General Settings', href: '/settings/general' },
+        { name: 'Users & Permissions', href: '/settings/users' },
+      ]
+    },
   ];
 
   // Simplified navigation for individuals
@@ -75,7 +84,15 @@ const Navigation: React.FC<NavigationProps> = ({ children, userType = 'organizat
     { name: 'Transactions', href: '/transactions', icon: Receipt, badge: 2 },
     { name: 'Wallets', href: '/wallets', icon: Wallet },
     { name: 'Tax Reports', href: '/reports', icon: FileText },
-    { name: 'Settings', href: '/settings', icon: Settings },
+    {
+      name: 'Settings',
+      href: '/settings',
+      icon: Settings,
+      subItems: [
+        { name: 'Chart of Accounts', href: '/chart-of-accounts' },
+        { name: 'General Settings', href: '/settings/general' },
+      ]
+    },
   ];
 
   const navItems = userType === 'organization' ? organizationNavItems : individualNavItems;

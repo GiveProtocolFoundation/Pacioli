@@ -16,7 +16,8 @@ export default tseslint.config(
       'vite.config.ts',
       'build',
       'ignition/**',
-      'contracts/**'
+      'contracts/**',
+      'scripts/**'
     ]
   },
   js.configs.recommended,
