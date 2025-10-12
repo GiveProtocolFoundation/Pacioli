@@ -11,7 +11,7 @@ function parseSheet(sheet) {
 
   if (data.length === 0) return [];
 
-  const headers = data[0];
+  // Skip headers row (data[0])
   const accounts = [];
 
   for (let i = 1; i < data.length; i++) {
@@ -102,5 +102,5 @@ try {
   console.log('\n✓ Conversion complete!');
 } catch (error) {
   console.error('Error:', error.message);
-  process.exit(1);
+  throw error;
 }
