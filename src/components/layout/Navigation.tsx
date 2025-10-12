@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { useState } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 import {
   LayoutDashboard,
   Receipt,
@@ -15,27 +15,30 @@ import {
   LogOut,
   User,
   HelpCircle,
-  MessageCircle
-} from 'lucide-react';
-import NumbersWhiteLogo from '../../assets/Numbers_White.svg';
+  MessageCircle,
+} from 'lucide-react'
+import NumbersWhiteLogo from '../../assets/Numbers_White.svg'
 
 interface NavigationProps {
-  children: React.ReactNode;
-  userType?: 'individual' | 'organization';
+  children: React.ReactNode
+  userType?: 'individual' | 'organization'
 }
 
 interface NavItem {
-  name: string;
-  href: string;
-  icon: React.ElementType;
-  badge?: number;
-  subItems?: { name: string; href: string }[];
+  name: string
+  href: string
+  icon: React.ElementType
+  badge?: number
+  subItems?: { name: string; href: string }[]
 }
 
-const Navigation: React.FC<NavigationProps> = ({ children, userType = 'organization' }) => {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const location = useLocation();
+const Navigation: React.FC<NavigationProps> = ({
+  children,
+  userType = 'organization',
+}) => {
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [userMenuOpen, setUserMenuOpen] = useState(false)
+  const location = useLocation()
 
   // Navigation items for organizations/charities
   const organizationNavItems: NavItem[] = [
@@ -50,7 +53,7 @@ const Navigation: React.FC<NavigationProps> = ({ children, userType = 'organizat
         { name: 'Revenue', href: '/transactions?filter=revenue' },
         { name: 'Expense', href: '/transactions?filter=expense' },
         { name: 'Transfers', href: '/transactions?filter=transfers' },
-      ]
+      ],
     },
     { name: 'Wallets', href: '/wallets', icon: Wallet },
     {
@@ -62,7 +65,7 @@ const Navigation: React.FC<NavigationProps> = ({ children, userType = 'organizat
         { name: 'Tax Reports', href: '/reports/tax' },
         { name: 'Donor Reports', href: '/reports/donors' },
         { name: 'Compliance', href: '/reports/compliance' },
-      ]
+      ],
     },
     { name: 'Analytics', href: '/analytics', icon: BarChart3 },
     { name: 'Support', href: '/support', icon: MessageCircle },
@@ -74,9 +77,9 @@ const Navigation: React.FC<NavigationProps> = ({ children, userType = 'organizat
         { name: 'Chart of Accounts', href: '/chart-of-accounts' },
         { name: 'General Settings', href: '/settings/general' },
         { name: 'Users & Permissions', href: '/settings/users' },
-      ]
+      ],
     },
-  ];
+  ]
 
   // Simplified navigation for individuals
   const individualNavItems: NavItem[] = [
@@ -91,21 +94,22 @@ const Navigation: React.FC<NavigationProps> = ({ children, userType = 'organizat
       subItems: [
         { name: 'Chart of Accounts', href: '/chart-of-accounts' },
         { name: 'General Settings', href: '/settings/general' },
-      ]
+      ],
     },
-  ];
+  ]
 
-  const navItems = userType === 'organization' ? organizationNavItems : individualNavItems;
+  const navItems =
+    userType === 'organization' ? organizationNavItems : individualNavItems
 
-  const [expandedItems, setExpandedItems] = useState<string[]>([]);
+  const [expandedItems, setExpandedItems] = useState<string[]>([])
 
   const toggleExpanded = (itemName: string) => {
     setExpandedItems(prev =>
       prev.includes(itemName)
         ? prev.filter(name => name !== itemName)
         : [...prev, itemName]
-    );
-  };
+    )
+  }
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -114,14 +118,14 @@ const Navigation: React.FC<NavigationProps> = ({ children, userType = 'organizat
         {/* Logo */}
         <div className="flex items-center justify-center h-16 px-6 border-b border-gray-200">
           <div className="flex items-center">
-            <img
-              src={NumbersWhiteLogo}
-              alt="Numbers"
-              className="h-10 w-auto"
-            />
+            <img src={NumbersWhiteLogo} alt="Numbers" className="h-10 w-auto" />
             <div className="ml-3 flex flex-col">
-              <span className="text-lg font-semibold text-gray-900">Numbers</span>
-              <span className="text-xs text-gray-500">Accounting & Analytics</span>
+              <span className="text-lg font-semibold text-gray-900">
+                Numbers
+              </span>
+              <span className="text-xs text-gray-500">
+                Accounting & Analytics
+              </span>
             </div>
           </div>
         </div>
@@ -129,9 +133,12 @@ const Navigation: React.FC<NavigationProps> = ({ children, userType = 'organizat
         {/* Navigation */}
         <nav className="flex-1 px-3 py-4 overflow-y-auto">
           <ul className="space-y-1">
-            {navItems.map((item) => {
-              const isActive = location.pathname === item.href ||
-                              (item.subItems && item.subItems.some(sub => location.pathname + location.search === sub.href));
+            {navItems.map(item => {
+              const isActive =
+                location.pathname === item.href ||
+                item.subItems?.some(
+                  sub => location.pathname + location.search === sub.href
+                )
 
               return (
                 <li key={item.name}>
@@ -156,7 +163,9 @@ const Navigation: React.FC<NavigationProps> = ({ children, userType = 'organizat
                         )}
                         <ChevronDown
                           className={`w-4 h-4 transition-transform ${
-                            expandedItems.includes(item.name) ? 'transform rotate-180' : ''
+                            expandedItems.includes(item.name)
+                              ? 'transform rotate-180'
+                              : ''
                           }`}
                         />
                       </div>
@@ -185,8 +194,9 @@ const Navigation: React.FC<NavigationProps> = ({ children, userType = 'organizat
                   {/* Sub-items */}
                   {item.subItems && expandedItems.includes(item.name) && (
                     <ul className="mt-1 ml-8 space-y-1">
-                      {item.subItems.map((subItem) => {
-                        const isSubActive = location.pathname + location.search === subItem.href;
+                      {item.subItems.map(subItem => {
+                        const isSubActive =
+                          location.pathname + location.search === subItem.href
                         return (
                           <li key={subItem.name}>
                             <Link
@@ -200,12 +210,12 @@ const Navigation: React.FC<NavigationProps> = ({ children, userType = 'organizat
                               {subItem.name}
                             </Link>
                           </li>
-                        );
+                        )
                       })}
                     </ul>
                   )}
                 </li>
-              );
+              )
             })}
           </ul>
         </nav>
@@ -248,8 +258,12 @@ const Navigation: React.FC<NavigationProps> = ({ children, userType = 'organizat
                   className="h-10 w-auto"
                 />
                 <div className="ml-3 flex flex-col">
-                  <span className="text-lg font-semibold text-gray-900">Numbers</span>
-                  <span className="text-xs text-gray-500">Accounting & Analytics</span>
+                  <span className="text-lg font-semibold text-gray-900">
+                    Numbers
+                  </span>
+                  <span className="text-xs text-gray-500">
+                    Accounting & Analytics
+                  </span>
                 </div>
               </div>
               <button
@@ -263,9 +277,12 @@ const Navigation: React.FC<NavigationProps> = ({ children, userType = 'organizat
             {/* Navigation */}
             <nav className="flex-1 px-3 py-4 overflow-y-auto">
               <ul className="space-y-1">
-                {navItems.map((item) => {
-                  const isActive = location.pathname === item.href ||
-                                  (item.subItems && item.subItems.some(sub => location.pathname + location.search === sub.href));
+                {navItems.map(item => {
+                  const isActive =
+                    location.pathname === item.href ||
+                    item.subItems?.some(
+                      sub => location.pathname + location.search === sub.href
+                    )
 
                   return (
                     <li key={item.name}>
@@ -290,7 +307,9 @@ const Navigation: React.FC<NavigationProps> = ({ children, userType = 'organizat
                             )}
                             <ChevronDown
                               className={`w-4 h-4 transition-transform ${
-                                expandedItems.includes(item.name) ? 'transform rotate-180' : ''
+                                expandedItems.includes(item.name)
+                                  ? 'transform rotate-180'
+                                  : ''
                               }`}
                             />
                           </div>
@@ -319,8 +338,10 @@ const Navigation: React.FC<NavigationProps> = ({ children, userType = 'organizat
 
                       {item.subItems && expandedItems.includes(item.name) && (
                         <ul className="mt-1 ml-8 space-y-1">
-                          {item.subItems.map((subItem) => {
-                            const isSubActive = location.pathname + location.search === subItem.href;
+                          {item.subItems.map(subItem => {
+                            const isSubActive =
+                              location.pathname + location.search ===
+                              subItem.href
                             return (
                               <li key={subItem.name}>
                                 <Link
@@ -335,12 +356,12 @@ const Navigation: React.FC<NavigationProps> = ({ children, userType = 'organizat
                                   {subItem.name}
                                 </Link>
                               </li>
-                            );
+                            )
                           })}
                         </ul>
                       )}
                     </li>
-                  );
+                  )
                 })}
               </ul>
             </nav>
@@ -353,7 +374,9 @@ const Navigation: React.FC<NavigationProps> = ({ children, userType = 'organizat
                 </div>
                 <div className="ml-3 flex-1">
                   <p className="text-sm font-medium text-gray-900">
-                    {userType === 'organization' ? 'Hope Foundation' : 'John Doe'}
+                    {userType === 'organization'
+                      ? 'Hope Foundation'
+                      : 'John Doe'}
                   </p>
                   <p className="text-xs text-gray-500">
                     {userType === 'organization' ? 'Admin' : 'Personal Account'}
@@ -420,10 +443,14 @@ const Navigation: React.FC<NavigationProps> = ({ children, userType = 'organizat
                   <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
                     <div className="px-4 py-3 border-b border-gray-200">
                       <p className="text-sm font-medium text-gray-900">
-                        {userType === 'organization' ? 'Hope Foundation' : 'John Doe'}
+                        {userType === 'organization'
+                          ? 'Hope Foundation'
+                          : 'John Doe'}
                       </p>
                       <p className="text-xs text-gray-500 mt-1">
-                        {userType === 'organization' ? 'admin@hopefoundation.org' : 'john.doe@email.com'}
+                        {userType === 'organization'
+                          ? 'admin@hopefoundation.org'
+                          : 'john.doe@email.com'}
                       </p>
                     </div>
                     <button className="w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-50 flex items-center">
@@ -451,12 +478,10 @@ const Navigation: React.FC<NavigationProps> = ({ children, userType = 'organizat
         </header>
 
         {/* Page content */}
-        <main className="flex-1">
-          {children}
-        </main>
+        <main className="flex-1">{children}</main>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Navigation;
+export default Navigation
