@@ -51,7 +51,7 @@ const Onboarding: React.FC = () => {
             <img src={NumbersBlackLogo} alt="Numbers" className="h-12 w-auto" />
             <span className="ml-3 text-2xl font-bold text-gray-900">Numbers</span>
           </div>
-          <p className="text-gray-600">Let's set up your account</p>
+          <p className="text-gray-600">Let&apos;s set up your account</p>
         </div>
 
         {/* Progress Steps */}

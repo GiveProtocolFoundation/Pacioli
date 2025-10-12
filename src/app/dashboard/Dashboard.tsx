@@ -96,7 +96,7 @@ const Dashboard: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-semibold text-gray-900">Dashboard</h1>
-              <p className="text-sm text-gray-500 mt-1">Welcome back! Here's your crypto portfolio overview.</p>
+              <p className="text-sm text-gray-500 mt-1">Welcome back! Here&apos;s your crypto portfolio overview.</p>
             </div>
             <div className="flex items-center space-x-3">
               <button className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
