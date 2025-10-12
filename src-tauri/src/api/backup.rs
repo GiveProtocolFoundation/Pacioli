@@ -1,15 +1,14 @@
 use std::fs;
 use std::path::PathBuf;
-use tauri::api::dialog;
 use anyhow::Result;
 
 #[tauri::command]
 pub async fn create_backup(
     app_handle: tauri::AppHandle,
 ) -> Result<String, String> {
-    let data_dir = app_handle.path_resolver()
+    let data_dir = app_handle.path()
         .app_data_dir()
-        .ok_or("Could not find data directory")?;
+        .map_err(|e| e.to_string())?;
     
     let backup_name = format!("numbers_backup_{}.zip", 
         chrono::Utc::now().format("%Y%m%d_%H%M%S"));
