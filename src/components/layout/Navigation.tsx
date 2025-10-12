@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
   Receipt,
   FileText,
   Settings,
   Wallet,
-  Users,
   BarChart3,
   Bell,
   Search,
@@ -14,10 +14,10 @@ import {
   ChevronDown,
   LogOut,
   User,
-  HelpCircle
+  HelpCircle,
+  MessageCircle
 } from 'lucide-react';
 import NumbersWhiteLogo from '../../assets/Numbers_White.svg';
-import NumbersBlackLogo from '../../assets/Numbers_Black.svg';
 
 interface NavigationProps {
   children: React.ReactNode;
@@ -35,7 +35,7 @@ interface NavItem {
 const Navigation: React.FC<NavigationProps> = ({ children, userType = 'organization' }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const [activeItem, setActiveItem] = useState('Dashboard');
+  const location = useLocation();
 
   // Navigation items for organizations/charities
   const organizationNavItems: NavItem[] = [
@@ -46,10 +46,10 @@ const Navigation: React.FC<NavigationProps> = ({ children, userType = 'organizat
       icon: Receipt,
       badge: 3,
       subItems: [
-        { name: 'All Transactions', href: '/transactions' },
-        { name: 'Donations', href: '/transactions/donations' },
-        { name: 'Expenses', href: '/transactions/expenses' },
-        { name: 'Transfers', href: '/transactions/transfers' },
+        { name: 'All Transactions', href: '/transactions?filter=all' },
+        { name: 'Revenue', href: '/transactions?filter=revenue' },
+        { name: 'Expense', href: '/transactions?filter=expense' },
+        { name: 'Transfers', href: '/transactions?filter=transfers' },
       ]
     },
     { name: 'Wallets', href: '/wallets', icon: Wallet },
@@ -65,7 +65,7 @@ const Navigation: React.FC<NavigationProps> = ({ children, userType = 'organizat
       ]
     },
     { name: 'Analytics', href: '/analytics', icon: BarChart3 },
-    { name: 'Team', href: '/team', icon: Users },
+    { name: 'Support', href: '/support', icon: MessageCircle },
     { name: 'Settings', href: '/settings', icon: Settings },
   ];
 
@@ -98,7 +98,7 @@ const Navigation: React.FC<NavigationProps> = ({ children, userType = 'organizat
         <div className="flex items-center justify-center h-16 px-6 border-b border-gray-200">
           <div className="flex items-center">
             <img
-              src={NumbersBlackLogo}
+              src={NumbersWhiteLogo}
               alt="Numbers"
               className="h-10 w-auto"
             />
@@ -112,62 +112,84 @@ const Navigation: React.FC<NavigationProps> = ({ children, userType = 'organizat
         {/* Navigation */}
         <nav className="flex-1 px-3 py-4 overflow-y-auto">
           <ul className="space-y-1">
-            {navItems.map((item) => (
-              <li key={item.name}>
-                <button
-                  onClick={() => {
-                    setActiveItem(item.name);
-                    if (item.subItems) {
-                      toggleExpanded(item.name);
-                    }
-                  }}
-                  className={`w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
-                    activeItem === item.name
-                      ? 'bg-blue-50 text-blue-600'
-                      : 'text-gray-700 hover:bg-gray-50'
-                  }`}
-                >
-                  <div className="flex items-center">
-                    <item.icon className="w-5 h-5 mr-3" />
-                    <span>{item.name}</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    {item.badge && (
-                      <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-medium text-white bg-red-500 rounded-full">
-                        {item.badge}
-                      </span>
-                    )}
-                    {item.subItems && (
-                      <ChevronDown
-                        className={`w-4 h-4 transition-transform ${
-                          expandedItems.includes(item.name) ? 'transform rotate-180' : ''
-                        }`}
-                      />
-                    )}
-                  </div>
-                </button>
+            {navItems.map((item) => {
+              const isActive = location.pathname === item.href ||
+                              (item.subItems && item.subItems.some(sub => location.pathname + location.search === sub.href));
 
-                {/* Sub-items */}
-                {item.subItems && expandedItems.includes(item.name) && (
-                  <ul className="mt-1 ml-8 space-y-1">
-                    {item.subItems.map((subItem) => (
-                      <li key={subItem.name}>
-                        <button
-                          onClick={() => setActiveItem(subItem.name)}
-                          className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${
-                            activeItem === subItem.name
-                              ? 'text-blue-600 bg-blue-50'
-                              : 'text-gray-600 hover:bg-gray-50'
+              return (
+                <li key={item.name}>
+                  {item.subItems ? (
+                    <button
+                      onClick={() => toggleExpanded(item.name)}
+                      className={`w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                        isActive
+                          ? 'bg-blue-50 text-blue-600'
+                          : 'text-gray-700 hover:bg-gray-50'
+                      }`}
+                    >
+                      <div className="flex items-center">
+                        <item.icon className="w-5 h-5 mr-3" />
+                        <span>{item.name}</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        {item.badge && (
+                          <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-medium text-white bg-red-500 rounded-full">
+                            {item.badge}
+                          </span>
+                        )}
+                        <ChevronDown
+                          className={`w-4 h-4 transition-transform ${
+                            expandedItems.includes(item.name) ? 'transform rotate-180' : ''
                           }`}
-                        >
-                          {subItem.name}
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </li>
-            ))}
+                        />
+                      </div>
+                    </button>
+                  ) : (
+                    <Link
+                      to={item.href}
+                      className={`w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                        isActive
+                          ? 'bg-blue-50 text-blue-600'
+                          : 'text-gray-700 hover:bg-gray-50'
+                      }`}
+                    >
+                      <div className="flex items-center">
+                        <item.icon className="w-5 h-5 mr-3" />
+                        <span>{item.name}</span>
+                      </div>
+                      {item.badge && (
+                        <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-medium text-white bg-red-500 rounded-full">
+                          {item.badge}
+                        </span>
+                      )}
+                    </Link>
+                  )}
+
+                  {/* Sub-items */}
+                  {item.subItems && expandedItems.includes(item.name) && (
+                    <ul className="mt-1 ml-8 space-y-1">
+                      {item.subItems.map((subItem) => {
+                        const isSubActive = location.pathname + location.search === subItem.href;
+                        return (
+                          <li key={subItem.name}>
+                            <Link
+                              to={subItem.href}
+                              className={`block w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${
+                                isSubActive
+                                  ? 'text-blue-600 bg-blue-50'
+                                  : 'text-gray-600 hover:bg-gray-50'
+                              }`}
+                            >
+                              {subItem.name}
+                            </Link>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         </nav>
 
@@ -204,7 +226,7 @@ const Navigation: React.FC<NavigationProps> = ({ children, userType = 'organizat
             <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
               <div className="flex items-center">
                 <img
-                  src={NumbersBlackLogo}
+                  src={NumbersWhiteLogo}
                   alt="Numbers"
                   className="h-10 w-auto"
                 />
@@ -224,67 +246,85 @@ const Navigation: React.FC<NavigationProps> = ({ children, userType = 'organizat
             {/* Navigation */}
             <nav className="flex-1 px-3 py-4 overflow-y-auto">
               <ul className="space-y-1">
-                {navItems.map((item) => (
-                  <li key={item.name}>
-                    <button
-                      onClick={() => {
-                        setActiveItem(item.name);
-                        if (item.subItems) {
-                          toggleExpanded(item.name);
-                        }
-                        if (!item.subItems) {
-                          setSidebarOpen(false);
-                        }
-                      }}
-                      className={`w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
-                        activeItem === item.name
-                          ? 'bg-blue-50 text-blue-600'
-                          : 'text-gray-700 hover:bg-gray-50'
-                      }`}
-                    >
-                      <div className="flex items-center">
-                        <item.icon className="w-5 h-5 mr-3" />
-                        <span>{item.name}</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        {item.badge && (
-                          <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-medium text-white bg-red-500 rounded-full">
-                            {item.badge}
-                          </span>
-                        )}
-                        {item.subItems && (
-                          <ChevronDown
-                            className={`w-4 h-4 transition-transform ${
-                              expandedItems.includes(item.name) ? 'transform rotate-180' : ''
-                            }`}
-                          />
-                        )}
-                      </div>
-                    </button>
+                {navItems.map((item) => {
+                  const isActive = location.pathname === item.href ||
+                                  (item.subItems && item.subItems.some(sub => location.pathname + location.search === sub.href));
 
-                    {item.subItems && expandedItems.includes(item.name) && (
-                      <ul className="mt-1 ml-8 space-y-1">
-                        {item.subItems.map((subItem) => (
-                          <li key={subItem.name}>
-                            <button
-                              onClick={() => {
-                                setActiveItem(subItem.name);
-                                setSidebarOpen(false);
-                              }}
-                              className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${
-                                activeItem === subItem.name
-                                  ? 'text-blue-600 bg-blue-50'
-                                  : 'text-gray-600 hover:bg-gray-50'
+                  return (
+                    <li key={item.name}>
+                      {item.subItems ? (
+                        <button
+                          onClick={() => toggleExpanded(item.name)}
+                          className={`w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                            isActive
+                              ? 'bg-blue-50 text-blue-600'
+                              : 'text-gray-700 hover:bg-gray-50'
+                          }`}
+                        >
+                          <div className="flex items-center">
+                            <item.icon className="w-5 h-5 mr-3" />
+                            <span>{item.name}</span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            {item.badge && (
+                              <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-medium text-white bg-red-500 rounded-full">
+                                {item.badge}
+                              </span>
+                            )}
+                            <ChevronDown
+                              className={`w-4 h-4 transition-transform ${
+                                expandedItems.includes(item.name) ? 'transform rotate-180' : ''
                               }`}
-                            >
-                              {subItem.name}
-                            </button>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </li>
-                ))}
+                            />
+                          </div>
+                        </button>
+                      ) : (
+                        <Link
+                          to={item.href}
+                          onClick={() => setSidebarOpen(false)}
+                          className={`w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                            isActive
+                              ? 'bg-blue-50 text-blue-600'
+                              : 'text-gray-700 hover:bg-gray-50'
+                          }`}
+                        >
+                          <div className="flex items-center">
+                            <item.icon className="w-5 h-5 mr-3" />
+                            <span>{item.name}</span>
+                          </div>
+                          {item.badge && (
+                            <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-medium text-white bg-red-500 rounded-full">
+                              {item.badge}
+                            </span>
+                          )}
+                        </Link>
+                      )}
+
+                      {item.subItems && expandedItems.includes(item.name) && (
+                        <ul className="mt-1 ml-8 space-y-1">
+                          {item.subItems.map((subItem) => {
+                            const isSubActive = location.pathname + location.search === subItem.href;
+                            return (
+                              <li key={subItem.name}>
+                                <Link
+                                  to={subItem.href}
+                                  onClick={() => setSidebarOpen(false)}
+                                  className={`block w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${
+                                    isSubActive
+                                      ? 'text-blue-600 bg-blue-50'
+                                      : 'text-gray-600 hover:bg-gray-50'
+                                  }`}
+                                >
+                                  {subItem.name}
+                                </Link>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
             </nav>
 

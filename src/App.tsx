@@ -1,21 +1,31 @@
 import React from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Navigation from './components/layout/Navigation';
 import Dashboard from './app/dashboard/Dashboard';
-
-// This is an example of how to use the Navigation component
-// You would typically set this up in your main app layout or page
+import Transactions from './app/transactions/Transactions';
+import Onboarding from './app/onboarding/Onboarding';
 
 const App: React.FC = () => {
   return (
-    <Navigation userType="organization">
-      <Dashboard />
-    </Navigation>
+    <BrowserRouter>
+      <Routes>
+        {/* Onboarding route - no navigation wrapper */}
+        <Route path="/onboarding" element={<Onboarding />} />
+
+        {/* Main app routes - with navigation wrapper */}
+        <Route path="/*" element={
+          <Navigation userType="organization">
+            <Routes>
+              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/transactions" element={<Transactions />} />
+              {/* Add more routes as needed */}
+            </Routes>
+          </Navigation>
+        } />
+      </Routes>
+    </BrowserRouter>
   );
 };
-
-// For individual users, you would use:
-// <Navigation userType="individual">
-//   <Dashboard />
-// </Navigation>
 
 export default App;
