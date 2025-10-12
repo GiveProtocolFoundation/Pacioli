@@ -5,12 +5,11 @@ use serde::{Deserialize, Serialize};
 use rust_decimal::Decimal;
 use chrono::{DateTime, Utc};
 use uuid::Uuid;
-use sqlx::FromRow;
 
 pub use address::UnifiedAddress;
 pub use encryption::Encryptor;
 
-#[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Transaction {
     pub id: Uuid,
     pub chain: String,
