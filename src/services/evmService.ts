@@ -1,5 +1,6 @@
 import { ethers } from 'ethers';
 import { invoke } from '@tauri-apps/api/tauri';
+import { getErrorCode } from '../types/errors';
 
 export interface EVMChain {
   name: string;
@@ -145,9 +146,9 @@ export class EVMService {
         method: 'wallet_switchEthereumChain',
         params: [{ chainId: hexChainId }],
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Network doesn't exist, try to add it
-      if (error.code === 4902) {
+      if (getErrorCode(error) === 4902) {
         const chain = Object.values(EVM_CHAINS).find(c => c.chainId === chainId);
         if (chain) {
           await this.addNetwork(chain);

@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { ethers } from 'ethers';
+import { getErrorCode } from '../types/errors';
 
 export interface NetworkConfig {
   chainId: string;
@@ -82,9 +83,9 @@ export const useNetworkConfig = () => {
         params: [{ chainId: config.chainId }],
       });
       setCurrentNetwork(networkName);
-    } catch (switchError: any) {
+    } catch (switchError: unknown) {
       // This error code indicates that the chain has not been added to MetaMask
-      if (switchError.code === 4902) {
+      if (getErrorCode(switchError) === 4902) {
         try {
           await window.ethereum.request({
             method: 'wallet_addEthereumChain',

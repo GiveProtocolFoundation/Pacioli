@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { EVMService, EVM_CHAINS } from '../services/evmService';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '../types/errors';
 
 export interface EVMAccount {
   address: string;
@@ -29,8 +30,8 @@ export const useEVMService = () => {
       setCurrentAccount(account);
       toast.success(`Connected to ${EVM_CHAINS[account.chain]?.name || account.chain}`);
       return account;
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to connect to MetaMask');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error) || 'Failed to connect to MetaMask');
       throw error;
     } finally {
       setIsConnecting(false);
@@ -57,8 +58,8 @@ export const useEVMService = () => {
       
       const chainName = Object.values(EVM_CHAINS).find(c => c.chainId === chainId)?.name;
       toast.success(`Switched to ${chainName || `Chain ${chainId}`}`);
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to switch network');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error) || 'Failed to switch network');
       throw error;
     }
   }, [service, currentAccount]);
@@ -67,8 +68,8 @@ export const useEVMService = () => {
     try {
       await service.connectToChain(chain);
       toast.success(`Backend connected to ${EVM_CHAINS[chain]?.name || chain}`);
-    } catch (error: any) {
-      toast.error(error.message || `Failed to connect to ${chain}`);
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error) || `Failed to connect to ${chain}`);
       throw error;
     }
   }, [service]);
@@ -104,8 +105,8 @@ export const useEVMService = () => {
 
       setBalances(allBalances);
       return allBalances;
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to load balances');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error) || 'Failed to load balances');
       throw error;
     } finally {
       setIsLoadingBalances(false);
@@ -123,8 +124,8 @@ export const useEVMService = () => {
       const result = await service.syncEVMTransactions(chain, address);
       toast.success(result);
       return result;
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to sync transactions');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error) || 'Failed to sync transactions');
       throw error;
     }
   }, [service, currentAccount]);
@@ -139,8 +140,8 @@ export const useEVMService = () => {
     try {
       const positions = await service.scanDeFiPositions(chain, address);
       return positions.map(pos => JSON.parse(pos));
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to scan DeFi positions');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error) || 'Failed to scan DeFi positions');
       throw error;
     }
   }, [service, currentAccount]);
@@ -160,8 +161,8 @@ export const useEVMService = () => {
     try {
       const transactions = await service.getTransactions(chain, address, fromBlock, toBlock);
       return transactions.map(tx => JSON.parse(tx));
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to get transactions');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error) || 'Failed to get transactions');
       throw error;
     }
   }, [service, currentAccount]);
