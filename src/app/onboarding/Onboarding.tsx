@@ -1,46 +1,46 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Globe, Building2, User, Check } from 'lucide-react';
-import NumbersBlackLogo from '../../assets/Numbers_Black.svg';
+import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Globe, Building2, User, Check } from 'lucide-react'
+import NumbersBlackLogo from '../../assets/Numbers_Black.svg'
 
-type Step = 'jurisdiction' | 'account-type' | 'complete';
-type Jurisdiction = 'us-gaap' | 'ifrs';
-type AccountType = 'individual' | 'sme' | 'not-for-profit';
+type Step = 'jurisdiction' | 'account-type' | 'complete'
+type Jurisdiction = 'us-gaap' | 'ifrs'
+type AccountType = 'individual' | 'sme' | 'not-for-profit'
 
 const Onboarding: React.FC = () => {
-  const navigate = useNavigate();
-  const [currentStep, setCurrentStep] = useState<Step>('jurisdiction');
-  const [jurisdiction, setJurisdiction] = useState<Jurisdiction | null>(null);
-  const [accountType, setAccountType] = useState<AccountType | null>(null);
+  const navigate = useNavigate()
+  const [currentStep, setCurrentStep] = useState<Step>('jurisdiction')
+  const [jurisdiction, setJurisdiction] = useState<Jurisdiction | null>(null)
+  const [accountType, setAccountType] = useState<AccountType | null>(null)
 
   const handleJurisdictionSelect = (selected: Jurisdiction) => {
-    setJurisdiction(selected);
-  };
+    setJurisdiction(selected)
+  }
 
   const handleAccountTypeSelect = (selected: AccountType) => {
-    setAccountType(selected);
-  };
+    setAccountType(selected)
+  }
 
   const handleContinue = () => {
     if (currentStep === 'jurisdiction' && jurisdiction) {
-      setCurrentStep('account-type');
+      setCurrentStep('account-type')
     } else if (currentStep === 'account-type' && accountType) {
       // TODO: Save to backend/context
       // Selected: { jurisdiction, accountType }
       // Navigate to dashboard
-      navigate('/dashboard');
+      navigate('/dashboard')
     }
-  };
+  }
 
   const handleBack = () => {
     if (currentStep === 'account-type') {
-      setCurrentStep('jurisdiction');
+      setCurrentStep('jurisdiction')
     }
-  };
+  }
 
   const canContinue =
     (currentStep === 'jurisdiction' && jurisdiction) ||
-    (currentStep === 'account-type' && accountType);
+    (currentStep === 'account-type' && accountType)
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center p-4">
@@ -49,7 +49,9 @@ const Onboarding: React.FC = () => {
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
             <img src={NumbersBlackLogo} alt="Numbers" className="h-12 w-auto" />
-            <span className="ml-3 text-2xl font-bold text-gray-900">Numbers</span>
+            <span className="ml-3 text-2xl font-bold text-gray-900">
+              Numbers
+            </span>
           </div>
           <p className="text-gray-600">Let&apos;s set up your account</p>
         </div>
@@ -58,31 +60,41 @@ const Onboarding: React.FC = () => {
         <div className="mb-8">
           <div className="flex items-center justify-center space-x-4">
             <div className="flex items-center">
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                currentStep === 'jurisdiction'
-                  ? 'bg-blue-600 text-white'
-                  : jurisdiction
-                    ? 'bg-green-600 text-white'
-                    : 'bg-gray-200 text-gray-600'
-              }`}>
+              <div
+                className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                  currentStep === 'jurisdiction'
+                    ? 'bg-blue-600 text-white'
+                    : jurisdiction
+                      ? 'bg-green-600 text-white'
+                      : 'bg-gray-200 text-gray-600'
+                }`}
+              >
                 {jurisdiction ? <Check className="w-5 h-5" /> : '1'}
               </div>
-              <span className="ml-2 text-sm font-medium text-gray-700">Jurisdiction</span>
+              <span className="ml-2 text-sm font-medium text-gray-700">
+                Jurisdiction
+              </span>
             </div>
             <div className="w-16 h-1 bg-gray-300">
-              <div className={`h-full transition-all ${jurisdiction ? 'bg-blue-600 w-full' : 'bg-transparent w-0'}`} />
+              <div
+                className={`h-full transition-all ${jurisdiction ? 'bg-blue-600 w-full' : 'bg-transparent w-0'}`}
+              />
             </div>
             <div className="flex items-center">
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                currentStep === 'account-type'
-                  ? 'bg-blue-600 text-white'
-                  : accountType
-                    ? 'bg-green-600 text-white'
-                    : 'bg-gray-200 text-gray-600'
-              }`}>
+              <div
+                className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                  currentStep === 'account-type'
+                    ? 'bg-blue-600 text-white'
+                    : accountType
+                      ? 'bg-green-600 text-white'
+                      : 'bg-gray-200 text-gray-600'
+                }`}
+              >
                 {accountType ? <Check className="w-5 h-5" /> : '2'}
               </div>
-              <span className="ml-2 text-sm font-medium text-gray-700">Account Type</span>
+              <span className="ml-2 text-sm font-medium text-gray-700">
+                Account Type
+              </span>
             </div>
           </div>
         </div>
@@ -92,8 +104,12 @@ const Onboarding: React.FC = () => {
           {/* Jurisdiction Step */}
           {currentStep === 'jurisdiction' && (
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Select Your Jurisdiction</h2>
-              <p className="text-gray-600 mb-8">Choose the accounting standard that applies to your organization</p>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                Select Your Jurisdiction
+              </h2>
+              <p className="text-gray-600 mb-8">
+                Choose the accounting standard that applies to your organization
+              </p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* US GAAP Option */}
@@ -106,17 +122,31 @@ const Onboarding: React.FC = () => {
                   }`}
                 >
                   <div className="flex items-start space-x-4">
-                    <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
-                      jurisdiction === 'us-gaap' ? 'bg-blue-600' : 'bg-gray-100'
-                    }`}>
-                      <Globe className={`w-6 h-6 ${
-                        jurisdiction === 'us-gaap' ? 'text-white' : 'text-gray-600'
-                      }`} />
+                    <div
+                      className={`w-12 h-12 rounded-lg flex items-center justify-center ${
+                        jurisdiction === 'us-gaap'
+                          ? 'bg-blue-600'
+                          : 'bg-gray-100'
+                      }`}
+                    >
+                      <Globe
+                        className={`w-6 h-6 ${
+                          jurisdiction === 'us-gaap'
+                            ? 'text-white'
+                            : 'text-gray-600'
+                        }`}
+                      />
                     </div>
                     <div className="flex-1 text-left">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">United States</h3>
-                      <p className="text-sm text-gray-600">US GAAP (Generally Accepted Accounting Principles)</p>
-                      <p className="text-xs text-gray-500 mt-2">For organizations operating in the United States</p>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                        United States
+                      </h3>
+                      <p className="text-sm text-gray-600">
+                        US GAAP (Generally Accepted Accounting Principles)
+                      </p>
+                      <p className="text-xs text-gray-500 mt-2">
+                        For organizations operating in the United States
+                      </p>
                     </div>
                     {jurisdiction === 'us-gaap' && (
                       <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center">
@@ -136,17 +166,29 @@ const Onboarding: React.FC = () => {
                   }`}
                 >
                   <div className="flex items-start space-x-4">
-                    <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
-                      jurisdiction === 'ifrs' ? 'bg-blue-600' : 'bg-gray-100'
-                    }`}>
-                      <Globe className={`w-6 h-6 ${
-                        jurisdiction === 'ifrs' ? 'text-white' : 'text-gray-600'
-                      }`} />
+                    <div
+                      className={`w-12 h-12 rounded-lg flex items-center justify-center ${
+                        jurisdiction === 'ifrs' ? 'bg-blue-600' : 'bg-gray-100'
+                      }`}
+                    >
+                      <Globe
+                        className={`w-6 h-6 ${
+                          jurisdiction === 'ifrs'
+                            ? 'text-white'
+                            : 'text-gray-600'
+                        }`}
+                      />
                     </div>
                     <div className="flex-1 text-left">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">International</h3>
-                      <p className="text-sm text-gray-600">IFRS (International Financial Reporting Standards)</p>
-                      <p className="text-xs text-gray-500 mt-2">For organizations operating internationally</p>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                        International
+                      </h3>
+                      <p className="text-sm text-gray-600">
+                        IFRS (International Financial Reporting Standards)
+                      </p>
+                      <p className="text-xs text-gray-500 mt-2">
+                        For organizations operating internationally
+                      </p>
                     </div>
                     {jurisdiction === 'ifrs' && (
                       <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center">
@@ -162,8 +204,12 @@ const Onboarding: React.FC = () => {
           {/* Account Type Step */}
           {currentStep === 'account-type' && (
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Select Your Account Type</h2>
-              <p className="text-gray-600 mb-8">Choose the option that best describes your organization</p>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                Select Your Account Type
+              </h2>
+              <p className="text-gray-600 mb-8">
+                Choose the option that best describes your organization
+              </p>
 
               <div className="space-y-4">
                 {/* Individual Option */}
@@ -176,17 +222,31 @@ const Onboarding: React.FC = () => {
                   }`}
                 >
                   <div className="flex items-start space-x-4">
-                    <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
-                      accountType === 'individual' ? 'bg-blue-600' : 'bg-gray-100'
-                    }`}>
-                      <User className={`w-6 h-6 ${
-                        accountType === 'individual' ? 'text-white' : 'text-gray-600'
-                      }`} />
+                    <div
+                      className={`w-12 h-12 rounded-lg flex items-center justify-center ${
+                        accountType === 'individual'
+                          ? 'bg-blue-600'
+                          : 'bg-gray-100'
+                      }`}
+                    >
+                      <User
+                        className={`w-6 h-6 ${
+                          accountType === 'individual'
+                            ? 'text-white'
+                            : 'text-gray-600'
+                        }`}
+                      />
                     </div>
                     <div className="flex-1 text-left">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">Individual</h3>
-                      <p className="text-sm text-gray-600">For personal crypto accounting and tax reporting</p>
-                      <p className="text-xs text-gray-500 mt-2">Single user account with simplified features</p>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                        Individual
+                      </h3>
+                      <p className="text-sm text-gray-600">
+                        For personal crypto accounting and tax reporting
+                      </p>
+                      <p className="text-xs text-gray-500 mt-2">
+                        Single user account with simplified features
+                      </p>
                     </div>
                     {accountType === 'individual' && (
                       <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center shrink-0">
@@ -206,17 +266,27 @@ const Onboarding: React.FC = () => {
                   }`}
                 >
                   <div className="flex items-start space-x-4">
-                    <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
-                      accountType === 'sme' ? 'bg-blue-600' : 'bg-gray-100'
-                    }`}>
-                      <Building2 className={`w-6 h-6 ${
-                        accountType === 'sme' ? 'text-white' : 'text-gray-600'
-                      }`} />
+                    <div
+                      className={`w-12 h-12 rounded-lg flex items-center justify-center ${
+                        accountType === 'sme' ? 'bg-blue-600' : 'bg-gray-100'
+                      }`}
+                    >
+                      <Building2
+                        className={`w-6 h-6 ${
+                          accountType === 'sme' ? 'text-white' : 'text-gray-600'
+                        }`}
+                      />
                     </div>
                     <div className="flex-1 text-left">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">Small & Medium Enterprise (SME)</h3>
-                      <p className="text-sm text-gray-600">For businesses managing crypto transactions</p>
-                      <p className="text-xs text-gray-500 mt-2">Multi-user support with admin controls</p>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                        Small & Medium Enterprise (SME)
+                      </h3>
+                      <p className="text-sm text-gray-600">
+                        For businesses managing crypto transactions
+                      </p>
+                      <p className="text-xs text-gray-500 mt-2">
+                        Multi-user support with admin controls
+                      </p>
                     </div>
                     {accountType === 'sme' && (
                       <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center shrink-0">
@@ -236,17 +306,32 @@ const Onboarding: React.FC = () => {
                   }`}
                 >
                   <div className="flex items-start space-x-4">
-                    <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
-                      accountType === 'not-for-profit' ? 'bg-blue-600' : 'bg-gray-100'
-                    }`}>
-                      <Building2 className={`w-6 h-6 ${
-                        accountType === 'not-for-profit' ? 'text-white' : 'text-gray-600'
-                      }`} />
+                    <div
+                      className={`w-12 h-12 rounded-lg flex items-center justify-center ${
+                        accountType === 'not-for-profit'
+                          ? 'bg-blue-600'
+                          : 'bg-gray-100'
+                      }`}
+                    >
+                      <Building2
+                        className={`w-6 h-6 ${
+                          accountType === 'not-for-profit'
+                            ? 'text-white'
+                            : 'text-gray-600'
+                        }`}
+                      />
                     </div>
                     <div className="flex-1 text-left">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">Not-for-Profit / NGO</h3>
-                      <p className="text-sm text-gray-600">For charities and non-profit organizations</p>
-                      <p className="text-xs text-gray-500 mt-2">Specialized reporting for grant management and donor tracking</p>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                        Not-for-Profit / NGO
+                      </h3>
+                      <p className="text-sm text-gray-600">
+                        For charities and non-profit organizations
+                      </p>
+                      <p className="text-xs text-gray-500 mt-2">
+                        Specialized reporting for grant management and donor
+                        tracking
+                      </p>
                     </div>
                     {accountType === 'not-for-profit' && (
                       <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center shrink-0">
@@ -288,11 +373,19 @@ const Onboarding: React.FC = () => {
 
         {/* Footer */}
         <div className="text-center mt-8 text-sm text-gray-600">
-          <p>Already have an account? <a href="/login" className="text-blue-600 hover:text-blue-700 font-medium">Sign in</a></p>
+          <p>
+            Already have an account?{' '}
+            <a
+              href="/login"
+              className="text-blue-600 hover:text-blue-700 font-medium"
+            >
+              Sign in
+            </a>
+          </p>
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Onboarding;
+export default Onboarding
