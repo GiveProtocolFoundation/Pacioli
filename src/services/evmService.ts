@@ -65,11 +65,15 @@ export class EVMService {
     if (!this.providers.has(chain)) {
       const config = EVM_CHAINS[chain];
       if (!config) throw new Error(`Unknown chain: ${chain}`);
-      
+
       const provider = new ethers.providers.JsonRpcProvider(config.rpcUrl);
       this.providers.set(chain, provider);
     }
-    return this.providers.get(chain)!;
+    const provider = this.providers.get(chain);
+    if (!provider) {
+      throw new Error(`Provider not found for chain: ${chain}`);
+    }
+    return provider;
   }
   
   async importFromMetaMask() {
