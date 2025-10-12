@@ -32,6 +32,7 @@ rlp = "0.5"
 ethereum-types = "0.14"
 keccak-hash = "0.10"
 sha3 = "0.10"
+sha2 = "0.10"
 secp256k1 = { version = "0.29", features = ["recovery", "rand"] }
 
 # Additional dependencies for the indexer
@@ -45,8 +46,8 @@ uuid = { version = "1.10", features = ["v4", "serde"] }
 sp-core = { version = "21.0", default-features = false, features = ["std"] }
 subxt = "0.35"
 
-# Database dependencies  
-sqlx = { version = "0.8", features = ["runtime-tokio-rustls", "sqlite", "chrono", "uuid", "migrate"] }
+# Database dependencies
+sqlx = { version = "0.8", features = ["runtime-tokio-rustls", "sqlite", "chrono", "uuid", "migrate", "rust_decimal"] }
 
 # File handling dependencies
 csv = "1.3"

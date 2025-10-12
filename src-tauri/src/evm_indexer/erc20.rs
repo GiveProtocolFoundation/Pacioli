@@ -65,21 +65,21 @@ impl ERC20Scanner {
         to_block: u64
     ) -> Result<Vec<TokenTransfer>> {
         let contract = IERC20::new(token_address, self.provider.clone());
-        
+
         // Get all Transfer events involving the wallet
         let filter = contract
             .transfer_filter()
             .from_block(from_block)
             .to_block(to_block);
-        
-        let logs = filter.query().await?;
-        
+
+        let logs = filter.query_with_meta().await?;
+
         let mut transfers = Vec::new();
-        for log in logs {
+        for (log, meta) in logs {
             if log.from == wallet_address || log.to == wallet_address {
                 transfers.push(TokenTransfer {
-                    block_number: log.block_number.unwrap_or_default().as_u64(),
-                    transaction_hash: log.transaction_hash,
+                    block_number: meta.block_number.as_u64(),
+                    transaction_hash: meta.transaction_hash,
                     from: log.from,
                     to: log.to,
                     value: log.value,
@@ -87,7 +87,7 @@ impl ERC20Scanner {
                 });
             }
         }
-        
+
         Ok(transfers)
     }
 }
