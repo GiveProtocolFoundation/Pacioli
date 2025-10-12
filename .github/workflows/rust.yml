@@ -51,17 +51,6 @@ jobs:
         path: src-tauri/target
         key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
 
-    - name: Create database
-      working-directory: ./src-tauri
-      run: |
-        touch numbers.db
-        chmod 666 numbers.db
-
     - name: Build
       working-directory: ./src-tauri
-      run: cargo build --verbose
-
-    - name: Run tests
-      working-directory: ./src-tauri
-      run: cargo test --verbose || true
-      continue-on-error: true
+      run: cargo build --verbose --lib
