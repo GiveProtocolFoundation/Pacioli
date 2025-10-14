@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Save, X, DollarSign, TrendingUp, Settings as SettingsIcon, Key, Eye } from 'lucide-react';
 import {
   SUPPORTED_CRYPTO_CURRENCIES,
@@ -104,6 +104,61 @@ const Currencies: React.FC = () => {
     }
   };
 
+  // Memoized event handlers
+  const handlePrimaryCurrencyChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    handleChange('primaryCurrency', e.target.value);
+  }, []);
+
+  const handleCurrencyToggle = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
+    const currency = e.currentTarget.dataset.currency;
+    if (currency) {
+      handleToggleReportingCurrency(currency);
+    }
+  }, []);
+
+  const handleConversionMethodChange = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
+    const method = e.currentTarget.dataset.method as ConversionMethod;
+    if (method) {
+      handleChange('conversionMethod', method);
+    }
+  }, []);
+
+  const handleAutoConvertChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    handleChange('autoConvert', e.target.checked);
+  }, []);
+
+  const handleCacheRatesChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    handleChange('cacheExchangeRates', e.target.checked);
+  }, []);
+
+  const handleDisplayFormatChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    handleChange('currencyDisplayFormat', e.target.value as CurrencyDisplayFormat);
+  }, []);
+
+  const handleDecimalPlacesChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    handleChange('decimalPlaces', parseInt(e.target.value) || 2);
+  }, []);
+
+  const handleSeparatorStandardChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    handleChange('decimalSeparatorStandard', e.target.value as DecimalSeparatorStandard);
+  }, []);
+
+  const handleThousandsSeparatorChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    handleChange('useThousandsSeparator', e.target.checked);
+  }, []);
+
+  const handleToggleApiKeys = useCallback(() => {
+    setShowApiKeys(prev => !prev);
+  }, []);
+
+  const handleCoingeckoKeyChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    handleChange('coingeckoApiKey', e.target.value);
+  }, []);
+
+  const handleFixerKeyChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    handleChange('fixerApiKey', e.target.value);
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black">
       {/* Header */}
@@ -164,7 +219,7 @@ const Currencies: React.FC = () => {
                 </label>
                 <select
                   value={localSettings.primaryCurrency}
-                  onChange={e => handleChange('primaryCurrency', e.target.value)}
+                  onChange={handlePrimaryCurrencyChange}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <optgroup label="Fiat Currencies">
@@ -210,7 +265,8 @@ const Currencies: React.FC = () => {
                   ).map(currency => (
                     <button
                       key={currency}
-                      onClick={() => handleToggleReportingCurrency(currency)}
+                      data-currency={currency}
+                      onClick={handleCurrencyToggle}
                       className={`px-3 py-2 text-sm font-medium rounded-lg border transition-colors ${
                         localSettings.reportingCurrencies.includes(currency)
                           ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-600 dark:border-blue-400 text-blue-700 dark:text-blue-400'
@@ -233,7 +289,8 @@ const Currencies: React.FC = () => {
                   ).map(currency => (
                     <button
                       key={currency}
-                      onClick={() => handleToggleReportingCurrency(currency)}
+                      data-currency={currency}
+                      onClick={handleCurrencyToggle}
                       className={`px-3 py-2 text-sm font-medium rounded-lg border transition-colors ${
                         localSettings.reportingCurrencies.includes(currency)
                           ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-600 dark:border-blue-400 text-blue-700 dark:text-blue-400'
@@ -273,7 +330,8 @@ const Currencies: React.FC = () => {
                 </label>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <button
-                    onClick={() => handleChange('conversionMethod', 'spot')}
+                    data-method="spot"
+                    onClick={handleConversionMethodChange}
                     className={`p-4 rounded-lg border-2 transition-colors ${
                       localSettings.conversionMethod === 'spot'
                         ? 'border-blue-600 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/30'
@@ -286,7 +344,8 @@ const Currencies: React.FC = () => {
                     </div>
                   </button>
                   <button
-                    onClick={() => handleChange('conversionMethod', 'historical')}
+                    data-method="historical"
+                    onClick={handleConversionMethodChange}
                     className={`p-4 rounded-lg border-2 transition-colors ${
                       localSettings.conversionMethod === 'historical'
                         ? 'border-blue-600 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/30'
@@ -301,7 +360,8 @@ const Currencies: React.FC = () => {
                     </div>
                   </button>
                   <button
-                    onClick={() => handleChange('conversionMethod', 'fixed')}
+                    data-method="fixed"
+                    onClick={handleConversionMethodChange}
                     className={`p-4 rounded-lg border-2 transition-colors ${
                       localSettings.conversionMethod === 'fixed'
                         ? 'border-blue-600 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/30'
@@ -321,7 +381,7 @@ const Currencies: React.FC = () => {
                   <input
                     type="checkbox"
                     checked={localSettings.autoConvert}
-                    onChange={e => handleChange('autoConvert', e.target.checked)}
+                    onChange={handleAutoConvertChange}
                     className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
                   <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
@@ -335,9 +395,7 @@ const Currencies: React.FC = () => {
                   <input
                     type="checkbox"
                     checked={localSettings.cacheExchangeRates}
-                    onChange={e =>
-                      handleChange('cacheExchangeRates', e.target.checked)
-                    }
+                    onChange={handleCacheRatesChange}
                     className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
                   <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
@@ -364,12 +422,7 @@ const Currencies: React.FC = () => {
                 </label>
                 <select
                   value={localSettings.currencyDisplayFormat}
-                  onChange={e =>
-                    handleChange(
-                      'currencyDisplayFormat',
-                      e.target.value as CurrencyDisplayFormat
-                    )
-                  }
+                  onChange={handleDisplayFormatChange}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="symbol">Symbol ($1,234.56)</option>
@@ -387,9 +440,7 @@ const Currencies: React.FC = () => {
                   min="0"
                   max="8"
                   value={localSettings.decimalPlaces}
-                  onChange={e =>
-                    handleChange('decimalPlaces', parseInt(e.target.value) || 2)
-                  }
+                  onChange={handleDecimalPlacesChange}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -403,12 +454,7 @@ const Currencies: React.FC = () => {
                 </label>
                 <select
                   value={localSettings.decimalSeparatorStandard}
-                  onChange={e =>
-                    handleChange(
-                      'decimalSeparatorStandard',
-                      e.target.value as DecimalSeparatorStandard
-                    )
-                  }
+                  onChange={handleSeparatorStandardChange}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="point-comma">Decimal point format - 1,234.56</option>
@@ -426,9 +472,7 @@ const Currencies: React.FC = () => {
                   <input
                     type="checkbox"
                     checked={localSettings.useThousandsSeparator}
-                    onChange={e =>
-                      handleChange('useThousandsSeparator', e.target.checked)
-                    }
+                    onChange={handleThousandsSeparatorChange}
                     className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
                   <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
@@ -465,7 +509,7 @@ const Currencies: React.FC = () => {
                 </h2>
               </div>
               <button
-                onClick={() => setShowApiKeys(!showApiKeys)}
+                onClick={handleToggleApiKeys}
                 className="text-sm text-blue-600 hover:text-blue-700 font-medium"
               >
                 {showApiKeys ? 'Hide' : 'Show'} API Keys
@@ -486,7 +530,7 @@ const Currencies: React.FC = () => {
                   <input
                     type="password"
                     value={localSettings.coingeckoApiKey || ''}
-                    onChange={e => handleChange('coingeckoApiKey', e.target.value)}
+                    onChange={handleCoingeckoKeyChange}
                     placeholder="Enter your CoinGecko API key"
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
@@ -510,7 +554,7 @@ const Currencies: React.FC = () => {
                   <input
                     type="password"
                     value={localSettings.fixerApiKey || ''}
-                    onChange={e => handleChange('fixerApiKey', e.target.value)}
+                    onChange={handleFixerKeyChange}
                     placeholder="Enter your Fixer.io API key"
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
