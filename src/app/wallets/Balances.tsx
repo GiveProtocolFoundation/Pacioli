@@ -244,7 +244,8 @@ const Balances: React.FC = () => {
     return `${address.slice(0, 6)}...${address.slice(-4)}`
   }, [])
 
-  const handlePeriodChange = useCallback((period: TimePeriod) => {
+  const handlePeriodChange = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
+    const period = event.currentTarget.dataset.period as TimePeriod
     setSelectedPeriod(period)
   }, [])
 
@@ -308,7 +309,8 @@ const Balances: React.FC = () => {
                 {timePeriodOptions.map(option => (
                   <button
                     key={option.value}
-                    onClick={() => handlePeriodChange(option.value)}
+                    data-period={option.value}
+                    onClick={handlePeriodChange}
                     className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${
                       selectedPeriod === option.value
                         ? 'bg-blue-600 text-white'
