@@ -5,6 +5,8 @@ import Dashboard from './app/dashboard/Dashboard';
 import Transactions from './app/transactions/Transactions';
 import Onboarding from './app/onboarding/Onboarding';
 import ChartOfAccounts from './app/settings/ChartOfAccounts';
+import Currencies from './app/settings/Currencies';
+import Balances from './app/wallets/Balances';
 
 const App: React.FC = () => {
   return (
@@ -20,7 +22,9 @@ const App: React.FC = () => {
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/transactions" element={<Transactions />} />
+              <Route path="/wallets" element={<Balances />} />
               <Route path="/chart-of-accounts" element={<ChartOfAccounts />} />
+              <Route path="/settings/currencies" element={<Currencies />} />
               {/* Add more routes as needed */}
             </Routes>
           </Navigation>

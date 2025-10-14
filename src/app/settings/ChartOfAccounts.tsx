@@ -109,7 +109,7 @@ const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
 
   if (!template) {
     return (
-      <div className="p-6">
+      <div className="p-6 min-h-screen bg-gray-50 dark:bg-black">
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start">
           <AlertCircle className="w-5 h-5 text-yellow-600 mr-3 mt-0.5" />
           <div>
@@ -124,11 +124,11 @@ const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
   }
 
   return (
-    <div className="p-6">
+    <div className="p-6 min-h-screen bg-gray-50 dark:bg-black">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Chart of Accounts</h1>
-        <p className="text-gray-600 mt-1">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Chart of Accounts</h1>
+        <p className="text-gray-600 dark:text-gray-400 mt-1">
           {template.name} ({filteredAccounts.length} accounts)
         </p>
       </div>
@@ -156,7 +156,7 @@ const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
             placeholder="Search accounts..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
@@ -164,7 +164,7 @@ const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
         <select
           value={selectedType}
           onChange={(e) => setSelectedType(e.target.value)}
-          className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           {accountTypes.map(type => (
             <option key={type} value={type}>{type}</option>
@@ -184,10 +184,10 @@ const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
       </div>
 
       {/* Accounts Table */}
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+      <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Code
@@ -208,7 +208,7 @@ const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
                 )}
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
               {/* Editing/Adding Row */}
               {editingAccount && (
                 <tr className="bg-blue-50">
@@ -274,12 +274,12 @@ const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
 
               {/* Data Rows */}
               {filteredAccounts.map((account) => (
-                <tr key={account.code} className="hover:bg-gray-50">
+                <tr key={account.code} className="hover:bg-gray-50 dark:hover:bg-gray-800">
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm font-mono font-medium text-gray-900">{account.code}</span>
+                    <span className="text-sm font-mono font-medium text-gray-900 dark:text-white">{account.code}</span>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="text-sm font-medium text-gray-900">{account.name}</span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-white">{account.name}</span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
@@ -294,7 +294,7 @@ const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
                     </span>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="text-sm text-gray-600">{account.description}</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">{account.description}</span>
                   </td>
                   {canEdit && (
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -326,8 +326,8 @@ const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
         {filteredAccounts.length === 0 && !editingAccount && (
           <div className="text-center py-12">
             <Search className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">No accounts found</h3>
-            <p className="mt-1 text-sm text-gray-500">
+            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No accounts found</h3>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
               {searchQuery ? 'Try adjusting your search' : 'No accounts match the selected filter'}
             </p>
           </div>

@@ -1,5 +1,8 @@
 mod address;
 mod encryption;
+pub mod currency;
+pub mod currency_service;
+pub mod substrate_currency;
 
 use serde::{Deserialize, Serialize};
 use rust_decimal::Decimal;
@@ -8,6 +11,9 @@ use uuid::Uuid;
 
 pub use address::UnifiedAddress;
 pub use encryption::Encryptor;
+pub use currency::*;
+pub use currency_service::CurrencyService;
+pub use substrate_currency::SubstrateCurrencyHandler;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Transaction {

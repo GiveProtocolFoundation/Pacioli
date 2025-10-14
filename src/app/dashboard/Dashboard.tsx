@@ -9,6 +9,8 @@ import {
   PieChart,
   BarChart3,
 } from 'lucide-react'
+import { useCurrency } from '../../contexts/CurrencyContext'
+import { formatCurrency, formatNumber } from '../../utils/currencyFormatter'
 
 interface Transaction {
   id: string
@@ -29,11 +31,15 @@ interface AccountBalance {
 }
 
 const Dashboard: React.FC = () => {
+  const { settings: currencySettings } = useCurrency();
+
   const [accountBalances] = useState<AccountBalance[]>([
-    { crypto: 'BTC', amount: 2.456, usdValue: 164850, change24h: 2.3 },
-    { crypto: 'ETH', amount: 15.8, usdValue: 47400, change24h: -1.2 },
-    { crypto: 'USDC', amount: 25000, usdValue: 25000, change24h: 0.0 },
-    { crypto: 'SOL', amount: 450, usdValue: 67500, change24h: 5.7 },
+    { crypto: 'DOT', amount: 1250.5, usdValue: 9378.75, change24h: 2.3 },
+    { crypto: 'KSM', amount: 185.3, usdValue: 8338.50, change24h: -1.2 },
+    { crypto: 'GLMR', amount: 45000, usdValue: 13500, change24h: 3.4 },
+    { crypto: 'ASTR', amount: 125000, usdValue: 8750, change24h: 1.8 },
+    { crypto: 'BNC', amount: 8500, usdValue: 2550, change24h: 0.9 },
+    { crypto: 'iBTC', amount: 0.15, usdValue: 10050, change24h: 2.1 },
   ])
 
   const [recentTransactions] = useState<Transaction[]>([
@@ -42,9 +48,9 @@ const Dashboard: React.FC = () => {
       date: '2025-10-09',
       description: 'Donation from Anonymous',
       type: 'donation',
-      crypto: 'BTC',
-      amount: 0.5,
-      usdValue: 33500,
+      crypto: 'DOT',
+      amount: 500,
+      usdValue: 3750,
       status: 'completed',
     },
     {
@@ -52,29 +58,39 @@ const Dashboard: React.FC = () => {
       date: '2025-10-09',
       description: 'Program Expense - Education',
       type: 'expense',
-      crypto: 'ETH',
-      amount: -2.0,
-      usdValue: -6000,
+      crypto: 'GLMR',
+      amount: -5000,
+      usdValue: -1500,
       status: 'completed',
     },
     {
       id: '3',
       date: '2025-10-08',
-      description: 'Exchange BTC to USDC',
+      description: 'XCM Transfer DOT to Moonbeam',
       type: 'exchange',
-      crypto: 'BTC',
-      amount: -0.3,
-      usdValue: 20100,
+      crypto: 'DOT',
+      amount: -100,
+      usdValue: 750,
       status: 'completed',
     },
     {
       id: '4',
       date: '2025-10-08',
-      description: 'Transfer to Cold Storage',
+      description: 'Staking Rewards - Polkadot',
       type: 'transfer',
-      crypto: 'BTC',
-      amount: -1.0,
-      usdValue: 67000,
+      crypto: 'DOT',
+      amount: 25.5,
+      usdValue: 191.25,
+      status: 'completed',
+    },
+    {
+      id: '5',
+      date: '2025-10-07',
+      description: 'Parachain Crowdloan Reward',
+      type: 'donation',
+      crypto: 'ASTR',
+      amount: 10000,
+      usdValue: 700,
       status: 'pending',
     },
   ])
@@ -101,21 +117,21 @@ const Dashboard: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-black">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200">
+      <header className="bg-white dark:bg-black border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-semibold text-gray-900">
+              <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
                 Dashboard
               </h1>
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                 Welcome back! Here&apos;s your crypto portfolio overview.
               </p>
             </div>
             <div className="flex items-center space-x-3">
-              <button className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
+              <button className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
                 Export Report
               </button>
               <button className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
@@ -131,14 +147,18 @@ const Dashboard: React.FC = () => {
         {/* Key Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {/* Total Portfolio Value */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500">
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
                   Total Portfolio Value
                 </p>
-                <p className="text-2xl font-semibold text-gray-900 mt-2">
-                  ${totalPortfolioValue.toLocaleString()}
+                <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-2">
+                  {formatCurrency(totalPortfolioValue, currencySettings.primaryCurrency, {
+                    decimalPlaces: currencySettings.decimalPlaces,
+                    useThousandsSeparator: currencySettings.useThousandsSeparator,
+                    decimalSeparatorStandard: currencySettings.decimalSeparatorStandard,
+                  })}
                 </p>
                 <div className="flex items-center mt-2">
                   {portfolioChange >= 0 ? (
@@ -162,14 +182,18 @@ const Dashboard: React.FC = () => {
           </div>
 
           {/* Total Donations */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500">
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
                   Total Donations (YTD)
                 </p>
-                <p className="text-2xl font-semibold text-gray-900 mt-2">
-                  $425,600
+                <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-2">
+                  {formatCurrency(425600, currencySettings.primaryCurrency, {
+                    decimalPlaces: currencySettings.decimalPlaces,
+                    useThousandsSeparator: currencySettings.useThousandsSeparator,
+                    decimalSeparatorStandard: currencySettings.decimalSeparatorStandard,
+                  })}
                 </p>
                 <div className="flex items-center mt-2">
                   <ArrowUpRight className="w-4 h-4 text-green-600 mr-1" />
@@ -188,14 +212,18 @@ const Dashboard: React.FC = () => {
           </div>
 
           {/* Program Expenses */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500">
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
                   Program Expenses (YTD)
                 </p>
-                <p className="text-2xl font-semibold text-gray-900 mt-2">
-                  $312,450
+                <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-2">
+                  {formatCurrency(312450, currencySettings.primaryCurrency, {
+                    decimalPlaces: currencySettings.decimalPlaces,
+                    useThousandsSeparator: currencySettings.useThousandsSeparator,
+                    decimalSeparatorStandard: currencySettings.decimalSeparatorStandard,
+                  })}
                 </p>
                 <div className="flex items-center mt-2">
                   <ArrowDownRight className="w-4 h-4 text-red-600 mr-1" />
@@ -214,13 +242,13 @@ const Dashboard: React.FC = () => {
           </div>
 
           {/* Active Wallets */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500">
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
                   Active Wallets
                 </p>
-                <p className="text-2xl font-semibold text-gray-900 mt-2">8</p>
+                <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-2">8</p>
                 <div className="flex items-center mt-2">
                   <span className="text-sm font-medium text-gray-600">
                     4 blockchains
@@ -238,9 +266,9 @@ const Dashboard: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Account Balances - Takes up 2/3 on large screens */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h2 className="text-lg font-semibold text-gray-900">
+            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+              <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                   Account Balances
                 </h2>
               </div>
@@ -249,7 +277,7 @@ const Dashboard: React.FC = () => {
                   {accountBalances.map(account => (
                     <div
                       key={account.crypto}
-                      className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+                      className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg"
                     >
                       <div className="flex items-center space-x-4">
                         <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
@@ -258,17 +286,21 @@ const Dashboard: React.FC = () => {
                           </span>
                         </div>
                         <div>
-                          <p className="font-medium text-gray-900">
+                          <p className="font-medium text-gray-900 dark:text-white">
                             {account.crypto}
                           </p>
-                          <p className="text-sm text-gray-500">
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
                             {account.amount.toLocaleString()} {account.crypto}
                           </p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="font-semibold text-gray-900">
-                          ${account.usdValue.toLocaleString()}
+                        <p className="font-semibold text-gray-900 dark:text-white">
+                          {formatCurrency(account.usdValue, currencySettings.primaryCurrency, {
+                            decimalPlaces: currencySettings.decimalPlaces,
+                            useThousandsSeparator: currencySettings.useThousandsSeparator,
+                            decimalSeparatorStandard: currencySettings.decimalSeparatorStandard,
+                          })}
                         </p>
                         <div className="flex items-center justify-end mt-1">
                           {account.change24h >= 0 ? (
@@ -291,9 +323,9 @@ const Dashboard: React.FC = () => {
             </div>
 
             {/* Recent Transactions */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 mt-8">
-              <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-gray-900">
+            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 mt-8">
+              <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                   Recent Transactions
                 </h2>
                 <button className="text-sm text-blue-600 hover:text-blue-700 font-medium">
@@ -302,7 +334,7 @@ const Dashboard: React.FC = () => {
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-gray-50 border-b border-gray-200">
+                  <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Date
@@ -317,20 +349,20 @@ const Dashboard: React.FC = () => {
                         Amount
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        USD Value
+                        Value
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Status
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
                     {recentTransactions.map(tx => (
-                      <tr key={tx.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <tr key={tx.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                           {tx.date}
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-900">
+                        <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
                           {tx.description}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
@@ -345,15 +377,19 @@ const Dashboard: React.FC = () => {
                             className={
                               tx.amount >= 0
                                 ? 'text-green-600'
-                                : 'text-gray-900'
+                                : 'text-gray-900 dark:text-white'
                             }
                           >
                             {tx.amount >= 0 ? '+' : ''}
                             {tx.amount} {tx.crypto}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          ${Math.abs(tx.usdValue).toLocaleString()}
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                          {formatCurrency(Math.abs(tx.usdValue), currencySettings.primaryCurrency, {
+                            decimalPlaces: currencySettings.decimalPlaces,
+                            useThousandsSeparator: currencySettings.useThousandsSeparator,
+                            decimalSeparatorStandard: currencySettings.decimalSeparatorStandard,
+                          })}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span
@@ -378,50 +414,50 @@ const Dashboard: React.FC = () => {
           {/* Quick Actions Sidebar - Takes up 1/3 on large screens */}
           <div className="space-y-6">
             {/* Quick Actions */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h2 className="text-lg font-semibold text-gray-900">
+            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+              <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                   Quick Actions
                 </h2>
               </div>
               <div className="p-6 space-y-3">
-                <button className="w-full px-4 py-3 text-sm font-medium text-gray-700 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 text-left">
+                <button className="w-full px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-left">
                   Record Donation
                 </button>
-                <button className="w-full px-4 py-3 text-sm font-medium text-gray-700 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 text-left">
+                <button className="w-full px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-left">
                   Add Expense
                 </button>
-                <button className="w-full px-4 py-3 text-sm font-medium text-gray-700 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 text-left">
+                <button className="w-full px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-left">
                   Import Transactions
                 </button>
-                <button className="w-full px-4 py-3 text-sm font-medium text-gray-700 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 text-left">
+                <button className="w-full px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-left">
                   Generate Tax Report
                 </button>
               </div>
             </div>
 
             {/* Compliance Status */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h2 className="text-lg font-semibold text-gray-900">
+            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+              <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                   Compliance Status
                 </h2>
               </div>
               <div className="p-6 space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Tax Year 2025</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">Tax Year 2025</span>
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium text-green-800 bg-green-100">
                     On Track
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">IRS Form 990</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">IRS Form 990</span>
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium text-yellow-800 bg-yellow-100">
                     Due Soon
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Audit Ready</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">Audit Ready</span>
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium text-green-800 bg-green-100">
                     Yes
                   </span>
@@ -430,9 +466,9 @@ const Dashboard: React.FC = () => {
             </div>
 
             {/* Alerts */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h2 className="text-lg font-semibold text-gray-900">Alerts</h2>
+            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+              <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Alerts</h2>
               </div>
               <div className="p-6">
                 <div className="space-y-3">

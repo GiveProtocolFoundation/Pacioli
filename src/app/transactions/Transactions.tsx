@@ -203,17 +203,17 @@ const Transactions: React.FC = () => {
   };
 
   return (
-    <div className="p-6">
+    <div className="p-6 min-h-screen bg-gray-50 dark:bg-black">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Transactions</h1>
-        <p className="text-gray-600 mt-1">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Transactions</h1>
+        <p className="text-gray-600 dark:text-gray-400 mt-1">
           View and manage all your crypto transactions
         </p>
       </div>
 
       {/* Filter Tabs */}
-      <div className="mb-6 border-b border-gray-200">
+      <div className="mb-6 border-b border-gray-200 dark:border-gray-700">
         <nav className="flex space-x-8">
           {[
             { key: 'all', label: 'All Transactions', count: allTransactions.length },
@@ -226,13 +226,13 @@ const Transactions: React.FC = () => {
               to={`/transactions?filter=${tab.key}`}
               className={`pb-4 px-1 border-b-2 font-medium text-sm transition-colors ${
                 filter === tab.key
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
               }`}
             >
               {tab.label}
               <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
-                filter === tab.key ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600'
+                filter === tab.key ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
               }`}>
                 {tab.count}
               </span>
@@ -250,16 +250,16 @@ const Transactions: React.FC = () => {
             placeholder="Search transactions..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
         <div className="flex gap-3">
-          <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700">
+          <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300">
             <Calendar className="w-5 h-5" />
             <span className="hidden sm:inline">Date Range</span>
           </button>
-          <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700">
+          <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300">
             <Filter className="w-5 h-5" />
             <span className="hidden sm:inline">Filters</span>
           </button>
@@ -271,10 +271,10 @@ const Transactions: React.FC = () => {
       </div>
 
       {/* Transactions Table */}
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+      <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Type
@@ -302,26 +302,26 @@ const Transactions: React.FC = () => {
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
               {filteredTransactions.map((transaction) => (
-                <tr key={transaction.id} className="hover:bg-gray-50">
+                <tr key={transaction.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className={`inline-flex items-center justify-center w-10 h-10 rounded-lg ${getTypeColor(transaction.type)}`}>
                       {getTypeIcon(transaction.type)}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{transaction.date}</div>
+                    <div className="text-sm text-gray-900 dark:text-white">{transaction.date}</div>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="text-sm font-medium text-gray-900">{transaction.description}</div>
-                    <div className="text-xs text-gray-500">{transaction.hash}</div>
+                    <div className="text-sm font-medium text-gray-900 dark:text-white">{transaction.description}</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">{transaction.hash}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm text-gray-900">{transaction.category}</span>
+                    <span className="text-sm text-gray-900 dark:text-white">{transaction.category}</span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm text-gray-600">{transaction.wallet}</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">{transaction.wallet}</span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className={`text-sm font-semibold ${
@@ -332,7 +332,7 @@ const Transactions: React.FC = () => {
                       {transaction.type === 'revenue' ? '+' : transaction.type === 'expense' ? '-' : ''}
                       {transaction.amount} {transaction.crypto}
                     </div>
-                    <div className="text-xs text-gray-500">
+                    <div className="text-xs text-gray-500 dark:text-gray-400">
                       ${transaction.usdValue.toLocaleString()}
                     </div>
                   </td>
@@ -356,8 +356,8 @@ const Transactions: React.FC = () => {
         {filteredTransactions.length === 0 && (
           <div className="text-center py-12">
             <Receipt className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">No transactions found</h3>
-            <p className="mt-1 text-sm text-gray-500">
+            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No transactions found</h3>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
               {searchQuery ? 'Try adjusting your search' : 'No transactions match the selected filter'}
             </p>
           </div>
@@ -367,18 +367,18 @@ const Transactions: React.FC = () => {
       {/* Pagination */}
       {filteredTransactions.length > 0 && (
         <div className="mt-6 flex items-center justify-between">
-          <div className="text-sm text-gray-700">
+          <div className="text-sm text-gray-700 dark:text-gray-300">
             Showing <span className="font-medium">1</span> to <span className="font-medium">{filteredTransactions.length}</span> of{' '}
             <span className="font-medium">{filteredTransactions.length}</span> results
           </div>
           <div className="flex gap-2">
-            <button className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 text-sm">
+            <button className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm text-gray-700 dark:text-gray-300">
               Previous
             </button>
-            <button className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 text-sm bg-blue-50 text-blue-600 border-blue-600">
+            <button className="px-3 py-1 border rounded text-sm bg-blue-50 text-blue-600 border-blue-600 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-400">
               1
             </button>
-            <button className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 text-sm">
+            <button className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm text-gray-700 dark:text-gray-300">
               Next
             </button>
           </div>

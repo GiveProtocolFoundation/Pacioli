@@ -237,9 +237,9 @@
     },
     {
       "code": "1851",
-      "name": "Bitcoin (BTC)",
+      "name": "Polkadot (DOT)",
       "type": "Asset",
-      "description": "Bitcoin holdings at fair value",
+      "description": "Polkadot holdings at fair value",
       "isActive": true,
       "editable": true
     },
