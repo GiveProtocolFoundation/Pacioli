@@ -111,7 +111,7 @@ const Balances: React.FC = () => {
   ])
 
   // Generate mock historical data based on selected period
-  const generateChartData = (period: TimePeriod): ChartDataPoint[] => {
+  const generateChartData = useCallback((period: TimePeriod): ChartDataPoint[] => {
     const now = new Date()
     let startDate: Date
     let dataPoints: number
@@ -121,11 +121,12 @@ const Balances: React.FC = () => {
         startDate = startOfMonth(now)
         dataPoints = now.getDate()
         break
-      case 'last_month':
+      case 'last_month': {
         const lastMonth = subMonths(now, 1)
         startDate = startOfMonth(lastMonth)
         dataPoints = endOfMonth(lastMonth).getDate()
         break
+      }
       case '30_days':
         startDate = subDays(now, 30)
         dataPoints = 30
@@ -142,11 +143,12 @@ const Balances: React.FC = () => {
         startDate = startOfYear(now)
         dataPoints = Math.floor((now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24 * 7)) // Weekly
         break
-      case 'last_year':
+      case 'last_year': {
         const lastYear = subYears(now, 1)
         startDate = startOfYear(lastYear)
         dataPoints = 52 // Weekly data
         break
+      }
       default:
         startDate = subDays(now, 30)
         dataPoints = 30
@@ -157,13 +159,18 @@ const Balances: React.FC = () => {
       ? Math.floor((now.getTime() - startDate.getTime()) / (dataPoints * 24 * 60 * 60 * 1000))
       : 1
 
+    // Use a deterministic seed based on the period to make the random data stable
+    const seed = period.charCodeAt(0) + period.length
+
     for (let i = 0; i < dataPoints; i++) {
       const date = new Date(startDate.getTime() + i * interval * 24 * 60 * 60 * 1000)
 
       // Generate realistic-looking data with some volatility
       const baseValue = 300000
       const trend = i * (20000 / dataPoints) // Slight upward trend
-      const volatility = Math.sin(i / 3) * 15000 + Math.random() * 10000
+      // Use deterministic pseudo-random based on seed and index
+      const pseudoRandom = ((seed * (i + 1) * 9301 + 49297) % 233280) / 233280
+      const volatility = Math.sin(i / 3) * 15000 + pseudoRandom * 10000
 
       const totalValue = baseValue + trend + volatility
 
@@ -185,9 +192,9 @@ const Balances: React.FC = () => {
     }
 
     return data
-  }
+  }, [])
 
-  const chartData = useMemo(() => generateChartData(selectedPeriod), [selectedPeriod])
+  const chartData = useMemo(() => generateChartData(selectedPeriod), [selectedPeriod, generateChartData])
 
   const timePeriodOptions: { value: TimePeriod; label: string }[] = [
     { value: 'this_month', label: 'This Month' },

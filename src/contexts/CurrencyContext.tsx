@@ -40,20 +40,18 @@ const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined
 export const CurrencyProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [settings, setSettings] = useState<CurrencySettings>(defaultSettings);
-
-  // Initialize settings from localStorage on mount
-  useEffect(() => {
+  const [settings, setSettings] = useState<CurrencySettings>(() => {
     const savedSettings = localStorage.getItem('currencySettings');
     if (savedSettings) {
       try {
         const parsed = JSON.parse(savedSettings);
-        setSettings({ ...defaultSettings, ...parsed });
+        return { ...defaultSettings, ...parsed };
       } catch (error) {
         console.error('Failed to parse currency settings:', error);
       }
     }
-  }, []);
+    return defaultSettings;
+  });
 
   // Save settings to localStorage whenever they change
   useEffect(() => {

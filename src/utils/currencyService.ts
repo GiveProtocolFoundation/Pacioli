@@ -217,23 +217,25 @@ export class CurrencyService {
     const formatted = decimal.toFixed(decimals);
 
     // Add thousands separator if needed
-    let [whole, fraction] = formatted.split('.');
-    if (useThousands) {
-      whole = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-    }
+    const [whole, fraction] = formatted.split('.');
+    const formattedWhole = useThousands
+      ? whole.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+      : whole;
 
-    const numberPart = fraction ? `${whole}.${fraction}` : whole;
+    const numberPart = fraction ? `${formattedWhole}.${fraction}` : formattedWhole;
 
     // Format based on display preference
     switch (displayFormat) {
-      case 'symbol':
+      case 'symbol': {
         const symbol = options?.symbol ?? CURRENCY_SYMBOLS[currencyCode] ?? '';
         return `${symbol}${numberPart}`;
+      }
       case 'code':
         return `${numberPart} ${currencyCode}`;
-      case 'name':
+      case 'name': {
         const name = currency?.name ?? currencyCode;
         return `${numberPart} ${name}`;
+      }
       default:
         return numberPart;
     }

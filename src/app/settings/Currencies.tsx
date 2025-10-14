@@ -25,47 +25,41 @@ interface CurrencySettings {
 
 const Currencies: React.FC = () => {
   const { settings: contextSettings, updateSettings: updateContextSettings } = useCurrency();
-  const [localSettings, setLocalSettings] = useState<CurrencySettings>({
+  const [localSettings, setLocalSettings] = useState<CurrencySettings>(() => ({
     ...contextSettings,
     coingeckoApiKey: '',
     fixerApiKey: '',
-  });
+  }));
 
   const [showApiKeys, setShowApiKeys] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
 
-  // Sync local settings with context on mount
-  useEffect(() => {
-    setLocalSettings({
-      ...contextSettings,
-      coingeckoApiKey: '',
-      fixerApiKey: '',
-    });
-  }, [contextSettings]);
-
-  const handleChange = <K extends keyof CurrencySettings>(
+  const handleChange = useCallback(<K extends keyof CurrencySettings>(
     key: K,
     value: CurrencySettings[K]
   ) => {
     setLocalSettings(prev => ({ ...prev, [key]: value }));
     setHasChanges(true);
-  };
+  }, []);
 
-  const handleToggleReportingCurrency = (currency: string) => {
-    const newReportingCurrencies = localSettings.reportingCurrencies.includes(currency)
-      ? localSettings.reportingCurrencies.filter(c => c !== currency)
-      : [...localSettings.reportingCurrencies, currency];
+  const handleToggleReportingCurrency = useCallback((currency: string) => {
+    setLocalSettings(prev => {
+      const newReportingCurrencies = prev.reportingCurrencies.includes(currency)
+        ? prev.reportingCurrencies.filter(c => c !== currency)
+        : [...prev.reportingCurrencies, currency];
 
-    handleChange('reportingCurrencies', newReportingCurrencies);
-  };
+      setHasChanges(true);
+      return { ...prev, reportingCurrencies: newReportingCurrencies };
+    });
+  }, []);
 
   const handleSave = () => {
     // Update context with new settings (excluding API keys for now)
-    const { coingeckoApiKey: _coingeckoApiKey, fixerApiKey: _fixerApiKey, ...settingsToSave } = localSettings;
+    const { coingeckoApiKey, fixerApiKey, ...settingsToSave } = localSettings;
     updateContextSettings(settingsToSave);
 
     // TODO: Save API keys to backend via Tauri command
-    console.log('Saving currency settings:', localSettings);
+    // console.log('Saving currency settings:', localSettings);
     setHasChanges(false);
     // Show success notification
   };
@@ -107,45 +101,45 @@ const Currencies: React.FC = () => {
   // Memoized event handlers
   const handlePrimaryCurrencyChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
     handleChange('primaryCurrency', e.target.value);
-  }, []);
+  }, [handleChange]);
 
   const handleCurrencyToggle = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
     const currency = e.currentTarget.dataset.currency;
     if (currency) {
       handleToggleReportingCurrency(currency);
     }
-  }, []);
+  }, [handleToggleReportingCurrency]);
 
   const handleConversionMethodChange = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
     const method = e.currentTarget.dataset.method as ConversionMethod;
     if (method) {
       handleChange('conversionMethod', method);
     }
-  }, []);
+  }, [handleChange]);
 
   const handleAutoConvertChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     handleChange('autoConvert', e.target.checked);
-  }, []);
+  }, [handleChange]);
 
   const handleCacheRatesChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     handleChange('cacheExchangeRates', e.target.checked);
-  }, []);
+  }, [handleChange]);
 
   const handleDisplayFormatChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
     handleChange('currencyDisplayFormat', e.target.value as CurrencyDisplayFormat);
-  }, []);
+  }, [handleChange]);
 
   const handleDecimalPlacesChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     handleChange('decimalPlaces', parseInt(e.target.value) || 2);
-  }, []);
+  }, [handleChange]);
 
   const handleSeparatorStandardChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
     handleChange('decimalSeparatorStandard', e.target.value as DecimalSeparatorStandard);
-  }, []);
+  }, [handleChange]);
 
   const handleThousandsSeparatorChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     handleChange('useThousandsSeparator', e.target.checked);
-  }, []);
+  }, [handleChange]);
 
   const handleToggleApiKeys = useCallback(() => {
     setShowApiKeys(prev => !prev);
@@ -153,11 +147,11 @@ const Currencies: React.FC = () => {
 
   const handleCoingeckoKeyChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     handleChange('coingeckoApiKey', e.target.value);
-  }, []);
+  }, [handleChange]);
 
   const handleFixerKeyChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     handleChange('fixerApiKey', e.target.value);
-  }, []);
+  }, [handleChange]);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black">
