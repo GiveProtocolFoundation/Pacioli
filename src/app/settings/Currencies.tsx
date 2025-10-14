@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Save, X, DollarSign, TrendingUp, Settings as SettingsIcon, Key, Eye } from 'lucide-react';
 import {
   SUPPORTED_CRYPTO_CURRENCIES,
@@ -55,7 +55,7 @@ const Currencies: React.FC = () => {
 
   const handleSave = () => {
     // Update context with new settings (excluding API keys for now)
-    const { coingeckoApiKey, fixerApiKey, ...settingsToSave } = localSettings;
+    const { coingeckoApiKey: _coingeckoApiKey, fixerApiKey: _fixerApiKey, ...settingsToSave } = localSettings;
     updateContextSettings(settingsToSave);
 
     // TODO: Save API keys to backend via Tauri command
