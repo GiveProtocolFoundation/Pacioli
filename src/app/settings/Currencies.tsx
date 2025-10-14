@@ -43,11 +43,6 @@ const Currencies: React.FC = () => {
     });
   }, [contextSettings]);
 
-  const allCurrencies = [
-    ...SUPPORTED_FIAT_CURRENCIES,
-    ...SUPPORTED_CRYPTO_CURRENCIES,
-  ];
-
   const handleChange = <K extends keyof CurrencySettings>(
     key: K,
     value: CurrencySettings[K]
@@ -66,7 +61,7 @@ const Currencies: React.FC = () => {
 
   const handleSave = () => {
     // Update context with new settings (excluding API keys for now)
-    const { coingeckoApiKey, fixerApiKey, ...settingsToSave } = localSettings;
+    const { coingeckoApiKey: _coingeckoApiKey, fixerApiKey: _fixerApiKey, ...settingsToSave } = localSettings;
     updateContextSettings(settingsToSave);
 
     // TODO: Save API keys to backend via Tauri command

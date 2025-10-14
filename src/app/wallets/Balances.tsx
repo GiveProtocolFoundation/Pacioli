@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useCallback } from 'react'
 import {
   Wallet,
   TrendingUp,
@@ -16,7 +16,7 @@ import {
   ResponsiveContainer,
   Legend,
 } from 'recharts'
-import { format, subDays, subMonths, startOfMonth, endOfMonth, startOfYear, endOfYear, subYears } from 'date-fns'
+import { format, subDays, subMonths, startOfMonth, endOfMonth, startOfYear, subYears } from 'date-fns'
 
 interface WalletBalance {
   id: string
@@ -229,18 +229,24 @@ const Balances: React.FC = () => {
     USDT: '#26A17B',     // Tether green
   }
 
-  const formatCurrency = (value: number) => {
+  const formatCurrency = useCallback((value: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(value)
-  }
+  }, [])
 
-  const truncateAddress = (address: string) => {
+  const formatYAxisTick = useCallback((value: number) => `$${(value / 1000).toFixed(0)}k`, [])
+
+  const truncateAddress = useCallback((address: string) => {
     return `${address.slice(0, 6)}...${address.slice(-4)}`
-  }
+  }, [])
+
+  const handlePeriodChange = useCallback((period: TimePeriod) => {
+    setSelectedPeriod(period)
+  }, [])
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black">
@@ -302,7 +308,7 @@ const Balances: React.FC = () => {
                 {timePeriodOptions.map(option => (
                   <button
                     key={option.value}
-                    onClick={() => setSelectedPeriod(option.value)}
+                    onClick={() => handlePeriodChange(option.value)}
                     className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${
                       selectedPeriod === option.value
                         ? 'bg-blue-600 text-white'
@@ -350,7 +356,7 @@ const Balances: React.FC = () => {
                 <YAxis
                   stroke="#6b7280"
                   style={{ fontSize: '12px' }}
-                  tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                  tickFormatter={formatYAxisTick}
                 />
                 <Tooltip
                   contentStyle={{
@@ -358,7 +364,7 @@ const Balances: React.FC = () => {
                     border: '1px solid #e5e7eb',
                     borderRadius: '8px',
                   }}
-                  formatter={(value: number) => formatCurrency(value)}
+                  formatter={formatCurrency}
                 />
                 <Legend />
                 <Area

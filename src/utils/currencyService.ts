@@ -10,7 +10,6 @@ import {
   ConversionRequest,
   ConversionResponse,
   CurrencyFormatOptions,
-  CurrencyDisplayFormat,
   AccountSettings,
   ExchangeRateSource,
 } from '../types/currency';

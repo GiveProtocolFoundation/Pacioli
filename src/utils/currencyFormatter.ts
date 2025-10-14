@@ -107,7 +107,7 @@ export function formatNumber(
  */
 export function formatCurrency(
   value: number | string,
-  currencyCode: string = 'USD',
+  currencyCode = 'USD',
   options: Omit<NumberFormatOptions, 'showCurrency' | 'currencyCode'> = {}
 ): string {
   const currencySymbols: Record<string, string> = {

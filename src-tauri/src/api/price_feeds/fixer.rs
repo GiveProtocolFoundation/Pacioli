@@ -282,10 +282,12 @@ impl FixerClient {
 mod tests {
     use super::*;
 
+    static FIXER_API_KEY: &str = "FIXER_API_KEY";
+
     #[tokio::test]
     #[ignore] // Requires API key and internet connection
     async fn test_get_rate() {
-        let api_key = std::env::var("FIXER_API_KEY")
+        let api_key = std::env::var(FIXER_API_KEY)
             .expect("FIXER_API_KEY environment variable not set");
 
         let client = FixerClient::new(api_key);
@@ -297,7 +299,7 @@ mod tests {
     #[tokio::test]
     #[ignore] // Requires API key and internet connection
     async fn test_get_multiple_rates() {
-        let api_key = std::env::var("FIXER_API_KEY")
+        let api_key = std::env::var(FIXER_API_KEY)
             .expect("FIXER_API_KEY environment variable not set");
 
         let client = FixerClient::new(api_key);

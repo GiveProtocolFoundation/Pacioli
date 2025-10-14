@@ -10,7 +10,7 @@ import {
   BarChart3,
 } from 'lucide-react'
 import { useCurrency } from '../../contexts/CurrencyContext'
-import { formatCurrency, formatNumber } from '../../utils/currencyFormatter'
+import { formatCurrency } from '../../utils/currencyFormatter'
 
 interface Transaction {
   id: string
