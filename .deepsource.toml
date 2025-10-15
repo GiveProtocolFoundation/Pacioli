@@ -16,9 +16,10 @@ enabled = true
 name = "rust"
 enabled = true
 
-[[analyzers]]
-name = "test-coverage"
-enabled = true
+# Disabled until tests are implemented
+# [[analyzers]]
+# name = "test-coverage"
+# enabled = true
 
 [[analyzers]]
 name = "secrets"
