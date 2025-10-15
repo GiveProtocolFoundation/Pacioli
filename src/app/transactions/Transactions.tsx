@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import {
   Search,
@@ -202,6 +202,10 @@ const Transactions: React.FC = () => {
     }
   };
 
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  }, []);
+
   return (
     <div className="p-6 min-h-screen bg-gray-50 dark:bg-black">
       {/* Header */}
@@ -249,7 +253,7 @@ const Transactions: React.FC = () => {
             type="text"
             placeholder="Search transactions..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={handleSearchChange}
             className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>

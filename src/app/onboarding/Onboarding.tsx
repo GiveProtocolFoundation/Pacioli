@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Globe, Building2, User, Check } from 'lucide-react'
 import NumbersBlackLogo from '../../assets/Numbers_Black.svg'
@@ -13,15 +13,15 @@ const Onboarding: React.FC = () => {
   const [jurisdiction, setJurisdiction] = useState<Jurisdiction | null>(null)
   const [accountType, setAccountType] = useState<AccountType | null>(null)
 
-  const handleJurisdictionSelect = (selected: Jurisdiction) => {
+  const handleJurisdictionSelect = useCallback((selected: Jurisdiction) => {
     setJurisdiction(selected)
-  }
+  }, [])
 
-  const handleAccountTypeSelect = (selected: AccountType) => {
+  const handleAccountTypeSelect = useCallback((selected: AccountType) => {
     setAccountType(selected)
-  }
+  }, [])
 
-  const handleContinue = () => {
+  const handleContinue = useCallback(() => {
     if (currentStep === 'jurisdiction' && jurisdiction) {
       setCurrentStep('account-type')
     } else if (currentStep === 'account-type' && accountType) {
@@ -30,13 +30,33 @@ const Onboarding: React.FC = () => {
       // Navigate to dashboard
       navigate('/dashboard')
     }
-  }
+  }, [currentStep, jurisdiction, accountType, navigate])
 
-  const handleBack = () => {
+  const handleBack = useCallback(() => {
     if (currentStep === 'account-type') {
       setCurrentStep('jurisdiction')
     }
-  }
+  }, [currentStep])
+
+  const handleSelectUSGAAP = useCallback(() => {
+    handleJurisdictionSelect('us-gaap')
+  }, [handleJurisdictionSelect])
+
+  const handleSelectIFRS = useCallback(() => {
+    handleJurisdictionSelect('ifrs')
+  }, [handleJurisdictionSelect])
+
+  const handleSelectIndividual = useCallback(() => {
+    handleAccountTypeSelect('individual')
+  }, [handleAccountTypeSelect])
+
+  const handleSelectSME = useCallback(() => {
+    handleAccountTypeSelect('sme')
+  }, [handleAccountTypeSelect])
+
+  const handleSelectNonProfit = useCallback(() => {
+    handleAccountTypeSelect('not-for-profit')
+  }, [handleAccountTypeSelect])
 
   const canContinue =
     (currentStep === 'jurisdiction' && jurisdiction) ||
@@ -114,7 +134,7 @@ const Onboarding: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* US GAAP Option */}
                 <button
-                  onClick={() => handleJurisdictionSelect('us-gaap')}
+                  onClick={handleSelectUSGAAP}
                   className={`p-6 border-2 rounded-xl transition-all hover:shadow-lg ${
                     jurisdiction === 'us-gaap'
                       ? 'border-blue-600 bg-blue-50 shadow-md'
@@ -158,7 +178,7 @@ const Onboarding: React.FC = () => {
 
                 {/* IFRS Option */}
                 <button
-                  onClick={() => handleJurisdictionSelect('ifrs')}
+                  onClick={handleSelectIFRS}
                   className={`p-6 border-2 rounded-xl transition-all hover:shadow-lg ${
                     jurisdiction === 'ifrs'
                       ? 'border-blue-600 bg-blue-50 shadow-md'
@@ -214,7 +234,7 @@ const Onboarding: React.FC = () => {
               <div className="space-y-4">
                 {/* Individual Option */}
                 <button
-                  onClick={() => handleAccountTypeSelect('individual')}
+                  onClick={handleSelectIndividual}
                   className={`w-full p-6 border-2 rounded-xl transition-all hover:shadow-lg ${
                     accountType === 'individual'
                       ? 'border-blue-600 bg-blue-50 shadow-md'
@@ -258,7 +278,7 @@ const Onboarding: React.FC = () => {
 
                 {/* SME Option */}
                 <button
-                  onClick={() => handleAccountTypeSelect('sme')}
+                  onClick={handleSelectSME}
                   className={`w-full p-6 border-2 rounded-xl transition-all hover:shadow-lg ${
                     accountType === 'sme'
                       ? 'border-blue-600 bg-blue-50 shadow-md'
@@ -298,7 +318,7 @@ const Onboarding: React.FC = () => {
 
                 {/* Not-for-Profit Option */}
                 <button
-                  onClick={() => handleAccountTypeSelect('not-for-profit')}
+                  onClick={handleSelectNonProfit}
                   className={`w-full p-6 border-2 rounded-xl transition-all hover:shadow-lg ${
                     accountType === 'not-for-profit'
                       ? 'border-blue-600 bg-blue-50 shadow-md'

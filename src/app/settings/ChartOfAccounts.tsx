@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { Search, Plus, Edit2, Trash2, Save, X, AlertCircle } from 'lucide-react';
 import { getChartOfAccountsTemplate, groupAccountsByType } from '../../utils/chartOfAccounts';
 
@@ -69,7 +69,7 @@ const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
     return accounts;
   }, [template, selectedType, searchQuery]);
 
-  const handleEdit = (account: typeof template.accounts[0]) => {
+  const handleEdit = useCallback((account: typeof template.accounts[0]) => {
     setEditingAccount({
       code: account.code,
       name: account.name,
@@ -77,9 +77,9 @@ const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
       description: account.description || ''
     });
     setIsAddingNew(false);
-  };
+  }, []);
 
-  const handleAddNew = () => {
+  const handleAddNew = useCallback(() => {
     setEditingAccount({
       code: '',
       name: '',
@@ -87,25 +87,57 @@ const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
       description: ''
     });
     setIsAddingNew(true);
-  };
+  }, [accountTypes]);
 
-  const handleSave = () => {
+  const handleSave = useCallback(() => {
     // TODO: Implement save to backend
     // Saving account: editingAccount
     setEditingAccount(null);
     setIsAddingNew(false);
-  };
+  }, []);
 
-  const handleCancel = () => {
+  const handleCancel = useCallback(() => {
     setEditingAccount(null);
     setIsAddingNew(false);
-  };
+  }, []);
 
-  const handleDelete = (code: string) => {
+  const handleDelete = useCallback((code: string) => {
     // TODO: Implement delete confirmation and backend call
     // Deleting account: code
     void code;
-  };
+  }, []);
+
+  const createEditHandler = useCallback((account: typeof template.accounts[0]) => {
+    return () => handleEdit(account);
+  }, [handleEdit]);
+
+  const createDeleteHandler = useCallback((code: string) => {
+    return () => handleDelete(code);
+  }, [handleDelete]);
+
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  }, []);
+
+  const handleTypeChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedType(e.target.value);
+  }, []);
+
+  const handleEditingCodeChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setEditingAccount(prev => prev ? { ...prev, code: e.target.value } : null);
+  }, []);
+
+  const handleEditingNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setEditingAccount(prev => prev ? { ...prev, name: e.target.value } : null);
+  }, []);
+
+  const handleEditingTypeChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    setEditingAccount(prev => prev ? { ...prev, type: e.target.value } : null);
+  }, []);
+
+  const handleEditingDescriptionChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setEditingAccount(prev => prev ? { ...prev, description: e.target.value } : null);
+  }, []);
 
   if (!template) {
     return (
@@ -155,7 +187,7 @@ const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
             type="text"
             placeholder="Search accounts..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={handleSearchChange}
             className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
@@ -163,7 +195,7 @@ const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
         {/* Type Filter */}
         <select
           value={selectedType}
-          onChange={(e) => setSelectedType(e.target.value)}
+          onChange={handleTypeChange}
           className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           {accountTypes.map(type => (
@@ -216,7 +248,7 @@ const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
                     <input
                       type="text"
                       value={editingAccount.code}
-                      onChange={(e) => setEditingAccount({ ...editingAccount, code: e.target.value })}
+                      onChange={handleEditingCodeChange}
                       placeholder="Code"
                       className="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                       disabled={!isAddingNew}
@@ -226,7 +258,7 @@ const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
                     <input
                       type="text"
                       value={editingAccount.name}
-                      onChange={(e) => setEditingAccount({ ...editingAccount, name: e.target.value })}
+                      onChange={handleEditingNameChange}
                       placeholder="Account Name"
                       className="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
@@ -234,7 +266,7 @@ const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
                   <td className="px-6 py-4">
                     <select
                       value={editingAccount.type}
-                      onChange={(e) => setEditingAccount({ ...editingAccount, type: e.target.value })}
+                      onChange={handleEditingTypeChange}
                       className="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       {accountTypes.filter(t => t !== 'All').map(type => (
@@ -246,7 +278,7 @@ const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
                     <input
                       type="text"
                       value={editingAccount.description}
-                      onChange={(e) => setEditingAccount({ ...editingAccount, description: e.target.value })}
+                      onChange={handleEditingDescriptionChange}
                       placeholder="Description"
                       className="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
@@ -300,14 +332,14 @@ const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end gap-2">
                         <button
-                          onClick={() => handleEdit(account)}
+                          onClick={createEditHandler(account)}
                           className="p-1 text-blue-600 hover:text-blue-900"
                           title="Edit"
                         >
                           <Edit2 className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => handleDelete(account.code)}
+                          onClick={createDeleteHandler(account.code)}
                           className="p-1 text-red-600 hover:text-red-900"
                           title="Delete"
                         >
