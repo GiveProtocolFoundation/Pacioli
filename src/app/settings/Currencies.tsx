@@ -53,7 +53,7 @@ const Currencies: React.FC = () => {
     });
   }, []);
 
-  const handleSave = () => {
+  const handleSave = useCallback(() => {
     // Update context with new settings (excluding API keys for now)
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { coingeckoApiKey, fixerApiKey, ...settingsToSave } = localSettings;
@@ -63,9 +63,9 @@ const Currencies: React.FC = () => {
     // console.log('Saving currency settings:', localSettings);
     setHasChanges(false);
     // Show success notification
-  };
+  }, [localSettings, updateContextSettings]);
 
-  const handleReset = () => {
+  const handleReset = useCallback(() => {
     // Reset to context settings
     setLocalSettings({
       ...contextSettings,
@@ -73,7 +73,7 @@ const Currencies: React.FC = () => {
       fixerApiKey: '',
     });
     setHasChanges(false);
-  };
+  }, [contextSettings]);
 
   // Format number based on decimal separator standard
   const formatNumber = (

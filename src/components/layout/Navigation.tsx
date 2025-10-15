@@ -136,6 +136,10 @@ const Navigation: React.FC<NavigationProps> = ({
     }
   }, [])
 
+  const createToggleExpandedHandler = useCallback((itemName: string) => {
+    return () => toggleExpanded(itemName)
+  }, [toggleExpanded])
+
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-black">
       {/* Sidebar for desktop */}
@@ -173,7 +177,7 @@ const Navigation: React.FC<NavigationProps> = ({
                 <li key={item.name}>
                   {item.subItems ? (
                     <button
-                      onClick={() => toggleExpanded(item.name)}
+                      onClick={createToggleExpandedHandler(item.name)}
                       className={`w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
                         isActive
                           ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
@@ -321,7 +325,7 @@ const Navigation: React.FC<NavigationProps> = ({
                     <li key={item.name}>
                       {item.subItems ? (
                         <button
-                          onClick={() => toggleExpanded(item.name)}
+                          onClick={createToggleExpandedHandler(item.name)}
                           className={`w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
                             isActive
                               ? 'bg-blue-50 text-blue-600'
