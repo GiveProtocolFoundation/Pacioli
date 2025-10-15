@@ -153,7 +153,7 @@ export function parseFormattedNumber(
 ): number {
   // Remove currency symbols and whitespace
   let cleaned = formattedValue
-    .replace(/[$€£¥₹]/g, '')
+    .replace(/[$€£¥₹]/gu, '')
     .replace(/[A-Z]{3}/g, '')
     .trim();
 
