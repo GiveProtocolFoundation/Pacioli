@@ -381,7 +381,7 @@ const Balances: React.FC = () => {
                   dataKey="DOT"
                   stackId="1"
                   stroke={currencyColors.DOT}
-                  fill={`url(#colorDOT)`}
+                  fill="url(#colorDOT)"
                   strokeWidth={2}
                 />
                 <Area
@@ -389,7 +389,7 @@ const Balances: React.FC = () => {
                   dataKey="KSM"
                   stackId="1"
                   stroke={currencyColors.KSM}
-                  fill={`url(#colorKSM)`}
+                  fill="url(#colorKSM)"
                   strokeWidth={2}
                 />
                 <Area
@@ -397,7 +397,7 @@ const Balances: React.FC = () => {
                   dataKey="GLMR"
                   stackId="1"
                   stroke={currencyColors.GLMR}
-                  fill={`url(#colorGLMR)`}
+                  fill="url(#colorGLMR)"
                   strokeWidth={2}
                 />
                 <Area
@@ -405,7 +405,7 @@ const Balances: React.FC = () => {
                   dataKey="ASTR"
                   stackId="1"
                   stroke={currencyColors.ASTR}
-                  fill={`url(#colorASTR)`}
+                  fill="url(#colorASTR)"
                   strokeWidth={2}
                 />
                 <Area
@@ -413,7 +413,7 @@ const Balances: React.FC = () => {
                   dataKey="iBTC"
                   stackId="1"
                   stroke={currencyColors.iBTC}
-                  fill={`url(#coloriBTC)`}
+                  fill="url(#coloriBTC)"
                   strokeWidth={2}
                 />
               </AreaChart>

@@ -209,10 +209,11 @@ const Currencies: React.FC = () => {
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="primary-currency" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Select Primary Currency
                 </label>
                 <select
+                  id="primary-currency"
                   value={localSettings.primaryCurrency}
                   onChange={handlePrimaryCurrencyChange}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -320,9 +321,9 @@ const Currencies: React.FC = () => {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <div className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Conversion Method
-                </label>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <button
                     data-method="spot"
@@ -412,10 +413,11 @@ const Currencies: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="currency-display-format" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Currency Display Format
                 </label>
                 <select
+                  id="currency-display-format"
                   value={localSettings.currencyDisplayFormat}
                   onChange={handleDisplayFormatChange}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -427,10 +429,11 @@ const Currencies: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="decimal-places" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Decimal Places
                 </label>
                 <input
+                  id="decimal-places"
                   type="number"
                   min="0"
                   max="8"
@@ -444,10 +447,11 @@ const Currencies: React.FC = () => {
               </div>
 
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="decimal-separator" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Decimal Separator Standard
                 </label>
                 <select
+                  id="decimal-separator"
                   value={localSettings.decimalSeparatorStandard}
                   onChange={handleSeparatorStandardChange}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -519,10 +523,11 @@ const Currencies: React.FC = () => {
             {showApiKeys && (
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label htmlFor="coingecko-api-key" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     CoinGecko API Key
                   </label>
                   <input
+                    id="coingecko-api-key"
                     type="password"
                     value={localSettings.coingeckoApiKey || ''}
                     onChange={handleCoingeckoKeyChange}
@@ -543,10 +548,11 @@ const Currencies: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label htmlFor="fixer-api-key" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Fixer.io API Key
                   </label>
                   <input
+                    id="fixer-api-key"
                     type="password"
                     value={localSettings.fixerApiKey || ''}
                     onChange={handleFixerKeyChange}
