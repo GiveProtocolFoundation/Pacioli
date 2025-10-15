@@ -11,6 +11,9 @@ enabled = true
     "browser"
   ]
   style_guide = "airbnb"
+  exclude_patterns = [
+    "JS-0415"  # JSX maximum depth - acceptable for complex page layouts
+  ]
 
 [[analyzers]]
 name = "rust"
