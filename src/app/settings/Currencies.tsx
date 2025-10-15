@@ -55,7 +55,8 @@ const Currencies: React.FC = () => {
 
   const handleSave = () => {
     // Update context with new settings (excluding API keys for now)
-    const { coingeckoApiKey: _coingeckoApiKey, fixerApiKey: _fixerApiKey, ...settingsToSave } = localSettings;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { coingeckoApiKey, fixerApiKey, ...settingsToSave } = localSettings;
     updateContextSettings(settingsToSave);
 
     // TODO: Save API keys to backend via Tauri command
