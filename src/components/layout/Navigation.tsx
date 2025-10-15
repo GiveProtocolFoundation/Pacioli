@@ -136,9 +136,12 @@ const Navigation: React.FC<NavigationProps> = ({
     }
   }, [])
 
-  const createToggleExpandedHandler = useCallback((itemName: string) => {
-    return () => toggleExpanded(itemName)
-  }, [toggleExpanded])
+  const createToggleExpandedHandler = useCallback(
+    (itemName: string) => {
+      return () => toggleExpanded(itemName)
+    },
+    [toggleExpanded]
+  )
 
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-black">
