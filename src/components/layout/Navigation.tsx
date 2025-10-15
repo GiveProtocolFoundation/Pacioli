@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useCallback } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import {
   LayoutDashboard,
@@ -110,13 +110,31 @@ const Navigation: React.FC<NavigationProps> = ({
 
   const [expandedItems, setExpandedItems] = useState<string[]>([])
 
-  const toggleExpanded = (itemName: string) => {
+  const toggleExpanded = useCallback((itemName: string) => {
     setExpandedItems(prev =>
       prev.includes(itemName)
         ? prev.filter(name => name !== itemName)
         : [...prev, itemName]
     )
-  }
+  }, [])
+
+  const handleCloseSidebar = useCallback(() => {
+    setSidebarOpen(false)
+  }, [])
+
+  const handleOpenSidebar = useCallback(() => {
+    setSidebarOpen(true)
+  }, [])
+
+  const handleToggleUserMenu = useCallback(() => {
+    setUserMenuOpen(prev => !prev)
+  }, [])
+
+  const handleBackdropKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      setSidebarOpen(false)
+    }
+  }, [])
 
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-black">
@@ -255,12 +273,8 @@ const Navigation: React.FC<NavigationProps> = ({
           {/* Backdrop */}
           <div
             className="fixed inset-0 bg-gray-600 bg-opacity-75"
-            onClick={() => setSidebarOpen(false)}
-            onKeyDown={(e) => {
-              if (e.key === 'Escape') {
-                setSidebarOpen(false);
-              }
-            }}
+            onClick={handleCloseSidebar}
+            onKeyDown={handleBackdropKeyDown}
             role="button"
             tabIndex={0}
             aria-label="Close sidebar"
@@ -286,7 +300,7 @@ const Navigation: React.FC<NavigationProps> = ({
                 </div>
               </div>
               <button
-                onClick={() => setSidebarOpen(false)}
+                onClick={handleCloseSidebar}
                 className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
               >
                 <X className="w-6 h-6" />
@@ -336,7 +350,7 @@ const Navigation: React.FC<NavigationProps> = ({
                       ) : (
                         <Link
                           to={item.href}
-                          onClick={() => setSidebarOpen(false)}
+                          onClick={handleCloseSidebar}
                           className={`w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
                             isActive
                               ? 'bg-blue-50 text-blue-600'
@@ -365,7 +379,7 @@ const Navigation: React.FC<NavigationProps> = ({
                               <li key={subItem.name}>
                                 <Link
                                   to={subItem.href}
-                                  onClick={() => setSidebarOpen(false)}
+                                  onClick={handleCloseSidebar}
                                   className={`block w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${
                                     isSubActive
                                       ? 'text-blue-600 bg-blue-50'
@@ -414,7 +428,7 @@ const Navigation: React.FC<NavigationProps> = ({
           <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
             {/* Mobile menu button */}
             <button
-              onClick={() => setSidebarOpen(true)}
+              onClick={handleOpenSidebar}
               className="lg:hidden p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
             >
               <Menu className="w-6 h-6" />
@@ -462,7 +476,7 @@ const Navigation: React.FC<NavigationProps> = ({
               {/* User menu */}
               <div className="relative">
                 <button
-                  onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  onClick={handleToggleUserMenu}
                   className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
                 >
                   <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
