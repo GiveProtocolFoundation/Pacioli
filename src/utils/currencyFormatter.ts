@@ -131,7 +131,7 @@ export function formatCurrency(
     ...options,
     showCurrency: true,
     currencySymbol: currencySymbols[currencyCode] || currencyCode,
-    currencyCode: currencyCode,
+    currencyCode,
   })
 }
 

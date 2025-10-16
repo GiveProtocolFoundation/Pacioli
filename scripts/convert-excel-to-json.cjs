@@ -76,9 +76,9 @@ function convertFile(filePath, jurisdiction) {
 
     const chartOfAccounts = {
       name: `${jurisdiction.toUpperCase()} - ${accountType.replace('-', ' ').split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}`,
-      jurisdiction: jurisdiction,
-      accountType: accountType,
-      accounts: accounts,
+      jurisdiction,
+      accountType,
+      accounts,
       isTemplate: true
     };
 

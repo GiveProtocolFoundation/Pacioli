@@ -30,6 +30,7 @@
     "@tauri-apps/plugin-opener": "^2",
     "@walletconnect/web3-provider": "^1.8.0",
     "antd": "^5.27.4",
+    "cryptocurrency-icons": "^0.18.1",
     "date-fns": "^4.1.0",
     "dayjs": "^1.11.18",
     "decimal.js": "^10.6.0",

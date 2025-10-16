@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import { useCurrency } from '../../contexts/CurrencyContext'
 import { formatCurrency } from '../../utils/currencyFormatter'
+import { getCryptoLogoPath, getCryptoBrandColor } from '../../utils/cryptoLogos'
 
 interface Transaction {
   id: string
@@ -274,50 +275,65 @@ const Dashboard: React.FC = () => {
               </div>
               <div className="p-6">
                 <div className="space-y-4">
-                  {accountBalances.map(account => (
-                    <div
-                      key={account.crypto}
-                      className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg"
-                    >
-                      <div className="flex items-center space-x-4">
-                        <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                          <span className="text-sm font-semibold text-blue-600">
-                            {account.crypto}
-                          </span>
+                  {accountBalances.map(account => {
+                    const logoPath = getCryptoLogoPath(account.crypto)
+                    const brandColor = getCryptoBrandColor(account.crypto)
+
+                    return (
+                      <div
+                        key={account.crypto}
+                        className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg"
+                      >
+                        <div className="flex items-center space-x-4">
+                          <div className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden"
+                               style={{ backgroundColor: logoPath ? 'transparent' : `${brandColor}20` }}>
+                            {logoPath ? (
+                              <img
+                                src={logoPath}
+                                alt={`${account.crypto} logo`}
+                                className="w-full h-full object-contain p-1"
+                              />
+                            ) : (
+                              <span className="text-sm font-semibold"
+                                    style={{ color: brandColor }}>
+                                {account.crypto}
+                              </span>
+                            )}
+                          </div>
+                          <div>
+                            <p className="font-medium text-gray-900 dark:text-white">
+                              {account.crypto}
+                            </p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                              {account.amount.toLocaleString()} {account.crypto}
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-medium text-gray-900 dark:text-white">
-                            {account.crypto}
+                        <div className="text-right">
+                          <p className="font-semibold text-gray-900 dark:text-white">
+                            {formatCurrency(account.usdValue, currencySettings.primaryCurrency, {
+                              decimalPlaces: currencySettings.decimalPlaces,
+                              useThousandsSeparator: currencySettings.useThousandsSeparator,
+                              decimalSeparatorStandard: currencySettings.decimalSeparatorStandard,
+                            })}
                           </p>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">
-                            {account.amount.toLocaleString()} {account.crypto}
-                          </p>
+                          <div className="flex items-center justify-end mt-1">
+                            {account.change24h >= 0 ? (
+                              <TrendingUp className="w-3 h-3 text-green-600 mr-1" />
+                            ) : (
+                              <TrendingDown className="w-3 h-3 text-red-600 mr-1" />
+                            )}
+                            <span
+                              className={`text-sm ${account.change24h >= 0 ? 'text-green-600' : 'text-red-600'}`}
+                            >
+                              {account.change24h >= 0 ? '+' : ''}
+                              {account.change24h}%
+                            </span>
+                          </div>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="font-semibold text-gray-900 dark:text-white">
-                          {formatCurrency(account.usdValue, currencySettings.primaryCurrency, {
-                            decimalPlaces: currencySettings.decimalPlaces,
-                            useThousandsSeparator: currencySettings.useThousandsSeparator,
-                            decimalSeparatorStandard: currencySettings.decimalSeparatorStandard,
-                          })}
-                        </p>
-                        <div className="flex items-center justify-end mt-1">
-                          {account.change24h >= 0 ? (
-                            <TrendingUp className="w-3 h-3 text-green-600 mr-1" />
-                          ) : (
-                            <TrendingDown className="w-3 h-3 text-red-600 mr-1" />
-                          )}
-                          <span
-                            className={`text-sm ${account.change24h >= 0 ? 'text-green-600' : 'text-red-600'}`}
-                          >
-                            {account.change24h >= 0 ? '+' : ''}
-                            {account.change24h}%
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               </div>
             </div>

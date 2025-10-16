@@ -17,6 +17,7 @@ import {
   Legend,
 } from 'recharts'
 import { format, subDays, subMonths, startOfMonth, endOfMonth, startOfYear, subYears } from 'date-fns'
+import { getCryptoLogoPath, getCryptoBrandColor } from '../../utils/cryptoLogos'
 
 interface WalletBalance {
   id: string
@@ -425,54 +426,67 @@ const Balances: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {Object.entries(totalBalancesByCurrency)
             .sort((a, b) => b[1].usdValue - a[1].usdValue)
-            .map(([crypto, balance]) => (
-              <div
-                key={crypto}
-                className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6"
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <div
-                    className="w-10 h-10 rounded-full flex items-center justify-center"
-                    style={{ backgroundColor: `${currencyColors[crypto]}20` }}
-                  >
-                    <span
-                      className="text-sm font-semibold"
-                      style={{ color: currencyColors[crypto] }}
+            .map(([crypto, balance]) => {
+              const logoPath = getCryptoLogoPath(crypto)
+              const brandColor = getCryptoBrandColor(crypto)
+
+              return (
+                <div
+                  key={crypto}
+                  className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6"
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <div
+                      className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden"
+                      style={{ backgroundColor: logoPath ? 'transparent' : `${brandColor}20` }}
                     >
-                      {crypto}
-                    </span>
+                      {logoPath ? (
+                        <img
+                          src={logoPath}
+                          alt={`${crypto} logo`}
+                          className="w-full h-full object-contain p-1"
+                        />
+                      ) : (
+                        <span
+                          className="text-sm font-semibold"
+                          style={{ color: brandColor }}
+                        >
+                          {crypto}
+                        </span>
+                      )}
+                    </div>
+                    {balance.change24h >= 0 ? (
+                      <TrendingUp className="w-5 h-5 text-green-600" />
+                    ) : (
+                      <TrendingDown className="w-5 h-5 text-red-600" />
+                    )}
                   </div>
-                  {balance.change24h >= 0 ? (
-                    <TrendingUp className="w-5 h-5 text-green-600" />
-                  ) : (
-                    <TrendingDown className="w-5 h-5 text-red-600" />
-                  )}
+                  <p className="text-2xl font-semibold text-gray-900 dark:text-white mb-1">
+                    {formatCurrency(balance.usdValue)}
+                  </p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+                    {balance.amount.toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 6,
+                    })}{' '}
+                    {crypto}
+                  </p>
+                  <div className="flex items-center">
+                    <span
+                      className={`text-sm font-medium ${
+                        balance.change24h >= 0
+                          ? 'text-green-600'
+                          : 'text-red-600'
+                      }`}
+                    >
+                      {balance.change24h >= 0 ? '+' : ''}
+                      {balance.change24h}%
+                    </span>
+                    <span className="text-sm text-gray-500 dark:text-gray-400 ml-1">24h</span>
+                  </div>
                 </div>
-                <p className="text-2xl font-semibold text-gray-900 dark:text-white mb-1">
-                  {formatCurrency(balance.usdValue)}
-                </p>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-                  {balance.amount.toLocaleString(undefined, {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 6,
-                  })}{' '}
-                  {crypto}
-                </p>
-                <div className="flex items-center">
-                  <span
-                    className={`text-sm font-medium ${
-                      balance.change24h >= 0
-                        ? 'text-green-600'
-                        : 'text-red-600'
-                    }`}
-                  >
-                    {balance.change24h >= 0 ? '+' : ''}
-                    {balance.change24h}%
-                  </span>
-                  <span className="text-sm text-gray-500 dark:text-gray-400 ml-1">24h</span>
-                </div>
-              </div>
-            ))}
+              )
+            })}
         </div>
 
         {/* Wallet List */}

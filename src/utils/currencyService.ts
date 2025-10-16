@@ -244,7 +244,7 @@ export class CurrencyService {
   /**
    * Parse currency string to decimal
    */
-  parseCurrency(value: string): Decimal {
+  static parseCurrency(value: string): Decimal {
     // Remove currency symbols and thousands separators
     const cleaned = value.replace(/[^0-9.-]/g, '');
     return new Decimal(cleaned);
@@ -278,7 +278,7 @@ export class CurrencyService {
   /**
    * Calculate percentage change
    */
-  calculatePercentageChange(oldValue: string, newValue: string): number {
+  static calculatePercentageChange(oldValue: string, newValue: string): number {
     const old = new Decimal(oldValue);
     const newVal = new Decimal(newValue);
 
@@ -290,7 +290,7 @@ export class CurrencyService {
   /**
    * Sum amounts in the same currency
    */
-  sumAmounts(amounts: string[]): string {
+  static sumAmounts(amounts: string[]): string {
     return amounts
       .reduce((sum, amount) => sum.plus(new Decimal(amount)), new Decimal(0))
       .toString();
@@ -299,7 +299,7 @@ export class CurrencyService {
   /**
    * Check if exchange rate is stale
    */
-  isRateStale(rate: ExchangeRate): boolean {
+  static isRateStale(rate: ExchangeRate): boolean {
     const rateTime = new Date(rate.timestamp).getTime();
     const now = Date.now();
     const ageInSeconds = (now - rateTime) / 1000;
