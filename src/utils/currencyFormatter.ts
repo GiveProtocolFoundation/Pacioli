@@ -1,13 +1,13 @@
-import { DecimalSeparatorStandard } from '../types/currency';
+import { DecimalSeparatorStandard } from '../types/currency'
 
 export interface NumberFormatOptions {
-  decimalPlaces?: number;
-  useThousandsSeparator?: boolean;
-  decimalSeparatorStandard?: DecimalSeparatorStandard;
-  currencySymbol?: string;
-  currencyCode?: string;
-  showCurrency?: boolean;
-  currencyPosition?: 'prefix' | 'suffix';
+  decimalPlaces?: number
+  useThousandsSeparator?: boolean
+  decimalSeparatorStandard?: DecimalSeparatorStandard
+  currencySymbol?: string
+  currencyCode?: string
+  showCurrency?: boolean
+  currencyPosition?: 'prefix' | 'suffix'
 }
 
 /**
@@ -25,81 +25,86 @@ export function formatNumber(
     currencyCode = '',
     showCurrency = false,
     currencyPosition = 'prefix',
-  } = options;
+  } = options
 
   // Convert to number if string
-  const numValue = typeof value === 'string' ? parseFloat(value) : value;
+  const numValue = typeof value === 'string' ? parseFloat(value) : value
 
   if (isNaN(numValue)) {
-    return '0';
+    return '0'
   }
 
   // Split into integer and decimal parts
-  const absoluteValue = Math.abs(numValue);
-  const fixedValue = absoluteValue.toFixed(decimalPlaces);
-  const [integerPart, decimalPart] = fixedValue.split('.');
+  const absoluteValue = Math.abs(numValue)
+  const fixedValue = absoluteValue.toFixed(decimalPlaces)
+  const [integerPart, decimalPart] = fixedValue.split('.')
 
   // Format integer part with thousands separator
-  let formattedInteger = integerPart;
+  let formattedInteger = integerPart
   if (useThousandsSeparator && integerPart.length > 3) {
-    formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
   }
 
   // Apply decimal separator standard
-  let formattedNumber = '';
+  let formattedNumber = ''
 
   switch (decimalSeparatorStandard) {
     case 'point-comma':
       // 1,234.56 - comma for thousands, point for decimal
-      formattedNumber = decimalPlaces > 0
-        ? `${formattedInteger}.${decimalPart}`
-        : formattedInteger;
-      break;
+      formattedNumber =
+        decimalPlaces > 0
+          ? `${formattedInteger}.${decimalPart}`
+          : formattedInteger
+      break
 
     case 'comma-point':
       // 1.234,56 - point for thousands, comma for decimal
-      formattedNumber = decimalPlaces > 0
-        ? `${formattedInteger.replace(/,/g, '.')},${decimalPart}`
-        : formattedInteger.replace(/,/g, '.');
-      break;
+      formattedNumber =
+        decimalPlaces > 0
+          ? `${formattedInteger.replace(/,/g, '.')},${decimalPart}`
+          : formattedInteger.replace(/,/g, '.')
+      break
 
     case 'point-space':
       // 1 234.56 - space for thousands, point for decimal
-      formattedNumber = decimalPlaces > 0
-        ? `${formattedInteger.replace(/,/g, ' ')}.${decimalPart}`
-        : formattedInteger.replace(/,/g, ' ');
-      break;
+      formattedNumber =
+        decimalPlaces > 0
+          ? `${formattedInteger.replace(/,/g, ' ')}.${decimalPart}`
+          : formattedInteger.replace(/,/g, ' ')
+      break
 
     case 'comma-space':
       // 1 234,56 - space for thousands, comma for decimal
-      formattedNumber = decimalPlaces > 0
-        ? `${formattedInteger.replace(/,/g, ' ')},${decimalPart}`
-        : formattedInteger.replace(/,/g, ' ');
-      break;
+      formattedNumber =
+        decimalPlaces > 0
+          ? `${formattedInteger.replace(/,/g, ' ')},${decimalPart}`
+          : formattedInteger.replace(/,/g, ' ')
+      break
 
     default:
-      formattedNumber = decimalPlaces > 0
-        ? `${formattedInteger}.${decimalPart}`
-        : formattedInteger;
+      formattedNumber =
+        decimalPlaces > 0
+          ? `${formattedInteger}.${decimalPart}`
+          : formattedInteger
   }
 
   // Add negative sign if needed
   if (numValue < 0) {
-    formattedNumber = `-${formattedNumber}`;
+    formattedNumber = `-${formattedNumber}`
   }
 
   // Add currency if requested
   if (showCurrency) {
     if (currencySymbol && currencyPosition === 'prefix') {
-      formattedNumber = `${currencySymbol}${formattedNumber}`;
+      formattedNumber = `${currencySymbol}${formattedNumber}`
     } else if (currencySymbol && currencyPosition === 'suffix') {
-      formattedNumber = `${formattedNumber} ${currencySymbol}`;
+      formattedNumber = `${formattedNumber} ${currencySymbol}`
     } else if (currencyCode) {
-      formattedNumber = `${formattedNumber} ${currencyCode}`;
+      formattedNumber = `${formattedNumber} ${currencyCode}`
     }
   }
 
-  return formattedNumber;
+  return formattedNumber
 }
 
 /**
@@ -120,14 +125,14 @@ export function formatCurrency(
     CHF: 'CHF',
     CNY: '¥',
     INR: '₹',
-  };
+  }
 
   return formatNumber(value, {
     ...options,
     showCurrency: true,
     currencySymbol: currencySymbols[currencyCode] || currencyCode,
     currencyCode: currencyCode,
-  });
+  })
 }
 
 /**
@@ -135,13 +140,16 @@ export function formatCurrency(
  */
 export function formatPercentage(
   value: number,
-  options: Pick<NumberFormatOptions, 'decimalPlaces' | 'decimalSeparatorStandard'> = {}
+  options: Pick<
+    NumberFormatOptions,
+    'decimalPlaces' | 'decimalSeparatorStandard'
+  > = {}
 ): string {
   const formatted = formatNumber(value, {
     ...options,
     useThousandsSeparator: false,
-  });
-  return `${formatted}%`;
+  })
+  return `${formatted}%`
 }
 
 /**
@@ -153,32 +161,32 @@ export function parseFormattedNumber(
 ): number {
   // Remove currency symbols and whitespace
   let cleaned = formattedValue
-    .replace(/[$€£¥₹]/g, '')
+    .replace(/[$€£¥₹]/gu, '')
     .replace(/[A-Z]{3}/g, '')
-    .trim();
+    .trim()
 
   // Convert based on separator standard
   switch (decimalSeparatorStandard) {
     case 'point-comma':
       // Remove commas (thousands) and parse
-      cleaned = cleaned.replace(/,/g, '');
-      break;
+      cleaned = cleaned.replace(/,/g, '')
+      break
 
     case 'comma-point':
       // Replace comma (decimal) with point, remove points (thousands)
-      cleaned = cleaned.replace(/\./g, '').replace(',', '.');
-      break;
+      cleaned = cleaned.replace(/\./g, '').replace(',', '.')
+      break
 
     case 'point-space':
       // Remove spaces (thousands)
-      cleaned = cleaned.replace(/ /g, '');
-      break;
+      cleaned = cleaned.replace(/ /g, '')
+      break
 
     case 'comma-space':
       // Remove spaces (thousands), replace comma (decimal) with point
-      cleaned = cleaned.replace(/ /g, '').replace(',', '.');
-      break;
+      cleaned = cleaned.replace(/ /g, '').replace(',', '.')
+      break
   }
 
-  return parseFloat(cleaned) || 0;
+  return parseFloat(cleaned) || 0
 }
