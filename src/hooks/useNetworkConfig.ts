@@ -112,11 +112,13 @@ export const useNetworkConfig = () => {
       const accounts = await window.ethereum.request({
         method: 'eth_requestAccounts',
       });
-      
+
       if (accounts.length > 0) {
         setIsConnected(true);
         return accounts[0];
       }
+
+      return null;
     } catch (error) {
       console.error('Failed to connect wallet:', error);
       throw error;

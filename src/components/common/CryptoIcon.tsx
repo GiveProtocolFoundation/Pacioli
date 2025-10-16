@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 
 interface CryptoIconProps {
   symbol: string;
@@ -25,16 +25,6 @@ const CryptoIcon: React.FC<CryptoIconProps> = ({ symbol, size = 40, className = 
 
   const config = cryptoConfig[symbol.toUpperCase()];
 
-  // Determine the icon source
-  const getIconSrc = () => {
-    if (config?.hasLocalIcon) {
-      return `/crypto-icons/${symbol.toLowerCase()}.svg`;
-    } else if (config?.coingeckoId) {
-      return `https://assets.coingecko.com/coins/images/${getCoinGeckoImageId(config.coingeckoId)}/small/${config.coingeckoId}.png`;
-    }
-    return null;
-  };
-
   // Helper to get CoinGecko image IDs (these are specific to each coin)
   const getCoinGeckoImageId = (coinId: string): string => {
     const imageIds: Record<string, string> = {
@@ -52,7 +42,21 @@ const CryptoIcon: React.FC<CryptoIconProps> = ({ symbol, size = 40, className = 
     return imageIds[coinId] || '1';
   };
 
+  // Determine the icon source
+  const getIconSrc = () => {
+    if (config?.hasLocalIcon) {
+      return `/crypto-icons/${symbol.toLowerCase()}.svg`;
+    } else if (config?.coingeckoId) {
+      return `https://assets.coingecko.com/coins/images/${getCoinGeckoImageId(config.coingeckoId)}/small/${config.coingeckoId}.png`;
+    }
+    return null;
+  };
+
   const iconSrc = getIconSrc();
+
+  const handleImageError = useCallback(() => {
+    setImageError(true);
+  }, []);
 
   // Fallback UI when image fails or no icon available
   if (imageError || !iconSrc) {
@@ -75,7 +79,7 @@ const CryptoIcon: React.FC<CryptoIconProps> = ({ symbol, size = 40, className = 
       width={size}
       height={size}
       className={`rounded-full ${className}`}
-      onError={() => setImageError(true)}
+      onError={handleImageError}
     />
   );
 };

@@ -76,7 +76,7 @@ export const useEVMService = () => {
 
   const loadBalances = useCallback(async (chain?: string, address?: string) => {
     if (!chain || !address) {
-      if (!currentAccount) return;
+      if (!currentAccount) return null;
       chain = currentAccount.chain;
       address = currentAccount.address;
     }
@@ -86,10 +86,10 @@ export const useEVMService = () => {
       // Get native token balance
       const nativeBalance = await service.getBalance(chain, address);
       const nativeToken = EVM_CHAINS[chain]?.nativeToken;
-      
+
       // Get ERC20 token balances
       const tokenBalances = await service.getTokenBalances(chain, address);
-      
+
       const allBalances: TokenBalance[] = [
         {
           address: 'native',
@@ -115,7 +115,7 @@ export const useEVMService = () => {
 
   const syncTransactions = useCallback(async (chain?: string, address?: string) => {
     if (!chain || !address) {
-      if (!currentAccount) return;
+      if (!currentAccount) return null;
       chain = currentAccount.chain;
       address = currentAccount.address;
     }
