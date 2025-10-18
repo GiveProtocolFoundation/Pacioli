@@ -77,7 +77,7 @@ const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
       description: account.description || ''
     });
     setIsAddingNew(false);
-  }, []);
+  }, [template]);
 
   const handleAddNew = useCallback(() => {
     setEditingAccount({
@@ -109,7 +109,7 @@ const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
 
   const createEditHandler = useCallback((account: typeof template.accounts[0]) => {
     return () => handleEdit(account);
-  }, [handleEdit]);
+  }, [handleEdit, template]);
 
   const createDeleteHandler = useCallback((code: string) => {
     return () => handleDelete(code);

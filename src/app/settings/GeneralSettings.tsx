@@ -101,7 +101,7 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ userType = 'organizat
 
   const handleSave = useCallback(() => {
     // TODO: Save to backend via Tauri command
-    console.log('Saving settings:', { organizationSettings, systemSettings })
+    // console.log('Saving settings:', { organizationSettings, systemSettings })
     setHasChanges(false)
     // Show success notification
   }, [organizationSettings, systemSettings])

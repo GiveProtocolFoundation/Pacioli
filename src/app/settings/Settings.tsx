@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useMemo, useCallback } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import {
   Settings as SettingsIcon,
@@ -92,28 +92,20 @@ interface SettingsProps {
 const Settings: React.FC<SettingsProps> = ({ userType = 'organization' }) => {
   const location = useLocation()
   const navigate = useNavigate()
-  const [activeSection, setActiveSection] = useState<SettingsSection>('general')
 
-  // Map URL paths to section IDs
-  useEffect(() => {
+  // Derive active section from URL path
+  const activeSection = useMemo<SettingsSection>(() => {
     const path = location.pathname
-    if (path === '/settings/general') {
-      setActiveSection('general')
-    } else if (path === '/settings/currencies') {
-      setActiveSection('currencies')
-    } else if (path === '/settings/users') {
-      setActiveSection('users-permissions')
-    } else if (path === '/chart-of-accounts') {
-      setActiveSection('chart-of-accounts')
-    } else if (path === '/settings') {
-      setActiveSection('general')
-    }
+    if (path === '/settings/general') return 'general'
+    if (path === '/settings/currencies') return 'currencies'
+    if (path === '/settings/users') return 'users-permissions'
+    if (path === '/chart-of-accounts') return 'chart-of-accounts'
+    return 'general'
   }, [location.pathname])
 
   const handleSectionChange = useCallback((section: SettingsSection) => {
     const item = navigationItems.find(item => item.id === section)
     if (!item?.comingSoon) {
-      setActiveSection(section)
       // Update URL
       if (section === 'general') {
         navigate('/settings/general')

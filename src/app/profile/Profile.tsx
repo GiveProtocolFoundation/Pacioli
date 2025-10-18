@@ -66,25 +66,25 @@ const Profile: React.FC = () => {
   const [hasChanges, setHasChanges] = useState(false)
   const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'preferences'>('profile')
 
-  const handleProfileChange = <K extends keyof UserProfile>(key: K, value: UserProfile[K]) => {
+  const handleProfileChange = useCallback(<K extends keyof UserProfile>(key: K, value: UserProfile[K]) => {
     setProfile(prev => ({ ...prev, [key]: value }))
     setHasChanges(true)
-  }
+  }, [])
 
-  const handleSecurityChange = <K extends keyof SecuritySettings>(
+  const handleSecurityChange = useCallback(<K extends keyof SecuritySettings>(
     key: K,
     value: SecuritySettings[K]
   ) => {
     setSecurity(prev => ({ ...prev, [key]: value }))
     setHasChanges(true)
-  }
+  }, [])
 
   const handleSave = useCallback(() => {
     // TODO: Save to backend
-    console.log('Saving profile:', { profile, security })
+    // console.log('Saving profile:', { profile, security })
     setHasChanges(false)
     // Show success message
-  }, [profile, security])
+  }, [])
 
   const handleCancel = useCallback(() => {
     // Reset changes
