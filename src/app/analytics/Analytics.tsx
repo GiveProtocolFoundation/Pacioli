@@ -2,7 +2,6 @@ import React, { useState, useCallback } from 'react'
 import {
   TrendingUp,
   DollarSign,
-  Wallet,
   BarChart3,
   PieChart,
   Activity,

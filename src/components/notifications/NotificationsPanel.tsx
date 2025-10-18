@@ -198,6 +198,10 @@ const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
     setNotifications(prev => prev.map(n => ({ ...n, read: true })))
   }, [])
 
+  const createMarkAsReadHandler = useCallback((id: string) => {
+    return () => markAsRead(id)
+  }, [markAsRead])
+
   const handleFilterAll = useCallback(() => setFilter('all'), [])
   const handleFilterFinancial = useCallback(() => setFilter('financial'), [])
   const handleFilterTransactional = useCallback(() => setFilter('transactional'), [])
@@ -318,7 +322,7 @@ const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
             <div className="divide-y divide-gray-200 dark:divide-gray-700">
               {filteredNotifications.map(notification => {
                 const Icon = notification.icon
-                const handleClick = () => markAsRead(notification.id)
+                const handleClick = createMarkAsReadHandler(notification.id)
                 return (
                   <div
                     key={notification.id}

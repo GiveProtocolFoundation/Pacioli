@@ -79,26 +79,26 @@ const Profile: React.FC = () => {
     setHasChanges(true)
   }
 
-  const handleSave = () => {
+  const handleSave = useCallback(() => {
     // TODO: Save to backend
     console.log('Saving profile:', { profile, security })
     setHasChanges(false)
     // Show success message
-  }
+  }, [profile, security])
 
-  const handleCancel = () => {
+  const handleCancel = useCallback(() => {
     // Reset changes
     setHasChanges(false)
-  }
+  }, [])
 
-  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
       const url = URL.createObjectURL(file)
       setUserAvatar(url)
       handleProfileChange('avatar', url)
     }
-  }
+  }, [setUserAvatar, handleProfileChange])
 
   // Tab navigation handlers
   const handleTabProfile = useCallback(() => {

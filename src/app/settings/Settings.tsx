@@ -127,6 +127,10 @@ const Settings: React.FC<SettingsProps> = ({ userType = 'organization' }) => {
     }
   }, [navigate])
 
+  const createSectionHandler = useCallback((section: SettingsSection) => {
+    return () => handleSectionChange(section)
+  }, [handleSectionChange])
+
   const ActiveComponent = navigationItems.find(
     item => item.id === activeSection
   )?.component
@@ -156,11 +160,12 @@ const Settings: React.FC<SettingsProps> = ({ userType = 'organization' }) => {
               {navigationItems.map(item => {
                 const Icon = item.icon
                 const isActive = activeSection === item.id
+                const handleClick = createSectionHandler(item.id)
 
                 return (
                   <button
                     key={item.id}
-                    onClick={() => handleSectionChange(item.id)}
+                    onClick={handleClick}
                     disabled={item.comingSoon}
                     className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
                       isActive
