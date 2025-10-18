@@ -12,7 +12,6 @@ import {
   Camera,
   Save,
   X,
-  Check,
   Globe,
   Calendar,
   Briefcase,

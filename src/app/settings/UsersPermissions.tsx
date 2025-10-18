@@ -6,15 +6,10 @@ import {
   Lock,
   Mail,
   MoreVertical,
-  Edit2,
-  Trash2,
   Check,
   X,
   Search,
-  Filter,
-  ChevronDown,
   AlertCircle,
-  Key,
 } from 'lucide-react'
 
 interface User {
@@ -191,12 +186,11 @@ type ViewMode = 'users' | 'roles'
 
 const UsersPermissions: React.FC = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('users')
-  const [users, setUsers] = useState<User[]>(mockUsers)
+  const [users] = useState<User[]>(mockUsers)
   const [roles] = useState<Role[]>(mockRoles)
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive' | 'pending'>('all')
   const [showInviteModal, setShowInviteModal] = useState(false)
-  const [selectedUser, setSelectedUser] = useState<User | null>(null)
 
   const filteredUsers = users.filter(user => {
     const matchesSearch =

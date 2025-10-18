@@ -8,7 +8,6 @@ import {
   Play,
   Clock,
   Star,
-  Filter,
   Search,
   ChevronRight,
   PieChart,

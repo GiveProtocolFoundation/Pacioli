@@ -4,8 +4,6 @@ import Navigation from './components/layout/Navigation';
 import Dashboard from './app/dashboard/Dashboard';
 import Transactions from './app/transactions/Transactions';
 import Onboarding from './app/onboarding/Onboarding';
-import ChartOfAccounts from './app/settings/ChartOfAccounts';
-import Currencies from './app/settings/Currencies';
 import Balances from './app/wallets/Balances';
 import Settings from './app/settings/Settings';
 import Reports from './app/reports/Reports';

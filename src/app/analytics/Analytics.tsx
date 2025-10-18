@@ -1,7 +1,6 @@
 import React, { useState, useCallback } from 'react'
 import {
   TrendingUp,
-  TrendingDown,
   DollarSign,
   Wallet,
   BarChart3,
@@ -27,14 +26,6 @@ interface KPI {
   changeLabel: string
   icon: React.ElementType
   trend: 'up' | 'down' | 'neutral'
-}
-
-interface ChartData {
-  id: string
-  title: string
-  subtitle: string
-  type: 'line' | 'bar' | 'pie' | 'area'
-  icon: React.ElementType
 }
 
 type TimePeriod = '7d' | '30d' | '90d' | '1y' | 'all'
@@ -75,51 +66,6 @@ const kpis: KPI[] = [
     changeLabel: '-$4,621 vs last month',
     icon: TrendingUp,
     trend: 'down',
-  },
-]
-
-const charts: ChartData[] = [
-  {
-    id: 'portfolio-performance',
-    title: 'Portfolio Performance',
-    subtitle: 'Total value over time',
-    type: 'area',
-    icon: Activity,
-  },
-  {
-    id: 'asset-allocation',
-    title: 'Asset Allocation',
-    subtitle: 'Holdings by cryptocurrency',
-    type: 'pie',
-    icon: PieChart,
-  },
-  {
-    id: 'transaction-volume',
-    title: 'Transaction Volume',
-    subtitle: 'Daily transaction activity',
-    type: 'bar',
-    icon: BarChart3,
-  },
-  {
-    id: 'staking-rewards',
-    title: 'Staking Rewards',
-    subtitle: 'Rewards earned over time',
-    type: 'line',
-    icon: Target,
-  },
-  {
-    id: 'revenue-expenses',
-    title: 'Revenue vs Expenses',
-    subtitle: 'Monthly comparison',
-    type: 'bar',
-    icon: DollarSign,
-  },
-  {
-    id: 'wallet-distribution',
-    title: 'Wallet Distribution',
-    subtitle: 'Value by wallet',
-    type: 'pie',
-    icon: Wallet,
   },
 ]
 
@@ -291,7 +237,7 @@ const Analytics: React.FC = () => {
                 <g className="text-gray-200 dark:text-gray-700">
                   {[0, 1, 2, 3, 4].map(i => (
                     <line
-                      key={i}
+                      key={`grid-${i}`}
                       x1="0"
                       y1={i * 50}
                       x2="800"
@@ -330,7 +276,7 @@ const Analytics: React.FC = () => {
                   const y = 120 - (i * 12) + (i % 2 === 0 ? 15 : 0)
                   return (
                     <circle
-                      key={i}
+                      key={`point-${point.date}`}
                       cx={x}
                       cy={y}
                       r="4"
@@ -343,7 +289,7 @@ const Analytics: React.FC = () => {
                 {/* X-axis labels */}
                 {portfolioData.map((point, i) => (
                   <text
-                    key={i}
+                    key={`label-${point.date}`}
                     x={50 + i * 100}
                     y="245"
                     className="text-xs fill-current text-gray-500 dark:text-gray-400"
@@ -471,17 +417,20 @@ const Analytics: React.FC = () => {
 
             {/* Mock Bar Chart */}
             <div className="h-48 flex items-end justify-between gap-2">
-              {[65, 85, 45, 90, 70, 95, 80].map((height, i) => (
-                <div key={i} className="flex-1 flex flex-col items-center">
-                  <div
-                    className="w-full bg-blue-500 dark:bg-blue-600 rounded-t hover:bg-blue-600 dark:hover:bg-blue-500 transition-colors cursor-pointer"
-                    style={{ height: `${height}%` }}
-                  />
-                  <span className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                    {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][i]}
-                  </span>
-                </div>
-              ))}
+              {[65, 85, 45, 90, 70, 95, 80].map((height, i) => {
+                const dayName = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][i]
+                return (
+                  <div key={dayName} className="flex-1 flex flex-col items-center">
+                    <div
+                      className="w-full bg-blue-500 dark:bg-blue-600 rounded-t hover:bg-blue-600 dark:hover:bg-blue-500 transition-colors cursor-pointer"
+                      style={{ height: `${height}%` }}
+                    />
+                    <span className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                      {dayName}
+                    </span>
+                  </div>
+                )
+              })}
             </div>
 
             <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
@@ -591,23 +540,26 @@ const Analytics: React.FC = () => {
                 { revenue: 75, expense: 55 },
                 { revenue: 90, expense: 48 },
                 { revenue: 80, expense: 52 },
-              ].map((data, i) => (
-                <div key={i} className="flex-1 flex flex-col items-center">
-                  <div className="w-full flex gap-1 items-end h-full">
-                    <div
-                      className="flex-1 bg-green-500 dark:bg-green-600 rounded-t"
-                      style={{ height: `${data.revenue}%` }}
-                    />
-                    <div
-                      className="flex-1 bg-red-500 dark:bg-red-600 rounded-t"
-                      style={{ height: `${data.expense}%` }}
-                    />
+              ].map((data, i) => {
+                const monthName = ['Jun', 'Jul', 'Aug', 'Sep', 'Oct'][i]
+                return (
+                  <div key={monthName} className="flex-1 flex flex-col items-center">
+                    <div className="w-full flex gap-1 items-end h-full">
+                      <div
+                        className="flex-1 bg-green-500 dark:bg-green-600 rounded-t"
+                        style={{ height: `${data.revenue}%` }}
+                      />
+                      <div
+                        className="flex-1 bg-red-500 dark:bg-red-600 rounded-t"
+                        style={{ height: `${data.expense}%` }}
+                      />
+                    </div>
+                    <span className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                      {monthName}
+                    </span>
                   </div>
-                  <span className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                    {['Jun', 'Jul', 'Aug', 'Sep', 'Oct'][i]}
-                  </span>
-                </div>
-              ))}
+                )
+              })}
             </div>
 
             <div className="mt-6 flex items-center justify-center gap-6">

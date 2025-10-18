@@ -3,10 +3,8 @@ import {
   X,
   DollarSign,
   TrendingUp,
-  TrendingDown,
   AlertTriangle,
   CheckCircle,
-  Clock,
   Receipt,
   Wallet,
   Users,
@@ -14,7 +12,6 @@ import {
   ArrowRight,
   Check,
   XCircle,
-  Filter,
 } from 'lucide-react'
 
 interface Notification {
