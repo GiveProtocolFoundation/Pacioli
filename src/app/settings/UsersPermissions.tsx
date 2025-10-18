@@ -234,6 +234,35 @@ const UsersPermissions: React.FC = () => {
     return loginDate.toLocaleDateString()
   }
 
+  const handleOpenInviteModal = useCallback(() => {
+    setShowInviteModal(true)
+  }, [])
+
+  const handleCloseInviteModal = useCallback(() => {
+    setShowInviteModal(false)
+  }, [])
+
+  const handleViewModeUsers = useCallback(() => {
+    setViewMode('users')
+  }, [])
+
+  const handleViewModeRoles = useCallback(() => {
+    setViewMode('roles')
+  }, [])
+
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value)
+  }, [])
+
+  const handleStatusFilterChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    setStatusFilter(e.target.value as typeof statusFilter)
+  }, [])
+
+  const handleSendInvite = useCallback(() => {
+    // TODO: Send invitation
+    setShowInviteModal(false)
+  }, [])
+
   return (
     <div className="p-6">
       {/* Header */}
@@ -247,7 +276,7 @@ const UsersPermissions: React.FC = () => {
           </p>
         </div>
         <button
-          onClick={() => setShowInviteModal(true)}
+          onClick={handleOpenInviteModal}
           className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 flex items-center justify-center"
         >
           <UserPlus className="w-4 h-4 mr-2" />
@@ -259,7 +288,7 @@ const UsersPermissions: React.FC = () => {
       <div className="mb-6">
         <div className="inline-flex rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-1">
           <button
-            onClick={() => setViewMode('users')}
+            onClick={handleViewModeUsers}
             className={`px-4 py-2 text-sm font-medium rounded-md transition-colors flex items-center ${
               viewMode === 'users'
                 ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
@@ -270,7 +299,7 @@ const UsersPermissions: React.FC = () => {
             Users
           </button>
           <button
-            onClick={() => setViewMode('roles')}
+            onClick={handleViewModeRoles}
             className={`px-4 py-2 text-sm font-medium rounded-md transition-colors flex items-center ${
               viewMode === 'roles'
                 ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
@@ -293,13 +322,13 @@ const UsersPermissions: React.FC = () => {
                 type="text"
                 placeholder="Search users..."
                 value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
+                onChange={handleSearchChange}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <select
               value={statusFilter}
-              onChange={e => setStatusFilter(e.target.value as typeof statusFilter)}
+              onChange={handleStatusFilterChange}
               className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="all">All Status</option>
@@ -599,7 +628,7 @@ const UsersPermissions: React.FC = () => {
                 Invite User
               </h3>
               <button
-                onClick={() => setShowInviteModal(false)}
+                onClick={handleCloseInviteModal}
                 className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
               >
                 <X className="w-5 h-5" />
@@ -643,16 +672,13 @@ const UsersPermissions: React.FC = () => {
 
               <div className="flex items-center space-x-3 pt-4">
                 <button
-                  onClick={() => setShowInviteModal(false)}
+                  onClick={handleCloseInviteModal}
                   className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
                 >
                   Cancel
                 </button>
                 <button
-                  onClick={() => {
-                    // TODO: Send invitation
-                    setShowInviteModal(false)
-                  }}
+                  onClick={handleSendInvite}
                   className="flex-1 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 flex items-center justify-center"
                 >
                   <Mail className="w-4 h-4 mr-2" />

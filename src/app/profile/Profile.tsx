@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useCallback } from 'react'
 import {
   User,
   Mail,
@@ -101,6 +101,39 @@ const Profile: React.FC = () => {
     }
   }
 
+  // Tab navigation handlers
+  const handleTabProfile = useCallback(() => {
+    setActiveTab('profile')
+  }, [])
+
+  const handleTabSecurity = useCallback(() => {
+    setActiveTab('security')
+  }, [])
+
+  const handleTabPreferences = useCallback(() => {
+    setActiveTab('preferences')
+  }, [])
+
+  // Factory function for profile text/select input handlers
+  const createProfileInputHandler = useCallback(
+    (key: keyof UserProfile) => {
+      return (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+        handleProfileChange(key, e.target.value)
+      }
+    },
+    [handleProfileChange]
+  )
+
+  // Factory function for security checkbox handlers
+  const createSecurityToggleHandler = useCallback(
+    (key: keyof SecuritySettings) => {
+      return (e: React.ChangeEvent<HTMLInputElement>) => {
+        handleSecurityChange(key, e.target.checked)
+      }
+    },
+    [handleSecurityChange]
+  )
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black">
       {/* Header */}
@@ -175,7 +208,7 @@ const Profile: React.FC = () => {
               {/* Tab Navigation */}
               <nav className="space-y-1">
                 <button
-                  onClick={() => setActiveTab('profile')}
+                  onClick={handleTabProfile}
                   className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
                     activeTab === 'profile'
                       ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
@@ -186,7 +219,7 @@ const Profile: React.FC = () => {
                   Profile Information
                 </button>
                 <button
-                  onClick={() => setActiveTab('security')}
+                  onClick={handleTabSecurity}
                   className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
                     activeTab === 'security'
                       ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
@@ -197,7 +230,7 @@ const Profile: React.FC = () => {
                   Security
                 </button>
                 <button
-                  onClick={() => setActiveTab('preferences')}
+                  onClick={handleTabPreferences}
                   className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
                     activeTab === 'preferences'
                       ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
@@ -228,7 +261,7 @@ const Profile: React.FC = () => {
                         <input
                           type="text"
                           value={profile.firstName}
-                          onChange={e => handleProfileChange('firstName', e.target.value)}
+                          onChange={createProfileInputHandler('firstName')}
                           className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </div>
@@ -239,7 +272,7 @@ const Profile: React.FC = () => {
                         <input
                           type="text"
                           value={profile.lastName}
-                          onChange={e => handleProfileChange('lastName', e.target.value)}
+                          onChange={createProfileInputHandler('lastName')}
                           className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </div>
@@ -252,7 +285,7 @@ const Profile: React.FC = () => {
                           <input
                             type="email"
                             value={profile.email}
-                            onChange={e => handleProfileChange('email', e.target.value)}
+                            onChange={createProfileInputHandler('email')}
                             className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                           />
                         </div>
@@ -266,7 +299,7 @@ const Profile: React.FC = () => {
                           <input
                             type="tel"
                             value={profile.phone}
-                            onChange={e => handleProfileChange('phone', e.target.value)}
+                            onChange={createProfileInputHandler('phone')}
                             className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                           />
                         </div>
@@ -288,7 +321,7 @@ const Profile: React.FC = () => {
                           <input
                             type="text"
                             value={profile.jobTitle}
-                            onChange={e => handleProfileChange('jobTitle', e.target.value)}
+                            onChange={createProfileInputHandler('jobTitle')}
                             className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                           />
                         </div>
@@ -302,7 +335,7 @@ const Profile: React.FC = () => {
                           <input
                             type="text"
                             value={profile.department}
-                            onChange={e => handleProfileChange('department', e.target.value)}
+                            onChange={createProfileInputHandler('department')}
                             className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                           />
                         </div>
@@ -316,7 +349,7 @@ const Profile: React.FC = () => {
                           <input
                             type="text"
                             value={profile.location}
-                            onChange={e => handleProfileChange('location', e.target.value)}
+                            onChange={createProfileInputHandler('location')}
                             className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                           />
                         </div>
@@ -350,9 +383,7 @@ const Profile: React.FC = () => {
                         <input
                           type="checkbox"
                           checked={security.twoFactorEnabled}
-                          onChange={e =>
-                            handleSecurityChange('twoFactorEnabled', e.target.checked)
-                          }
+                          onChange={createSecurityToggleHandler('twoFactorEnabled')}
                           className="sr-only peer"
                         />
                         <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
@@ -376,7 +407,7 @@ const Profile: React.FC = () => {
                         <input
                           type="checkbox"
                           checked={security.loginAlerts}
-                          onChange={e => handleSecurityChange('loginAlerts', e.target.checked)}
+                          onChange={createSecurityToggleHandler('loginAlerts')}
                           className="sr-only peer"
                         />
                         <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
@@ -419,7 +450,7 @@ const Profile: React.FC = () => {
                           <Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                           <select
                             value={profile.timezone}
-                            onChange={e => handleProfileChange('timezone', e.target.value)}
+                            onChange={createProfileInputHandler('timezone')}
                             className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                           >
                             <option value="America/Los_Angeles">Pacific Time (US & Canada)</option>
@@ -436,7 +467,7 @@ const Profile: React.FC = () => {
                         </label>
                         <select
                           value={profile.language}
-                          onChange={e => handleProfileChange('language', e.target.value)}
+                          onChange={createProfileInputHandler('language')}
                           className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
                           <option value="en">English</option>
@@ -453,7 +484,7 @@ const Profile: React.FC = () => {
                           <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                           <select
                             value={profile.dateFormat}
-                            onChange={e => handleProfileChange('dateFormat', e.target.value)}
+                            onChange={createProfileInputHandler('dateFormat')}
                             className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                           >
                             <option value="MM/DD/YYYY">MM/DD/YYYY (US)</option>
@@ -483,9 +514,7 @@ const Profile: React.FC = () => {
                         <input
                           type="checkbox"
                           checked={security.emailNotifications}
-                          onChange={e =>
-                            handleSecurityChange('emailNotifications', e.target.checked)
-                          }
+                          onChange={createSecurityToggleHandler('emailNotifications')}
                           className="sr-only peer"
                         />
                         <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
@@ -505,9 +534,7 @@ const Profile: React.FC = () => {
                         <input
                           type="checkbox"
                           checked={security.smsNotifications}
-                          onChange={e =>
-                            handleSecurityChange('smsNotifications', e.target.checked)
-                          }
+                          onChange={createSecurityToggleHandler('smsNotifications')}
                           className="sr-only peer"
                         />
                         <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>

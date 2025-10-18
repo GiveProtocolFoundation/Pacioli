@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useCallback } from 'react'
 import {
   X,
   DollarSign,
@@ -191,15 +191,21 @@ const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
     return styles[severity]
   }
 
-  const markAsRead = (id: string) => {
+  const markAsRead = useCallback((id: string) => {
     setNotifications(prev =>
       prev.map(n => (n.id === id ? { ...n, read: true } : n))
     )
-  }
+  }, [])
 
-  const markAllAsRead = () => {
+  const markAllAsRead = useCallback(() => {
     setNotifications(prev => prev.map(n => ({ ...n, read: true })))
-  }
+  }, [])
+
+  const handleFilterAll = useCallback(() => setFilter('all'), [])
+  const handleFilterFinancial = useCallback(() => setFilter('financial'), [])
+  const handleFilterTransactional = useCallback(() => setFilter('transactional'), [])
+  const handleFilterWorkflow = useCallback(() => setFilter('workflow'), [])
+  const handleFilterApproval = useCallback(() => setFilter('approval'), [])
 
   if (!isOpen) return null
 
@@ -244,7 +250,7 @@ const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
         {/* Filter Tabs */}
         <div className="flex items-center space-x-2 p-4 border-b border-gray-200 dark:border-gray-700 overflow-x-auto">
           <button
-            onClick={() => setFilter('all')}
+            onClick={handleFilterAll}
             className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
               filter === 'all'
                 ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
@@ -254,7 +260,7 @@ const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
             All
           </button>
           <button
-            onClick={() => setFilter('financial')}
+            onClick={handleFilterFinancial}
             className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
               filter === 'financial'
                 ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
@@ -264,7 +270,7 @@ const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
             Financial
           </button>
           <button
-            onClick={() => setFilter('transactional')}
+            onClick={handleFilterTransactional}
             className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
               filter === 'transactional'
                 ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
@@ -276,7 +282,7 @@ const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
           {userType === 'organization' && (
             <>
               <button
-                onClick={() => setFilter('workflow')}
+                onClick={handleFilterWorkflow}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
                   filter === 'workflow'
                     ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
@@ -286,7 +292,7 @@ const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
                 Workflow
               </button>
               <button
-                onClick={() => setFilter('approval')}
+                onClick={handleFilterApproval}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
                   filter === 'approval'
                     ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
@@ -315,13 +321,14 @@ const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
             <div className="divide-y divide-gray-200 dark:divide-gray-700">
               {filteredNotifications.map(notification => {
                 const Icon = notification.icon
+                const handleClick = () => markAsRead(notification.id)
                 return (
                   <div
                     key={notification.id}
                     className={`p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer ${
                       !notification.read ? 'bg-blue-50/50 dark:bg-blue-900/10' : ''
                     }`}
-                    onClick={() => markAsRead(notification.id)}
+                    onClick={handleClick}
                   >
                     <div className="flex items-start space-x-3">
                       <div

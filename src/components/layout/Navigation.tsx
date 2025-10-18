@@ -140,6 +140,14 @@ const Navigation: React.FC<NavigationProps> = ({
     }
   }, [])
 
+  const handleOpenNotifications = useCallback(() => {
+    setNotificationsOpen(true)
+  }, [])
+
+  const handleCloseNotifications = useCallback(() => {
+    setNotificationsOpen(false)
+  }, [])
+
   const createToggleExpandedHandler = useCallback(
     (itemName: string) => {
       return () => toggleExpanded(itemName)
@@ -477,7 +485,7 @@ const Navigation: React.FC<NavigationProps> = ({
             <div className="flex items-center space-x-3">
               {/* Notifications */}
               <button
-                onClick={() => setNotificationsOpen(true)}
+                onClick={handleOpenNotifications}
                 className="relative p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
               >
                 <Bell className="w-6 h-6" />
@@ -572,7 +580,7 @@ const Navigation: React.FC<NavigationProps> = ({
       {/* Notifications Panel */}
       <NotificationsPanel
         isOpen={notificationsOpen}
-        onClose={() => setNotificationsOpen(false)}
+        onClose={handleCloseNotifications}
         userType={userType}
       />
     </div>

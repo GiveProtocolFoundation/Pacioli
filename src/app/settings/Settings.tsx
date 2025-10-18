@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import {
   Settings as SettingsIcon,
@@ -110,7 +110,7 @@ const Settings: React.FC<SettingsProps> = ({ userType = 'organization' }) => {
     }
   }, [location.pathname])
 
-  const handleSectionChange = (section: SettingsSection) => {
+  const handleSectionChange = useCallback((section: SettingsSection) => {
     const item = navigationItems.find(item => item.id === section)
     if (!item?.comingSoon) {
       setActiveSection(section)
@@ -125,7 +125,7 @@ const Settings: React.FC<SettingsProps> = ({ userType = 'organization' }) => {
         navigate('/chart-of-accounts')
       }
     }
-  }
+  }, [navigate])
 
   const ActiveComponent = navigationItems.find(
     item => item.id === activeSection

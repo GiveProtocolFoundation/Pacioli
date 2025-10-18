@@ -124,6 +124,39 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ userType = 'organizat
     [handleOrganizationChange, setOrganizationLogo]
   )
 
+  // Theme button handlers
+  const handleThemeLight = useCallback(() => handleSystemChange('theme', 'light'), [handleSystemChange])
+  const handleThemeDark = useCallback(() => handleSystemChange('theme', 'dark'), [handleSystemChange])
+  const handleThemeSystem = useCallback(() => handleSystemChange('theme', 'system'), [handleSystemChange])
+
+  // Factory function for organization text input handlers
+  const createOrgTextHandler = useCallback(
+    (key: keyof OrganizationSettings) => {
+      return (e: React.ChangeEvent<HTMLInputElement>) => {
+        handleOrganizationChange(key, e.target.value)
+      }
+    },
+    [handleOrganizationChange]
+  )
+
+  // Factory function for system select handlers
+  const createSystemSelectHandler = useCallback(
+    <K extends keyof SystemSettings>(key: K) => {
+      return (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
+        handleSystemChange(key, e.target.value as SystemSettings[K])
+      }
+    },
+    [handleSystemChange]
+  )
+
+  // Specific handlers for organization type (needs type assertion)
+  const handleOrgTypeChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      handleOrganizationChange('organizationType', e.target.value as OrganizationSettings['organizationType'])
+    },
+    [handleOrganizationChange]
+  )
+
   return (
     <div className="p-6">
       {/* Header */}
@@ -211,12 +244,7 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ userType = 'organizat
               </label>
               <select
                 value={organizationSettings.organizationType}
-                onChange={e =>
-                  handleOrganizationChange(
-                    'organizationType',
-                    e.target.value as OrganizationSettings['organizationType']
-                  )
-                }
+                onChange={handleOrgTypeChange}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="not-for-profit">Not-for-Profit Organization</option>
@@ -233,9 +261,7 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ userType = 'organizat
                 <input
                   type="text"
                   value={organizationSettings.name}
-                  onChange={e =>
-                    handleOrganizationChange('name', e.target.value)
-                  }
+                  onChange={createOrgTextHandler('name')}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -247,9 +273,7 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ userType = 'organizat
                 <input
                   type="text"
                   value={organizationSettings.legalName}
-                  onChange={e =>
-                    handleOrganizationChange('legalName', e.target.value)
-                  }
+                  onChange={createOrgTextHandler('legalName')}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -261,9 +285,7 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ userType = 'organizat
                 <input
                   type="text"
                   value={organizationSettings.taxId}
-                  onChange={e =>
-                    handleOrganizationChange('taxId', e.target.value)
-                  }
+                  onChange={createOrgTextHandler('taxId')}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -275,9 +297,7 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ userType = 'organizat
                 <input
                   type="url"
                   value={organizationSettings.website}
-                  onChange={e =>
-                    handleOrganizationChange('website', e.target.value)
-                  }
+                  onChange={createOrgTextHandler('website')}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -289,9 +309,7 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ userType = 'organizat
                 <input
                   type="email"
                   value={organizationSettings.email}
-                  onChange={e =>
-                    handleOrganizationChange('email', e.target.value)
-                  }
+                  onChange={createOrgTextHandler('email')}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -303,9 +321,7 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ userType = 'organizat
                 <input
                   type="tel"
                   value={organizationSettings.phone}
-                  onChange={e =>
-                    handleOrganizationChange('phone', e.target.value)
-                  }
+                  onChange={createOrgTextHandler('phone')}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -318,9 +334,7 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ userType = 'organizat
               <input
                 type="text"
                 value={organizationSettings.address}
-                onChange={e =>
-                  handleOrganizationChange('address', e.target.value)
-                }
+                onChange={createOrgTextHandler('address')}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -333,9 +347,7 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ userType = 'organizat
                 <input
                   type="text"
                   value={organizationSettings.city}
-                  onChange={e =>
-                    handleOrganizationChange('city', e.target.value)
-                  }
+                  onChange={createOrgTextHandler('city')}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -347,9 +359,7 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ userType = 'organizat
                 <input
                   type="text"
                   value={organizationSettings.state}
-                  onChange={e =>
-                    handleOrganizationChange('state', e.target.value)
-                  }
+                  onChange={createOrgTextHandler('state')}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -361,9 +371,7 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ userType = 'organizat
                 <input
                   type="text"
                   value={organizationSettings.zipCode}
-                  onChange={e =>
-                    handleOrganizationChange('zipCode', e.target.value)
-                  }
+                  onChange={createOrgTextHandler('zipCode')}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -376,9 +384,7 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ userType = 'organizat
               <input
                 type="text"
                 value={organizationSettings.country}
-                onChange={e =>
-                  handleOrganizationChange('country', e.target.value)
-                }
+                onChange={createOrgTextHandler('country')}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -414,9 +420,7 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ userType = 'organizat
               <input
                 type="text"
                 value={systemSettings.fiscalYearStart}
-                onChange={e =>
-                  handleSystemChange('fiscalYearStart', e.target.value)
-                }
+                onChange={createSystemSelectHandler('fiscalYearStart')}
                 placeholder="01-01"
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
@@ -429,9 +433,7 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ userType = 'organizat
               <input
                 type="text"
                 value={systemSettings.fiscalYearEnd}
-                onChange={e =>
-                  handleSystemChange('fiscalYearEnd', e.target.value)
-                }
+                onChange={createSystemSelectHandler('fiscalYearEnd')}
                 placeholder="12-31"
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
@@ -455,7 +457,7 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ userType = 'organizat
               </label>
               <select
                 value={systemSettings.timezone}
-                onChange={e => handleSystemChange('timezone', e.target.value)}
+                onChange={createSystemSelectHandler('timezone')}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="America/Los_Angeles">Pacific Time (US & Canada)</option>
@@ -475,9 +477,7 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ userType = 'organizat
               </label>
               <select
                 value={systemSettings.language}
-                onChange={e =>
-                  handleSystemChange('language', e.target.value as SystemSettings['language'])
-                }
+                onChange={createSystemSelectHandler('language')}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="en">English</option>
@@ -493,9 +493,7 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ userType = 'organizat
               </label>
               <select
                 value={systemSettings.dateFormat}
-                onChange={e =>
-                  handleSystemChange('dateFormat', e.target.value as SystemSettings['dateFormat'])
-                }
+                onChange={createSystemSelectHandler('dateFormat')}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="MM/DD/YYYY">MM/DD/YYYY (US)</option>
@@ -510,9 +508,7 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ userType = 'organizat
               </label>
               <select
                 value={systemSettings.timeFormat}
-                onChange={e =>
-                  handleSystemChange('timeFormat', e.target.value as SystemSettings['timeFormat'])
-                }
+                onChange={createSystemSelectHandler('timeFormat')}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="12h">12-hour (1:00 PM)</option>
@@ -537,7 +533,7 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ userType = 'organizat
             </label>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <button
-                onClick={() => handleSystemChange('theme', 'light')}
+                onClick={handleThemeLight}
                 className={`p-4 rounded-lg border-2 transition-colors ${
                   systemSettings.theme === 'light'
                     ? 'border-blue-600 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/30'
@@ -551,7 +547,7 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ userType = 'organizat
               </button>
 
               <button
-                onClick={() => handleSystemChange('theme', 'dark')}
+                onClick={handleThemeDark}
                 className={`p-4 rounded-lg border-2 transition-colors ${
                   systemSettings.theme === 'dark'
                     ? 'border-blue-600 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/30'
@@ -565,7 +561,7 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ userType = 'organizat
               </button>
 
               <button
-                onClick={() => handleSystemChange('theme', 'system')}
+                onClick={handleThemeSystem}
                 className={`p-4 rounded-lg border-2 transition-colors ${
                   systemSettings.theme === 'system'
                     ? 'border-blue-600 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/30'

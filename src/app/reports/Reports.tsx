@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useCallback } from 'react'
 import {
   FileText,
   TrendingUp,
@@ -266,6 +266,22 @@ const Reports: React.FC = () => {
     )
   }
 
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value)
+  }, [])
+
+  const handleToggleFavorites = useCallback(() => {
+    setShowFavoritesOnly(!showFavoritesOnly)
+  }, [showFavoritesOnly])
+
+  const handleCategoryAll = useCallback(() => {
+    setSelectedCategory('all')
+  }, [])
+
+  const createCategoryHandler = useCallback((categoryId: ReportCategory) => {
+    return () => setSelectedCategory(categoryId)
+  }, [])
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black">
       {/* Header */}
@@ -338,12 +354,12 @@ const Reports: React.FC = () => {
                     type="text"
                     placeholder="Search reports..."
                     value={searchQuery}
-                    onChange={e => setSearchQuery(e.target.value)}
+                    onChange={handleSearchChange}
                     className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <button
-                  onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+                  onClick={handleToggleFavorites}
                   className={`px-4 py-2 rounded-lg border flex items-center justify-center transition-colors ${
                     showFavoritesOnly
                       ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
@@ -359,7 +375,7 @@ const Reports: React.FC = () => {
             {/* Category Tabs */}
             <div className="flex flex-wrap gap-2">
               <button
-                onClick={() => setSelectedCategory('all')}
+                onClick={handleCategoryAll}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   selectedCategory === 'all'
                     ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-700'
@@ -370,10 +386,11 @@ const Reports: React.FC = () => {
               </button>
               {reportCategories.map(category => {
                 const Icon = category.icon
+                const handleClick = createCategoryHandler(category.id)
                 return (
                   <button
                     key={category.id}
-                    onClick={() => setSelectedCategory(category.id)}
+                    onClick={handleClick}
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center ${
                       selectedCategory === category.id
                         ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-700'

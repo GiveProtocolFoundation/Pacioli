@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useCallback } from 'react'
 import {
   BookOpen,
   Search,
@@ -101,6 +101,15 @@ const Support: React.FC = () => {
     return matchesSearch && matchesCategory
   })
 
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value)
+  }, [])
+
+  const handleCategoryAll = useCallback(() => setSelectedCategory('all'), [])
+  const handleCategoryGuide = useCallback(() => setSelectedCategory('guide'), [])
+  const handleCategoryCrypto = useCallback(() => setSelectedCategory('crypto'), [])
+  const handleCategoryApi = useCallback(() => setSelectedCategory('api'), [])
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black">
       {/* Header */}
@@ -125,13 +134,13 @@ const Support: React.FC = () => {
                 type="text"
                 placeholder="Search documentation..."
                 value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
+                onChange={handleSearchChange}
                 className="w-full pl-12 pr-4 py-4 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div className="flex items-center justify-center gap-2 mt-4">
               <button
-                onClick={() => setSelectedCategory('all')}
+                onClick={handleCategoryAll}
                 className={`px-3 py-1 rounded-full text-sm ${
                   selectedCategory === 'all'
                     ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
@@ -141,7 +150,7 @@ const Support: React.FC = () => {
                 All
               </button>
               <button
-                onClick={() => setSelectedCategory('guide')}
+                onClick={handleCategoryGuide}
                 className={`px-3 py-1 rounded-full text-sm ${
                   selectedCategory === 'guide'
                     ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
@@ -151,7 +160,7 @@ const Support: React.FC = () => {
                 User Guide
               </button>
               <button
-                onClick={() => setSelectedCategory('crypto')}
+                onClick={handleCategoryCrypto}
                 className={`px-3 py-1 rounded-full text-sm ${
                   selectedCategory === 'crypto'
                     ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
@@ -161,7 +170,7 @@ const Support: React.FC = () => {
                 Crypto
               </button>
               <button
-                onClick={() => setSelectedCategory('api')}
+                onClick={handleCategoryApi}
                 className={`px-3 py-1 rounded-full text-sm ${
                   selectedCategory === 'api'
                     ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'

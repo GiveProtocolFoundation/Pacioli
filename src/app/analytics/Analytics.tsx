@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useCallback } from 'react'
 import {
   TrendingUp,
   TrendingDown,
@@ -158,6 +158,17 @@ const Analytics: React.FC = () => {
   const currentPeriodLabel =
     timePeriods.find(p => p.value === timePeriod)?.label || 'Last 30 days'
 
+  const handleTogglePeriodDropdown = useCallback(() => {
+    setShowPeriodDropdown(!showPeriodDropdown)
+  }, [showPeriodDropdown])
+
+  const createPeriodSelectHandler = useCallback((periodValue: TimePeriod) => {
+    return () => {
+      setTimePeriod(periodValue)
+      setShowPeriodDropdown(false)
+    }
+  }, [])
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black">
       {/* Header */}
@@ -175,7 +186,7 @@ const Analytics: React.FC = () => {
             <div className="flex items-center space-x-3">
               <div className="relative">
                 <button
-                  onClick={() => setShowPeriodDropdown(!showPeriodDropdown)}
+                  onClick={handleTogglePeriodDropdown}
                   className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center"
                 >
                   <Calendar className="w-4 h-4 mr-2" />
@@ -184,22 +195,22 @@ const Analytics: React.FC = () => {
                 </button>
                 {showPeriodDropdown && (
                   <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-10">
-                    {timePeriods.map(period => (
-                      <button
-                        key={period.value}
-                        onClick={() => {
-                          setTimePeriod(period.value)
-                          setShowPeriodDropdown(false)
-                        }}
-                        className={`w-full px-4 py-2 text-sm text-left hover:bg-gray-50 dark:hover:bg-gray-800 first:rounded-t-lg last:rounded-b-lg ${
-                          timePeriod === period.value
-                            ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30'
-                            : 'text-gray-700 dark:text-gray-300'
-                        }`}
-                      >
-                        {period.label}
-                      </button>
-                    ))}
+                    {timePeriods.map(period => {
+                      const handleClick = createPeriodSelectHandler(period.value)
+                      return (
+                        <button
+                          key={period.value}
+                          onClick={handleClick}
+                          className={`w-full px-4 py-2 text-sm text-left hover:bg-gray-50 dark:hover:bg-gray-800 first:rounded-t-lg last:rounded-b-lg ${
+                            timePeriod === period.value
+                              ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30'
+                              : 'text-gray-700 dark:text-gray-300'
+                          }`}
+                        >
+                          {period.label}
+                        </button>
+                      )
+                    })}
                   </div>
                 )}
               </div>
