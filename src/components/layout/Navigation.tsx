@@ -22,6 +22,8 @@ import {
 import NumbersWhiteLogo from '../../assets/Numbers_White.svg'
 import NumbersBlackLogo from '../../assets/Numbers_Black.svg'
 import { useTheme } from '../../contexts/ThemeContext'
+import { useOrganization } from '../../contexts/OrganizationContext'
+import NotificationsPanel from '../notifications/NotificationsPanel'
 
 interface NavigationProps {
   children: React.ReactNode
@@ -42,8 +44,10 @@ const Navigation: React.FC<NavigationProps> = ({
 }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
+  const [notificationsOpen, setNotificationsOpen] = useState(false)
   const location = useLocation()
   const { theme, toggleTheme } = useTheme()
+  const { organizationLogo, userAvatar } = useOrganization()
 
   // Navigation items for organizations/charities
   const organizationNavItems: NavItem[] = [
@@ -259,9 +263,17 @@ const Navigation: React.FC<NavigationProps> = ({
         {/* User section at bottom */}
         <div className="border-t border-gray-200 dark:border-gray-700 p-4">
           <div className="flex items-center">
-            <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
-              <User className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-            </div>
+            {userType === 'organization' && organizationLogo ? (
+              <img
+                src={organizationLogo}
+                alt="Organization"
+                className="w-10 h-10 rounded-full object-cover border-2 border-gray-200 dark:border-gray-700"
+              />
+            ) : (
+              <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                <User className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+              </div>
+            )}
             <div className="ml-3 flex-1">
               <p className="text-sm font-medium text-gray-900 dark:text-white">
                 {userType === 'organization' ? 'Hope Foundation' : 'John Doe'}
@@ -409,9 +421,17 @@ const Navigation: React.FC<NavigationProps> = ({
             {/* User section */}
             <div className="border-t border-gray-200 dark:border-gray-700 p-4">
               <div className="flex items-center">
-                <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
-                  <User className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-                </div>
+                {userType === 'organization' && organizationLogo ? (
+                  <img
+                    src={organizationLogo}
+                    alt="Organization"
+                    className="w-10 h-10 rounded-full object-cover border-2 border-gray-200 dark:border-gray-700"
+                  />
+                ) : (
+                  <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                    <User className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+                  </div>
+                )}
                 <div className="ml-3 flex-1">
                   <p className="text-sm font-medium text-gray-900 dark:text-white">
                     {userType === 'organization'
@@ -456,7 +476,10 @@ const Navigation: React.FC<NavigationProps> = ({
             {/* Right side actions */}
             <div className="flex items-center space-x-3">
               {/* Notifications */}
-              <button className="relative p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+              <button
+                onClick={() => setNotificationsOpen(true)}
+                className="relative p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              >
                 <Bell className="w-6 h-6" />
                 <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
               </button>
@@ -486,9 +509,17 @@ const Navigation: React.FC<NavigationProps> = ({
                   onClick={handleToggleUserMenu}
                   className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
                 >
-                  <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
-                    <User className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-                  </div>
+                  {userAvatar ? (
+                    <img
+                      src={userAvatar}
+                      alt="User"
+                      className="w-8 h-8 rounded-full object-cover border-2 border-gray-200 dark:border-gray-700"
+                    />
+                  ) : (
+                    <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                      <User className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+                    </div>
+                  )}
                   <ChevronDown className="w-4 h-4 text-gray-600 dark:text-gray-300 hidden sm:block" />
                 </button>
 
@@ -507,10 +538,13 @@ const Navigation: React.FC<NavigationProps> = ({
                           : 'john.doe@email.com'}
                       </p>
                     </div>
-                    <button className="w-full px-4 py-2 text-sm text-left text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center">
+                    <Link
+                      to="/profile"
+                      className="w-full px-4 py-2 text-sm text-left text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center"
+                    >
                       <User className="w-4 h-4 mr-3" />
                       Your Profile
-                    </button>
+                    </Link>
                     <button className="w-full px-4 py-2 text-sm text-left text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center">
                       <Settings className="w-4 h-4 mr-3" />
                       Settings
@@ -534,6 +568,13 @@ const Navigation: React.FC<NavigationProps> = ({
         {/* Page content */}
         <main className="flex-1">{children}</main>
       </div>
+
+      {/* Notifications Panel */}
+      <NotificationsPanel
+        isOpen={notificationsOpen}
+        onClose={() => setNotificationsOpen(false)}
+        userType={userType}
+      />
     </div>
   )
 }

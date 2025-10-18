@@ -3,11 +3,13 @@
  *
  * Provides functions to retrieve cryptocurrency logos from the public/crypto-icons directory.
  * Includes fallback handling for cryptocurrencies without logos.
+ * Supports theme-specific logos for cryptocurrencies like GLMR.
  */
 
 export interface CryptoLogoConfig {
   symbol: string
   logoPath: string | null
+  logoPathDark?: string | null // Optional dark theme logo
   color: string // Brand color for fallback display
 }
 
@@ -30,22 +32,23 @@ const CRYPTO_LOGOS: Record<string, CryptoLogoConfig> = {
   },
   GLMR: {
     symbol: 'GLMR',
-    logoPath: null, // Not yet available
+    logoPath: '/crypto-icons/GLMR_Black.svg', // Light mode
+    logoPathDark: '/crypto-icons/GLMR_White.svg', // Dark mode
     color: '#53CBC8',
   },
   ASTR: {
     symbol: 'ASTR',
-    logoPath: null, // Not yet available
+    logoPath: '/crypto-icons/ASTR.png',
     color: '#0081FF',
   },
   BNC: {
     symbol: 'BNC',
-    logoPath: null, // Not yet available
+    logoPath: '/crypto-icons/BNC.svg',
     color: '#5A25F0',
   },
-  iBTC: {
+  IBTC: {
     symbol: 'iBTC',
-    logoPath: null, // Not yet available
+    logoPath: '/crypto-icons/iBTC.svg',
     color: '#F7931A',
   },
   USDC: {
@@ -63,11 +66,19 @@ const CRYPTO_LOGOS: Record<string, CryptoLogoConfig> = {
 /**
  * Get the logo path for a cryptocurrency symbol
  * @param symbol - Cryptocurrency symbol (e.g., 'BTC', 'DOT')
+ * @param theme - Current theme ('light' or 'dark'), defaults to 'light'
  * @returns The logo path or null if not available
  */
-export const getCryptoLogoPath = (symbol: string): string | null => {
+export const getCryptoLogoPath = (symbol: string, theme: 'light' | 'dark' = 'light'): string | null => {
   const crypto = CRYPTO_LOGOS[symbol.toUpperCase()]
-  return crypto?.logoPath || null
+  if (!crypto) return null
+
+  // Use theme-specific logo if available and theme is dark
+  if (theme === 'dark' && crypto.logoPathDark) {
+    return crypto.logoPathDark
+  }
+
+  return crypto.logoPath || null
 }
 
 /**

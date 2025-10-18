@@ -1,0 +1,76 @@
+# Jekyll Documentation Site Configuration
+# Numbers - Crypto-Native Accounting System
+
+# Site settings
+title: Numbers Documentation
+description: >-
+  Complete documentation for Numbers, the crypto-native accounting system
+  for not-for-profits, DAOs, and SMEs.
+baseurl: "/docs" # the subpath of your site, e.g. /docs
+url: "https://numbers.example.org" # the base hostname & protocol
+
+# Build settings
+markdown: kramdown
+theme: minima
+plugins:
+  - jekyll-feed
+  - jekyll-seo-tag
+  - jekyll-sitemap
+
+# Navigation
+header_pages:
+  - getting-started.md
+  - user-guide/index.md
+  - api-reference/index.md
+  - crypto-operations/index.md
+  - faq.md
+
+# Collections for organized documentation
+collections:
+  user_guide:
+    output: true
+    permalink: /user-guide/:path/
+  api_reference:
+    output: true
+    permalink: /api/:path/
+  crypto_operations:
+    output: true
+    permalink: /crypto/:path/
+  tutorials:
+    output: true
+    permalink: /tutorials/:path/
+
+# Defaults
+defaults:
+  - scope:
+      path: ""
+      type: "user_guide"
+    values:
+      layout: "page"
+      sidebar: user_guide
+  - scope:
+      path: ""
+      type: "api_reference"
+    values:
+      layout: "page"
+      sidebar: api
+  - scope:
+      path: ""
+      type: "crypto_operations"
+    values:
+      layout: "page"
+      sidebar: crypto
+  - scope:
+      path: ""
+      type: "tutorials"
+    values:
+      layout: "page"
+
+# Exclude from processing
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor
+  - .sass-cache
+  - .jekyll-cache

@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from 'react'
+import { useTheme } from '../../contexts/ThemeContext'
 
 interface CryptoIconProps {
   symbol: string
@@ -12,22 +13,23 @@ const CryptoIcon: React.FC<CryptoIconProps> = ({
   className = '',
 }) => {
   const [imageError, setImageError] = useState(false)
+  const { theme } = useTheme()
 
   // Map symbols to their CoinGecko IDs and local icons
   const cryptoConfig: Record<
     string,
-    { coingeckoId: string; hasLocalIcon: boolean }
+    { coingeckoId: string; hasLocalIcon: boolean; hasThemeVariants?: boolean }
   > = {
     DOT: { coingeckoId: 'polkadot', hasLocalIcon: true },
     KSM: { coingeckoId: 'kusama', hasLocalIcon: true },
-    GLMR: { coingeckoId: 'moonbeam', hasLocalIcon: false },
-    ASTR: { coingeckoId: 'astar', hasLocalIcon: false },
-    BNC: { coingeckoId: 'bifrost-native-coin', hasLocalIcon: false },
-    iBTC: { coingeckoId: 'interbtc', hasLocalIcon: false },
+    GLMR: { coingeckoId: 'moonbeam', hasLocalIcon: true, hasThemeVariants: true },
+    ASTR: { coingeckoId: 'astar', hasLocalIcon: true },
+    BNC: { coingeckoId: 'bifrost-native-coin', hasLocalIcon: true },
+    iBTC: { coingeckoId: 'interbtc', hasLocalIcon: true },
     BTC: { coingeckoId: 'bitcoin', hasLocalIcon: true },
     ETH: { coingeckoId: 'ethereum', hasLocalIcon: false },
-    USDT: { coingeckoId: 'tether', hasLocalIcon: false },
-    USDC: { coingeckoId: 'usd-coin', hasLocalIcon: false },
+    USDT: { coingeckoId: 'tether', hasLocalIcon: true },
+    USDC: { coingeckoId: 'usd-coin', hasLocalIcon: true },
   }
 
   const config = cryptoConfig[symbol.toUpperCase()]
@@ -52,6 +54,27 @@ const CryptoIcon: React.FC<CryptoIconProps> = ({
   // Determine the icon source
   const getIconSrc = () => {
     if (config?.hasLocalIcon) {
+      // Handle theme-specific logos (e.g., GLMR)
+      if (config.hasThemeVariants && symbol.toUpperCase() === 'GLMR') {
+        return theme === 'dark'
+          ? '/crypto-icons/GLMR_White.svg'
+          : '/crypto-icons/GLMR_Black.svg'
+      }
+
+      // Handle ASTR PNG file
+      if (symbol.toUpperCase() === 'ASTR') {
+        return '/crypto-icons/ASTR.png'
+      }
+
+      // Handle other SVG files (need to check for case-sensitive variants)
+      const upperSymbol = symbol.toUpperCase()
+      if (upperSymbol === 'BNC') {
+        return '/crypto-icons/BNC.svg'
+      }
+      if (upperSymbol === 'IBTC') {
+        return '/crypto-icons/iBTC.svg'  // Case-sensitive: iBTC not IBTC
+      }
+
       return `/crypto-icons/${symbol.toLowerCase()}.svg`
     } else if (config?.coingeckoId) {
       return `https://assets.coingecko.com/coins/images/${getCoinGeckoImageId(config.coingeckoId)}/small/${config.coingeckoId}.png`

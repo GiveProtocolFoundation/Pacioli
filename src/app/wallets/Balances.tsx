@@ -17,6 +17,7 @@ import {
   Legend,
 } from 'recharts'
 import { format, subDays, subMonths, startOfMonth, endOfMonth, startOfYear, subYears } from 'date-fns'
+import { useTheme } from '../../contexts/ThemeContext'
 import { getCryptoLogoPath, getCryptoBrandColor } from '../../utils/cryptoLogos'
 
 interface WalletBalance {
@@ -43,6 +44,7 @@ type TimePeriod = 'this_month' | 'last_month' | '30_days' | '90_days' | 'one_yea
 
 const Balances: React.FC = () => {
   const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>('30_days')
+  const { theme } = useTheme()
 
   // Mock wallet data
   const [wallets] = useState<WalletBalance[]>([
@@ -427,7 +429,7 @@ const Balances: React.FC = () => {
           {Object.entries(totalBalancesByCurrency)
             .sort((a, b) => b[1].usdValue - a[1].usdValue)
             .map(([crypto, balance]) => {
-              const logoPath = getCryptoLogoPath(crypto)
+              const logoPath = getCryptoLogoPath(crypto, theme)
               const brandColor = getCryptoBrandColor(crypto)
 
               return (

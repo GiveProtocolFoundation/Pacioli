@@ -10,6 +10,7 @@ import {
   BarChart3,
 } from 'lucide-react'
 import { useCurrency } from '../../contexts/CurrencyContext'
+import { useTheme } from '../../contexts/ThemeContext'
 import { formatCurrency } from '../../utils/currencyFormatter'
 import { getCryptoLogoPath, getCryptoBrandColor } from '../../utils/cryptoLogos'
 
@@ -33,6 +34,7 @@ interface AccountBalance {
 
 const Dashboard: React.FC = () => {
   const { settings: currencySettings } = useCurrency();
+  const { theme } = useTheme();
 
   const [accountBalances] = useState<AccountBalance[]>([
     { crypto: 'DOT', amount: 1250.5, usdValue: 9378.75, change24h: 2.3 },
@@ -276,7 +278,7 @@ const Dashboard: React.FC = () => {
               <div className="p-6">
                 <div className="space-y-4">
                   {accountBalances.map(account => {
-                    const logoPath = getCryptoLogoPath(account.crypto)
+                    const logoPath = getCryptoLogoPath(account.crypto, theme)
                     const brandColor = getCryptoBrandColor(account.crypto)
 
                     return (
