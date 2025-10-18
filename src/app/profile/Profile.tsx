@@ -255,10 +255,11 @@ const Profile: React.FC = () => {
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                           First Name
                         </label>
                         <input
+                          id="firstName"
                           type="text"
                           value={profile.firstName}
                           onChange={createProfileInputHandler('firstName')}
@@ -266,10 +267,11 @@ const Profile: React.FC = () => {
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                           Last Name
                         </label>
                         <input
+                          id="lastName"
                           type="text"
                           value={profile.lastName}
                           onChange={createProfileInputHandler('lastName')}
@@ -277,12 +279,13 @@ const Profile: React.FC = () => {
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                           Email Address
                         </label>
                         <div className="relative">
                           <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                           <input
+                            id="email"
                             type="email"
                             value={profile.email}
                             onChange={createProfileInputHandler('email')}
@@ -291,12 +294,13 @@ const Profile: React.FC = () => {
                         </div>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label htmlFor="phone" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                           Phone Number
                         </label>
                         <div className="relative">
                           <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                           <input
+                            id="phone"
                             type="tel"
                             value={profile.phone}
                             onChange={createProfileInputHandler('phone')}
@@ -313,12 +317,13 @@ const Profile: React.FC = () => {
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label htmlFor="jobTitle" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                           Job Title
                         </label>
                         <div className="relative">
                           <Briefcase className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                           <input
+                            id="jobTitle"
                             type="text"
                             value={profile.jobTitle}
                             onChange={createProfileInputHandler('jobTitle')}
@@ -327,12 +332,13 @@ const Profile: React.FC = () => {
                         </div>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label htmlFor="department" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                           Department
                         </label>
                         <div className="relative">
                           <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                           <input
+                            id="department"
                             type="text"
                             value={profile.department}
                             onChange={createProfileInputHandler('department')}
@@ -341,12 +347,13 @@ const Profile: React.FC = () => {
                         </div>
                       </div>
                       <div className="md:col-span-2">
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label htmlFor="location" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                           Location
                         </label>
                         <div className="relative">
                           <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                           <input
+                            id="location"
                             type="text"
                             value={profile.location}
                             onChange={createProfileInputHandler('location')}
@@ -379,7 +386,7 @@ const Profile: React.FC = () => {
                           </p>
                         </div>
                       </div>
-                      <label className="relative inline-flex items-center cursor-pointer">
+                      <label aria-label="Two-Factor Authentication" className="relative inline-flex items-center cursor-pointer">
                         <input
                           type="checkbox"
                           checked={security.twoFactorEnabled}
@@ -403,7 +410,7 @@ const Profile: React.FC = () => {
                           </p>
                         </div>
                       </div>
-                      <label className="relative inline-flex items-center cursor-pointer">
+                      <label aria-label="Login Alerts" className="relative inline-flex items-center cursor-pointer">
                         <input
                           type="checkbox"
                           checked={security.loginAlerts}
@@ -443,12 +450,13 @@ const Profile: React.FC = () => {
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label htmlFor="timezone" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                           Timezone
                         </label>
                         <div className="relative">
                           <Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                           <select
+                            id="timezone"
                             value={profile.timezone}
                             onChange={createProfileInputHandler('timezone')}
                             className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -462,10 +470,11 @@ const Profile: React.FC = () => {
                         </div>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label htmlFor="language" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                           Language
                         </label>
                         <select
+                          id="language"
                           value={profile.language}
                           onChange={createProfileInputHandler('language')}
                           className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -477,12 +486,13 @@ const Profile: React.FC = () => {
                         </select>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label htmlFor="dateFormat" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                           Date Format
                         </label>
                         <div className="relative">
                           <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                           <select
+                            id="dateFormat"
                             value={profile.dateFormat}
                             onChange={createProfileInputHandler('dateFormat')}
                             className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -510,7 +520,7 @@ const Profile: React.FC = () => {
                           Receive notifications via email
                         </p>
                       </div>
-                      <label className="relative inline-flex items-center cursor-pointer">
+                      <label aria-label="Email Notifications" className="relative inline-flex items-center cursor-pointer">
                         <input
                           type="checkbox"
                           checked={security.emailNotifications}
@@ -530,7 +540,7 @@ const Profile: React.FC = () => {
                           Receive notifications via SMS
                         </p>
                       </div>
-                      <label className="relative inline-flex items-center cursor-pointer">
+                      <label aria-label="SMS Notifications" className="relative inline-flex items-center cursor-pointer">
                         <input
                           type="checkbox"
                           checked={security.smsNotifications}

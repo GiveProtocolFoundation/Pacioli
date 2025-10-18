@@ -239,10 +239,11 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ userType = 'organizat
 
             {/* Organization Type */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label htmlFor="organizationType" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Organization Type
               </label>
               <select
+                id="organizationType"
                 value={organizationSettings.organizationType}
                 onChange={handleOrgTypeChange}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -255,10 +256,11 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ userType = 'organizat
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="orgName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Organization Name
                 </label>
                 <input
+                  id="orgName"
                   type="text"
                   value={organizationSettings.name}
                   onChange={createOrgTextHandler('name')}
@@ -267,10 +269,11 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ userType = 'organizat
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="legalName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Legal Name
                 </label>
                 <input
+                  id="legalName"
                   type="text"
                   value={organizationSettings.legalName}
                   onChange={createOrgTextHandler('legalName')}
@@ -279,10 +282,11 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ userType = 'organizat
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="taxId" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Tax ID / EIN
                 </label>
                 <input
+                  id="taxId"
                   type="text"
                   value={organizationSettings.taxId}
                   onChange={createOrgTextHandler('taxId')}
@@ -291,10 +295,11 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ userType = 'organizat
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="website" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Website
                 </label>
                 <input
+                  id="website"
                   type="url"
                   value={organizationSettings.website}
                   onChange={createOrgTextHandler('website')}
@@ -303,10 +308,11 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ userType = 'organizat
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Email
                 </label>
                 <input
+                  id="email"
                   type="email"
                   value={organizationSettings.email}
                   onChange={createOrgTextHandler('email')}
@@ -315,10 +321,11 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ userType = 'organizat
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Phone
                 </label>
                 <input
+                  id="phone"
                   type="tel"
                   value={organizationSettings.phone}
                   onChange={createOrgTextHandler('phone')}
@@ -328,10 +335,11 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ userType = 'organizat
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label htmlFor="address" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Address
               </label>
               <input
+                id="address"
                 type="text"
                 value={organizationSettings.address}
                 onChange={createOrgTextHandler('address')}
@@ -341,10 +349,11 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ userType = 'organizat
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="city" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   City
                 </label>
                 <input
+                  id="city"
                   type="text"
                   value={organizationSettings.city}
                   onChange={createOrgTextHandler('city')}
@@ -353,10 +362,11 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ userType = 'organizat
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="state" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   State/Province
                 </label>
                 <input
+                  id="state"
                   type="text"
                   value={organizationSettings.state}
                   onChange={createOrgTextHandler('state')}
@@ -365,10 +375,11 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ userType = 'organizat
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="zipCode" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   ZIP/Postal Code
                 </label>
                 <input
+                  id="zipCode"
                   type="text"
                   value={organizationSettings.zipCode}
                   onChange={createOrgTextHandler('zipCode')}
@@ -378,10 +389,11 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ userType = 'organizat
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label htmlFor="country" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Country
               </label>
               <input
+                id="country"
                 type="text"
                 value={organizationSettings.country}
                 onChange={createOrgTextHandler('country')}
@@ -414,10 +426,11 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ userType = 'organizat
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label htmlFor="fiscalYearStart" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Fiscal Year Start (MM-DD)
               </label>
               <input
+                id="fiscalYearStart"
                 type="text"
                 value={systemSettings.fiscalYearStart}
                 onChange={createSystemSelectHandler('fiscalYearStart')}
@@ -427,10 +440,11 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ userType = 'organizat
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label htmlFor="fiscalYearEnd" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Fiscal Year End (MM-DD)
               </label>
               <input
+                id="fiscalYearEnd"
                 type="text"
                 value={systemSettings.fiscalYearEnd}
                 onChange={createSystemSelectHandler('fiscalYearEnd')}
@@ -452,10 +466,11 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ userType = 'organizat
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label htmlFor="timezone" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Timezone
               </label>
               <select
+                id="timezone"
                 value={systemSettings.timezone}
                 onChange={createSystemSelectHandler('timezone')}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -472,10 +487,11 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ userType = 'organizat
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label htmlFor="language" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Language
               </label>
               <select
+                id="language"
                 value={systemSettings.language}
                 onChange={createSystemSelectHandler('language')}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -488,10 +504,11 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ userType = 'organizat
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label htmlFor="dateFormat" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Date Format
               </label>
               <select
+                id="dateFormat"
                 value={systemSettings.dateFormat}
                 onChange={createSystemSelectHandler('dateFormat')}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -503,10 +520,11 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ userType = 'organizat
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label htmlFor="timeFormat" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Time Format
               </label>
               <select
+                id="timeFormat"
                 value={systemSettings.timeFormat}
                 onChange={createSystemSelectHandler('timeFormat')}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
