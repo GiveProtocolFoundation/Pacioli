@@ -22,7 +22,11 @@ const CryptoIcon: React.FC<CryptoIconProps> = ({
   > = {
     DOT: { coingeckoId: 'polkadot', hasLocalIcon: true },
     KSM: { coingeckoId: 'kusama', hasLocalIcon: true },
-    GLMR: { coingeckoId: 'moonbeam', hasLocalIcon: true, hasThemeVariants: true },
+    GLMR: {
+      coingeckoId: 'moonbeam',
+      hasLocalIcon: true,
+      hasThemeVariants: true,
+    },
     ASTR: { coingeckoId: 'astar', hasLocalIcon: true },
     BNC: { coingeckoId: 'bifrost-native-coin', hasLocalIcon: true },
     iBTC: { coingeckoId: 'interbtc', hasLocalIcon: true },
@@ -72,7 +76,7 @@ const CryptoIcon: React.FC<CryptoIconProps> = ({
         return '/crypto-icons/BNC.svg'
       }
       if (upperSymbol === 'IBTC') {
-        return '/crypto-icons/iBTC.svg'  // Case-sensitive: iBTC not IBTC
+        return '/crypto-icons/iBTC.svg' // Case-sensitive: iBTC not IBTC
       }
 
       return `/crypto-icons/${symbol.toLowerCase()}.svg`

@@ -78,8 +78,7 @@ impl SubstrateCurrencyHandler {
     /// assert_eq!(amount, "1.0000000000");
     /// ```
     pub fn convert_from_planck(planck_amount: &str, decimals: u8) -> Result<String> {
-        let planck = Decimal::from_str(planck_amount)
-            .context("Failed to parse planck amount")?;
+        let planck = Decimal::from_str(planck_amount).context("Failed to parse planck amount")?;
 
         let divisor = Decimal::from(10_u64.pow(decimals as u32));
         let token_amount = planck / divisor;
@@ -96,8 +95,7 @@ impl SubstrateCurrencyHandler {
     /// # Returns
     /// String representation of planck amount
     pub fn convert_to_planck(token_amount: &str, decimals: u8) -> Result<String> {
-        let amount = Decimal::from_str(token_amount)
-            .context("Failed to parse token amount")?;
+        let amount = Decimal::from_str(token_amount).context("Failed to parse token amount")?;
 
         let multiplier = Decimal::from(10_u64.pow(decimals as u32));
         let planck = amount * multiplier;
@@ -108,8 +106,8 @@ impl SubstrateCurrencyHandler {
 
     /// Track XCM transfer
     pub async fn track_xcm_transfer(&self, transfer: &XcmTransfer) -> Result<()> {
-        let hops_json = serde_json::to_string(&transfer.hops)
-            .context("Failed to serialize hops")?;
+        let hops_json =
+            serde_json::to_string(&transfer.hops).context("Failed to serialize hops")?;
 
         sqlx::query(
             r#"
@@ -194,8 +192,8 @@ impl SubstrateCurrencyHandler {
                 _ => XcmTransferStatus::Pending,
             };
 
-            let hops: Vec<String> = serde_json::from_str(&row.hops)
-                .context("Failed to parse hops JSON")?;
+            let hops: Vec<String> =
+                serde_json::from_str(&row.hops).context("Failed to parse hops JSON")?;
 
             Ok(Some(XcmTransfer {
                 id: row.id,
@@ -289,11 +287,7 @@ impl SubstrateCurrencyHandler {
     /// - Destination chain
     /// - Asset being transferred
     /// - Network congestion
-    pub fn estimate_xcm_fee(
-        from_chain: &str,
-        to_chain: &str,
-        amount: &str,
-    ) -> Result<String> {
+    pub fn estimate_xcm_fee(from_chain: &str, to_chain: &str, amount: &str) -> Result<String> {
         // Simplified fee calculation
         // In production, query actual chain state
         let base_fee = match (from_chain, to_chain) {
@@ -340,11 +334,17 @@ mod tests {
     fn test_validate_substrate_address() {
         // Valid format (length check)
         let valid_address = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY";
-        assert!(SubstrateCurrencyHandler::validate_substrate_address(valid_address, 0));
+        assert!(SubstrateCurrencyHandler::validate_substrate_address(
+            valid_address,
+            0
+        ));
 
         // Invalid format (too short)
         let invalid_address = "invalid";
-        assert!(!SubstrateCurrencyHandler::validate_substrate_address(invalid_address, 0));
+        assert!(!SubstrateCurrencyHandler::validate_substrate_address(
+            invalid_address,
+            0
+        ));
     }
 
     #[test]

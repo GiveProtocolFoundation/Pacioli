@@ -74,11 +74,7 @@ impl CoinGeckoClient {
         if !response.status().is_success() {
             let status = response.status();
             let error_text = response.text().await.unwrap_or_default();
-            anyhow::bail!(
-                "CoinGecko API error ({}): {}",
-                status,
-                error_text
-            );
+            anyhow::bail!("CoinGecko API error ({}): {}", status, error_text);
         }
 
         let data: CoinGeckoPriceResponse = response
@@ -136,11 +132,7 @@ impl CoinGeckoClient {
         if !response.status().is_success() {
             let status = response.status();
             let error_text = response.text().await.unwrap_or_default();
-            anyhow::bail!(
-                "CoinGecko API error ({}): {}",
-                status,
-                error_text
-            );
+            anyhow::bail!("CoinGecko API error ({}): {}", status, error_text);
         }
 
         let data: CoinGeckoPriceResponse = response
@@ -196,11 +188,7 @@ impl CoinGeckoClient {
         if !response.status().is_success() {
             let status = response.status();
             let error_text = response.text().await.unwrap_or_default();
-            anyhow::bail!(
-                "CoinGecko API error ({}): {}",
-                status,
-                error_text
-            );
+            anyhow::bail!("CoinGecko API error ({}): {}", status, error_text);
         }
 
         let data: CoinGeckoHistoricalResponse = response

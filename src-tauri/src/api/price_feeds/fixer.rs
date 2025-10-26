@@ -69,11 +69,7 @@ impl FixerClient {
         if !response.status().is_success() {
             let status = response.status();
             let error_text = response.text().await.unwrap_or_default();
-            anyhow::bail!(
-                "Fixer.io API error ({}): {}",
-                status,
-                error_text
-            );
+            anyhow::bail!("Fixer.io API error ({}): {}", status, error_text);
         }
 
         let data: FixerResponse = response
@@ -131,11 +127,7 @@ impl FixerClient {
         if !response.status().is_success() {
             let status = response.status();
             let error_text = response.text().await.unwrap_or_default();
-            anyhow::bail!(
-                "Fixer.io API error ({}): {}",
-                status,
-                error_text
-            );
+            anyhow::bail!("Fixer.io API error ({}): {}", status, error_text);
         }
 
         let data: FixerResponse = response
@@ -191,11 +183,7 @@ impl FixerClient {
         if !response.status().is_success() {
             let status = response.status();
             let error_text = response.text().await.unwrap_or_default();
-            anyhow::bail!(
-                "Fixer.io API error ({}): {}",
-                status,
-                error_text
-            );
+            anyhow::bail!("Fixer.io API error ({}): {}", status, error_text);
         }
 
         let data: FixerHistoricalResponse = response
@@ -220,10 +208,7 @@ impl FixerClient {
 
     /// Get all available currencies
     pub async fn get_supported_currencies(&self) -> Result<Vec<String>> {
-        let url = format!(
-            "{}/symbols?access_key={}",
-            self.base_url, self.api_key
-        );
+        let url = format!("{}/symbols?access_key={}", self.base_url, self.api_key);
 
         let client = reqwest::Client::new();
         let response = client
@@ -268,10 +253,8 @@ impl FixerClient {
         use rust_decimal::Decimal;
         use std::str::FromStr;
 
-        let amount_decimal = Decimal::from_str(amount)
-            .context("Failed to parse amount")?;
-        let rate_decimal = Decimal::from_str(&rate)
-            .context("Failed to parse rate")?;
+        let amount_decimal = Decimal::from_str(amount).context("Failed to parse amount")?;
+        let rate_decimal = Decimal::from_str(&rate).context("Failed to parse rate")?;
 
         let result = amount_decimal * rate_decimal;
         Ok(result.to_string())
@@ -287,8 +270,8 @@ mod tests {
     #[tokio::test]
     #[ignore] // Requires API key and internet connection
     async fn test_get_rate() {
-        let api_key = std::env::var(FIXER_API_KEY)
-            .expect("FIXER_API_KEY environment variable not set");
+        let api_key =
+            std::env::var(FIXER_API_KEY).expect("FIXER_API_KEY environment variable not set");
 
         let client = FixerClient::new(api_key);
         let rate = client.get_rate("USD", "EUR").await;
@@ -299,13 +282,11 @@ mod tests {
     #[tokio::test]
     #[ignore] // Requires API key and internet connection
     async fn test_get_multiple_rates() {
-        let api_key = std::env::var(FIXER_API_KEY)
-            .expect("FIXER_API_KEY environment variable not set");
+        let api_key =
+            std::env::var(FIXER_API_KEY).expect("FIXER_API_KEY environment variable not set");
 
         let client = FixerClient::new(api_key);
-        let rates = client
-            .get_multiple_rates("USD", &["EUR", "GBP"])
-            .await;
+        let rates = client.get_multiple_rates("USD", &["EUR", "GBP"]).await;
         assert!(rates.is_ok());
         let rates = rates.unwrap();
         println!("Rates: {:?}", rates);

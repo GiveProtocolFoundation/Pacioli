@@ -103,25 +103,31 @@ const Settings: React.FC<SettingsProps> = ({ userType = 'organization' }) => {
     return 'general'
   }, [location.pathname])
 
-  const handleSectionChange = useCallback((section: SettingsSection) => {
-    const item = navigationItems.find(item => item.id === section)
-    if (!item?.comingSoon) {
-      // Update URL
-      if (section === 'general') {
-        navigate('/settings/general')
-      } else if (section === 'currencies') {
-        navigate('/settings/currencies')
-      } else if (section === 'users-permissions') {
-        navigate('/settings/users')
-      } else if (section === 'chart-of-accounts') {
-        navigate('/chart-of-accounts')
+  const handleSectionChange = useCallback(
+    (section: SettingsSection) => {
+      const item = navigationItems.find(item => item.id === section)
+      if (!item?.comingSoon) {
+        // Update URL
+        if (section === 'general') {
+          navigate('/settings/general')
+        } else if (section === 'currencies') {
+          navigate('/settings/currencies')
+        } else if (section === 'users-permissions') {
+          navigate('/settings/users')
+        } else if (section === 'chart-of-accounts') {
+          navigate('/chart-of-accounts')
+        }
       }
-    }
-  }, [navigate])
+    },
+    [navigate]
+  )
 
-  const createSectionHandler = useCallback((section: SettingsSection) => {
-    return () => handleSectionChange(section)
-  }, [handleSectionChange])
+  const createSectionHandler = useCallback(
+    (section: SettingsSection) => {
+      return () => handleSectionChange(section)
+    },
+    [handleSectionChange]
+  )
 
   const ActiveComponent = navigationItems.find(
     item => item.id === activeSection
@@ -168,13 +174,15 @@ const Settings: React.FC<SettingsProps> = ({ userType = 'organization' }) => {
                     }`}
                   >
                     <div className="flex items-center flex-1 text-left">
-                      <Icon className={`w-5 h-5 mr-3 flex-shrink-0 ${
-                        isActive
-                          ? 'text-blue-600 dark:text-blue-400'
-                          : item.comingSoon
-                            ? 'text-gray-400 dark:text-gray-600'
-                            : 'text-gray-500 dark:text-gray-400'
-                      }`} />
+                      <Icon
+                        className={`w-5 h-5 mr-3 flex-shrink-0 ${
+                          isActive
+                            ? 'text-blue-600 dark:text-blue-400'
+                            : item.comingSoon
+                              ? 'text-gray-400 dark:text-gray-600'
+                              : 'text-gray-500 dark:text-gray-400'
+                        }`}
+                      />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <span className="truncate">{item.label}</span>
@@ -202,7 +210,10 @@ const Settings: React.FC<SettingsProps> = ({ userType = 'organization' }) => {
               <div className="flex items-center text-sm">
                 <SettingsIcon className="w-4 h-4 text-blue-600 dark:text-blue-400 mr-2" />
                 <span className="text-blue-700 dark:text-blue-400 font-medium">
-                  {navigationItems.find(item => item.id === activeSection)?.label}
+                  {
+                    navigationItems.find(item => item.id === activeSection)
+                      ?.label
+                  }
                 </span>
               </div>
             </div>

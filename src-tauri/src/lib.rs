@@ -38,7 +38,10 @@ async fn get_evm_balance(
 ) -> Result<String, String> {
     let balance = {
         let indexer = state.lock().map_err(|e| e.to_string())?;
-        indexer.get_balance(&chain, &address).await.map_err(|e| e.to_string())
+        indexer
+            .get_balance(&chain, &address)
+            .await
+            .map_err(|e| e.to_string())
     }?;
     Ok(balance.to_string())
 }
@@ -67,11 +70,16 @@ async fn get_evm_token_balances(
 
     let balances = {
         let indexer = state.lock().map_err(|e| e.to_string())?;
-        indexer.scan_erc20_balances(&chain, &address, tokens).await
+        indexer
+            .scan_erc20_balances(&chain, &address, tokens)
+            .await
             .map_err(|e| e.to_string())
     }?;
 
-    Ok(balances.into_iter().map(|(addr, balance)| (addr, balance.to_string())).collect())
+    Ok(balances
+        .into_iter()
+        .map(|(addr, balance)| (addr, balance.to_string()))
+        .collect())
 }
 
 #[tauri::command]
@@ -84,19 +92,27 @@ async fn get_evm_transactions(
 ) -> Result<Vec<String>, String> {
     let to_block_num = if to_block == "latest" {
         let indexer = state.lock().map_err(|e| e.to_string())?;
-        indexer.get_block_number(&chain).await.map_err(|e| e.to_string())?
+        indexer
+            .get_block_number(&chain)
+            .await
+            .map_err(|e| e.to_string())?
     } else {
         to_block.parse::<u64>().map_err(|e| e.to_string())?
     };
 
     let transactions = {
         let indexer = state.lock().map_err(|e| e.to_string())?;
-        indexer.get_transactions(&chain, &address, from_block, to_block_num).await
+        indexer
+            .get_transactions(&chain, &address, from_block, to_block_num)
+            .await
             .map_err(|e| e.to_string())
     }?;
 
     // Convert transactions to JSON strings for frontend
-    Ok(transactions.into_iter().map(|tx| serde_json::to_string(&tx).unwrap_or_default()).collect())
+    Ok(transactions
+        .into_iter()
+        .map(|tx| serde_json::to_string(&tx).unwrap_or_default())
+        .collect())
 }
 
 #[tauri::command]
@@ -114,12 +130,17 @@ async fn scan_defi_positions(
 
     let positions = {
         let indexer = state.lock().map_err(|e| e.to_string())?;
-        indexer.scan_defi_positions(&chain, &address, protocols).await
+        indexer
+            .scan_defi_positions(&chain, &address, protocols)
+            .await
             .map_err(|e| e.to_string())
     }?;
 
     // Convert positions to JSON strings for frontend
-    Ok(positions.into_iter().map(|pos| serde_json::to_string(&pos).unwrap_or_default()).collect())
+    Ok(positions
+        .into_iter()
+        .map(|pos| serde_json::to_string(&pos).unwrap_or_default())
+        .collect())
 }
 
 #[tauri::command]
@@ -131,13 +152,18 @@ async fn sync_evm_transactions(
     // Get latest block and sync from last 1000 blocks
     let latest_block = {
         let indexer = state.lock().map_err(|e| e.to_string())?;
-        indexer.get_block_number(&chain).await.map_err(|e| e.to_string())
+        indexer
+            .get_block_number(&chain)
+            .await
+            .map_err(|e| e.to_string())
     }?;
     let from_block = latest_block.saturating_sub(1000);
 
     let transactions = {
         let indexer = state.lock().map_err(|e| e.to_string())?;
-        indexer.get_transactions(&chain, &address, from_block, latest_block).await
+        indexer
+            .get_transactions(&chain, &address, from_block, latest_block)
+            .await
             .map_err(|e| e.to_string())
     }?;
 

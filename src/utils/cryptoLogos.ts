@@ -69,7 +69,10 @@ const CRYPTO_LOGOS: Record<string, CryptoLogoConfig> = {
  * @param theme - Current theme ('light' or 'dark'), defaults to 'light'
  * @returns The logo path or null if not available
  */
-export const getCryptoLogoPath = (symbol: string, theme: 'light' | 'dark' = 'light'): string | null => {
+export const getCryptoLogoPath = (
+  symbol: string,
+  theme: 'light' | 'dark' = 'light'
+): string | null => {
   const crypto = CRYPTO_LOGOS[symbol.toUpperCase()]
   if (!crypto) return null
 

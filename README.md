@@ -1,4 +1,5 @@
 # Numbers
+
 **Open-Source Ledger - Tauri + React + TypeScript**
 
 A comprehensive blockchain transaction tracking application built with Tauri, React, TypeScript, and Rust. Features multi-chain support for Polkadot ecosystem including Moonbeam, Moonriver, Astar, Acala EVM+, and Paseo TestNet.
@@ -15,6 +16,7 @@ A comprehensive blockchain transaction tracking application built with Tauri, Re
 ## Tech Stack
 
 ### Frontend
+
 - **Tauri** - Cross-platform desktop app framework
 - **React 19** - Modern React with TypeScript
 - **Redux Toolkit** - State management
@@ -23,52 +25,59 @@ A comprehensive blockchain transaction tracking application built with Tauri, Re
 - **Polkadot.js API** - Polkadot ecosystem integration
 
 ### Backend
+
 - **Rust** - High-performance backend with Tauri
 - **Ethers-rs** - Ethereum library for Rust
 - **SQLite** - Local database for transaction storage
 - **WebSocket** - Real-time blockchain data streaming
 
 ### Smart Contracts
+
 - **Hardhat** - Development environment with PolkaVM support
 - **Solidity 0.8.28** - Smart contract language
 - **Paseo TestNet** - Polkadot Hub TestNet deployment target
 
 ## Supported Networks
 
-| Network | Chain ID | RPC URL | Native Token |
-|---------|----------|---------|--------------|
-| Paseo TestNet | 420420422 | https://testnet-passet-hub-eth-rpc.polkadot.io | PAS |
-| Moonbeam | 1284 | https://rpc.api.moonbeam.network | GLMR |
-| Moonriver | 1285 | https://rpc.api.moonriver.moonbeam.network | MOVR |
-| Astar | 592 | https://evm.astar.network | ASTR |
+| Network       | Chain ID  | RPC URL                                        | Native Token |
+| ------------- | --------- | ---------------------------------------------- | ------------ |
+| Paseo TestNet | 420420422 | https://testnet-passet-hub-eth-rpc.polkadot.io | PAS          |
+| Moonbeam      | 1284      | https://rpc.api.moonbeam.network               | GLMR         |
+| Moonriver     | 1285      | https://rpc.api.moonriver.moonbeam.network     | MOVR         |
+| Astar         | 592       | https://evm.astar.network                      | ASTR         |
 
 ## Quick Start
 
 ### Prerequisites
-- **Node.js** v18+ 
+
+- **Node.js** v18+
 - **Rust** (latest stable)
 - **pnpm** package manager
 
 ### Installation
 
 1. **Clone the repository**
+
 ```bash
 git clone https://github.com/civicmastery/Pacioli.git
 cd Pacioli
 ```
 
 2. **Install dependencies**
+
 ```bash
 pnpm install
 ```
 
 3. **Install Rust dependencies**
+
 ```bash
 cargo install tauri-cli
 cargo install sqlx-cli --no-default-features --features sqlite
 ```
 
 4. **Start development server**
+
 ```bash
 pnpm run tauri dev
 ```
@@ -78,23 +87,26 @@ pnpm run tauri dev
 ### Setup Hardhat for Polkadot
 
 1. **Install Polkadot dependencies**
+
 ```bash
 npm install --save-dev @parity/hardhat-polkadot solc@0.8.28
 npm install --force @nomicfoundation/hardhat-toolbox
 ```
 
 2. **Initialize Polkadot plugin**
+
 ```bash
 npx hardhat-polkadot init
 ```
 
 3. **Set private key securely**
+
 ```bash
 npx hardhat vars set PRIVATE_KEY
 ```
 
 4. **Get test tokens from Paseo faucet**
-Visit: https://faucet.polkadot.io/?parachain=1111
+   Visit: https://faucet.polkadot.io/?parachain=1111
 
 ### Deploy to Paseo TestNet
 
@@ -130,6 +142,7 @@ Numbers/
 ## Development
 
 ### Frontend Development
+
 ```bash
 pnpm run dev          # Start Vite dev server
 pnpm run build        # Build for production
@@ -137,6 +150,7 @@ pnpm run tauri dev    # Start Tauri development mode
 ```
 
 ### Backend Development
+
 ```bash
 cargo check           # Check Rust code
 cargo build           # Build Rust backend
@@ -144,6 +158,7 @@ cargo test            # Run tests
 ```
 
 ### Smart Contract Development
+
 ```bash
 npx hardhat compile   # Compile contracts
 npx hardhat test      # Run contract tests

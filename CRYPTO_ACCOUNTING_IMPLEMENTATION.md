@@ -18,6 +18,7 @@ Supports four industry-standard cost basis calculation methods:
 - **Specific ID**: Taxpayer chooses specific lots
 
 **Key Features**:
+
 - Lot-level tracking with acquisition dates and costs
 - Automatic disposal allocation across multiple lots
 - Holding period calculation for tax purposes
@@ -25,19 +26,23 @@ Supports four industry-standard cost basis calculation methods:
 - Validation and integrity checking
 
 **Example Usage**:
+
 ```typescript
-import { calculateCostBasis } from '@/services/costBasisService';
+import { calculateCostBasis } from '@/services/costBasisService'
 
 // Calculate cost basis for a disposal
-const disposal = calculateCostBasis({
-  assetSymbol: 'ETH',
-  quantity: '2.5',
-  disposalDate: '2025-01-15',
-  method: 'FIFO'
-}, cryptoLots);
+const disposal = calculateCostBasis(
+  {
+    assetSymbol: 'ETH',
+    quantity: '2.5',
+    disposalDate: '2025-01-15',
+    method: 'FIFO',
+  },
+  cryptoLots
+)
 
-console.log(`Total cost basis: ${disposal.totalCostBasis}`);
-console.log(`Average cost per unit: ${disposal.averageCostPerUnit}`);
+console.log(`Total cost basis: ${disposal.totalCostBasis}`)
+console.log(`Average cost per unit: ${disposal.averageCostPerUnit}`)
 ```
 
 ### 2. Asset Classification System
@@ -47,21 +52,25 @@ console.log(`Average cost per unit: ${disposal.averageCostPerUnit}`);
 Four classification modes based on business intent:
 
 #### Broker-Trader Mode
+
 - **Treatment**: Fair value through P&L under both GAAP and IFRS
 - **Use Case**: Active trading operations
 - **Gains/Losses**: Recognized immediately in profit/loss
 
 #### Investment Mode
+
 - **US GAAP**: Fair value through P&L
 - **IFRS**: Revaluation model (OCI) or cost model
 - **Use Case**: Long-term holdings
 
 #### Operational Mode
+
 - **Treatment**: Intangible assets (cost less impairment)
 - **Use Case**: Payment tokens, gas fees, governance tokens
 - **Impairment**: Tested periodically
 
 #### Inventory Mode
+
 - **Treatment**: Lower of cost or net realizable value
 - **Use Case**: NFT traders, token merchants
 - **Write-downs**: Recognized when NRV < cost
@@ -73,17 +82,20 @@ Four classification modes based on business intent:
 Automatically applies appropriate accounting treatment based on selected standard:
 
 **US GAAP Treatment**:
+
 - Crypto assets generally measured at fair value through P&L
 - No impairment reversal allowed once written down
 - Specific disclosure requirements
 
 **IFRS Treatment**:
+
 - Choice of cost model or revaluation model
 - Impairment testing required under cost model
 - Impairment reversals allowed (up to original cost)
 - Revaluation gains to OCI (Other Comprehensive Income)
 
 **Dual Reporting**:
+
 - Maintains both GAAP and IFRS values simultaneously
 - Automatic reconciliation between standards
 - Flags irreconcilable differences
@@ -96,41 +108,43 @@ Each crypto acquisition is tracked as a separate lot containing:
 
 ```typescript
 interface CryptoLot {
-  lotId: string;
-  acquisitionDate: string;
-  quantity: string;
-  remainingQuantity: string;
+  lotId: string
+  acquisitionDate: string
+  quantity: string
+  remainingQuantity: string
 
   // Cost tracking
-  acquisitionCost: string;
-  costPerUnit: string;
+  acquisitionCost: string
+  costPerUnit: string
 
   // Fair value tracking
-  fairValueAtAcquisition: string;
-  currentFairValue: string;
-  lastFairValueUpdate: string;
+  fairValueAtAcquisition: string
+  currentFairValue: string
+  lastFairValueUpdate: string
 
   // Classification
-  classification: AssetClassification;
+  classification: AssetClassification
 
   // Impairment history
-  impairmentHistory: ImpairmentEvent[];
-  cumulativeImpairment: string;
+  impairmentHistory: ImpairmentEvent[]
+  cumulativeImpairment: string
 
   // Active market indicators
-  activeMarket: ActiveMarketIndicators;
+  activeMarket: ActiveMarketIndicators
 }
 ```
 
 ### 5. Impairment Testing (IFRS Cost Model)
 
 **Features**:
+
 - Automatic impairment testing when fair value drops below carrying amount
 - Impairment reversal capability (IFRS only)
 - Complete audit trail of impairment events
 - Integration with journal entry generation
 
 **Example**:
+
 ```typescript
 import { complianceService } from '@/services/complianceService';
 
@@ -186,24 +200,28 @@ Automatically generates comprehensive disclosure reports including:
 Automatically generates proper journal entries for:
 
 #### Acquisition:
+
 ```
 Dr: Crypto Assets - ETH
 Cr: Cash
 ```
 
 #### Revaluation (Fair Value Model):
+
 ```
 Dr: Crypto Assets - ETH
 Cr: Unrealized Gain on Crypto Assets
 ```
 
 #### Revaluation (IFRS Revaluation Model - Gain):
+
 ```
 Dr: Crypto Assets - ETH
 Cr: Revaluation Surplus (OCI)
 ```
 
 #### Impairment:
+
 ```
 Dr: Impairment Loss
 Cr: Crypto Assets - ETH
@@ -232,12 +250,12 @@ Cr: Crypto Assets - ETH
 ### Step 1: Configure Compliance Settings
 
 ```typescript
-import { ComplianceSettings } from '@/types/cryptoAccounting';
+import { ComplianceSettings } from '@/types/cryptoAccounting'
 
 const settings: ComplianceSettings = {
   id: 'settings-1',
   profileId: 'user-123',
-  accountingStandard: 'Both',  // Or 'US_GAAP' or 'IFRS'
+  accountingStandard: 'Both', // Or 'US_GAAP' or 'IFRS'
   defaultCostBasisMethod: 'FIFO',
   allowMethodOverride: true,
   ifrsMeasurementModel: 'RevaluationModel',
@@ -246,30 +264,30 @@ const settings: ComplianceSettings = {
   generateDisclosures: true,
   disclosureLevel: 'Comprehensive',
   fairValueSource: 'CoinGecko',
-  fairValueUpdateFrequency: 300,  // 5 minutes
+  fairValueUpdateFrequency: 300, // 5 minutes
   reportingCurrency: 'USD',
   functionalCurrency: 'USD',
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
-};
+}
 
-complianceService.initialize(settings);
+complianceService.initialize(settings)
 ```
 
 ### Step 2: Track Acquisitions as Lots
 
 ```typescript
-import { CryptoLot } from '@/types/cryptoAccounting';
+import { CryptoLot } from '@/types/cryptoAccounting'
 
 const lot: CryptoLot = {
   lotId: 'lot-eth-001',
   acquisitionDate: '2025-01-10T10:00:00Z',
   quantity: '5.0',
   remainingQuantity: '5.0',
-  acquisitionCost: '10000',  // $10,000 total
-  costPerUnit: '2000',       // $2,000 per ETH
+  acquisitionCost: '10000', // $10,000 total
+  costPerUnit: '2000', // $2,000 per ETH
   fairValueAtAcquisition: '10000',
-  currentFairValue: '12500',  // Now worth $12,500
+  currentFairValue: '12500', // Now worth $12,500
   lastFairValueUpdate: new Date().toISOString(),
   classification: 'Investment',
   activeMarket: {
@@ -282,45 +300,47 @@ const lot: CryptoLot = {
   },
   impairmentHistory: [],
   cumulativeImpairment: '0',
-};
+}
 ```
 
 ### Step 3: Calculate Cost Basis on Disposal
 
 ```typescript
-import { calculateCostBasis, calculateGainLoss } from '@/services/costBasisService';
+import {
+  calculateCostBasis,
+  calculateGainLoss,
+} from '@/services/costBasisService'
 
 // Dispose of 2.5 ETH using FIFO
-const disposal = calculateCostBasis({
-  assetSymbol: 'ETH',
-  quantity: '2.5',
-  disposalDate: '2025-01-15T14:00:00Z',
-  method: 'FIFO',
-}, [lot]);
+const disposal = calculateCostBasis(
+  {
+    assetSymbol: 'ETH',
+    quantity: '2.5',
+    disposalDate: '2025-01-15T14:00:00Z',
+    method: 'FIFO',
+  },
+  [lot]
+)
 
 // Calculate gain/loss
-const proceeds = '6500';  // Sold for $6,500
-const gainLoss = calculateGainLoss(
-  disposal.totalCostBasis,
-  proceeds
-);
+const proceeds = '6500' // Sold for $6,500
+const gainLoss = calculateGainLoss(disposal.totalCostBasis, proceeds)
 
-console.log(`Realized ${gainLoss.isGain ? 'gain' : 'loss'}: $${gainLoss.gainLoss}`);
+console.log(
+  `Realized ${gainLoss.isGain ? 'gain' : 'loss'}: $${gainLoss.gainLoss}`
+)
 ```
 
 ### Step 4: Generate Disclosures
 
 ```typescript
-import { complianceService } from '@/services/complianceService';
+import { complianceService } from '@/services/complianceService'
 
-const disclosure = complianceService.generateDisclosure(
-  holdings,
-  '2025-01-31'
-);
+const disclosure = complianceService.generateDisclosure(holdings, '2025-01-31')
 
-console.log('Total Crypto Assets:', disclosure.totalCryptoAssets);
-console.log('Unrealized Gains:', disclosure.unrealizedGains);
-console.log('Unrealized Losses:', disclosure.unrealizedLosses);
+console.log('Total Crypto Assets:', disclosure.totalCryptoAssets)
+console.log('Unrealized Gains:', disclosure.unrealizedGains)
+console.log('Unrealized Losses:', disclosure.unrealizedLosses)
 ```
 
 ### Step 5: Perform GAAP/IFRS Reconciliation
@@ -329,11 +349,11 @@ console.log('Unrealized Losses:', disclosure.unrealizedLosses);
 const reconciliation = complianceService.generateReconciliation(
   holdings,
   '2025-01-31'
-);
+)
 
-console.log('GAAP Carrying Amount:', reconciliation.gaapCarryingAmount);
-console.log('IFRS Carrying Amount:', reconciliation.ifrsCarryingAmount);
-console.log('Adjustments:', reconciliation.adjustments);
+console.log('GAAP Carrying Amount:', reconciliation.gaapCarryingAmount)
+console.log('IFRS Carrying Amount:', reconciliation.ifrsCarryingAmount)
+console.log('Adjustments:', reconciliation.adjustments)
 ```
 
 ## Active Market Determination
@@ -342,16 +362,17 @@ The system includes sophisticated active market indicators:
 
 ```typescript
 interface ActiveMarketIndicators {
-  hasActiveMarket: boolean;
-  exchangeName?: string;
-  dailyVolume24h?: string;      // 24-hour trading volume
-  marketCap?: string;            // Total market capitalization
-  liquidityScore?: number;       // 0-100 score
-  lastUpdated: string;
+  hasActiveMarket: boolean
+  exchangeName?: string
+  dailyVolume24h?: string // 24-hour trading volume
+  marketCap?: string // Total market capitalization
+  liquidityScore?: number // 0-100 score
+  lastUpdated: string
 }
 ```
 
 **Active Market Criteria**:
+
 1. Minimum daily volume threshold
 2. Multiple exchanges trading the asset
 3. Sufficient market capitalization
@@ -364,15 +385,15 @@ The system includes tax lot tracking compatible with IRS Form 8949:
 
 ```typescript
 interface TaxLot {
-  lotId: string;
-  acquisitionDate: string;
-  disposalDate?: string;
-  quantity: string;
-  costBasis: string;
-  proceeds?: string;
-  gainLoss?: string;
-  holdingPeriod?: 'ShortTerm' | 'LongTerm';
-  taxYear: number;
+  lotId: string
+  acquisitionDate: string
+  disposalDate?: string
+  quantity: string
+  costBasis: string
+  proceeds?: string
+  gainLoss?: string
+  holdingPeriod?: 'ShortTerm' | 'LongTerm'
+  taxYear: number
 }
 ```
 
@@ -427,11 +448,13 @@ src/
 ## Standards Compliance
 
 ### US GAAP References:
+
 - ASC 820: Fair Value Measurement
 - ASC 350: Intangibles (for operational tokens)
 - ASC 330: Inventory (for NFTs/tokens for sale)
 
 ### IFRS References:
+
 - IAS 38: Intangible Assets
 - IAS 2: Inventories
 - IAS 36: Impairment of Assets
@@ -440,6 +463,7 @@ src/
 ## Support
 
 For questions or issues with the crypto accounting implementation:
+
 - Review this guide
 - Check type definitions in `src/types/cryptoAccounting.ts`
 - Examine service implementations in `src/services/`

@@ -1,10 +1,10 @@
-use sp_core::crypto::Ss58Codec;
-use ethers::types::Address as H160Address;
 use anyhow::Result;
+use ethers::types::Address as H160Address;
+use sp_core::crypto::Ss58Codec;
 
 pub struct UnifiedAddress {
-    pub substrate: Option<String>,  // SS58 format
-    pub ethereum: Option<String>,   // H160 format
+    pub substrate: Option<String>, // SS58 format
+    pub ethereum: Option<String>,  // H160 format
 }
 
 impl UnifiedAddress {
@@ -27,14 +27,14 @@ impl UnifiedAddress {
             })
         }
     }
-    
+
     /// Convert H160 to SS58 for Moonbeam (uses special mapping)
     fn h160_to_ss58_moonbeam(h160: H160Address) -> Result<String> {
         // Moonbeam uses a special prefix "0x" + h160 for substrate addresses
         // This is a simplified version - actual implementation needs proper encoding
         Ok(format!("0x{}", hex::encode(h160)))
     }
-    
+
     /// Convert SS58 to H160 for Moonbeam
     fn ss58_to_h160_moonbeam(ss58: &str) -> Result<Vec<u8>> {
         // Decode SS58 and extract H160
@@ -42,7 +42,7 @@ impl UnifiedAddress {
         hex::decode(ss58.trim_start_matches("0x"))
             .map_err(|e| anyhow::anyhow!("Failed to decode: {}", e))
     }
-    
+
     /// Handle Astar's dual address system
     pub fn from_astar_address(address: &str) -> Result<Self> {
         // Astar maintains separate EVM and Substrate addresses

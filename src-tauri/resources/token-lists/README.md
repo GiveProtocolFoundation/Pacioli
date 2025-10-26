@@ -5,7 +5,7 @@ This directory contains token lists for supported EVM chains in the Polkadot eco
 ## Available Token Lists
 
 - ✅ `moonbeam-tokens.json` - Moonbeam network tokens
-- ✅ `moonriver-tokens.json` - Moonriver network tokens  
+- ✅ `moonriver-tokens.json` - Moonriver network tokens
 - ✅ `astar-tokens.json` - Astar network tokens
 
 ## TODO: Missing Token Lists

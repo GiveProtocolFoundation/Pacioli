@@ -50,12 +50,15 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
     onMarkAsRead(notification.id)
   }, [onMarkAsRead, notification.id])
 
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault()
-      onMarkAsRead(notification.id)
-    }
-  }, [onMarkAsRead, notification.id])
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault()
+        onMarkAsRead(notification.id)
+      }
+    },
+    [onMarkAsRead, notification.id]
+  )
 
   return (
     <div
@@ -120,7 +123,8 @@ const mockNotifications: Notification[] = [
     id: '1',
     type: 'financial',
     title: 'Large Transaction Detected',
-    message: 'A transaction of $25,000 was recorded in account "Treasury Wallet"',
+    message:
+      'A transaction of $25,000 was recorded in account "Treasury Wallet"',
     timestamp: '2025-10-18T02:30:00Z',
     read: false,
     severity: 'warning',
@@ -232,13 +236,19 @@ const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
   onClose,
   userType,
 }) => {
-  const [filter, setFilter] = useState<'all' | 'financial' | 'transactional' | 'workflow' | 'approval'>('all')
-  const [notifications, setNotifications] = useState<Notification[]>(mockNotifications)
+  const [filter, setFilter] = useState<
+    'all' | 'financial' | 'transactional' | 'workflow' | 'approval'
+  >('all')
+  const [notifications, setNotifications] =
+    useState<Notification[]>(mockNotifications)
 
   // Filter notifications based on user type and selected filter
   const filteredNotifications = notifications.filter(notif => {
     // For individuals, don't show workflow or approval notifications
-    if (userType === 'individual' && (notif.type === 'workflow' || notif.type === 'approval')) {
+    if (
+      userType === 'individual' &&
+      (notif.type === 'workflow' || notif.type === 'approval')
+    ) {
       return false
     }
     // Apply selected filter
@@ -247,12 +257,16 @@ const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
   })
 
   const unreadCount = filteredNotifications.filter(n => !n.read).length
-  const actionRequiredCount = filteredNotifications.filter(n => n.actionRequired).length
+  const actionRequiredCount = filteredNotifications.filter(
+    n => n.actionRequired
+  ).length
 
   const formatTimestamp = (timestamp: string) => {
     const date = new Date(timestamp)
     const now = new Date()
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60))
+    const diffInHours = Math.floor(
+      (now.getTime() - date.getTime()) / (1000 * 60 * 60)
+    )
 
     if (diffInHours < 1) return 'Just now'
     if (diffInHours < 24) return `${diffInHours}h ago`
@@ -263,8 +277,10 @@ const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
   const getSeverityStyles = (severity: Notification['severity']) => {
     const styles = {
       info: 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400',
-      warning: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400',
-      success: 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400',
+      warning:
+        'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400',
+      success:
+        'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400',
       error: 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400',
     }
     return styles[severity]
@@ -282,16 +298,22 @@ const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
 
   const handleFilterAll = useCallback(() => setFilter('all'), [])
   const handleFilterFinancial = useCallback(() => setFilter('financial'), [])
-  const handleFilterTransactional = useCallback(() => setFilter('transactional'), [])
+  const handleFilterTransactional = useCallback(
+    () => setFilter('transactional'),
+    []
+  )
   const handleFilterWorkflow = useCallback(() => setFilter('workflow'), [])
   const handleFilterApproval = useCallback(() => setFilter('approval'), [])
 
-  const handleBackdropKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault()
-      onClose()
-    }
-  }, [onClose])
+  const handleBackdropKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault()
+        onClose()
+      }
+    },
+    [onClose]
+  )
 
   if (!isOpen) return null
 
@@ -316,7 +338,9 @@ const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
               Notifications
             </h2>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-              {unreadCount} unread {actionRequiredCount > 0 && `• ${actionRequiredCount} require action`}
+              {unreadCount} unread{' '}
+              {actionRequiredCount > 0 &&
+                `• ${actionRequiredCount} require action`}
             </p>
           </div>
           <div className="flex items-center space-x-2">

@@ -2,8 +2,8 @@ use aes_gcm::{
     aead::{Aead, KeyInit, OsRng},
     Aes256Gcm, Nonce,
 };
-use sha2::{Sha256, Digest};
 use anyhow::Result;
+use sha2::{Digest, Sha256};
 
 pub struct Encryptor {
     cipher: Aes256Gcm,
@@ -23,7 +23,8 @@ impl Encryptor {
 
     pub fn encrypt(&self, data: &[u8]) -> Result<Vec<u8>> {
         let nonce = Nonce::from_slice(b"unique nonce"); // Use random nonce in production
-        let ciphertext = self.cipher
+        let ciphertext = self
+            .cipher
             .encrypt(nonce, data)
             .map_err(|e| anyhow::anyhow!("Encryption failed: {}", e))?;
         Ok(ciphertext)
@@ -31,7 +32,8 @@ impl Encryptor {
 
     pub fn decrypt(&self, encrypted_data: &[u8]) -> Result<Vec<u8>> {
         let nonce = Nonce::from_slice(b"unique nonce");
-        let plaintext = self.cipher
+        let plaintext = self
+            .cipher
             .decrypt(nonce, encrypted_data)
             .map_err(|e| anyhow::anyhow!("Decryption failed: {}", e))?;
         Ok(plaintext)

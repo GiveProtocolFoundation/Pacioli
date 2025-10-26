@@ -20,10 +20,12 @@ impl CurrencyService {
 
     /// Get all supported currencies
     pub async fn get_all_currencies(&self) -> Result<Vec<Currency>> {
-        let currencies = sqlx::query_as::<_, Currency>("SELECT * FROM currencies WHERE is_supported = 1 ORDER BY code")
-            .fetch_all(&self.pool)
-            .await
-            .context("Failed to fetch currencies")?;
+        let currencies = sqlx::query_as::<_, Currency>(
+            "SELECT * FROM currencies WHERE is_supported = 1 ORDER BY code",
+        )
+        .fetch_all(&self.pool)
+        .await
+        .context("Failed to fetch currencies")?;
 
         Ok(currencies)
     }
@@ -196,7 +198,11 @@ impl CurrencyService {
         } else {
             // If no cached rate, would need to fetch from external API
             // For now, return an error
-            anyhow::bail!("Exchange rate not available for {}/{}", from_currency, to_currency);
+            anyhow::bail!(
+                "Exchange rate not available for {}/{}",
+                from_currency,
+                to_currency
+            );
         };
 
         let amount_decimal = Decimal::from_str(amount).context("Failed to parse amount")?;

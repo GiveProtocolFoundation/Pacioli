@@ -1,7 +1,7 @@
-use ethers::prelude::*;
-use ethers::contract::abigen;
-use std::sync::Arc;
 use anyhow::Result;
+use ethers::contract::abigen;
+use ethers::prelude::*;
+use std::sync::Arc;
 
 // Generate ERC20 ABI bindings
 abigen!(
@@ -29,15 +29,15 @@ impl ERC20Scanner {
     pub fn new(provider: Arc<Provider<Ws>>) -> Self {
         Self { provider }
     }
-    
+
     pub async fn get_token_info(&self, token_address: Address) -> Result<TokenInfo> {
         let contract = IERC20::new(token_address, self.provider.clone());
-        
+
         let name = contract.name().call().await?;
         let symbol = contract.symbol().call().await?;
         let decimals = contract.decimals().call().await?;
         let total_supply = contract.total_supply().call().await?;
-        
+
         Ok(TokenInfo {
             address: token_address,
             name,
@@ -46,23 +46,23 @@ impl ERC20Scanner {
             total_supply,
         })
     }
-    
+
     pub async fn get_token_balance(
         &self,
         token_address: Address,
-        wallet_address: Address
+        wallet_address: Address,
     ) -> Result<U256> {
         let contract = IERC20::new(token_address, self.provider.clone());
         let balance = contract.balance_of(wallet_address).call().await?;
         Ok(balance)
     }
-    
+
     pub async fn scan_token_transfers(
         &self,
         token_address: Address,
         wallet_address: Address,
         from_block: u64,
-        to_block: u64
+        to_block: u64,
     ) -> Result<Vec<TokenTransfer>> {
         let contract = IERC20::new(token_address, self.provider.clone());
 
