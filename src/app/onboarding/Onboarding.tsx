@@ -14,7 +14,12 @@ interface ProgressStepProps {
   stepNumber: number
 }
 
-const ProgressStep: React.FC<ProgressStepProps> = ({ label, isActive, isCompleted, stepNumber }) => {
+const ProgressStep: React.FC<ProgressStepProps> = ({
+  label,
+  isActive,
+  isCompleted,
+  stepNumber,
+}) => {
   const getStepClassName = () => {
     if (isActive) return 'bg-blue-600 text-white'
     if (isCompleted) return 'bg-green-600 text-white'
@@ -23,7 +28,9 @@ const ProgressStep: React.FC<ProgressStepProps> = ({ label, isActive, isComplete
 
   return (
     <div className="flex items-center">
-      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${getStepClassName()}`}>
+      <div
+        className={`w-10 h-10 rounded-full flex items-center justify-center ${getStepClassName()}`}
+      >
         {isCompleted ? <Check className="w-5 h-5" /> : stepNumber}
       </div>
       <span className="ml-2 text-sm font-medium text-gray-700">{label}</span>
@@ -35,9 +42,13 @@ interface ProgressConnectorProps {
   isCompleted: boolean
 }
 
-const ProgressConnector: React.FC<ProgressConnectorProps> = ({ isCompleted }) => (
+const ProgressConnector: React.FC<ProgressConnectorProps> = ({
+  isCompleted,
+}) => (
   <div className="w-16 h-1 bg-gray-300">
-    <div className={`h-full transition-all ${isCompleted ? 'bg-blue-600 w-full' : 'bg-transparent w-0'}`} />
+    <div
+      className={`h-full transition-all ${isCompleted ? 'bg-blue-600 w-full' : 'bg-transparent w-0'}`}
+    />
   </div>
 )
 
@@ -79,7 +90,9 @@ function SelectionButton<T>({
       className={`p-6 border-2 rounded-xl transition-all hover:shadow-lg ${getButtonClassName()}`}
     >
       <div className="flex items-start space-x-4">
-        <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${getIconContainerClassName()}`}>
+        <div
+          className={`w-12 h-12 rounded-lg flex items-center justify-center ${getIconContainerClassName()}`}
+        >
           <Icon className={`w-6 h-6 ${getIconClassName()}`} />
         </div>
         <div className="flex-1 text-left">
@@ -189,7 +202,11 @@ const Onboarding: React.FC = () => {
         {/* Logo and Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
-            <img src={PacioliBlackLogo} alt="Pacioli" className="h-12 w-auto mix-blend-multiply" />
+            <img
+              src={PacioliBlackLogo}
+              alt="Pacioli"
+              className="h-12 w-auto mix-blend-multiply"
+            />
             <span className="ml-3 text-2xl font-bold text-gray-900">
               Pacioli
             </span>
