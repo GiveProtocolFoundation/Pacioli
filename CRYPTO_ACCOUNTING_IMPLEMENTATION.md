@@ -26,10 +26,10 @@ Supports four industry-standard cost basis calculation methods:
 
 **Example Usage**:
 ```typescript
-import { CostBasisService } from '@/services/costBasisService';
+import { calculateCostBasis } from '@/services/costBasisService';
 
 // Calculate cost basis for a disposal
-const disposal = CostBasisService.calculateCostBasis({
+const disposal = calculateCostBasis({
   assetSymbol: 'ETH',
   quantity: '2.5',
   disposalDate: '2025-01-15',
@@ -288,10 +288,10 @@ const lot: CryptoLot = {
 ### Step 3: Calculate Cost Basis on Disposal
 
 ```typescript
-import { CostBasisService } from '@/services/costBasisService';
+import { calculateCostBasis, calculateGainLoss } from '@/services/costBasisService';
 
 // Dispose of 2.5 ETH using FIFO
-const disposal = CostBasisService.calculateCostBasis({
+const disposal = calculateCostBasis({
   assetSymbol: 'ETH',
   quantity: '2.5',
   disposalDate: '2025-01-15T14:00:00Z',
@@ -300,7 +300,7 @@ const disposal = CostBasisService.calculateCostBasis({
 
 // Calculate gain/loss
 const proceeds = '6500';  // Sold for $6,500
-const gainLoss = CostBasisService.calculateGainLoss(
+const gainLoss = calculateGainLoss(
   disposal.totalCostBasis,
   proceeds
 );
