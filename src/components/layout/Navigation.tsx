@@ -165,7 +165,7 @@ const Navigation: React.FC<NavigationProps> = ({
             <img
               src={theme === 'dark' ? PacioliBlackLogo : PacioliWhiteLogo}
               alt="Pacioli"
-              className="h-12 w-auto"
+              className="h-12 w-auto mix-blend-multiply dark:mix-blend-normal"
             />
             <div className="ml-3 flex flex-col">
               <span className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -315,7 +315,7 @@ const Navigation: React.FC<NavigationProps> = ({
                 <img
                   src={theme === 'dark' ? PacioliBlackLogo : PacioliWhiteLogo}
                   alt="Pacioli"
-                  className="h-12 w-auto"
+                  className="h-12 w-auto mix-blend-multiply dark:mix-blend-normal"
                 />
                 <div className="ml-3 flex flex-col">
                   <span className="text-lg font-semibold text-gray-900 dark:text-white">
