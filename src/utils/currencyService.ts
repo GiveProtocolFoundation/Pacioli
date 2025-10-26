@@ -3,7 +3,7 @@
  * Handles currency conversions, formatting, and exchange rate management
  */
 
-import Decimal from 'decimal.js';
+import Decimal from 'decimal.js'
 import {
   Currency,
   ExchangeRate,
@@ -12,7 +12,7 @@ import {
   CurrencyFormatOptions,
   AccountSettings,
   ExchangeRateSource,
-} from '../types/currency';
+} from '../types/currency'
 
 /**
  * Currency symbols map
@@ -36,15 +36,15 @@ const CURRENCY_SYMBOLS: Record<string, string> = {
   ETH: 'Ξ',
   USDC: '$',
   USDT: '$',
-};
+}
 
 /**
  * Currency Service Class
  */
 export class CurrencyService {
-  private exchangeRates: Map<string, ExchangeRate> = new Map();
-  private currencies: Map<string, Currency> = new Map();
-  private settings: AccountSettings | null = null;
+  private exchangeRates: Map<string, ExchangeRate> = new Map()
+  private currencies: Map<string, Currency> = new Map()
+  private settings: AccountSettings | null = null
 
   /**
    * Initialize the currency service with currencies and settings
@@ -53,53 +53,53 @@ export class CurrencyService {
     currencies: Currency[],
     settings: AccountSettings
   ): Promise<void> {
-    this.currencies = new Map(currencies.map(c => [c.code, c]));
-    this.settings = settings;
+    this.currencies = new Map(currencies.map(c => [c.code, c]))
+    this.settings = settings
   }
 
   /**
    * Set account settings
    */
   setSettings(settings: AccountSettings): void {
-    this.settings = settings;
+    this.settings = settings
   }
 
   /**
    * Get currency by code
    */
   getCurrency(code: string): Currency | undefined {
-    return this.currencies.get(code);
+    return this.currencies.get(code)
   }
 
   /**
    * Cache exchange rate
    */
   cacheExchangeRate(rate: ExchangeRate): void {
-    const key = `${rate.fromCurrency}-${rate.toCurrency}`;
-    this.exchangeRates.set(key, rate);
+    const key = `${rate.fromCurrency}-${rate.toCurrency}`
+    this.exchangeRates.set(key, rate)
   }
 
   /**
    * Get cached exchange rate
    */
   getCachedRate(fromCurrency: string, toCurrency: string): ExchangeRate | null {
-    const key = `${fromCurrency}-${toCurrency}`;
-    const rate = this.exchangeRates.get(key);
+    const key = `${fromCurrency}-${toCurrency}`
+    const rate = this.exchangeRates.get(key)
 
-    if (!rate) return null;
+    if (!rate) return null
 
     // Check if rate is still valid (TTL)
-    const rateTime = new Date(rate.timestamp).getTime();
-    const now = Date.now();
-    const ageInSeconds = (now - rateTime) / 1000;
+    const rateTime = new Date(rate.timestamp).getTime()
+    const now = Date.now()
+    const ageInSeconds = (now - rateTime) / 1000
 
     if (ageInSeconds > rate.ttlSeconds) {
       // Rate has expired
-      this.exchangeRates.delete(key);
-      return null;
+      this.exchangeRates.delete(key)
+      return null
     }
 
-    return rate;
+    return rate
   }
 
   /**
@@ -107,7 +107,7 @@ export class CurrencyService {
    * This would typically call a Tauri command to get the rate from the backend
    */
   async convert(request: ConversionRequest): Promise<ConversionResponse> {
-    const { fromCurrency, toCurrency, amount, timestamp, method } = request;
+    const { fromCurrency, toCurrency, amount, timestamp, method } = request
 
     // If same currency, no conversion needed
     if (fromCurrency === toCurrency) {
@@ -119,15 +119,15 @@ export class CurrencyService {
         exchangeRate: '1.0',
         timestamp: timestamp || new Date().toISOString(),
         source: 'manual' as ExchangeRateSource,
-      };
+      }
     }
 
     // Check cache first
-    const cachedRate = this.getCachedRate(fromCurrency, toCurrency);
+    const cachedRate = this.getCachedRate(fromCurrency, toCurrency)
     if (cachedRate && (!timestamp || method !== 'historical')) {
       const convertedAmount = new Decimal(amount)
         .mul(new Decimal(cachedRate.rate))
-        .toString();
+        .toString()
 
       return {
         fromCurrency,
@@ -137,7 +137,7 @@ export class CurrencyService {
         exchangeRate: cachedRate.rate,
         timestamp: cachedRate.timestamp,
         source: cachedRate.source,
-      };
+      }
     }
 
     // TODO: Call Tauri command to fetch rate from backend
@@ -147,7 +147,7 @@ export class CurrencyService {
 
     throw new Error(
       'Exchange rate not available. Please implement Tauri command integration.'
-    );
+    )
   }
 
   /**
@@ -159,21 +159,21 @@ export class CurrencyService {
     timestamp: string
   ): Promise<{ convertedAmount: string; rate: string; source: string }> {
     if (!this.settings) {
-      throw new Error('Account settings not initialized');
+      throw new Error('Account settings not initialized')
     }
 
-    const primaryCurrency = this.settings.primaryCurrency;
+    const primaryCurrency = this.settings.primaryCurrency
 
     if (currency === primaryCurrency) {
       return {
         convertedAmount: amount,
         rate: '1.0',
         source: 'manual',
-      };
+      }
     }
 
-    const conversionMethod = this.settings.conversionMethod;
-    const useHistorical = conversionMethod === 'historical';
+    const conversionMethod = this.settings.conversionMethod
+    const useHistorical = conversionMethod === 'historical'
 
     const response = await this.convert({
       fromCurrency: currency,
@@ -181,13 +181,13 @@ export class CurrencyService {
       amount,
       timestamp: useHistorical ? timestamp : undefined,
       method: conversionMethod,
-    });
+    })
 
     return {
       convertedAmount: response.convertedAmount,
       rate: response.exchangeRate,
       source: response.source,
-    };
+    }
   }
 
   /**
@@ -198,46 +198,46 @@ export class CurrencyService {
     currencyCode: string,
     options?: CurrencyFormatOptions
   ): string {
-    const currency = this.getCurrency(currencyCode);
+    const currency = this.getCurrency(currencyCode)
     const decimals =
       options?.decimals ??
       currency?.decimals ??
       this.settings?.decimalPlaces ??
-      2;
+      2
     const useThousands =
       options?.useThousandsSeparator ??
       this.settings?.useThousandsSeparator ??
-      true;
+      true
     const displayFormat =
-      options?.displayFormat ??
-      this.settings?.currencyDisplayFormat ??
-      'symbol';
+      options?.displayFormat ?? this.settings?.currencyDisplayFormat ?? 'symbol'
 
-    const decimal = new Decimal(amount);
-    const formatted = decimal.toFixed(decimals);
+    const decimal = new Decimal(amount)
+    const formatted = decimal.toFixed(decimals)
 
     // Add thousands separator if needed
-    const [whole, fraction] = formatted.split('.');
+    const [whole, fraction] = formatted.split('.')
     const formattedWhole = useThousands
       ? whole.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-      : whole;
+      : whole
 
-    const numberPart = fraction ? `${formattedWhole}.${fraction}` : formattedWhole;
+    const numberPart = fraction
+      ? `${formattedWhole}.${fraction}`
+      : formattedWhole
 
     // Format based on display preference
     switch (displayFormat) {
       case 'symbol': {
-        const symbol = options?.symbol ?? CURRENCY_SYMBOLS[currencyCode] ?? '';
-        return `${symbol}${numberPart}`;
+        const symbol = options?.symbol ?? CURRENCY_SYMBOLS[currencyCode] ?? ''
+        return `${symbol}${numberPart}`
       }
       case 'code':
-        return `${numberPart} ${currencyCode}`;
+        return `${numberPart} ${currencyCode}`
       case 'name': {
-        const name = currency?.name ?? currencyCode;
-        return `${numberPart} ${name}`;
+        const name = currency?.name ?? currencyCode
+        return `${numberPart} ${name}`
       }
       default:
-        return numberPart;
+        return numberPart
     }
   }
 
@@ -246,45 +246,45 @@ export class CurrencyService {
    */
   static parseCurrency(value: string): Decimal {
     // Remove currency symbols and thousands separators
-    const cleaned = value.replace(/[^0-9.-]/g, '');
-    return new Decimal(cleaned);
+    const cleaned = value.replace(/[^0-9.-]/g, '')
+    return new Decimal(cleaned)
   }
 
   /**
    * Get all supported currencies
    */
   getAllCurrencies(): Currency[] {
-    return Array.from(this.currencies.values());
+    return Array.from(this.currencies.values())
   }
 
   /**
    * Get currencies by type
    */
   getCurrenciesByType(type: 'fiat' | 'crypto'): Currency[] {
-    return this.getAllCurrencies().filter(c => c.type === type);
+    return this.getAllCurrencies().filter(c => c.type === type)
   }
 
   /**
    * Get reporting currencies for the account
    */
   getReportingCurrencies(): string[] {
-    if (!this.settings) return [];
+    if (!this.settings) return []
     return [
       this.settings.primaryCurrency,
       ...(this.settings.reportingCurrencies || []),
-    ];
+    ]
   }
 
   /**
    * Calculate percentage change
    */
   static calculatePercentageChange(oldValue: string, newValue: string): number {
-    const old = new Decimal(oldValue);
-    const newVal = new Decimal(newValue);
+    const old = new Decimal(oldValue)
+    const newVal = new Decimal(newValue)
 
-    if (old.isZero()) return 0;
+    if (old.isZero()) return 0
 
-    return newVal.minus(old).div(old).mul(100).toNumber();
+    return newVal.minus(old).div(old).mul(100).toNumber()
   }
 
   /**
@@ -293,24 +293,24 @@ export class CurrencyService {
   static sumAmounts(amounts: string[]): string {
     return amounts
       .reduce((sum, amount) => sum.plus(new Decimal(amount)), new Decimal(0))
-      .toString();
+      .toString()
   }
 
   /**
    * Check if exchange rate is stale
    */
   static isRateStale(rate: ExchangeRate): boolean {
-    const rateTime = new Date(rate.timestamp).getTime();
-    const now = Date.now();
-    const ageInSeconds = (now - rateTime) / 1000;
-    return ageInSeconds > rate.ttlSeconds;
+    const rateTime = new Date(rate.timestamp).getTime()
+    const now = Date.now()
+    const ageInSeconds = (now - rateTime) / 1000
+    return ageInSeconds > rate.ttlSeconds
   }
 }
 
 /**
  * Singleton instance
  */
-export const currencyService = new CurrencyService();
+export const currencyService = new CurrencyService()
 
 /**
  * Utility function to format currency
@@ -320,14 +320,14 @@ export function formatCurrency(
   currencyCode: string,
   options?: CurrencyFormatOptions
 ): string {
-  return currencyService.formatCurrency(amount, currencyCode, options);
+  return currencyService.formatCurrency(amount, currencyCode, options)
 }
 
 /**
  * Utility function to get currency symbol
  */
 export function getCurrencySymbol(currencyCode: string): string {
-  return CURRENCY_SYMBOLS[currencyCode] || currencyCode;
+  return CURRENCY_SYMBOLS[currencyCode] || currencyCode
 }
 
 /**
@@ -337,20 +337,20 @@ export function formatCompactCurrency(
   amount: string | number,
   currencyCode: string
 ): string {
-  const decimal = new Decimal(amount);
-  const symbol = getCurrencySymbol(currencyCode);
+  const decimal = new Decimal(amount)
+  const symbol = getCurrencySymbol(currencyCode)
 
   if (decimal.abs().lessThan(1000)) {
-    return `${symbol}${decimal.toFixed(2)}`;
+    return `${symbol}${decimal.toFixed(2)}`
   }
 
   if (decimal.abs().lessThan(1000000)) {
-    return `${symbol}${decimal.div(1000).toFixed(1)}K`;
+    return `${symbol}${decimal.div(1000).toFixed(1)}K`
   }
 
   if (decimal.abs().lessThan(1000000000)) {
-    return `${symbol}${decimal.div(1000000).toFixed(1)}M`;
+    return `${symbol}${decimal.div(1000000).toFixed(1)}M`
   }
 
-  return `${symbol}${decimal.div(1000000000).toFixed(1)}B`;
+  return `${symbol}${decimal.div(1000000000).toFixed(1)}B`
 }

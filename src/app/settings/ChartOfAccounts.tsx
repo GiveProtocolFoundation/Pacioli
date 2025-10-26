@@ -1,142 +1,183 @@
-import React, { useState, useMemo, useCallback } from 'react';
-import { Search, Plus, Edit2, Trash2, Save, X, AlertCircle } from 'lucide-react';
-import { getChartOfAccountsTemplate, groupAccountsByType } from '../../utils/chartOfAccounts';
+import React, { useState, useMemo, useCallback } from 'react'
+import { Search, Plus, Edit2, Trash2, Save, X, AlertCircle } from 'lucide-react'
+import {
+  getChartOfAccountsTemplate,
+  groupAccountsByType,
+} from '../../utils/chartOfAccounts'
 
 interface ChartOfAccountsProps {
-  jurisdiction?: 'us-gaap' | 'ifrs';
-  accountType?: 'individual' | 'sme' | 'not-for-profit';
-  userRole?: 'user' | 'admin' | 'system-admin';
+  jurisdiction?: 'us-gaap' | 'ifrs'
+  accountType?: 'individual' | 'sme' | 'not-for-profit'
+  userRole?: 'user' | 'admin' | 'system-admin'
 }
 
 interface EditingAccount {
-  code: string;
-  name: string;
-  type: string;
-  description: string;
+  code: string
+  name: string
+  type: string
+  description: string
 }
 
 const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
   jurisdiction = 'us-gaap',
   accountType = 'not-for-profit',
-  userRole = 'admin'
+  userRole = 'admin',
 }) => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedType, setSelectedType] = useState<string>('All');
-  const [editingAccount, setEditingAccount] = useState<EditingAccount | null>(null);
-  const [isAddingNew, setIsAddingNew] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('')
+  const [selectedType, setSelectedType] = useState<string>('All')
+  const [editingAccount, setEditingAccount] = useState<EditingAccount | null>(
+    null
+  )
+  const [isAddingNew, setIsAddingNew] = useState(false)
 
   // Load the template
-  const template = getChartOfAccountsTemplate(jurisdiction, accountType);
+  const template = getChartOfAccountsTemplate(jurisdiction, accountType)
 
   // Check if user can edit
   const canEdit = useMemo(() => {
-    if (accountType === 'individual') return true;
-    return userRole === 'admin' || userRole === 'system-admin';
-  }, [accountType, userRole]);
+    if (accountType === 'individual') return true
+    return userRole === 'admin' || userRole === 'system-admin'
+  }, [accountType, userRole])
 
   // Group accounts by type
   const groupedAccounts = useMemo(() => {
-    if (!template) return {};
-    return groupAccountsByType(template);
-  }, [template]);
+    if (!template) return {}
+    return groupAccountsByType(template)
+  }, [template])
 
   // Get unique account types
   const accountTypes = useMemo(() => {
-    return ['All', ...Object.keys(groupedAccounts).sort()];
-  }, [groupedAccounts]);
+    return ['All', ...Object.keys(groupedAccounts).sort()]
+  }, [groupedAccounts])
 
   // Filter accounts
   const filteredAccounts = useMemo(() => {
-    if (!template) return [];
+    if (!template) return []
 
-    let accounts = template.accounts;
+    let accounts = template.accounts
 
     // Filter by type
     if (selectedType !== 'All') {
-      accounts = accounts.filter(acc => acc.type === selectedType);
+      accounts = accounts.filter(acc => acc.type === selectedType)
     }
 
     // Filter by search query
     if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      accounts = accounts.filter(acc =>
-        acc.code.toLowerCase().includes(query) ||
-        acc.name.toLowerCase().includes(query) ||
-        acc.description?.toLowerCase().includes(query)
-      );
+      const query = searchQuery.toLowerCase()
+      accounts = accounts.filter(
+        acc =>
+          acc.code.toLowerCase().includes(query) ||
+          acc.name.toLowerCase().includes(query) ||
+          acc.description?.toLowerCase().includes(query)
+      )
     }
 
-    return accounts;
-  }, [template, selectedType, searchQuery]);
+    return accounts
+  }, [template, selectedType, searchQuery])
 
-  const handleEdit = useCallback((account: typeof template.accounts[0]) => {
-    setEditingAccount({
-      code: account.code,
-      name: account.name,
-      type: account.type,
-      description: account.description || ''
-    });
-    setIsAddingNew(false);
-  }, [template]);
+  const handleEdit = useCallback(
+    (account: (typeof template.accounts)[0]) => {
+      setEditingAccount({
+        code: account.code,
+        name: account.name,
+        type: account.type,
+        description: account.description || '',
+      })
+      setIsAddingNew(false)
+    },
+    [template]
+  )
 
   const handleAddNew = useCallback(() => {
     setEditingAccount({
       code: '',
       name: '',
       type: accountTypes[1] || 'Asset',
-      description: ''
-    });
-    setIsAddingNew(true);
-  }, [accountTypes]);
+      description: '',
+    })
+    setIsAddingNew(true)
+  }, [accountTypes])
 
   const handleSave = useCallback(() => {
     // TODO: Implement save to backend
     // Saving account: editingAccount
-    setEditingAccount(null);
-    setIsAddingNew(false);
-  }, []);
+    setEditingAccount(null)
+    setIsAddingNew(false)
+  }, [])
 
   const handleCancel = useCallback(() => {
-    setEditingAccount(null);
-    setIsAddingNew(false);
-  }, []);
+    setEditingAccount(null)
+    setIsAddingNew(false)
+  }, [])
 
   const handleDelete = useCallback((code: string) => {
     // TODO: Implement delete confirmation and backend call
-    console.warn('Delete not implemented for account:', code);
-  }, []);
+    console.warn('Delete not implemented for account:', code)
+  }, [])
 
-  const createEditHandler = useCallback((account: typeof template.accounts[0]) => {
-    return () => handleEdit(account);
-  }, [handleEdit, template]);
+  const createEditHandler = useCallback(
+    (account: (typeof template.accounts)[0]) => {
+      return () => handleEdit(account)
+    },
+    [handleEdit, template]
+  )
 
-  const createDeleteHandler = useCallback((code: string) => {
-    return () => handleDelete(code);
-  }, [handleDelete]);
+  const createDeleteHandler = useCallback(
+    (code: string) => {
+      return () => handleDelete(code)
+    },
+    [handleDelete]
+  )
 
-  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
-  }, []);
+  const handleSearchChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setSearchQuery(e.target.value)
+    },
+    []
+  )
 
-  const handleTypeChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedType(e.target.value);
-  }, []);
+  const handleTypeChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      setSelectedType(e.target.value)
+    },
+    []
+  )
 
-  const handleEditingCodeChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setEditingAccount(prev => prev ? { ...prev, code: e.target.value } : null);
-  }, []);
+  const handleEditingCodeChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setEditingAccount(prev =>
+        prev ? { ...prev, code: e.target.value } : null
+      )
+    },
+    []
+  )
 
-  const handleEditingNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setEditingAccount(prev => prev ? { ...prev, name: e.target.value } : null);
-  }, []);
+  const handleEditingNameChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setEditingAccount(prev =>
+        prev ? { ...prev, name: e.target.value } : null
+      )
+    },
+    []
+  )
 
-  const handleEditingTypeChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    setEditingAccount(prev => prev ? { ...prev, type: e.target.value } : null);
-  }, []);
+  const handleEditingTypeChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      setEditingAccount(prev =>
+        prev ? { ...prev, type: e.target.value } : null
+      )
+    },
+    []
+  )
 
-  const handleEditingDescriptionChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setEditingAccount(prev => prev ? { ...prev, description: e.target.value } : null);
-  }, []);
+  const handleEditingDescriptionChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setEditingAccount(prev =>
+        prev ? { ...prev, description: e.target.value } : null
+      )
+    },
+    []
+  )
 
   if (!template) {
     return (
@@ -144,21 +185,26 @@ const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start">
           <AlertCircle className="w-5 h-5 text-yellow-600 mr-3 mt-0.5" />
           <div>
-            <h3 className="text-sm font-medium text-yellow-800">Chart of Accounts Not Found</h3>
+            <h3 className="text-sm font-medium text-yellow-800">
+              Chart of Accounts Not Found
+            </h3>
             <p className="text-sm text-yellow-700 mt-1">
-              No chart of accounts template found for {jurisdiction.toUpperCase()} - {accountType}.
+              No chart of accounts template found for{' '}
+              {jurisdiction.toUpperCase()} - {accountType}.
             </p>
           </div>
         </div>
       </div>
-    );
+    )
   }
 
   return (
     <div className="p-6 min-h-screen bg-gray-50 dark:bg-black">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Chart of Accounts</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          Chart of Accounts
+        </h1>
         <p className="text-gray-600 dark:text-gray-400 mt-1">
           {template.name} ({filteredAccounts.length} accounts)
         </p>
@@ -171,7 +217,8 @@ const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
           <div>
             <h3 className="text-sm font-medium text-blue-800">View Only</h3>
             <p className="text-sm text-blue-700 mt-1">
-              Only administrators can edit the chart of accounts for {accountType} accounts.
+              Only administrators can edit the chart of accounts for{' '}
+              {accountType} accounts.
             </p>
           </div>
         </div>
@@ -198,7 +245,9 @@ const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
           className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           {accountTypes.map(type => (
-            <option key={type} value={type}>{type}</option>
+            <option key={type} value={type}>
+              {type}
+            </option>
           ))}
         </select>
 
@@ -268,9 +317,13 @@ const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
                       onChange={handleEditingTypeChange}
                       className="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
-                      {accountTypes.filter(t => t !== 'All').map(type => (
-                        <option key={type} value={type}>{type}</option>
-                      ))}
+                      {accountTypes
+                        .filter(t => t !== 'All')
+                        .map(type => (
+                          <option key={type} value={type}>
+                            {type}
+                          </option>
+                        ))}
                     </select>
                   </td>
                   <td className="px-6 py-4">
@@ -304,28 +357,44 @@ const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
               )}
 
               {/* Data Rows */}
-              {filteredAccounts.map((account) => (
-                <tr key={account.code} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+              {filteredAccounts.map(account => (
+                <tr
+                  key={account.code}
+                  className="hover:bg-gray-50 dark:hover:bg-gray-800"
+                >
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm font-mono font-medium text-gray-900 dark:text-white">{account.code}</span>
+                    <span className="text-sm font-mono font-medium text-gray-900 dark:text-white">
+                      {account.code}
+                    </span>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="text-sm font-medium text-gray-900 dark:text-white">{account.name}</span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-white">
+                      {account.name}
+                    </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      account.type === 'Asset' ? 'bg-green-100 text-green-800' :
-                      account.type === 'Liability' ? 'bg-red-100 text-red-800' :
-                      account.type === 'Equity' ? 'bg-blue-100 text-blue-800' :
-                      account.type === 'Revenue' ? 'bg-purple-100 text-purple-800' :
-                      account.type === 'Expense' ? 'bg-orange-100 text-orange-800' :
-                      'bg-gray-100 text-gray-800'
-                    }`}>
+                    <span
+                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                        account.type === 'Asset'
+                          ? 'bg-green-100 text-green-800'
+                          : account.type === 'Liability'
+                            ? 'bg-red-100 text-red-800'
+                            : account.type === 'Equity'
+                              ? 'bg-blue-100 text-blue-800'
+                              : account.type === 'Revenue'
+                                ? 'bg-purple-100 text-purple-800'
+                                : account.type === 'Expense'
+                                  ? 'bg-orange-100 text-orange-800'
+                                  : 'bg-gray-100 text-gray-800'
+                      }`}
+                    >
                       {account.type}
                     </span>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">{account.description}</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                      {account.description}
+                    </span>
                   </td>
                   {canEdit && (
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -357,15 +426,19 @@ const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
         {filteredAccounts.length === 0 && !editingAccount && (
           <div className="text-center py-12">
             <Search className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No accounts found</h3>
+            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">
+              No accounts found
+            </h3>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              {searchQuery ? 'Try adjusting your search' : 'No accounts match the selected filter'}
+              {searchQuery
+                ? 'Try adjusting your search'
+                : 'No accounts match the selected filter'}
             </p>
           </div>
         )}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default ChartOfAccounts;
+export default ChartOfAccounts

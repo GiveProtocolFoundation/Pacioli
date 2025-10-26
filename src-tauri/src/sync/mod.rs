@@ -1,9 +1,9 @@
 use crate::core::{SyncStatus, Transaction};
 use crate::db::Database;
 use crate::indexer::PolkadotIndexer;
+use anyhow::Result;
 use std::sync::Arc;
 use tokio::sync::Mutex;
-use anyhow::Result;
 
 pub struct SyncManager {
     db: Arc<Mutex<Database>>,
@@ -17,39 +17,43 @@ impl SyncManager {
             indexer: Arc::new(Mutex::new(PolkadotIndexer::new())),
         }
     }
-    
+
     pub async fn sync_account(
         &self,
         chain: &str,
         address: &str,
-        profile_id: &str
+        profile_id: &str,
     ) -> Result<SyncStatus> {
         let mut indexer = self.indexer.lock().await;
-        
+
         // Connect to chain if not already connected
         indexer.connect(chain).await?;
-        
+
         // Get current block height
         let current_block = indexer.get_latest_block(chain).await?;
-        
+
         // Get last synced block from database
         let db = self.db.lock().await;
         let last_synced_block = self.get_last_synced_block(&db, profile_id, chain).await?;
-        
+
         // Fetch transactions
-        let transactions = indexer.fetch_account_transactions(
-            chain,
-            address,
-            Some(last_synced_block),
-            Some(current_block)
-        ).await?;
-        
+        let transactions = indexer
+            .fetch_account_transactions(
+                chain,
+                address,
+                Some(last_synced_block),
+                Some(current_block),
+            )
+            .await?;
+
         // Save transactions to database
-        self.save_transactions(&db, profile_id, &transactions).await?;
-        
+        self.save_transactions(&db, profile_id, &transactions)
+            .await?;
+
         // Update sync status
-        self.update_sync_status(&db, profile_id, chain, current_block).await?;
-        
+        self.update_sync_status(&db, profile_id, chain, current_block)
+            .await?;
+
         Ok(SyncStatus {
             chain: chain.to_string(),
             last_block: last_synced_block as i64,
@@ -58,12 +62,12 @@ impl SyncManager {
             progress: 100.0,
         })
     }
-    
+
     async fn get_last_synced_block(
         &self,
         db: &Database,
         profile_id: &str,
-        chain: &str
+        chain: &str,
     ) -> Result<u32> {
         let result = sqlx::query!(
             "SELECT last_synced_block FROM sync_status WHERE profile_id = ? AND chain = ?",
@@ -72,15 +76,15 @@ impl SyncManager {
         )
         .fetch_optional(&db.pool)
         .await?;
-        
+
         Ok(result.map(|r| r.last_synced_block as u32).unwrap_or(0))
     }
-    
+
     async fn save_transactions(
         &self,
         db: &Database,
         profile_id: &str,
-        transactions: &[Transaction]
+        transactions: &[Transaction],
     ) -> Result<()> {
         // Save transactions to database
         for tx in transactions {
@@ -111,16 +115,16 @@ impl SyncManager {
             .execute(&db.pool)
             .await?;
         }
-        
+
         Ok(())
     }
-    
+
     async fn update_sync_status(
         &self,
         db: &Database,
         profile_id: &str,
         chain: &str,
-        block: u32
+        block: u32,
     ) -> Result<()> {
         sqlx::query!(
             r#"
@@ -136,7 +140,7 @@ impl SyncManager {
         )
         .execute(&db.pool)
         .await?;
-        
+
         Ok(())
     }
 }

@@ -1,5 +1,5 @@
-use sqlx::{Pool, Sqlite, SqlitePool};
 use anyhow::Result;
+use sqlx::{Pool, Sqlite, SqlitePool};
 
 pub struct Database {
     pub pool: Pool<Sqlite>,
@@ -8,13 +8,13 @@ pub struct Database {
 impl Database {
     pub async fn new(database_url: &str) -> Result<Self> {
         let pool = SqlitePool::connect(database_url).await?;
-        
+
         // Run migrations
         sqlx::migrate!("./migrations").run(&pool).await?;
-        
+
         Ok(Self { pool })
     }
-    
+
     pub async fn get_transactions(
         &self,
         profile_id: &str,
@@ -22,25 +22,25 @@ impl Database {
         end_date: Option<String>,
     ) -> Result<Vec<crate::core::Transaction>> {
         let mut query = "SELECT * FROM transactions WHERE profile_id = ?".to_string();
-        
+
         if let Some(start) = start_date {
             query.push_str(&format!(" AND timestamp >= '{}'", start));
         }
-        
+
         if let Some(end) = end_date {
             query.push_str(&format!(" AND timestamp <= '{}'", end));
         }
-        
+
         query.push_str(" ORDER BY timestamp DESC");
-        
+
         let transactions = sqlx::query_as(&query)
             .bind(profile_id)
             .fetch_all(&self.pool)
             .await?;
-        
+
         Ok(transactions)
     }
-    
+
     pub async fn init_tables(&self) -> Result<()> {
         // Create tables if they don't exist
         sqlx::query!(
@@ -56,7 +56,7 @@ impl Database {
         )
         .execute(&self.pool)
         .await?;
-        
+
         sqlx::query!(
             r#"
             CREATE TABLE IF NOT EXISTS accounts (
@@ -73,7 +73,7 @@ impl Database {
         )
         .execute(&self.pool)
         .await?;
-        
+
         sqlx::query!(
             r#"
             CREATE TABLE IF NOT EXISTS transactions (
@@ -101,7 +101,7 @@ impl Database {
         )
         .execute(&self.pool)
         .await?;
-        
+
         sqlx::query!(
             r#"
             CREATE TABLE IF NOT EXISTS sync_status (
@@ -116,7 +116,7 @@ impl Database {
         )
         .execute(&self.pool)
         .await?;
-        
+
         Ok(())
     }
 }

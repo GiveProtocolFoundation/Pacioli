@@ -41,7 +41,11 @@ interface RecentRun {
   status: 'completed' | 'processing' | 'failed'
 }
 
-const reportCategories: { id: ReportCategory; label: string; icon: React.ElementType }[] = [
+const reportCategories: {
+  id: ReportCategory
+  label: string
+  icon: React.ElementType
+}[] = [
   { id: 'financial', label: 'Financial Reports', icon: FileText },
   { id: 'crypto', label: 'Crypto Reports', icon: Coins },
   { id: 'tax', label: 'Tax Reports', icon: Receipt },
@@ -53,7 +57,8 @@ const reports: Report[] = [
   {
     id: 'balance-sheet',
     name: 'Balance Sheet',
-    description: 'Statement of financial position showing assets, liabilities, and equity',
+    description:
+      'Statement of financial position showing assets, liabilities, and equity',
     category: 'financial',
     icon: PieChart,
     lastRun: '2025-10-15T14:30:00Z',
@@ -62,7 +67,8 @@ const reports: Report[] = [
   {
     id: 'income-statement',
     name: 'Income Statement (P&L)',
-    description: 'Profit and loss statement showing revenue, expenses, and net income',
+    description:
+      'Profit and loss statement showing revenue, expenses, and net income',
     category: 'financial',
     icon: TrendingUp,
     lastRun: '2025-10-15T14:30:00Z',
@@ -71,7 +77,8 @@ const reports: Report[] = [
   {
     id: 'cash-flow',
     name: 'Cash Flow Statement',
-    description: 'Statement of cash flows from operating, investing, and financing activities',
+    description:
+      'Statement of cash flows from operating, investing, and financing activities',
     category: 'financial',
     icon: DollarSign,
     lastRun: '2025-10-10T09:15:00Z',
@@ -79,7 +86,8 @@ const reports: Report[] = [
   {
     id: 'trial-balance',
     name: 'Trial Balance',
-    description: 'List of all general ledger accounts with their debit and credit balances',
+    description:
+      'List of all general ledger accounts with their debit and credit balances',
     category: 'financial',
     icon: BarChart3,
   },
@@ -159,7 +167,8 @@ const reports: Report[] = [
   {
     id: 'tax-summary',
     name: 'Tax Summary Report',
-    description: 'Annual tax summary including realized gains, income, and deductions',
+    description:
+      'Annual tax summary including realized gains, income, and deductions',
     category: 'tax',
     icon: Receipt,
     lastRun: '2025-01-15T14:00:00Z',
@@ -168,14 +177,16 @@ const reports: Report[] = [
   {
     id: 'form-8949',
     name: 'Form 8949 (Capital Gains)',
-    description: 'IRS Form 8949 data for cryptocurrency capital gains and losses',
+    description:
+      'IRS Form 8949 data for cryptocurrency capital gains and losses',
     category: 'tax',
     icon: FileText,
   },
   {
     id: 'income-report',
     name: 'Cryptocurrency Income Report',
-    description: 'All cryptocurrency income including staking, rewards, and airdrops',
+    description:
+      'All cryptocurrency income including staking, rewards, and airdrops',
     category: 'tax',
     icon: DollarSign,
   },
@@ -224,12 +235,15 @@ const recentRuns: RecentRun[] = [
 ]
 
 const Reports: React.FC = () => {
-  const [selectedCategory, setSelectedCategory] = useState<ReportCategory | 'all'>('all')
+  const [selectedCategory, setSelectedCategory] = useState<
+    ReportCategory | 'all'
+  >('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false)
 
   const filteredReports = reports.filter(report => {
-    const matchesCategory = selectedCategory === 'all' || report.category === selectedCategory
+    const matchesCategory =
+      selectedCategory === 'all' || report.category === selectedCategory
     const matchesSearch =
       report.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       report.description.toLowerCase().includes(searchQuery.toLowerCase())
@@ -253,21 +267,28 @@ const Reports: React.FC = () => {
 
   const getStatusBadge = (status: RecentRun['status']) => {
     const styles = {
-      completed: 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400',
-      processing: 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400',
+      completed:
+        'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400',
+      processing:
+        'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400',
       failed: 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400',
     }
 
     return (
-      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${styles[status]}`}>
+      <span
+        className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${styles[status]}`}
+      >
         {status.charAt(0).toUpperCase() + status.slice(1)}
       </span>
     )
   }
 
-  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value)
-  }, [])
+  const handleSearchChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setSearchQuery(e.target.value)
+    },
+    []
+  )
 
   const handleToggleFavorites = useCallback(() => {
     setShowFavoritesOnly(!showFavoritesOnly)
@@ -288,7 +309,9 @@ const Reports: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Reports</h1>
+              <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
+                Reports
+              </h1>
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                 Financial and cryptocurrency reporting
               </p>
@@ -310,7 +333,9 @@ const Reports: React.FC = () => {
               <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Total Reports</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Total Reports
+                    </p>
                     <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
                       {reports.length}
                     </p>
@@ -322,7 +347,9 @@ const Reports: React.FC = () => {
               <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Favorites</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Favorites
+                    </p>
                     <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
                       {favoriteReports.length}
                     </p>
@@ -334,9 +361,14 @@ const Reports: React.FC = () => {
               <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Run Today</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Run Today
+                    </p>
                     <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
-                      {recentRuns.filter(r => r.ranAt.startsWith('2025-10-17')).length}
+                      {
+                        recentRuns.filter(r => r.ranAt.startsWith('2025-10-17'))
+                          .length
+                      }
                     </p>
                   </div>
                   <Clock className="w-8 h-8 text-green-600" />
@@ -365,7 +397,9 @@ const Reports: React.FC = () => {
                       : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
                   }`}
                 >
-                  <Star className={`w-4 h-4 mr-2 ${showFavoritesOnly ? 'fill-current' : ''}`} />
+                  <Star
+                    className={`w-4 h-4 mr-2 ${showFavoritesOnly ? 'fill-current' : ''}`}
+                  />
                   Favorites
                 </button>
               </div>
@@ -543,7 +577,9 @@ const Reports: React.FC = () => {
 
             {/* Report Builder CTA */}
             <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg p-6 text-white">
-              <h3 className="text-sm font-semibold mb-2">Custom Report Builder</h3>
+              <h3 className="text-sm font-semibold mb-2">
+                Custom Report Builder
+              </h3>
               <p className="text-xs opacity-90 mb-4">
                 Create custom reports with advanced filters and calculations
               </p>

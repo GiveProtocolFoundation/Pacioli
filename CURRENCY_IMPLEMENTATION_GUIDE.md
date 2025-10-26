@@ -9,11 +9,13 @@ This guide provides step-by-step instructions for implementing the multi-currenc
 ### Supported Currencies
 
 **Fiat:**
+
 - USD (US Dollar) - Primary
 - EUR (Euro)
 - GBP (British Pound)
 
 **Crypto:**
+
 - DOT (Polkadot) - 10 decimals, Substrate chain
 - KSM (Kusama) - 12 decimals, Substrate chain
 - USDT (Tether) - 6 decimals
@@ -68,6 +70,7 @@ parachain_tokens
 #### 1. Store Original, Convert On-Demand
 
 **Always store:**
+
 ```rust
 struct Transaction {
     original_amount: String,      // "10.5" DOT
@@ -80,6 +83,7 @@ struct Transaction {
 ```
 
 **Never store:**
+
 - Only converted amounts
 - Hardcoded exchange rates
 - Amounts without their currency
@@ -146,6 +150,7 @@ let historical = client.get_historical_price(
 ```
 
 **Rate Limits:**
+
 - Free tier: 10-50 calls/minute
 - Pro tier: 500 calls/minute
 - Cache aggressively!
@@ -176,6 +181,7 @@ let converted = client.convert("EUR", "USD", "100.00").await?;
 ```
 
 **Rate Limits:**
+
 - Free tier: 100 calls/month
 - Basic tier: 1000 calls/month
 - Cache for 24 hours!
@@ -663,6 +669,7 @@ async fn backfill_currency_data(pool: &Pool<Sqlite>) -> Result<()> {
 ## Next Steps (Phase 2)
 
 After MVP is stable, expand to:
+
 1. Add more cryptocurrencies (ETH, BTC, etc.)
 2. Add more fiat currencies
 3. Implement real-time price updates (WebSockets)
@@ -673,6 +680,7 @@ After MVP is stable, expand to:
 ## Support
 
 For issues or questions:
+
 - Check logs for API errors
 - Verify API keys are valid
 - Ensure network connectivity

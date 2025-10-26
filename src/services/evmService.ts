@@ -1,16 +1,16 @@
-import { ethers } from 'ethers';
-import { invoke } from '@tauri-apps/api/tauri';
-import { getErrorCode } from '../types/errors';
+import { ethers } from 'ethers'
+import { invoke } from '@tauri-apps/api/tauri'
+import { getErrorCode } from '../types/errors'
 
 export interface EVMChain {
-  name: string;
-  chainId: number;
-  rpcUrl: string;
+  name: string
+  chainId: number
+  rpcUrl: string
   nativeToken: {
-    symbol: string;
-    decimals: number;
-  };
-  explorer: string;
+    symbol: string
+    decimals: number
+  }
+  explorer: string
 }
 
 export const EVM_CHAINS: Record<string, EVMChain> = {
@@ -56,133 +56,140 @@ export const EVM_CHAINS: Record<string, EVMChain> = {
     nativeToken: { symbol: 'PAS', decimals: 18 },
     explorer: 'https://blockscout-passet-hub.parity-testnet.parity.io',
   },
-};
+}
 
 export class EVMService {
-  private providers: Map<string, ethers.providers.JsonRpcProvider> = new Map();
-  
+  private providers: Map<string, ethers.providers.JsonRpcProvider> = new Map()
+
   getProvider(chain: string): ethers.providers.JsonRpcProvider {
     if (!this.providers.has(chain)) {
-      const config = EVM_CHAINS[chain];
-      if (!config) throw new Error(`Unknown chain: ${chain}`);
+      const config = EVM_CHAINS[chain]
+      if (!config) throw new Error(`Unknown chain: ${chain}`)
 
-      const provider = new ethers.providers.JsonRpcProvider(config.rpcUrl);
-      this.providers.set(chain, provider);
+      const provider = new ethers.providers.JsonRpcProvider(config.rpcUrl)
+      this.providers.set(chain, provider)
     }
-    const provider = this.providers.get(chain);
+    const provider = this.providers.get(chain)
     if (!provider) {
-      throw new Error(`Provider not found for chain: ${chain}`);
+      throw new Error(`Provider not found for chain: ${chain}`)
     }
-    return provider;
+    return provider
   }
-  
+
   static async importFromMetaMask() {
     if (!window.ethereum) {
-      throw new Error('MetaMask not installed');
+      throw new Error('MetaMask not installed')
     }
 
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
-    await provider.send('eth_requestAccounts', []);
-    const signer = provider.getSigner();
-    const address = await signer.getAddress();
-    const network = await provider.getNetwork();
+    const provider = new ethers.providers.Web3Provider(window.ethereum)
+    await provider.send('eth_requestAccounts', [])
+    const signer = provider.getSigner()
+    const address = await signer.getAddress()
+    const network = await provider.getNetwork()
 
     // Find matching chain
     const chain = Object.entries(EVM_CHAINS).find(
       ([_, config]) => config.chainId === network.chainId
-    );
+    )
 
     if (!chain) {
-      throw new Error(`Unsupported network: ${network.chainId}`);
+      throw new Error(`Unsupported network: ${network.chainId}`)
     }
 
     return {
       address,
       chain: chain[0],
       chainId: network.chainId,
-    };
+    }
   }
-  
+
   static async syncEVMTransactions(chain: string, address: string) {
-    return invoke('sync_evm_transactions', { chain, address });
+    return invoke('sync_evm_transactions', { chain, address })
   }
 
   static async getTokenBalances(chain: string, address: string) {
-    return invoke('get_evm_token_balances', { chain, address });
+    return invoke('get_evm_token_balances', { chain, address })
   }
 
   static async scanDeFiPositions(chain: string, address: string) {
-    return invoke('scan_defi_positions', { chain, address });
+    return invoke('scan_defi_positions', { chain, address })
   }
 
   static async getBalance(chain: string, address: string) {
-    return invoke('get_evm_balance', { chain, address });
+    return invoke('get_evm_balance', { chain, address })
   }
 
-  static async getTransactions(chain: string, address: string, fromBlock?: number, toBlock?: number) {
+  static async getTransactions(
+    chain: string,
+    address: string,
+    fromBlock?: number,
+    toBlock?: number
+  ) {
     return invoke('get_evm_transactions', {
       chain,
       address,
       fromBlock: fromBlock || 0,
-      toBlock: toBlock || 'latest'
-    });
+      toBlock: toBlock || 'latest',
+    })
   }
 
   static async connectToChain(chain: string) {
-    return invoke('connect_evm_chain', { chain });
+    return invoke('connect_evm_chain', { chain })
   }
 
   static async getChainInfo(chain: string) {
-    const config = EVM_CHAINS[chain];
-    if (!config) throw new Error(`Unknown chain: ${chain}`);
-    return config;
+    const config = EVM_CHAINS[chain]
+    if (!config) throw new Error(`Unknown chain: ${chain}`)
+    return config
   }
 
   static async switchNetwork(chainId: number) {
     if (!window.ethereum) {
-      throw new Error('MetaMask not installed');
+      throw new Error('MetaMask not installed')
     }
 
-    const hexChainId = `0x${chainId.toString(16)}`;
+    const hexChainId = `0x${chainId.toString(16)}`
 
     try {
       await window.ethereum.request({
         method: 'wallet_switchEthereumChain',
         params: [{ chainId: hexChainId }],
-      });
+      })
     } catch (error: unknown) {
       // Network doesn't exist, try to add it
       if (getErrorCode(error) === 4902) {
-        const chain = Object.values(EVM_CHAINS).find(c => c.chainId === chainId);
+        const chain = Object.values(EVM_CHAINS).find(c => c.chainId === chainId)
         if (chain) {
-          await EVMService.addNetwork(chain);
+          await EVMService.addNetwork(chain)
         } else {
-          throw new Error(`Unknown chain ID: ${chainId}`);
+          throw new Error(`Unknown chain ID: ${chainId}`)
         }
       } else {
-        throw error;
+        throw error
       }
     }
   }
 
   private static async addNetwork(chain: EVMChain) {
     if (!window.ethereum) {
-      throw new Error('MetaMask not installed');
+      throw new Error('MetaMask not installed')
     }
 
     await window.ethereum.request({
       method: 'wallet_addEthereumChain',
-      params: [{
-        chainId: `0x${chain.chainId.toString(16)}`,
-        chainName: chain.name,
-        nativeCurrency: {
-          name: chain.nativeToken.symbol,
-          symbol: chain.nativeToken.symbol,
-          decimals: chain.nativeToken.decimals,
+      params: [
+        {
+          chainId: `0x${chain.chainId.toString(16)}`,
+          chainName: chain.name,
+          nativeCurrency: {
+            name: chain.nativeToken.symbol,
+            symbol: chain.nativeToken.symbol,
+            decimals: chain.nativeToken.decimals,
+          },
+          rpcUrls: [chain.rpcUrl],
+          blockExplorerUrls: [chain.explorer],
         },
-        rpcUrls: [chain.rpcUrl],
-        blockExplorerUrls: [chain.explorer],
-      }],
-    });
+      ],
+    })
   }
 }

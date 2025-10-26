@@ -44,15 +44,16 @@ interface GeneralSettingsProps {
 
 interface OrganizationInformationSectionProps {
   organizationSettings: OrganizationSettings
-  onOrganizationChange: <K extends keyof OrganizationSettings>(key: K, value: OrganizationSettings[K]) => void
+  onOrganizationChange: <K extends keyof OrganizationSettings>(
+    key: K,
+    value: OrganizationSettings[K]
+  ) => void
   onLogoUpload: (e: React.ChangeEvent<HTMLInputElement>) => void
 }
 
-const OrganizationInformationSection: React.FC<OrganizationInformationSectionProps> = ({
-  organizationSettings,
-  onOrganizationChange,
-  onLogoUpload,
-}) => {
+const OrganizationInformationSection: React.FC<
+  OrganizationInformationSectionProps
+> = ({ organizationSettings, onOrganizationChange, onLogoUpload }) => {
   const createTextHandler = useCallback(
     <K extends keyof OrganizationSettings>(key: K) => {
       return (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -64,7 +65,10 @@ const OrganizationInformationSection: React.FC<OrganizationInformationSectionPro
 
   const handleOrgTypeChange = useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
-      onOrganizationChange('organizationType', e.target.value as OrganizationSettings['organizationType'])
+      onOrganizationChange(
+        'organizationType',
+        e.target.value as OrganizationSettings['organizationType']
+      )
     },
     [onOrganizationChange]
   )
@@ -116,7 +120,10 @@ const OrganizationInformationSection: React.FC<OrganizationInformationSectionPro
 
         {/* Organization Type */}
         <div>
-          <label htmlFor="organizationType" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label
+            htmlFor="organizationType"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+          >
             Organization Type
           </label>
           <select
@@ -133,7 +140,10 @@ const OrganizationInformationSection: React.FC<OrganizationInformationSectionPro
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="orgName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label
+              htmlFor="orgName"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            >
               Organization Name
             </label>
             <input
@@ -146,7 +156,10 @@ const OrganizationInformationSection: React.FC<OrganizationInformationSectionPro
           </div>
 
           <div>
-            <label htmlFor="legalName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label
+              htmlFor="legalName"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            >
               Legal Name
             </label>
             <input
@@ -159,7 +172,10 @@ const OrganizationInformationSection: React.FC<OrganizationInformationSectionPro
           </div>
 
           <div>
-            <label htmlFor="taxId" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label
+              htmlFor="taxId"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            >
               Tax ID / EIN
             </label>
             <input
@@ -172,7 +188,10 @@ const OrganizationInformationSection: React.FC<OrganizationInformationSectionPro
           </div>
 
           <div>
-            <label htmlFor="website" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label
+              htmlFor="website"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            >
               Website
             </label>
             <input
@@ -185,7 +204,10 @@ const OrganizationInformationSection: React.FC<OrganizationInformationSectionPro
           </div>
 
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            >
               Email
             </label>
             <input
@@ -198,7 +220,10 @@ const OrganizationInformationSection: React.FC<OrganizationInformationSectionPro
           </div>
 
           <div>
-            <label htmlFor="phone" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label
+              htmlFor="phone"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            >
               Phone
             </label>
             <input
@@ -212,7 +237,10 @@ const OrganizationInformationSection: React.FC<OrganizationInformationSectionPro
         </div>
 
         <div>
-          <label htmlFor="address" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label
+            htmlFor="address"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+          >
             Address
           </label>
           <input
@@ -226,7 +254,10 @@ const OrganizationInformationSection: React.FC<OrganizationInformationSectionPro
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="md:col-span-2">
-            <label htmlFor="city" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label
+              htmlFor="city"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            >
               City
             </label>
             <input
@@ -239,7 +270,10 @@ const OrganizationInformationSection: React.FC<OrganizationInformationSectionPro
           </div>
 
           <div>
-            <label htmlFor="state" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label
+              htmlFor="state"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            >
               State/Province
             </label>
             <input
@@ -252,7 +286,10 @@ const OrganizationInformationSection: React.FC<OrganizationInformationSectionPro
           </div>
 
           <div>
-            <label htmlFor="zipCode" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label
+              htmlFor="zipCode"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            >
               ZIP/Postal Code
             </label>
             <input
@@ -266,7 +303,10 @@ const OrganizationInformationSection: React.FC<OrganizationInformationSectionPro
         </div>
 
         <div>
-          <label htmlFor="country" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label
+            htmlFor="country"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+          >
             Country
           </label>
           <input
@@ -284,7 +324,10 @@ const OrganizationInformationSection: React.FC<OrganizationInformationSectionPro
 
 interface FiscalYearSectionProps {
   systemSettings: SystemSettings
-  onSystemChange: <K extends keyof SystemSettings>(key: K, value: SystemSettings[K]) => void
+  onSystemChange: <K extends keyof SystemSettings>(
+    key: K,
+    value: SystemSettings[K]
+  ) => void
 }
 
 const FiscalYearSection: React.FC<FiscalYearSectionProps> = ({
@@ -314,8 +357,8 @@ const FiscalYearSection: React.FC<FiscalYearSectionProps> = ({
           <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
           <div className="ml-3">
             <p className="text-sm text-blue-800 dark:text-blue-400">
-              Changing the fiscal year will affect all date-based reports and analytics.
-              Consult with your accountant before making changes.
+              Changing the fiscal year will affect all date-based reports and
+              analytics. Consult with your accountant before making changes.
             </p>
           </div>
         </div>
@@ -323,7 +366,10 @@ const FiscalYearSection: React.FC<FiscalYearSectionProps> = ({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label htmlFor="fiscalYearStart" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label
+            htmlFor="fiscalYearStart"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+          >
             Fiscal Year Start (MM-DD)
           </label>
           <input
@@ -337,7 +383,10 @@ const FiscalYearSection: React.FC<FiscalYearSectionProps> = ({
         </div>
 
         <div>
-          <label htmlFor="fiscalYearEnd" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label
+            htmlFor="fiscalYearEnd"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+          >
             Fiscal Year End (MM-DD)
           </label>
           <input
@@ -354,7 +403,9 @@ const FiscalYearSection: React.FC<FiscalYearSectionProps> = ({
   )
 }
 
-const GeneralSettings: React.FC<GeneralSettingsProps> = ({ userType = 'organization' }) => {
+const GeneralSettings: React.FC<GeneralSettingsProps> = ({
+  userType = 'organization',
+}) => {
   const { theme: currentTheme, setTheme } = useTheme()
   const { organizationLogo, setOrganizationLogo } = useOrganization()
 
@@ -437,9 +488,18 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ userType = 'organizat
   )
 
   // Theme button handlers
-  const handleThemeLight = useCallback(() => handleSystemChange('theme', 'light'), [handleSystemChange])
-  const handleThemeDark = useCallback(() => handleSystemChange('theme', 'dark'), [handleSystemChange])
-  const handleThemeSystem = useCallback(() => handleSystemChange('theme', 'system'), [handleSystemChange])
+  const handleThemeLight = useCallback(
+    () => handleSystemChange('theme', 'light'),
+    [handleSystemChange]
+  )
+  const handleThemeDark = useCallback(
+    () => handleSystemChange('theme', 'dark'),
+    [handleSystemChange]
+  )
+  const handleThemeSystem = useCallback(
+    () => handleSystemChange('theme', 'system'),
+    [handleSystemChange]
+  )
 
   // Factory function for system select handlers (used in main component)
   const createSystemSelectHandler = useCallback(
@@ -514,7 +574,10 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ userType = 'organizat
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label htmlFor="timezone" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label
+                htmlFor="timezone"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              >
                 Timezone
               </label>
               <select
@@ -523,10 +586,18 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ userType = 'organizat
                 onChange={createSystemSelectHandler('timezone')}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option value="America/Los_Angeles">Pacific Time (US & Canada)</option>
-                <option value="America/Denver">Mountain Time (US & Canada)</option>
-                <option value="America/Chicago">Central Time (US & Canada)</option>
-                <option value="America/New_York">Eastern Time (US & Canada)</option>
+                <option value="America/Los_Angeles">
+                  Pacific Time (US & Canada)
+                </option>
+                <option value="America/Denver">
+                  Mountain Time (US & Canada)
+                </option>
+                <option value="America/Chicago">
+                  Central Time (US & Canada)
+                </option>
+                <option value="America/New_York">
+                  Eastern Time (US & Canada)
+                </option>
                 <option value="UTC">UTC</option>
                 <option value="Europe/London">London</option>
                 <option value="Europe/Paris">Paris</option>
@@ -535,7 +606,10 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ userType = 'organizat
             </div>
 
             <div>
-              <label htmlFor="language" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label
+                htmlFor="language"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              >
                 Language
               </label>
               <select
@@ -552,7 +626,10 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ userType = 'organizat
             </div>
 
             <div>
-              <label htmlFor="dateFormat" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label
+                htmlFor="dateFormat"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              >
                 Date Format
               </label>
               <select
@@ -568,7 +645,10 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ userType = 'organizat
             </div>
 
             <div>
-              <label htmlFor="timeFormat" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label
+                htmlFor="timeFormat"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              >
                 Time Format
               </label>
               <select
@@ -606,7 +686,9 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ userType = 'organizat
                     : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
                 }`}
               >
-                <div className="font-medium text-gray-900 dark:text-white mb-1">Light</div>
+                <div className="font-medium text-gray-900 dark:text-white mb-1">
+                  Light
+                </div>
                 <div className="text-xs text-gray-500 dark:text-gray-400">
                   Classic light theme
                 </div>
@@ -620,7 +702,9 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ userType = 'organizat
                     : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
                 }`}
               >
-                <div className="font-medium text-gray-900 dark:text-white mb-1">Dark</div>
+                <div className="font-medium text-gray-900 dark:text-white mb-1">
+                  Dark
+                </div>
                 <div className="text-xs text-gray-500 dark:text-gray-400">
                   Easy on the eyes
                 </div>
@@ -634,7 +718,9 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ userType = 'organizat
                     : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
                 }`}
               >
-                <div className="font-medium text-gray-900 dark:text-white mb-1">System</div>
+                <div className="font-medium text-gray-900 dark:text-white mb-1">
+                  System
+                </div>
                 <div className="text-xs text-gray-500 dark:text-gray-400">
                   Match OS preference
                 </div>

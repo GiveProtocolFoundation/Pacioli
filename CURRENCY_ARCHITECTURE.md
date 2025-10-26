@@ -9,6 +9,7 @@ This document describes the multi-currency architecture implemented in the Numbe
 ### 1. Database Schema
 
 #### currencies table
+
 Stores all supported currencies (both fiat and crypto).
 
 ```sql
@@ -29,10 +30,12 @@ CREATE TABLE currencies (
 ```
 
 **Pre-populated currencies:**
+
 - Crypto: BTC, ETH, USDC, USDT, SOL, MATIC, BNB, ADA, DOT, AVAX
 - Fiat: USD, EUR, GBP, JPY, CAD, AUD, CHF, CNY, INR
 
 #### exchange_rates table
+
 Caches exchange rates with TTL for performance.
 
 ```sql
@@ -53,16 +56,19 @@ CREATE TABLE exchange_rates (
 ```
 
 **Exchange rate sources:**
+
 - `coingecko`: Crypto prices from CoinGecko API
 - `fixer`: Fiat exchange rates from Fixer API
 - `manual`: Manually entered rates
 - `compound`: Calculated from multiple sources (e.g., BTC→ETH via USD)
 
 **TTL (Time To Live):**
+
 - Crypto rates: 300 seconds (5 minutes) - volatile markets
 - Fiat rates: 86400 seconds (24 hours) - more stable
 
 #### account_settings table
+
 Per-profile currency preferences.
 
 ```sql
@@ -94,11 +100,13 @@ CREATE TABLE account_settings (
 ```
 
 **Conversion methods:**
+
 - `spot`: Use current exchange rate
 - `historical`: Use rate at transaction time
 - `fixed`: Use manually set rates
 
 #### transactions table (enhanced)
+
 Updated with currency conversion fields.
 
 ```sql
@@ -112,6 +120,7 @@ ALTER TABLE transactions ADD COLUMN exchange_rate_timestamp DATETIME;
 ### 2. Rust Backend
 
 #### Currency Models
+
 Located in `src-tauri/src/core/currency.rs`:
 
 ```rust
@@ -159,6 +168,7 @@ pub struct TransactionWithConversion {
 ```
 
 #### Currency Service
+
 Located in `src-tauri/src/core/currency_service.rs`:
 
 ```rust
@@ -180,69 +190,81 @@ impl CurrencyService {
 ### 3. TypeScript Frontend
 
 #### Type Definitions
+
 Located in `src/types/currency.ts`:
 
 ```typescript
 export interface Currency {
-  id: string;
-  code: string;
-  name: string;
-  type: 'fiat' | 'crypto';
-  decimals: number;
-  isSupported: boolean;
-  symbol?: string;
+  id: string
+  code: string
+  name: string
+  type: 'fiat' | 'crypto'
+  decimals: number
+  isSupported: boolean
+  symbol?: string
   // ... other fields
 }
 
 export interface ExchangeRate {
-  id: string;
-  fromCurrency: string;
-  toCurrency: string;
-  rate: string;
-  timestamp: string;
-  source: ExchangeRateSource;
-  ttlSeconds: number;
+  id: string
+  fromCurrency: string
+  toCurrency: string
+  rate: string
+  timestamp: string
+  source: ExchangeRateSource
+  ttlSeconds: number
 }
 
 export interface AccountSettings {
-  id: string;
-  profileId: string;
-  primaryCurrency: string;
-  reportingCurrencies?: string[];
-  conversionMethod: ConversionMethod;
+  id: string
+  profileId: string
+  primaryCurrency: string
+  reportingCurrencies?: string[]
+  conversionMethod: ConversionMethod
   // ... other fields
 }
 
 export interface TransactionWithConversion {
   // Original fields
-  value: string;
-  tokenSymbol: string;
+  value: string
+  tokenSymbol: string
 
   // Conversion fields
-  amountPrimary?: string;
-  primaryCurrency?: string;
-  exchangeRate?: string;
-  exchangeRateSource?: string;
+  amountPrimary?: string
+  primaryCurrency?: string
+  exchangeRate?: string
+  exchangeRateSource?: string
 }
 ```
 
 #### Currency Service
+
 Located in `src/utils/currencyService.ts`:
 
 ```typescript
 export class CurrencyService {
-  async initialize(currencies: Currency[], settings: AccountSettings): Promise<void>;
-  getCurrency(code: string): Currency | undefined;
-  getCachedRate(from: string, to: string): ExchangeRate | null;
-  async convert(request: ConversionRequest): Promise<ConversionResponse>;
-  formatCurrency(amount: string | number, code: string, options?: CurrencyFormatOptions): string;
+  async initialize(
+    currencies: Currency[],
+    settings: AccountSettings
+  ): Promise<void>
+  getCurrency(code: string): Currency | undefined
+  getCachedRate(from: string, to: string): ExchangeRate | null
+  async convert(request: ConversionRequest): Promise<ConversionResponse>
+  formatCurrency(
+    amount: string | number,
+    code: string,
+    options?: CurrencyFormatOptions
+  ): string
   // ... other methods
 }
 
 // Utility functions
-export function formatCurrency(amount: string | number, code: string): string;
-export function getCurrencySymbol(code: string): string;
-export function formatCompactCurrency(amount: string | number, code: string): string;
+export function formatCurrency(amount: string | number, code: string): string
+export function getCurrencySymbol(code: string): string
+export function formatCompactCurrency(
+  amount: string | number,
+  code: string
+): string
 ```
 
 ## Usage Examples
@@ -292,30 +314,34 @@ currency_service.cache_exchange_rate(&rate).await?;
 ### Frontend (TypeScript)
 
 ```typescript
-import { currencyService, formatCurrency, formatCompactCurrency } from '@/utils/currencyService';
-import { Currency, AccountSettings } from '@/types/currency';
+import {
+  currencyService,
+  formatCurrency,
+  formatCompactCurrency,
+} from '@/utils/currencyService'
+import { Currency, AccountSettings } from '@/types/currency'
 
 // Initialize service
-await currencyService.initialize(currencies, settings);
+await currencyService.initialize(currencies, settings)
 
 // Format currency
-const formatted = formatCurrency(1234.56, 'USD');  // "$1,234.56"
+const formatted = formatCurrency(1234.56, 'USD') // "$1,234.56"
 
 // Compact format
-const compact = formatCompactCurrency(1500000, 'USD');  // "$1.5M"
+const compact = formatCompactCurrency(1500000, 'USD') // "$1.5M"
 
 // Convert currency
 const result = await currencyService.convert({
   fromCurrency: 'BTC',
   toCurrency: 'USD',
   amount: '0.5',
-  method: 'spot'
-});
+  method: 'spot',
+})
 
-console.log(`0.5 BTC = ${result.convertedAmount} USD`);
+console.log(`0.5 BTC = ${result.convertedAmount} USD`)
 
 // Get currency symbol
-const symbol = getCurrencySymbol('EUR');  // "€"
+const symbol = getCurrencySymbol('EUR') // "€"
 ```
 
 ## Migration Guide
@@ -432,19 +458,19 @@ mod tests {
 ```typescript
 describe('CurrencyService', () => {
   it('should format currency correctly', () => {
-    const result = formatCurrency(1234.56, 'USD');
-    expect(result).toBe('$1,234.56');
-  });
+    const result = formatCurrency(1234.56, 'USD')
+    expect(result).toBe('$1,234.56')
+  })
 
   it('should convert between currencies', async () => {
     const result = await currencyService.convert({
       fromCurrency: 'BTC',
       toCurrency: 'USD',
-      amount: '1.0'
-    });
-    expect(result.convertedAmount).toBeDefined();
-  });
-});
+      amount: '1.0',
+    })
+    expect(result.convertedAmount).toBeDefined()
+  })
+})
 ```
 
 ## Future Enhancements
@@ -517,6 +543,7 @@ let amount = Decimal::from_str("1.23")? * Decimal::from_str("67000")?;
 ## Support
 
 For questions or issues with the currency architecture:
+
 1. Check this documentation
 2. Review the code comments
 3. Create an issue in the repository

@@ -1,8 +1,8 @@
 use crate::db::Database;
-use std::path::PathBuf;
 use anyhow::Result;
 use csv::Writer;
 use serde_json;
+use std::path::PathBuf;
 
 #[tauri::command]
 pub async fn export_transactions_csv(
@@ -12,35 +12,38 @@ pub async fn export_transactions_csv(
     start_date: Option<String>,
     end_date: Option<String>,
 ) -> Result<(), String> {
-    let transactions = db.get_transactions(&profile_id, start_date, end_date)
+    let transactions = db
+        .get_transactions(&profile_id, start_date, end_date)
         .await
         .map_err(|e| e.to_string())?;
-    
-    let mut writer = Writer::from_path(path)
-        .map_err(|e| e.to_string())?;
-    
+
+    let mut writer = Writer::from_path(path).map_err(|e| e.to_string())?;
+
     // Write headers
-    writer.write_record(&[
-        "Date", "Chain", "Hash", "From", "To", "Value", 
-        "Token", "Type", "Fee", "Status"
-    ]).map_err(|e| e.to_string())?;
-    
+    writer
+        .write_record(&[
+            "Date", "Chain", "Hash", "From", "To", "Value", "Token", "Type", "Fee", "Status",
+        ])
+        .map_err(|e| e.to_string())?;
+
     // Write transactions
     for tx in transactions {
-        writer.write_record(&[
-            tx.timestamp.to_string(),
-            tx.chain,
-            tx.hash,
-            tx.from_address,
-            tx.to_address.unwrap_or_default(),
-            tx.value.to_string(),
-            tx.token_symbol,
-            tx.transaction_type,
-            tx.fee.map(|f| f.to_string()).unwrap_or_default(),
-            tx.status,
-        ]).map_err(|e| e.to_string())?;
+        writer
+            .write_record(&[
+                tx.timestamp.to_string(),
+                tx.chain,
+                tx.hash,
+                tx.from_address,
+                tx.to_address.unwrap_or_default(),
+                tx.value.to_string(),
+                tx.token_symbol,
+                tx.transaction_type,
+                tx.fee.map(|f| f.to_string()).unwrap_or_default(),
+                tx.status,
+            ])
+            .map_err(|e| e.to_string())?;
     }
-    
+
     writer.flush().map_err(|e| e.to_string())?;
     Ok(())
 }
@@ -55,7 +58,7 @@ pub async fn export_tax_report(
     let report = generate_tax_report(&db, &profile_id, year)
         .await
         .map_err(|e| e.to_string())?;
-    
+
     Ok(report)
 }
 

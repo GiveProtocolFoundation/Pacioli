@@ -44,6 +44,7 @@ Organization Type: Not-for-Profit / SME / Individual
 ### 2. Configure Regional Settings
 
 Set your preferences for:
+
 - **Timezone**: Your local timezone
 - **Date Format**: MM/DD/YYYY, DD/MM/YYYY, or YYYY-MM-DD
 - **Language**: English, Español, Français, or Deutsch
@@ -52,6 +53,7 @@ Set your preferences for:
 ### 3. Set Up Chart of Accounts
 
 Numbers provides templates based on your organization type:
+
 - **Not-for-Profit**: FASB/GAAP compliant accounts
 - **SME**: Standard business accounts
 - **Individual**: Simplified personal accounts
@@ -118,6 +120,7 @@ If you're working with a team:
 4. Click **Save Transaction**
 
 Numbers will automatically:
+
 - Record the transaction in your general ledger
 - Update wallet balances
 - Calculate cost basis (for tax purposes)

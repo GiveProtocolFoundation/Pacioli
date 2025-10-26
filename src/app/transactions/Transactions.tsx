@@ -1,5 +1,5 @@
-import React, { useState, useCallback } from 'react';
-import { useLocation, Link } from 'react-router-dom';
+import React, { useState, useCallback } from 'react'
+import { useLocation, Link } from 'react-router-dom'
 import {
   Search,
   Filter,
@@ -9,39 +9,39 @@ import {
   ArrowDownRight,
   ArrowLeftRight,
   Eye,
-  Receipt
-} from 'lucide-react';
+  Receipt,
+} from 'lucide-react'
 
-type TransactionType = 'all' | 'revenue' | 'expense' | 'transfers';
+type TransactionType = 'all' | 'revenue' | 'expense' | 'transfers'
 
 interface Transaction {
-  id: string;
-  date: string;
-  description: string;
-  type: 'revenue' | 'expense' | 'transfer';
-  category: string;
-  wallet: string;
-  amount: number;
-  crypto: string;
-  usdValue: number;
-  hash: string;
-  status: 'completed' | 'pending' | 'failed';
-  accountCode?: string; // Chart of Accounts code
-  accountName?: string; // Chart of Accounts name
-  memo?: string; // Additional notes (character limited)
+  id: string
+  date: string
+  description: string
+  type: 'revenue' | 'expense' | 'transfer'
+  category: string
+  wallet: string
+  amount: number
+  crypto: string
+  usdValue: number
+  hash: string
+  status: 'completed' | 'pending' | 'failed'
+  accountCode?: string // Chart of Accounts code
+  accountName?: string // Chart of Accounts name
+  memo?: string // Additional notes (character limited)
 }
 
 const Transactions: React.FC = () => {
-  const location = useLocation();
-  const [searchQuery, setSearchQuery] = useState('');
+  const location = useLocation()
+  const [searchQuery, setSearchQuery] = useState('')
 
   // Derive filter from URL instead of state
-  const params = new URLSearchParams(location.search);
-  const urlFilter = params.get('filter') as TransactionType;
+  const params = new URLSearchParams(location.search)
+  const urlFilter = params.get('filter') as TransactionType
   const filter: TransactionType =
     urlFilter && ['all', 'revenue', 'expense', 'transfers'].includes(urlFilter)
       ? urlFilter
-      : 'all';
+      : 'all'
 
   // Dummy transaction data
   const allTransactions: Transaction[] = [
@@ -54,9 +54,9 @@ const Transactions: React.FC = () => {
       wallet: 'Main Wallet',
       amount: 2.5,
       crypto: 'ETH',
-      usdValue: 6250.00,
+      usdValue: 6250.0,
       hash: '0x1234...5678',
-      status: 'completed'
+      status: 'completed',
     },
     {
       id: '2',
@@ -67,9 +67,9 @@ const Transactions: React.FC = () => {
       wallet: 'Operating Wallet',
       amount: 0.5,
       crypto: 'ETH',
-      usdValue: 1250.00,
+      usdValue: 1250.0,
       hash: '0x2345...6789',
-      status: 'completed'
+      status: 'completed',
     },
     {
       id: '3',
@@ -80,9 +80,9 @@ const Transactions: React.FC = () => {
       wallet: 'Main Wallet',
       amount: 10.0,
       crypto: 'ETH',
-      usdValue: 25000.00,
+      usdValue: 25000.0,
       hash: '0x3456...7890',
-      status: 'completed'
+      status: 'completed',
     },
     {
       id: '4',
@@ -93,9 +93,9 @@ const Transactions: React.FC = () => {
       wallet: 'Main → Cold Storage',
       amount: 5.0,
       crypto: 'ETH',
-      usdValue: 12500.00,
+      usdValue: 12500.0,
       hash: '0x4567...8901',
-      status: 'completed'
+      status: 'completed',
     },
     {
       id: '5',
@@ -106,9 +106,9 @@ const Transactions: React.FC = () => {
       wallet: 'Operating Wallet',
       amount: 0.2,
       crypto: 'ETH',
-      usdValue: 500.00,
+      usdValue: 500.0,
       hash: '0x5678...9012',
-      status: 'completed'
+      status: 'completed',
     },
     {
       id: '6',
@@ -119,9 +119,9 @@ const Transactions: React.FC = () => {
       wallet: 'Main Wallet',
       amount: 1.0,
       crypto: 'ETH',
-      usdValue: 2500.00,
+      usdValue: 2500.0,
       hash: '0x6789...0123',
-      status: 'pending'
+      status: 'pending',
     },
     {
       id: '7',
@@ -132,9 +132,9 @@ const Transactions: React.FC = () => {
       wallet: 'Operating Wallet',
       amount: 1.5,
       crypto: 'ETH',
-      usdValue: 3750.00,
+      usdValue: 3750.0,
       hash: '0x7890...1234',
-      status: 'completed'
+      status: 'completed',
     },
     {
       id: '8',
@@ -145,72 +145,81 @@ const Transactions: React.FC = () => {
       wallet: 'Hot → Warm Wallet',
       amount: 3.0,
       crypto: 'ETH',
-      usdValue: 7500.00,
+      usdValue: 7500.0,
       hash: '0x8901...2345',
-      status: 'completed'
-    }
-  ];
+      status: 'completed',
+    },
+  ]
 
   // Filter transactions based on selected filter
-  const filteredTransactions = allTransactions.filter(tx => {
-    if (filter === 'all') return true;
-    if (filter === 'transfers') return tx.type === 'transfer';
-    return tx.type === filter;
-  }).filter(tx => {
-    if (!searchQuery) return true;
-    return tx.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-           tx.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-           tx.hash.toLowerCase().includes(searchQuery.toLowerCase());
-  });
+  const filteredTransactions = allTransactions
+    .filter(tx => {
+      if (filter === 'all') return true
+      if (filter === 'transfers') return tx.type === 'transfer'
+      return tx.type === filter
+    })
+    .filter(tx => {
+      if (!searchQuery) return true
+      return (
+        tx.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        tx.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        tx.hash.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    })
 
   const getTypeIcon = (type: string) => {
     switch (type) {
       case 'revenue':
-        return <ArrowDownRight className="w-5 h-5 text-green-600" />;
+        return <ArrowDownRight className="w-5 h-5 text-green-600" />
       case 'expense':
-        return <ArrowUpRight className="w-5 h-5 text-red-600" />;
+        return <ArrowUpRight className="w-5 h-5 text-red-600" />
       case 'transfer':
-        return <ArrowLeftRight className="w-5 h-5 text-blue-600" />;
+        return <ArrowLeftRight className="w-5 h-5 text-blue-600" />
       default:
-        return null;
+        return null
     }
-  };
+  }
 
   const getTypeColor = (type: string) => {
     switch (type) {
       case 'revenue':
-        return 'text-green-600 bg-green-50';
+        return 'text-green-600 bg-green-50'
       case 'expense':
-        return 'text-red-600 bg-red-50';
+        return 'text-red-600 bg-red-50'
       case 'transfer':
-        return 'text-blue-600 bg-blue-50';
+        return 'text-blue-600 bg-blue-50'
       default:
-        return 'text-gray-600 bg-gray-50';
+        return 'text-gray-600 bg-gray-50'
     }
-  };
+  }
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed':
-        return 'text-green-700 bg-green-100';
+        return 'text-green-700 bg-green-100'
       case 'pending':
-        return 'text-yellow-700 bg-yellow-100';
+        return 'text-yellow-700 bg-yellow-100'
       case 'failed':
-        return 'text-red-700 bg-red-100';
+        return 'text-red-700 bg-red-100'
       default:
-        return 'text-gray-700 bg-gray-100';
+        return 'text-gray-700 bg-gray-100'
     }
-  };
+  }
 
-  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
-  }, []);
+  const handleSearchChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setSearchQuery(e.target.value)
+    },
+    []
+  )
 
   return (
     <div className="p-6 min-h-screen bg-gray-50 dark:bg-black">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Transactions</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          Transactions
+        </h1>
         <p className="text-gray-600 dark:text-gray-400 mt-1">
           View and manage all your crypto transactions
         </p>
@@ -220,10 +229,26 @@ const Transactions: React.FC = () => {
       <div className="mb-6 border-b border-gray-200 dark:border-gray-700">
         <nav className="flex space-x-8">
           {[
-            { key: 'all', label: 'All Transactions', count: allTransactions.length },
-            { key: 'revenue', label: 'Revenue', count: allTransactions.filter(t => t.type === 'revenue').length },
-            { key: 'expense', label: 'Expense', count: allTransactions.filter(t => t.type === 'expense').length },
-            { key: 'transfers', label: 'Transfers', count: allTransactions.filter(t => t.type === 'transfer').length }
+            {
+              key: 'all',
+              label: 'All Transactions',
+              count: allTransactions.length,
+            },
+            {
+              key: 'revenue',
+              label: 'Revenue',
+              count: allTransactions.filter(t => t.type === 'revenue').length,
+            },
+            {
+              key: 'expense',
+              label: 'Expense',
+              count: allTransactions.filter(t => t.type === 'expense').length,
+            },
+            {
+              key: 'transfers',
+              label: 'Transfers',
+              count: allTransactions.filter(t => t.type === 'transfer').length,
+            },
           ].map(tab => (
             <Link
               key={tab.key}
@@ -235,9 +260,13 @@ const Transactions: React.FC = () => {
               }`}
             >
               {tab.label}
-              <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
-                filter === tab.key ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
-              }`}>
+              <span
+                className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
+                  filter === tab.key
+                    ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
+                    : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
+                }`}
+              >
                 {tab.count}
               </span>
             </Link>
@@ -307,33 +336,56 @@ const Transactions: React.FC = () => {
               </tr>
             </thead>
             <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
-              {filteredTransactions.map((transaction) => (
-                <tr key={transaction.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+              {filteredTransactions.map(transaction => (
+                <tr
+                  key={transaction.id}
+                  className="hover:bg-gray-50 dark:hover:bg-gray-800"
+                >
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className={`inline-flex items-center justify-center w-10 h-10 rounded-lg ${getTypeColor(transaction.type)}`}>
+                    <div
+                      className={`inline-flex items-center justify-center w-10 h-10 rounded-lg ${getTypeColor(transaction.type)}`}
+                    >
                       {getTypeIcon(transaction.type)}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900 dark:text-white">{transaction.date}</div>
+                    <div className="text-sm text-gray-900 dark:text-white">
+                      {transaction.date}
+                    </div>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="text-sm font-medium text-gray-900 dark:text-white">{transaction.description}</div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">{transaction.hash}</div>
+                    <div className="text-sm font-medium text-gray-900 dark:text-white">
+                      {transaction.description}
+                    </div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                      {transaction.hash}
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm text-gray-900 dark:text-white">{transaction.category}</span>
+                    <span className="text-sm text-gray-900 dark:text-white">
+                      {transaction.category}
+                    </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">{transaction.wallet}</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                      {transaction.wallet}
+                    </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className={`text-sm font-semibold ${
-                      transaction.type === 'revenue' ? 'text-green-600' :
-                      transaction.type === 'expense' ? 'text-red-600' :
-                      'text-blue-600'
-                    }`}>
-                      {transaction.type === 'revenue' ? '+' : transaction.type === 'expense' ? '-' : ''}
+                    <div
+                      className={`text-sm font-semibold ${
+                        transaction.type === 'revenue'
+                          ? 'text-green-600'
+                          : transaction.type === 'expense'
+                            ? 'text-red-600'
+                            : 'text-blue-600'
+                      }`}
+                    >
+                      {transaction.type === 'revenue'
+                        ? '+'
+                        : transaction.type === 'expense'
+                          ? '-'
+                          : ''}
                       {transaction.amount} {transaction.crypto}
                     </div>
                     <div className="text-xs text-gray-500 dark:text-gray-400">
@@ -341,7 +393,9 @@ const Transactions: React.FC = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(transaction.status)}`}>
+                    <span
+                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(transaction.status)}`}
+                    >
                       {transaction.status}
                     </span>
                   </td>
@@ -360,9 +414,13 @@ const Transactions: React.FC = () => {
         {filteredTransactions.length === 0 && (
           <div className="text-center py-12">
             <Receipt className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No transactions found</h3>
+            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">
+              No transactions found
+            </h3>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              {searchQuery ? 'Try adjusting your search' : 'No transactions match the selected filter'}
+              {searchQuery
+                ? 'Try adjusting your search'
+                : 'No transactions match the selected filter'}
             </p>
           </div>
         )}
@@ -372,8 +430,11 @@ const Transactions: React.FC = () => {
       {filteredTransactions.length > 0 && (
         <div className="mt-6 flex items-center justify-between">
           <div className="text-sm text-gray-700 dark:text-gray-300">
-            Showing <span className="font-medium">1</span> to <span className="font-medium">{filteredTransactions.length}</span> of{' '}
-            <span className="font-medium">{filteredTransactions.length}</span> results
+            Showing <span className="font-medium">1</span> to{' '}
+            <span className="font-medium">{filteredTransactions.length}</span>{' '}
+            of{' '}
+            <span className="font-medium">{filteredTransactions.length}</span>{' '}
+            results
           </div>
           <div className="flex gap-2">
             <button className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm text-gray-700 dark:text-gray-300">
@@ -389,7 +450,7 @@ const Transactions: React.FC = () => {
         </div>
       )}
     </div>
-  );
-};
+  )
+}
 
-export default Transactions;
+export default Transactions

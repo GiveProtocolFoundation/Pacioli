@@ -7,9 +7,13 @@ interface OrganizationContextType {
   setUserAvatar: (avatar: string | null) => void
 }
 
-const OrganizationContext = createContext<OrganizationContextType | undefined>(undefined)
+const OrganizationContext = createContext<OrganizationContextType | undefined>(
+  undefined
+)
 
-export const OrganizationProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const OrganizationProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
   const [organizationLogo, setOrganizationLogo] = useState<string | null>(null)
   const [userAvatar, setUserAvatar] = useState<string | null>(null)
 
@@ -30,7 +34,9 @@ export const OrganizationProvider: React.FC<{ children: ReactNode }> = ({ childr
 export const useOrganization = () => {
   const context = useContext(OrganizationContext)
   if (context === undefined) {
-    throw new Error('useOrganization must be used within an OrganizationProvider')
+    throw new Error(
+      'useOrganization must be used within an OrganizationProvider'
+    )
   }
   return context
 }

@@ -10,12 +10,14 @@ This directory contains the Jekyll-based documentation site for Numbers.
 ## Local Development
 
 1. **Install dependencies:**
+
    ```bash
    cd docs
    bundle install
    ```
 
 2. **Run the development server:**
+
    ```bash
    bundle exec jekyll serve
    ```
@@ -105,6 +107,7 @@ code here
 ### Images
 
 Place images in `assets/images/` and reference:
+
 ```markdown
 ![Alt text](/assets/images/image.png)
 ```
