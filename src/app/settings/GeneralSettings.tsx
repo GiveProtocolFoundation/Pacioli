@@ -204,9 +204,9 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ userType = 'organizat
           <div className="space-y-4">
             {/* Logo Upload */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <div className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Organization Logo
-              </label>
+              </div>
               <div className="flex items-center space-x-4">
                 {organizationSettings.logo ? (
                   <img
@@ -546,9 +546,9 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ userType = 'organizat
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+            <div className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
               Theme
-            </label>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <button
                 onClick={handleThemeLight}

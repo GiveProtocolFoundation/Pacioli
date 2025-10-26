@@ -210,12 +210,23 @@ const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
 
   if (!isOpen) return null
 
+  const handleBackdropKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      onClose()
+    }
+  }
+
   return (
     <>
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black/50 z-40"
         onClick={onClose}
+        onKeyDown={handleBackdropKeyDown}
+        role="button"
+        tabIndex={0}
+        aria-label="Close notifications"
       />
 
       {/* Sliding Panel */}
@@ -323,6 +334,12 @@ const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
               {filteredNotifications.map(notification => {
                 const Icon = notification.icon
                 const handleClick = createMarkAsReadHandler(notification.id)
+                const handleKeyDown = (e: React.KeyboardEvent) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    handleClick()
+                  }
+                }
                 return (
                   <div
                     key={notification.id}
@@ -330,6 +347,10 @@ const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
                       !notification.read ? 'bg-blue-50/50 dark:bg-blue-900/10' : ''
                     }`}
                     onClick={handleClick}
+                    onKeyDown={handleKeyDown}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`${notification.read ? 'Read' : 'Unread'} notification: ${notification.title}`}
                   >
                     <div className="flex items-start space-x-3">
                       <div
