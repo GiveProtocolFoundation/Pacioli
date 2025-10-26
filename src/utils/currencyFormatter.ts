@@ -186,6 +186,11 @@ export function parseFormattedNumber(
       // Remove spaces (thousands), replace comma (decimal) with point
       cleaned = cleaned.replace(/ /g, '').replace(',', '.')
       break
+
+    default:
+      // Default to point-comma format (most common)
+      cleaned = cleaned.replace(/,/g, '')
+      break
   }
 
   return parseFloat(cleaned) || 0
