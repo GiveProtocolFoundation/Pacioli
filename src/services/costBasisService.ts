@@ -46,9 +46,9 @@ export class CostBasisService {
     const availableLots = CostBasisService.getAvailableLots(lots, disposalDate);
 
     return {
-      FIFO: this.calculateFIFO(availableLots, quantity).totalCostBasis,
-      LIFO: this.calculateLIFO(availableLots, quantity).totalCostBasis,
-      HIFO: this.calculateHIFO(availableLots, quantity).totalCostBasis,
+      FIFO: CostBasisService.calculateFIFO(availableLots, quantity).totalCostBasis,
+      LIFO: CostBasisService.calculateLIFO(availableLots, quantity).totalCostBasis,
+      HIFO: CostBasisService.calculateHIFO(availableLots, quantity).totalCostBasis,
     };
   }
 
@@ -60,16 +60,16 @@ export class CostBasisService {
 
     switch (request.method) {
       case 'FIFO':
-        return this.calculateFIFO(availableLots, request.quantity);
+        return CostBasisService.calculateFIFO(availableLots, request.quantity);
       case 'LIFO':
-        return this.calculateLIFO(availableLots, request.quantity);
+        return CostBasisService.calculateLIFO(availableLots, request.quantity);
       case 'HIFO':
-        return this.calculateHIFO(availableLots, request.quantity);
+        return CostBasisService.calculateHIFO(availableLots, request.quantity);
       case 'SpecificID':
         if (!request.specificLotIds || request.specificLotIds.length === 0) {
           throw new Error('Specific lot IDs required for Specific ID method');
         }
-        return this.calculateSpecificID(availableLots, request.quantity, request.specificLotIds);
+        return CostBasisService.calculateSpecificID(availableLots, request.quantity, request.specificLotIds);
       default:
         throw new Error(`Unknown cost basis method: ${request.method}`);
     }
@@ -79,7 +79,7 @@ export class CostBasisService {
    * FIFO: First In, First Out
    * Use oldest lots first
    */
-  private calculateFIFO(lots: CryptoLot[], quantity: string): DisposalResult {
+  private static calculateFIFO(lots: CryptoLot[], quantity: string): DisposalResult {
     // Sort by acquisition date (oldest first)
     const sortedLots = [...lots].sort((a, b) =>
       new Date(a.acquisitionDate).getTime() - new Date(b.acquisitionDate).getTime()
@@ -92,7 +92,7 @@ export class CostBasisService {
    * LIFO: Last In, First Out
    * Use newest lots first
    */
-  private calculateLIFO(lots: CryptoLot[], quantity: string): DisposalResult {
+  private static calculateLIFO(lots: CryptoLot[], quantity: string): DisposalResult {
     // Sort by acquisition date (newest first)
     const sortedLots = [...lots].sort((a, b) =>
       new Date(b.acquisitionDate).getTime() - new Date(a.acquisitionDate).getTime()
@@ -105,7 +105,7 @@ export class CostBasisService {
    * HIFO: Highest In, First Out
    * Use highest cost lots first (maximizes current period deductions)
    */
-  private calculateHIFO(lots: CryptoLot[], quantity: string): DisposalResult {
+  private static calculateHIFO(lots: CryptoLot[], quantity: string): DisposalResult {
     // Sort by cost per unit (highest first)
     const sortedLots = [...lots].sort((a, b) =>
       new Decimal(b.costPerUnit).cmp(new Decimal(a.costPerUnit))
@@ -118,7 +118,7 @@ export class CostBasisService {
    * Specific ID: Use specifically identified lots
    * Taxpayer chooses specific lots
    */
-  private calculateSpecificID(
+  private static calculateSpecificID(
     lots: CryptoLot[],
     quantity: string,
     lotIds: string[]
