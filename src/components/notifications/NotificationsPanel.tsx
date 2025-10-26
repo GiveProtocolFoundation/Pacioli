@@ -261,7 +261,7 @@ const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
     n => n.actionRequired
   ).length
 
-  const formatTimestamp = (timestamp: string) => {
+  const formatTimestamp = useCallback((timestamp: string) => {
     const date = new Date(timestamp)
     const now = new Date()
     const diffInHours = Math.floor(
@@ -272,9 +272,9 @@ const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
     if (diffInHours < 24) return `${diffInHours}h ago`
     if (diffInHours < 48) return 'Yesterday'
     return date.toLocaleDateString()
-  }
+  }, [])
 
-  const getSeverityStyles = (severity: Notification['severity']) => {
+  const getSeverityStyles = useCallback((severity: Notification['severity']) => {
     const styles = {
       info: 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400',
       warning:
@@ -284,7 +284,7 @@ const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
       error: 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400',
     }
     return styles[severity]
-  }
+  }, [])
 
   const markAsRead = useCallback((id: string) => {
     setNotifications(prev =>
