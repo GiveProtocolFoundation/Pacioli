@@ -39,7 +39,7 @@ export default defineConfig(async () => ({
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
 
           // Blockchain - Polkadot ecosystem
-          'polkadot': [
+          polkadot: [
             '@polkadot/api',
             '@polkadot/extension-dapp',
             '@polkadot/extension-inject',
@@ -47,30 +47,23 @@ export default defineConfig(async () => ({
           ],
 
           // Blockchain - Ethereum and wallet providers
-          'blockchain': [
+          blockchain: [
             'ethers',
             '@metamask/detect-provider',
             '@walletconnect/web3-provider',
           ],
 
           // Wallet connection libraries
-          'wallet-connect': [
-            '@talismn/connect-ui',
-            '@talismn/connect-wallets',
-          ],
+          'wallet-connect': ['@talismn/connect-ui', '@talismn/connect-wallets'],
 
           // UI Libraries
-          'ui': [
-            'antd',
-            '@ant-design/icons',
-            'lucide-react',
-          ],
+          ui: ['antd', '@ant-design/icons', 'lucide-react'],
 
           // Charts and data visualization
-          'charts': ['recharts'],
+          charts: ['recharts'],
 
           // Data management and querying
-          'data': [
+          data: [
             '@tanstack/react-query',
             '@tanstack/react-table',
             '@reduxjs/toolkit',
@@ -78,12 +71,7 @@ export default defineConfig(async () => ({
           ],
 
           // Date and utility libraries
-          'utils': [
-            'date-fns',
-            'dayjs',
-            'decimal.js',
-            'xlsx',
-          ],
+          utils: ['date-fns', 'dayjs', 'decimal.js', 'xlsx'],
         },
       },
     },
