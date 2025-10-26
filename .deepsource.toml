@@ -12,12 +12,6 @@ enabled = true
   ]
   style_guide = "airbnb"
 
-  # Ignore JSX maximum depth validation (JS-0415)
-  # We've already extracted components where appropriate.
-  # Further extraction would have diminishing returns.
-  [[analyzers.meta.exclude]]
-  patterns = ["JS-0415"]
-
 [[analyzers]]
 name = "rust"
 enabled = true
