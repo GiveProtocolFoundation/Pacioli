@@ -53,8 +53,8 @@ A comprehensive blockchain transaction tracking application built with Tauri, Re
 
 1. **Clone the repository**
 ```bash
-git clone https://github.com/civicmastery/Numbers.git
-cd Numbers
+git clone https://github.com/civicmastery/Pacioli.git
+cd Pacioli
 ```
 
 2. **Install dependencies**

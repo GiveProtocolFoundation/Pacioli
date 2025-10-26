@@ -51,7 +51,7 @@ Numbers is a **crypto-native accounting system** designed for not-for-profits, D
 - **Documentation**: Browse the complete documentation in the sidebar
 - **FAQ**: Check our [Frequently Asked Questions](/faq/)
 - **Community**: Join our community forum for support
-- **Issues**: Report bugs on our [GitHub repository](https://github.com/civicmastery/Numbers)
+- **Issues**: Report bugs on our [GitHub repository](https://github.com/civicmastery/Pacioli)
 
 ## System Requirements
 

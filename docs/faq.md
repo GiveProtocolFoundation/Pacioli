@@ -189,13 +189,13 @@ For jurisdiction-specific compliance, consult with your local accountant or tax 
 ### Can I request new features?
 
 Absolutely! We love hearing from our users. Submit feature requests:
-- **GitHub**: [Open an issue](https://github.com/civicmastery/Numbers/issues)
+- **GitHub**: [Open an issue](https://github.com/civicmastery/Pacioli/issues)
 - **Community Forum**: Vote on feature requests
 - **Email**: features@numbers.example.org
 
 ### How do I report a bug?
 
-Report bugs on our [GitHub repository](https://github.com/civicmastery/Numbers/issues) or email support@numbers.example.org.
+Report bugs on our [GitHub repository](https://github.com/civicmastery/Pacioli/issues) or email support@numbers.example.org.
 
 ---
 

@@ -301,7 +301,7 @@ const Support: React.FC = () => {
                   Community Forum
                 </a>
                 <a
-                  href="https://github.com/civicmastery/Numbers/issues"
+                  href="https://github.com/civicmastery/Pacioli/issues"
                   className="flex items-center text-sm text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
                 >
                   <Github className="w-4 h-4 mr-3" />

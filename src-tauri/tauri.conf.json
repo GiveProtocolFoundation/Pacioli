@@ -54,7 +54,7 @@
     "shortDescription": "Blockchain transaction tracker for the Polkadot ecosystem",
     "longDescription": "A comprehensive blockchain transaction tracker that supports EVM and Substrate chains in the Polkadot ecosystem, including Moonbeam, Moonriver, Astar, and Acala.",
     "copyright": "© 2024 CivicMastery",
-    "homepage": "https://github.com/civicmastery/Numbers",
+    "homepage": "https://github.com/civicmastery/Pacioli",
     "publisher": "CivicMastery",
     "resources": ["resources/token-lists/*"]
   },
