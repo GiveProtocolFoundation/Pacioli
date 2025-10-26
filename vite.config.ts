@@ -29,4 +29,63 @@ export default defineConfig(async () => ({
       ignored: ['**/src-tauri/**'],
     },
   },
+
+  // Build optimizations
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Core React libraries
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+
+          // Blockchain - Polkadot ecosystem
+          'polkadot': [
+            '@polkadot/api',
+            '@polkadot/extension-dapp',
+            '@polkadot/extension-inject',
+            '@polkadot/ui-keyring',
+          ],
+
+          // Blockchain - Ethereum and wallet providers
+          'blockchain': [
+            'ethers',
+            '@metamask/detect-provider',
+            '@walletconnect/web3-provider',
+          ],
+
+          // Wallet connection libraries
+          'wallet-connect': [
+            '@talismn/connect-ui',
+            '@talismn/connect-wallets',
+          ],
+
+          // UI Libraries
+          'ui': [
+            'antd',
+            '@ant-design/icons',
+            'lucide-react',
+          ],
+
+          // Charts and data visualization
+          'charts': ['recharts'],
+
+          // Data management and querying
+          'data': [
+            '@tanstack/react-query',
+            '@tanstack/react-table',
+            '@reduxjs/toolkit',
+            'react-redux',
+          ],
+
+          // Date and utility libraries
+          'utils': [
+            'date-fns',
+            'dayjs',
+            'decimal.js',
+            'xlsx',
+          ],
+        },
+      },
+    },
+  },
 }))
