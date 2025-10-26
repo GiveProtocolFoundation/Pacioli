@@ -208,8 +208,6 @@ const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
   const handleFilterWorkflow = useCallback(() => setFilter('workflow'), [])
   const handleFilterApproval = useCallback(() => setFilter('approval'), [])
 
-  if (!isOpen) return null
-
   const handleBackdropKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault()
@@ -225,6 +223,8 @@ const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
       }
     }
   }, [markAsRead])
+
+  if (!isOpen) return null
 
   return (
     <>

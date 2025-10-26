@@ -104,7 +104,7 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ userType = 'organizat
     // console.log('Saving settings:', { organizationSettings, systemSettings })
     setHasChanges(false)
     // Show success notification
-  }, [organizationSettings, systemSettings])
+  }, [])
 
   const handleReset = useCallback(() => {
     // Reset to defaults
