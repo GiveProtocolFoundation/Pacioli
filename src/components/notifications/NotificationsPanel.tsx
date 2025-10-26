@@ -274,17 +274,20 @@ const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
     return date.toLocaleDateString()
   }, [])
 
-  const getSeverityStyles = useCallback((severity: Notification['severity']) => {
-    const styles = {
-      info: 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400',
-      warning:
-        'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400',
-      success:
-        'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400',
-      error: 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400',
-    }
-    return styles[severity]
-  }, [])
+  const getSeverityStyles = useCallback(
+    (severity: Notification['severity']) => {
+      const styles = {
+        info: 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400',
+        warning:
+          'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400',
+        success:
+          'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400',
+        error: 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400',
+      }
+      return styles[severity]
+    },
+    []
+  )
 
   const markAsRead = useCallback((id: string) => {
     setNotifications(prev =>
