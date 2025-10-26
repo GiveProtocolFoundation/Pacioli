@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Numbers",
+  "productName": "Pacioli",
   "version": "0.1.0",
   "identifier": "com.civicmastery.numbers",
   "build": {
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "Numbers - Blockchain Transaction Tracker",
+        "title": "Pacioli - Blockchain Transaction Tracker",
         "width": 1200,
         "height": 800,
         "minWidth": 800,

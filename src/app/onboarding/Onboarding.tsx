@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Globe, Building2, User, Check } from 'lucide-react'
-import NumbersBlackLogo from '../../assets/Numbers_Black.svg'
+import PacioliBlackLogo from '../../assets/Pacioli_logo_black.svg'
 
 type Step = 'jurisdiction' | 'account-type' | 'complete'
 type Jurisdiction = 'us-gaap' | 'ifrs'
@@ -68,9 +68,9 @@ const Onboarding: React.FC = () => {
         {/* Logo and Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
-            <img src={NumbersBlackLogo} alt="Numbers" className="h-12 w-auto" />
+            <img src={PacioliBlackLogo} alt="Pacioli" className="h-12 w-auto" />
             <span className="ml-3 text-2xl font-bold text-gray-900">
-              Numbers
+              Pacioli
             </span>
           </div>
           <p className="text-gray-600">Let&apos;s set up your account</p>

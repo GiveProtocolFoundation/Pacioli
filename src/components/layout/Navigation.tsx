@@ -19,8 +19,8 @@ import {
   Moon,
   Sun,
 } from 'lucide-react'
-import NumbersWhiteLogo from '../../assets/Numbers_White.svg'
-import NumbersBlackLogo from '../../assets/Numbers_Black.svg'
+import PacioliWhiteLogo from '../../assets/pacioli_logo_white.svg'
+import PacioliBlackLogo from '../../assets/Pacioli_logo_black.svg'
 import { useTheme } from '../../contexts/ThemeContext'
 import { useOrganization } from '../../contexts/OrganizationContext'
 import NotificationsPanel from '../notifications/NotificationsPanel'
@@ -163,16 +163,16 @@ const Navigation: React.FC<NavigationProps> = ({
         <div className="flex items-center justify-center h-16 px-6 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center">
             <img
-              src={theme === 'dark' ? NumbersBlackLogo : NumbersWhiteLogo}
-              alt="Numbers"
-              className="h-10 w-auto"
+              src={theme === 'dark' ? PacioliBlackLogo : PacioliWhiteLogo}
+              alt="Pacioli"
+              className="h-12 w-auto"
             />
             <div className="ml-3 flex flex-col">
               <span className="text-lg font-semibold text-gray-900 dark:text-white">
-                Numbers
+                Pacioli
               </span>
               <span className="text-xs text-gray-500 dark:text-gray-400">
-                Accounting & Analytics
+                Books & Ledgers
               </span>
             </div>
           </div>
@@ -313,16 +313,16 @@ const Navigation: React.FC<NavigationProps> = ({
             <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-center">
                 <img
-                  src={theme === 'dark' ? NumbersBlackLogo : NumbersWhiteLogo}
-                  alt="Numbers"
-                  className="h-10 w-auto"
+                  src={theme === 'dark' ? PacioliBlackLogo : PacioliWhiteLogo}
+                  alt="Pacioli"
+                  className="h-12 w-auto"
                 />
                 <div className="ml-3 flex flex-col">
                   <span className="text-lg font-semibold text-gray-900 dark:text-white">
-                    Numbers
+                    Pacioli
                   </span>
                   <span className="text-xs text-gray-500 dark:text-gray-400">
-                    Accounting & Analytics
+                    Books & Ledgers
                   </span>
                 </div>
               </div>

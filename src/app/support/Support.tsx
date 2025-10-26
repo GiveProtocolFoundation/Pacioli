@@ -35,7 +35,7 @@ const helpTopics: HelpTopic[] = [
   {
     id: 'getting-started',
     title: 'Getting Started',
-    description: 'Set up your organization and start using Numbers',
+    description: 'Set up your organization and start using Pacioli',
     icon: BookOpen,
     url: '/docs/getting-started/',
     category: 'guide',
@@ -75,7 +75,7 @@ const helpTopics: HelpTopic[] = [
   {
     id: 'api',
     title: 'API Integration',
-    description: 'Integrate Numbers with your systems',
+    description: 'Integrate Pacioli with your systems',
     icon: Code,
     url: '/docs/api-reference/',
     category: 'api',
@@ -248,7 +248,7 @@ const Support: React.FC = () => {
                 <div className="ml-4 flex-1">
                   <h3 className="text-lg font-semibold mb-2">Video Tutorials</h3>
                   <p className="text-sm opacity-90 mb-4">
-                    Watch step-by-step video guides to learn Numbers features
+                    Watch step-by-step video guides to learn Pacioli features
                   </p>
                   <a
                     href="https://youtube.com/numbers"
@@ -375,7 +375,7 @@ const Support: React.FC = () => {
                 Full Documentation
               </h3>
               <p className="text-xs text-gray-600 dark:text-gray-400 mb-4">
-                Access the complete Numbers documentation site for in-depth guides and
+                Access the complete Pacioli documentation site for in-depth guides and
                 references.
               </p>
               <a
