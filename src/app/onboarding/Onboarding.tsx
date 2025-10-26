@@ -203,14 +203,14 @@ const Onboarding: React.FC = () => {
             <ProgressStep
               label="Jurisdiction"
               isActive={isJurisdictionStep}
-              isCompleted={!!jurisdiction}
+              isCompleted={Boolean(jurisdiction)}
               stepNumber={1}
             />
-            <ProgressConnector isCompleted={!!jurisdiction} />
+            <ProgressConnector isCompleted={Boolean(jurisdiction)} />
             <ProgressStep
               label="Account Type"
               isActive={isAccountTypeStep}
-              isCompleted={!!accountType}
+              isCompleted={Boolean(accountType)}
               stepNumber={2}
             />
           </div>
