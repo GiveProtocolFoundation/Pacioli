@@ -35,7 +35,6 @@ interface NotificationsPanelProps {
 interface NotificationItemProps {
   notification: Notification
   onMarkAsRead: (id: string) => void
-  onKeyDown: (id: string) => (e: React.KeyboardEvent) => void
   formatTimestamp: (timestamp: string) => string
   getSeverityStyles: (severity: Notification['severity']) => string
 }
@@ -43,12 +42,20 @@ interface NotificationItemProps {
 const NotificationItem: React.FC<NotificationItemProps> = ({
   notification,
   onMarkAsRead,
-  onKeyDown,
   formatTimestamp,
   getSeverityStyles,
 }) => {
   const Icon = notification.icon
-  const handleClick = () => onMarkAsRead(notification.id)
+  const handleClick = useCallback(() => {
+    onMarkAsRead(notification.id)
+  }, [onMarkAsRead, notification.id])
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      onMarkAsRead(notification.id)
+    }
+  }, [onMarkAsRead, notification.id])
 
   return (
     <div
@@ -57,7 +64,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
         !notification.read ? 'bg-blue-50/50 dark:bg-blue-900/10' : ''
       }`}
       onClick={handleClick}
-      onKeyDown={onKeyDown(notification.id)}
+      onKeyDown={handleKeyDown}
       role="button"
       tabIndex={0}
       aria-label={`${notification.read ? 'Read' : 'Unread'} notification: ${notification.title}`}
@@ -273,10 +280,6 @@ const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
     setNotifications(prev => prev.map(n => ({ ...n, read: true })))
   }, [])
 
-  const createMarkAsReadHandler = useCallback((id: string) => {
-    return () => markAsRead(id)
-  }, [markAsRead])
-
   const handleFilterAll = useCallback(() => setFilter('all'), [])
   const handleFilterFinancial = useCallback(() => setFilter('financial'), [])
   const handleFilterTransactional = useCallback(() => setFilter('transactional'), [])
@@ -289,15 +292,6 @@ const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
       onClose()
     }
   }, [onClose])
-
-  const handleNotificationKeyDown = useCallback((notificationId: string) => {
-    return (e: React.KeyboardEvent) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault()
-        markAsRead(notificationId)
-      }
-    }
-  }, [markAsRead])
 
   if (!isOpen) return null
 
@@ -420,7 +414,6 @@ const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
                   key={notification.id}
                   notification={notification}
                   onMarkAsRead={markAsRead}
-                  onKeyDown={handleNotificationKeyDown}
                   formatTimestamp={formatTimestamp}
                   getSeverityStyles={getSeverityStyles}
                 />
