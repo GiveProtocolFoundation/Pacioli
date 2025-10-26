@@ -42,6 +42,318 @@ interface GeneralSettingsProps {
   userType?: 'individual' | 'organization'
 }
 
+interface OrganizationInformationSectionProps {
+  organizationSettings: OrganizationSettings
+  onOrganizationChange: <K extends keyof OrganizationSettings>(key: K, value: OrganizationSettings[K]) => void
+  onLogoUpload: (e: React.ChangeEvent<HTMLInputElement>) => void
+}
+
+const OrganizationInformationSection: React.FC<OrganizationInformationSectionProps> = ({
+  organizationSettings,
+  onOrganizationChange,
+  onLogoUpload,
+}) => {
+  const createTextHandler = useCallback(
+    <K extends keyof OrganizationSettings>(key: K) => {
+      return (e: React.ChangeEvent<HTMLInputElement>) => {
+        onOrganizationChange(key, e.target.value)
+      }
+    },
+    [onOrganizationChange]
+  )
+
+  const handleOrgTypeChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      onOrganizationChange('organizationType', e.target.value as OrganizationSettings['organizationType'])
+    },
+    [onOrganizationChange]
+  )
+
+  return (
+    <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+      <div className="flex items-center mb-4">
+        <Building2 className="w-5 h-5 text-blue-600 mr-2" />
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+          Organization Information
+        </h3>
+      </div>
+
+      <div className="space-y-4">
+        {/* Logo Upload */}
+        <div>
+          <div className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Organization Logo
+          </div>
+          <div className="flex items-center space-x-4">
+            {organizationSettings.logo ? (
+              <img
+                src={organizationSettings.logo}
+                alt="Organization logo"
+                className="w-16 h-16 rounded-lg border border-gray-200 dark:border-gray-700 object-cover"
+              />
+            ) : (
+              <div className="w-16 h-16 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center">
+                <Building2 className="w-6 h-6 text-gray-400" />
+              </div>
+            )}
+            <label className="cursor-pointer">
+              <span className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 inline-flex items-center">
+                <Upload className="w-4 h-4 mr-2" />
+                Upload Logo
+              </span>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={onLogoUpload}
+                className="hidden"
+              />
+            </label>
+          </div>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            Recommended: Square image, at least 200x200px
+          </p>
+        </div>
+
+        {/* Organization Type */}
+        <div>
+          <label htmlFor="organizationType" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Organization Type
+          </label>
+          <select
+            id="organizationType"
+            value={organizationSettings.organizationType}
+            onChange={handleOrgTypeChange}
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="not-for-profit">Not-for-Profit Organization</option>
+            <option value="sme">Small-Medium Enterprise (SME)</option>
+            <option value="individual">Individual/Sole Proprietor</option>
+          </select>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="orgName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Organization Name
+            </label>
+            <input
+              id="orgName"
+              type="text"
+              value={organizationSettings.name}
+              onChange={createTextHandler('name')}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="legalName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Legal Name
+            </label>
+            <input
+              id="legalName"
+              type="text"
+              value={organizationSettings.legalName}
+              onChange={createTextHandler('legalName')}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="taxId" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Tax ID / EIN
+            </label>
+            <input
+              id="taxId"
+              type="text"
+              value={organizationSettings.taxId}
+              onChange={createTextHandler('taxId')}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="website" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Website
+            </label>
+            <input
+              id="website"
+              type="url"
+              value={organizationSettings.website}
+              onChange={createTextHandler('website')}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Email
+            </label>
+            <input
+              id="email"
+              type="email"
+              value={organizationSettings.email}
+              onChange={createTextHandler('email')}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="phone" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Phone
+            </label>
+            <input
+              id="phone"
+              type="tel"
+              value={organizationSettings.phone}
+              onChange={createTextHandler('phone')}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label htmlFor="address" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Address
+          </label>
+          <input
+            id="address"
+            type="text"
+            value={organizationSettings.address}
+            onChange={createTextHandler('address')}
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="md:col-span-2">
+            <label htmlFor="city" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              City
+            </label>
+            <input
+              id="city"
+              type="text"
+              value={organizationSettings.city}
+              onChange={createTextHandler('city')}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="state" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              State/Province
+            </label>
+            <input
+              id="state"
+              type="text"
+              value={organizationSettings.state}
+              onChange={createTextHandler('state')}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="zipCode" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              ZIP/Postal Code
+            </label>
+            <input
+              id="zipCode"
+              type="text"
+              value={organizationSettings.zipCode}
+              onChange={createTextHandler('zipCode')}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label htmlFor="country" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Country
+          </label>
+          <input
+            id="country"
+            type="text"
+            value={organizationSettings.country}
+            onChange={createTextHandler('country')}
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+interface FiscalYearSectionProps {
+  systemSettings: SystemSettings
+  onSystemChange: <K extends keyof SystemSettings>(key: K, value: SystemSettings[K]) => void
+}
+
+const FiscalYearSection: React.FC<FiscalYearSectionProps> = ({
+  systemSettings,
+  onSystemChange,
+}) => {
+  const createHandler = useCallback(
+    <K extends keyof SystemSettings>(key: K) => {
+      return (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
+        onSystemChange(key, e.target.value as SystemSettings[K])
+      }
+    },
+    [onSystemChange]
+  )
+
+  return (
+    <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+      <div className="flex items-center mb-4">
+        <Calendar className="w-5 h-5 text-blue-600 mr-2" />
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+          Fiscal Year
+        </h3>
+      </div>
+
+      <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
+        <div className="flex">
+          <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+          <div className="ml-3">
+            <p className="text-sm text-blue-800 dark:text-blue-400">
+              Changing the fiscal year will affect all date-based reports and analytics.
+              Consult with your accountant before making changes.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label htmlFor="fiscalYearStart" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Fiscal Year Start (MM-DD)
+          </label>
+          <input
+            id="fiscalYearStart"
+            type="text"
+            value={systemSettings.fiscalYearStart}
+            onChange={createHandler('fiscalYearStart')}
+            placeholder="01-01"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="fiscalYearEnd" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Fiscal Year End (MM-DD)
+          </label>
+          <input
+            id="fiscalYearEnd"
+            type="text"
+            value={systemSettings.fiscalYearEnd}
+            onChange={createHandler('fiscalYearEnd')}
+            placeholder="12-31"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+      </div>
+    </div>
+  )
+}
+
 const GeneralSettings: React.FC<GeneralSettingsProps> = ({ userType = 'organization' }) => {
   const { theme: currentTheme, setTheme } = useTheme()
   const { organizationLogo, setOrganizationLogo } = useOrganization()
@@ -129,17 +441,7 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ userType = 'organizat
   const handleThemeDark = useCallback(() => handleSystemChange('theme', 'dark'), [handleSystemChange])
   const handleThemeSystem = useCallback(() => handleSystemChange('theme', 'system'), [handleSystemChange])
 
-  // Factory function for organization text input handlers
-  const createOrgTextHandler = useCallback(
-    (key: keyof OrganizationSettings) => {
-      return (e: React.ChangeEvent<HTMLInputElement>) => {
-        handleOrganizationChange(key, e.target.value)
-      }
-    },
-    [handleOrganizationChange]
-  )
-
-  // Factory function for system select handlers
+  // Factory function for system select handlers (used in main component)
   const createSystemSelectHandler = useCallback(
     <K extends keyof SystemSettings>(key: K) => {
       return (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
@@ -147,14 +449,6 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ userType = 'organizat
       }
     },
     [handleSystemChange]
-  )
-
-  // Specific handlers for organization type (needs type assertion)
-  const handleOrgTypeChange = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
-      handleOrganizationChange('organizationType', e.target.value as OrganizationSettings['organizationType'])
-    },
-    [handleOrganizationChange]
   )
 
   return (
@@ -193,267 +487,21 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ userType = 'organizat
 
       <div className="space-y-6">
         {/* Organization Information - Only for organizations */}
-        {userType === 'organization' && <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-6">
-          <div className="flex items-center mb-4">
-            <Building2 className="w-5 h-5 text-blue-600 mr-2" />
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Organization Information
-            </h3>
-          </div>
-
-          <div className="space-y-4">
-            {/* Logo Upload */}
-            <div>
-              <div className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Organization Logo
-              </div>
-              <div className="flex items-center space-x-4">
-                {organizationSettings.logo ? (
-                  <img
-                    src={organizationSettings.logo}
-                    alt="Organization logo"
-                    className="w-16 h-16 rounded-lg border border-gray-200 dark:border-gray-700 object-cover"
-                  />
-                ) : (
-                  <div className="w-16 h-16 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center">
-                    <Building2 className="w-6 h-6 text-gray-400" />
-                  </div>
-                )}
-                <label className="cursor-pointer">
-                  <span className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 inline-flex items-center">
-                    <Upload className="w-4 h-4 mr-2" />
-                    Upload Logo
-                  </span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleLogoUpload}
-                    className="hidden"
-                  />
-                </label>
-              </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                Recommended: Square image, at least 200x200px
-              </p>
-            </div>
-
-            {/* Organization Type */}
-            <div>
-              <label htmlFor="organizationType" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Organization Type
-              </label>
-              <select
-                id="organizationType"
-                value={organizationSettings.organizationType}
-                onChange={handleOrgTypeChange}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="not-for-profit">Not-for-Profit Organization</option>
-                <option value="sme">Small-Medium Enterprise (SME)</option>
-                <option value="individual">Individual/Sole Proprietor</option>
-              </select>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="orgName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Organization Name
-                </label>
-                <input
-                  id="orgName"
-                  type="text"
-                  value={organizationSettings.name}
-                  onChange={createOrgTextHandler('name')}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="legalName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Legal Name
-                </label>
-                <input
-                  id="legalName"
-                  type="text"
-                  value={organizationSettings.legalName}
-                  onChange={createOrgTextHandler('legalName')}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="taxId" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Tax ID / EIN
-                </label>
-                <input
-                  id="taxId"
-                  type="text"
-                  value={organizationSettings.taxId}
-                  onChange={createOrgTextHandler('taxId')}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="website" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Website
-                </label>
-                <input
-                  id="website"
-                  type="url"
-                  value={organizationSettings.website}
-                  onChange={createOrgTextHandler('website')}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Email
-                </label>
-                <input
-                  id="email"
-                  type="email"
-                  value={organizationSettings.email}
-                  onChange={createOrgTextHandler('email')}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Phone
-                </label>
-                <input
-                  id="phone"
-                  type="tel"
-                  value={organizationSettings.phone}
-                  onChange={createOrgTextHandler('phone')}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="address" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Address
-              </label>
-              <input
-                id="address"
-                type="text"
-                value={organizationSettings.address}
-                onChange={createOrgTextHandler('address')}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="md:col-span-2">
-                <label htmlFor="city" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  City
-                </label>
-                <input
-                  id="city"
-                  type="text"
-                  value={organizationSettings.city}
-                  onChange={createOrgTextHandler('city')}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="state" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  State/Province
-                </label>
-                <input
-                  id="state"
-                  type="text"
-                  value={organizationSettings.state}
-                  onChange={createOrgTextHandler('state')}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="zipCode" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  ZIP/Postal Code
-                </label>
-                <input
-                  id="zipCode"
-                  type="text"
-                  value={organizationSettings.zipCode}
-                  onChange={createOrgTextHandler('zipCode')}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="country" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Country
-              </label>
-              <input
-                id="country"
-                type="text"
-                value={organizationSettings.country}
-                onChange={createOrgTextHandler('country')}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-          </div>
-        </div>}
+        {userType === 'organization' && (
+          <OrganizationInformationSection
+            organizationSettings={organizationSettings}
+            onOrganizationChange={handleOrganizationChange}
+            onLogoUpload={handleLogoUpload}
+          />
+        )}
 
         {/* Fiscal Year Settings - Only for organizations */}
-        {userType === 'organization' && <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-6">
-          <div className="flex items-center mb-4">
-            <Calendar className="w-5 h-5 text-blue-600 mr-2" />
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Fiscal Year
-            </h3>
-          </div>
-
-          <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
-            <div className="flex">
-              <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
-              <div className="ml-3">
-                <p className="text-sm text-blue-800 dark:text-blue-400">
-                  Changing the fiscal year will affect all date-based reports and analytics.
-                  Consult with your accountant before making changes.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="fiscalYearStart" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Fiscal Year Start (MM-DD)
-              </label>
-              <input
-                id="fiscalYearStart"
-                type="text"
-                value={systemSettings.fiscalYearStart}
-                onChange={createSystemSelectHandler('fiscalYearStart')}
-                placeholder="01-01"
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="fiscalYearEnd" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Fiscal Year End (MM-DD)
-              </label>
-              <input
-                id="fiscalYearEnd"
-                type="text"
-                value={systemSettings.fiscalYearEnd}
-                onChange={createSystemSelectHandler('fiscalYearEnd')}
-                placeholder="12-31"
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-          </div>
-        </div>}
+        {userType === 'organization' && (
+          <FiscalYearSection
+            systemSettings={systemSettings}
+            onSystemChange={handleSystemChange}
+          />
+        )}
 
         {/* Regional Settings */}
         <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-6">

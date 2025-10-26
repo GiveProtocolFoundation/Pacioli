@@ -32,6 +32,81 @@ interface NotificationsPanelProps {
   userType: 'individual' | 'organization'
 }
 
+interface NotificationItemProps {
+  notification: Notification
+  onMarkAsRead: (id: string) => void
+  onKeyDown: (id: string) => (e: React.KeyboardEvent) => void
+  formatTimestamp: (timestamp: string) => string
+  getSeverityStyles: (severity: Notification['severity']) => string
+}
+
+const NotificationItem: React.FC<NotificationItemProps> = ({
+  notification,
+  onMarkAsRead,
+  onKeyDown,
+  formatTimestamp,
+  getSeverityStyles,
+}) => {
+  const Icon = notification.icon
+  const handleClick = () => onMarkAsRead(notification.id)
+
+  return (
+    <div
+      key={notification.id}
+      className={`p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer ${
+        !notification.read ? 'bg-blue-50/50 dark:bg-blue-900/10' : ''
+      }`}
+      onClick={handleClick}
+      onKeyDown={onKeyDown(notification.id)}
+      role="button"
+      tabIndex={0}
+      aria-label={`${notification.read ? 'Read' : 'Unread'} notification: ${notification.title}`}
+    >
+      <div className="flex items-start space-x-3">
+        <div
+          className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${getSeverityStyles(notification.severity)}`}
+        >
+          <Icon className="w-5 h-5" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <p className="text-sm font-medium text-gray-900 dark:text-white">
+                {notification.title}
+                {!notification.read && (
+                  <span className="inline-block w-2 h-2 bg-blue-600 rounded-full ml-2"></span>
+                )}
+              </p>
+              <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                {notification.message}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center justify-between mt-2">
+            <span className="text-xs text-gray-400 dark:text-gray-500">
+              {formatTimestamp(notification.timestamp)}
+            </span>
+            {notification.actionRequired && (
+              <div className="flex items-center space-x-2">
+                <button className="p-1.5 text-green-600 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/30 rounded">
+                  <Check className="w-4 h-4" />
+                </button>
+                <button className="p-1.5 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 rounded">
+                  <X className="w-4 h-4" />
+                </button>
+                <button className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center">
+                  View
+                  <ArrowRight className="w-3 h-3 ml-1" />
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 const mockNotifications: Notification[] = [
   // Financial Alerts
   {
@@ -340,65 +415,16 @@ const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
             </div>
           ) : (
             <div className="divide-y divide-gray-200 dark:divide-gray-700">
-              {filteredNotifications.map(notification => {
-                const Icon = notification.icon
-                const handleClick = createMarkAsReadHandler(notification.id)
-                return (
-                  <div
-                    key={notification.id}
-                    className={`p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer ${
-                      !notification.read ? 'bg-blue-50/50 dark:bg-blue-900/10' : ''
-                    }`}
-                    onClick={handleClick}
-                    onKeyDown={handleNotificationKeyDown(notification.id)}
-                    role="button"
-                    tabIndex={0}
-                    aria-label={`${notification.read ? 'Read' : 'Unread'} notification: ${notification.title}`}
-                  >
-                    <div className="flex items-start space-x-3">
-                      <div
-                        className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${getSeverityStyles(notification.severity)}`}
-                      >
-                        <Icon className="w-5 h-5" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <p className="text-sm font-medium text-gray-900 dark:text-white">
-                              {notification.title}
-                              {!notification.read && (
-                                <span className="inline-block w-2 h-2 bg-blue-600 rounded-full ml-2"></span>
-                              )}
-                            </p>
-                            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                              {notification.message}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center justify-between mt-2">
-                          <span className="text-xs text-gray-400 dark:text-gray-500">
-                            {formatTimestamp(notification.timestamp)}
-                          </span>
-                          {notification.actionRequired && (
-                            <div className="flex items-center space-x-2">
-                              <button className="p-1.5 text-green-600 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/30 rounded">
-                                <Check className="w-4 h-4" />
-                              </button>
-                              <button className="p-1.5 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 rounded">
-                                <X className="w-4 h-4" />
-                              </button>
-                              <button className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center">
-                                View
-                                <ArrowRight className="w-3 h-3 ml-1" />
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
+              {filteredNotifications.map(notification => (
+                <NotificationItem
+                  key={notification.id}
+                  notification={notification}
+                  onMarkAsRead={markAsRead}
+                  onKeyDown={handleNotificationKeyDown}
+                  formatTimestamp={formatTimestamp}
+                  getSeverityStyles={getSeverityStyles}
+                />
+              ))}
             </div>
           )}
         </div>
