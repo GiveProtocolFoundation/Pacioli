@@ -38,7 +38,7 @@ export class CostBasisService {
   /**
    * Calculate cost basis for all methods
    */
-  calculateAllMethods(
+  static calculateAllMethods(
     lots: CryptoLot[],
     quantity: string,
     disposalDate?: string
@@ -55,7 +55,7 @@ export class CostBasisService {
   /**
    * Calculate cost basis using selected method
    */
-  calculateCostBasis(request: DisposalRequest, lots: CryptoLot[]): DisposalResult {
+  static calculateCostBasis(request: DisposalRequest, lots: CryptoLot[]): DisposalResult {
     const availableLots = CostBasisService.getAvailableLots(lots, request.disposalDate);
 
     switch (request.method) {
