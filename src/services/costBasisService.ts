@@ -43,7 +43,7 @@ export class CostBasisService {
     quantity: string,
     disposalDate?: string
   ): CostBasisCalculation {
-    const availableLots = this.getAvailableLots(lots, disposalDate);
+    const availableLots = CostBasisService.getAvailableLots(lots, disposalDate);
 
     return {
       FIFO: this.calculateFIFO(availableLots, quantity).totalCostBasis,
@@ -56,7 +56,7 @@ export class CostBasisService {
    * Calculate cost basis using selected method
    */
   calculateCostBasis(request: DisposalRequest, lots: CryptoLot[]): DisposalResult {
-    const availableLots = this.getAvailableLots(lots, request.disposalDate);
+    const availableLots = CostBasisService.getAvailableLots(lots, request.disposalDate);
 
     switch (request.method) {
       case 'FIFO':
@@ -85,7 +85,7 @@ export class CostBasisService {
       new Date(a.acquisitionDate).getTime() - new Date(b.acquisitionDate).getTime()
     );
 
-    return this.allocateFromLots(sortedLots, quantity);
+    return CostBasisService.allocateFromLots(sortedLots, quantity);
   }
 
   /**
@@ -98,7 +98,7 @@ export class CostBasisService {
       new Date(b.acquisitionDate).getTime() - new Date(a.acquisitionDate).getTime()
     );
 
-    return this.allocateFromLots(sortedLots, quantity);
+    return CostBasisService.allocateFromLots(sortedLots, quantity);
   }
 
   /**
@@ -111,7 +111,7 @@ export class CostBasisService {
       new Decimal(b.costPerUnit).cmp(new Decimal(a.costPerUnit))
     );
 
-    return this.allocateFromLots(sortedLots, quantity);
+    return CostBasisService.allocateFromLots(sortedLots, quantity);
   }
 
   /**
@@ -137,13 +137,13 @@ export class CostBasisService {
       return indexA - indexB;
     });
 
-    return this.allocateFromLots(sortedLots, quantity);
+    return CostBasisService.allocateFromLots(sortedLots, quantity);
   }
 
   /**
    * Core allocation logic: allocate quantity from lots
    */
-  private allocateFromLots(lots: CryptoLot[], quantity: string): DisposalResult {
+  private static allocateFromLots(lots: CryptoLot[], quantity: string): DisposalResult {
     const quantityNeeded = new Decimal(quantity);
     let quantityRemaining = quantityNeeded;
     let totalCost = new Decimal(0);
@@ -190,7 +190,7 @@ export class CostBasisService {
   /**
    * Get lots available on or before a specific date
    */
-  private getAvailableLots(lots: CryptoLot[], date?: string): CryptoLot[] {
+  private static getAvailableLots(lots: CryptoLot[], date?: string): CryptoLot[] {
     if (!date) {
       return lots.filter(lot => new Decimal(lot.remainingQuantity).gt(0));
     }

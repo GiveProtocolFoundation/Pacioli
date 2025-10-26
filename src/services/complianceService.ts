@@ -493,7 +493,7 @@ export class ComplianceService {
         activeMarketDetermination: 'Based on daily trading volume and market capitalization',
       },
       accountingPolicies: this.getAccountingPoliciesText(),
-      significantJudgments: this.getSignificantJudgmentsText(),
+      significantJudgments: ComplianceService.getSignificantJudgmentsText(),
       createdAt: new Date().toISOString(),
     };
   }
@@ -523,7 +523,7 @@ export class ComplianceService {
   /**
    * Get significant judgments text for disclosure
    */
-  private getSignificantJudgmentsText(): string {
+  private static getSignificantJudgmentsText(): string {
     return 'Management makes judgments in determining whether an active market exists for crypto assets, ' +
       'which affects the measurement approach. Active markets are identified based on daily trading volume, ' +
       'number of exchanges, and market capitalization. Impairment assessments require judgment in ' +

@@ -103,8 +103,7 @@ const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
 
   const handleDelete = useCallback((code: string) => {
     // TODO: Implement delete confirmation and backend call
-    // Deleting account: code
-    void code;
+    console.log('Deleting account:', code);
   }, []);
 
   const createEditHandler = useCallback((account: typeof template.accounts[0]) => {

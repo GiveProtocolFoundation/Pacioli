@@ -137,8 +137,8 @@ export class EVMService {
     if (!config) throw new Error(`Unknown chain: ${chain}`);
     return config;
   }
-  
-  async switchNetwork(chainId: number) {
+
+  static async switchNetwork(chainId: number) {
     if (!window.ethereum) {
       throw new Error('MetaMask not installed');
     }
