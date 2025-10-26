@@ -189,7 +189,11 @@ const Onboarding: React.FC = () => {
         {/* Logo and Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
-            <img src={PacioliBlackLogo} alt="Pacioli" className="h-12 w-auto mix-blend-multiply" />
+            <img
+              src={PacioliBlackLogo}
+              alt="Pacioli"
+              className="h-12 w-auto mix-blend-multiply"
+            />
             <span className="ml-3 text-2xl font-bold text-gray-900">
               Pacioli
             </span>
