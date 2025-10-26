@@ -249,6 +249,10 @@ export class ComplianceService {
         // Placeholder for disposal journal entries
         break;
       }
+
+      default:
+        // No journal entries needed for unknown transaction types
+        break;
     }
 
     return entries;
@@ -281,7 +285,7 @@ export class ComplianceService {
   performImpairmentTest(
     carryingAmount: string,
     fairValue: string,
-    previousImpairment: string = '0'
+    previousImpairment = '0'
   ): { isImpaired: boolean; impairmentLoss: string; allowReversal: boolean } {
     if (!this.settings) {
       throw new Error('Compliance settings not initialized');
@@ -522,10 +526,10 @@ export class ComplianceService {
    * Get significant judgments text for disclosure
    */
   private getSignificantJudgmentsText(): string {
-    return `Management makes judgments in determining whether an active market exists for crypto assets, ` +
-      `which affects the measurement approach. Active markets are identified based on daily trading volume, ` +
-      `number of exchanges, and market capitalization. Impairment assessments require judgment in ` +
-      `determining whether fair value declines are other-than-temporary.`;
+    return 'Management makes judgments in determining whether an active market exists for crypto assets, ' +
+      'which affects the measurement approach. Active markets are identified based on daily trading volume, ' +
+      'number of exchanges, and market capitalization. Impairment assessments require judgment in ' +
+      'determining whether fair value declines are other-than-temporary.';
   }
 }
 

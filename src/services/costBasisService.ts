@@ -206,7 +206,7 @@ export class CostBasisService {
   /**
    * Update lot quantities after a disposal
    */
-  updateLotsAfterDisposal(
+  static updateLotsAfterDisposal(
     lots: CryptoLot[],
     disposal: DisposalResult
   ): CryptoLot[] {
@@ -233,7 +233,7 @@ export class CostBasisService {
   /**
    * Calculate holding period for tax purposes
    */
-  calculateHoldingPeriod(
+  static calculateHoldingPeriod(
     acquisitionDate: string,
     disposalDate: string
   ): { days: number; isLongTerm: boolean } {
@@ -250,7 +250,7 @@ export class CostBasisService {
   /**
    * Calculate gain/loss from disposal
    */
-  calculateGainLoss(
+  static calculateGainLoss(
     costBasis: string,
     proceeds: string
   ): { gainLoss: string; isGain: boolean } {
@@ -268,7 +268,7 @@ export class CostBasisService {
    * Get weighted average cost
    * Useful for certain reporting scenarios
    */
-  calculateWeightedAverage(lots: CryptoLot[]): string {
+  static calculateWeightedAverage(lots: CryptoLot[]): string {
     const activeLots = lots.filter(lot =>
       new Decimal(lot.remainingQuantity).gt(0)
     );
@@ -294,7 +294,7 @@ export class CostBasisService {
   /**
    * Validate lot data integrity
    */
-  validateLots(lots: CryptoLot[]): { isValid: boolean; errors: string[] } {
+  static validateLots(lots: CryptoLot[]): { isValid: boolean; errors: string[] } {
     const errors: string[] = [];
 
     for (const lot of lots) {
