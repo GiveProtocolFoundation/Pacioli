@@ -11,6 +11,13 @@ enabled = true
     "browser"
   ]
   style_guide = "airbnb"
+  skip_doc_coverage = ["file-paths"]
+
+  # Ignore JSX maximum depth validation (JS-0415)
+  # We've already extracted components where appropriate.
+  # Further extraction would have diminishing returns.
+  [[analyzers.meta.exclude]]
+  patterns = ["JS-0415"]
 
 [[analyzers]]
 name = "rust"
