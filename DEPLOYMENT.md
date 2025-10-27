@@ -1,4 +1,4 @@
-# Deployment Guide for Numbers App
+# Deployment Guide for Pacioli App
 
 ## Prerequisites
 

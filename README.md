@@ -1,6 +1,6 @@
-# Numbers
+# Pacioli
 
-**Open-Source Ledger - Tauri + React + TypeScript**
+**Open-Source Crypto Accounting Platform - Tauri + React + TypeScript**
 
 A comprehensive blockchain transaction tracking application built with Tauri, React, TypeScript, and Rust. Features multi-chain support for Polkadot ecosystem including Moonbeam, Moonriver, Astar, Acala EVM+, and Paseo TestNet.
 
@@ -124,7 +124,7 @@ npx hardhat ignition deploy ./ignition/modules/MinimalERC20.js --network passetH
 ## Project Structure
 
 ```
-Numbers/
+Pacioli/
 ├── src/                    # React frontend
 │   ├── hooks/             # Custom React hooks
 │   └── components/        # UI components

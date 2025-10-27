@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document describes the multi-currency architecture implemented in the Numbers application. The system supports both fiat currencies (USD, EUR, GBP, etc.) and cryptocurrencies (BTC, ETH, SOL, etc.) with automatic conversion and flexible reporting options.
+This document describes the multi-currency architecture implemented in the Pacioli application. The system supports both fiat currencies (USD, EUR, GBP, etc.) and cryptocurrencies (BTC, ETH, SOL, etc.) with automatic conversion and flexible reporting options.
 
 ## Architecture Components
 
@@ -551,4 +551,4 @@ For questions or issues with the currency architecture:
 
 ## License
 
-This currency architecture is part of the Numbers project and follows the same license.
+This currency architecture is part of the Pacioli project and follows the same license.

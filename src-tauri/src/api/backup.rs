@@ -10,7 +10,7 @@ pub async fn create_backup(app_handle: tauri::AppHandle) -> Result<String, Strin
         .map_err(|e| e.to_string())?;
 
     let backup_name = format!(
-        "numbers_backup_{}.zip",
+        "pacioli_backup_{}.zip",
         chrono::Utc::now().format("%Y%m%d_%H%M%S")
     );
 

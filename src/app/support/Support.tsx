@@ -267,7 +267,7 @@ const Support: React.FC = () => {
                     Watch step-by-step video guides to learn Pacioli features
                   </p>
                   <a
-                    href="https://youtube.com/numbers"
+                    href="https://youtube.com/pacioli"
                     className="inline-flex items-center px-4 py-2 bg-white text-purple-600 rounded-lg hover:bg-purple-50 text-sm font-medium"
                   >
                     Watch Tutorials
@@ -287,14 +287,14 @@ const Support: React.FC = () => {
               </h3>
               <div className="space-y-3">
                 <a
-                  href="mailto:support@numbers.example.org"
+                  href="mailto:support@pacioli.io"
                   className="flex items-center text-sm text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
                 >
                   <Mail className="w-4 h-4 mr-3" />
                   Email Support
                 </a>
                 <a
-                  href="https://community.numbers.example.org"
+                  href="https://community.pacioli.io"
                   className="flex items-center text-sm text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
                 >
                   <MessageCircle className="w-4 h-4 mr-3" />
@@ -343,7 +343,7 @@ const Support: React.FC = () => {
                 </span>
               </div>
               <a
-                href="https://status.numbers.example.org"
+                href="https://status.pacioli.io"
                 className="text-xs text-blue-600 dark:text-blue-400 hover:underline mt-3 inline-flex items-center"
               >
                 View Status Page

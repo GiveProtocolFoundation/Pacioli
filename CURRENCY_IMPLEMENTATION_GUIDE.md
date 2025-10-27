@@ -2,7 +2,7 @@
 
 ## Overview
 
-This guide provides step-by-step instructions for implementing the multi-currency system in the Numbers application, following the MVP-first approach with support for USD, EUR, GBP, DOT, KSM, USDT, and USDC.
+This guide provides step-by-step instructions for implementing the multi-currency system in the Pacioli application, following the MVP-first approach with support for USD, EUR, GBP, DOT, KSM, USDT, and USDC.
 
 ## Phase 1: MVP Implementation (CURRENT)
 
