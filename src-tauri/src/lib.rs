@@ -6,7 +6,7 @@ mod indexer;
 mod sync;
 
 use evm_indexer::EVMIndexer;
-use std::sync::Mutex;
+use tokio::sync::Mutex;
 use tauri::State;
 
 // Global EVM indexer state
@@ -23,10 +23,8 @@ async fn connect_evm_chain(
     state: State<'_, EVMIndexerState>,
     chain: String,
 ) -> Result<String, String> {
-    let result = {
-        let mut indexer = state.lock().map_err(|e| e.to_string())?;
-        indexer.connect(&chain).await.map_err(|e| e.to_string())
-    }?;
+    let mut indexer = state.lock().await;
+    indexer.connect(&chain).await.map_err(|e| e.to_string())?;
     Ok(format!("Connected to {}", chain))
 }
 
@@ -36,13 +34,11 @@ async fn get_evm_balance(
     chain: String,
     address: String,
 ) -> Result<String, String> {
-    let balance = {
-        let indexer = state.lock().map_err(|e| e.to_string())?;
-        indexer
-            .get_balance(&chain, &address)
-            .await
-            .map_err(|e| e.to_string())
-    }?;
+    let indexer = state.lock().await;
+    let balance = indexer
+        .get_balance(&chain, &address)
+        .await
+        .map_err(|e| e.to_string())?;
     Ok(balance.to_string())
 }
 
@@ -68,13 +64,11 @@ async fn get_evm_token_balances(
         _ => vec![],
     };
 
-    let balances = {
-        let indexer = state.lock().map_err(|e| e.to_string())?;
-        indexer
-            .scan_erc20_balances(&chain, &address, tokens)
-            .await
-            .map_err(|e| e.to_string())
-    }?;
+    let indexer = state.lock().await;
+    let balances = indexer
+        .scan_erc20_balances(&chain, &address, tokens)
+        .await
+        .map_err(|e| e.to_string())?;
 
     Ok(balances
         .into_iter()
@@ -91,7 +85,7 @@ async fn get_evm_transactions(
     to_block: String,
 ) -> Result<Vec<String>, String> {
     let to_block_num = if to_block == "latest" {
-        let indexer = state.lock().map_err(|e| e.to_string())?;
+        let indexer = state.lock().await;
         indexer
             .get_block_number(&chain)
             .await
@@ -100,13 +94,11 @@ async fn get_evm_transactions(
         to_block.parse::<u64>().map_err(|e| e.to_string())?
     };
 
-    let transactions = {
-        let indexer = state.lock().map_err(|e| e.to_string())?;
-        indexer
-            .get_transactions(&chain, &address, from_block, to_block_num)
-            .await
-            .map_err(|e| e.to_string())
-    }?;
+    let indexer = state.lock().await;
+    let transactions = indexer
+        .get_transactions(&chain, &address, from_block, to_block_num)
+        .await
+        .map_err(|e| e.to_string())?;
 
     // Convert transactions to JSON strings for frontend
     Ok(transactions
@@ -128,13 +120,11 @@ async fn scan_defi_positions(
         _ => vec![],
     };
 
-    let positions = {
-        let indexer = state.lock().map_err(|e| e.to_string())?;
-        indexer
-            .scan_defi_positions(&chain, &address, protocols)
-            .await
-            .map_err(|e| e.to_string())
-    }?;
+    let indexer = state.lock().await;
+    let positions = indexer
+        .scan_defi_positions(&chain, &address, protocols)
+        .await
+        .map_err(|e| e.to_string())?;
 
     // Convert positions to JSON strings for frontend
     Ok(positions
@@ -150,22 +140,17 @@ async fn sync_evm_transactions(
     address: String,
 ) -> Result<String, String> {
     // Get latest block and sync from last 1000 blocks
-    let latest_block = {
-        let indexer = state.lock().map_err(|e| e.to_string())?;
-        indexer
-            .get_block_number(&chain)
-            .await
-            .map_err(|e| e.to_string())
-    }?;
+    let indexer = state.lock().await;
+    let latest_block = indexer
+        .get_block_number(&chain)
+        .await
+        .map_err(|e| e.to_string())?;
     let from_block = latest_block.saturating_sub(1000);
 
-    let transactions = {
-        let indexer = state.lock().map_err(|e| e.to_string())?;
-        indexer
-            .get_transactions(&chain, &address, from_block, latest_block)
-            .await
-            .map_err(|e| e.to_string())
-    }?;
+    let transactions = indexer
+        .get_transactions(&chain, &address, from_block, latest_block)
+        .await
+        .map_err(|e| e.to_string())?;
 
     Ok(format!("Synced {} transactions", transactions.len()))
 }
