@@ -1,6 +1,7 @@
 use anyhow::Result;
 use std::fs;
 use std::path::PathBuf;
+use tauri::Manager;
 
 #[tauri::command]
 pub async fn create_backup(app_handle: tauri::AppHandle) -> Result<String, String> {

@@ -1,5 +1,6 @@
 use anyhow::Result;
 use ethers::prelude::*;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -168,7 +169,7 @@ impl DeFiProtocolScanner {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeFiPosition {
     pub protocol: String,
     pub position_type: String,
@@ -178,7 +179,7 @@ pub struct DeFiPosition {
     pub value_usd: Option<f64>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AssetAmount {
     pub token_address: Option<Address>,
     pub token_symbol: String,
