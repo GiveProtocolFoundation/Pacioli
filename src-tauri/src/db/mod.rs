@@ -43,7 +43,7 @@ impl Database {
 
     pub async fn init_tables(&self) -> Result<()> {
         // Create tables if they don't exist
-        sqlx::query!(
+        sqlx::query(
             r#"
             CREATE TABLE IF NOT EXISTS profiles (
                 id TEXT PRIMARY KEY,
@@ -57,7 +57,7 @@ impl Database {
         .execute(&self.pool)
         .await?;
 
-        sqlx::query!(
+        sqlx::query(
             r#"
             CREATE TABLE IF NOT EXISTS accounts (
                 id TEXT PRIMARY KEY,
@@ -74,7 +74,7 @@ impl Database {
         .execute(&self.pool)
         .await?;
 
-        sqlx::query!(
+        sqlx::query(
             r#"
             CREATE TABLE IF NOT EXISTS transactions (
                 id TEXT PRIMARY KEY,
@@ -102,7 +102,7 @@ impl Database {
         .execute(&self.pool)
         .await?;
 
-        sqlx::query!(
+        sqlx::query(
             r#"
             CREATE TABLE IF NOT EXISTS sync_status (
                 profile_id TEXT NOT NULL,

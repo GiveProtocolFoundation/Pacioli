@@ -69,15 +69,15 @@ impl SyncManager {
         profile_id: &str,
         chain: &str,
     ) -> Result<u32> {
-        let result = sqlx::query!(
-            "SELECT last_synced_block FROM sync_status WHERE profile_id = ? AND chain = ?",
-            profile_id,
-            chain
+        let result: Option<(i64,)> = sqlx::query_as(
+            "SELECT last_synced_block FROM sync_status WHERE profile_id = ? AND chain = ?"
         )
+        .bind(profile_id)
+        .bind(chain)
         .fetch_optional(&db.pool)
         .await?;
 
-        Ok(result.map(|r| r.last_synced_block as u32).unwrap_or(0))
+        Ok(result.map(|(block,)| block as u32).unwrap_or(0))
     }
 
     async fn save_transactions(
@@ -88,7 +88,7 @@ impl SyncManager {
     ) -> Result<()> {
         // Save transactions to database
         for tx in transactions {
-            sqlx::query!(
+            sqlx::query(
                 r#"
                 INSERT INTO transactions (
                     profile_id, chain, hash, block_number, timestamp,
@@ -96,22 +96,22 @@ impl SyncManager {
                     transaction_type, status, fee, metadata
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(hash, chain) DO NOTHING
-                "#,
-                profile_id,
-                tx.chain,
-                tx.hash,
-                tx.block_number,
-                tx.timestamp,
-                tx.from_address,
-                tx.to_address,
-                tx.value.to_string(),
-                tx.token_symbol,
-                tx.token_decimals,
-                tx.transaction_type,
-                tx.status,
-                tx.fee.map(|f| f.to_string()),
-                serde_json::to_string(&tx.metadata)?
+                "#
             )
+            .bind(profile_id)
+            .bind(&tx.chain)
+            .bind(&tx.hash)
+            .bind(tx.block_number)
+            .bind(&tx.timestamp)
+            .bind(&tx.from_address)
+            .bind(&tx.to_address)
+            .bind(tx.value.to_string())
+            .bind(&tx.token_symbol)
+            .bind(tx.token_decimals)
+            .bind(&tx.transaction_type)
+            .bind(&tx.status)
+            .bind(tx.fee.map(|f| f.to_string()))
+            .bind(serde_json::to_string(&tx.metadata)?)
             .execute(&db.pool)
             .await?;
         }
@@ -126,18 +126,18 @@ impl SyncManager {
         chain: &str,
         block: u32,
     ) -> Result<()> {
-        sqlx::query!(
+        sqlx::query(
             r#"
             INSERT INTO sync_status (profile_id, chain, last_synced_block, last_sync_time)
             VALUES (?, ?, ?, datetime('now'))
             ON CONFLICT(profile_id, chain) DO UPDATE SET
                 last_synced_block = excluded.last_synced_block,
                 last_sync_time = excluded.last_sync_time
-            "#,
-            profile_id,
-            chain,
-            block
+            "#
         )
+        .bind(profile_id)
+        .bind(chain)
+        .bind(block)
         .execute(&db.pool)
         .await?;
 
