@@ -1,0 +1,54 @@
+# CODEOWNERS for Pacioli
+#
+# This file defines individuals or teams that are responsible for code in this repository.
+# Code owners are automatically requested for review when someone opens a pull request
+# that modifies code that they own.
+#
+# More info: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owners for everything in the repository
+# These users will be requested for review unless a later match takes precedence
+* @drigobl @civicmastery
+
+# Frontend - React/TypeScript
+/src/ @drigobl @civicmastery
+/src/components/ @drigobl @civicmastery
+/src/app/ @drigobl @civicmastery
+/src/hooks/ @drigobl @civicmastery
+/src/contexts/ @drigobl @civicmastery
+
+# Backend - Rust/Tauri
+/src-tauri/ @drigobl @civicmastery
+/src-tauri/src/ @drigobl @civicmastery
+/src-tauri/Cargo.toml @drigobl @civicmastery
+
+# Security-sensitive areas - require approval from both founders
+/src-tauri/src/db/ @drigobl @civicmastery
+/src-tauri/src/api/ @drigobl @civicmastery
+/src-tauri/src/core/ @drigobl @civicmastery
+
+# Smart Contracts - require extra scrutiny
+/contracts/ @drigobl @civicmastery
+/ignition/ @drigobl @civicmastery
+hardhat.config.js @drigobl @civicmastery
+
+# Configuration files
+/package.json @drigobl @civicmastery
+/tsconfig.json @drigobl @civicmastery
+/vite.config.ts @drigobl @civicmastery
+/.github/ @drigobl @civicmastery
+
+# Documentation
+/docs/ @drigobl @civicmastery
+*.md @drigobl @civicmastery
+
+# Security
+/.gitleaks.toml @drigobl @civicmastery
+/SECURITY.md @drigobl @civicmastery
+
+# Build and CI/CD
+/.github/workflows/ @drigobl @civicmastery
+/Makefile @drigobl @civicmastery
+
+# Database migrations - critical, require careful review
+/src-tauri/migrations/ @drigobl @civicmastery

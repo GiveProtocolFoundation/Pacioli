@@ -1,0 +1,177 @@
+title = "Pacioli Security Configuration"
+
+# Gitleaks configuration for preventing secrets in commits
+# https://github.com/gitleaks/gitleaks
+
+[extend]
+# useDefault will extend the base configuration with the default gitleaks config:
+# https://github.com/gitleaks/gitleaks/blob/master/config/gitleaks.toml
+useDefault = true
+
+[allowlist]
+description = "Allowlisted files and patterns"
+paths = [
+    '''node_modules/''',
+    '''target/''',
+    '''.git/''',
+    '''dist/''',
+    '''build/''',
+    '''\.lock$''',
+    '''package-lock\.json$''',
+    '''pnpm-lock\.yaml$''',
+    '''Cargo\.lock$''',
+]
+
+# Allowlist for test files and examples
+regexes = [
+    '''(?i)example''',
+    '''(?i)sample''',
+    '''(?i)test[_-]?(key|password|secret)''',
+    '''(?i)dummy[_-]?(key|password|secret)''',
+]
+
+# Additional custom rules specific to crypto projects
+[[rules]]
+id = "private-key-pem"
+description = "Detected PEM-encoded private key"
+regex = '''-----BEGIN[ A-Z]*?PRIVATE KEY-----'''
+tags = ["key", "private-key"]
+
+[[rules]]
+id = "ethereum-private-key"
+description = "Ethereum private key (64 hex characters)"
+regex = '''\b(0x)?[a-fA-F0-9]{64}\b'''
+tags = ["ethereum", "private-key", "blockchain"]
+[rules.allowlist]
+regexes = [
+    '''(?i)(test|example|sample|dummy)''',
+    '''0x0000000000000000000000000000000000000000000000000000000000000000''',
+]
+
+[[rules]]
+id = "polkadot-seed-phrase"
+description = "Polkadot/Substrate seed phrase (12 or 24 words)"
+regex = '''\b([a-z]+\s){11,23}[a-z]+\b'''
+tags = ["polkadot", "seed-phrase", "blockchain"]
+entropy = 3.5
+[rules.allowlist]
+regexes = [
+    '''(?i)(test|example|sample|dummy|lorem|ipsum)''',
+]
+
+[[rules]]
+id = "api-key-generic"
+description = "Generic API key pattern"
+regex = '''(?i)(api[_-]?key|apikey|api[_-]?secret)['\"]?\s*[:=]\s*['\"]?[a-zA-Z0-9_\-]{20,}['\"]?'''
+tags = ["api", "key"]
+[rules.allowlist]
+regexes = [
+    '''(?i)(test|example|sample|dummy|your|placeholder)''',
+    '''xxx+''',
+    '''yyy+''',
+]
+
+[[rules]]
+id = "aws-access-key"
+description = "AWS Access Key ID"
+regex = '''AKIA[0-9A-Z]{16}'''
+tags = ["aws", "key"]
+
+[[rules]]
+id = "aws-secret-key"
+description = "AWS Secret Access Key"
+regex = '''(?i)aws[_-]?secret[_-]?access[_-]?key['\"]?\s*[:=]\s*['\"]?[a-zA-Z0-9/+=]{40}['\"]?'''
+tags = ["aws", "secret"]
+
+[[rules]]
+id = "github-token"
+description = "GitHub Personal Access Token"
+regex = '''ghp_[0-9a-zA-Z]{36}'''
+tags = ["github", "token"]
+
+[[rules]]
+id = "github-oauth"
+description = "GitHub OAuth Access Token"
+regex = '''gho_[0-9a-zA-Z]{36}'''
+tags = ["github", "oauth"]
+
+[[rules]]
+id = "slack-token"
+description = "Slack Token"
+regex = '''xox[baprs]-([0-9a-zA-Z]{10,48})?'''
+tags = ["slack", "token"]
+
+[[rules]]
+id = "slack-webhook"
+description = "Slack Webhook"
+regex = '''https://hooks\.slack\.com/services/T[a-zA-Z0-9_]+/B[a-zA-Z0-9_]+/[a-zA-Z0-9_]+'''
+tags = ["slack", "webhook"]
+
+[[rules]]
+id = "password-in-url"
+description = "Password in URL"
+regex = '''[a-zA-Z]{3,10}://[^/\s:@]{3,20}:[^/\s:@]{3,20}@.{1,100}'''
+tags = ["password", "url"]
+[rules.allowlist]
+regexes = [
+    '''(?i)(user|username|admin):password@''',
+    '''(?i)(test|example|sample|dummy)''',
+]
+
+[[rules]]
+id = "coingecko-api-key"
+description = "CoinGecko API Key"
+regex = '''(?i)coingecko[_-]?api[_-]?key['\"]?\s*[:=]\s*['\"]?CG-[a-zA-Z0-9]{20,}['\"]?'''
+tags = ["coingecko", "api", "key"]
+
+[[rules]]
+id = "generic-secret"
+description = "Generic Secret"
+regex = '''(?i)(secret|password|passwd|pwd|token)['\"]?\s*[:=]\s*['\"]?[a-zA-Z0-9_\-!@#$%^&*()]{12,}['\"]?'''
+tags = ["secret", "password"]
+entropy = 3.0
+[rules.allowlist]
+regexes = [
+    '''(?i)(test|example|sample|dummy|your|placeholder|change|replace)''',
+    '''xxx+''',
+    '''yyy+''',
+    '''123+''',
+    '''\*\*\*+''',
+]
+
+[[rules]]
+id = "jwt-token"
+description = "JWT Token"
+regex = '''eyJ[A-Za-z0-9_-]{10,}\.eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}'''
+tags = ["jwt", "token"]
+
+[[rules]]
+id = "rsa-private-key"
+description = "RSA Private Key"
+regex = '''-----BEGIN RSA PRIVATE KEY-----'''
+tags = ["rsa", "private-key"]
+
+[[rules]]
+id = "ssh-private-key"
+description = "SSH Private Key"
+regex = '''-----BEGIN OPENSSH PRIVATE KEY-----'''
+tags = ["ssh", "private-key"]
+
+[[rules]]
+id = "pgp-private-key"
+description = "PGP Private Key"
+regex = '''-----BEGIN PGP PRIVATE KEY BLOCK-----'''
+tags = ["pgp", "private-key"]
+
+[[rules]]
+id = "database-connection-string"
+description = "Database connection string with password"
+regex = '''(?i)(postgresql|mysql|mongodb|redis)://[^:]+:[^@]+@[^/]+'''
+tags = ["database", "connection-string"]
+[rules.allowlist]
+regexes = [
+    '''(?i)(user|username|admin):password@''',
+    '''(?i)(test|example|sample|dummy)''',
+    '''localhost''',
+    '''127\.0\.0\.1''',
+]
