@@ -302,6 +302,7 @@ impl EVMIndexer {
 
         Ok(CoreTransaction {
             id: uuid::Uuid::new_v4(),
+            profile_id: None,
             chain: chain.to_string(),
             hash: format!("0x{}", hex::encode(tx.hash)),
             from_address: format!("0x{}", hex::encode(tx.from)),

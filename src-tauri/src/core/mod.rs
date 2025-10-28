@@ -15,13 +15,17 @@ pub use currency_service::CurrencyService;
 pub use encryption::Encryptor;
 pub use substrate_currency::SubstrateCurrencyHandler;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
 pub struct Transaction {
+    #[sqlx(try_from = "String")]
     pub id: Uuid,
+    #[sqlx(default)]
+    pub profile_id: Option<String>,
     pub chain: String,
     pub hash: String,
     pub from_address: String,
     pub to_address: Option<String>,
+    #[sqlx(try_from = "String")]
     pub value: Decimal,
     pub token_symbol: String,
     pub token_decimals: i32,
@@ -29,6 +33,7 @@ pub struct Transaction {
     pub block_number: i64,
     pub transaction_type: String,
     pub status: String,
+    #[sqlx(try_from = "Option<String>")]
     pub fee: Option<Decimal>,
     pub metadata: serde_json::Value,
     pub created_at: DateTime<Utc>,
