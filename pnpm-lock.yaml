@@ -96,6 +96,9 @@ importers:
         specifier: ^0.18.5
         version: 0.18.5
     devDependencies:
+      '@eslint/js':
+        specifier: ^9.38.0
+        version: 9.38.0
       '@nomicfoundation/hardhat-toolbox':
         specifier: ^5.0.0
         version: 5.0.0(8ce9b97173ea2763e846b5cf145641fe)
@@ -138,6 +141,9 @@ importers:
       eslint-plugin-react-refresh:
         specifier: ^0.4.23
         version: 0.4.24(eslint@9.38.0(jiti@2.6.1))
+      globals:
+        specifier: ^16.4.0
+        version: 16.4.0
       hardhat:
         specifier: ^2.22.0
         version: 2.26.3(ts-node@10.9.2(@types/node@24.9.1)(typescript@5.8.3))(typescript@5.8.3)
@@ -3022,6 +3028,10 @@ packages:
 
   globals@14.0.0:
     resolution: {integrity: sha512-oahGvuMGQlPw/ivIYBjVSrWAfWLBeku5tpPE2fOPLi+WHffIWbuh2tCjhyQhTBPMf5E9jDEH4FOmTYgYwbKwtQ==}
+    engines: {node: '>=18'}
+
+  globals@16.4.0:
+    resolution: {integrity: sha512-ob/2LcVVaVGCYN+r14cnwnoDPUufjiYgSqRhiFD0Q1iI4Odora5RE8Iv1D24hAz5oMophRGkGz+yuvQmmUMnMw==}
     engines: {node: '>=18'}
 
   globby@10.0.2:
@@ -8691,6 +8701,8 @@ snapshots:
       process: 0.11.10
 
   globals@14.0.0: {}
+
+  globals@16.4.0: {}
 
   globby@10.0.2:
     dependencies:
