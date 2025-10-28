@@ -2,8 +2,7 @@
 
 **Open-Source Crypto Accounting Platform for Polkadot Ecosystem**
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE-MIT)
-[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE-APACHE)
+[![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL%203.0-blue.svg)](LICENSE)
 
 A comprehensive blockchain accounting application built with Tauri, React, TypeScript, and Rust. Designed specifically for the Polkadot ecosystem with support for Moonbeam, Moonriver, Astar, and other parachains.
 
@@ -194,14 +193,15 @@ Security is a top priority. Please review our [Security Policy](SECURITY.md) for
 
 ## 📜 License
 
-Pacioli is **dual-licensed** under your choice of:
+Pacioli is licensed under the **GNU Affero General Public License v3.0 (AGPL-3.0)**.
 
-- **[MIT License](LICENSE-MIT)** - Simple and permissive
-- **[Apache License 2.0](LICENSE-APACHE)** - Includes patent protection
+This means:
+- You can use, modify, and distribute Pacioli freely
+- If you modify and deploy Pacioli as a service (including web apps), you **must** make your source code available
+- Any derivative works must also be licensed under AGPL-3.0
+- This ensures the software and its derivatives remain free and open-source
 
-See [LICENSE](LICENSE) for details on dual licensing.
-
-**TL;DR**: You can use Pacioli for free, modify it, and distribute it. Choose whichever license works best for you.
+See [LICENSE](LICENSE) for the full license text.
 
 ---
 
