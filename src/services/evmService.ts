@@ -1,5 +1,5 @@
 import { ethers } from 'ethers'
-import { invoke } from '@tauri-apps/api/tauri'
+import { invoke } from '@tauri-apps/api/core'
 import { getErrorCode } from '../types/errors'
 
 export interface EVMChain {
@@ -83,23 +83,26 @@ export class EVMService {
 
     const provider = new ethers.BrowserProvider(window.ethereum)
     await provider.send('eth_requestAccounts', [])
-    const signer = provider.getSigner()
+    const signer = await provider.getSigner()
     const address = await signer.getAddress()
     const network = await provider.getNetwork()
 
+    // Convert chainId from bigint to number (ethers v6 returns bigint)
+    const chainId = Number(network.chainId)
+
     // Find matching chain
     const chain = Object.entries(EVM_CHAINS).find(
-      ([_, config]) => config.chainId === network.chainId
+      ([_, config]) => config.chainId === chainId
     )
 
     if (!chain) {
-      throw new Error(`Unsupported network: ${network.chainId}`)
+      throw new Error(`Unsupported network: ${chainId}`)
     }
 
     return {
       address,
       chain: chain[0],
-      chainId: network.chainId,
+      chainId,
     }
   }
 

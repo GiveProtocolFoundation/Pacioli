@@ -124,7 +124,7 @@ export const useEVMService = () => {
         setIsLoadingBalances(false)
       }
     },
-    [service, currentAccount]
+    [currentAccount]
   )
 
   const syncTransactions = useCallback(
@@ -144,7 +144,7 @@ export const useEVMService = () => {
         throw error
       }
     },
-    [service, currentAccount]
+    [currentAccount]
   )
 
   const scanDeFiPositions = useCallback(
