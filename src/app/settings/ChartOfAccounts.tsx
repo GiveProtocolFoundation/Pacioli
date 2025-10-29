@@ -76,7 +76,7 @@ const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
   }, [template, selectedType, searchQuery])
 
   const handleEdit = useCallback(
-    (account: (typeof template.accounts)[0]) => {
+    (account: NonNullable<typeof template>['accounts'][0]) => {
       setEditingAccount({
         code: account.code,
         name: account.name,
@@ -116,7 +116,7 @@ const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
   }, [])
 
   const createEditHandler = useCallback(
-    (account: (typeof template.accounts)[0]) => {
+    (account: NonNullable<typeof template>['accounts'][0]) => {
       return () => handleEdit(account)
     },
     [handleEdit, template]

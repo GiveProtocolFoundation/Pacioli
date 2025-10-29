@@ -59,14 +59,14 @@ export const EVM_CHAINS: Record<string, EVMChain> = {
 }
 
 export class EVMService {
-  private providers: Map<string, ethers.providers.JsonRpcProvider> = new Map()
+  private providers: Map<string, ethers.JsonRpcProvider> = new Map()
 
-  getProvider(chain: string): ethers.providers.JsonRpcProvider {
+  getProvider(chain: string): ethers.JsonRpcProvider {
     if (!this.providers.has(chain)) {
       const config = EVM_CHAINS[chain]
       if (!config) throw new Error(`Unknown chain: ${chain}`)
 
-      const provider = new ethers.providers.JsonRpcProvider(config.rpcUrl)
+      const provider = new ethers.JsonRpcProvider(config.rpcUrl)
       this.providers.set(chain, provider)
     }
     const provider = this.providers.get(chain)
@@ -81,7 +81,7 @@ export class EVMService {
       throw new Error('MetaMask not installed')
     }
 
-    const provider = new ethers.providers.Web3Provider(window.ethereum)
+    const provider = new ethers.BrowserProvider(window.ethereum)
     await provider.send('eth_requestAccounts', [])
     const signer = provider.getSigner()
     const address = await signer.getAddress()

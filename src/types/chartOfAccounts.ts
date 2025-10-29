@@ -5,14 +5,23 @@ export type AccountCategory =
   | 'Revenue'
   | 'Expenses'
 
-export type AccountType = 'debit' | 'credit'
+// JSON data currently uses these singular forms in the 'type' field
+export type AccountTypeValue =
+  | 'Asset'
+  | 'Liability'
+  | 'Equity'
+  | 'Revenue'
+  | 'Expense'
+
+export type DebitCreditType = 'debit' | 'credit'
 
 export interface ChartOfAccountsEntry {
   code: string
   name: string
-  category: AccountCategory
+  category?: AccountCategory
   subcategory?: string
-  type: AccountType
+  type: AccountTypeValue // Currently stores category in JSON data
+  debitCredit?: DebitCreditType // Future field for debit/credit classification
   description?: string
   parentCode?: string
   isActive: boolean
@@ -35,5 +44,5 @@ export interface ChartOfAccountsTemplate {
   name: string
   jurisdiction: 'us-gaap' | 'ifrs'
   accountType: 'individual' | 'sme' | 'not-for-profit'
-  accounts: Omit<ChartOfAccountsEntry, 'isActive' | 'editable'>[]
+  accounts: ChartOfAccountsEntry[]
 }

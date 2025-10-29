@@ -57,7 +57,7 @@ const OrganizationInformationSection: React.FC<
   const createTextHandler = useCallback(
     <K extends keyof OrganizationSettings>(key: K) => {
       return (e: React.ChangeEvent<HTMLInputElement>) => {
-        onOrganizationChange(key, e.target.value)
+        onOrganizationChange(key, e.target.value as OrganizationSettings[K])
       }
     },
     [onOrganizationChange]

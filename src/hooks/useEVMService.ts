@@ -17,7 +17,6 @@ export interface TokenBalance {
 }
 
 export const useEVMService = () => {
-  const [service] = useState(() => new EVMService())
   const [currentAccount, setCurrentAccount] = useState<EVMAccount | null>(null)
   const [isConnecting, setIsConnecting] = useState(false)
   const [balances, setBalances] = useState<TokenBalance[]>([])
@@ -26,7 +25,7 @@ export const useEVMService = () => {
   const connectMetaMask = useCallback(async () => {
     setIsConnecting(true)
     try {
-      const account = await service.importFromMetaMask()
+      const account = await EVMService.importFromMetaMask()
       setCurrentAccount(account)
       toast.success(
         `Connected to ${EVM_CHAINS[account.chain]?.name || account.chain}`
@@ -38,12 +37,12 @@ export const useEVMService = () => {
     } finally {
       setIsConnecting(false)
     }
-  }, [service])
+  }, [])
 
   const switchNetwork = useCallback(
     async (chainId: number) => {
       try {
-        await service.switchNetwork(chainId)
+        await EVMService.switchNetwork(chainId)
 
         // Update current account with new chain
         if (currentAccount) {
@@ -68,13 +67,13 @@ export const useEVMService = () => {
         throw error
       }
     },
-    [service, currentAccount]
+    [currentAccount]
   )
 
   const connectToChain = useCallback(
     async (chain: string) => {
       try {
-        await service.connectToChain(chain)
+        await EVMService.connectToChain(chain)
         toast.success(
           `Backend connected to ${EVM_CHAINS[chain]?.name || chain}`
         )
@@ -83,7 +82,7 @@ export const useEVMService = () => {
         throw error
       }
     },
-    [service]
+    []
   )
 
   const loadBalances = useCallback(
@@ -97,11 +96,11 @@ export const useEVMService = () => {
       setIsLoadingBalances(true)
       try {
         // Get native token balance
-        const nativeBalance = await service.getBalance(chain, address)
+        const nativeBalance = await EVMService.getBalance(chain, address)
         const nativeToken = EVM_CHAINS[chain]?.nativeToken
 
         // Get ERC20 token balances
-        const tokenBalances = await service.getTokenBalances(chain, address)
+        const tokenBalances = await EVMService.getTokenBalances(chain, address)
 
         const allBalances: TokenBalance[] = [
           {
@@ -110,7 +109,7 @@ export const useEVMService = () => {
             symbol: nativeToken?.symbol,
             decimals: nativeToken?.decimals,
           },
-          ...tokenBalances.map(([addr, balance]) => ({
+          ...tokenBalances.map(([addr, balance]: [string, string]) => ({
             address: addr,
             balance,
           })),
@@ -137,7 +136,7 @@ export const useEVMService = () => {
       }
 
       try {
-        const result = await service.syncEVMTransactions(chain, address)
+        const result = await EVMService.syncEVMTransactions(chain, address)
         toast.success(result)
         return result
       } catch (error: unknown) {
@@ -157,14 +156,14 @@ export const useEVMService = () => {
       }
 
       try {
-        const positions = await service.scanDeFiPositions(chain, address)
-        return positions.map(pos => JSON.parse(pos))
+        const positions = await EVMService.scanDeFiPositions(chain, address)
+        return positions.map((pos: string) => JSON.parse(pos))
       } catch (error: unknown) {
         toast.error(getErrorMessage(error) || 'Failed to scan DeFi positions')
         throw error
       }
     },
-    [service, currentAccount]
+    [currentAccount]
   )
 
   const getTransactions = useCallback(
@@ -181,19 +180,19 @@ export const useEVMService = () => {
       }
 
       try {
-        const transactions = await service.getTransactions(
+        const transactions = await EVMService.getTransactions(
           chain,
           address,
           fromBlock,
           toBlock
         )
-        return transactions.map(tx => JSON.parse(tx))
+        return transactions.map((tx: string) => JSON.parse(tx))
       } catch (error: unknown) {
         toast.error(getErrorMessage(error) || 'Failed to get transactions')
         throw error
       }
     },
-    [service, currentAccount]
+    [currentAccount]
   )
 
   // Auto-connect to backend when account changes
@@ -205,7 +204,6 @@ export const useEVMService = () => {
   }, [currentAccount, connectToChain, loadBalances])
 
   return {
-    service,
     currentAccount,
     isConnecting,
     balances,
