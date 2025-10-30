@@ -1,6 +1,5 @@
 use anyhow::Result;
 use ethers::types::Address as H160Address;
-use sp_core::crypto::Ss58Codec;
 
 pub struct UnifiedAddress {
     pub substrate: Option<String>, // SS58 format

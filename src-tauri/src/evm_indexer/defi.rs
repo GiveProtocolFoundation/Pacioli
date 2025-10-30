@@ -138,9 +138,9 @@ impl DeFiProtocolScanner {
 
     async fn scan_dex_positions(
         &self,
-        provider: Arc<Provider<Ws>>,
-        config: &ProtocolConfig,
-        user_address: Address,
+        _provider: Arc<Provider<Ws>>,
+        _config: &ProtocolConfig,
+        _user_address: Address,
     ) -> Result<Vec<DeFiPosition>> {
         // Scan for liquidity positions
         // This would involve querying LP token balances and calculating underlying assets
@@ -149,9 +149,9 @@ impl DeFiProtocolScanner {
 
     async fn scan_lending_positions(
         &self,
-        provider: Arc<Provider<Ws>>,
-        config: &ProtocolConfig,
-        user_address: Address,
+        _provider: Arc<Provider<Ws>>,
+        _config: &ProtocolConfig,
+        _user_address: Address,
     ) -> Result<Vec<DeFiPosition>> {
         // Scan for lending/borrowing positions
         // Query cToken balances, borrow balances, etc.
@@ -160,9 +160,9 @@ impl DeFiProtocolScanner {
 
     async fn scan_staking_positions(
         &self,
-        provider: Arc<Provider<Ws>>,
-        config: &ProtocolConfig,
-        user_address: Address,
+        _provider: Arc<Provider<Ws>>,
+        _config: &ProtocolConfig,
+        _user_address: Address,
     ) -> Result<Vec<DeFiPosition>> {
         // Scan for staking positions
         Ok(Vec::new())

@@ -8,8 +8,8 @@ use ethers::providers::{Http, Provider, Ws};
 use std::collections::HashMap;
 use std::sync::Arc;
 
-pub use defi::{AssetAmount, DeFiPosition, DeFiProtocolScanner, ProtocolType};
-pub use erc20::{ERC20Scanner, TokenInfo, TokenTransfer};
+pub use defi::{DeFiPosition, DeFiProtocolScanner};
+pub use erc20::ERC20Scanner;
 
 pub struct EVMIndexer {
     providers: HashMap<String, Arc<Provider<Ws>>>,

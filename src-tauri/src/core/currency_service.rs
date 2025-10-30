@@ -5,7 +5,6 @@ use std::str::FromStr;
 
 use super::currency::{
     AccountSettings, ConversionMethod, Currency, CurrencyConversion, ExchangeRate,
-    ExchangeRateSource, TransactionWithConversion,
 };
 
 /// Currency Service for database operations and conversions

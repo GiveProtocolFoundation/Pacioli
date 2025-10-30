@@ -275,7 +275,7 @@ impl SubstrateCurrencyHandler {
 
     /// Validate Substrate address format
     /// SS58 address validation (simplified)
-    pub fn validate_substrate_address(address: &str, expected_prefix: u8) -> bool {
+    pub fn validate_substrate_address(address: &str, _expected_prefix: u8) -> bool {
         // Simplified validation - just check length and format
         // In production, use ss58-registry crate for full validation
         address.len() >= 47 && address.len() <= 48 && address.chars().all(|c| c.is_alphanumeric())
@@ -287,7 +287,7 @@ impl SubstrateCurrencyHandler {
     /// - Destination chain
     /// - Asset being transferred
     /// - Network congestion
-    pub fn estimate_xcm_fee(from_chain: &str, to_chain: &str, amount: &str) -> Result<String> {
+    pub fn estimate_xcm_fee(from_chain: &str, to_chain: &str, _amount: &str) -> Result<String> {
         // Simplified fee calculation
         // In production, query actual chain state
         let base_fee = match (from_chain, to_chain) {

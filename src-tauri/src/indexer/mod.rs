@@ -1,7 +1,6 @@
 use crate::core::{ChainConfig, Transaction};
 use anyhow::Result;
 use std::collections::HashMap;
-use subxt::utils::AccountId32;
 use subxt::{OnlineClient, PolkadotConfig};
 
 pub struct PolkadotIndexer {
@@ -76,10 +75,10 @@ impl PolkadotIndexer {
 
     pub async fn fetch_account_transactions(
         &self,
-        chain: &str,
-        address: &str,
-        from_block: Option<u32>,
-        to_block: Option<u32>,
+        _chain: &str,
+        _address: &str,
+        _from_block: Option<u32>,
+        _to_block: Option<u32>,
     ) -> Result<Vec<Transaction>> {
         // Implementation would query the chain for transactions
         // This is a simplified version

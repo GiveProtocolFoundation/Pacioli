@@ -7,13 +7,8 @@ pub mod substrate_currency;
 use chrono::{DateTime, Utc};
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
+use std::str::FromStr;
 use uuid::Uuid;
-
-pub use address::UnifiedAddress;
-pub use currency::*;
-pub use currency_service::CurrencyService;
-pub use encryption::Encryptor;
-pub use substrate_currency::SubstrateCurrencyHandler;
 
 #[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
 pub struct Transaction {
@@ -25,19 +20,30 @@ pub struct Transaction {
     pub hash: String,
     pub from_address: String,
     pub to_address: Option<String>,
-    #[sqlx(try_from = "String")]
-    pub value: Decimal,
+    pub value: String,
     pub token_symbol: String,
     pub token_decimals: i32,
     pub timestamp: DateTime<Utc>,
     pub block_number: i64,
     pub transaction_type: String,
     pub status: String,
-    #[sqlx(try_from = "Option<String>")]
-    pub fee: Option<Decimal>,
+    pub fee: Option<String>,
     pub metadata: serde_json::Value,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
+}
+
+impl Transaction {
+    pub fn value_decimal(&self) -> Result<Decimal, rust_decimal::Error> {
+        Decimal::from_str(&self.value)
+    }
+
+    pub fn fee_decimal(&self) -> Result<Option<Decimal>, rust_decimal::Error> {
+        self.fee
+            .as_ref()
+            .map(|f| Decimal::from_str(f))
+            .transpose()
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

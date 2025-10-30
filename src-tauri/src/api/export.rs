@@ -2,7 +2,6 @@ use crate::db::Database;
 use anyhow::Result;
 use csv::Writer;
 use serde_json;
-use std::path::PathBuf;
 
 #[tauri::command]
 pub async fn export_transactions_csv(
@@ -63,8 +62,8 @@ pub async fn export_tax_report(
 }
 
 async fn generate_tax_report(
-    db: &Database,
-    profile_id: &str,
+    _db: &Database,
+    _profile_id: &str,
     year: i32,
 ) -> Result<serde_json::Value> {
     // Implementation for tax report generation
