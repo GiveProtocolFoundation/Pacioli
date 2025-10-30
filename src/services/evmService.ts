@@ -106,20 +106,20 @@ export class EVMService {
     }
   }
 
-  static async syncEVMTransactions(chain: string, address: string) {
-    return invoke('sync_evm_transactions', { chain, address })
+  static async syncEVMTransactions(chain: string, address: string): Promise<string> {
+    return invoke<string>('sync_evm_transactions', { chain, address })
   }
 
-  static async getTokenBalances(chain: string, address: string) {
-    return invoke('get_evm_token_balances', { chain, address })
+  static async getTokenBalances(chain: string, address: string): Promise<[string, string][]> {
+    return invoke<[string, string][]>('get_evm_token_balances', { chain, address })
   }
 
-  static async scanDeFiPositions(chain: string, address: string) {
-    return invoke('scan_defi_positions', { chain, address })
+  static async scanDeFiPositions(chain: string, address: string): Promise<string[]> {
+    return invoke<string[]>('scan_defi_positions', { chain, address })
   }
 
-  static async getBalance(chain: string, address: string) {
-    return invoke('get_evm_balance', { chain, address })
+  static async getBalance(chain: string, address: string): Promise<string> {
+    return invoke<string>('get_evm_balance', { chain, address })
   }
 
   static async getTransactions(
@@ -127,8 +127,8 @@ export class EVMService {
     address: string,
     fromBlock?: number,
     toBlock?: number
-  ) {
-    return invoke('get_evm_transactions', {
+  ): Promise<string[]> {
+    return invoke<string[]>('get_evm_transactions', {
       chain,
       address,
       fromBlock: fromBlock || 0,
@@ -136,8 +136,8 @@ export class EVMService {
     })
   }
 
-  static async connectToChain(chain: string) {
-    return invoke('connect_evm_chain', { chain })
+  static async connectToChain(chain: string): Promise<void> {
+    return invoke<void>('connect_evm_chain', { chain })
   }
 
   static async getChainInfo(chain: string) {
