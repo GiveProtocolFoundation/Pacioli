@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use crate::core::{ChainConfig, Transaction};
 use anyhow::Result;
 use std::collections::HashMap;

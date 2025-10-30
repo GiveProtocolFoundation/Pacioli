@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use crate::core::{SyncStatus, Transaction};
 use crate::db::Database;
 use crate::indexer::PolkadotIndexer;
@@ -102,7 +104,7 @@ impl SyncManager {
             .bind(&tx.chain)
             .bind(&tx.hash)
             .bind(tx.block_number)
-            .bind(&tx.timestamp)
+            .bind(tx.timestamp)
             .bind(&tx.from_address)
             .bind(&tx.to_address)
             .bind(&tx.value)

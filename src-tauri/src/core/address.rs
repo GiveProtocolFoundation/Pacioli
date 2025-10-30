@@ -1,11 +1,13 @@
 use anyhow::Result;
 use ethers::types::Address as H160Address;
 
+#[allow(dead_code)]
 pub struct UnifiedAddress {
     pub substrate: Option<String>, // SS58 format
     pub ethereum: Option<String>,  // H160 format
 }
 
+#[allow(dead_code)]
 impl UnifiedAddress {
     /// Convert between Moonbeam's unified accounts
     pub fn from_moonbeam_address(address: &str) -> Result<Self> {

@@ -34,10 +34,12 @@ pub struct Transaction {
 }
 
 impl Transaction {
+    #[allow(dead_code)]
     pub fn value_decimal(&self) -> Result<Decimal, rust_decimal::Error> {
         Decimal::from_str(&self.value)
     }
 
+    #[allow(dead_code)]
     pub fn fee_decimal(&self) -> Result<Option<Decimal>, rust_decimal::Error> {
         self.fee
             .as_ref()
@@ -46,6 +48,7 @@ impl Transaction {
     }
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Token {
     pub symbol: String,
@@ -54,6 +57,7 @@ pub struct Token {
     pub contract_address: Option<String>,
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Account {
     pub id: Uuid,
@@ -64,6 +68,7 @@ pub struct Account {
     pub updated_at: DateTime<Utc>,
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Balance {
     pub account_id: Uuid,
@@ -73,6 +78,7 @@ pub struct Balance {
     pub updated_at: DateTime<Utc>,
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ChainConfig {
     pub name: String,
@@ -83,6 +89,7 @@ pub struct ChainConfig {
     pub symbol: String,
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SyncStatus {
     pub chain: String,

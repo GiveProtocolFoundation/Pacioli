@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use anyhow::Result;
 use ethers::prelude::*;
 use serde::{Deserialize, Serialize};
@@ -18,7 +20,7 @@ pub struct ProtocolConfig {
 
 #[derive(Clone, Debug)]
 pub enum ProtocolType {
-    DEX,
+    Dex,
     Lending,
     Staking,
     Farming,
@@ -35,7 +37,7 @@ impl DeFiProtocolScanner {
             ProtocolConfig {
                 name: "StellaSwap".to_string(),
                 chain: "moonbeam".to_string(),
-                protocol_type: ProtocolType::DEX,
+                protocol_type: ProtocolType::Dex,
                 contracts: {
                     let mut contracts = HashMap::new();
                     contracts.insert(
@@ -80,7 +82,7 @@ impl DeFiProtocolScanner {
             ProtocolConfig {
                 name: "ArthSwap".to_string(),
                 chain: "astar".to_string(),
-                protocol_type: ProtocolType::DEX,
+                protocol_type: ProtocolType::Dex,
                 contracts: {
                     let mut contracts = HashMap::new();
                     contracts.insert(
@@ -100,7 +102,7 @@ impl DeFiProtocolScanner {
             ProtocolConfig {
                 name: "Acala Swap".to_string(),
                 chain: "acala-evm".to_string(),
-                protocol_type: ProtocolType::DEX,
+                protocol_type: ProtocolType::Dex,
                 contracts: HashMap::new(), // Acala uses substrate-native DEX
             },
         );
@@ -120,7 +122,7 @@ impl DeFiProtocolScanner {
             .ok_or_else(|| anyhow::anyhow!("Unknown protocol"))?;
 
         match config.protocol_type {
-            ProtocolType::DEX => {
+            ProtocolType::Dex => {
                 self.scan_dex_positions(provider, config, user_address)
                     .await
             }

@@ -20,7 +20,7 @@ pub async fn export_transactions_csv(
 
     // Write headers
     writer
-        .write_record(&[
+        .write_record([
             "Date", "Chain", "Hash", "From", "To", "Value", "Token", "Type", "Fee", "Status",
         ])
         .map_err(|e| e.to_string())?;

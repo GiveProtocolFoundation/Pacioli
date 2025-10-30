@@ -5,6 +5,7 @@ pub struct Database {
     pub pool: Pool<Sqlite>,
 }
 
+#[allow(dead_code)]
 impl Database {
     pub async fn new(database_url: &str) -> Result<Self> {
         let pool = SqlitePool::connect(database_url).await?;
