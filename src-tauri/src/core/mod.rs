@@ -41,10 +41,7 @@ impl Transaction {
 
     #[allow(dead_code)]
     pub fn fee_decimal(&self) -> Result<Option<Decimal>, rust_decimal::Error> {
-        self.fee
-            .as_ref()
-            .map(|f| Decimal::from_str(f))
-            .transpose()
+        self.fee.as_ref().map(|f| Decimal::from_str(f)).transpose()
     }
 }
 

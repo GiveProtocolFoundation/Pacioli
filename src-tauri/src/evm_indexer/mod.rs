@@ -316,12 +316,10 @@ impl EVMIndexer {
             block_number: tx.block_number.unwrap_or_default().as_u64() as i64,
             transaction_type: "transfer".to_string(),
             status: "confirmed".to_string(),
-            fee: tx
-                .gas_price
-                .map(|gp| {
-                    let gas_used = tx.gas;
-                    (gp * gas_used).to_string()
-                }),
+            fee: tx.gas_price.map(|gp| {
+                let gas_used = tx.gas;
+                (gp * gas_used).to_string()
+            }),
             metadata: serde_json::json!({
                 "nonce": tx.nonce.as_u64(),
                 "gas_limit": tx.gas.as_u64(),

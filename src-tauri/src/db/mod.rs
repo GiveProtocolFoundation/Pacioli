@@ -53,7 +53,7 @@ impl Database {
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )
-            "#
+            "#,
         )
         .execute(&self.pool)
         .await?;
@@ -70,7 +70,7 @@ impl Database {
                 updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (profile_id) REFERENCES profiles (id)
             )
-            "#
+            "#,
         )
         .execute(&self.pool)
         .await?;
@@ -98,7 +98,7 @@ impl Database {
                 UNIQUE(hash, chain),
                 FOREIGN KEY (profile_id) REFERENCES profiles (id)
             )
-            "#
+            "#,
         )
         .execute(&self.pool)
         .await?;
@@ -113,7 +113,7 @@ impl Database {
                 PRIMARY KEY (profile_id, chain),
                 FOREIGN KEY (profile_id) REFERENCES profiles (id)
             )
-            "#
+            "#,
         )
         .execute(&self.pool)
         .await?;

@@ -72,7 +72,7 @@ impl SyncManager {
         chain: &str,
     ) -> Result<u32> {
         let result: Option<(i64,)> = sqlx::query_as(
-            "SELECT last_synced_block FROM sync_status WHERE profile_id = ? AND chain = ?"
+            "SELECT last_synced_block FROM sync_status WHERE profile_id = ? AND chain = ?",
         )
         .bind(profile_id)
         .bind(chain)
@@ -98,7 +98,7 @@ impl SyncManager {
                     transaction_type, status, fee, metadata
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(hash, chain) DO NOTHING
-                "#
+                "#,
             )
             .bind(profile_id)
             .bind(&tx.chain)
@@ -135,7 +135,7 @@ impl SyncManager {
             ON CONFLICT(profile_id, chain) DO UPDATE SET
                 last_synced_block = excluded.last_synced_block,
                 last_sync_time = excluded.last_sync_time
-            "#
+            "#,
         )
         .bind(profile_id)
         .bind(chain)

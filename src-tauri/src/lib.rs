@@ -6,8 +6,8 @@ mod indexer;
 mod sync;
 
 use evm_indexer::EVMIndexer;
-use tokio::sync::Mutex;
 use tauri::State;
+use tokio::sync::Mutex;
 
 // Global EVM indexer state
 type EVMIndexerState = Mutex<EVMIndexer>;
