@@ -307,7 +307,7 @@ impl EVMIndexer {
             hash: format!("0x{}", hex::encode(tx.hash)),
             from_address: format!("0x{}", hex::encode(tx.from)),
             to_address: tx.to.map(|a| format!("0x{}", hex::encode(a))),
-            value: rust_decimal::Decimal::from_str_exact(&tx.value.to_string())?,
+            value: tx.value.to_string(),
             token_symbol: config.native_token.symbol.clone(),
             token_decimals: config.native_token.decimals as i32,
             timestamp: chrono::Utc::now(), // Would need to get from block
@@ -318,9 +318,8 @@ impl EVMIndexer {
                 .gas_price
                 .map(|gp| {
                     let gas_used = tx.gas;
-                    rust_decimal::Decimal::from_str_exact(&(gp * gas_used).to_string()).ok()
-                })
-                .flatten(),
+                    (gp * gas_used).to_string()
+                }),
             metadata: serde_json::json!({
                 "nonce": tx.nonce.as_u64(),
                 "gas_limit": tx.gas.as_u64(),
