@@ -15,28 +15,28 @@ A comprehensive blockchain accounting application built with Tauri, React, TypeS
 ## 🚀 Features
 
 ### Core Accounting
-- ✅ **Multi-Chain Support** - Track transactions across Polkadot parachains
-- ✅ **Double-Entry Accounting** - Professional-grade chart of accounts
-- ✅ **Multi-Currency** - Support for fiat and crypto currencies
-- ✅ **Real-Time Indexing** - Rust-based blockchain indexer for fast sync
-- ✅ **ERC20 Tokens** - Full support for token tracking and categorization
+- **Multi-Chain Support** - Track transactions across Polkadot parachains
+- **Double-Entry Accounting** - Professional-grade chart of accounts
+- **Multi-Currency** - Support for fiat and crypto currencies
+- **Real-Time Indexing** - Rust-based blockchain indexer for fast sync
+- **ERC20 Tokens** - Full support for token tracking and categorization
 
 ### Blockchain Integration
-- ✅ **EVM Indexer** - Efficient indexing for Moonbeam, Moonriver, Astar
-- ✅ **Wallet Integration** - MetaMask, Polkadot.js, Talisman
-- ✅ **Smart Contracts** - PolkaVM-enabled Hardhat for Paseo TestNet
-- ✅ **Transaction History** - Complete historical data with categorization
+- **EVM Indexer** - Efficient indexing for Moonbeam, Moonriver, Astar
+- **Wallet Integration** - MetaMask, Polkadot.js, Talisman
+- **Smart Contracts** - PolkaVM-enabled Hardhat for Paseo TestNet
+- **Transaction History** - Complete historical data with categorization
 
 ### User Experience
-- ✅ **Modern UI** - React 19 with Tailwind CSS
-- ✅ **Dark Mode** - Beautiful light and dark themes
-- ✅ **Desktop App** - Cross-platform with Tauri
-- ✅ **Local-First** - Your data stays on your device
-- ✅ **Self-Hosted** - Full control over your financial data
+- **Modern UI** - React 19 with Tailwind CSS
+- **Dark Mode** - Beautiful light and dark themes
+- **Desktop App** - Cross-platform with Tauri
+- **Local-First** - Your data stays on your device
+- **Self-Hosted** - Full control over your financial data
 
 ---
 
-## 📦 Repository Structure
+## Repository Structure
 
 Pacioli uses a multi-repository architecture:
 
@@ -78,7 +78,7 @@ The application will launch in development mode with hot-reloading enabled.
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 ### Frontend
 - **Tauri 2.0** - Cross-platform desktop framework
@@ -102,7 +102,7 @@ The application will launch in development mode with hot-reloading enabled.
 
 ---
 
-## 🌐 Supported Networks
+## Supported Networks
 
 | Network | Chain ID | Type | Native Token |
 |---------|----------|------|--------------|
@@ -125,7 +125,7 @@ Comprehensive documentation is available in the [pacioli-docs](https://github.co
 
 ---
 
-## 🔧 Development
+## Development
 
 ### Frontend Development
 
@@ -157,7 +157,7 @@ npx hardhat deploy    # Deploy contracts
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 We welcome contributions from the community! Please read our [Contributing Guide](CONTRIBUTING.md) before submitting pull requests.
 
@@ -179,7 +179,7 @@ We welcome contributions from the community! Please read our [Contributing Guide
 
 ---
 
-## 🔒 Security
+## Security
 
 Security is a top priority. Please review our [Security Policy](SECURITY.md) for:
 
@@ -191,7 +191,7 @@ Security is a top priority. Please review our [Security Policy](SECURITY.md) for
 
 ---
 
-## 📜 License
+## License
 
 Pacioli is licensed under the **GNU Affero General Public License v3.0 (AGPL-3.0)**.
 
@@ -208,26 +208,26 @@ See [LICENSE](LICENSE) for the full license text.
 ## 🗺️ Roadmap
 
 ### Current (v0.1)
-- ✅ Multi-chain transaction tracking
-- ✅ Basic accounting (chart of accounts)
-- ✅ Wallet integration
-- ✅ EVM indexer
+- Multi-chain transaction tracking
+- Basic accounting (chart of accounts)
+- Wallet integration
+- EVM indexer
 
 ### Coming Soon (v0.2)
-- 🚧 Advanced reporting and analytics
-- 🚧 Plugin system
-- 🚧 Tax calculation helpers
-- 🚧 Multi-entity support
+- Advanced reporting and analytics
+- Plugin system
+- Tax calculation helpers
+- Multi-entity support
 
 ### Future
-- 📋 Mobile app (React Native + Tauri Mobile)
-- 📋 Cloud sync (optional premium feature)
-- 📋 ERP integrations
-- 📋 AI-powered categorization
+- Mobile app (React Native + Tauri Mobile)
+- Cloud sync (optional premium feature)
+- ERP integrations
+- AI-powered categorization
 
 ---
 
-## 🌟 Why Pacioli?
+## Why Pacioli?
 
 Named after **Luca Pacioli**, the father of double-entry bookkeeping, this project brings professional accounting to the decentralized world.
 
@@ -240,7 +240,7 @@ Named after **Luca Pacioli**, the father of double-entry bookkeeping, this proje
 
 ---
 
-## 💬 Community & Support
+## Community & Support
 
 - **GitHub Issues** - [Report bugs](https://github.com/GiveProtocol/pacioli-core/issues)
 - **GitHub Discussions** - [Ask questions](https://github.com/GiveProtocol/pacioli-core/discussions)
@@ -249,7 +249,7 @@ Named after **Luca Pacioli**, the father of double-entry bookkeeping, this proje
 
 ---
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 Built with amazing open-source technologies:
 - [Tauri](https://tauri.app/) - Desktop framework
@@ -262,7 +262,7 @@ Special thanks to the Polkadot and Web3 Foundation communities.
 
 ---
 
-## 📊 Project Status
+## Project Status
 
 ![GitHub Stars](https://img.shields.io/github/stars/GiveProtocol/pacioli-core?style=social)
 ![GitHub Forks](https://img.shields.io/github/forks/GiveProtocol/pacioli-core?style=social)
@@ -271,7 +271,7 @@ Special thanks to the Polkadot and Web3 Foundation communities.
 
 **Current Version**: 0.1.0
 **Status**: Active Development
-**Maintained**: ✅ Yes
+**Maintained**: Yes
 
 ---
 
