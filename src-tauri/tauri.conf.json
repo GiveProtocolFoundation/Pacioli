@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "Pacioli - Blockchain Transaction Tracker",
+        "title": "Pacioli",
         "width": 1200,
         "height": 800,
         "minWidth": 800,
