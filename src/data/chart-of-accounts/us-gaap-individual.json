@@ -133,131 +133,120 @@
     },
     {
       "code": "1510",
-      "name": "Cryptocurrency - Bitcoin",
+      "name": "Native Protocol Tokens",
       "type": "Asset",
-      "description": "Bitcoin holdings across all wallets",
+      "description": "Tokens that power blockchain networks (DOT, KSM, ETH, BTC, GLMR, ASTR, etc.) - tracked by token via subsidiary ledger",
+      "subcategory": "Digital Assets",
       "isActive": true,
-      "editable": true
-    },
-    {
-      "code": "1511",
-      "name": "Cryptocurrency - Ethereum",
-      "type": "Asset",
-      "description": "Ethereum holdings across all wallets",
-      "isActive": true,
-      "editable": true
-    },
-    {
-      "code": "1512",
-      "name": "Cryptocurrency - Stablecoins",
-      "type": "Asset",
-      "description": "USDC, USDT, DAI, and other stablecoins",
-      "isActive": true,
-      "editable": true
-    },
-    {
-      "code": "1513",
-      "name": "Cryptocurrency - Altcoins",
-      "type": "Asset",
-      "description": "Other cryptocurrencies (track by sub-accounts)",
-      "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "1520",
-      "name": "DeFi - Wrapped Tokens",
+      "name": "Stablecoins",
       "type": "Asset",
-      "description": "WETH, WBTC, and other wrapped assets",
+      "description": "Fiat-pegged cryptocurrencies (USDC, USDT, DAI, etc.) - tracked by token via subsidiary ledger",
+      "subcategory": "Digital Assets",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "1530",
-      "name": "DeFi - LP Tokens",
+      "name": "Wrapped/Bridged Tokens",
       "type": "Asset",
-      "description": "Liquidity pool tokens (Uniswap, Curve, etc.)",
+      "description": "Cross-chain token representations (WETH, WBTC, xcDOT, xcKSM, etc.) - tracked by token via subsidiary ledger",
+      "subcategory": "Digital Assets",
       "isActive": true,
-      "editable": true
-    },
-    {
-      "code": "1531",
-      "name": "DeFi - LP Token Cost Basis Adjustment",
-      "type": "Asset",
-      "description": "Track impermanent loss adjustments",
-      "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "1540",
-      "name": "DeFi - Staked Assets",
+      "name": "Liquid Staking Derivatives",
       "type": "Asset",
-      "description": "Assets locked in staking protocols",
+      "description": "Liquid staking receipt tokens (stDOT, LDOT, stETH, rETH, etc.) - tracked by token via subsidiary ledger",
+      "subcategory": "Digital Assets",
       "isActive": true,
-      "editable": true
-    },
-    {
-      "code": "1541",
-      "name": "DeFi - Liquid Staking Tokens",
-      "type": "Asset",
-      "description": "stETH, rETH, and other liquid staking derivatives",
-      "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "1550",
-      "name": "DeFi - Yield Farming Positions",
+      "name": "Liquidity Pool (LP) Tokens",
       "type": "Asset",
-      "description": "Active yield farming positions",
+      "description": "DEX liquidity pool shares - tracked by pool/token pair via subsidiary ledger",
+      "subcategory": "Digital Assets",
       "isActive": true,
-      "editable": true
+      "editable": false
+    },
+    {
+      "code": "1551",
+      "name": "LP Impermanent Loss Adjustment",
+      "type": "Asset",
+      "description": "Contra-asset account for tracking impermanent loss on LP positions",
+      "subcategory": "Digital Assets",
+      "isActive": true,
+      "editable": false
     },
     {
       "code": "1560",
-      "name": "DeFi - Lending Protocol Deposits",
+      "name": "Governance Tokens",
       "type": "Asset",
-      "description": "Assets deposited in Aave, Compound, etc.",
+      "description": "Protocol voting and governance tokens (UNI, AAVE, COMP, INTR, etc.) - tracked by token via subsidiary ledger",
+      "subcategory": "Digital Assets",
       "isActive": true,
-      "editable": true
-    },
-    {
-      "code": "1561",
-      "name": "DeFi - aTokens/cTokens",
-      "type": "Asset",
-      "description": "Interest-bearing tokens from lending protocols",
-      "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "1570",
-      "name": "DeFi - Governance Tokens",
+      "name": "Yield-Bearing Tokens",
       "type": "Asset",
-      "description": "UNI, AAVE, COMP, and other governance tokens",
+      "description": "Auto-compounding interest tokens (aTokens, cTokens, yvTokens, etc.) - tracked by token via subsidiary ledger",
+      "subcategory": "Digital Assets",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "1580",
-      "name": "DeFi - NFTs",
+      "name": "NFTs - Collectibles",
       "type": "Asset",
-      "description": "Non-fungible tokens",
+      "description": "Non-fungible tokens held for collection/appreciation - tracked individually by token ID",
+      "subcategory": "Digital Assets",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "1585",
-      "name": "DeFi - Unclaimed Rewards",
+      "name": "NFTs - Utility/Functional",
       "type": "Asset",
-      "description": "Accrued but unclaimed staking/farming rewards",
+      "description": "NFTs with utility or access rights (domains, memberships, etc.) - tracked individually by token ID",
+      "subcategory": "Digital Assets",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "1590",
-      "name": "Precious Metals",
+      "name": "Synthetic Assets",
       "type": "Asset",
-      "description": "Gold, silver, other precious metals",
+      "description": "Tokens representing off-chain assets (synthetic stocks, commodities, etc.) - tracked by token via subsidiary ledger",
+      "subcategory": "Digital Assets",
       "isActive": true,
-      "editable": true
+      "editable": false
+    },
+    {
+      "code": "1595",
+      "name": "Other Digital Assets",
+      "type": "Asset",
+      "description": "Uncategorized or unique digital assets - tracked by token via subsidiary ledger",
+      "subcategory": "Digital Assets",
+      "isActive": true,
+      "editable": false
+    },
+    {
+      "code": "1598",
+      "name": "Unclaimed DeFi Rewards Receivable",
+      "type": "Asset",
+      "description": "Accrued but unclaimed protocol rewards - tracked by token via subsidiary ledger",
+      "subcategory": "Digital Assets",
+      "isActive": true,
+      "editable": false
     },
     {
       "code": "1600",
@@ -344,6 +333,7 @@
       "name": "DeFi - Borrowed Assets (Aave)",
       "type": "Liability",
       "description": "Outstanding loans from Aave protocol",
+      "subcategory": "DeFi Liabilities",
       "isActive": true,
       "editable": true
     },
@@ -352,6 +342,7 @@
       "name": "DeFi - Borrowed Assets (Compound)",
       "type": "Liability",
       "description": "Outstanding loans from Compound protocol",
+      "subcategory": "DeFi Liabilities",
       "isActive": true,
       "editable": true
     },
@@ -360,6 +351,7 @@
       "name": "DeFi - Borrowed Assets (MakerDAO)",
       "type": "Liability",
       "description": "DAI debt from MakerDAO CDP/Vaults",
+      "subcategory": "DeFi Liabilities",
       "isActive": true,
       "editable": true
     },
@@ -368,6 +360,7 @@
       "name": "DeFi - Other Protocol Debt",
       "type": "Liability",
       "description": "Debt from other DeFi lending protocols",
+      "subcategory": "DeFi Liabilities",
       "isActive": true,
       "editable": true
     },
@@ -376,6 +369,7 @@
       "name": "DeFi - Impermanent Loss Reserve",
       "type": "Liability",
       "description": "Estimated unrealized impermanent loss",
+      "subcategory": "DeFi Liabilities",
       "isActive": true,
       "editable": true
     },
@@ -401,7 +395,7 @@
       "type": "Equity",
       "description": "Opening net worth balance",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "3900",
@@ -409,7 +403,7 @@
       "type": "Equity",
       "description": "Net income for current year",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "4000",
@@ -472,6 +466,7 @@
       "name": "DeFi - Staking Rewards",
       "type": "Income",
       "description": "Rewards from staking protocols (taxable as ordinary income)",
+      "subcategory": "DeFi Income",
       "isActive": true,
       "editable": true
     },
@@ -480,6 +475,7 @@
       "name": "DeFi - Liquid Staking Rewards",
       "type": "Income",
       "description": "Rewards from liquid staking (Lido, Rocket Pool)",
+      "subcategory": "DeFi Income",
       "isActive": true,
       "editable": true
     },
@@ -488,6 +484,7 @@
       "name": "DeFi - Yield Farming Income",
       "type": "Income",
       "description": "Income from yield farming activities",
+      "subcategory": "DeFi Income",
       "isActive": true,
       "editable": true
     },
@@ -496,6 +493,7 @@
       "name": "DeFi - Liquidity Pool Fees",
       "type": "Income",
       "description": "Trading fees earned from LP positions",
+      "subcategory": "DeFi Income",
       "isActive": true,
       "editable": true
     },
@@ -504,6 +502,7 @@
       "name": "DeFi - Lending Interest Income",
       "type": "Income",
       "description": "Interest earned from lending protocols",
+      "subcategory": "DeFi Income",
       "isActive": true,
       "editable": true
     },
@@ -512,6 +511,7 @@
       "name": "DeFi - Airdrop Income",
       "type": "Income",
       "description": "Token airdrops (taxable at FMV upon receipt)",
+      "subcategory": "DeFi Income",
       "isActive": true,
       "editable": true
     },
@@ -520,6 +520,7 @@
       "name": "DeFi - Governance Token Rewards",
       "type": "Income",
       "description": "Governance tokens received as rewards",
+      "subcategory": "DeFi Income",
       "isActive": true,
       "editable": true
     },
@@ -528,6 +529,7 @@
       "name": "DeFi - NFT Sales",
       "type": "Income",
       "description": "Proceeds from NFT sales",
+      "subcategory": "DeFi Income",
       "isActive": true,
       "editable": true
     },
@@ -536,6 +538,7 @@
       "name": "DeFi - Crypto Capital Gains - Short-term",
       "type": "Income",
       "description": "Short-term gains on crypto trades (<1 year)",
+      "subcategory": "DeFi Income",
       "isActive": true,
       "editable": true
     },
@@ -544,6 +547,7 @@
       "name": "DeFi - Crypto Capital Gains - Long-term",
       "type": "Income",
       "description": "Long-term gains on crypto trades (>1 year)",
+      "subcategory": "DeFi Income",
       "isActive": true,
       "editable": true
     },
@@ -552,6 +556,7 @@
       "name": "DeFi - Realized Gain on LP Exit",
       "type": "Income",
       "description": "Gains realized when exiting liquidity pools",
+      "subcategory": "DeFi Income",
       "isActive": true,
       "editable": true
     },
@@ -560,6 +565,7 @@
       "name": "DeFi - Hard Fork/Chain Split Income",
       "type": "Income",
       "description": "New tokens received from chain splits",
+      "subcategory": "DeFi Income",
       "isActive": true,
       "editable": true
     },
@@ -844,18 +850,11 @@
       "editable": true
     },
     {
-      "code": "5905",
-      "name": "DeFi - Gas Fees (Ethereum)",
-      "type": "Expense",
-      "description": "Ethereum network gas fees",
-      "isActive": true,
-      "editable": true
-    },
-    {
       "code": "5906",
-      "name": "DeFi - Transaction Fees (Other Chains)",
+      "name": "DeFi - Transaction Fees (Gas)",
       "type": "Expense",
-      "description": "Transaction fees on other blockchains",
+      "description": "Transaction fees on blockchains",
+      "subcategory": "DeFi Expenses",
       "isActive": true,
       "editable": true
     },
@@ -864,6 +863,7 @@
       "name": "DeFi - Protocol Fees",
       "type": "Expense",
       "description": "Swap fees, protocol usage fees",
+      "subcategory": "DeFi Expenses",
       "isActive": true,
       "editable": true
     },
@@ -872,6 +872,7 @@
       "name": "DeFi - Lending Interest Expense",
       "type": "Expense",
       "description": "Interest paid on borrowed assets",
+      "subcategory": "DeFi Expenses",
       "isActive": true,
       "editable": true
     },
@@ -880,6 +881,7 @@
       "name": "DeFi - Realized Impermanent Loss",
       "type": "Expense",
       "description": "Realized losses from LP position exits",
+      "subcategory": "DeFi Expenses",
       "isActive": true,
       "editable": true
     },
@@ -888,6 +890,7 @@
       "name": "DeFi - Crypto Capital Loss - Short-term",
       "type": "Expense",
       "description": "Short-term losses on crypto sales",
+      "subcategory": "DeFi Expenses",
       "isActive": true,
       "editable": true
     },
@@ -896,6 +899,7 @@
       "name": "DeFi - Crypto Capital Loss - Long-term",
       "type": "Expense",
       "description": "Long-term losses on crypto sales",
+      "subcategory": "DeFi Expenses",
       "isActive": true,
       "editable": true
     },
@@ -904,6 +908,7 @@
       "name": "DeFi - Liquidation Losses",
       "type": "Expense",
       "description": "Losses from protocol liquidations",
+      "subcategory": "DeFi Expenses",
       "isActive": true,
       "editable": true
     },
@@ -912,6 +917,7 @@
       "name": "DeFi - NFT Losses",
       "type": "Expense",
       "description": "Losses on NFT sales",
+      "subcategory": "DeFi Expenses",
       "isActive": true,
       "editable": true
     },
@@ -920,6 +926,7 @@
       "name": "DeFi - Rug Pull/Scam Losses",
       "type": "Expense",
       "description": "Losses from scams or failed projects",
+      "subcategory": "DeFi Expenses",
       "isActive": true,
       "editable": true
     },
@@ -928,6 +935,7 @@
       "name": "DeFi - Wallet/Security Services",
       "type": "Expense",
       "description": "Hardware wallets, security tools",
+      "subcategory": "DeFi Expenses",
       "isActive": true,
       "editable": true
     },
@@ -955,6 +963,5 @@
       "isActive": true,
       "editable": true
     }
-  ],
-  "isTemplate": true
+  ]
 }

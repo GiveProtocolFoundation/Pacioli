@@ -148,7 +148,7 @@
       "editable": true
     },
     {
-      "code": "1510",
+      "code": "1505",
       "name": "Retirement Benefit Assets",
       "type": "Asset",
       "description": "Pension plans and retirement schemes",
@@ -156,12 +156,111 @@
       "editable": true
     },
     {
-      "code": "1520",
+      "code": "1507",
       "name": "Equity Securities - Long-term",
       "type": "Asset",
       "description": "Strategic equity investments",
       "isActive": true,
       "editable": true
+    },
+    {
+      "code": "1510",
+      "name": "Digital Assets - Native Protocol Tokens",
+      "type": "Asset",
+      "description": "Native tokens of blockchain protocols (ETH, DOT, KSM, GLMR, MOVR, ASTR, ACA, etc.)",
+      "subcategory": "Digital Assets",
+      "isActive": true,
+      "editable": false
+    },
+    {
+      "code": "1520",
+      "name": "Digital Assets - Stablecoins",
+      "type": "Asset",
+      "description": "Fiat-pegged digital assets (USDC, USDT, DAI, aUSD, etc.)",
+      "subcategory": "Digital Assets",
+      "isActive": true,
+      "editable": false
+    },
+    {
+      "code": "1530",
+      "name": "Digital Assets - Wrapped & Bridged Tokens",
+      "type": "Asset",
+      "description": "Cross-chain wrapped assets (WETH, WBTC, xcDOT, xcKSM, etc.)",
+      "subcategory": "Digital Assets",
+      "isActive": true,
+      "editable": false
+    },
+    {
+      "code": "1540",
+      "name": "Digital Assets - Liquid Staking Derivatives",
+      "type": "Asset",
+      "description": "Liquid staking tokens (stETH, rETH, LDOT, stDOT, etc.)",
+      "subcategory": "Digital Assets",
+      "isActive": true,
+      "editable": false
+    },
+    {
+      "code": "1550",
+      "name": "Digital Assets - Liquidity Pool Tokens",
+      "type": "Asset",
+      "description": "LP tokens from AMMs (Uniswap, Curve, Balancer, HydraDX, etc.)",
+      "subcategory": "Digital Assets",
+      "isActive": true,
+      "editable": false
+    },
+    {
+      "code": "1560",
+      "name": "Digital Assets - Governance Tokens",
+      "type": "Asset",
+      "description": "Protocol governance tokens (UNI, AAVE, COMP, CRV, etc.)",
+      "subcategory": "Digital Assets",
+      "isActive": true,
+      "editable": false
+    },
+    {
+      "code": "1570",
+      "name": "Digital Assets - Yield-Bearing Tokens",
+      "type": "Asset",
+      "description": "Interest-bearing tokens (aTokens, cTokens, yTokens, etc.)",
+      "subcategory": "Digital Assets",
+      "isActive": true,
+      "editable": false
+    },
+    {
+      "code": "1580",
+      "name": "Digital Assets - NFTs (Collectibles)",
+      "type": "Asset",
+      "description": "Non-fungible tokens held as collectibles or art",
+      "subcategory": "Digital Assets",
+      "isActive": true,
+      "editable": false
+    },
+    {
+      "code": "1585",
+      "name": "Digital Assets - NFTs (Utility/Functional)",
+      "type": "Asset",
+      "description": "Functional NFTs (gaming items, access passes, memberships, etc.)",
+      "subcategory": "Digital Assets",
+      "isActive": true,
+      "editable": false
+    },
+    {
+      "code": "1590",
+      "name": "Digital Assets - Synthetic Assets",
+      "type": "Asset",
+      "description": "Synthetic derivatives and tokenized assets (synths, tokenized stocks, etc.)",
+      "subcategory": "Digital Assets",
+      "isActive": true,
+      "editable": false
+    },
+    {
+      "code": "1595",
+      "name": "Digital Assets - Other",
+      "type": "Asset",
+      "description": "Other digital assets that do not fit standard categories",
+      "subcategory": "Digital Assets",
+      "isActive": true,
+      "editable": false
     },
     {
       "code": "1600",

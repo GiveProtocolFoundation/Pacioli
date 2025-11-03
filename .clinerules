@@ -1,0 +1,24 @@
+Code Documentation Standards:
+- No emojis in any code-related output (commits, comments, docs, logs)
+- Use plain ASCII text for all technical writing
+- Keep commit messages in conventional format without decorative elements
+- Write clear, professional documentation using only alphanumeric characters and standard punctuation
+- Focus on clarity and precision over visual style and verbose description
+
+Commit Message Format:
+- Use conventional commit format: type(scope): description
+- Types: feat, fix, docs, style, refactor, test, chore
+- No emojis or decorative symbols
+- Example: "feat(navigation): align logo with navigation items"
+
+Code Comments:
+- Plain text only
+- Focus on why, not what
+- No decorative ASCII art or emojis
+- Keep comments concise and technical
+
+Documentation:
+- Use standard markdown without emoji
+- Clear headers and structure
+- Professional tone throughout
+- Focus on technical accuracy

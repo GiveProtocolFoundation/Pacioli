@@ -1,12 +1,13 @@
-export type AccountType = 'individual' | 'sme' | 'not-for-profit'
+export type AccountType = 'individual' | 'for-profit-enterprise' | 'sme' | 'not-for-profit' // 'sme' is deprecated, use 'for-profit-enterprise'
 export type Jurisdiction = 'us-gaap' | 'ifrs'
-export type UserRole = 'user' | 'admin' | 'system-admin'
+export type UserRole = 'user' | 'preparer' | 'approver' | 'admin' | 'system-admin'
 
 export interface User {
   id: string
   name: string
   email: string
   role: UserRole
+  roles?: UserRole[]
   accountType: AccountType
   jurisdiction: Jurisdiction
   organizationId?: string

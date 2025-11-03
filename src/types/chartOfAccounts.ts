@@ -32,7 +32,7 @@ export interface ChartOfAccounts {
   id: string
   name: string
   jurisdiction: 'us-gaap' | 'ifrs'
-  accountType: 'individual' | 'sme' | 'not-for-profit'
+  accountType: 'individual' | 'for-profit-enterprise' | 'sme' | 'not-for-profit' // 'sme' is deprecated
   accounts: ChartOfAccountsEntry[]
   isTemplate: boolean
   organizationId?: string
@@ -43,6 +43,6 @@ export interface ChartOfAccounts {
 export interface ChartOfAccountsTemplate {
   name: string
   jurisdiction: 'us-gaap' | 'ifrs'
-  accountType: 'individual' | 'sme' | 'not-for-profit'
+  accountType: 'individual' | 'for-profit-enterprise' | 'sme' | 'not-for-profit' // 'sme' is deprecated
   accounts: ChartOfAccountsEntry[]
 }

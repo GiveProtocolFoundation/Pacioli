@@ -1,5 +1,5 @@
 {
-  "name": "US-GAAP - Not For-profit",
+  "name": "US-GAAP - Not For-Profit",
   "jurisdiction": "us-gaap",
   "accountType": "not-for-profit",
   "accounts": [
@@ -8,528 +8,558 @@
       "name": "Cash - Operating",
       "type": "Asset",
       "description": "Unrestricted operating cash",
+      "subcategory": "Current Assets",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "1010",
       "name": "Cash - Temporarily Restricted",
       "type": "Asset",
       "description": "Cash with donor restrictions",
+      "subcategory": "Current Assets",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "1020",
       "name": "Cash - Permanently Restricted",
       "type": "Asset",
       "description": "Endowment cash",
+      "subcategory": "Current Assets",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "1030",
       "name": "Petty Cash",
       "type": "Asset",
       "description": "Cash on hand",
+      "subcategory": "Current Assets",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "1035",
       "name": "Digital Assets - Stablecoins (Unrestricted)",
       "type": "Asset",
       "description": "Unrestricted stablecoin holdings",
+      "subcategory": "Digital Assets",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "1036",
       "name": "Digital Assets - Stablecoins (Restricted)",
       "type": "Asset",
       "description": "Donor-restricted stablecoin holdings",
+      "subcategory": "Digital Assets",
       "isActive": true,
-      "editable": true
-    },
-    {
-      "code": "1040",
-      "name": "Digital Assets - Bitcoin (Unrestricted)",
-      "type": "Asset",
-      "description": "Unrestricted Bitcoin holdings",
-      "isActive": true,
-      "editable": true
-    },
-    {
-      "code": "1041",
-      "name": "Digital Assets - Bitcoin (Restricted)",
-      "type": "Asset",
-      "description": "Donor-restricted Bitcoin",
-      "isActive": true,
-      "editable": true
-    },
-    {
-      "code": "1045",
-      "name": "Digital Assets - Ethereum (Unrestricted)",
-      "type": "Asset",
-      "description": "Unrestricted Ethereum holdings",
-      "isActive": true,
-      "editable": true
-    },
-    {
-      "code": "1046",
-      "name": "Digital Assets - Ethereum (Restricted)",
-      "type": "Asset",
-      "description": "Donor-restricted Ethereum",
-      "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "1050",
       "name": "Digital Assets - Other Crypto (Unrestricted)",
       "type": "Asset",
       "description": "Other unrestricted cryptocurrencies",
+      "subcategory": "Digital Assets",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "1051",
       "name": "Digital Assets - Other Crypto (Restricted)",
       "type": "Asset",
       "description": "Other restricted cryptocurrencies",
+      "subcategory": "Digital Assets",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "1055",
       "name": "DeFi - Staked Assets",
       "type": "Asset",
       "description": "Staked crypto generating yield",
+      "subcategory": "Digital Assets",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "1060",
       "name": "DeFi - Liquid Staking Derivatives",
       "type": "Asset",
       "description": "stETH, rETH for liquidity + yield",
+      "subcategory": "Digital Assets",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "1065",
       "name": "DeFi - Liquidity Pool Tokens",
       "type": "Asset",
       "description": "LP tokens from DeFi protocols",
+      "subcategory": "Digital Assets",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "1070",
       "name": "DeFi - Lending Protocol Deposits",
       "type": "Asset",
       "description": "Deposits in Aave, Compound",
+      "subcategory": "Digital Assets",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "1071",
       "name": "DeFi - Interest-bearing Tokens",
       "type": "Asset",
       "description": "aTokens, cTokens from lending",
+      "subcategory": "Digital Assets",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "1075",
       "name": "DeFi - Governance Tokens",
       "type": "Asset",
       "description": "Voting/governance tokens held",
+      "subcategory": "Digital Assets",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "1080",
       "name": "DeFi - NFTs",
       "type": "Asset",
       "description": "Non-fungible tokens",
+      "subcategory": "Digital Assets",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "1085",
       "name": "DeFi - Unclaimed Rewards Receivable",
       "type": "Asset",
       "description": "Accrued unclaimed rewards",
+      "subcategory": "Digital Assets",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "1100",
       "name": "Grants Receivable",
       "type": "Asset",
       "description": "Grant revenue earned but not received",
+      "subcategory": "Current Assets",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "1110",
       "name": "Pledges Receivable - Current",
       "type": "Asset",
       "description": "Donor pledges due within one year",
+      "subcategory": "Current Assets",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "1120",
       "name": "Allowance for Uncollectible Pledges",
       "type": "Asset",
       "description": "Estimated uncollectible pledges (contra)",
+      "subcategory": "Current Assets",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "1200",
       "name": "Accounts Receivable",
       "type": "Asset",
       "description": "Program fees and other receivables",
+      "subcategory": "Current Assets",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "1300",
       "name": "Inventory",
       "type": "Asset",
       "description": "Program supplies and materials",
+      "subcategory": "Current Assets",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "1400",
       "name": "Prepaid Expenses",
       "type": "Asset",
       "description": "Expenses paid in advance",
+      "subcategory": "Current Assets",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "1500",
       "name": "Investments - Short-term",
       "type": "Asset",
       "description": "Marketable securities",
+      "subcategory": "Current Assets",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "1600",
       "name": "Pledges Receivable - Long-term",
       "type": "Asset",
       "description": "Multi-year pledges",
+      "subcategory": "Long-term Assets",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "1610",
       "name": "Discount on Long-term Pledges",
       "type": "Asset",
       "description": "Present value discount (contra)",
+      "subcategory": "Long-term Assets",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "1700",
       "name": "Investments - Unrestricted",
       "type": "Asset",
       "description": "Long-term unrestricted investments",
+      "subcategory": "Long-term Assets",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "1710",
       "name": "Investments - Temporarily Restricted",
       "type": "Asset",
       "description": "Restricted investment funds",
+      "subcategory": "Long-term Assets",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "1720",
       "name": "Investments - Permanently Restricted",
       "type": "Asset",
       "description": "Endowment investments",
+      "subcategory": "Long-term Assets",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "1750",
       "name": "Beneficial Interest in Trusts",
       "type": "Asset",
       "description": "Split-interest agreements",
+      "subcategory": "Long-term Assets",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "1800",
       "name": "Land",
       "type": "Asset",
       "description": "Land owned",
+      "subcategory": "Property & Equipment",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "1810",
       "name": "Buildings",
       "type": "Asset",
       "description": "Buildings owned",
+      "subcategory": "Property & Equipment",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "1811",
       "name": "Accumulated Depreciation - Buildings",
       "type": "Asset",
       "description": "Accumulated depreciation (contra)",
+      "subcategory": "Property & Equipment",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "1820",
       "name": "Leasehold Improvements",
       "type": "Asset",
       "description": "Improvements to leased space",
+      "subcategory": "Property & Equipment",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "1821",
       "name": "Accumulated Depreciation - Leasehold",
       "type": "Asset",
       "description": "Accumulated depreciation (contra)",
+      "subcategory": "Property & Equipment",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "1830",
       "name": "Furniture & Equipment",
       "type": "Asset",
       "description": "Furniture, equipment, fixtures",
+      "subcategory": "Property & Equipment",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "1831",
       "name": "Accumulated Depreciation - F&E",
       "type": "Asset",
       "description": "Accumulated depreciation (contra)",
+      "subcategory": "Property & Equipment",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "1840",
       "name": "Vehicles",
       "type": "Asset",
       "description": "Organization vehicles",
+      "subcategory": "Property & Equipment",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "1841",
       "name": "Accumulated Depreciation - Vehicles",
       "type": "Asset",
       "description": "Accumulated depreciation (contra)",
+      "subcategory": "Property & Equipment",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "1900",
       "name": "Other Assets",
       "type": "Asset",
       "description": "Security deposits, etc.",
+      "subcategory": "Long-term Assets",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "2000",
       "name": "Accounts Payable",
       "type": "Liability",
       "description": "Amounts owed to vendors",
+      "subcategory": "Current Liabilities",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "2050",
       "name": "Credit Card Payable",
       "type": "Liability",
       "description": "Credit card balances",
+      "subcategory": "Current Liabilities",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "2055",
       "name": "DeFi - Borrowed Assets",
       "type": "Liability",
       "description": "Loans from DeFi protocols",
+      "subcategory": "DeFi Liabilities",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "2060",
       "name": "DeFi - Accrued Interest on Loans",
       "type": "Liability",
       "description": "Unpaid interest on DeFi borrowing",
+      "subcategory": "DeFi Liabilities",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "2070",
       "name": "DeFi - Impermanent Loss Reserve",
       "type": "Liability",
       "description": "Reserve for unrealized IL",
+      "subcategory": "DeFi Liabilities",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "2100",
       "name": "Accrued Expenses",
       "type": "Liability",
       "description": "Accrued but unpaid expenses",
+      "subcategory": "Current Liabilities",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "2110",
       "name": "Accrued Payroll",
       "type": "Liability",
       "description": "Unpaid wages and salaries",
+      "subcategory": "Current Liabilities",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "2120",
       "name": "Accrued Payroll Taxes",
       "type": "Liability",
       "description": "Payroll taxes withheld/owed",
+      "subcategory": "Current Liabilities",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "2200",
       "name": "Deferred Revenue",
       "type": "Liability",
       "description": "Advance payments for services",
+      "subcategory": "Current Liabilities",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "2300",
       "name": "Refundable Advances",
       "type": "Liability",
       "description": "Grant advances to be refunded",
+      "subcategory": "Current Liabilities",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "2400",
       "name": "Notes Payable - Current",
       "type": "Liability",
       "description": "Current portion of debt",
+      "subcategory": "Current Liabilities",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "2500",
       "name": "Line of Credit",
       "type": "Liability",
       "description": "Outstanding credit line balance",
+      "subcategory": "Current Liabilities",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "2600",
       "name": "Notes Payable - Long-term",
       "type": "Liability",
       "description": "Long-term debt",
+      "subcategory": "Long-term Liabilities",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "2610",
       "name": "Mortgage Payable",
       "type": "Liability",
       "description": "Mortgage on property",
+      "subcategory": "Long-term Liabilities",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "2700",
       "name": "Capital Lease Obligations",
       "type": "Liability",
       "description": "Long-term lease obligations",
+      "subcategory": "Long-term Liabilities",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "2800",
       "name": "Annuity Obligations",
       "type": "Liability",
       "description": "Charitable gift annuities",
+      "subcategory": "Long-term Liabilities",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "3000",
       "name": "Unrestricted Net Assets",
       "type": "Equity",
       "description": "Unrestricted funds",
+      "subcategory": "Net Assets Without Donor Restrictions",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "3100",
       "name": "Board-Designated Operating Reserve",
       "type": "Equity",
       "description": "Board-designated reserves",
+      "subcategory": "Net Assets Without Donor Restrictions",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "3200",
       "name": "Board-Designated Endowment",
       "type": "Equity",
       "description": "Quasi-endowment funds",
+      "subcategory": "Net Assets Without Donor Restrictions",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "3300",
       "name": "Temporarily Restricted - Purpose",
       "type": "Equity",
       "description": "Restricted for specific purpose",
+      "subcategory": "Net Assets With Donor Restrictions",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "3310",
       "name": "Temporarily Restricted - Time",
       "type": "Equity",
       "description": "Restricted by time",
+      "subcategory": "Net Assets With Donor Restrictions",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "3400",
       "name": "Temporarily Restricted - Capital",
       "type": "Equity",
       "description": "Restricted for capital projects",
+      "subcategory": "Net Assets With Donor Restrictions",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "3500",
       "name": "Permanently Restricted - Endowment",
       "type": "Equity",
       "description": "True endowment principal",
+      "subcategory": "Net Assets With Donor Restrictions",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "3900",
@@ -537,213 +567,239 @@
       "type": "Equity",
       "description": "Current year activity",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "4000",
       "name": "Individual Contributions - Unrestricted",
       "type": "Income",
       "description": "Individual donations",
+      "subcategory": "Contributions",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "4010",
       "name": "Individual Contributions - Restricted",
       "type": "Income",
       "description": "Restricted individual gifts",
+      "subcategory": "Contributions",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "4100",
       "name": "Corporate Contributions",
       "type": "Income",
       "description": "Corporate donations",
+      "subcategory": "Contributions",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "4110",
       "name": "Corporate Sponsorships",
       "type": "Income",
       "description": "Corporate sponsorships",
+      "subcategory": "Contributions",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "4200",
       "name": "Foundation Grants",
       "type": "Income",
       "description": "Foundation grant revenue",
+      "subcategory": "Contributions",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "4300",
       "name": "Government Grants",
       "type": "Income",
       "description": "Government grant revenue",
+      "subcategory": "Contributions",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "4350",
       "name": "Crypto Contributions - Unrestricted",
       "type": "Income",
       "description": "Cryptocurrency donations (unrestricted)",
+      "subcategory": "Contributions",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "4360",
       "name": "Crypto Contributions - Restricted",
       "type": "Income",
       "description": "Cryptocurrency donations (restricted)",
+      "subcategory": "Contributions",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "4370",
       "name": "NFT Contributions",
       "type": "Income",
       "description": "Donated NFTs at fair market value",
+      "subcategory": "Contributions",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "4400",
       "name": "In-Kind Contributions",
       "type": "Income",
       "description": "Non-cash donations",
+      "subcategory": "Contributions",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "4500",
       "name": "Bequests",
       "type": "Income",
       "description": "Estate gifts",
+      "subcategory": "Contributions",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "4600",
       "name": "Special Events Revenue",
       "type": "Income",
       "description": "Event ticket sales and revenue",
+      "subcategory": "Contributions",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "4610",
       "name": "Less: Direct Event Costs",
       "type": "Income",
       "description": "Direct costs of events (contra)",
+      "subcategory": "Contributions",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "4700",
       "name": "Program Service Fees",
       "type": "Income",
       "description": "Fees for program services",
+      "subcategory": "Earned Revenue",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "4800",
       "name": "Membership Dues",
       "type": "Income",
       "description": "Member dues and fees",
+      "subcategory": "Earned Revenue",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "4900",
       "name": "Investment Income - Unrestricted",
       "type": "Income",
       "description": "Interest and dividends",
+      "subcategory": "Earned Revenue",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "4910",
       "name": "Investment Income - Restricted",
       "type": "Income",
       "description": "Restricted investment income",
+      "subcategory": "Earned Revenue",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "4915",
       "name": "DeFi - Staking Rewards",
       "type": "Income",
       "description": "Income from staking activities",
+      "subcategory": "DeFi Income",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "4920",
       "name": "DeFi - Yield Farming Income",
       "type": "Income",
       "description": "Yield from farming activities",
+      "subcategory": "DeFi Income",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "4925",
       "name": "DeFi - Liquidity Pool Fees",
       "type": "Income",
       "description": "Trading fees from LP positions",
+      "subcategory": "DeFi Income",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "4930",
       "name": "DeFi - Lending Interest Income",
       "type": "Income",
       "description": "Interest from lending protocols",
+      "subcategory": "DeFi Income",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "4935",
       "name": "DeFi - Airdrop Income",
       "type": "Income",
       "description": "Token airdrops received",
+      "subcategory": "DeFi Income",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "4940",
       "name": "DeFi - Realized Gains on Crypto",
       "type": "Income",
       "description": "Gains from crypto asset sales",
+      "subcategory": "DeFi Income",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "4950",
       "name": "Realized Gains/Losses on Investments",
       "type": "Income",
       "description": "Realized investment gains/losses",
+      "subcategory": "Earned Revenue",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "4960",
       "name": "Unrealized Gains/Losses on Investments",
       "type": "Income",
       "description": "Unrealized investment gains/losses",
+      "subcategory": "Earned Revenue",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "4970",
       "name": "Other Revenue",
       "type": "Income",
       "description": "Miscellaneous revenue",
+      "subcategory": "Earned Revenue",
       "isActive": true,
       "editable": true
     },
@@ -752,14 +808,16 @@
       "name": "Net Assets Released from Restrictions",
       "type": "Income",
       "description": "Transfer of restricted funds used",
+      "subcategory": "Earned Revenue",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "5000",
       "name": "Program A - Salaries",
       "type": "Expense",
       "description": "Program A staff salaries",
+      "subcategory": "Program Services",
       "isActive": true,
       "editable": true
     },
@@ -768,6 +826,7 @@
       "name": "Program A - Payroll Taxes",
       "type": "Expense",
       "description": "Program A payroll taxes",
+      "subcategory": "Program Services",
       "isActive": true,
       "editable": true
     },
@@ -776,6 +835,7 @@
       "name": "Program A - Benefits",
       "type": "Expense",
       "description": "Program A employee benefits",
+      "subcategory": "Program Services",
       "isActive": true,
       "editable": true
     },
@@ -784,6 +844,7 @@
       "name": "Program A - Professional Fees",
       "type": "Expense",
       "description": "Program A consultants",
+      "subcategory": "Program Services",
       "isActive": true,
       "editable": true
     },
@@ -792,6 +853,7 @@
       "name": "Program A - Supplies",
       "type": "Expense",
       "description": "Program A supplies and materials",
+      "subcategory": "Program Services",
       "isActive": true,
       "editable": true
     },
@@ -800,6 +862,7 @@
       "name": "Program A - Travel",
       "type": "Expense",
       "description": "Program A travel expenses",
+      "subcategory": "Program Services",
       "isActive": true,
       "editable": true
     },
@@ -808,6 +871,7 @@
       "name": "Program A - Occupancy",
       "type": "Expense",
       "description": "Program A rent and utilities",
+      "subcategory": "Program Services",
       "isActive": true,
       "editable": true
     },
@@ -816,6 +880,7 @@
       "name": "Program A - Equipment",
       "type": "Expense",
       "description": "Program A equipment",
+      "subcategory": "Program Services",
       "isActive": true,
       "editable": true
     },
@@ -824,6 +889,7 @@
       "name": "Program A - Other",
       "type": "Expense",
       "description": "Program A other expenses",
+      "subcategory": "Program Services",
       "isActive": true,
       "editable": true
     },
@@ -832,6 +898,7 @@
       "name": "Program B - Salaries",
       "type": "Expense",
       "description": "Program B staff salaries",
+      "subcategory": "Program Services",
       "isActive": true,
       "editable": true
     },
@@ -840,6 +907,7 @@
       "name": "Program B - Payroll Taxes",
       "type": "Expense",
       "description": "Program B payroll taxes",
+      "subcategory": "Program Services",
       "isActive": true,
       "editable": true
     },
@@ -848,6 +916,7 @@
       "name": "Program B - Benefits",
       "type": "Expense",
       "description": "Program B employee benefits",
+      "subcategory": "Program Services",
       "isActive": true,
       "editable": true
     },
@@ -856,6 +925,7 @@
       "name": "Program B - Professional Fees",
       "type": "Expense",
       "description": "Program B consultants",
+      "subcategory": "Program Services",
       "isActive": true,
       "editable": true
     },
@@ -864,6 +934,7 @@
       "name": "Program B - Supplies",
       "type": "Expense",
       "description": "Program B supplies",
+      "subcategory": "Program Services",
       "isActive": true,
       "editable": true
     },
@@ -872,6 +943,7 @@
       "name": "Program B - Travel",
       "type": "Expense",
       "description": "Program B travel",
+      "subcategory": "Program Services",
       "isActive": true,
       "editable": true
     },
@@ -880,6 +952,7 @@
       "name": "Program B - Occupancy",
       "type": "Expense",
       "description": "Program B facilities",
+      "subcategory": "Program Services",
       "isActive": true,
       "editable": true
     },
@@ -888,6 +961,7 @@
       "name": "Program B - Equipment",
       "type": "Expense",
       "description": "Program B equipment",
+      "subcategory": "Program Services",
       "isActive": true,
       "editable": true
     },
@@ -896,6 +970,7 @@
       "name": "Program B - Other",
       "type": "Expense",
       "description": "Program B other expenses",
+      "subcategory": "Program Services",
       "isActive": true,
       "editable": true
     },
@@ -904,214 +979,241 @@
       "name": "M&G - Executive Salaries",
       "type": "Expense",
       "description": "Executive team salaries",
+      "subcategory": "Management & General",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "6010",
       "name": "M&G - Administrative Salaries",
       "type": "Expense",
       "description": "Administrative staff salaries",
+      "subcategory": "Management & General",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "6020",
       "name": "M&G - Payroll Taxes",
       "type": "Expense",
       "description": "Payroll taxes",
+      "subcategory": "Management & General",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "6030",
       "name": "M&G - Employee Benefits",
       "type": "Expense",
       "description": "Employee benefits",
+      "subcategory": "Management & General",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "6100",
       "name": "M&G - Professional Fees - Legal",
       "type": "Expense",
       "description": "Legal fees",
+      "subcategory": "Management & General",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "6110",
       "name": "M&G - Professional Fees - Accounting",
       "type": "Expense",
       "description": "Audit and accounting",
+      "subcategory": "Management & General",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "6120",
       "name": "M&G - Professional Fees - Other",
       "type": "Expense",
       "description": "Other professional services",
+      "subcategory": "Management & General",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "6200",
       "name": "M&G - Rent",
       "type": "Expense",
       "description": "Office rent",
+      "subcategory": "Management & General",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "6210",
       "name": "M&G - Utilities",
       "type": "Expense",
       "description": "Utilities",
+      "subcategory": "Management & General",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "6220",
       "name": "M&G - Telephone & Internet",
       "type": "Expense",
       "description": "Communications",
+      "subcategory": "Management & General",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "6300",
       "name": "M&G - Insurance",
       "type": "Expense",
       "description": "Insurance premiums",
+      "subcategory": "Management & General",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "6400",
       "name": "M&G - Office Supplies",
       "type": "Expense",
       "description": "Office supplies",
+      "subcategory": "Management & General",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "6410",
       "name": "M&G - Postage",
       "type": "Expense",
       "description": "Postage and shipping",
+      "subcategory": "Management & General",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "6420",
       "name": "M&G - Printing",
       "type": "Expense",
       "description": "Printing expenses",
+      "subcategory": "Management & General",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "6500",
       "name": "M&G - Bank Fees",
       "type": "Expense",
       "description": "Banking fees",
+      "subcategory": "Management & General",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "6510",
       "name": "M&G - Merchant Fees",
       "type": "Expense",
       "description": "Credit card processing fees",
+      "subcategory": "Management & General",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "6515",
       "name": "M&G - DeFi Gas Fees",
       "type": "Expense",
       "description": "Blockchain transaction fees",
+      "subcategory": "DeFi Expenses",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "6520",
       "name": "M&G - DeFi Protocol Fees",
       "type": "Expense",
       "description": "DEX and protocol usage fees",
+      "subcategory": "DeFi Expenses",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "6525",
       "name": "M&G - DeFi Interest Expense",
       "type": "Expense",
       "description": "Interest on borrowed assets",
+      "subcategory": "DeFi Expenses",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "6530",
       "name": "M&G - DeFi Realized Losses",
       "type": "Expense",
       "description": "Losses on crypto sales",
+      "subcategory": "DeFi Expenses",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "6535",
       "name": "M&G - DeFi Impermanent Loss",
       "type": "Expense",
       "description": "Realized impermanent loss",
+      "subcategory": "DeFi Expenses",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "6540",
       "name": "M&G - DeFi Security/Custody",
       "type": "Expense",
       "description": "Wallet and custody services",
+      "subcategory": "DeFi Expenses",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "6545",
-      "name": "M&G - Crypto Accounting Software",
+      "name": "M&G - Crypto Accounting & Tax Expenses",
       "type": "Expense",
-      "description": "DeFi accounting tools",
+      "description": "DeFi accounting/tax expenses",
+      "subcategory": "DeFi Expenses",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "6600",
       "name": "M&G - Software & Technology",
       "type": "Expense",
       "description": "Software subscriptions",
+      "subcategory": "Management & General",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "6700",
       "name": "M&G - Board Expenses",
       "type": "Expense",
       "description": "Board meeting expenses",
+      "subcategory": "Management & General",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "6800",
       "name": "M&G - Depreciation",
       "type": "Expense",
       "description": "Depreciation expense",
+      "subcategory": "Management & General",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "6900",
       "name": "M&G - Other",
       "type": "Expense",
       "description": "Other administrative expenses",
+      "subcategory": "Management & General",
       "isActive": true,
       "editable": true
     },
@@ -1120,97 +1222,108 @@
       "name": "Fundraising - Salaries",
       "type": "Expense",
       "description": "Development staff salaries",
+      "subcategory": "Fundraising",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "7010",
       "name": "Fundraising - Payroll Taxes",
       "type": "Expense",
       "description": "Payroll taxes",
+      "subcategory": "Fundraising",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "7020",
       "name": "Fundraising - Benefits",
       "type": "Expense",
       "description": "Employee benefits",
+      "subcategory": "Fundraising",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "7100",
       "name": "Fundraising - Direct Mail",
       "type": "Expense",
       "description": "Direct mail campaigns",
+      "subcategory": "Fundraising",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "7110",
       "name": "Fundraising - Printing",
       "type": "Expense",
       "description": "Printing of fundraising materials",
+      "subcategory": "Fundraising",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "7120",
       "name": "Fundraising - Postage",
       "type": "Expense",
       "description": "Mailing costs",
+      "subcategory": "Fundraising",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "7200",
       "name": "Fundraising - Events",
       "type": "Expense",
       "description": "Event expenses (allocated)",
+      "subcategory": "Fundraising",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "7300",
       "name": "Fundraising - Donor Recognition",
       "type": "Expense",
       "description": "Donor recognition and stewardship",
+      "subcategory": "Fundraising",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "7400",
       "name": "Fundraising - Professional Fees",
       "type": "Expense",
       "description": "Fundraising consultants",
+      "subcategory": "Fundraising",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "7500",
       "name": "Fundraising - Travel",
       "type": "Expense",
       "description": "Travel for donor meetings",
+      "subcategory": "Fundraising",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "7600",
       "name": "Fundraising - Software & Technology",
       "type": "Expense",
       "description": "Donor database and tools",
+      "subcategory": "Fundraising",
       "isActive": true,
-      "editable": true
+      "editable": false
     },
     {
       "code": "7900",
       "name": "Fundraising - Other",
       "type": "Expense",
       "description": "Other fundraising expenses",
+      "subcategory": "Fundraising",
       "isActive": true,
       "editable": true
     }
-  ],
-  "isTemplate": true
+  ]
 }

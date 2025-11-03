@@ -295,8 +295,39 @@ cargo test test_fetch_transaction
 
 ## Documentation
 
-### Code Documentation
+### Code Documentation Standards
 
+All code documentation must follow these standards:
+
+- No emojis in any code-related output (commits, comments, docs, logs)
+- Use plain ASCII text for all technical writing
+- Keep commit messages in conventional format without decorative elements
+- Write clear, professional documentation using only alphanumeric characters and standard punctuation
+- Focus on clarity and precision over visual style and verbose description
+
+### Commit Message Format
+
+Use conventional commit format without emojis or decorative symbols:
+
+```
+type(scope): description
+
+[optional body]
+
+[optional footer]
+```
+
+Examples:
+- `feat(navigation): align logo with navigation items`
+- `fix(transactions): resolve parsing error for ERC20 transfers`
+- `docs(contributing): add documentation standards section`
+
+### Code Comments
+
+- Use plain text only
+- Focus on why, not what
+- No decorative ASCII art or emojis
+- Keep comments concise and technical
 - Add **JSDoc comments** for TypeScript functions
 - Add **doc comments** for Rust public APIs
 - Include **examples** in documentation
@@ -306,6 +337,8 @@ cargo test test_fetch_transaction
 - Update **README.md** if adding new features
 - Update **docs/** if changing user-facing functionality
 - Add **screenshots** for UI changes
+- Use standard markdown without emoji
+- Maintain professional tone throughout
 
 ## Community
 
@@ -336,6 +369,6 @@ By contributing to Pacioli, you agree that your contributions will be licensed u
 
 ---
 
-**Thank you for contributing to Pacioli!** 🎉
+**Thank you for contributing to Pacioli!**
 
 Your time and expertise help make crypto accounting accessible for everyone in the Polkadot ecosystem.

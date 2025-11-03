@@ -181,6 +181,113 @@
     },
     {
       "code": "1500",
+      "name": "Short-term Investments",
+      "type": "Asset",
+      "description": "Marketable securities",
+      "isActive": true,
+      "editable": true
+    },
+    {
+      "code": "1510",
+      "name": "Digital Assets - Native Protocol Tokens",
+      "type": "Asset",
+      "description": "Native tokens of blockchain protocols (ETH, DOT, KSM, GLMR, MOVR, ASTR, ACA, etc.)",
+      "subcategory": "Digital Assets",
+      "isActive": true,
+      "editable": false
+    },
+    {
+      "code": "1520",
+      "name": "Digital Assets - Stablecoins",
+      "type": "Asset",
+      "description": "Fiat-pegged digital assets (USDC, USDT, DAI, aUSD, etc.)",
+      "subcategory": "Digital Assets",
+      "isActive": true,
+      "editable": false
+    },
+    {
+      "code": "1530",
+      "name": "Digital Assets - Wrapped & Bridged Tokens",
+      "type": "Asset",
+      "description": "Cross-chain wrapped assets (WETH, WBTC, xcDOT, xcKSM, etc.)",
+      "subcategory": "Digital Assets",
+      "isActive": true,
+      "editable": false
+    },
+    {
+      "code": "1540",
+      "name": "Digital Assets - Liquid Staking Derivatives",
+      "type": "Asset",
+      "description": "Liquid staking tokens (stETH, rETH, LDOT, stDOT, etc.)",
+      "subcategory": "Digital Assets",
+      "isActive": true,
+      "editable": false
+    },
+    {
+      "code": "1550",
+      "name": "Digital Assets - Liquidity Pool Tokens",
+      "type": "Asset",
+      "description": "LP tokens from AMMs (Uniswap, Curve, Balancer, HydraDX, etc.)",
+      "subcategory": "Digital Assets",
+      "isActive": true,
+      "editable": false
+    },
+    {
+      "code": "1560",
+      "name": "Digital Assets - Governance Tokens",
+      "type": "Asset",
+      "description": "Protocol governance tokens (UNI, AAVE, COMP, CRV, etc.)",
+      "subcategory": "Digital Assets",
+      "isActive": true,
+      "editable": false
+    },
+    {
+      "code": "1570",
+      "name": "Digital Assets - Yield-Bearing Tokens",
+      "type": "Asset",
+      "description": "Interest-bearing tokens (aTokens, cTokens, yTokens, etc.)",
+      "subcategory": "Digital Assets",
+      "isActive": true,
+      "editable": false
+    },
+    {
+      "code": "1580",
+      "name": "Digital Assets - NFTs (Collectibles)",
+      "type": "Asset",
+      "description": "Non-fungible tokens held as collectibles or art",
+      "subcategory": "Digital Assets",
+      "isActive": true,
+      "editable": false
+    },
+    {
+      "code": "1585",
+      "name": "Digital Assets - NFTs (Utility/Functional)",
+      "type": "Asset",
+      "description": "Functional NFTs (gaming items, access passes, memberships, etc.)",
+      "subcategory": "Digital Assets",
+      "isActive": true,
+      "editable": false
+    },
+    {
+      "code": "1590",
+      "name": "Digital Assets - Synthetic Assets",
+      "type": "Asset",
+      "description": "Synthetic derivatives and tokenized assets (synths, tokenized stocks, etc.)",
+      "subcategory": "Digital Assets",
+      "isActive": true,
+      "editable": false
+    },
+    {
+      "code": "1595",
+      "name": "Digital Assets - Other",
+      "type": "Asset",
+      "description": "Other digital assets that do not fit standard categories",
+      "subcategory": "Digital Assets",
+      "isActive": true,
+      "editable": false
+    },
+    {
+      "code": "1600",
       "name": "Property, Plant and Equipment",
       "type": "Asset",
       "description": "Tangible fixed assets (IAS 16)",
@@ -188,7 +295,7 @@
       "editable": true
     },
     {
-      "code": "1510",
+      "code": "1610",
       "name": "Land",
       "type": "Asset",
       "description": "Freehold land",
@@ -196,7 +303,7 @@
       "editable": true
     },
     {
-      "code": "1520",
+      "code": "1620",
       "name": "Buildings",
       "type": "Asset",
       "description": "Buildings and structures",
@@ -204,7 +311,7 @@
       "editable": true
     },
     {
-      "code": "1521",
+      "code": "1621",
       "name": "Accumulated Depreciation - Buildings",
       "type": "Asset",
       "description": "Cumulative depreciation (contra)",
@@ -212,7 +319,7 @@
       "editable": true
     },
     {
-      "code": "1530",
+      "code": "1630",
       "name": "Leasehold Improvements",
       "type": "Asset",
       "description": "Improvements to leased premises",
@@ -220,7 +327,7 @@
       "editable": true
     },
     {
-      "code": "1531",
+      "code": "1631",
       "name": "Accumulated Depreciation - Leasehold",
       "type": "Asset",
       "description": "Cumulative depreciation (contra)",
@@ -228,7 +335,7 @@
       "editable": true
     },
     {
-      "code": "1540",
+      "code": "1640",
       "name": "Plant and Machinery",
       "type": "Asset",
       "description": "Manufacturing equipment",
@@ -236,7 +343,7 @@
       "editable": true
     },
     {
-      "code": "1541",
+      "code": "1641",
       "name": "Accumulated Depreciation - Plant",
       "type": "Asset",
       "description": "Cumulative depreciation (contra)",
@@ -244,7 +351,7 @@
       "editable": true
     },
     {
-      "code": "1550",
+      "code": "1650",
       "name": "Furniture and Fittings",
       "type": "Asset",
       "description": "Office furniture and fixtures",
@@ -252,7 +359,7 @@
       "editable": true
     },
     {
-      "code": "1551",
+      "code": "1651",
       "name": "Accumulated Depreciation - Furniture",
       "type": "Asset",
       "description": "Cumulative depreciation (contra)",
@@ -260,7 +367,7 @@
       "editable": true
     },
     {
-      "code": "1560",
+      "code": "1660",
       "name": "Motor Vehicles",
       "type": "Asset",
       "description": "Company vehicles",
@@ -268,7 +375,7 @@
       "editable": true
     },
     {
-      "code": "1561",
+      "code": "1661",
       "name": "Accumulated Depreciation - Vehicles",
       "type": "Asset",
       "description": "Cumulative depreciation (contra)",

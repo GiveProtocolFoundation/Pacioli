@@ -160,8 +160,8 @@ const Navigation: React.FC<NavigationProps> = ({
       {/* Sidebar for desktop */}
       <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 bg-white dark:bg-black border-r border-gray-200 dark:border-gray-700">
         {/* Logo */}
-        <div className="flex items-center justify-center h-16 px-6 border-b border-gray-200 dark:border-gray-700">
-          <div className="flex items-center">
+        <div className="flex items-center h-16 px-3 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex items-center px-3">
             <img
               src={theme === 'dark' ? PacioliBlackLogo : PacioliWhiteLogo}
               alt="Pacioli"
@@ -310,8 +310,8 @@ const Navigation: React.FC<NavigationProps> = ({
           {/* Sidebar panel */}
           <aside className="fixed inset-y-0 left-0 w-64 bg-white dark:bg-black flex flex-col">
             {/* Logo and close button */}
-            <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200 dark:border-gray-700">
-              <div className="flex items-center">
+            <div className="flex items-center justify-between h-16 px-3 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center px-3">
                 <img
                   src={theme === 'dark' ? PacioliBlackLogo : PacioliWhiteLogo}
                   alt="Pacioli"
@@ -553,14 +553,20 @@ const Navigation: React.FC<NavigationProps> = ({
                       <User className="w-4 h-4 mr-3" />
                       Your Profile
                     </Link>
-                    <button className="w-full px-4 py-2 text-sm text-left text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center">
+                    <Link
+                      to="/settings"
+                      className="w-full px-4 py-2 text-sm text-left text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center"
+                    >
                       <Settings className="w-4 h-4 mr-3" />
                       Settings
-                    </button>
-                    <button className="w-full px-4 py-2 text-sm text-left text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center">
+                    </Link>
+                    <Link
+                      to="/support"
+                      className="w-full px-4 py-2 text-sm text-left text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center"
+                    >
                       <HelpCircle className="w-4 h-4 mr-3" />
                       Help & Support
-                    </button>
+                    </Link>
                     <div className="border-t border-gray-200 dark:border-gray-700 mt-1"></div>
                     <button className="w-full px-4 py-2 text-sm text-left text-red-600 dark:text-red-400 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center">
                       <LogOut className="w-4 h-4 mr-3" />

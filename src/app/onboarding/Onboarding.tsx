@@ -5,7 +5,7 @@ import PacioliBlackLogo from '../../assets/Pacioli_logo_black.svg'
 
 type Step = 'jurisdiction' | 'account-type' | 'complete'
 type Jurisdiction = 'us-gaap' | 'ifrs'
-type AccountType = 'individual' | 'sme' | 'not-for-profit'
+type AccountType = 'individual' | 'for-profit-enterprise' | 'not-for-profit'
 
 interface ProgressStepProps {
   label: string
@@ -166,7 +166,7 @@ const Onboarding: React.FC = () => {
   }, [handleAccountTypeSelect])
 
   const handleSelectSME = useCallback(() => {
-    handleAccountTypeSelect('sme')
+    handleAccountTypeSelect('for-profit-enterprise')
   }, [handleAccountTypeSelect])
 
   const handleSelectNonProfit = useCallback(() => {
@@ -292,12 +292,12 @@ const Onboarding: React.FC = () => {
                 />
                 <GridSelectionButton
                   icon={Building2}
-                  title="Small & Medium Enterprise (SME)"
+                  title="For-Profit Enterprise"
                   description="For businesses managing crypto transactions"
                   subtitle="Multi-user support with admin controls"
-                  isSelected={accountType === 'sme'}
+                  isSelected={accountType === 'for-profit-enterprise'}
                   onClick={handleSelectSME}
-                  value="sme"
+                  value="for-profit-enterprise"
                 />
                 <GridSelectionButton
                   icon={Building2}

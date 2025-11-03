@@ -6,13 +6,13 @@
 
 A comprehensive blockchain accounting application built with Tauri, React, TypeScript, and Rust. Designed specifically for the Polkadot ecosystem with support for Moonbeam, Moonriver, Astar, and other parachains.
 
-🌐 **Website**: [pacioli.io](https://pacioli.io) (coming soon)
-📚 **Documentation**: [docs.pacioli.io](https://docs.pacioli.io)
-💬 **Community**: [community.pacioli.io](https://community.pacioli.io)
+**Website**: [pacioli.io](https://pacioli.io) (coming soon)
+**Documentation**: [docs.pacioli.io](https://docs.pacioli.io)
+**Community**: [community.pacioli.io](https://community.pacioli.io)
 
 ---
 
-## 🚀 Features
+## Features
 
 ### Core Accounting
 - **Multi-Chain Support** - Track transactions across Polkadot parachains
@@ -42,13 +42,13 @@ Pacioli uses a multi-repository architecture:
 
 | Repository | Purpose | Status |
 |------------|---------|--------|
-| **[pacioli-core](https://github.com/GiveProtocol/pacioli-core)** (this repo) | Main application | ✅ Active |
-| **[pacioli-docs](https://github.com/GiveProtocol/pacioli-docs)** | Documentation site | ✅ Active |
-| **[pacioli-plugins](https://github.com/GiveProtocol/pacioli-plugins)** | Plugin system | 🚧 Coming Soon |
+| **[pacioli-core](https://github.com/GiveProtocol/pacioli-core)** (this repo) | Main application | Active |
+| **[pacioli-docs](https://github.com/GiveProtocol/pacioli-docs)** | Documentation site | Active |
+| **[pacioli-plugins](https://github.com/GiveProtocol/pacioli-plugins)** | Plugin system | Coming Soon |
 
 ---
 
-## 🏁 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -113,7 +113,7 @@ The application will launch in development mode with hot-reloading enabled.
 
 ---
 
-## 📖 Documentation
+## Documentation
 
 Comprehensive documentation is available in the [pacioli-docs](https://github.com/GiveProtocol/pacioli-docs) repository:
 
@@ -205,7 +205,7 @@ See [LICENSE](LICENSE) for the full license text.
 
 ---
 
-## 🗺️ Roadmap
+## Roadmap
 
 ### Current (v0.1)
 - Multi-chain transaction tracking
@@ -275,4 +275,4 @@ Special thanks to the Polkadot and Web3 Foundation communities.
 
 ---
 
-**Made with ❤️ by the Pacioli community**
+**Made by the Pacioli community**

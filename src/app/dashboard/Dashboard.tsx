@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   TrendingUp,
   TrendingDown,
@@ -33,6 +34,7 @@ interface AccountBalance {
 }
 
 const Dashboard: React.FC = () => {
+  const navigate = useNavigate()
   const { settings: currencySettings } = useCurrency()
   const { theme } = useTheme()
 
@@ -137,7 +139,10 @@ const Dashboard: React.FC = () => {
               <button className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
                 Export Report
               </button>
-              <button className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
+              <button
+                onClick={() => navigate('/transactions/new')}
+                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"
+              >
                 New Transaction
               </button>
             </div>
