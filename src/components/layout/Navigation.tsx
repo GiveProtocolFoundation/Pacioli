@@ -23,6 +23,7 @@ import PacioliWhiteLogo from '../../assets/pacioli_logo_white.svg'
 import PacioliBlackLogo from '../../assets/Pacioli_logo_black.svg'
 import { useTheme } from '../../contexts/ThemeContext'
 import { useOrganization } from '../../contexts/OrganizationContext'
+import { useTransactions } from '../../contexts/TransactionContext'
 import NotificationsPanel from '../notifications/NotificationsPanel'
 
 interface NavigationProps {
@@ -48,6 +49,9 @@ const Navigation: React.FC<NavigationProps> = ({
   const location = useLocation()
   const { theme, toggleTheme } = useTheme()
   const { organizationLogo, userAvatar } = useOrganization()
+  const { pendingApprovals } = useTransactions()
+
+  const pendingCount = pendingApprovals.length
 
   // Navigation items for organizations/charities
   const organizationNavItems: NavItem[] = [
@@ -56,7 +60,7 @@ const Navigation: React.FC<NavigationProps> = ({
       name: 'Transactions',
       href: '/transactions',
       icon: Receipt,
-      badge: 3,
+      badge: pendingCount > 0 ? pendingCount : undefined,
       subItems: [
         { name: 'All Transactions', href: '/transactions?filter=all' },
         { name: 'Revenue', href: '/transactions?filter=revenue' },
@@ -94,7 +98,7 @@ const Navigation: React.FC<NavigationProps> = ({
   // Simplified navigation for individuals
   const individualNavItems: NavItem[] = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-    { name: 'Transactions', href: '/transactions', icon: Receipt, badge: 2 },
+    { name: 'Transactions', href: '/transactions', icon: Receipt, badge: pendingCount > 0 ? pendingCount : undefined },
     { name: 'Wallets', href: '/wallets', icon: Wallet },
     { name: 'Tax Reports', href: '/reports', icon: FileText },
     {
