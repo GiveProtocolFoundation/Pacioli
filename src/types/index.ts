@@ -4,19 +4,105 @@
  */
 
 // =============================================================================
-// DATABASE TYPES
+// DATABASE TYPES (Primary source for core types)
 // =============================================================================
 export * from './database'
 
 // =============================================================================
-// ACCOUNTING TYPES
+// ACCOUNTING TYPES (excluding duplicates)
 // =============================================================================
-export * from './accounting'
+export type {
+  CreateGLAccountRequest,
+  UpdateGLAccountRequest,
+  CreateTokenRequest,
+  CreateAccountingTransactionRequest,
+  CreateJournalEntryRequest,
+  CreateJournalEntryLineRequest,
+  RecordDisposalRequest,
+  UpdatePriceRequest,
+  EnrichedAccountingTransaction,
+  EnrichedJournalEntry,
+  EnrichedJournalEntryLine,
+  EnrichedTransactionLot,
+  EnrichedLotDisposal,
+  TokenHolding,
+  AccountTokenHolding,
+  PortfolioSummary,
+  PortfolioBreakdown,
+  CostBasisCalculation,
+  LotAllocation,
+  CapitalGain,
+  TaxYearSummary,
+  TaxLotSummary,
+  ReconciliationItem,
+  BlockchainTransaction,
+  ReconciliationReport,
+  DoubleEntryTemplate,
+  AuditTrail,
+  ComplianceCheck,
+  DataIntegrityReport
+} from './accounting'
+
+export { TRANSACTION_TEMPLATES } from './accounting'
 
 // =============================================================================
 // REPORTING TYPES
 // =============================================================================
-export * from './reporting'
+export type {
+  BalanceSheetReport,
+  BalanceSheetSection,
+  BalanceSheetAccount,
+  TokenBreakdownItem,
+  IncomeStatementReport,
+  IncomeStatementSection,
+  IncomeStatementAccount,
+  TransactionTypeBreakdown,
+  CashFlowStatement,
+  CashFlowSection,
+  CashFlowItem,
+  TrialBalance,
+  TrialBalanceAccount,
+  PortfolioReport,
+  PortfolioPerformance,
+  PortfolioAllocation,
+  AllocationBreakdown,
+  RiskMetrics,
+  ConcentrationRisk,
+  LiquidityRisk,
+  VolatilityMetrics,
+  TaxReport,
+  TaxpayerInfo,
+  Form8949Data,
+  Form8949Summary,
+  ScheduleD,
+  OtherIncomeReport,
+  IncomeItem,
+  DeductionsReport,
+  DeductionItem,
+  TimeSeriesDataPoint,
+  ChartData,
+  ChartDataset,
+  PortfolioValueChart,
+  AllocationChart,
+  GainsLossesChart,
+  TransactionVolumeChart,
+  DashboardData,
+  DashboardSummary,
+  DashboardTransaction,
+  DashboardCharts,
+  DashboardAlert,
+  CustomReportDefinition,
+  CustomReportFilters,
+  CustomReportColumn,
+  CustomReportResult,
+  ExportRequest,
+  ExportOptions,
+  ExportResult,
+  ComparativeReport,
+  ComparisonPeriod,
+  ComparisonMetric,
+  VarianceAnalysis
+} from './reporting'
 
 // =============================================================================
 // TAURI COMMAND TYPES
@@ -24,15 +110,72 @@ export * from './reporting'
 export * from './tauri-commands'
 
 // =============================================================================
-// EXISTING TYPES (Re-export for compatibility)
+// LEGACY TYPES (Re-export for backward compatibility)
+// These may have duplicates with database types but are kept for legacy code
 // =============================================================================
 export * from './chartOfAccounts'
-export * from './digitalAssets'
-export * from './transaction'
+
+// Export digitalAssets types with explicit names to avoid conflicts
+export type {
+  DigitalAssetType as LegacyDigitalAssetType,
+  Token as LegacyToken,
+  Chain as LegacyChain,
+  ChainType as LegacyChainType,
+  TokenStandard as LegacyTokenStandard,
+  DigitalAssetTypeInfo,
+  TokenBalance,
+  TokenPrice,
+  TokenMetadata,
+  ChainMetadata
+} from './digitalAssets'
+
+export {
+  DIGITAL_ASSET_TYPES,
+  getDigitalAssetTypeInfo,
+  getAccountNumberForAssetType,
+  getAllDigitalAssetTypes
+} from './digitalAssets'
+
+// Export transaction types with explicit names to avoid conflicts
+export type {
+  TransactionType as LegacyTransactionType,
+  TransactionStatus,
+  ApprovalStatus,
+  TransactionFormData,
+  Transaction as LegacyTransaction,
+  TransactionApprovalQueueItem
+} from './transaction'
+
 export * from './currency'
-export * from './user'
-export * from './cryptoAccounting'
+
+// Export user types with AccountType renamed to avoid conflict with database AccountType
+export type {
+  AccountType as UserAccountType,
+  Jurisdiction,
+  UserRole,
+  User,
+  Organization
+} from './user'
+
 export * from './errors'
+
+// Export crypto accounting types explicitly to avoid CostBasisMethod conflict
+export type {
+  CostBasisMethod as CryptoCostBasisMethod,
+  AccountingStandard,
+  AssetClassification,
+  IFRSMeasurementModel,
+  ActiveMarketIndicators,
+  CryptoLot,
+  ImpairmentEvent,
+  CryptoTransaction,
+  CryptoHolding,
+  ComplianceSettings,
+  DisclosureReport,
+  GAAPIFRSReconciliation,
+  TaxLot,
+  EnhancedTransaction
+} from './cryptoAccounting'
 
 // =============================================================================
 // TYPE UTILITIES
