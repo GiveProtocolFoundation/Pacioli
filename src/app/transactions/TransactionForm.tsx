@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { Save, X, Calendar, DollarSign, FileText, Tag, Wallet as WalletIcon } from 'lucide-react'
+import { Save, X, Calendar, DollarSign, FileText, Tag, Wallet as WalletIcon, ArrowRight } from 'lucide-react'
 import { useTransactions } from '../../contexts/TransactionContext'
 import { useCurrency } from '../../contexts/CurrencyContext'
 import { useTokens } from '../../contexts/TokenContext'
@@ -8,6 +8,13 @@ import { TransactionFormData, TransactionType } from '../../types/transaction'
 import { Token, Chain } from '../../types/digitalAssets'
 import { getDigitalAssetTypeInfo } from '../../types/digitalAssets'
 import TokenSelector from '../../components/common/TokenSelector'
+import {
+  TransactionCategory,
+  getAllCategories,
+  getAllSubcategories,
+  getTransactionTypesBySubcategory,
+  getTransactionTypeByCode
+} from '../../types/transaction-categories'
 
 const TransactionForm: React.FC = () => {
   const navigate = useNavigate()
@@ -55,11 +62,17 @@ const TransactionForm: React.FC = () => {
   const selectedToken = formData.tokenId ? getToken(formData.tokenId) : undefined
   const selectedChain = formData.chainId ? getChain(formData.chainId) : undefined
 
-  const categories = {
-    revenue: ['Donation', 'Grant', 'Investment Income', 'Service Revenue', 'Other Revenue'],
-    expense: ['Marketing', 'Operations', 'Salaries', 'Events', 'Software', 'Program Expenses', 'Other Expense'],
-    transfer: ['Internal Transfer', 'Wallet Rebalancing', 'Security Transfer', 'Other Transfer'],
-  }
+  // Get available options based on selections
+  const availableCategories = getAllCategories()
+  const availableSubcategories = formData.transactionCategory
+    ? getAllSubcategories(formData.transactionCategory as TransactionCategory)
+    : []
+  const availableTransactionTypes = formData.transactionSubcategory
+    ? getTransactionTypesBySubcategory(formData.transactionSubcategory)
+    : []
+  const selectedTransactionType = formData.transactionTypeCode
+    ? getTransactionTypeByCode(formData.transactionTypeCode)
+    : undefined
 
   const handleInputChange = useCallback((field: keyof TransactionFormData, value: string | number) => {
     setFormData(prev => ({ ...prev, [field]: value }))
@@ -95,7 +108,6 @@ const TransactionForm: React.FC = () => {
 
     if (!formData.date) newErrors.date = 'Date is required'
     if (!formData.description.trim()) newErrors.description = 'Description is required'
-    if (!formData.category) newErrors.category = 'Category is required'
     if (!formData.wallet) newErrors.wallet = 'Wallet is required'
     if (!formData.tokenId) newErrors.tokenId = 'Token is required'
     if (formData.amount <= 0) newErrors.amount = 'Amount must be greater than 0'
@@ -182,20 +194,30 @@ const TransactionForm: React.FC = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Transaction Type
+                  <div className="flex items-center">
+                    <WalletIcon className="w-4 h-4 mr-2" />
+                    Wallet
+                  </div>
                 </label>
                 <select
-                  value={formData.type}
-                  onChange={e => {
-                    handleInputChange('type', e.target.value as TransactionType)
-                    handleInputChange('category', '')
-                  }}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={formData.wallet}
+                  onChange={e => handleInputChange('wallet', e.target.value)}
+                  className={`w-full px-4 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white ${
+                    errors.wallet
+                      ? 'border-red-500'
+                      : 'border-gray-300 dark:border-gray-600'
+                  } focus:outline-none focus:ring-2 focus:ring-blue-500`}
                 >
-                  <option value="revenue">Revenue</option>
-                  <option value="expense">Expense</option>
-                  <option value="transfer">Transfer</option>
+                  <option value="">Select wallet</option>
+                  {availableWallets.map(wallet => (
+                    <option key={wallet} value={wallet}>
+                      {wallet}
+                    </option>
+                  ))}
                 </select>
+                {errors.wallet && (
+                  <p className="mt-1 text-sm text-red-600">{errors.wallet}</p>
+                )}
               </div>
             </div>
 
@@ -222,62 +244,93 @@ const TransactionForm: React.FC = () => {
               )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  <div className="flex items-center">
-                    <Tag className="w-4 h-4 mr-2" />
+            {/* Comprehensive Transaction Type System */}
+            <div className="space-y-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+              <h3 className="text-sm font-semibold text-blue-900 dark:text-blue-300 flex items-center">
+                <Tag className="w-4 h-4 mr-2" />
+                Transaction Classification
+              </h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Category
-                  </div>
-                </label>
-                <select
-                  value={formData.category}
-                  onChange={e => handleInputChange('category', e.target.value)}
-                  className={`w-full px-4 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white ${
-                    errors.category
-                      ? 'border-red-500'
-                      : 'border-gray-300 dark:border-gray-600'
-                  } focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                >
-                  <option value="">Select category</option>
-                  {categories[formData.type].map(cat => (
-                    <option key={cat} value={cat}>
-                      {cat}
-                    </option>
-                  ))}
-                </select>
-                {errors.category && (
-                  <p className="mt-1 text-sm text-red-600">{errors.category}</p>
-                )}
+                  </label>
+                  <select
+                    value={formData.transactionCategory || ''}
+                    onChange={e => {
+                      handleInputChange('transactionCategory', e.target.value)
+                      handleInputChange('transactionSubcategory', '')
+                      handleInputChange('transactionTypeCode', '')
+                    }}
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Select category</option>
+                    {availableCategories.map(cat => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Subcategory
+                  </label>
+                  <select
+                    value={formData.transactionSubcategory || ''}
+                    onChange={e => {
+                      handleInputChange('transactionSubcategory', e.target.value)
+                      handleInputChange('transactionTypeCode', '')
+                    }}
+                    disabled={!formData.transactionCategory}
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <option value="">Select subcategory</option>
+                    {availableSubcategories.map(subcat => (
+                      <option key={subcat} value={subcat}>
+                        {subcat}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Transaction Type
+                  </label>
+                  <select
+                    value={formData.transactionTypeCode || ''}
+                    onChange={e => handleInputChange('transactionTypeCode', e.target.value)}
+                    disabled={!formData.transactionSubcategory}
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <option value="">Select transaction type</option>
+                    {availableTransactionTypes.map(txnType => (
+                      <option key={txnType.code} value={txnType.code}>
+                        {txnType.transactionType}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  <div className="flex items-center">
-                    <WalletIcon className="w-4 h-4 mr-2" />
-                    Wallet
+              {selectedTransactionType && (
+                <div className="mt-4 p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                  <h4 className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">Suggested Accounts</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                    <div>
+                      <span className="font-medium text-green-700 dark:text-green-400">Debit:</span>
+                      <p className="text-gray-900 dark:text-gray-100 mt-1">{selectedTransactionType.debitAccounts}</p>
+                    </div>
+                    <div>
+                      <span className="font-medium text-red-700 dark:text-red-400">Credit:</span>
+                      <p className="text-gray-900 dark:text-gray-100 mt-1">{selectedTransactionType.creditAccounts}</p>
+                    </div>
                   </div>
-                </label>
-                <select
-                  value={formData.wallet}
-                  onChange={e => handleInputChange('wallet', e.target.value)}
-                  className={`w-full px-4 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white ${
-                    errors.wallet
-                      ? 'border-red-500'
-                      : 'border-gray-300 dark:border-gray-600'
-                  } focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                >
-                  <option value="">Select wallet</option>
-                  {availableWallets.map(wallet => (
-                    <option key={wallet} value={wallet}>
-                      {wallet}
-                    </option>
-                  ))}
-                </select>
-                {errors.wallet && (
-                  <p className="mt-1 text-sm text-red-600">{errors.wallet}</p>
-                )}
-              </div>
+                </div>
+              )}
             </div>
 
             <div>

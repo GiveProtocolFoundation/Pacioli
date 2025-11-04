@@ -27,6 +27,11 @@ export interface TransactionFormData {
   accountName?: string
   digitalAssetType?: string
 
+  // Comprehensive transaction type system
+  transactionCategory?: string
+  transactionSubcategory?: string
+  transactionTypeCode?: string
+
   // Additional information
   memo?: string
   attachments?: File[]
