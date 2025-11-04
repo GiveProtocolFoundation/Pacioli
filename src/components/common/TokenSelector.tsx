@@ -20,7 +20,7 @@ const TokenSelector: React.FC<TokenSelectorProps> = ({
   required = false,
   error,
 }) => {
-  const { tokens, chains, getToken, getChain, searchTokens } = useTokens()
+  const { tokens, getToken, getChain, searchTokens } = useTokens()
   const [isOpen, setIsOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
 

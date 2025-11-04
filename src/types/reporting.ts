@@ -212,7 +212,7 @@ export interface VolatilityMetrics {
   portfolioVolatility: number
   beta?: number
   sharpeRatio?: number
-  sortino Ratio?: number
+  sortinoRatio?: number
   maxDrawdown?: number
 }
 

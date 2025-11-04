@@ -15,12 +15,9 @@ import {
   VTokenBalance,
   VAccountBalance,
   VTokenHolding,
-  VBalanceSheetItem,
-  VIncomeStatementItem,
   VGainsLossesSummary,
   VOpenTaxLot,
   VGeneralLedgerEntry,
-  VTrialBalanceEntry,
   VTaxSummary,
   FilterOptions,
   SortOptions,
@@ -39,7 +36,6 @@ import {
   EnrichedAccountingTransaction,
   EnrichedJournalEntry,
   PortfolioSummary,
-  TaxYearSummary,
   ReconciliationReport
 } from './accounting'
 
@@ -77,6 +73,7 @@ export interface TauriError {
 // GENERAL LEDGER COMMANDS
 // =============================================================================
 
+/* eslint-disable @typescript-eslint/no-namespace */
 export namespace GLAccountCommands {
   export type GetAll = () => Promise<TauriResponse<GLAccount[]>>
   export type GetById = (id: number) => Promise<TauriResponse<GLAccount>>
@@ -337,7 +334,7 @@ export type CommandName =
   | 'run_migrations'
   | 'backup_database'
 
-export interface CommandInvocation<T = any> {
+export interface CommandInvocation {
   cmd: CommandName
   payload?: Record<string, unknown>
 }

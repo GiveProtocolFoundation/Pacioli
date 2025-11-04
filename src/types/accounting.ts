@@ -16,7 +16,6 @@ import {
   JournalEntryLine,
   TransactionLot,
   LotDisposal,
-  RealizedGainLoss,
   Decimal
 } from './database'
 

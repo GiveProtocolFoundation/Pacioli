@@ -20,7 +20,6 @@ import {
 } from './transaction'
 
 import {
-  AccountType as ChartAccountType,
   AccountTypeValue
 } from './chartOfAccounts'
 

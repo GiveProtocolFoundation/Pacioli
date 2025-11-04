@@ -8,7 +8,6 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   ArrowLeftRight,
-  Eye,
   Receipt,
   Edit2,
   Plus,
