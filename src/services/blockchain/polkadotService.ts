@@ -6,7 +6,8 @@
 
 import { ApiPromise, WsProvider } from '@polkadot/api'
 import { formatBalance } from '@polkadot/util'
-import type { Header } from '@polkadot/types/interfaces'
+import type { Header, AccountInfo, EventRecord } from '@polkadot/types/interfaces'
+import type { Codec } from '@polkadot/types/types'
 import type { NetworkConfig, SubstrateTransaction, NetworkType } from '../wallet/types'
 import { ChainType } from '../wallet/types'
 import { subscanService } from './subscanService'
@@ -584,7 +585,7 @@ class PolkadotService {
    * OPTIMIZED: Extracts fees and staking rewards
    */
   private async fetchBlockTransactions(
-    api: any,
+    api: ApiPromise,
     blockNum: number,
     address: string,
     network: NetworkType
@@ -606,20 +607,27 @@ class PolkadotService {
         console.log(`Scanning block #${blockNum}, found ${signedBlock.block.extrinsics.length} extrinsics`)
       }
 
+      // Define event type for mapped events
+      type MappedEvent = {
+        method: string
+        section: string
+        data: Record<string, unknown>
+      }
+
       // Process each extrinsic
-      signedBlock.block.extrinsics.forEach((extrinsic: any, index: number) => {
+      signedBlock.block.extrinsics.forEach((extrinsic, index: number) => {
         const {
           method: { method, section },
           signer,
         } = extrinsic
 
         // Get events for this extrinsic
-        const events = allRecords
-          .filter((record: any) => record.phase.isApplyExtrinsic && record.phase.asApplyExtrinsic.eq(index))
-          .map((record: any) => ({
+        const events: MappedEvent[] = allRecords
+          .filter((record: EventRecord) => record.phase.isApplyExtrinsic && record.phase.asApplyExtrinsic.eq(index))
+          .map((record: EventRecord) => ({
             method: record.event.method,
             section: record.event.section,
-            data: record.event.data.toJSON(),
+            data: record.event.data.toJSON() as Record<string, unknown>,
           }))
 
         // Check if this transaction involves our address
@@ -628,7 +636,7 @@ class PolkadotService {
         let isRelevant = signerAddress === address
 
         // Also check transfer events and staking rewards
-        events.forEach((event: any) => {
+        events.forEach((event) => {
           if (event.section === 'balances' && event.method === 'Transfer') {
             const data = event.data as { from: string; to: string; amount: string }
             if (data.from === address || data.to === address) {
@@ -646,21 +654,21 @@ class PolkadotService {
 
         if (isRelevant) {
           // Find success/failure event
-          const isSuccess = events.some((e: any) => e.section === 'system' && e.method === 'ExtrinsicSuccess')
+          const isSuccess = events.some((e) => e.section === 'system' && e.method === 'ExtrinsicSuccess')
 
           // Extract transfer details
-          const transferEvent = events.find((e: any) => e.section === 'balances' && e.method === 'Transfer')
+          const transferEvent = events.find((e) => e.section === 'balances' && e.method === 'Transfer')
           const transferData = transferEvent?.data as { from?: string; to?: string; amount?: string }
 
           // OPTIMIZATION: Extract transaction fee
           const feeEvent = events.find(
-            (e: any) => e.section === 'transactionPayment' && e.method === 'TransactionFeePaid'
+            (e) => e.section === 'transactionPayment' && e.method === 'TransactionFeePaid'
           )
           const feeData = feeEvent?.data as { who?: string; actualFee?: string; tip?: string }
           const fee = feeData?.actualFee || '0'
 
           // OPTIMIZATION: Extract staking reward
-          const rewardEvent = events.find((e: any) => e.section === 'staking' && e.method === 'Rewarded')
+          const rewardEvent = events.find((e) => e.section === 'staking' && e.method === 'Rewarded')
           const rewardData = rewardEvent?.data as { stash?: string; amount?: string }
           const rewardAmount = rewardData?.amount
 
@@ -753,8 +761,7 @@ class PolkadotService {
       throw new Error(`Not connected to ${network}`)
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const unsubscribe = (await api.query.system.account(address, (account: any) => {
+    const unsubscribe = (await api.query.system.account(address, (account: AccountInfo) => {
       callback(account.data.free.toString())
     })) as unknown as () => void
 

@@ -229,12 +229,42 @@ export namespace ReconciliationCommands {
 // PORTFOLIO COMMANDS
 // =============================================================================
 
+// Analytics data types
+export interface PortfolioValuePoint {
+  date: string
+  value: number
+}
+
+export interface TransactionVolumePoint {
+  date: string
+  volume: number
+  count: number
+}
+
+export interface GainsLossesChartData {
+  date: string
+  realized_gains: number
+  unrealized_gains: number
+}
+
+export interface AllocationChartData {
+  label: string
+  value: number
+  percentage: number
+}
+
+export interface PerformanceData {
+  total_return: number
+  total_return_percent: number
+  time_weighted_return: number
+}
+
 export namespace PortfolioCommands {
   export type GetSummary = () => Promise<TauriResponse<PortfolioSummary>>
   export type GetHoldings = () => Promise<TauriResponse<VTokenHolding[]>>
   export type GetTokenBalances = (accountId?: number) => Promise<TauriResponse<VTokenBalance[]>>
-  export type GetPerformance = (dateRange: DateRange) => Promise<TauriResponse<any>>
-  export type GetAllocation = () => Promise<TauriResponse<any>>
+  export type GetPerformance = (dateRange: DateRange) => Promise<TauriResponse<PerformanceData>>
+  export type GetAllocation = () => Promise<TauriResponse<AllocationChartData[]>>
 }
 
 // =============================================================================
@@ -242,10 +272,10 @@ export namespace PortfolioCommands {
 // =============================================================================
 
 export namespace AnalyticsCommands {
-  export type GetPortfolioValueHistory = (dateRange: DateRange) => Promise<TauriResponse<any>>
-  export type GetTransactionVolume = (dateRange: DateRange) => Promise<TauriResponse<any>>
-  export type GetGainsLossesChart = (dateRange: DateRange) => Promise<TauriResponse<any>>
-  export type GetAllocationChart = (groupBy: 'asset_type' | 'chain' | 'account') => Promise<TauriResponse<any>>
+  export type GetPortfolioValueHistory = (dateRange: DateRange) => Promise<TauriResponse<PortfolioValuePoint[]>>
+  export type GetTransactionVolume = (dateRange: DateRange) => Promise<TauriResponse<TransactionVolumePoint[]>>
+  export type GetGainsLossesChart = (dateRange: DateRange) => Promise<TauriResponse<GainsLossesChartData[]>>
+  export type GetAllocationChart = (groupBy: 'asset_type' | 'chain' | 'account') => Promise<TauriResponse<AllocationChartData[]>>
 }
 
 // =============================================================================
