@@ -480,7 +480,7 @@ class SubscanService {
       const data = JSON.parse(responseText)
       console.log('Subscan API Response:', data)
       return data
-    } catch (error) {
+    } catch (_error) {
       console.error('Failed to parse Subscan response:', responseText)
       throw new Error(`Invalid JSON response from Subscan: ${responseText.slice(0, 200)}`)
     }
