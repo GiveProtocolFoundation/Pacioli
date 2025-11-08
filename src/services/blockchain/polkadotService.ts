@@ -754,9 +754,9 @@ class PolkadotService {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const unsubscribe = await api.query.system.account(address, (account: any) => {
+    const unsubscribe = (await api.query.system.account(address, (account: any) => {
       callback(account.data.free.toString())
-    })
+    })) as unknown as () => void
 
     return unsubscribe
   }
