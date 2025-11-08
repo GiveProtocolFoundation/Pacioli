@@ -169,6 +169,14 @@ const WalletManager: React.FC = () => {
     // Note: Transactions will be auto-loaded by the useEffect above
   }, [])
 
+  const handleAddressChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    handleAddressSelect(e.target.value)
+  }, [handleAddressSelect])
+
+  const handleNetworkChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedNetwork(e.target.value as NetworkType)
+  }, [])
+
   // Sync transactions from blockchain
   const syncTransactions = useCallback(async () => {
     console.log('=== SYNC BUTTON CLICKED ===')
@@ -385,7 +393,7 @@ const WalletManager: React.FC = () => {
                   </label>
                   <select
                     value={selectedNetwork}
-                    onChange={(e) => setSelectedNetwork(e.target.value as NetworkType)}
+                    onChange={handleNetworkChange}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#7c3626] dark:focus:ring-[#a04830] focus:border-transparent"
                   >
                     <option value={NetworkType.POLKADOT}>Polkadot</option>
@@ -404,7 +412,7 @@ const WalletManager: React.FC = () => {
                   </label>
                   <select
                     value={selectedAddress}
-                    onChange={(e) => handleAddressSelect(e.target.value)}
+                    onChange={handleAddressChange}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#7c3626] dark:focus:ring-[#a04830] focus:border-transparent"
                   >
                     <option value="">Select an address...</option>

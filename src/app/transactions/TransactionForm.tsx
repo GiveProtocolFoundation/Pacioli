@@ -103,6 +103,28 @@ const TransactionForm: React.FC = () => {
     handleInputChange('fiatValue', estimatedFiatValue)
   }, [handleInputChange])
 
+  // Field-specific handlers to avoid inline arrow functions
+  const handleAccountNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    handleInputChange('accountName', e.target.value)
+  }, [handleInputChange])
+
+  const handleAccountCodeChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    handleInputChange('accountCode', e.target.value)
+  }, [handleInputChange])
+
+  const handleFiatValueChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    handleInputChange('fiatValue', parseFloat(e.target.value) || 0)
+  }, [handleInputChange])
+
+  const handleTransactionTypeCodeChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    handleInputChange('transactionTypeCode', e.target.value)
+  }, [handleInputChange])
+
+  const handleTransactionSubcategoryChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    handleInputChange('transactionSubcategory', e.target.value)
+    handleInputChange('transactionTypeCode', '')
+  }, [handleInputChange])
+
   const validateForm = useCallback((): boolean => {
     const newErrors: Partial<Record<keyof TransactionFormData, string>> = {}
 
@@ -280,10 +302,7 @@ const TransactionForm: React.FC = () => {
                   </label>
                   <select
                     value={formData.transactionSubcategory || ''}
-                    onChange={e => {
-                      handleInputChange('transactionSubcategory', e.target.value)
-                      handleInputChange('transactionTypeCode', '')
-                    }}
+                    onChange={handleTransactionSubcategoryChange}
                     disabled={!formData.transactionCategory}
                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
@@ -302,7 +321,7 @@ const TransactionForm: React.FC = () => {
                   </label>
                   <select
                     value={formData.transactionTypeCode || ''}
-                    onChange={e => handleInputChange('transactionTypeCode', e.target.value)}
+                    onChange={handleTransactionTypeCodeChange}
                     disabled={!formData.transactionSubcategory}
                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
@@ -390,7 +409,7 @@ const TransactionForm: React.FC = () => {
                   type="number"
                   step="0.01"
                   value={formData.fiatValue}
-                  onChange={e => handleInputChange('fiatValue', parseFloat(e.target.value) || 0)}
+                  onChange={handleFiatValueChange}
                   placeholder="0.00"
                   className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
@@ -418,7 +437,7 @@ const TransactionForm: React.FC = () => {
                 <input
                   type="text"
                   value={formData.accountCode}
-                  onChange={e => handleInputChange('accountCode', e.target.value)}
+                  onChange={handleAccountCodeChange}
                   placeholder="e.g., 1000"
                   className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
@@ -431,7 +450,7 @@ const TransactionForm: React.FC = () => {
                 <input
                   type="text"
                   value={formData.accountName}
-                  onChange={e => handleInputChange('accountName', e.target.value)}
+                  onChange={handleAccountNameChange}
                   placeholder="e.g., Cash"
                   className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />

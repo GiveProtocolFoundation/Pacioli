@@ -38,6 +38,65 @@ export const TransactionList: React.FC<TransactionListProps> = ({
     return [...transactions].sort((a, b) => b.blockNumber - a.blockNumber)
   }, [transactions])
 
+  // Helper: Get network decimals
+  const getNetworkDecimals = (network: string): number => {
+    const networkDecimals: Record<string, number> = {
+      polkadot: 10,
+      kusama: 12,
+      moonbeam: 18,
+      moonriver: 18,
+      astar: 18,
+      acala: 12,
+    }
+    return networkDecimals[network] || 10
+  }
+
+  // Get token symbol based on network
+  const getTokenSymbol = (tx: Transaction): string => {
+    const substrateTx = tx as SubstrateTransaction
+
+    // Map network to token symbol
+    const networkTokens: Record<string, string> = {
+      polkadot: 'DOT',
+      kusama: 'KSM',
+      moonbeam: 'GLMR',
+      moonriver: 'MOVR',
+      astar: 'ASTR',
+      acala: 'ACA',
+    }
+
+    return networkTokens[substrateTx.network] || 'Token'
+  }
+
+  // Format amount with proper decimals and token symbol
+  const formatAmount = (tx: Transaction): string => {
+    if (tx.value === '0') return '—'
+
+    const substrateTx = tx as SubstrateTransaction
+
+    // Get decimals for each network
+    const networkDecimals: Record<string, number> = {
+      polkadot: 10,  // DOT has 10 decimals
+      kusama: 12,    // KSM has 12 decimals
+      moonbeam: 18,  // GLMR has 18 decimals (Ethereum-compatible)
+      moonriver: 18, // MOVR has 18 decimals
+      astar: 18,     // ASTR has 18 decimals
+      acala: 12,     // ACA has 12 decimals
+    }
+
+    const decimals = networkDecimals[substrateTx.network] || 10
+    const symbol = getTokenSymbol(tx)
+
+    // Format with correct decimals
+    const formatted = formatBalance(tx.value, {
+      decimals,
+      withUnit: false,
+      forceUnit: '-',
+    })
+
+    return `${formatted} ${symbol}`
+  }
+
   // Import wallet transactions to accounting ledger
   const importToLedger = async () => {
     setImporting(true)
@@ -86,19 +145,6 @@ export const TransactionList: React.FC<TransactionListProps> = ({
     } finally {
       setImporting(false)
     }
-  }
-
-  // Helper: Get network decimals
-  const getNetworkDecimals = (network: string): number => {
-    const networkDecimals: Record<string, number> = {
-      polkadot: 10,
-      kusama: 12,
-      moonbeam: 18,
-      moonriver: 18,
-      astar: 18,
-      acala: 12,
-    }
-    return networkDecimals[network] || 10
   }
 
   // Handle purge confirmation
@@ -216,52 +262,6 @@ export const TransactionList: React.FC<TransactionListProps> = ({
       hour: '2-digit',
       minute: '2-digit',
     })
-  }
-
-  // Get token symbol based on network
-  const getTokenSymbol = (tx: Transaction): string => {
-    const substrateTx = tx as SubstrateTransaction
-
-    // Map network to token symbol
-    const networkTokens: Record<string, string> = {
-      polkadot: 'DOT',
-      kusama: 'KSM',
-      moonbeam: 'GLMR',
-      moonriver: 'MOVR',
-      astar: 'ASTR',
-      acala: 'ACA',
-    }
-
-    return networkTokens[substrateTx.network] || 'Token'
-  }
-
-  // Format amount with proper decimals and token symbol
-  const formatAmount = (tx: Transaction): string => {
-    if (tx.value === '0') return '—'
-
-    const substrateTx = tx as SubstrateTransaction
-
-    // Get decimals for each network
-    const networkDecimals: Record<string, number> = {
-      polkadot: 10,  // DOT has 10 decimals
-      kusama: 12,    // KSM has 12 decimals
-      moonbeam: 18,  // GLMR has 18 decimals (Ethereum-compatible)
-      moonriver: 18, // MOVR has 18 decimals
-      astar: 18,     // ASTR has 18 decimals
-      acala: 12,     // ACA has 12 decimals
-    }
-
-    const decimals = networkDecimals[substrateTx.network] || 10
-    const symbol = getTokenSymbol(tx)
-
-    // Format with correct decimals
-    const formatted = formatBalance(tx.value, {
-      decimals,
-      withUnit: false,
-      forceUnit: '-',
-    })
-
-    return `${formatted} ${symbol}`
   }
 
   if (isLoading) {

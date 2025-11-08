@@ -59,6 +59,18 @@ const TokenSelector: React.FC<TokenSelectorProps> = ({
     setSearchQuery('')
   }, [])
 
+  const handleClose = useCallback(() => {
+    setIsOpen(false)
+  }, [])
+
+  const handleToggle = useCallback(() => {
+    setIsOpen(!isOpen)
+  }, [isOpen])
+
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value)
+  }, [])
+
   return (
     <div className="relative">
       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -68,7 +80,7 @@ const TokenSelector: React.FC<TokenSelectorProps> = ({
 
       <button
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={handleToggle}
         className={`w-full px-4 py-2 text-left border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white ${
           error
             ? 'border-red-500'
@@ -112,7 +124,7 @@ const TokenSelector: React.FC<TokenSelectorProps> = ({
               <input
                 type="text"
                 value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
+                onChange={handleSearchChange}
                 placeholder="Search tokens..."
                 className="w-full pl-9 pr-9 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 autoFocus
@@ -193,7 +205,7 @@ const TokenSelector: React.FC<TokenSelectorProps> = ({
       {isOpen && (
         <div
           className="fixed inset-0 z-40"
-          onClick={() => setIsOpen(false)}
+          onClick={handleClose}
         />
       )}
     </div>

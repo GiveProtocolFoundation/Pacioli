@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useCallback } from 'react'
 import {
   BookOpen,
   Rocket,
@@ -185,6 +185,10 @@ const Docs: React.FC = () => {
     )
   }
 
+  const handleSelectDoc = useCallback((docId: string) => {
+    setSelectedDoc(docId)
+  }, [])
+
   return (
     <div className="min-h-screen ledger-background">
       {/* Header */}
@@ -276,7 +280,7 @@ const Docs: React.FC = () => {
                                       return (
                                         <button
                                           key={subItem.id}
-                                          onClick={() => setSelectedDoc(subItem.id)}
+                                          onClick={() => handleSelectDoc(subItem.id)}
                                           className={`w-full px-3 py-1 text-xs rounded transition-colors text-left ${
                                             isSubSelected
                                               ? 'bg-[#7c3626]/10 dark:bg-[#a04830]/10 text-[#7c3626] dark:text-[#a04830] font-medium'
