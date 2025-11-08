@@ -44,6 +44,9 @@ export default defineConfig(async () => ({
             '@polkadot/extension-dapp',
             '@polkadot/extension-inject',
             '@polkadot/ui-keyring',
+            '@polkadot/types',
+            '@polkadot/util',
+            '@polkadot/util-crypto',
           ],
 
           // Blockchain - Ethereum and wallet providers
