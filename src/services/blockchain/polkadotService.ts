@@ -325,8 +325,8 @@ class PolkadotService {
     if (isEVMChain && address.startsWith('0x')) {
       throw new Error(
         `EVM transaction scanning for ${network} is not yet implemented. ` +
-        `Please use Polkadot or Kusama relay chains for now. ` +
-        `EVM support coming soon!`
+        'Please use Polkadot or Kusama relay chains for now. ' +
+        'EVM support coming soon!'
       )
     }
 
