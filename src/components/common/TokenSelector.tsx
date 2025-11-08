@@ -71,6 +71,12 @@ const TokenSelector: React.FC<TokenSelectorProps> = ({
     setSearchQuery(e.target.value)
   }, [])
 
+  const handleBackdropKeyDown = useCallback((e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'Escape' || e.key === 'Enter') {
+      setIsOpen(false)
+    }
+  }, [])
+
   return (
     <div className="relative">
       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -204,8 +210,12 @@ const TokenSelector: React.FC<TokenSelectorProps> = ({
 
       {isOpen && (
         <div
+          role="button"
+          tabIndex={0}
           className="fixed inset-0 z-40"
           onClick={handleClose}
+          onKeyDown={handleBackdropKeyDown}
+          aria-label="Close token selector"
         />
       )}
     </div>

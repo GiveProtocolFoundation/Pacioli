@@ -185,8 +185,11 @@ const Docs: React.FC = () => {
     )
   }
 
-  const handleSelectDoc = useCallback((docId: string) => {
-    setSelectedDoc(docId)
+  const handleSelectDoc = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
+    const docId = e.currentTarget.getAttribute('data-doc-id')
+    if (docId) {
+      setSelectedDoc(docId)
+    }
   }, [])
 
   return (
@@ -280,7 +283,8 @@ const Docs: React.FC = () => {
                                       return (
                                         <button
                                           key={subItem.id}
-                                          onClick={() => handleSelectDoc(subItem.id)}
+                                          data-doc-id={subItem.id}
+                                          onClick={handleSelectDoc}
                                           className={`w-full px-3 py-1 text-xs rounded transition-colors text-left ${
                                             isSubSelected
                                               ? 'bg-[#7c3626]/10 dark:bg-[#a04830]/10 text-[#7c3626] dark:text-[#a04830] font-medium'

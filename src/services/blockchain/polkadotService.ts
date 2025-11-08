@@ -6,8 +6,8 @@
 
 import { ApiPromise, WsProvider } from '@polkadot/api'
 import { formatBalance } from '@polkadot/util'
-import type { Header, AccountInfo, EventRecord } from '@polkadot/types/interfaces'
-import type { Codec } from '@polkadot/types/types'
+import type { Header, AccountInfo, EventRecord, Moment } from '@polkadot/types/interfaces'
+import type { Vec } from '@polkadot/types'
 import type { NetworkConfig, SubstrateTransaction, NetworkType } from '../wallet/types'
 import { ChainType } from '../wallet/types'
 import { subscanService } from './subscanService'
@@ -596,10 +596,10 @@ class PolkadotService {
       const blockHash = await api.rpc.chain.getBlockHash(blockNum)
       const signedBlock = await api.rpc.chain.getBlock(blockHash)
       const apiAt = await api.at(blockHash)
-      const allRecords = await apiAt.query.system.events()
+      const allRecords = (await apiAt.query.system.events()) as Vec<EventRecord>
 
       // Get block timestamp
-      const timestamp = await apiAt.query.timestamp.now()
+      const timestamp = (await apiAt.query.timestamp.now()) as Moment
       const blockTime = new Date(timestamp.toNumber())
 
       // Log first block to verify scanning is working
