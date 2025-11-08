@@ -111,9 +111,9 @@ export const useNetworkConfig = () => {
     }
 
     try {
-      const accounts = await window.ethereum.request({
+      const accounts = (await window.ethereum.request({
         method: 'eth_requestAccounts',
-      })
+      })) as string[]
 
       if (accounts.length > 0) {
         setIsConnected(true)

@@ -312,8 +312,6 @@ const WalletManager: React.FC = () => {
     console.log('🗑️ [Purge] Starting purge of wallet transactions...')
 
     try {
-      const networkAddress = convertToNetworkFormat(selectedAddress, selectedNetwork)
-
       // Clear transactions from IndexedDB for this address/network
       // Note: We can't selectively delete by address from IndexedDB easily,
       // so we'll clear all transactions and let user re-sync if needed

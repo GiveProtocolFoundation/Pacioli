@@ -6,8 +6,9 @@
 
 import { ApiPromise, WsProvider } from '@polkadot/api'
 import { formatBalance } from '@polkadot/util'
-import type { SignedBlock, Header } from '@polkadot/types/interfaces'
+import type { Header } from '@polkadot/types/interfaces'
 import type { NetworkConfig, SubstrateTransaction, NetworkType } from '../wallet/types'
+import { ChainType } from '../wallet/types'
 import { subscanService } from './subscanService'
 
 export interface BlockchainConnection {
@@ -140,7 +141,7 @@ class PolkadotService {
         const networkConfig: NetworkConfig = {
           name: chain.toString(),
           type: network,
-          chainType: 'substrate',
+          chainType: ChainType.SUBSTRATE,
           rpcEndpoint: endpoint,
           wsEndpoint: endpoint,
           ss58Format,
@@ -352,7 +353,7 @@ class PolkadotService {
 
           const subscanTxs = await subscanService.fetchAllTransactions(network, address, {
             limit: Math.min(limit, 100), // Subscan API max is 100 rows
-            onProgress: (stage, current, total) => {
+            onProgress: (stage, current, _total) => {
               onProgress?.({
                 stage: 'fetching',
                 currentBlock: 0,
@@ -716,7 +717,8 @@ class PolkadotService {
     }
 
     const account = await api.query.system.account(address)
-    return account.data.free.toString()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (account as any).data.free.toString()
   }
 
   /**
@@ -751,7 +753,8 @@ class PolkadotService {
       throw new Error(`Not connected to ${network}`)
     }
 
-    const unsubscribe = await api.query.system.account(address, (account) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const unsubscribe = await api.query.system.account(address, (account: any) => {
       callback(account.data.free.toString())
     })
 

@@ -698,7 +698,7 @@ class SubscanService {
    */
   private classifyExtrinsicType(
     module: string,
-    method: string
+    _method: string
   ): SubstrateTransaction['type'] {
     if (module === 'balances') return 'transfer'
     if (module === 'staking') return 'staking'
