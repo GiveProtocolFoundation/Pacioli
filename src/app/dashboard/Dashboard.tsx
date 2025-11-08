@@ -9,6 +9,12 @@ import {
   DollarSign,
   PieChart,
   BarChart3,
+  Plus,
+  Download,
+  Heart,
+  Minus,
+  Upload,
+  FileText,
 } from 'lucide-react'
 import { useCurrency } from '../../contexts/CurrencyContext'
 import { useTheme } from '../../contexts/ThemeContext'
@@ -109,26 +115,26 @@ const Dashboard: React.FC = () => {
   const getTypeColor = (type: string) => {
     switch (type) {
       case 'donation':
-        return 'text-green-600 bg-green-50'
+        return 'text-[#2d7738] dark:text-[#3d9147] bg-[#2d7738]/10'
       case 'expense':
-        return 'text-red-600 bg-red-50'
+        return 'text-[#c14040] dark:text-[#d45050] bg-[#c14040]/10'
       case 'exchange':
-        return 'text-blue-600 bg-blue-50'
+        return 'text-[#7c3626] dark:text-[#a04830] bg-[#7c3626]/10'
       case 'transfer':
-        return 'text-purple-600 bg-purple-50'
+        return 'text-[#4a5f7a] dark:text-[#6b8099] bg-[#4a5f7a]/10'
       default:
         return 'text-gray-600 bg-gray-50'
     }
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-black">
+    <div className="min-h-screen ledger-background">
       {/* Header */}
       <header className="bg-white dark:bg-black border-b border-gray-200 dark:border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div className="max-w-7xl mx-auto px-10 py-10">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
+              <h1>
                 Dashboard
               </h1>
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
@@ -136,13 +142,15 @@ const Dashboard: React.FC = () => {
               </p>
             </div>
             <div className="flex items-center space-x-3">
-              <button className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
+              <button className="btn-secondary">
+                <Download className="btn-icon" />
                 Export Report
               </button>
               <button
                 onClick={() => navigate('/transactions/new')}
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"
+                className="btn-primary"
               >
+                <Plus className="btn-icon" />
                 New Transaction
               </button>
             </div>
@@ -151,17 +159,17 @@ const Dashboard: React.FC = () => {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-10 py-10">
         {/* Key Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {/* Total Portfolio Value */}
-          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+          <div className="ledger-card ledger-card-financial border border-gray-200 dark:border-gray-700 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                <p className="ledger-card-label font-medium text-gray-500 dark:text-gray-400">
                   Total Portfolio Value
                 </p>
-                <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-2">
+                <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2 tracking-tight tabular-nums">
                   {formatCurrency(
                     totalPortfolioValue,
                     currencySettings.primaryCurrency,
@@ -176,12 +184,12 @@ const Dashboard: React.FC = () => {
                 </p>
                 <div className="flex items-center mt-2">
                   {portfolioChange >= 0 ? (
-                    <TrendingUp className="w-4 h-4 text-green-600 mr-1" />
+                    <TrendingUp className="w-4 h-4 text-[#2d7738] dark:text-[#3d9147] mr-1" />
                   ) : (
-                    <TrendingDown className="w-4 h-4 text-red-600 mr-1" />
+                    <TrendingDown className="w-4 h-4 text-[#c14040] dark:text-[#d45050] mr-1" />
                   )}
                   <span
-                    className={`text-sm font-medium ${portfolioChange >= 0 ? 'text-green-600' : 'text-red-600'}`}
+                    className={`text-sm font-medium ${portfolioChange >= 0 ? 'text-[#2d7738] dark:text-[#3d9147]' : 'text-[#c14040] dark:text-[#d45050]'}`}
                   >
                     {portfolioChange >= 0 ? '+' : ''}
                     {portfolioChange}%
@@ -189,20 +197,20 @@ const Dashboard: React.FC = () => {
                   <span className="text-sm text-gray-500 ml-1">24h</span>
                 </div>
               </div>
-              <div className="p-3 bg-blue-50 rounded-lg">
-                <Wallet className="w-6 h-6 text-blue-600" />
+              <div className="p-3 bg-[#7c3626]/10 dark:bg-[#a04830]/10 rounded-lg">
+                <Wallet className="w-6 h-6 text-[#7c3626] dark:text-[#a04830]" />
               </div>
             </div>
           </div>
 
           {/* Total Donations */}
-          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+          <div className="ledger-card ledger-card-donation border border-gray-200 dark:border-gray-700 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                <p className="ledger-card-label font-medium text-gray-500 dark:text-gray-400">
                   Total Donations (YTD)
                 </p>
-                <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-2">
+                <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2 tracking-tight tabular-nums">
                   {formatCurrency(425600, currencySettings.primaryCurrency, {
                     decimalPlaces: currencySettings.decimalPlaces,
                     useThousandsSeparator:
@@ -212,8 +220,8 @@ const Dashboard: React.FC = () => {
                   })}
                 </p>
                 <div className="flex items-center mt-2">
-                  <ArrowUpRight className="w-4 h-4 text-green-600 mr-1" />
-                  <span className="text-sm font-medium text-green-600">
+                  <ArrowUpRight className="w-4 h-4 text-[#2d7738] dark:text-[#3d9147] mr-1" />
+                  <span className="text-sm font-medium text-[#2d7738] dark:text-[#3d9147]">
                     +12.5%
                   </span>
                   <span className="text-sm text-gray-500 ml-1">
@@ -221,20 +229,20 @@ const Dashboard: React.FC = () => {
                   </span>
                 </div>
               </div>
-              <div className="p-3 bg-green-50 rounded-lg">
-                <DollarSign className="w-6 h-6 text-green-600" />
+              <div className="p-3 bg-[#2d7738]/10 dark:bg-[#3d9147]/10 rounded-lg">
+                <DollarSign className="w-6 h-6 text-[#2d7738] dark:text-[#3d9147]" />
               </div>
             </div>
           </div>
 
           {/* Program Expenses */}
-          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+          <div className="ledger-card ledger-card-expense border border-gray-200 dark:border-gray-700 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                <p className="ledger-card-label font-medium text-gray-500 dark:text-gray-400">
                   Program Expenses (YTD)
                 </p>
-                <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-2">
+                <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2 tracking-tight tabular-nums">
                   {formatCurrency(312450, currencySettings.primaryCurrency, {
                     decimalPlaces: currencySettings.decimalPlaces,
                     useThousandsSeparator:
@@ -244,7 +252,7 @@ const Dashboard: React.FC = () => {
                   })}
                 </p>
                 <div className="flex items-center mt-2">
-                  <ArrowDownRight className="w-4 h-4 text-red-600 mr-1" />
+                  <ArrowDownRight className="w-4 h-4 text-[#c14040] dark:text-[#d45050] mr-1" />
                   <span className="text-sm font-medium text-gray-600">
                     73.4%
                   </span>
@@ -253,20 +261,20 @@ const Dashboard: React.FC = () => {
                   </span>
                 </div>
               </div>
-              <div className="p-3 bg-red-50 rounded-lg">
-                <PieChart className="w-6 h-6 text-red-600" />
+              <div className="p-3 bg-[#c14040]/10 dark:bg-[#d45050]/10 rounded-lg">
+                <PieChart className="w-6 h-6 text-[#c14040] dark:text-[#d45050]" />
               </div>
             </div>
           </div>
 
           {/* Active Wallets */}
-          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+          <div className="ledger-card ledger-card-wallet border border-gray-200 dark:border-gray-700 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                <p className="ledger-card-label font-medium text-gray-500 dark:text-gray-400">
                   Active Wallets
                 </p>
-                <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-2">
+                <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2 tracking-tight">
                   8
                 </p>
                 <div className="flex items-center mt-2">
@@ -275,8 +283,8 @@ const Dashboard: React.FC = () => {
                   </span>
                 </div>
               </div>
-              <div className="p-3 bg-purple-50 rounded-lg">
-                <BarChart3 className="w-6 h-6 text-purple-600" />
+              <div className="p-3 bg-[#4a5f7a]/10 dark:bg-[#6b8099]/10 rounded-lg">
+                <BarChart3 className="w-6 h-6 text-[#4a5f7a] dark:text-[#6b8099]" />
               </div>
             </div>
           </div>
@@ -286,14 +294,14 @@ const Dashboard: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Account Balances - Takes up 2/3 on large screens */}
           <div className="lg:col-span-2">
-            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+            <div className="ledger-card ledger-card-financial border border-gray-200 dark:border-gray-700">
               <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                <h2>
                   Account Balances
                 </h2>
               </div>
-              <div className="p-6">
-                <div className="space-y-4">
+              <div className="px-6">
+                <div>
                   {accountBalances.map(account => {
                     const logoPath = getCryptoLogoPath(account.crypto, theme)
                     const brandColor = getCryptoBrandColor(account.crypto)
@@ -301,11 +309,11 @@ const Dashboard: React.FC = () => {
                     return (
                       <div
                         key={account.crypto}
-                        className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg"
+                        className="balance-list-item"
                       >
-                        <div className="flex items-center space-x-4">
+                        <div className="token-info">
                           <div
-                            className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden"
+                            className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0"
                             style={{
                               backgroundColor: logoPath
                                 ? 'transparent'
@@ -331,13 +339,13 @@ const Dashboard: React.FC = () => {
                             <p className="font-medium text-gray-900 dark:text-white">
                               {account.crypto}
                             </p>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                              {account.amount.toLocaleString()} {account.crypto}
+                            <p className="text-sm text-gray-500 dark:text-gray-400 tabular-nums">
+                              {account.amount.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} {account.crypto}
                             </p>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <p className="font-semibold text-gray-900 dark:text-white">
+                        <div className="token-values">
+                          <p className="font-semibold text-gray-900 dark:text-white tabular-nums">
                             {formatCurrency(
                               account.usdValue,
                               currencySettings.primaryCurrency,
@@ -350,15 +358,13 @@ const Dashboard: React.FC = () => {
                               }
                             )}
                           </p>
-                          <div className="flex items-center justify-end mt-1">
+                          <div className={`percentage-change ${account.change24h >= 0 ? 'text-[#2d7738] dark:text-[#3d9147]' : 'text-[#c14040] dark:text-[#d45050]'}`}>
                             {account.change24h >= 0 ? (
-                              <TrendingUp className="w-3 h-3 text-green-600 mr-1" />
+                              <TrendingUp className="w-3 h-3" />
                             ) : (
-                              <TrendingDown className="w-3 h-3 text-red-600 mr-1" />
+                              <TrendingDown className="w-3 h-3" />
                             )}
-                            <span
-                              className={`text-sm ${account.change24h >= 0 ? 'text-green-600' : 'text-red-600'}`}
-                            >
+                            <span>
                               {account.change24h >= 0 ? '+' : ''}
                               {account.change24h}%
                             </span>
@@ -372,71 +378,71 @@ const Dashboard: React.FC = () => {
             </div>
 
             {/* Recent Transactions */}
-            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 mt-8">
+            <div className="ledger-card ledger-card-wallet border border-gray-200 dark:border-gray-700 mt-8">
               <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                <h2>
                   Recent Transactions
                 </h2>
-                <button className="text-sm text-blue-600 hover:text-blue-700 font-medium">
+                <button className="text-sm text-[#7c3626] dark:text-[#a04830] hover:opacity-90 font-medium">
                   View All
                 </button>
               </div>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+              <div className="ledger-table-wrapper">
+                <table className="ledger-table">
+                  <thead className="ledger-table-header">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="ledger-table-cell-date">
                         Date
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="ledger-table-cell-text">
                         Description
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="ledger-table-cell-text">
                         Type
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="ledger-table-cell-number">
                         Amount
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="ledger-table-cell-number">
                         Value
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="ledger-table-cell-text">
                         Status
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+                  <tbody>
                     {recentTransactions.map(tx => (
                       <tr
                         key={tx.id}
-                        className="hover:bg-gray-50 dark:hover:bg-gray-800"
+                        className="ledger-table-row"
                       >
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                        <td className="ledger-table-cell-date whitespace-nowrap text-sm text-gray-900 dark:text-white">
                           {tx.date}
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
+                        <td className="ledger-table-cell-text text-sm text-gray-900 dark:text-white">
                           {tx.description}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="ledger-table-cell-text whitespace-nowrap">
                           <span
                             className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getTypeColor(tx.type)}`}
                           >
                             {tx.type.charAt(0).toUpperCase() + tx.type.slice(1)}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        <td className="ledger-table-cell-number whitespace-nowrap text-sm tabular-nums">
                           <span
                             className={
                               tx.amount >= 0
-                                ? 'text-green-600'
+                                ? 'text-[#2d7738] dark:text-[#3d9147]'
                                 : 'text-gray-900 dark:text-white'
                             }
                           >
                             {tx.amount >= 0 ? '+' : ''}
-                            {tx.amount} {tx.crypto}
+                            {tx.amount.toLocaleString()} {tx.crypto}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                        <td className="ledger-table-cell-number whitespace-nowrap text-sm text-gray-900 dark:text-white tabular-nums">
                           {formatCurrency(
                             Math.abs(tx.usdValue),
                             currencySettings.primaryCurrency,
@@ -449,7 +455,7 @@ const Dashboard: React.FC = () => {
                             }
                           )}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="ledger-table-cell-text whitespace-nowrap">
                           <span
                             className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                               tx.status === 'completed'
@@ -472,32 +478,36 @@ const Dashboard: React.FC = () => {
           {/* Quick Actions Sidebar - Takes up 1/3 on large screens */}
           <div className="space-y-6">
             {/* Quick Actions */}
-            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+            <div className="ledger-card ledger-card-wallet border border-gray-200 dark:border-gray-700">
               <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                <h2>
                   Quick Actions
                 </h2>
               </div>
               <div className="p-6 space-y-3">
-                <button className="w-full px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-left">
+                <button className="btn-quick-action">
+                  <Heart className="btn-icon" />
                   Record Donation
                 </button>
-                <button className="w-full px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-left">
+                <button className="btn-quick-action">
+                  <Minus className="btn-icon" />
                   Add Expense
                 </button>
-                <button className="w-full px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-left">
+                <button className="btn-quick-action">
+                  <Upload className="btn-icon" />
                   Import Transactions
                 </button>
-                <button className="w-full px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-left">
+                <button className="btn-quick-action">
+                  <FileText className="btn-icon" />
                   Generate Tax Report
                 </button>
               </div>
             </div>
 
             {/* Compliance Status */}
-            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+            <div className="ledger-card ledger-card-financial border border-gray-200 dark:border-gray-700">
               <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                <h2>
                   Compliance Status
                 </h2>
               </div>
@@ -530,9 +540,9 @@ const Dashboard: React.FC = () => {
             </div>
 
             {/* Alerts */}
-            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+            <div className="ledger-card ledger-card-expense border border-gray-200 dark:border-gray-700">
               <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                <h2>
                   Alerts
                 </h2>
               </div>
@@ -546,11 +556,11 @@ const Dashboard: React.FC = () => {
                       2 transactions need review
                     </p>
                   </div>
-                  <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                    <p className="text-sm font-medium text-blue-800">
+                  <div className="p-3 bg-[#7c3626]/10 dark:bg-[#a04830]/10 border border-[#7c3626]/20 dark:border-[#a04830]/20 rounded-lg">
+                    <p className="text-sm font-medium text-[#7c3626] dark:text-[#a04830]">
                       Price Alert
                     </p>
-                    <p className="text-xs text-blue-700 mt-1">
+                    <p className="text-xs text-[#8b7355] dark:text-[#a38a6f] mt-1">
                       BTC reached target price
                     </p>
                   </div>

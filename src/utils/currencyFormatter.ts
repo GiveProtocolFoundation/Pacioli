@@ -42,6 +42,7 @@ export function formatNumber(
   // Format integer part with thousands separator
   let formattedInteger = integerPart
   if (useThousandsSeparator && integerPart.length > 3) {
+    // Use comma for initial formatting, will be replaced based on standard
     formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
   }
 
@@ -66,19 +67,21 @@ export function formatNumber(
       break
 
     case 'point-space':
-      // 1 234.56 - space for thousands, point for decimal
+      // 1 234.56 - thin space for thousands, point for decimal
+      // Using U+2009 (thin space) for proper typography
       formattedNumber =
         decimalPlaces > 0
-          ? `${formattedInteger.replace(/,/g, ' ')}.${decimalPart}`
-          : formattedInteger.replace(/,/g, ' ')
+          ? `${formattedInteger.replace(/,/g, '\u2009')}.${decimalPart}`
+          : formattedInteger.replace(/,/g, '\u2009')
       break
 
     case 'comma-space':
-      // 1 234,56 - space for thousands, comma for decimal
+      // 1 234,56 - thin space for thousands, comma for decimal
+      // Using U+2009 (thin space) for proper typography
       formattedNumber =
         decimalPlaces > 0
-          ? `${formattedInteger.replace(/,/g, ' ')},${decimalPart}`
-          : formattedInteger.replace(/,/g, ' ')
+          ? `${formattedInteger.replace(/,/g, '\u2009')},${decimalPart}`
+          : formattedInteger.replace(/,/g, '\u2009')
       break
 
     default:
@@ -178,13 +181,13 @@ export function parseFormattedNumber(
       break
 
     case 'point-space':
-      // Remove spaces (thousands)
-      cleaned = cleaned.replace(/ /g, '')
+      // Remove spaces (thousands) - both regular and thin spaces
+      cleaned = cleaned.replace(/[ \u2009]/g, '')
       break
 
     case 'comma-space':
-      // Remove spaces (thousands), replace comma (decimal) with point
-      cleaned = cleaned.replace(/ /g, '').replace(',', '.')
+      // Remove spaces (thousands) - both regular and thin spaces, replace comma (decimal) with point
+      cleaned = cleaned.replace(/[ \u2009]/g, '').replace(',', '.')
       break
 
     default:

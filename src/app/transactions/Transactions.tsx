@@ -129,7 +129,7 @@ const Transactions: React.FC = () => {
   }, [navigate])
 
   return (
-    <div className="p-6 min-h-screen bg-gray-50 dark:bg-black">
+    <div className="p-6 min-h-screen ledger-background">
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
         <div>

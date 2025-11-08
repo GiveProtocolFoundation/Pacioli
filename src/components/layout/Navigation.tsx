@@ -162,7 +162,7 @@ const Navigation: React.FC<NavigationProps> = ({
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-black">
       {/* Sidebar for desktop */}
-      <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 bg-white dark:bg-black border-r border-gray-200 dark:border-gray-700">
+      <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 ledger-sidebar border-r border-gray-200 dark:border-gray-700">
         {/* Logo */}
         <div className="flex items-center h-16 px-3 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center px-3">
@@ -172,10 +172,10 @@ const Navigation: React.FC<NavigationProps> = ({
               className="h-12 w-auto mix-blend-multiply dark:mix-blend-normal"
             />
             <div className="ml-3 flex flex-col">
-              <span className="text-lg font-semibold text-gray-900 dark:text-white">
+              <span className="font-serif font-bold text-gray-900 dark:text-white" style={{ fontSize: '24px', letterSpacing: '0.5px', color: '#7c3626' }}>
                 Pacioli
               </span>
-              <span className="text-xs text-gray-500 dark:text-gray-400">
+              <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
                 Books & Ledgers
               </span>
             </div>
@@ -197,10 +197,10 @@ const Navigation: React.FC<NavigationProps> = ({
                   {item.subItems ? (
                     <button
                       onClick={createToggleExpandedHandler(item.name)}
-                      className={`w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                      className={`w-full flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-colors ${
                         isActive
-                          ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
-                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                          ? 'bg-[#7c3626]/10 dark:bg-[#a04830]/10 text-[#7c3626] dark:text-[#a04830] font-semibold'
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-medium'
                       }`}
                     >
                       <div className="flex items-center">
@@ -209,7 +209,7 @@ const Navigation: React.FC<NavigationProps> = ({
                       </div>
                       <div className="flex items-center space-x-2">
                         {item.badge && (
-                          <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-medium text-white bg-red-500 rounded-full">
+                          <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-medium text-white bg-[#c14040] dark:bg-[#d45050] rounded-full">
                             {item.badge}
                           </span>
                         )}
@@ -225,10 +225,10 @@ const Navigation: React.FC<NavigationProps> = ({
                   ) : (
                     <Link
                       to={item.href}
-                      className={`w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                      className={`w-full flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-colors ${
                         isActive
-                          ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
-                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                          ? 'bg-[#7c3626]/10 dark:bg-[#a04830]/10 text-[#7c3626] dark:text-[#a04830] font-semibold'
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-medium'
                       }`}
                     >
                       <div className="flex items-center">
@@ -236,7 +236,7 @@ const Navigation: React.FC<NavigationProps> = ({
                         <span>{item.name}</span>
                       </div>
                       {item.badge && (
-                        <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-medium text-white bg-red-500 rounded-full">
+                        <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-medium text-white bg-[#c14040] dark:bg-[#d45050] rounded-full">
                           {item.badge}
                         </span>
                       )}
@@ -255,8 +255,8 @@ const Navigation: React.FC<NavigationProps> = ({
                               to={subItem.href}
                               className={`block w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${
                                 isSubActive
-                                  ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30'
-                                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
+                                  ? 'text-[#7c3626] dark:text-[#a04830] bg-[#7c3626]/10 dark:bg-[#a04830]/10 font-medium'
+                                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 font-normal'
                               }`}
                             >
                               {subItem.name}
@@ -312,7 +312,7 @@ const Navigation: React.FC<NavigationProps> = ({
           />
 
           {/* Sidebar panel */}
-          <aside className="fixed inset-y-0 left-0 w-64 bg-white dark:bg-black flex flex-col">
+          <aside className="fixed inset-y-0 left-0 w-64 ledger-sidebar flex flex-col">
             {/* Logo and close button */}
             <div className="flex items-center justify-between h-16 px-3 border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-center px-3">
@@ -322,10 +322,10 @@ const Navigation: React.FC<NavigationProps> = ({
                   className="h-12 w-auto mix-blend-multiply dark:mix-blend-normal"
                 />
                 <div className="ml-3 flex flex-col">
-                  <span className="text-lg font-semibold text-gray-900 dark:text-white">
+                  <span className="font-serif font-bold text-gray-900 dark:text-white" style={{ fontSize: '24px', letterSpacing: '0.5px', color: '#7c3626' }}>
                     Pacioli
                   </span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                  <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
                     Books & Ledgers
                   </span>
                 </div>
@@ -355,7 +355,7 @@ const Navigation: React.FC<NavigationProps> = ({
                           onClick={createToggleExpandedHandler(item.name)}
                           className={`w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
                             isActive
-                              ? 'bg-blue-50 text-blue-600'
+                              ? 'bg-[#7c3626]/10 text-[#7c3626]'
                               : 'text-gray-700 hover:bg-gray-50'
                           }`}
                         >
@@ -365,7 +365,7 @@ const Navigation: React.FC<NavigationProps> = ({
                           </div>
                           <div className="flex items-center space-x-2">
                             {item.badge && (
-                              <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-medium text-white bg-red-500 rounded-full">
+                              <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-medium text-white bg-[#c14040] dark:bg-[#d45050] rounded-full">
                                 {item.badge}
                               </span>
                             )}
@@ -384,7 +384,7 @@ const Navigation: React.FC<NavigationProps> = ({
                           onClick={handleCloseSidebar}
                           className={`w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
                             isActive
-                              ? 'bg-blue-50 text-blue-600'
+                              ? 'bg-[#7c3626]/10 text-[#7c3626]'
                               : 'text-gray-700 hover:bg-gray-50'
                           }`}
                         >
@@ -393,7 +393,7 @@ const Navigation: React.FC<NavigationProps> = ({
                             <span>{item.name}</span>
                           </div>
                           {item.badge && (
-                            <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-medium text-white bg-red-500 rounded-full">
+                            <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-medium text-white bg-[#c14040] dark:bg-[#d45050] rounded-full">
                               {item.badge}
                             </span>
                           )}
@@ -413,7 +413,7 @@ const Navigation: React.FC<NavigationProps> = ({
                                   onClick={handleCloseSidebar}
                                   className={`block w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${
                                     isSubActive
-                                      ? 'text-blue-600 bg-blue-50'
+                                      ? 'text-[#7c3626] bg-[#7c3626]/10'
                                       : 'text-gray-600 hover:bg-gray-50'
                                   }`}
                                 >
@@ -463,7 +463,7 @@ const Navigation: React.FC<NavigationProps> = ({
       {/* Main content area */}
       <div className="flex-1 lg:ml-64">
         {/* Top bar */}
-        <header className="sticky top-0 z-40 bg-white dark:bg-black border-b border-gray-200 dark:border-gray-700">
+        <header className="sticky top-0 z-40 ledger-topbar">
           <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
             {/* Mobile menu button */}
             <button
@@ -480,7 +480,7 @@ const Navigation: React.FC<NavigationProps> = ({
                 <input
                   type="text"
                   placeholder="Search transactions, wallets, or reports..."
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="ledger-search w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                 />
               </div>
             </div>
@@ -493,7 +493,7 @@ const Navigation: React.FC<NavigationProps> = ({
                 className="relative p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
               >
                 <Bell className="w-6 h-6" />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                <span className="absolute top-1 right-1 w-2 h-2 bg-[#c14040] dark:bg-[#d45050] rounded-full"></span>
               </button>
 
               {/* Help */}
@@ -572,7 +572,7 @@ const Navigation: React.FC<NavigationProps> = ({
                       Help & Support
                     </Link>
                     <div className="border-t border-gray-200 dark:border-gray-700 mt-1"></div>
-                    <button className="w-full px-4 py-2 text-sm text-left text-red-600 dark:text-red-400 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center">
+                    <button className="w-full px-4 py-2 text-sm text-left text-[#c14040] dark:text-[#d45050] hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center">
                       <LogOut className="w-4 h-4 mr-3" />
                       Sign Out
                     </button>

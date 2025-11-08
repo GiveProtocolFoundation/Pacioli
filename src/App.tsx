@@ -15,12 +15,14 @@ const Reports = React.lazy(() => import('./app/reports/Reports'))
 const Analytics = React.lazy(() => import('./app/analytics/Analytics'))
 const Support = React.lazy(() => import('./app/support/Support'))
 const Profile = React.lazy(() => import('./app/profile/Profile'))
+const Docs = React.lazy(() => import('./app/docs/Docs'))
+const WalletManager = React.lazy(() => import('./app/wallets/WalletManager'))
 
 // Loading fallback component
 const LoadingFallback: React.FC = () => (
   <div className="min-h-screen bg-gray-50 dark:bg-black flex items-center justify-center">
     <div className="text-center">
-      <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#7c3626] dark:border-[#a04830]"></div>
       <p className="mt-4 text-gray-600 dark:text-gray-400">Loading...</p>
     </div>
   </div>
@@ -51,6 +53,7 @@ const App: React.FC = () => {
                     <Route path="/transactions/new" element={<TransactionForm />} />
                     <Route path="/transactions/edit/:id" element={<TransactionForm />} />
                     <Route path="/wallets" element={<Balances />} />
+                    <Route path="/wallet-manager" element={<WalletManager />} />
                     <Route path="/reports" element={<Reports />} />
                     <Route path="/reports/financial" element={<Reports />} />
                     <Route path="/reports/tax" element={<Reports />} />
@@ -61,6 +64,7 @@ const App: React.FC = () => {
                     <Route path="/settings/general" element={<Settings />} />
                     <Route path="/settings/currencies" element={<Settings />} />
                     <Route path="/settings/users" element={<Settings />} />
+                    <Route path="/docs" element={<Docs />} />
                     <Route path="/support" element={<Support />} />
                     <Route path="/profile" element={<Profile />} />
                     <Route path="/chart-of-accounts" element={<Settings />} />

@@ -1,3 +1,548 @@
+/* Import Google Fonts - must come first */
+@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=Inter:wght@300;400;500;600;700;800&display=swap');
+
 @import 'tailwindcss';
 
 @variant dark (.dark &);
+
+@theme {
+  /* Libre Baskerville for brand and headings - referencing Renaissance accounting heritage */
+  --font-family-serif: "Libre Baskerville", Georgia, serif;
+
+  /* Inter for body text and UI */
+  --font-family-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  /* Enhanced font weight scale for better hierarchy */
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+
+  /* Heritage-inspired color palette - Light mode */
+  --color-brand-burgundy: #7c3626;
+  --color-brand-burgundy-dark: #a04830;
+  --color-success: #2d7738;
+  --color-success-dark: #3d9147;
+  --color-error: #c14040;
+  --color-error-dark: #d45050;
+  --color-slate-blue: #4a5f7a;
+  --color-slate-blue-dark: #6b8099;
+  --color-parchment: #8b7355;
+  --color-parchment-dark: #a38a6f;
+
+  /* Background colors */
+  --color-bg-main: #f0f2f5;
+  --color-bg-card: #ffffff;
+}
+
+/* Global typography styles */
+h1 {
+  font-family: var(--font-family-serif);
+  font-size: 32px;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+h2 {
+  font-family: var(--font-family-sans);
+  font-size: 24px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+h3 {
+  font-family: var(--font-family-sans);
+  font-size: 18px;
+  font-weight: 600;
+  color: #495057;
+}
+
+/* Dark mode overrides for headings */
+.dark h1 {
+  color: #ffffff;
+}
+
+.dark h2 {
+  color: #e2e8f0;
+}
+
+.dark h3 {
+  color: #cbd5e1;
+}
+
+/* Apply tabular numbers globally to all numeric content */
+.tabular-nums,
+[class*="text-"][class*="xl"],
+[class*="text-"][class*="lg"],
+[class*="text-"][class*="2xl"],
+[class*="text-"][class*="3xl"],
+td,
+.font-semibold,
+.font-bold {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Ensure all numbers use tabular nums */
+body {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Ledger-inspired dashboard card styles */
+.ledger-card {
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  background: var(--color-bg-card);
+  position: relative;
+  overflow: hidden;
+}
+
+.dark .ledger-card {
+  background: #1a1a1a;
+}
+
+/* Grid background pattern for ledger aesthetic */
+.ledger-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0,0,0,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,0,0,0.02) 1px, transparent 1px);
+  background-size: 40px 40px;
+  opacity: 0.3;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.dark .ledger-card::before {
+  background-image:
+    linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+}
+
+/* Ensure card content is above the grid pattern */
+.ledger-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Left accent borders for different card types */
+.ledger-card-financial {
+  border-left: 3px solid var(--color-brand-burgundy); /* burgundy */
+}
+
+.ledger-card-donation {
+  border-left: 3px solid var(--color-success); /* forest green */
+}
+
+.ledger-card-expense {
+  border-left: 3px solid var(--color-error); /* rust red */
+}
+
+.ledger-card-wallet {
+  border-left: 3px solid var(--color-slate-blue); /* slate blue */
+}
+
+/* Dark mode accent borders */
+.dark .ledger-card-financial {
+  border-left: 3px solid var(--color-brand-burgundy-dark);
+}
+
+.dark .ledger-card-donation {
+  border-left: 3px solid var(--color-success-dark);
+}
+
+.dark .ledger-card-expense {
+  border-left: 3px solid var(--color-error-dark);
+}
+
+.dark .ledger-card-wallet {
+  border-left: 3px solid var(--color-slate-blue-dark);
+}
+
+/* Ledger card labels - uppercase, proper letter-spacing */
+.ledger-card-label {
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 13px;
+}
+
+/* Account balance list item styling */
+.balance-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 0;
+  border-bottom: 1px solid #e9ecef;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.dark .balance-list-item {
+  border-bottom: 1px solid #374151;
+}
+
+.balance-list-item:last-child {
+  border-bottom: none;
+}
+
+.balance-list-item:hover {
+  background: rgba(0,0,0,0.02);
+  margin-left: -16px;
+  margin-right: -16px;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+.dark .balance-list-item:hover {
+  background: rgba(255,255,255,0.02);
+}
+
+/* Square token icon container */
+.token-icon-square {
+  width: 36px;
+  height: 36px;
+  border-radius: 2px;
+  background: #f8f9fa;
+  border: 1.5px solid #dee2e6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: #495057;
+  flex-shrink: 0;
+}
+
+.dark .token-icon-square {
+  background: #1f2937;
+  border-color: #374151;
+  color: #9ca3af;
+}
+
+/* Token info section (left side) */
+.token-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Token values section (right side) */
+.token-values {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+/* Percentage change styling */
+.percentage-change {
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+/* Main content area background with ledger grid pattern */
+.ledger-background {
+  background-color: var(--color-bg-main);
+  background-image:
+    linear-gradient(rgba(0,0,0,0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,0,0,0.015) 1px, transparent 1px);
+  background-size: 40px 40px;
+  background-position: 0 0;
+}
+
+.dark .ledger-background {
+  background-color: #0a0a0a;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+}
+
+/* Sidebar styling enhancements */
+.ledger-sidebar {
+  background: #ffffff;
+  border-left: 2px solid var(--color-brand-burgundy);
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.04);
+}
+
+.dark .ledger-sidebar {
+  background: #000000;
+  border-left: 2px solid var(--color-brand-burgundy-dark);
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Top navigation bar styling */
+.ledger-topbar {
+  background: #ffffff;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.dark .ledger-topbar {
+  background: #000000;
+  border-bottom: 1px solid #1f2937;
+}
+
+/* Search bar refinements */
+.ledger-search {
+  border-radius: 4px;
+  border: 1px solid #dee2e6;
+  transition: border 0.2s ease;
+}
+
+.ledger-search:focus {
+  outline: none;
+  border: 2px solid var(--color-brand-burgundy);
+  box-shadow: none;
+}
+
+.dark .ledger-search {
+  border-color: #374151;
+}
+
+.dark .ledger-search:focus {
+  border-color: var(--color-brand-burgundy-dark);
+}
+
+/* Table styling for ledger aesthetic */
+.ledger-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.ledger-table-header {
+  background: #f8f9fa;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.dark .ledger-table-header {
+  background: #1a1a1a;
+  border-bottom: 2px solid #374151;
+}
+
+.ledger-table-header th {
+  font-size: 13px;
+  font-weight: 600;
+  color: #495057;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 12px 16px;
+  text-align: left;
+}
+
+.dark .ledger-table-header th {
+  color: #9ca3af;
+}
+
+.ledger-table-row {
+  border-bottom: 1px solid #e9ecef;
+  transition: background 0.2s ease;
+}
+
+.dark .ledger-table-row {
+  border-bottom: 1px solid #374151;
+}
+
+.ledger-table-row:hover {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.dark .ledger-table-row:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.ledger-table-row td {
+  padding: 14px 16px;
+}
+
+/* Cell alignment utilities - higher specificity for headers and cells */
+.ledger-table-cell-number,
+.ledger-table-header th.ledger-table-cell-number,
+.ledger-table-row td.ledger-table-cell-number {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.ledger-table-cell-date,
+.ledger-table-header th.ledger-table-cell-date,
+.ledger-table-row td.ledger-table-cell-date {
+  text-align: left;
+}
+
+.ledger-table-cell-text,
+.ledger-table-header th.ledger-table-cell-text,
+.ledger-table-row td.ledger-table-cell-text {
+  text-align: left;
+}
+
+.ledger-table-cell-actions,
+.ledger-table-header th.ledger-table-cell-actions,
+.ledger-table-row td.ledger-table-cell-actions {
+  text-align: right;
+}
+
+/* Alternating row colors (optional, can be applied selectively) */
+.ledger-table-striped .ledger-table-row:nth-child(even) {
+  background: #fafbfc;
+}
+
+.dark .ledger-table-striped .ledger-table-row:nth-child(even) {
+  background: #0f0f0f;
+}
+
+/* Mobile responsive table wrapper */
+.ledger-table-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 768px) {
+  .ledger-table-header th,
+  .ledger-table-row td {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+}
+
+/* Button styles for professional appearance */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--color-brand-burgundy);
+  color: #ffffff;
+  border-radius: 4px;
+  padding: 11px 24px;
+  font-weight: 600;
+  font-size: 14px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.dark .btn-primary {
+  background: var(--color-brand-burgundy-dark);
+}
+
+.dark .btn-primary:hover {
+  opacity: 0.9;
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.btn-primary:disabled:hover {
+  opacity: 0.5;
+  transform: none;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.btn-primary svg,
+.btn-primary .btn-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+/* Secondary button styles */
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  color: var(--color-brand-burgundy);
+  border: 1.5px solid var(--color-brand-burgundy);
+  border-radius: 4px;
+  padding: 11px 24px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background: rgba(124, 54, 38, 0.05);
+  transform: translateY(-1px);
+}
+
+.btn-secondary:active {
+  transform: translateY(0);
+}
+
+.btn-secondary svg,
+.btn-secondary .btn-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.dark .btn-secondary {
+  color: var(--color-brand-burgundy-dark);
+  border-color: var(--color-brand-burgundy-dark);
+}
+
+.dark .btn-secondary:hover {
+  background: rgba(160, 72, 48, 0.1);
+}
+
+/* Quick action button styles */
+.btn-quick-action {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: 4px;
+  background: transparent;
+  border: 1px solid #e9ecef;
+  color: #495057;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-quick-action:hover {
+  background: rgba(124, 54, 38, 0.05);
+  color: var(--color-brand-burgundy);
+  border-color: #dee2e6;
+}
+
+.btn-quick-action svg,
+.btn-quick-action .btn-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.dark .btn-quick-action {
+  border-color: #374151;
+  color: #9ca3af;
+}
+
+.dark .btn-quick-action:hover {
+  background: rgba(160, 72, 48, 0.1);
+  color: var(--color-brand-burgundy-dark);
+  border-color: #4b5563;
+}

@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   Wallet,
   TrendingUp,
@@ -60,6 +61,7 @@ type TimePeriod =
 const Balances: React.FC = () => {
   const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>('30_days')
   const { theme } = useTheme()
+  const navigate = useNavigate()
 
   // Mock wallet data
   const [wallets] = useState<WalletBalance[]>([
@@ -307,7 +309,7 @@ const Balances: React.FC = () => {
   )
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-black">
+    <div className="min-h-screen ledger-background">
       {/* Header */}
       <header className="bg-white dark:bg-black border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -324,7 +326,10 @@ const Balances: React.FC = () => {
               <button className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
                 Export Data
               </button>
-              <button className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 flex items-center">
+              <button
+                onClick={() => navigate('/wallet-manager')}
+                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 flex items-center"
+              >
                 <Plus className="w-4 h-4 mr-2" />
                 Connect Wallet
               </button>
