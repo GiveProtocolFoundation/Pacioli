@@ -20,6 +20,7 @@ import type {
 } from '../wallet/types'
 import { ChainType } from '../wallet/types'
 import { subscanService } from './subscanService'
+import { moonscanService } from './moonscanService'
 
 export interface BlockchainConnection {
   api: ApiPromise
@@ -355,14 +356,64 @@ class PolkadotService {
     console.log('🚀 [Hybrid] Limit:', limit)
     console.log('🚀 [Hybrid] Recent blocks cutoff:', RECENT_BLOCKS_CUTOFF)
 
-    // Check if this is an EVM chain (Moonbeam, Moonriver)
+    // Check if this is an EVM address on an EVM-compatible chain (Moonbeam, Moonriver)
     const isEVMChain = network === 'moonbeam' || network === 'moonriver'
-    if (isEVMChain && address.startsWith('0x')) {
-      throw new Error(
-        `EVM transaction scanning for ${network} is not yet implemented. ` +
-          'Please use Polkadot or Kusama relay chains for now. ' +
-          'EVM support coming soon!'
-      )
+    const isEVMAddress = address.startsWith('0x')
+
+    if (isEVMChain && isEVMAddress) {
+      console.log('🚀 [Hybrid] Detected EVM address on EVM chain, using Moonscan')
+
+      // Use Moonscan for EVM addresses on Moonbeam/Moonriver
+      if (!moonscanService.isAvailable(network)) {
+        throw new Error(`Moonscan not available for ${network}`)
+      }
+
+      try {
+        onProgress?.({
+          stage: 'fetching',
+          currentBlock: 0,
+          totalBlocks: 0,
+          blocksScanned: 0,
+          transactionsFound: 0,
+          message: `Fetching EVM transactions from Moonscan...`,
+        })
+
+        const evmTransactions = await moonscanService.fetchAllTransactions(
+          network,
+          address,
+          {
+            limit,
+            onProgress: (stage, current, total) => {
+              onProgress?.({
+                stage: 'fetching',
+                currentBlock: 0,
+                totalBlocks: total,
+                blocksScanned: current,
+                transactionsFound: current,
+                message: stage,
+              })
+            },
+          }
+        )
+
+        console.log(`🚀 [Hybrid] Moonscan returned ${evmTransactions.length} transactions`)
+
+        onProgress?.({
+          stage: 'complete',
+          currentBlock: 0,
+          totalBlocks: 0,
+          blocksScanned: evmTransactions.length,
+          transactionsFound: evmTransactions.length,
+          message: `Found ${evmTransactions.length} EVM transaction${evmTransactions.length !== 1 ? 's' : ''}`,
+        })
+
+        return evmTransactions
+      } catch (error) {
+        console.error('🚀 [Hybrid] Moonscan fetch failed:', error)
+        throw new Error(
+          `Failed to fetch EVM transactions: ${error instanceof Error ? error.message : 'Unknown error'}`
+        )
+      }
     }
 
     try {

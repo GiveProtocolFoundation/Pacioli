@@ -107,8 +107,11 @@ export const TransactionList: React.FC<TransactionListProps> = ({
         const substrateTx = tx as SubstrateTransaction
 
         // Convert wallet transaction to accounting format
+        // Format date as YYYY-MM-DDTHH:MM for datetime-local input compatibility
+        const txDate = new Date(tx.timestamp)
+        const formattedDate = txDate.toISOString().slice(0, 16) // "YYYY-MM-DDTHH:MM"
         const accountingTx: TransactionFormData = {
-          date: new Date(tx.timestamp).toISOString().split('T')[0],
+          date: formattedDate,
           description: `${substrateTx.section}.${substrateTx.method} - ${substrateTx.network}`,
           type: 'transfer', // Blockchain transactions are transfers
           category: substrateTx.section, // e.g., "balances", "staking"
@@ -234,13 +237,13 @@ export const TransactionList: React.FC<TransactionListProps> = ({
   const getTypeBadgeColor = (type: string) => {
     switch (type) {
       case 'transfer':
-        return 'bg-[#7c3626]/10 text-[#7c3626] dark:bg-[#a04830]/10 dark:text-[#a04830]'
+        return 'bg-[#1e3a5f]/10 text-[#1e3a5f] dark:bg-[#3d5a80]/20 dark:text-[#3d5a80]'
       case 'staking':
         return 'bg-[#4a5f7a]/10 text-[#4a5f7a] dark:bg-[#6b8099]/10 dark:text-[#6b8099]'
       case 'xcm':
         return 'bg-[#8b7355]/10 text-[#8b7355] dark:bg-[#a38a6f]/10 dark:text-[#a38a6f]'
       case 'governance':
-        return 'bg-[#2d7738]/10 text-[#2d7738] dark:bg-[#3d9147]/10 dark:text-[#3d9147]'
+        return 'bg-[#059669]/10 text-[#059669] dark:bg-[#10b981]/20 dark:text-[#10b981]'
       default:
         return 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400'
     }
@@ -268,7 +271,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
     return (
       <div className="ledger-card ledger-card-financial border border-gray-200 dark:border-gray-700 p-6">
         <div className="flex items-center justify-center py-12">
-          <Loader className="w-6 h-6 animate-spin text-[#7c3626] dark:text-[#a04830]" />
+          <Loader className="w-6 h-6 animate-spin text-[#1e3a5f] dark:text-[#3d5a80]" />
           <span className="ml-3 text-gray-600 dark:text-gray-400">
             Loading transaction history...
           </span>
@@ -281,9 +284,9 @@ export const TransactionList: React.FC<TransactionListProps> = ({
     return (
       <div className="ledger-card ledger-card-expense border border-gray-200 dark:border-gray-700 p-6">
         <div className="flex items-start">
-          <AlertCircle className="w-5 h-5 text-[#c14040] dark:text-[#d45050] mr-3 flex-shrink-0 mt-0.5" />
+          <AlertCircle className="w-5 h-5 text-[#dc2626] dark:text-[#ef4444] mr-3 flex-shrink-0 mt-0.5" />
           <div>
-            <h3 className="font-semibold text-[#c14040] dark:text-[#d45050]">
+            <h3 className="font-semibold text-[#dc2626] dark:text-[#ef4444]">
               Error Loading Transactions
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{error}</p>
@@ -326,7 +329,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
           <div className="flex items-center gap-3">
             <button
               onClick={exportToCSV}
-              className="text-sm text-[#7c3626] dark:text-[#a04830] hover:opacity-90 font-medium transition-opacity inline-flex items-center gap-1.5"
+              className="text-sm text-[#1e3a5f] dark:text-[#3d5a80] hover:opacity-90 font-medium transition-opacity inline-flex items-center gap-1.5"
             >
               <Download className="w-4 h-4" />
               Export CSV
@@ -334,7 +337,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
             <button
               onClick={importToLedger}
               disabled={importing || importSuccess}
-              className="text-sm px-3 py-1.5 bg-[#7c3626] dark:bg-[#a04830] text-white hover:opacity-90 font-medium transition-opacity inline-flex items-center gap-1.5 rounded disabled:opacity-50"
+              className="text-sm px-3 py-1.5 bg-[#1e3a5f] dark:bg-[#3d5a80] text-white hover:opacity-90 font-medium transition-opacity inline-flex items-center gap-1.5 rounded disabled:opacity-50"
             >
               {importing ? (
                 <>
@@ -467,9 +470,9 @@ export const TransactionList: React.FC<TransactionListProps> = ({
                     <span
                       className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
                         tx.status === 'success'
-                          ? 'bg-[#2d7738]/10 text-[#2d7738] dark:bg-[#3d9147]/10 dark:text-[#3d9147]'
+                          ? 'bg-[#059669]/10 text-[#059669] dark:bg-[#10b981]/20 dark:text-[#10b981]'
                           : tx.status === 'failed'
-                            ? 'bg-[#c14040]/10 text-[#c14040] dark:bg-[#d45050]/10 dark:text-[#d45050]'
+                            ? 'bg-[#dc2626]/10 text-[#dc2626] dark:bg-[#ef4444]/20 dark:text-[#ef4444]'
                             : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-500'
                       }`}
                     >
@@ -488,7 +491,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
                       href={getExplorerUrl(tx)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-[#7c3626] dark:text-[#a04830] hover:opacity-80 transition-opacity inline-flex items-center justify-end"
+                      className="text-[#1e3a5f] dark:text-[#3d5a80] hover:opacity-80 transition-opacity inline-flex items-center justify-end"
                       title="View on Subscan explorer"
                     >
                       <ExternalLink className="w-4 h-4" />
@@ -508,7 +511,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
             Showing {Math.min(10, transactions.length)} of {transactions.length}{' '}
             transactions
           </p>
-          <button className="text-sm text-[#7c3626] dark:text-[#a04830] hover:opacity-90 font-medium">
+          <button className="text-sm text-[#1e3a5f] dark:text-[#3d5a80] hover:opacity-90 font-medium">
             Load More
           </button>
         </div>

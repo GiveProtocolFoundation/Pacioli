@@ -172,10 +172,10 @@ const Navigation: React.FC<NavigationProps> = ({
               className="h-12 w-auto mix-blend-multiply dark:mix-blend-normal"
             />
             <div className="ml-3 flex flex-col">
-              <span className="font-serif font-bold text-gray-900 dark:text-white" style={{ fontSize: '24px', letterSpacing: '0.5px', color: '#7c3626' }}>
+              <span className="brand-wordmark text-gray-900 dark:text-white" style={{ fontSize: '24px', color: '#1e3a5f' }}>
                 Pacioli
               </span>
-              <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
+              <span className="brand-tagline text-xs text-gray-500 dark:text-gray-400">
                 Books & Ledgers
               </span>
             </div>
@@ -199,7 +199,7 @@ const Navigation: React.FC<NavigationProps> = ({
                       onClick={createToggleExpandedHandler(item.name)}
                       className={`w-full flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-colors ${
                         isActive
-                          ? 'bg-[#7c3626]/10 dark:bg-[#a04830]/10 text-[#7c3626] dark:text-[#a04830] font-semibold'
+                          ? 'bg-[#1e3a5f]/10 dark:bg-[#3d5a80]/20 text-[#1e3a5f] dark:text-[#3d5a80] font-semibold'
                           : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-medium'
                       }`}
                     >
@@ -209,7 +209,7 @@ const Navigation: React.FC<NavigationProps> = ({
                       </div>
                       <div className="flex items-center space-x-2">
                         {item.badge && (
-                          <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-medium text-white bg-[#c14040] dark:bg-[#d45050] rounded-full">
+                          <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-medium text-white bg-[#dc2626] dark:bg-[#ef4444] rounded-full">
                             {item.badge}
                           </span>
                         )}
@@ -227,7 +227,7 @@ const Navigation: React.FC<NavigationProps> = ({
                       to={item.href}
                       className={`w-full flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-colors ${
                         isActive
-                          ? 'bg-[#7c3626]/10 dark:bg-[#a04830]/10 text-[#7c3626] dark:text-[#a04830] font-semibold'
+                          ? 'bg-[#1e3a5f]/10 dark:bg-[#3d5a80]/20 text-[#1e3a5f] dark:text-[#3d5a80] font-semibold'
                           : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-medium'
                       }`}
                     >
@@ -236,7 +236,7 @@ const Navigation: React.FC<NavigationProps> = ({
                         <span>{item.name}</span>
                       </div>
                       {item.badge && (
-                        <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-medium text-white bg-[#c14040] dark:bg-[#d45050] rounded-full">
+                        <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-medium text-white bg-[#dc2626] dark:bg-[#ef4444] rounded-full">
                           {item.badge}
                         </span>
                       )}
@@ -255,7 +255,7 @@ const Navigation: React.FC<NavigationProps> = ({
                               to={subItem.href}
                               className={`block w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${
                                 isSubActive
-                                  ? 'text-[#7c3626] dark:text-[#a04830] bg-[#7c3626]/10 dark:bg-[#a04830]/10 font-medium'
+                                  ? 'text-[#1e3a5f] dark:text-[#3d5a80] bg-[#1e3a5f]/10 dark:bg-[#3d5a80]/20 font-medium'
                                   : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 font-normal'
                               }`}
                             >
@@ -322,10 +322,10 @@ const Navigation: React.FC<NavigationProps> = ({
                   className="h-12 w-auto mix-blend-multiply dark:mix-blend-normal"
                 />
                 <div className="ml-3 flex flex-col">
-                  <span className="font-serif font-bold text-gray-900 dark:text-white" style={{ fontSize: '24px', letterSpacing: '0.5px', color: '#7c3626' }}>
+                  <span className="brand-wordmark text-gray-900 dark:text-white" style={{ fontSize: '24px', color: '#1e3a5f' }}>
                     Pacioli
                   </span>
-                  <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                  <span className="brand-tagline text-xs text-gray-500 dark:text-gray-400">
                     Books & Ledgers
                   </span>
                 </div>
@@ -355,7 +355,7 @@ const Navigation: React.FC<NavigationProps> = ({
                           onClick={createToggleExpandedHandler(item.name)}
                           className={`w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
                             isActive
-                              ? 'bg-[#7c3626]/10 text-[#7c3626]'
+                              ? 'bg-[#1e3a5f]/10 text-[#1e3a5f]'
                               : 'text-gray-700 hover:bg-gray-50'
                           }`}
                         >
@@ -365,7 +365,7 @@ const Navigation: React.FC<NavigationProps> = ({
                           </div>
                           <div className="flex items-center space-x-2">
                             {item.badge && (
-                              <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-medium text-white bg-[#c14040] dark:bg-[#d45050] rounded-full">
+                              <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-medium text-white bg-[#dc2626] dark:bg-[#ef4444] rounded-full">
                                 {item.badge}
                               </span>
                             )}
@@ -384,7 +384,7 @@ const Navigation: React.FC<NavigationProps> = ({
                           onClick={handleCloseSidebar}
                           className={`w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
                             isActive
-                              ? 'bg-[#7c3626]/10 text-[#7c3626]'
+                              ? 'bg-[#1e3a5f]/10 text-[#1e3a5f]'
                               : 'text-gray-700 hover:bg-gray-50'
                           }`}
                         >
@@ -393,7 +393,7 @@ const Navigation: React.FC<NavigationProps> = ({
                             <span>{item.name}</span>
                           </div>
                           {item.badge && (
-                            <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-medium text-white bg-[#c14040] dark:bg-[#d45050] rounded-full">
+                            <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-medium text-white bg-[#dc2626] dark:bg-[#ef4444] rounded-full">
                               {item.badge}
                             </span>
                           )}
@@ -413,7 +413,7 @@ const Navigation: React.FC<NavigationProps> = ({
                                   onClick={handleCloseSidebar}
                                   className={`block w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${
                                     isSubActive
-                                      ? 'text-[#7c3626] bg-[#7c3626]/10'
+                                      ? 'text-[#1e3a5f] bg-[#1e3a5f]/10'
                                       : 'text-gray-600 hover:bg-gray-50'
                                   }`}
                                 >
@@ -480,7 +480,7 @@ const Navigation: React.FC<NavigationProps> = ({
                 <input
                   type="text"
                   placeholder="Search transactions, wallets, or reports..."
-                  className="ledger-search w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                  className="ledger-search w-full pl-10 pr-4 py-2 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                 />
               </div>
             </div>
@@ -493,7 +493,7 @@ const Navigation: React.FC<NavigationProps> = ({
                 className="relative p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
               >
                 <Bell className="w-6 h-6" />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-[#c14040] dark:bg-[#d45050] rounded-full"></span>
+                <span className="absolute top-1 right-1 w-2 h-2 bg-[#dc2626] dark:bg-[#ef4444] rounded-full"></span>
               </button>
 
               {/* Help */}
@@ -572,7 +572,7 @@ const Navigation: React.FC<NavigationProps> = ({
                       Help & Support
                     </Link>
                     <div className="border-t border-gray-200 dark:border-gray-700 mt-1"></div>
-                    <button className="w-full px-4 py-2 text-sm text-left text-[#c14040] dark:text-[#d45050] hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center">
+                    <button className="w-full px-4 py-2 text-sm text-left text-[#dc2626] dark:text-[#ef4444] hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center">
                       <LogOut className="w-4 h-4 mr-3" />
                       Sign Out
                     </button>

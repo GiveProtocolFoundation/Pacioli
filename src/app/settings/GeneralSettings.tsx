@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import {
   Building2,
   Calendar,
@@ -8,9 +8,15 @@ import {
   X,
   Upload,
   AlertCircle,
+  Key,
+  ExternalLink,
+  Check,
+  Eye,
+  EyeOff,
 } from 'lucide-react'
 import { useTheme } from '../../contexts/ThemeContext'
 import { useOrganization } from '../../contexts/OrganizationContext'
+import { moonscanService } from '../../services/blockchain/moonscanService'
 
 interface OrganizationSettings {
   name: string
@@ -402,6 +408,163 @@ const FiscalYearSection: React.FC<FiscalYearSectionProps> = ({
   )
 }
 
+/**
+ * API Keys Section Component
+ * Manages external API keys for blockchain data providers
+ */
+const ApiKeysSection: React.FC = () => {
+  const [etherscanApiKey, setEtherscanApiKey] = useState('')
+  const [showApiKey, setShowApiKey] = useState(false)
+  const [isSaved, setIsSaved] = useState(false)
+  const [hasExistingKey, setHasExistingKey] = useState(false)
+
+  // Load existing API key on mount
+  useEffect(() => {
+    const existingKey = localStorage.getItem('etherscan_api_key')
+    if (existingKey) {
+      setEtherscanApiKey(existingKey)
+      setHasExistingKey(true)
+    }
+  }, [])
+
+  const handleSaveApiKey = useCallback(() => {
+    if (etherscanApiKey.trim()) {
+      moonscanService.setApiKey(etherscanApiKey.trim())
+      setIsSaved(true)
+      setHasExistingKey(true)
+      setTimeout(() => setIsSaved(false), 3000)
+    }
+  }, [etherscanApiKey])
+
+  const handleClearApiKey = useCallback(() => {
+    localStorage.removeItem('etherscan_api_key')
+    setEtherscanApiKey('')
+    setHasExistingKey(false)
+  }, [])
+
+  const handleKeyChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setEtherscanApiKey(e.target.value)
+    setIsSaved(false)
+  }, [])
+
+  const toggleShowApiKey = useCallback(() => {
+    setShowApiKey(prev => !prev)
+  }, [])
+
+  return (
+    <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+      <div className="flex items-center mb-4">
+        <Key className="w-5 h-5 text-blue-600 mr-2" />
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+          API Keys
+        </h3>
+      </div>
+
+      <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+        Configure API keys for external blockchain data providers. These keys are stored locally in your browser.
+      </p>
+
+      {/* Etherscan API Key */}
+      <div className="space-y-4">
+        <div>
+          <label
+            htmlFor="etherscanApiKey"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+          >
+            Etherscan API Key
+          </label>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+            Required for fetching EVM transaction history on Moonbeam, Moonriver, and other EVM chains.
+          </p>
+          <div className="flex space-x-2">
+            <div className="relative flex-1">
+              <input
+                id="etherscanApiKey"
+                type={showApiKey ? 'text' : 'password'}
+                value={etherscanApiKey}
+                onChange={handleKeyChange}
+                placeholder="Enter your Etherscan API key"
+                className="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
+              />
+              <button
+                type="button"
+                onClick={toggleShowApiKey}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              >
+                {showApiKey ? (
+                  <EyeOff className="w-4 h-4" />
+                ) : (
+                  <Eye className="w-4 h-4" />
+                )}
+              </button>
+            </div>
+            <button
+              onClick={handleSaveApiKey}
+              disabled={!etherscanApiKey.trim()}
+              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+            >
+              {isSaved ? (
+                <>
+                  <Check className="w-4 h-4 mr-1" />
+                  Saved
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4 mr-1" />
+                  Save
+                </>
+              )}
+            </button>
+            {hasExistingKey && (
+              <button
+                onClick={handleClearApiKey}
+                className="px-4 py-2 text-sm font-medium text-red-600 dark:text-red-400 border border-red-300 dark:border-red-600 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+
+          {/* Status indicator */}
+          {hasExistingKey && !isSaved && (
+            <div className="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
+              <Check className="w-4 h-4 mr-1" />
+              API key configured
+            </div>
+          )}
+
+          {/* Get API Key Link */}
+          <div className="mt-3 flex items-center">
+            <a
+              href="https://etherscan.io/myapikey"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center"
+            >
+              Get a free Etherscan API key
+              <ExternalLink className="w-3 h-3 ml-1" />
+            </a>
+          </div>
+
+          {/* Info box */}
+          <div className="mt-4 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+            <div className="flex">
+              <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+              <div className="ml-3">
+                <p className="text-sm text-blue-800 dark:text-blue-400">
+                  The Etherscan API is used to fetch transaction history for EVM-compatible chains
+                  (Moonbeam, Moonriver). The free tier allows up to 5 requests per second, which
+                  is sufficient for most use cases.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 const GeneralSettings: React.FC<GeneralSettingsProps> = ({
   userType = 'organization',
 }) => {
@@ -749,6 +912,9 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({
             </div>
           </div>
         </div>
+
+        {/* API Keys */}
+        <ApiKeysSection />
       </div>
     </div>
   )

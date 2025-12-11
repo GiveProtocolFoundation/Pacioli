@@ -198,7 +198,7 @@ const Docs: React.FC = () => {
       <header className="bg-white dark:bg-black border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-10 py-10">
           <div className="flex items-center">
-            <BookOpen className="w-8 h-8 text-[#7c3626] dark:text-[#a04830] mr-4" />
+            <BookOpen className="w-8 h-8 text-[#1e3a5f] dark:text-[#3d5a80] mr-4" />
             <div>
               <h1>Pacioli Documentation</h1>
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
@@ -231,7 +231,7 @@ const Docs: React.FC = () => {
                         className="w-full flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-colors hover:bg-gray-50 dark:hover:bg-gray-800 text-left"
                       >
                         <div className="flex items-center">
-                          <Icon className="w-4 h-4 mr-2 text-[#7c3626] dark:text-[#a04830]" />
+                          <Icon className="w-4 h-4 mr-2 text-[#1e3a5f] dark:text-[#3d5a80]" />
                           <span className="font-medium text-gray-900 dark:text-white">
                             {section.title}
                           </span>
@@ -262,7 +262,7 @@ const Docs: React.FC = () => {
                                   }}
                                   className={`w-full flex items-center justify-between px-3 py-1.5 text-sm rounded transition-colors text-left ${
                                     isSelected
-                                      ? 'bg-[#7c3626]/10 dark:bg-[#a04830]/10 text-[#7c3626] dark:text-[#a04830] font-medium'
+                                      ? 'bg-[#1e3a5f]/10 dark:bg-[#3d5a80]/20 text-[#1e3a5f] dark:text-[#3d5a80] font-medium'
                                       : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
                                   }`}
                                 >
@@ -287,7 +287,7 @@ const Docs: React.FC = () => {
                                           onClick={handleSelectDoc}
                                           className={`w-full px-3 py-1 text-xs rounded transition-colors text-left ${
                                             isSubSelected
-                                              ? 'bg-[#7c3626]/10 dark:bg-[#a04830]/10 text-[#7c3626] dark:text-[#a04830] font-medium'
+                                              ? 'bg-[#1e3a5f]/10 dark:bg-[#3d5a80]/20 text-[#1e3a5f] dark:text-[#3d5a80] font-medium'
                                               : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
                                           }`}
                                         >
@@ -339,9 +339,9 @@ const Docs: React.FC = () => {
                     <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-4/5"></div>
                   </div>
 
-                  <div className="bg-[#7c3626]/5 dark:bg-[#a04830]/5 border-l-4 border-[#7c3626] dark:border-[#a04830] p-4 rounded">
+                  <div className="bg-[#1e3a5f]/5 dark:bg-[#3d5a80]/10 border-l-4 border-[#1e3a5f] dark:border-[#3d5a80] p-4 rounded">
                     <p className="text-sm text-gray-700 dark:text-gray-300">
-                      <strong className="text-[#7c3626] dark:text-[#a04830]">
+                      <strong className="text-[#1e3a5f] dark:text-[#3d5a80]">
                         Note:
                       </strong>{' '}
                       Documentation content will be added here covering detailed

@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import Navigation from './components/layout/Navigation'
 import { TransactionProvider } from './contexts/TransactionContext'
 import { TokenProvider } from './contexts/TokenContext'
+import { WalletAliasProvider } from './contexts/WalletAliasContext'
 
 // Lazy load route components for code splitting
 const Dashboard = React.lazy(() => import('./app/dashboard/Dashboard'))
@@ -22,7 +23,7 @@ const WalletManager = React.lazy(() => import('./app/wallets/WalletManager'))
 const LoadingFallback: React.FC = () => (
   <div className="min-h-screen bg-gray-50 dark:bg-black flex items-center justify-center">
     <div className="text-center">
-      <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#7c3626] dark:border-[#a04830]"></div>
+      <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#1e3a5f] dark:border-[#3d5a80]"></div>
       <p className="mt-4 text-gray-600 dark:text-gray-400">Loading...</p>
     </div>
   </div>
@@ -32,8 +33,9 @@ const App: React.FC = () => {
   return (
     <BrowserRouter>
       <TokenProvider>
-        <TransactionProvider userAccountType="organization">
-          <Suspense fallback={<LoadingFallback />}>
+        <WalletAliasProvider>
+          <TransactionProvider userAccountType="organization">
+            <Suspense fallback={<LoadingFallback />}>
           <Routes>
             {/* Onboarding route - no navigation wrapper */}
             <Route path="/onboarding" element={<Onboarding />} />
@@ -73,8 +75,9 @@ const App: React.FC = () => {
               }
             />
           </Routes>
-        </Suspense>
-        </TransactionProvider>
+          </Suspense>
+          </TransactionProvider>
+        </WalletAliasProvider>
       </TokenProvider>
     </BrowserRouter>
   )

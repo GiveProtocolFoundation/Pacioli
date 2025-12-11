@@ -63,18 +63,39 @@ class WalletService {
       console.error('Error detecting Substrate wallets:', error)
     }
 
-    // Detect MetaMask
+    // Detect MetaMask - check after a small delay to ensure extension is injected
     try {
+      console.log('[WalletService] Detecting MetaMask...')
+      console.log('[WalletService] window.ethereum:', window.ethereum)
+      console.log('[WalletService] window.ethereum?.isMetaMask:', window.ethereum?.isMetaMask)
+
       // Check if window.ethereum exists and is MetaMask
       if (window.ethereum && window.ethereum.isMetaMask) {
+        console.log('[WalletService] MetaMask detected via window.ethereum.isMetaMask')
         status[WalletType.METAMASK] = {
           isDetected: true,
           isEnabled: true,
           isConnected: false,
         }
+      } else if (window.ethereum?.providers) {
+        // Check for MetaMask in providers array (multiple wallet extensions)
+        console.log('[WalletService] Checking providers array:', window.ethereum.providers)
+        const metamaskProvider = window.ethereum.providers.find(
+          (p) => p.isMetaMask && !p.isTalisman && !p.isSubWallet
+        )
+        if (metamaskProvider) {
+          console.log('[WalletService] MetaMask found in providers array')
+          status[WalletType.METAMASK] = {
+            isDetected: true,
+            isEnabled: true,
+            isConnected: false,
+          }
+        }
       } else {
         // Fallback to provider detection
-        const provider = await detectEthereumProvider({ timeout: 1000 })
+        console.log('[WalletService] Trying detectEthereumProvider fallback...')
+        const provider = await detectEthereumProvider({ timeout: 3000 })
+        console.log('[WalletService] detectEthereumProvider result:', provider)
         if (provider) {
           status[WalletType.METAMASK] = {
             isDetected: true,
@@ -84,9 +105,10 @@ class WalletService {
         }
       }
     } catch (error) {
-      console.error('Error detecting MetaMask:', error)
+      console.error('[WalletService] Error detecting MetaMask:', error)
     }
 
+    console.log('[WalletService] Final wallet status:', status)
     return status
   }
 
@@ -148,30 +170,38 @@ class WalletService {
    * Connect to MetaMask (EVM wallet)
    */
   async connectEVMWallet(): Promise<ConnectedWallet> {
+    console.log('[WalletService] connectEVMWallet called')
     try {
       // Get the correct MetaMask provider (handle conflicts with other wallets)
       let provider = window.ethereum
+      console.log('[WalletService] Initial provider:', provider)
+      console.log('[WalletService] Provider isMetaMask:', provider?.isMetaMask)
 
       // If multiple providers exist (e.g., MetaMask + SubWallet), find MetaMask specifically
       if (window.ethereum?.providers) {
+        console.log('[WalletService] Multiple providers detected:', window.ethereum.providers.length)
         const metamaskProvider = window.ethereum.providers.find(
           (p: any) => p.isMetaMask && !p.isTalisman && !p.isSubWallet
         )
         if (metamaskProvider) {
+          console.log('[WalletService] Using specific MetaMask provider from providers array')
           provider = metamaskProvider
         }
       }
 
       if (!provider) {
+        console.error('[WalletService] No provider found!')
         throw new Error('MetaMask not installed. Please install MetaMask extension.')
       }
 
       // Verify it's actually MetaMask
       if (!provider.isMetaMask) {
+        console.error('[WalletService] Provider is not MetaMask:', provider)
         throw new Error('MetaMask not detected. Please install MetaMask extension.')
       }
 
-      console.log('MetaMask detected, requesting accounts...')
+      console.log('[WalletService] MetaMask detected, requesting accounts...')
+      console.log('[WalletService] Calling eth_requestAccounts...')
 
       // Request account access with timeout
       const accountsRaw = await Promise.race([

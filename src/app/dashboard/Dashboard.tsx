@@ -115,11 +115,11 @@ const Dashboard: React.FC = () => {
   const getTypeColor = (type: string) => {
     switch (type) {
       case 'donation':
-        return 'text-[#2d7738] dark:text-[#3d9147] bg-[#2d7738]/10'
+        return 'text-[#059669] dark:text-[#10b981] bg-[#059669]/10'
       case 'expense':
-        return 'text-[#c14040] dark:text-[#d45050] bg-[#c14040]/10'
+        return 'text-[#dc2626] dark:text-[#ef4444] bg-[#dc2626]/10'
       case 'exchange':
-        return 'text-[#7c3626] dark:text-[#a04830] bg-[#7c3626]/10'
+        return 'text-[#1e3a5f] dark:text-[#3d5a80] bg-[#1e3a5f]/10'
       case 'transfer':
         return 'text-[#4a5f7a] dark:text-[#6b8099] bg-[#4a5f7a]/10'
       default:
@@ -184,12 +184,12 @@ const Dashboard: React.FC = () => {
                 </p>
                 <div className="flex items-center mt-2">
                   {portfolioChange >= 0 ? (
-                    <TrendingUp className="w-4 h-4 text-[#2d7738] dark:text-[#3d9147] mr-1" />
+                    <TrendingUp className="w-4 h-4 text-[#059669] dark:text-[#10b981] mr-1" />
                   ) : (
-                    <TrendingDown className="w-4 h-4 text-[#c14040] dark:text-[#d45050] mr-1" />
+                    <TrendingDown className="w-4 h-4 text-[#dc2626] dark:text-[#ef4444] mr-1" />
                   )}
                   <span
-                    className={`text-sm font-medium ${portfolioChange >= 0 ? 'text-[#2d7738] dark:text-[#3d9147]' : 'text-[#c14040] dark:text-[#d45050]'}`}
+                    className={`text-sm font-medium ${portfolioChange >= 0 ? 'text-[#059669] dark:text-[#10b981]' : 'text-[#dc2626] dark:text-[#ef4444]'}`}
                   >
                     {portfolioChange >= 0 ? '+' : ''}
                     {portfolioChange}%
@@ -197,8 +197,8 @@ const Dashboard: React.FC = () => {
                   <span className="text-sm text-gray-500 ml-1">24h</span>
                 </div>
               </div>
-              <div className="p-3 bg-[#7c3626]/10 dark:bg-[#a04830]/10 rounded-lg">
-                <Wallet className="w-6 h-6 text-[#7c3626] dark:text-[#a04830]" />
+              <div className="p-3 bg-[#1e3a5f]/10 dark:bg-[#3d5a80]/20 rounded-lg">
+                <Wallet className="w-6 h-6 text-[#1e3a5f] dark:text-[#3d5a80]" />
               </div>
             </div>
           </div>
@@ -220,8 +220,8 @@ const Dashboard: React.FC = () => {
                   })}
                 </p>
                 <div className="flex items-center mt-2">
-                  <ArrowUpRight className="w-4 h-4 text-[#2d7738] dark:text-[#3d9147] mr-1" />
-                  <span className="text-sm font-medium text-[#2d7738] dark:text-[#3d9147]">
+                  <ArrowUpRight className="w-4 h-4 text-[#059669] dark:text-[#10b981] mr-1" />
+                  <span className="text-sm font-medium text-[#059669] dark:text-[#10b981]">
                     +12.5%
                   </span>
                   <span className="text-sm text-gray-500 ml-1">
@@ -229,8 +229,8 @@ const Dashboard: React.FC = () => {
                   </span>
                 </div>
               </div>
-              <div className="p-3 bg-[#2d7738]/10 dark:bg-[#3d9147]/10 rounded-lg">
-                <DollarSign className="w-6 h-6 text-[#2d7738] dark:text-[#3d9147]" />
+              <div className="p-3 bg-[#059669]/10 dark:bg-[#10b981]/20 rounded-lg">
+                <DollarSign className="w-6 h-6 text-[#059669] dark:text-[#10b981]" />
               </div>
             </div>
           </div>
@@ -252,7 +252,7 @@ const Dashboard: React.FC = () => {
                   })}
                 </p>
                 <div className="flex items-center mt-2">
-                  <ArrowDownRight className="w-4 h-4 text-[#c14040] dark:text-[#d45050] mr-1" />
+                  <ArrowDownRight className="w-4 h-4 text-[#dc2626] dark:text-[#ef4444] mr-1" />
                   <span className="text-sm font-medium text-gray-600">
                     73.4%
                   </span>
@@ -261,8 +261,8 @@ const Dashboard: React.FC = () => {
                   </span>
                 </div>
               </div>
-              <div className="p-3 bg-[#c14040]/10 dark:bg-[#d45050]/10 rounded-lg">
-                <PieChart className="w-6 h-6 text-[#c14040] dark:text-[#d45050]" />
+              <div className="p-3 bg-[#dc2626]/10 dark:bg-[#ef4444]/20 rounded-lg">
+                <PieChart className="w-6 h-6 text-[#dc2626] dark:text-[#ef4444]" />
               </div>
             </div>
           </div>
@@ -358,7 +358,7 @@ const Dashboard: React.FC = () => {
                               }
                             )}
                           </p>
-                          <div className={`percentage-change ${account.change24h >= 0 ? 'text-[#2d7738] dark:text-[#3d9147]' : 'text-[#c14040] dark:text-[#d45050]'}`}>
+                          <div className={`percentage-change ${account.change24h >= 0 ? 'text-[#059669] dark:text-[#10b981]' : 'text-[#dc2626] dark:text-[#ef4444]'}`}>
                             {account.change24h >= 0 ? (
                               <TrendingUp className="w-3 h-3" />
                             ) : (
@@ -383,7 +383,7 @@ const Dashboard: React.FC = () => {
                 <h2>
                   Recent Transactions
                 </h2>
-                <button className="text-sm text-[#7c3626] dark:text-[#a04830] hover:opacity-90 font-medium">
+                <button className="text-sm text-[#1e3a5f] dark:text-[#3d5a80] hover:opacity-90 font-medium">
                   View All
                 </button>
               </div>
@@ -434,7 +434,7 @@ const Dashboard: React.FC = () => {
                           <span
                             className={
                               tx.amount >= 0
-                                ? 'text-[#2d7738] dark:text-[#3d9147]'
+                                ? 'text-[#059669] dark:text-[#10b981]'
                                 : 'text-gray-900 dark:text-white'
                             }
                           >
@@ -556,11 +556,11 @@ const Dashboard: React.FC = () => {
                       2 transactions need review
                     </p>
                   </div>
-                  <div className="p-3 bg-[#7c3626]/10 dark:bg-[#a04830]/10 border border-[#7c3626]/20 dark:border-[#a04830]/20 rounded-lg">
-                    <p className="text-sm font-medium text-[#7c3626] dark:text-[#a04830]">
+                  <div className="p-3 bg-[#1e3a5f]/10 dark:bg-[#3d5a80]/20 border border-[#1e3a5f]/20 dark:border-[#3d5a80]/30 rounded-lg">
+                    <p className="text-sm font-medium text-[#1e3a5f] dark:text-[#3d5a80]">
                       Price Alert
                     </p>
-                    <p className="text-xs text-[#8b7355] dark:text-[#a38a6f] mt-1">
+                    <p className="text-xs text-[#64748b] dark:text-[#94a3b8] mt-1">
                       BTC reached target price
                     </p>
                   </div>

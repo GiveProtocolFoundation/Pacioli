@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react'
+import React, { useState, useCallback, useEffect, useRef } from 'react'
 import { RefreshCw, Wallet, Database, AlertCircle, CheckCircle, Loader } from 'lucide-react'
 import { WalletConnector } from '../../components/wallet/WalletConnector'
 import { TransactionList } from '../../components/wallet/TransactionList'
@@ -7,12 +7,20 @@ import { indexedDBService } from '../../services/database/indexedDBService'
 import { migrationService } from '../../services/database/migrationService'
 import { NetworkType, type ConnectedWallet, type Transaction } from '../../services/wallet/types'
 import { encodeAddress, decodeAddress } from '@polkadot/util-crypto'
+import { useWalletAliases } from '../../contexts/WalletAliasContext'
 
 /**
  * Convert address to the correct SS58 format for the given network
  * Polkadot wallets may return addresses in generic format (42) but we need network-specific format
+ * EVM addresses (0x...) are returned as-is since they don't use SS58 encoding
  */
 const convertToNetworkFormat = (address: string, network: NetworkType): string => {
+  // EVM addresses start with 0x - don't try to convert them
+  if (address.startsWith('0x')) {
+    console.log(`📍 EVM address detected, skipping SS58 conversion: ${address}`)
+    return address
+  }
+
   try {
     // Get SS58 prefix for each network
     const ss58Formats: Record<NetworkType, number> = {
@@ -53,8 +61,21 @@ const WalletManager: React.FC = () => {
   const [syncStatus, setSyncStatus] = useState<{ lastSyncTime: Date; lastSyncedBlock: number } | null>(null)
   const [syncProgress, setSyncProgress] = useState<SyncProgress | null>(null)
 
+  // Wallet aliases
+  const { formatWalletDisplay } = useWalletAliases()
+
+  // Track if we've already initialized
+  const initializationStartedRef = useRef(false)
+
   // Initialize IndexedDB and run migration on mount
   useEffect(() => {
+    // Prevent double initialization in React Strict Mode
+    if (initializationStartedRef.current) {
+      console.log('💾 Skipping duplicate initialization')
+      return
+    }
+    initializationStartedRef.current = true
+
     const initializeDB = async () => {
       try {
         setMigrationStatus('Initializing database...')
@@ -113,25 +134,41 @@ const WalletManager: React.FC = () => {
 
   // Load transactions and sync status when address or network changes
   useEffect(() => {
+    // Track if this effect is still current (for cleanup on race conditions)
+    let isCurrent = true
+
     const loadData = async () => {
+      console.log(`💾 loadData called: dbInitialized=${dbInitialized}, selectedAddress=${selectedAddress}, selectedNetwork=${selectedNetwork}`)
+
       if (!dbInitialized || !selectedAddress) {
+        console.log(`💾 Early return: dbInitialized=${dbInitialized}, selectedAddress=${selectedAddress}`)
         setSyncStatus(null)
         setTransactions([])
         return
       }
 
       try {
-        // Convert address to network-specific format
+        // For EVM addresses (0x...), use as-is. For Substrate, convert.
+        const isEVMAddress = selectedAddress.startsWith('0x')
         const networkAddress = convertToNetworkFormat(selectedAddress, selectedNetwork)
+
+        console.log(`💾 Loading data for address: ${selectedAddress}`)
+        console.log(`💾 Is EVM: ${isEVMAddress}, Network address: ${networkAddress}`)
 
         // Load sync status
         const status = await indexedDBService.loadSyncStatus(selectedNetwork, networkAddress)
+        if (!isCurrent) return // Abort if effect was cleaned up
         setSyncStatus(status)
 
         // Load saved transactions from IndexedDB
         console.log(`💾 Loading transactions for ${networkAddress} on ${selectedNetwork}...`)
         const savedTxs = await indexedDBService.getTransactionsFor(selectedNetwork, networkAddress)
         console.log(`💾 Loaded ${savedTxs.length} saved transactions from IndexedDB`)
+
+        if (!isCurrent) return // Abort if effect was cleaned up
+
+        // Update transactions state
+        console.log(`💾 Setting transactions state with ${savedTxs.length} transactions for ${networkAddress}`)
         setTransactions(savedTxs)
 
         // Save selection to localStorage for persistence
@@ -143,6 +180,11 @@ const WalletManager: React.FC = () => {
     }
 
     loadData()
+
+    // Cleanup function to mark this effect as stale
+    return () => {
+      isCurrent = false
+    }
   }, [selectedAddress, selectedNetwork, dbInitialized])
 
   // Handle wallet changes from WalletConnector
@@ -158,13 +200,20 @@ const WalletManager: React.FC = () => {
     }
 
     // Auto-select first available address (only if none selected)
-    if (wallets.length > 0 && wallets[0].accounts.length > 0 && !selectedAddress) {
+    // Check localStorage directly to avoid race condition with state updates
+    const lastSavedAddress = localStorage.getItem('pacioli_last_address')
+    console.log(`💾 handleWalletsChange: selectedAddress='${selectedAddress}', lastSavedAddress='${lastSavedAddress}'`)
+    if (wallets.length > 0 && wallets[0].accounts.length > 0 && !selectedAddress && !lastSavedAddress) {
+      console.log(`💾 Auto-selecting first address: ${wallets[0].accounts[0].address}`)
       setSelectedAddress(wallets[0].accounts[0].address)
+    } else {
+      console.log(`💾 NOT auto-selecting (conditions not met)`)
     }
   }, [selectedAddress])
 
   // Handle address selection
   const handleAddressSelect = useCallback((address: string) => {
+    console.log(`🔄 handleAddressSelect called with: ${address}`)
     setSelectedAddress(address)
     // Note: Transactions will be auto-loaded by the useEffect above
   }, [])
@@ -352,7 +401,7 @@ const WalletManager: React.FC = () => {
       {/* Header */}
       <div className="max-w-7xl mx-auto mb-8">
         <div className="flex items-center mb-3">
-          <Wallet className="w-8 h-8 text-[#7c3626] dark:text-[#a04830] mr-3" />
+          <Wallet className="w-8 h-8 text-[#1e3a5f] dark:text-[#3d5a80] mr-3" />
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
             Wallet Manager
           </h1>
@@ -394,7 +443,7 @@ const WalletManager: React.FC = () => {
                   <select
                     value={selectedNetwork}
                     onChange={handleNetworkChange}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#7c3626] dark:focus:ring-[#a04830] focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#1e3a5f] dark:focus:ring-[#3d5a80] focus:border-transparent"
                   >
                     <option value={NetworkType.POLKADOT}>Polkadot</option>
                     <option value={NetworkType.KUSAMA}>Kusama</option>
@@ -413,13 +462,12 @@ const WalletManager: React.FC = () => {
                   <select
                     value={selectedAddress}
                     onChange={handleAddressChange}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#7c3626] dark:focus:ring-[#a04830] focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#1e3a5f] dark:focus:ring-[#3d5a80] focus:border-transparent"
                   >
                     <option value="">Select an address...</option>
                     {allAddresses.map((addr) => (
                       <option key={addr.address} value={addr.address}>
-                        {addr.name} ({addr.address.slice(0, 8)}...
-                        {addr.address.slice(-6)}) - {addr.walletType}
+                        {formatWalletDisplay(addr.address, addr.name)} - {addr.walletType}
                       </option>
                     ))}
                   </select>
@@ -523,7 +571,7 @@ const WalletManager: React.FC = () => {
 
                 {/* Sync Status (Last Sync Info) */}
                 {selectedAddress && syncStatus && !syncProgress && !error && (
-                  <div className="mt-4 p-3 bg-[#2d7738]/10 dark:bg-[#3d9147]/10 border-l-4 border-[#2d7738] dark:border-[#3d9147] rounded">
+                  <div className="mt-4 p-3 bg-[#059669]/10 dark:bg-[#10b981]/10 border-l-4 border-[#059669] dark:border-[#10b981] rounded">
                     <p className="text-sm text-gray-700 dark:text-gray-300">
                       Last synced: {new Date(syncStatus.lastSyncTime).toLocaleString()}
                     </p>
@@ -543,25 +591,25 @@ const WalletManager: React.FC = () => {
                 </h3>
                 <ol className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
                   <li className="flex items-start">
-                    <span className="font-semibold text-[#7c3626] dark:text-[#a04830] mr-2">
+                    <span className="font-semibold text-[#1e3a5f] dark:text-[#3d5a80] mr-2">
                       1.
                     </span>
                     Install a Polkadot wallet extension (Polkadot.js, Talisman, or SubWallet)
                   </li>
                   <li className="flex items-start">
-                    <span className="font-semibold text-[#7c3626] dark:text-[#a04830] mr-2">
+                    <span className="font-semibold text-[#1e3a5f] dark:text-[#3d5a80] mr-2">
                       2.
                     </span>
                     Click the "Connect" button for your wallet
                   </li>
                   <li className="flex items-start">
-                    <span className="font-semibold text-[#7c3626] dark:text-[#a04830] mr-2">
+                    <span className="font-semibold text-[#1e3a5f] dark:text-[#3d5a80] mr-2">
                       3.
                     </span>
                     Select an address and network
                   </li>
                   <li className="flex items-start">
-                    <span className="font-semibold text-[#7c3626] dark:text-[#a04830] mr-2">
+                    <span className="font-semibold text-[#1e3a5f] dark:text-[#3d5a80] mr-2">
                       4.
                     </span>
                     Click "Sync Transactions" to import your history

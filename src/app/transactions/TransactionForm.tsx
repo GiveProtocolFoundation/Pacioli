@@ -4,6 +4,7 @@ import { Save, X, Calendar, DollarSign, FileText, Tag, Wallet as WalletIcon } fr
 import { useTransactions } from '../../contexts/TransactionContext'
 import { useCurrency } from '../../contexts/CurrencyContext'
 import { useTokens } from '../../contexts/TokenContext'
+import { useWalletAliases } from '../../contexts/WalletAliasContext'
 import { TransactionFormData } from '../../types/transaction'
 import { Token, Chain } from '../../types/digitalAssets'
 import { getDigitalAssetTypeInfo } from '../../types/digitalAssets'
@@ -15,6 +16,8 @@ import {
   getTransactionTypesBySubcategory,
   getTransactionTypeByCode
 } from '../../types/transaction-categories'
+import { storageService } from '../../services/database/storageService'
+import { ConnectedWallet } from '../../services/wallet/types'
 
 const TransactionForm: React.FC = () => {
   const navigate = useNavigate()
@@ -26,8 +29,29 @@ const TransactionForm: React.FC = () => {
   const isEditMode = Boolean(id)
   const existingTransaction = id ? getTransaction(id) : undefined
 
+  // Helper to convert any date format to datetime-local format (YYYY-MM-DDTHH:MM)
+  const formatDateForInput = (dateStr: string | undefined): string => {
+    if (!dateStr) return new Date().toISOString().slice(0, 16)
+
+    // Try to parse the date string
+    const date = new Date(dateStr)
+    if (isNaN(date.getTime())) {
+      // If invalid date, return current date/time
+      return new Date().toISOString().slice(0, 16)
+    }
+
+    // Format as YYYY-MM-DDTHH:MM (local time, not UTC)
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    const hours = String(date.getHours()).padStart(2, '0')
+    const minutes = String(date.getMinutes()).padStart(2, '0')
+
+    return `${year}-${month}-${day}T${hours}:${minutes}`
+  }
+
   const [formData, setFormData] = useState<TransactionFormData>({
-    date: existingTransaction?.date || new Date().toISOString().slice(0, 16),
+    date: formatDateForInput(existingTransaction?.date),
     description: existingTransaction?.description || '',
     type: existingTransaction?.type || 'revenue',
     category: existingTransaction?.category || '',
@@ -48,6 +72,10 @@ const TransactionForm: React.FC = () => {
   const [errors, setErrors] = useState<Partial<Record<keyof TransactionFormData, string>>>({})
   const [isSaving, setIsSaving] = useState(false)
 
+  // Connected wallets and aliases
+  const { formatWalletDisplay } = useWalletAliases()
+  const [connectedWallets, setConnectedWallets] = useState<ConnectedWallet[]>([])
+
   useEffect(() => {
     if (!isEditMode) {
       setFormData(prev => ({
@@ -57,7 +85,21 @@ const TransactionForm: React.FC = () => {
     }
   }, [currencySettings.primaryCurrency, isEditMode])
 
-  const availableWallets = ['Main Wallet', 'Operating Wallet', 'Cold Storage', 'Hot Wallet', 'Warm Wallet']
+  // Load connected wallets on mount
+  useEffect(() => {
+    const savedWallets = storageService.loadWallets()
+    setConnectedWallets(savedWallets)
+  }, [])
+
+  // Build wallet options from connected wallets
+  const walletOptions = connectedWallets.flatMap((wallet) =>
+    wallet.accounts.map((acc) => ({
+      address: acc.address,
+      name: acc.name || 'Unnamed',
+      displayName: formatWalletDisplay(acc.address, acc.name),
+      walletType: wallet.type,
+    }))
+  )
 
   const selectedToken = formData.tokenId ? getToken(formData.tokenId) : undefined
   const selectedChain = formData.chainId ? getChain(formData.chainId) : undefined
@@ -231,11 +273,17 @@ const TransactionForm: React.FC = () => {
                   } focus:outline-none focus:ring-2 focus:ring-blue-500`}
                 >
                   <option value="">Select wallet</option>
-                  {availableWallets.map(wallet => (
-                    <option key={wallet} value={wallet}>
-                      {wallet}
+                  {walletOptions.length > 0 ? (
+                    walletOptions.map(wallet => (
+                      <option key={wallet.address} value={wallet.address}>
+                        {wallet.displayName} - {wallet.walletType}
+                      </option>
+                    ))
+                  ) : (
+                    <option value="" disabled>
+                      No wallets connected - go to Wallet Manager to connect
                     </option>
-                  ))}
+                  )}
                 </select>
                 {errors.wallet && (
                   <p className="mt-1 text-sm text-red-600">{errors.wallet}</p>

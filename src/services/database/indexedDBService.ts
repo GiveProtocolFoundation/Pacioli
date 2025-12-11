@@ -7,7 +7,7 @@
 import type { Transaction, ConnectedWallet } from '../wallet/types'
 
 const DB_NAME = 'PacioliDB'
-const DB_VERSION = 1
+const DB_VERSION = 2 // Bumped for wallet_aliases store
 
 // Store names
 const STORES = {
@@ -15,6 +15,7 @@ const STORES = {
   WALLETS: 'wallets',
   SYNC_STATUS: 'sync_status',
   METADATA: 'metadata',
+  WALLET_ALIASES: 'wallet_aliases',
 } as const
 
 export interface SyncStatus {
@@ -23,6 +24,12 @@ export interface SyncStatus {
   lastSyncedBlock: number
   lastSyncTime: Date
   isSyncing: boolean
+}
+
+export interface WalletAlias {
+  address: string // Primary key - the wallet address
+  alias: string // User-defined alias/name
+  updatedAt: Date
 }
 
 export interface TransactionQuery {
@@ -105,6 +112,11 @@ class IndexedDBService {
         // Create metadata store
         if (!db.objectStoreNames.contains(STORES.METADATA)) {
           db.createObjectStore(STORES.METADATA, { keyPath: 'key' })
+        }
+
+        // Create wallet aliases store (added in v2)
+        if (!db.objectStoreNames.contains(STORES.WALLET_ALIASES)) {
+          db.createObjectStore(STORES.WALLET_ALIASES, { keyPath: 'address' })
         }
       }
     })
@@ -478,6 +490,77 @@ class IndexedDBService {
       this.db = null
       this.initPromise = null
     }
+  }
+
+  // ==================== WALLET ALIAS OPERATIONS ====================
+
+  /**
+   * Save or update a wallet alias
+   */
+  async saveWalletAlias(address: string, alias: string): Promise<void> {
+    const db = await this.ensureDB()
+    const tx = db.transaction(STORES.WALLET_ALIASES, 'readwrite')
+    const store = tx.objectStore(STORES.WALLET_ALIASES)
+
+    const walletAlias: WalletAlias = {
+      address: address.toLowerCase(), // Normalize address for consistent lookup
+      alias,
+      updatedAt: new Date(),
+    }
+
+    await this.promisifyRequest(store.put(walletAlias))
+  }
+
+  /**
+   * Get alias for a specific address
+   */
+  async getWalletAlias(address: string): Promise<string | null> {
+    const db = await this.ensureDB()
+    const tx = db.transaction(STORES.WALLET_ALIASES, 'readonly')
+    const store = tx.objectStore(STORES.WALLET_ALIASES)
+
+    const result = await this.promisifyRequest<WalletAlias>(
+      store.get(address.toLowerCase())
+    )
+    return result?.alias || null
+  }
+
+  /**
+   * Get all wallet aliases as a map (address -> alias)
+   */
+  async getAllWalletAliases(): Promise<Record<string, string>> {
+    const db = await this.ensureDB()
+    const tx = db.transaction(STORES.WALLET_ALIASES, 'readonly')
+    const store = tx.objectStore(STORES.WALLET_ALIASES)
+
+    const aliases = await this.getAllFromStore<WalletAlias>(store)
+    const aliasMap: Record<string, string> = {}
+
+    for (const entry of aliases) {
+      aliasMap[entry.address] = entry.alias
+    }
+
+    return aliasMap
+  }
+
+  /**
+   * Delete a wallet alias
+   */
+  async deleteWalletAlias(address: string): Promise<void> {
+    const db = await this.ensureDB()
+    const tx = db.transaction(STORES.WALLET_ALIASES, 'readwrite')
+    const store = tx.objectStore(STORES.WALLET_ALIASES)
+    await this.promisifyRequest(store.delete(address.toLowerCase()))
+  }
+
+  /**
+   * Clear all wallet aliases
+   */
+  async clearWalletAliases(): Promise<void> {
+    const db = await this.ensureDB()
+    const tx = db.transaction(STORES.WALLET_ALIASES, 'readwrite')
+    const store = tx.objectStore(STORES.WALLET_ALIASES)
+    await this.promisifyRequest(store.clear())
   }
 }
 
