@@ -181,7 +181,7 @@ class WalletService {
       if (window.ethereum?.providers) {
         console.log('[WalletService] Multiple providers detected:', window.ethereum.providers.length)
         const metamaskProvider = window.ethereum.providers.find(
-          (p: any) => p.isMetaMask && !p.isTalisman && !p.isSubWallet
+          (p) => p.isMetaMask && !p.isTalisman && !p.isSubWallet
         )
         if (metamaskProvider) {
           console.log('[WalletService] Using specific MetaMask provider from providers array')

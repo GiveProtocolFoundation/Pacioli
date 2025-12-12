@@ -221,12 +221,13 @@ class IndexedDBService {
 
     // Apply additional filters
     results = results.filter((tx) => {
-      if (type && tx.type !== type) return false
-      if (startBlock && tx.blockNumber < startBlock) return false
-      if (endBlock && tx.blockNumber > endBlock) return false
-      if (startDate && new Date(tx.timestamp) < startDate) return false
-      if (endDate && new Date(tx.timestamp) > endDate) return false
-      return true
+      return (
+        (!type || tx.type === type) &&
+        (!startBlock || tx.blockNumber >= startBlock) &&
+        (!endBlock || tx.blockNumber <= endBlock) &&
+        (!startDate || new Date(tx.timestamp) >= startDate) &&
+        (!endDate || new Date(tx.timestamp) <= endDate)
+      )
     })
 
     // Sort by block number descending (newest first)

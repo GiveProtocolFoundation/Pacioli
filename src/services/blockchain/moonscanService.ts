@@ -9,6 +9,23 @@
 
 import type { NetworkType, SubstrateTransaction } from '../wallet/types'
 
+/**
+ * Sanitize a string for safe logging by removing/escaping control characters
+ * Prevents log injection attacks (CWE-117)
+ */
+function sanitizeForLog(input: string | number | undefined | null): string {
+  if (input === undefined || input === null) return ''
+  const str = String(input)
+  // Remove newlines, carriage returns, and other control characters
+  // Also escape backslashes to prevent escape sequence injection
+  return str
+    .replace(/\\/g, '\\\\')
+    .replace(/\r/g, '\\r')
+    .replace(/\n/g, '\\n')
+    .replace(/\t/g, '\\t')
+    .replace(/[\x00-\x1F\x7F]/g, '') // Remove other control characters
+}
+
 interface MoonscanConfig {
   chainId: number
   apiKey?: string
@@ -176,7 +193,7 @@ class MoonscanService {
       console.log(`🔍 [Moonscan] HTTP Response status: ${response.status}`)
 
       const responseText = await response.text()
-      console.log(`🔍 [Moonscan] Raw response (first 500 chars): ${responseText.substring(0, 500)}`)
+      console.log(`🔍 [Moonscan] Raw response (first 500 chars): ${sanitizeForLog(responseText.substring(0, 500))}`)
 
       let data: MoonscanResponse<MoonscanTransaction>
       try {
@@ -186,7 +203,7 @@ class MoonscanService {
         throw new Error(`Invalid JSON response from Etherscan API: ${responseText.substring(0, 200)}`)
       }
 
-      console.log(`🔍 [Moonscan] Response status: ${data.status}, message: ${data.message}`)
+      console.log(`🔍 [Moonscan] Response status: ${sanitizeForLog(data.status)}, message: ${sanitizeForLog(data.message)}`)
 
       if (data.status !== '1') {
         // Status '0' with "No transactions found" is not an error
@@ -207,7 +224,7 @@ class MoonscanService {
         return []
       }
 
-      console.log(`🔍 [Moonscan] Received ${data.result.length} transactions`)
+      console.log(`🔍 [Moonscan] Received ${sanitizeForLog(data.result.length)} transactions`)
 
       return data.result.map((tx) => this.mapToSubstrateTransaction(tx, network, address))
     } catch (error) {
@@ -275,7 +292,7 @@ class MoonscanService {
             (data.message === 'OK' && typeof data.result === 'string')) {
           return []
         }
-        console.warn(`🔍 [Moonscan] Token transfer API warning: ${data.message}`)
+        console.warn(`🔍 [Moonscan] Token transfer API warning: ${sanitizeForLog(data.message)}`)
         return []
       }
 
@@ -283,7 +300,7 @@ class MoonscanService {
         return []
       }
 
-      console.log(`🔍 [Moonscan] Received ${data.result.length} token transfers`)
+      console.log(`🔍 [Moonscan] Received ${sanitizeForLog(data.result.length)} token transfers`)
 
       return data.result.map((tx) => this.mapTokenTransferToSubstrateTransaction(tx, network, address))
     } catch (error) {
@@ -354,9 +371,8 @@ class MoonscanService {
   private mapToSubstrateTransaction(
     tx: MoonscanTransaction,
     network: NetworkType,
-    userAddress: string
+    _userAddress: string
   ): SubstrateTransaction {
-    const isOutgoing = tx.from.toLowerCase() === userAddress.toLowerCase()
     const isContract = tx.input !== '0x' && tx.input.length > 2
 
     // Determine transaction type
@@ -400,7 +416,7 @@ class MoonscanService {
   private mapTokenTransferToSubstrateTransaction(
     tx: MoonscanTokenTransfer,
     network: NetworkType,
-    userAddress: string
+    _userAddress: string
   ): SubstrateTransaction {
     return {
       id: `${tx.blockNumber}-${tx.transactionIndex}-token`,

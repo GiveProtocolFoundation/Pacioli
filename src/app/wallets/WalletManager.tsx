@@ -600,7 +600,7 @@ const WalletManager: React.FC = () => {
                     <span className="font-semibold text-[#1e3a5f] dark:text-[#3d5a80] mr-2">
                       2.
                     </span>
-                    Click the "Connect" button for your wallet
+                    Click the &quot;Connect&quot; button for your wallet
                   </li>
                   <li className="flex items-start">
                     <span className="font-semibold text-[#1e3a5f] dark:text-[#3d5a80] mr-2">
@@ -612,7 +612,7 @@ const WalletManager: React.FC = () => {
                     <span className="font-semibold text-[#1e3a5f] dark:text-[#3d5a80] mr-2">
                       4.
                     </span>
-                    Click "Sync Transactions" to import your history
+                    Click &quot;Sync Transactions&quot; to import your history
                   </li>
                 </ol>
               </div>

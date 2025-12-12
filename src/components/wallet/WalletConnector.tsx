@@ -50,20 +50,7 @@ export const WalletConnector: React.FC<WalletConnectorProps> = ({
   // Alias editing state
   const [editingAlias, setEditingAlias] = useState<string | null>(null) // address being edited
   const [aliasInput, setAliasInput] = useState('')
-  const { aliases, setAlias, formatWalletDisplay } = useWalletAliases()
-
-  // Detect wallets on mount
-  useEffect(() => {
-    detectWallets()
-    loadSavedWallets()
-  }, [])
-
-  // Notify parent when wallets change
-  useEffect(() => {
-    if (onWalletsChange) {
-      onWalletsChange(connectedWallets)
-    }
-  }, [connectedWallets, onWalletsChange])
+  const { aliases, setAlias } = useWalletAliases()
 
   const detectWallets = useCallback(async () => {
     try {
@@ -81,6 +68,19 @@ export const WalletConnector: React.FC<WalletConnectorProps> = ({
       setConnectedWallets(saved)
     }
   }, [])
+
+  // Detect wallets on mount
+  useEffect(() => {
+    detectWallets()
+    loadSavedWallets()
+  }, [detectWallets, loadSavedWallets])
+
+  // Notify parent when wallets change
+  useEffect(() => {
+    if (onWalletsChange) {
+      onWalletsChange(connectedWallets)
+    }
+  }, [connectedWallets, onWalletsChange])
 
   const connectWallet = useCallback(async (walletType: WalletType) => {
     setConnectingWallet(walletType)
@@ -181,6 +181,11 @@ export const WalletConnector: React.FC<WalletConnectorProps> = ({
     }
   }, [saveAlias, cancelEditingAlias])
 
+  // Handle alias input change
+  const handleAliasInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setAliasInput(e.target.value)
+  }, [])
+
   if (!walletStatus) {
     return (
       <div className="ledger-card ledger-card-financial border border-gray-200 dark:border-gray-700 p-6">
@@ -270,7 +275,7 @@ export const WalletConnector: React.FC<WalletConnectorProps> = ({
                                   <input
                                     type="text"
                                     value={aliasInput}
-                                    onChange={(e) => setAliasInput(e.target.value)}
+                                    onChange={handleAliasInputChange}
                                     onKeyDown={(e) => handleAliasKeyDown(e, acc.address)}
                                     placeholder="Enter alias..."
                                     className="flex-1 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#1e3a5f]"

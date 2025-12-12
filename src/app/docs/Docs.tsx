@@ -275,9 +275,9 @@ const Docs: React.FC = () => {
                                     ))}
                                 </button>
 
-                                {hasSubItems && isItemExpanded && (
+                                {hasSubItems && isItemExpanded && item.items && (
                                   <div className="ml-4 mt-1 space-y-1">
-                                    {item.items!.map(subItem => {
+                                    {item.items.map(subItem => {
                                       const isSubSelected = selectedDoc === subItem.id
 
                                       return (

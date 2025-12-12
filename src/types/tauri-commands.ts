@@ -11,6 +11,7 @@ import {
   AccountingTransaction,
   JournalEntry,
   TransactionLot,
+  LotDisposal,
   PriceHistory,
   VTokenBalance,
   VAccountBalance,
@@ -159,7 +160,7 @@ export namespace LotCommands {
   export type GetOpen = (tokenId?: number) => Promise<TauriResponse<VOpenTaxLot[]>>
   export type GetById = (id: number) => Promise<TauriResponse<TransactionLot>>
   export type RecordDisposal = (request: RecordDisposalRequest) => Promise<TauriResponse<boolean>>
-  export type GetDisposals = (lotId: number) => Promise<TauriResponse<any[]>>
+  export type GetDisposals = (lotId: number) => Promise<TauriResponse<LotDisposal[]>>
   export type GetRealizedGains = (taxYear?: number) => Promise<TauriResponse<VGainsLossesSummary[]>>
 }
 

@@ -7,12 +7,18 @@ import {
   DigitalAssetType as DBDigitalAssetType,
   ChainType as DBChainType,
   TransactionType as DBTransactionType,
-  AccountType as DBAccountType
+  AccountType as DBAccountType,
+  TokenStandard as DBTokenStandard,
+  Chain as DBChain,
+  Token as DBToken
 } from './database'
 
 import {
   DigitalAssetType as UIDigitalAssetType,
-  ChainType as UIChainType
+  ChainType as UIChainType,
+  TokenStandard as UITokenStandard,
+  Chain as UIChain,
+  Token as UIToken
 } from './digitalAssets'
 
 import {
@@ -207,57 +213,81 @@ export function isDBTransactionType(value: unknown): value is DBTransactionType 
 /**
  * Convert UI token to database token
  */
-export function uiTokenToDbToken(uiToken: any): any {
+export function uiTokenToDbToken(uiToken: UIToken | null): Omit<DBToken, 'createdAt' | 'updatedAt'> | null {
   if (!uiToken) return null
 
   return {
-    ...uiToken,
-    id: typeof uiToken.id === 'string' ? parseInt(uiToken.id, 10) : uiToken.id,
+    id: typeof uiToken.id === 'string' ? parseInt(uiToken.id, 10) : uiToken.id as unknown as number,
+    symbol: uiToken.symbol,
+    name: uiToken.name,
+    chainId: uiToken.chainId,
+    contractAddress: uiToken.contractAddress,
+    decimals: uiToken.decimals,
+    tokenStandard: uiToken.tokenStandard as DBTokenStandard,
     digitalAssetType: isUIDigitalAssetType(uiToken.digitalAssetType)
       ? uiToDbDigitalAssetType(uiToken.digitalAssetType)
-      : uiToken.digitalAssetType
+      : uiToken.digitalAssetType as DBDigitalAssetType,
+    coingeckoId: uiToken.coingeckoId,
+    iconUrl: uiToken.iconUrl,
+    isActive: uiToken.isActive
   }
 }
 
 /**
  * Convert database token to UI token
  */
-export function dbTokenToUiToken(dbToken: any): any {
+export function dbTokenToUiToken(dbToken: DBToken | null): UIToken | null {
   if (!dbToken) return null
 
   return {
-    ...dbToken,
     id: dbToken.id.toString(),
+    symbol: dbToken.symbol,
+    name: dbToken.name,
+    chainId: dbToken.chainId,
+    contractAddress: dbToken.contractAddress,
+    decimals: dbToken.decimals,
+    tokenStandard: dbToken.tokenStandard as UITokenStandard,
     digitalAssetType: isDBDigitalAssetType(dbToken.digitalAssetType)
       ? dbToUiDigitalAssetType(dbToken.digitalAssetType)
-      : dbToken.digitalAssetType
+      : dbToken.digitalAssetType as UIDigitalAssetType,
+    coingeckoId: dbToken.coingeckoId,
+    iconUrl: dbToken.iconUrl,
+    isActive: dbToken.isActive
   }
 }
 
 /**
  * Convert UI chain to database chain
  */
-export function uiChainToDbChain(uiChain: any): any {
+export function uiChainToDbChain(uiChain: UIChain | null): Omit<DBChain, 'createdAt' | 'updatedAt'> | null {
   if (!uiChain) return null
 
   return {
-    ...uiChain,
-    id: typeof uiChain.id === 'string' ? parseInt(uiChain.id, 10) : uiChain.id,
-    chainType: uiToDbChainType(uiChain.chainType)
+    id: typeof uiChain.id === 'string' ? parseInt(uiChain.id, 10) : uiChain.id as unknown as number,
+    chainId: uiChain.chainId,
+    chainName: uiChain.chainName,
+    nativeTokenSymbol: uiChain.nativeTokenId,
+    chainType: uiToDbChainType(uiChain.chainType),
+    rpcEndpoint: uiChain.rpcUrl,
+    blockExplorerUrl: uiChain.explorerUrl,
+    isActive: uiChain.isActive
   }
 }
 
 /**
  * Convert database chain to UI chain
  */
-export function dbChainToUiChain(dbChain: any): any {
+export function dbChainToUiChain(dbChain: DBChain | null): UIChain | null {
   if (!dbChain) return null
 
   return {
-    ...dbChain,
     id: dbChain.id.toString(),
+    chainId: dbChain.chainId,
+    chainName: dbChain.chainName,
+    nativeTokenId: dbChain.nativeTokenSymbol,
     chainType: dbToUiChainType(dbChain.chainType),
     rpcUrl: dbChain.rpcEndpoint,
-    explorerUrl: dbChain.blockExplorerUrl
+    explorerUrl: dbChain.blockExplorerUrl,
+    isActive: dbChain.isActive
   }
 }
