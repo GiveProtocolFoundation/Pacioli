@@ -9,10 +9,12 @@
 
 @theme {
   /* Libre Baskerville - ONLY for Pacioli wordmark and tagline */
-  --font-family-serif: "Libre Baskerville", Georgia, serif;
+  --font-family-serif: 'Libre Baskerville', Georgia, serif;
 
   /* IBM Plex Sans for ALL UI text - premium, highly legible */
-  --font-family-sans: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-family-sans:
+    'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    sans-serif;
 
   /* Font weight scale */
   --font-weight-normal: 400;
@@ -38,17 +40,17 @@
   --line-height-small: 1.4;
 
   /* Navy Blue + Gold color palette - Light mode */
-  --color-primary: #1e3a5f;           /* Deep navy */
+  --color-primary: #1e3a5f; /* Deep navy */
   --color-primary-hover: #2d4a6f;
-  --color-primary-light: #e8eef4;     /* Navy tint for backgrounds */
-  --color-accent: #c9a227;            /* Antique gold */
+  --color-primary-light: #e8eef4; /* Navy tint for backgrounds */
+  --color-accent: #c9a227; /* Antique gold */
   --color-accent-hover: #b8922a;
 
   /* Dark mode primary colors */
-  --color-primary-dark: #3d5a80;      /* Lighter navy for dark mode */
+  --color-primary-dark: #3d5a80; /* Lighter navy for dark mode */
   --color-primary-dark-hover: #4d6a90;
   --color-primary-dark-light: #1e3a5f; /* Darker navy for dark mode contrast */
-  --color-accent-dark: #d4af37;       /* Brighter gold for dark mode */
+  --color-accent-dark: #d4af37; /* Brighter gold for dark mode */
   --color-accent-dark-hover: #e4bf47;
 
   /* Semantic colors */
@@ -90,9 +92,9 @@
   --color-border-dark: #334155;
 
   /* Background colors */
-  --color-bg-main: #f8f9fa;          /* Warm white */
+  --color-bg-main: #f8f9fa; /* Warm white */
   --color-bg-card: #ffffff;
-  --color-bg-main-dark: #0f172a;     /* Rich dark blue */
+  --color-bg-main-dark: #0f172a; /* Rich dark blue */
   --color-bg-card-dark: #1e293b;
 }
 
@@ -176,7 +178,7 @@ h3 {
 /* Utility class for tabular figures */
 .tabular-nums,
 .numeric {
-  font-feature-settings: "tnum" 1;
+  font-feature-settings: 'tnum' 1;
   font-variant-numeric: tabular-nums;
 }
 
@@ -187,15 +189,15 @@ th,
 .amount,
 .price,
 .percentage,
-[data-numeric="true"] {
-  font-feature-settings: "tnum" 1;
+[data-numeric='true'] {
+  font-feature-settings: 'tnum' 1;
   font-variant-numeric: tabular-nums;
 }
 
 /* Large numeric displays (portfolio values, totals) */
 .text-3xl,
 .text-2xl {
-  font-feature-settings: "tnum" 1;
+  font-feature-settings: 'tnum' 1;
   font-variant-numeric: tabular-nums;
 }
 
@@ -203,7 +205,9 @@ th,
 .ledger-card {
   border-radius: 4px;
   border: 1px solid var(--color-border);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.04),
+    0 1px 2px rgba(0, 0, 0, 0.06);
   background: var(--color-bg-card);
   position: relative;
   overflow: hidden;
@@ -212,7 +216,9 @@ th,
 .dark .ledger-card {
   background: #1a1a1a;
   border-color: var(--color-border-dark);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.12);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.2),
+    0 1px 2px rgba(0, 0, 0, 0.12);
 }
 
 /* Grid background pattern for ledger aesthetic */
@@ -221,8 +227,8 @@ th,
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(0,0,0,0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,0,0,0.02) 1px, transparent 1px);
+    linear-gradient(rgba(0, 0, 0, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.02) 1px, transparent 1px);
   background-size: 40px 40px;
   opacity: 0.3;
   pointer-events: none;
@@ -231,8 +237,8 @@ th,
 
 .dark .ledger-card::before {
   background-image:
-    linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
 }
 
 /* Ensure card content is above the grid pattern */
@@ -293,7 +299,7 @@ th,
 
 /* Large numeric displays - tighter tracking for financial feel */
 .stat-value {
-  font-feature-settings: "tnum" 1;
+  font-feature-settings: 'tnum' 1;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
 }
@@ -359,7 +365,7 @@ th,
 }
 
 .balance-list-item:hover {
-  background: rgba(0,0,0,0.02);
+  background: rgba(0, 0, 0, 0.02);
   margin-left: -16px;
   margin-right: -16px;
   padding-left: 16px;
@@ -367,7 +373,7 @@ th,
 }
 
 .dark .balance-list-item:hover {
-  background: rgba(255,255,255,0.02);
+  background: rgba(255, 255, 255, 0.02);
 }
 
 /* Square token icon container */
@@ -420,8 +426,8 @@ th,
 .ledger-background {
   background-color: var(--color-bg-main);
   background-image:
-    linear-gradient(rgba(0,0,0,0.015) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,0,0,0.015) 1px, transparent 1px);
+    linear-gradient(rgba(0, 0, 0, 0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.015) 1px, transparent 1px);
   background-size: 40px 40px;
   background-position: 0 0;
 }
@@ -429,8 +435,8 @@ th,
 .dark .ledger-background {
   background-color: #0a0a0a;
   background-image:
-    linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+    linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
 }
 
 /* Sidebar styling enhancements */

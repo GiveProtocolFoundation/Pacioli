@@ -133,9 +133,7 @@ const Dashboard: React.FC = () => {
         <div className="max-w-7xl mx-auto px-10 py-10">
           <div className="flex items-center justify-between">
             <div>
-              <h1>
-                Dashboard
-              </h1>
+              <h1>Dashboard</h1>
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                 Welcome back! Here&apos;s your crypto portfolio overview.
               </p>
@@ -165,9 +163,7 @@ const Dashboard: React.FC = () => {
           <div className="ledger-card border border-gray-200 dark:border-gray-700 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="ledger-card-label">
-                  Total Portfolio Value
-                </p>
+                <p className="ledger-card-label">Total Portfolio Value</p>
                 <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2 stat-value">
                   {formatCurrency(
                     totalPortfolioValue,
@@ -206,9 +202,7 @@ const Dashboard: React.FC = () => {
           <div className="ledger-card border border-gray-200 dark:border-gray-700 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="ledger-card-label">
-                  Total Donations (YTD)
-                </p>
+                <p className="ledger-card-label">Total Donations (YTD)</p>
                 <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2 stat-value">
                   {formatCurrency(425600, currencySettings.primaryCurrency, {
                     decimalPlaces: currencySettings.decimalPlaces,
@@ -238,9 +232,7 @@ const Dashboard: React.FC = () => {
           <div className="ledger-card border border-gray-200 dark:border-gray-700 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="ledger-card-label">
-                  Program Expenses (YTD)
-                </p>
+                <p className="ledger-card-label">Program Expenses (YTD)</p>
                 <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2 stat-value">
                   {formatCurrency(312450, currencySettings.primaryCurrency, {
                     decimalPlaces: currencySettings.decimalPlaces,
@@ -269,9 +261,7 @@ const Dashboard: React.FC = () => {
           <div className="ledger-card border border-gray-200 dark:border-gray-700 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="ledger-card-label">
-                  Active Wallets
-                </p>
+                <p className="ledger-card-label">Active Wallets</p>
                 <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2 stat-value">
                   8
                 </p>
@@ -294,9 +284,7 @@ const Dashboard: React.FC = () => {
           <div className="lg:col-span-2">
             <div className="ledger-card border border-gray-200 dark:border-gray-700">
               <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                <h2>
-                  Account Balances
-                </h2>
+                <h2>Account Balances</h2>
               </div>
               <div className="px-6">
                 <div>
@@ -305,10 +293,7 @@ const Dashboard: React.FC = () => {
                     const brandColor = getCryptoBrandColor(account.crypto)
 
                     return (
-                      <div
-                        key={account.crypto}
-                        className="balance-list-item"
-                      >
+                      <div key={account.crypto} className="balance-list-item">
                         <div className="token-info">
                           <div
                             className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0"
@@ -338,7 +323,11 @@ const Dashboard: React.FC = () => {
                               {account.crypto}
                             </p>
                             <p className="text-sm text-gray-500 dark:text-gray-400 tabular-nums">
-                              {account.amount.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} {account.crypto}
+                              {account.amount.toLocaleString('en-US', {
+                                minimumFractionDigits: 1,
+                                maximumFractionDigits: 1,
+                              })}{' '}
+                              {account.crypto}
                             </p>
                           </div>
                         </div>
@@ -356,7 +345,9 @@ const Dashboard: React.FC = () => {
                               }
                             )}
                           </p>
-                          <div className={`percentage-change ${account.change24h >= 0 ? 'text-[#059669] dark:text-[#10b981]' : 'text-[#dc2626] dark:text-[#ef4444]'}`}>
+                          <div
+                            className={`percentage-change ${account.change24h >= 0 ? 'text-[#059669] dark:text-[#10b981]' : 'text-[#dc2626] dark:text-[#ef4444]'}`}
+                          >
                             {account.change24h >= 0 ? (
                               <TrendingUp className="w-3 h-3" />
                             ) : (
@@ -378,9 +369,7 @@ const Dashboard: React.FC = () => {
             {/* Recent Transactions */}
             <div className="ledger-card border border-gray-200 dark:border-gray-700 mt-10">
               <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-                <h2>
-                  Recent Transactions
-                </h2>
+                <h2>Recent Transactions</h2>
                 <button className="text-sm text-[#1e3a5f] dark:text-[#3d5a80] hover:opacity-90 font-medium">
                   View All
                 </button>
@@ -389,32 +378,17 @@ const Dashboard: React.FC = () => {
                 <table className="ledger-table">
                   <thead className="ledger-table-header">
                     <tr>
-                      <th className="ledger-table-cell-date">
-                        Date
-                      </th>
-                      <th className="ledger-table-cell-text">
-                        Description
-                      </th>
-                      <th className="ledger-table-cell-text">
-                        Type
-                      </th>
-                      <th className="ledger-table-cell-number">
-                        Amount
-                      </th>
-                      <th className="ledger-table-cell-number">
-                        Value
-                      </th>
-                      <th className="ledger-table-cell-text">
-                        Status
-                      </th>
+                      <th className="ledger-table-cell-date">Date</th>
+                      <th className="ledger-table-cell-text">Description</th>
+                      <th className="ledger-table-cell-text">Type</th>
+                      <th className="ledger-table-cell-number">Amount</th>
+                      <th className="ledger-table-cell-number">Value</th>
+                      <th className="ledger-table-cell-text">Status</th>
                     </tr>
                   </thead>
                   <tbody>
                     {recentTransactions.map(tx => (
-                      <tr
-                        key={tx.id}
-                        className="ledger-table-row"
-                      >
+                      <tr key={tx.id} className="ledger-table-row">
                         <td className="ledger-table-cell-date whitespace-nowrap text-sm text-gray-900 dark:text-white">
                           {tx.date}
                         </td>
@@ -478,9 +452,7 @@ const Dashboard: React.FC = () => {
             {/* Quick Actions */}
             <div className="ledger-card border border-gray-200 dark:border-gray-700">
               <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                <h2>
-                  Quick Actions
-                </h2>
+                <h2>Quick Actions</h2>
               </div>
               <div className="p-6 space-y-3">
                 <button className="btn-quick-action">
@@ -505,9 +477,7 @@ const Dashboard: React.FC = () => {
             {/* Compliance Status */}
             <div className="ledger-card border border-gray-200 dark:border-gray-700">
               <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                <h2>
-                  Compliance Status
-                </h2>
+                <h2>Compliance Status</h2>
               </div>
               <div className="p-6 space-y-4">
                 <div className="flex items-center justify-between">
@@ -540,9 +510,7 @@ const Dashboard: React.FC = () => {
             {/* Alerts */}
             <div className="ledger-card border border-gray-200 dark:border-gray-700">
               <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                <h2>
-                  Alerts
-                </h2>
+                <h2>Alerts</h2>
               </div>
               <div className="p-6">
                 <div className="space-y-3">
