@@ -172,7 +172,7 @@ const Navigation: React.FC<NavigationProps> = ({
               className="h-12 w-auto mix-blend-multiply dark:mix-blend-normal"
             />
             <div className="ml-3 flex flex-col">
-              <span className="brand-wordmark text-gray-900 dark:text-white" style={{ fontSize: '24px', color: '#1e3a5f' }}>
+              <span className="brand-wordmark text-[#1e3a5f] dark:text-[#93b4d4]" style={{ fontSize: '24px' }}>
                 Pacioli
               </span>
               <span className="brand-tagline text-xs text-gray-500 dark:text-gray-400">
@@ -197,10 +197,10 @@ const Navigation: React.FC<NavigationProps> = ({
                   {item.subItems ? (
                     <button
                       onClick={createToggleExpandedHandler(item.name)}
-                      className={`w-full flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-colors ${
+                      className={`w-full flex items-center justify-between px-3 py-2.5 text-sm rounded-lg transition-colors ${
                         isActive
-                          ? 'bg-[#1e3a5f]/10 dark:bg-[#3d5a80]/20 text-[#1e3a5f] dark:text-[#3d5a80] font-semibold'
-                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-medium'
+                          ? 'bg-[#e8eef4] dark:bg-[#1e3a5f] text-[#1e3a5f] dark:text-white font-semibold border-l-2 border-[#1e3a5f] dark:border-[#3d5a80] -ml-0.5'
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 font-medium'
                       }`}
                     >
                       <div className="flex items-center">
@@ -225,10 +225,10 @@ const Navigation: React.FC<NavigationProps> = ({
                   ) : (
                     <Link
                       to={item.href}
-                      className={`w-full flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-colors ${
+                      className={`w-full flex items-center justify-between px-3 py-2.5 text-sm rounded-lg transition-colors ${
                         isActive
-                          ? 'bg-[#1e3a5f]/10 dark:bg-[#3d5a80]/20 text-[#1e3a5f] dark:text-[#3d5a80] font-semibold'
-                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-medium'
+                          ? 'bg-[#e8eef4] dark:bg-[#1e3a5f] text-[#1e3a5f] dark:text-white font-semibold border-l-2 border-[#1e3a5f] dark:border-[#3d5a80] -ml-0.5'
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 font-medium'
                       }`}
                     >
                       <div className="flex items-center">
@@ -255,8 +255,8 @@ const Navigation: React.FC<NavigationProps> = ({
                               to={subItem.href}
                               className={`block w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${
                                 isSubActive
-                                  ? 'text-[#1e3a5f] dark:text-[#3d5a80] bg-[#1e3a5f]/10 dark:bg-[#3d5a80]/20 font-medium'
-                                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 font-normal'
+                                  ? 'text-[#1e3a5f] dark:text-white bg-[#e8eef4] dark:bg-[#1e3a5f]/50 font-medium'
+                                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 font-normal'
                               }`}
                             >
                               {subItem.name}

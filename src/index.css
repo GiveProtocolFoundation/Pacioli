@@ -115,17 +115,17 @@ h1 {
   font-size: var(--font-size-page-title);
   font-weight: var(--font-weight-semibold);
   line-height: var(--line-height-page-title);
-  color: #1a1a1a;
+  color: var(--color-text-primary);
   letter-spacing: -0.01em;
 }
 
-/* Section headers: Sans-serif medium, 18px */
+/* Section headers: Sans-serif semibold, 18px */
 h2 {
   font-family: var(--font-family-sans);
   font-size: var(--font-size-section-header);
-  font-weight: var(--font-weight-medium);
+  font-weight: var(--font-weight-semibold);
   line-height: var(--line-height-section-header);
-  color: #2c3e50;
+  color: var(--color-text-primary);
 }
 
 /* Sub-section headers: Sans-serif medium, 16px */
@@ -134,7 +134,7 @@ h3 {
   font-size: 16px;
   font-weight: var(--font-weight-medium);
   line-height: 1.4;
-  color: #495057;
+  color: var(--color-text-secondary);
 }
 
 /* Dark mode overrides for headings */
@@ -199,10 +199,11 @@ th,
   font-variant-numeric: tabular-nums;
 }
 
-/* Ledger-inspired dashboard card styles */
+/* Ledger-inspired dashboard card styles - Professional with subtle depth */
 .ledger-card {
   border-radius: 4px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06);
   background: var(--color-bg-card);
   position: relative;
   overflow: hidden;
@@ -210,6 +211,8 @@ th,
 
 .dark .ledger-card {
   background: #1a1a1a;
+  border-color: var(--color-border-dark);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.12);
 }
 
 /* Grid background pattern for ledger aesthetic */
@@ -238,54 +241,102 @@ th,
   z-index: 1;
 }
 
-/* Left accent borders for different card types */
-.ledger-card-financial {
-  border-left: 3px solid var(--color-primary); /* navy blue */
-}
-
-.ledger-card-donation {
-  border-left: 3px solid var(--color-success); /* green */
-}
-
-.ledger-card-expense {
-  border-left: 3px solid var(--color-error); /* red - only for expenses */
-}
-
-.ledger-card-wallet {
-  border-left: 3px solid var(--color-slate-blue); /* slate blue */
-}
-
-/* Gold accent for most important metric */
+/* Card type classes - NO colored left borders, all use subtle shadow only */
+.ledger-card-financial,
+.ledger-card-donation,
+.ledger-card-expense,
+.ledger-card-wallet,
 .ledger-card-gold {
-  border-left: 3px solid var(--color-accent); /* gold accent */
+  border-left: none;
 }
 
-/* Dark mode accent borders */
-.dark .ledger-card-financial {
-  border-left: 3px solid var(--color-primary-dark);
-}
-
-.dark .ledger-card-donation {
-  border-left: 3px solid var(--color-success-dark);
-}
-
-.dark .ledger-card-expense {
-  border-left: 3px solid var(--color-error-dark);
-}
-
-.dark .ledger-card-wallet {
-  border-left: 3px solid var(--color-slate-blue-dark);
-}
-
+.dark .ledger-card-financial,
+.dark .ledger-card-donation,
+.dark .ledger-card-expense,
+.dark .ledger-card-wallet,
 .dark .ledger-card-gold {
-  border-left: 3px solid var(--color-accent-dark);
+  border-left: none;
 }
 
 /* Ledger card labels - uppercase, proper letter-spacing */
 .ledger-card-label {
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-size: 13px;
+  letter-spacing: 0.05em;
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.dark .ledger-card-label {
+  color: var(--color-text-muted-dark);
+}
+
+/* Stat icon container - navy tinted styling */
+.stat-icon-container {
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--color-primary-light);
+}
+
+.stat-icon-container svg {
+  width: 24px;
+  height: 24px;
+  color: var(--color-primary);
+}
+
+.dark .stat-icon-container {
+  background: rgba(61, 90, 128, 0.2);
+}
+
+.dark .stat-icon-container svg {
+  color: var(--color-primary-dark);
+}
+
+/* Large numeric displays - tighter tracking for financial feel */
+.stat-value {
+  font-feature-settings: "tnum" 1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+/* Status badges - muted professional styling */
+.badge-completed {
+  background: rgba(107, 144, 128, 0.15);
+  color: #6b9080;
+}
+
+.dark .badge-completed {
+  background: rgba(124, 154, 140, 0.2);
+  color: #7c9a8c;
+}
+
+.badge-on-track {
+  background: rgba(107, 144, 128, 0.15);
+  color: #6b9080;
+}
+
+.dark .badge-on-track {
+  background: rgba(124, 154, 140, 0.2);
+  color: #7c9a8c;
+}
+
+.badge-due-soon {
+  background: rgba(180, 140, 80, 0.15);
+  color: #9a7b4f;
+}
+
+.dark .badge-due-soon {
+  background: rgba(180, 140, 80, 0.2);
+  color: #b49860;
+}
+
+.badge-pending {
+  background: rgba(180, 140, 80, 0.15);
+  color: #9a7b4f;
+}
+
+.dark .badge-pending {
+  background: rgba(180, 140, 80, 0.2);
+  color: #b49860;
 }
 
 /* Account balance list item styling */
@@ -531,13 +582,13 @@ th,
   }
 }
 
-/* Button styles for professional appearance */
+/* Button styles for professional appearance - Gold accent */
 .btn-primary {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: var(--color-primary);
-  color: #ffffff;
+  background: var(--color-accent);
+  color: #1a1a1a;
   border-radius: 4px;
   padding: 11px 24px;
   font-weight: 600;
@@ -549,7 +600,7 @@ th,
 }
 
 .btn-primary:hover {
-  background: var(--color-primary-hover);
+  background: var(--color-accent-hover);
   transform: translateY(-1px);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
@@ -560,11 +611,12 @@ th,
 }
 
 .dark .btn-primary {
-  background: var(--color-primary-dark);
+  background: var(--color-accent-dark);
+  color: #1a1a1a;
 }
 
 .dark .btn-primary:hover {
-  background: var(--color-primary-dark-hover);
+  background: var(--color-accent-dark-hover);
 }
 
 .btn-primary:disabled {
@@ -578,11 +630,11 @@ th,
   opacity: 0.5;
   transform: none;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-  background: var(--color-primary);
+  background: var(--color-accent);
 }
 
 .dark .btn-primary:disabled:hover {
-  background: var(--color-primary-dark);
+  background: var(--color-accent-dark);
 }
 
 .btn-primary svg,
@@ -592,14 +644,14 @@ th,
   flex-shrink: 0;
 }
 
-/* Secondary button styles */
+/* Secondary button styles - professional, muted */
 .btn-secondary {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   background: transparent;
-  color: var(--color-primary);
-  border: 1.5px solid var(--color-primary);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
   border-radius: 4px;
   padding: 11px 24px;
   font-weight: 600;
@@ -609,8 +661,9 @@ th,
 }
 
 .btn-secondary:hover {
-  background: var(--color-primary-light);
-  transform: translateY(-1px);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: transparent;
 }
 
 .btn-secondary:active {
@@ -625,12 +678,14 @@ th,
 }
 
 .dark .btn-secondary {
-  color: var(--color-primary-dark);
-  border-color: var(--color-primary-dark);
+  color: var(--color-text-secondary-dark);
+  border-color: var(--color-border-dark);
 }
 
 .dark .btn-secondary:hover {
-  background: rgba(61, 90, 128, 0.2);
+  border-color: var(--color-primary-dark);
+  color: var(--color-primary-dark);
+  background: transparent;
 }
 
 /* Quick action button styles */
@@ -673,4 +728,113 @@ th,
   background: rgba(61, 90, 128, 0.2);
   color: var(--color-primary-dark);
   border-color: #4b5563;
+}
+
+/* =============================================================================
+   SIDEBAR NAVIGATION - Refined active states
+   ============================================================================= */
+
+.nav-item-active {
+  background: #e8eef4;
+  color: var(--color-primary);
+  font-weight: 600;
+  border-left: 2px solid var(--color-primary);
+  margin-left: -2px;
+}
+
+.dark .nav-item-active {
+  background: var(--color-primary-dark-light);
+  color: var(--color-text-primary-dark);
+  border-left-color: var(--color-primary-dark);
+}
+
+/* =============================================================================
+   DOWNLOAD LINKS - Professional, muted styling
+   ============================================================================= */
+
+.download-link {
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  font-size: 12px;
+  transition: all 0.2s ease;
+}
+
+.download-link:hover {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+.dark .download-link {
+  color: var(--color-text-secondary-dark);
+}
+
+.dark .download-link:hover {
+  color: var(--color-primary-dark);
+}
+
+/* =============================================================================
+   REPORT LIST - Monochromatic icons
+   ============================================================================= */
+
+.report-icon-container {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: var(--color-surface-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.report-icon-container svg {
+  width: 20px;
+  height: 20px;
+  color: var(--color-text-secondary);
+}
+
+.dark .report-icon-container {
+  background: var(--color-surface-secondary-dark);
+}
+
+.dark .report-icon-container svg {
+  color: var(--color-text-secondary-dark);
+}
+
+/* Action icons in report rows */
+.action-icon {
+  color: var(--color-text-muted);
+  transition: color 0.2s ease;
+}
+
+.action-icon:hover {
+  color: var(--color-text-primary);
+}
+
+.dark .action-icon {
+  color: var(--color-text-muted-dark);
+}
+
+.dark .action-icon:hover {
+  color: var(--color-text-primary-dark);
+}
+
+/* =============================================================================
+   FAVORITES STAR - Gray instead of gold (gold reserved for logo only)
+   ============================================================================= */
+
+.favorite-star {
+  color: var(--color-text-muted);
+}
+
+.favorite-star.active {
+  color: var(--color-text-secondary);
+  fill: currentColor;
+}
+
+.dark .favorite-star {
+  color: var(--color-text-muted-dark);
+}
+
+.dark .favorite-star.active {
+  color: var(--color-text-secondary-dark);
 }

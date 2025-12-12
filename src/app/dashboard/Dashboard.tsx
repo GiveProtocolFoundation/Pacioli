@@ -5,7 +5,6 @@ import {
   TrendingDown,
   Wallet,
   ArrowUpRight,
-  ArrowDownRight,
   DollarSign,
   PieChart,
   BarChart3,
@@ -161,15 +160,15 @@ const Dashboard: React.FC = () => {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-10 py-10">
         {/* Key Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
           {/* Total Portfolio Value */}
-          <div className="ledger-card ledger-card-financial border border-gray-200 dark:border-gray-700 p-6">
+          <div className="ledger-card border border-gray-200 dark:border-gray-700 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="ledger-card-label font-medium text-gray-500 dark:text-gray-400">
+                <p className="ledger-card-label">
                   Total Portfolio Value
                 </p>
-                <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2 tracking-tight tabular-nums">
+                <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2 stat-value">
                   {formatCurrency(
                     totalPortfolioValue,
                     currencySettings.primaryCurrency,
@@ -197,20 +196,20 @@ const Dashboard: React.FC = () => {
                   <span className="text-sm text-gray-500 ml-1">24h</span>
                 </div>
               </div>
-              <div className="p-3 bg-[#1e3a5f]/10 dark:bg-[#3d5a80]/20 rounded-lg">
-                <Wallet className="w-6 h-6 text-[#1e3a5f] dark:text-[#3d5a80]" />
+              <div className="stat-icon-container">
+                <Wallet />
               </div>
             </div>
           </div>
 
           {/* Total Donations */}
-          <div className="ledger-card ledger-card-donation border border-gray-200 dark:border-gray-700 p-6">
+          <div className="ledger-card border border-gray-200 dark:border-gray-700 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="ledger-card-label font-medium text-gray-500 dark:text-gray-400">
+                <p className="ledger-card-label">
                   Total Donations (YTD)
                 </p>
-                <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2 tracking-tight tabular-nums">
+                <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2 stat-value">
                   {formatCurrency(425600, currencySettings.primaryCurrency, {
                     decimalPlaces: currencySettings.decimalPlaces,
                     useThousandsSeparator:
@@ -229,20 +228,20 @@ const Dashboard: React.FC = () => {
                   </span>
                 </div>
               </div>
-              <div className="p-3 bg-[#059669]/10 dark:bg-[#10b981]/20 rounded-lg">
-                <DollarSign className="w-6 h-6 text-[#059669] dark:text-[#10b981]" />
+              <div className="stat-icon-container">
+                <DollarSign />
               </div>
             </div>
           </div>
 
           {/* Program Expenses */}
-          <div className="ledger-card ledger-card-expense border border-gray-200 dark:border-gray-700 p-6">
+          <div className="ledger-card border border-gray-200 dark:border-gray-700 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="ledger-card-label font-medium text-gray-500 dark:text-gray-400">
+                <p className="ledger-card-label">
                   Program Expenses (YTD)
                 </p>
-                <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2 tracking-tight tabular-nums">
+                <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2 stat-value">
                   {formatCurrency(312450, currencySettings.primaryCurrency, {
                     decimalPlaces: currencySettings.decimalPlaces,
                     useThousandsSeparator:
@@ -252,8 +251,7 @@ const Dashboard: React.FC = () => {
                   })}
                 </p>
                 <div className="flex items-center mt-2">
-                  <ArrowDownRight className="w-4 h-4 text-[#dc2626] dark:text-[#ef4444] mr-1" />
-                  <span className="text-sm font-medium text-gray-600">
+                  <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
                     73.4%
                   </span>
                   <span className="text-sm text-gray-500 ml-1">
@@ -261,30 +259,30 @@ const Dashboard: React.FC = () => {
                   </span>
                 </div>
               </div>
-              <div className="p-3 bg-[#dc2626]/10 dark:bg-[#ef4444]/20 rounded-lg">
-                <PieChart className="w-6 h-6 text-[#dc2626] dark:text-[#ef4444]" />
+              <div className="stat-icon-container">
+                <PieChart />
               </div>
             </div>
           </div>
 
           {/* Active Wallets */}
-          <div className="ledger-card ledger-card-wallet border border-gray-200 dark:border-gray-700 p-6">
+          <div className="ledger-card border border-gray-200 dark:border-gray-700 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="ledger-card-label font-medium text-gray-500 dark:text-gray-400">
+                <p className="ledger-card-label">
                   Active Wallets
                 </p>
-                <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2 tracking-tight">
+                <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2 stat-value">
                   8
                 </p>
                 <div className="flex items-center mt-2">
-                  <span className="text-sm font-medium text-gray-600">
+                  <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
                     4 blockchains
                   </span>
                 </div>
               </div>
-              <div className="p-3 bg-[#4a5f7a]/10 dark:bg-[#6b8099]/10 rounded-lg">
-                <BarChart3 className="w-6 h-6 text-[#4a5f7a] dark:text-[#6b8099]" />
+              <div className="stat-icon-container">
+                <BarChart3 />
               </div>
             </div>
           </div>
@@ -294,7 +292,7 @@ const Dashboard: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Account Balances - Takes up 2/3 on large screens */}
           <div className="lg:col-span-2">
-            <div className="ledger-card ledger-card-financial border border-gray-200 dark:border-gray-700">
+            <div className="ledger-card border border-gray-200 dark:border-gray-700">
               <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                 <h2>
                   Account Balances
@@ -378,7 +376,7 @@ const Dashboard: React.FC = () => {
             </div>
 
             {/* Recent Transactions */}
-            <div className="ledger-card ledger-card-wallet border border-gray-200 dark:border-gray-700 mt-8">
+            <div className="ledger-card border border-gray-200 dark:border-gray-700 mt-10">
               <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
                 <h2>
                   Recent Transactions
@@ -459,8 +457,8 @@ const Dashboard: React.FC = () => {
                           <span
                             className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                               tx.status === 'completed'
-                                ? 'text-green-800 bg-green-100'
-                                : 'text-yellow-800 bg-yellow-100'
+                                ? 'badge-completed'
+                                : 'badge-pending'
                             }`}
                           >
                             {tx.status.charAt(0).toUpperCase() +
@@ -478,7 +476,7 @@ const Dashboard: React.FC = () => {
           {/* Quick Actions Sidebar - Takes up 1/3 on large screens */}
           <div className="space-y-6">
             {/* Quick Actions */}
-            <div className="ledger-card ledger-card-wallet border border-gray-200 dark:border-gray-700">
+            <div className="ledger-card border border-gray-200 dark:border-gray-700">
               <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                 <h2>
                   Quick Actions
@@ -505,7 +503,7 @@ const Dashboard: React.FC = () => {
             </div>
 
             {/* Compliance Status */}
-            <div className="ledger-card ledger-card-financial border border-gray-200 dark:border-gray-700">
+            <div className="ledger-card border border-gray-200 dark:border-gray-700">
               <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                 <h2>
                   Compliance Status
@@ -516,7 +514,7 @@ const Dashboard: React.FC = () => {
                   <span className="text-sm text-gray-600 dark:text-gray-400">
                     Tax Year 2025
                   </span>
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium text-green-800 bg-green-100">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium badge-on-track">
                     On Track
                   </span>
                 </div>
@@ -524,7 +522,7 @@ const Dashboard: React.FC = () => {
                   <span className="text-sm text-gray-600 dark:text-gray-400">
                     IRS Form 990
                   </span>
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium text-yellow-800 bg-yellow-100">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium badge-due-soon">
                     Due Soon
                   </span>
                 </div>
@@ -532,7 +530,7 @@ const Dashboard: React.FC = () => {
                   <span className="text-sm text-gray-600 dark:text-gray-400">
                     Audit Ready
                   </span>
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium text-green-800 bg-green-100">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium badge-completed">
                     Yes
                   </span>
                 </div>
@@ -540,7 +538,7 @@ const Dashboard: React.FC = () => {
             </div>
 
             {/* Alerts */}
-            <div className="ledger-card ledger-card-expense border border-gray-200 dark:border-gray-700">
+            <div className="ledger-card border border-gray-200 dark:border-gray-700">
               <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                 <h2>
                   Alerts

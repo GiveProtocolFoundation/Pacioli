@@ -336,11 +336,13 @@ const Reports: React.FC = () => {
                     <p className="text-sm text-gray-500 dark:text-gray-400">
                       Total Reports
                     </p>
-                    <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
+                    <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1 stat-value">
                       {reports.length}
                     </p>
                   </div>
-                  <FileText className="w-8 h-8 text-blue-600" />
+                  <div className="stat-icon-container">
+                    <FileText />
+                  </div>
                 </div>
               </div>
 
@@ -350,11 +352,13 @@ const Reports: React.FC = () => {
                     <p className="text-sm text-gray-500 dark:text-gray-400">
                       Favorites
                     </p>
-                    <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
+                    <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1 stat-value">
                       {favoriteReports.length}
                     </p>
                   </div>
-                  <Star className="w-8 h-8 text-yellow-500" />
+                  <div className="stat-icon-container">
+                    <Star />
+                  </div>
                 </div>
               </div>
 
@@ -364,14 +368,16 @@ const Reports: React.FC = () => {
                     <p className="text-sm text-gray-500 dark:text-gray-400">
                       Run Today
                     </p>
-                    <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
+                    <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1 stat-value">
                       {
                         recentRuns.filter(r => r.ranAt.startsWith('2025-10-17'))
                           .length
                       }
                     </p>
                   </div>
-                  <Clock className="w-8 h-8 text-green-600" />
+                  <div className="stat-icon-container">
+                    <Clock />
+                  </div>
                 </div>
               </div>
             </div>
@@ -444,12 +450,12 @@ const Reports: React.FC = () => {
                 return (
                   <div
                     key={report.id}
-                    className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:border-blue-400 dark:hover:border-blue-600 transition-colors"
+                    className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:border-gray-300 dark:hover:border-gray-600 transition-colors"
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex items-start flex-1">
-                        <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
-                          <Icon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                        <div className="report-icon-container flex-shrink-0">
+                          <Icon />
                         </div>
                         <div className="ml-4 flex-1">
                           <div className="flex items-center">
@@ -457,7 +463,7 @@ const Reports: React.FC = () => {
                               {report.name}
                             </h3>
                             {report.favorite && (
-                              <Star className="w-4 h-4 ml-2 text-yellow-500 fill-current" />
+                              <Star className="w-4 h-4 ml-2 favorite-star active" />
                             )}
                           </div>
                           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -472,19 +478,19 @@ const Reports: React.FC = () => {
                       </div>
                       <div className="flex items-center space-x-2 ml-4">
                         <button
-                          className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
+                          className="p-2 action-icon hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors"
                           title="Run Report"
                         >
                           <Play className="w-4 h-4" />
                         </button>
                         <button
-                          className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                          className="p-2 action-icon hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors"
                           title="Download"
                         >
                           <Download className="w-4 h-4" />
                         </button>
                         <button
-                          className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                          className="p-2 action-icon hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors"
                           title="Schedule"
                         >
                           <Clock className="w-4 h-4" />
@@ -535,7 +541,7 @@ const Reports: React.FC = () => {
                       {formatDate(run.ranAt)}
                     </p>
                     {run.status === 'completed' && (
-                      <button className="text-xs text-blue-600 dark:text-blue-400 hover:underline mt-2 flex items-center">
+                      <button className="download-link mt-2 flex items-center">
                         <Download className="w-3 h-3 mr-1" />
                         Download {run.format.toUpperCase()}
                       </button>
