@@ -255,11 +255,7 @@ class MoonscanService {
       const data: MoonscanResponse<MoonscanTokenTransfer> = await response.json()
 
       if (data.status !== '1') {
-        if (data.message === 'No transactions found' ||
-            (data.message === 'OK' && typeof data.result === 'string')) {
-          return []
-        }
-        console.warn('Moonscan token transfer API warning:', data.message)
+        // No transactions found or other non-error status - return empty
         return []
       }
 
