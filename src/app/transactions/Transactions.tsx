@@ -124,24 +124,33 @@ const Transactions: React.FC = () => {
     navigate('/transactions/new')
   }, [navigate])
 
-  const handleRowClick = useCallback((e: React.MouseEvent<HTMLTableRowElement>) => {
-    const id = e.currentTarget.getAttribute('data-id')
-    if (id) {
-      navigate(`/transactions/edit/${id}`)
-    }
-  }, [navigate])
+  const handleRowClick = useCallback(
+    (e: React.MouseEvent<HTMLTableRowElement>) => {
+      const id = e.currentTarget.getAttribute('data-id')
+      if (id) {
+        navigate(`/transactions/edit/${id}`)
+      }
+    },
+    [navigate]
+  )
 
-  const handleEditButtonClick = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
-    e.stopPropagation()
-    const id = e.currentTarget.getAttribute('data-id')
-    if (id) {
-      navigate(`/transactions/edit/${id}`)
-    }
-  }, [navigate])
+  const handleEditButtonClick = useCallback(
+    (e: React.MouseEvent<HTMLButtonElement>) => {
+      e.stopPropagation()
+      const id = e.currentTarget.getAttribute('data-id')
+      if (id) {
+        navigate(`/transactions/edit/${id}`)
+      }
+    },
+    [navigate]
+  )
 
-  const handleImageError = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
-    e.currentTarget.style.display = 'none'
-  }, [])
+  const handleImageError = useCallback(
+    (e: React.SyntheticEvent<HTMLImageElement>) => {
+      e.currentTarget.style.display = 'none'
+    },
+    []
+  )
 
   return (
     <div className="p-6 min-h-screen ledger-background">
@@ -348,11 +357,14 @@ const Transactions: React.FC = () => {
                                 : transaction.type === 'expense'
                                   ? '-'
                                   : ''}
-                              {transaction.amount} {token?.symbol || transaction.crypto}
+                              {transaction.amount}{' '}
+                              {token?.symbol || transaction.crypto}
                             </div>
                           </div>
                           <div className="text-xs text-gray-500 dark:text-gray-400">
-                            {transaction.fiatCurrency || currencySettings.primaryCurrency} {transaction.fiatValue.toLocaleString()}
+                            {transaction.fiatCurrency ||
+                              currencySettings.primaryCurrency}{' '}
+                            {transaction.fiatValue.toLocaleString()}
                           </div>
                           {chain && (
                             <div className="text-xs text-gray-500 dark:text-gray-400">
@@ -369,11 +381,12 @@ const Transactions: React.FC = () => {
                     >
                       {getStatusLabel(transaction.status)}
                     </span>
-                    {transaction.approvalStatus === 'rejected' && transaction.rejectionReason && (
-                      <div className="text-xs text-red-600 dark:text-red-400 mt-1">
-                        {transaction.rejectionReason}
-                      </div>
-                    )}
+                    {transaction.approvalStatus === 'rejected' &&
+                      transaction.rejectionReason && (
+                        <div className="text-xs text-red-600 dark:text-red-400 mt-1">
+                          {transaction.rejectionReason}
+                        </div>
+                      )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button

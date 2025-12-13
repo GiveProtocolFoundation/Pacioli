@@ -11,7 +11,10 @@ import {
   Trash2,
 } from 'lucide-react'
 import { formatBalance } from '@polkadot/util'
-import type { Transaction, SubstrateTransaction } from '../../services/wallet/types'
+import type {
+  Transaction,
+  SubstrateTransaction,
+} from '../../services/wallet/types'
 import { useTransactions } from '../../contexts/TransactionContext'
 import type { TransactionFormData } from '../../types/transaction'
 
@@ -76,12 +79,12 @@ export const TransactionList: React.FC<TransactionListProps> = ({
 
     // Get decimals for each network
     const networkDecimals: Record<string, number> = {
-      polkadot: 10,  // DOT has 10 decimals
-      kusama: 12,    // KSM has 12 decimals
-      moonbeam: 18,  // GLMR has 18 decimals (Ethereum-compatible)
+      polkadot: 10, // DOT has 10 decimals
+      kusama: 12, // KSM has 12 decimals
+      moonbeam: 18, // GLMR has 18 decimals (Ethereum-compatible)
       moonriver: 18, // MOVR has 18 decimals
-      astar: 18,     // ASTR has 18 decimals
-      acala: 12,     // ACA has 12 decimals
+      astar: 18, // ASTR has 18 decimals
+      acala: 12, // ACA has 12 decimals
     }
 
     const decimals = networkDecimals[substrateTx.network] || 10
@@ -120,11 +123,13 @@ export const TransactionList: React.FC<TransactionListProps> = ({
           // Token information
           tokenId: getTokenSymbol(tx), // DOT, KSM, etc.
           chainId: substrateTx.network,
-          amount: parseFloat(formatBalance(tx.value, {
-            decimals: getNetworkDecimals(substrateTx.network),
-            withUnit: false,
-            forceUnit: '-',
-          })),
+          amount: parseFloat(
+            formatBalance(tx.value, {
+              decimals: getNetworkDecimals(substrateTx.network),
+              withUnit: false,
+              forceUnit: '-',
+            })
+          ),
 
           // Fiat valuation (placeholder - you'd need price API)
           fiatValue: 0,
@@ -171,10 +176,21 @@ export const TransactionList: React.FC<TransactionListProps> = ({
     if (transactions.length === 0) return
 
     // CSV header
-    const headers = ['Date', 'Time', 'Type', 'From', 'To', 'Amount', 'Token', 'Status', 'Hash', 'Block']
+    const headers = [
+      'Date',
+      'Time',
+      'Type',
+      'From',
+      'To',
+      'Amount',
+      'Token',
+      'Status',
+      'Hash',
+      'Block',
+    ]
 
     // Convert transactions to CSV rows
-    const rows = sortedTransactions.map((tx) => {
+    const rows = sortedTransactions.map(tx => {
       const substrateTx = tx as SubstrateTransaction
       const date = new Date(tx.timestamp)
       const dateStr = date.toLocaleDateString('en-US')
@@ -185,7 +201,9 @@ export const TransactionList: React.FC<TransactionListProps> = ({
       return [
         dateStr,
         timeStr,
-        substrateTx.section ? `${substrateTx.section}.${substrateTx.method}` : tx.type,
+        substrateTx.section
+          ? `${substrateTx.section}.${substrateTx.method}`
+          : tx.type,
         tx.from,
         tx.to || '',
         amount,
@@ -199,7 +217,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
     // Combine headers and rows
     const csvContent = [
       headers.join(','),
-      ...rows.map((row) => row.map((cell) => `"${cell}"`).join(',')),
+      ...rows.map(row => row.map(cell => `"${cell}"`).join(',')),
     ].join('\n')
 
     // Create blob and download
@@ -208,7 +226,10 @@ export const TransactionList: React.FC<TransactionListProps> = ({
     const url = URL.createObjectURL(blob)
 
     link.setAttribute('href', url)
-    link.setAttribute('download', `polkadot-transactions-${new Date().toISOString().split('T')[0]}.csv`)
+    link.setAttribute(
+      'download',
+      `polkadot-transactions-${new Date().toISOString().split('T')[0]}.csv`
+    )
     link.style.visibility = 'hidden'
 
     document.body.appendChild(link)
@@ -297,7 +318,9 @@ export const TransactionList: React.FC<TransactionListProps> = ({
             <h3 className="font-semibold text-[#dc2626] dark:text-[#ef4444]">
               Error Loading Transactions
             </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{error}</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              {error}
+            </p>
           </div>
         </div>
       </div>
@@ -330,8 +353,8 @@ export const TransactionList: React.FC<TransactionListProps> = ({
               Transaction History
             </h3>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              {transactions.length} transaction{transactions.length !== 1 ? 's' : ''}{' '}
-              found
+              {transactions.length} transaction
+              {transactions.length !== 1 ? 's' : ''} found
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -388,8 +411,9 @@ export const TransactionList: React.FC<TransactionListProps> = ({
                   Purge Transaction Data?
                 </h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  This will permanently delete all {transactions.length} wallet transactions from IndexedDB.
-                  This action cannot be undone. You can re-sync from the blockchain anytime.
+                  This will permanently delete all {transactions.length} wallet
+                  transactions from IndexedDB. This action cannot be undone. You
+                  can re-sync from the blockchain anytime.
                 </p>
               </div>
             </div>
@@ -426,7 +450,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
             </tr>
           </thead>
           <tbody>
-            {sortedTransactions.map((tx) => {
+            {sortedTransactions.map(tx => {
               const isSubstrate = 'method' in tx
               const substrateTx = tx as SubstrateTransaction
 
