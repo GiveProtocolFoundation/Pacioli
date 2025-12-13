@@ -72,33 +72,36 @@ export const TransactionList: React.FC<TransactionListProps> = ({
   }, [])
 
   // Format amount with proper decimals and token symbol
-  const formatAmount = useCallback((tx: Transaction): string => {
-    if (tx.value === '0') return '—'
+  const formatAmount = useCallback(
+    (tx: Transaction): string => {
+      if (tx.value === '0') return '—'
 
-    const substrateTx = tx as SubstrateTransaction
+      const substrateTx = tx as SubstrateTransaction
 
-    // Get decimals for each network
-    const networkDecimals: Record<string, number> = {
-      polkadot: 10, // DOT has 10 decimals
-      kusama: 12, // KSM has 12 decimals
-      moonbeam: 18, // GLMR has 18 decimals (Ethereum-compatible)
-      moonriver: 18, // MOVR has 18 decimals
-      astar: 18, // ASTR has 18 decimals
-      acala: 12, // ACA has 12 decimals
-    }
+      // Get decimals for each network
+      const networkDecimals: Record<string, number> = {
+        polkadot: 10, // DOT has 10 decimals
+        kusama: 12, // KSM has 12 decimals
+        moonbeam: 18, // GLMR has 18 decimals (Ethereum-compatible)
+        moonriver: 18, // MOVR has 18 decimals
+        astar: 18, // ASTR has 18 decimals
+        acala: 12, // ACA has 12 decimals
+      }
 
-    const decimals = networkDecimals[substrateTx.network] || 10
-    const symbol = getTokenSymbol(tx)
+      const decimals = networkDecimals[substrateTx.network] || 10
+      const symbol = getTokenSymbol(tx)
 
-    // Format with correct decimals
-    const formatted = formatBalance(tx.value, {
-      decimals,
-      withUnit: false,
-      forceUnit: '-',
-    })
+      // Format with correct decimals
+      const formatted = formatBalance(tx.value, {
+        decimals,
+        withUnit: false,
+        forceUnit: '-',
+      })
 
-    return `${formatted} ${symbol}`
-  }, [getTokenSymbol])
+      return `${formatted} ${symbol}`
+    },
+    [getTokenSymbol]
+  )
 
   // Import wallet transactions to accounting ledger
   const importToLedger = useCallback(async () => {
