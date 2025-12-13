@@ -63,6 +63,10 @@ const Balances: React.FC = () => {
   const { theme } = useTheme()
   const navigate = useNavigate()
 
+  const handleConnectWallet = useCallback(() => {
+    navigate('/wallet-manager')
+  }, [navigate])
+
   // Mock wallet data
   const [wallets] = useState<WalletBalance[]>([
     {
@@ -327,7 +331,7 @@ const Balances: React.FC = () => {
                 Export Data
               </button>
               <button
-                onClick={() => navigate('/wallet-manager')}
+                onClick={handleConnectWallet}
                 className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 flex items-center"
               >
                 <Plus className="w-4 h-4 mr-2" />

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, memo } from 'react'
 import { Wallet, Check, AlertCircle, Loader, Pencil, X, Save } from 'lucide-react'
 import { walletService } from '../../services/wallet/walletService'
 import { storageService } from '../../services/database/storageService'
@@ -6,12 +6,183 @@ import {
   WalletType,
   type ConnectedWallet,
   type WalletConnectionStatus,
+  type WalletAccount,
 } from '../../services/wallet/types'
 import { useWalletAliases } from '../../contexts/WalletAliasContext'
 
 interface WalletConnectorProps {
   onWalletsChange?: (wallets: ConnectedWallet[]) => void
 }
+
+// Memoized account row component to prevent unnecessary re-renders
+interface AccountRowProps {
+  account: WalletAccount
+  isEditing: boolean
+  currentAlias: string | undefined
+  aliasInput: string
+  onAliasInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  onKeyDown: (e: React.KeyboardEvent, address: string) => void
+  onSave: (address: string) => void
+  onCancel: () => void
+  onStartEdit: (address: string) => void
+}
+
+const AccountRow = memo(function AccountRow({
+  account,
+  isEditing,
+  currentAlias,
+  aliasInput,
+  onAliasInputChange,
+  onKeyDown,
+  onSave,
+  onCancel,
+  onStartEdit,
+}: AccountRowProps) {
+  const displayName = currentAlias || account.name || 'Unnamed'
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      onKeyDown(e, account.address)
+    },
+    [onKeyDown, account.address]
+  )
+
+  const handleSave = useCallback(() => {
+    onSave(account.address)
+  }, [onSave, account.address])
+
+  const handleStartEdit = useCallback(() => {
+    onStartEdit(account.address)
+  }, [onStartEdit, account.address])
+
+  return (
+    <div className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
+      {isEditing ? (
+        // Editing mode
+        <div className="flex-1 flex items-center gap-2">
+          <input
+            type="text"
+            value={aliasInput}
+            onChange={onAliasInputChange}
+            onKeyDown={handleKeyDown}
+            placeholder="Enter alias..."
+            className="flex-1 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#1e3a5f]"
+          />
+          <button
+            onClick={handleSave}
+            className="p-1 text-[#059669] hover:bg-[#059669]/10 rounded"
+            title="Save alias"
+          >
+            <Save className="w-4 h-4" />
+          </button>
+          <button
+            onClick={onCancel}
+            className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded"
+            title="Cancel"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      ) : (
+        // Display mode
+        <>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="font-medium text-sm text-gray-900 dark:text-white">
+                {displayName}
+              </span>
+              {currentAlias && account.name && (
+                <span className="text-xs text-gray-400">
+                  ({account.name})
+                </span>
+              )}
+            </div>
+            <div className="text-xs text-gray-500 dark:text-gray-400 font-mono truncate">
+              {account.address.slice(0, 10)}...{account.address.slice(-8)}
+            </div>
+          </div>
+          <button
+            onClick={handleStartEdit}
+            className="p-1.5 text-gray-400 hover:text-[#1e3a5f] dark:hover:text-[#3d5a80] hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
+            title="Edit alias"
+          >
+            <Pencil className="w-3.5 h-3.5" />
+          </button>
+        </>
+      )}
+    </div>
+  )
+})
+
+// Memoized wallet action button component
+interface WalletActionsProps {
+  walletType: WalletType
+  isDetected: boolean
+  isConnected: boolean
+  isConnecting: boolean
+  installUrl: string
+  onConnect: (walletType: WalletType) => void
+  onDisconnect: (walletType: WalletType) => void
+}
+
+const WalletActions = memo(function WalletActions({
+  walletType,
+  isDetected,
+  isConnected,
+  isConnecting,
+  installUrl,
+  onConnect,
+  onDisconnect,
+}: WalletActionsProps) {
+  const handleConnect = useCallback(() => {
+    onConnect(walletType)
+  }, [onConnect, walletType])
+
+  const handleDisconnect = useCallback(() => {
+    onDisconnect(walletType)
+  }, [onDisconnect, walletType])
+
+  if (!isDetected) {
+    return (
+      <a
+        href={installUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="btn-secondary text-sm"
+      >
+        Install
+      </a>
+    )
+  }
+
+  if (isConnected) {
+    return (
+      <button
+        onClick={handleDisconnect}
+        className="px-4 py-2 text-sm font-medium text-[#dc2626] dark:text-[#ef4444] border border-[#dc2626] dark:border-[#ef4444] rounded hover:bg-[#dc2626]/10 dark:hover:bg-[#ef4444]/10 transition-colors"
+      >
+        Disconnect
+      </button>
+    )
+  }
+
+  return (
+    <button
+      onClick={handleConnect}
+      disabled={isConnecting}
+      className="btn-primary text-sm"
+    >
+      {isConnecting ? (
+        <>
+          <Loader className="w-4 h-4 animate-spin" />
+          Connecting...
+        </>
+      ) : (
+        'Connect'
+      )}
+    </button>
+  )
+})
 
 const WALLET_INFO = {
   [WalletType.POLKADOT_JS]: {
@@ -259,109 +430,34 @@ export const WalletConnector: React.FC<WalletConnectorProps> = ({
                     <div className="mt-3 space-y-2">
                       {connectedWallets
                         .find((w) => w.type === walletType)
-                        ?.accounts.map((acc) => {
-                          const isEditing = editingAlias === acc.address
-                          const currentAlias = aliases[acc.address.toLowerCase()]
-                          const displayName = currentAlias || acc.name || 'Unnamed'
-
-                          return (
-                            <div
-                              key={acc.address}
-                              className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-800 rounded-lg"
-                            >
-                              {isEditing ? (
-                                // Editing mode
-                                <div className="flex-1 flex items-center gap-2">
-                                  <input
-                                    type="text"
-                                    value={aliasInput}
-                                    onChange={handleAliasInputChange}
-                                    onKeyDown={(e) => handleAliasKeyDown(e, acc.address)}
-                                    placeholder="Enter alias..."
-                                    className="flex-1 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#1e3a5f]"
-                                  />
-                                  <button
-                                    onClick={() => saveAlias(acc.address)}
-                                    className="p-1 text-[#059669] hover:bg-[#059669]/10 rounded"
-                                    title="Save alias"
-                                  >
-                                    <Save className="w-4 h-4" />
-                                  </button>
-                                  <button
-                                    onClick={cancelEditingAlias}
-                                    className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded"
-                                    title="Cancel"
-                                  >
-                                    <X className="w-4 h-4" />
-                                  </button>
-                                </div>
-                              ) : (
-                                // Display mode
-                                <>
-                                  <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2">
-                                      <span className="font-medium text-sm text-gray-900 dark:text-white">
-                                        {displayName}
-                                      </span>
-                                      {currentAlias && acc.name && (
-                                        <span className="text-xs text-gray-400">
-                                          ({acc.name})
-                                        </span>
-                                      )}
-                                    </div>
-                                    <div className="text-xs text-gray-500 dark:text-gray-400 font-mono truncate">
-                                      {acc.address.slice(0, 10)}...{acc.address.slice(-8)}
-                                    </div>
-                                  </div>
-                                  <button
-                                    onClick={() => startEditingAlias(acc.address)}
-                                    className="p-1.5 text-gray-400 hover:text-[#1e3a5f] dark:hover:text-[#3d5a80] hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
-                                    title="Edit alias"
-                                  >
-                                    <Pencil className="w-3.5 h-3.5" />
-                                  </button>
-                                </>
-                              )}
-                            </div>
-                          )
-                        })}
+                        ?.accounts.map((acc) => (
+                          <AccountRow
+                            key={acc.address}
+                            account={acc}
+                            isEditing={editingAlias === acc.address}
+                            currentAlias={aliases[acc.address.toLowerCase()]}
+                            aliasInput={aliasInput}
+                            onAliasInputChange={handleAliasInputChange}
+                            onKeyDown={handleAliasKeyDown}
+                            onSave={saveAlias}
+                            onCancel={cancelEditingAlias}
+                            onStartEdit={startEditingAlias}
+                          />
+                        ))}
                     </div>
                   )}
                 </div>
 
                 <div className="ml-4">
-                  {!status.isDetected ? (
-                    <a
-                      href={info.installUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="btn-secondary text-sm"
-                    >
-                      Install
-                    </a>
-                  ) : connected ? (
-                    <button
-                      onClick={() => disconnectWallet(walletType)}
-                      className="px-4 py-2 text-sm font-medium text-[#dc2626] dark:text-[#ef4444] border border-[#dc2626] dark:border-[#ef4444] rounded hover:bg-[#dc2626]/10 dark:hover:bg-[#ef4444]/10 transition-colors"
-                    >
-                      Disconnect
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => connectWallet(walletType)}
-                      disabled={connecting}
-                      className="btn-primary text-sm"
-                    >
-                      {connecting ? (
-                        <>
-                          <Loader className="w-4 h-4 animate-spin" />
-                          Connecting...
-                        </>
-                      ) : (
-                        'Connect'
-                      )}
-                    </button>
-                  )}
+                  <WalletActions
+                    walletType={walletType}
+                    isDetected={status.isDetected}
+                    isConnected={connected}
+                    isConnecting={connecting}
+                    installUrl={info.installUrl}
+                    onConnect={connectWallet}
+                    onDisconnect={disconnectWallet}
+                  />
                 </div>
               </div>
             </div>

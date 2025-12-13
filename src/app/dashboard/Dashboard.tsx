@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   TrendingUp,
@@ -42,6 +42,10 @@ const Dashboard: React.FC = () => {
   const navigate = useNavigate()
   const { settings: currencySettings } = useCurrency()
   const { theme } = useTheme()
+
+  const handleNewTransaction = useCallback(() => {
+    navigate('/transactions/new')
+  }, [navigate])
 
   const [accountBalances] = useState<AccountBalance[]>([
     { crypto: 'DOT', amount: 1250.5, usdValue: 9378.75, change24h: 2.3 },
@@ -146,7 +150,7 @@ const Dashboard: React.FC = () => {
                 Export Report
               </button>
               <button
-                onClick={() => navigate('/transactions/new')}
+                onClick={handleNewTransaction}
                 className="btn-primary"
               >
                 <Plus className="btn-icon" />

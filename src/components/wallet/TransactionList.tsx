@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useState, useCallback } from 'react'
 import {
   ArrowUpRight,
   ArrowDownRight,
@@ -157,6 +157,14 @@ export const TransactionList: React.FC<TransactionListProps> = ({
       onPurge()
     }
   }
+
+  const handleShowPurgeConfirm = useCallback(() => {
+    setShowPurgeConfirm(true)
+  }, [])
+
+  const handleHidePurgeConfirm = useCallback(() => {
+    setShowPurgeConfirm(false)
+  }, [])
 
   // Export transactions to CSV
   const exportToCSV = () => {
@@ -357,7 +365,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
               )}
             </button>
             <button
-              onClick={() => setShowPurgeConfirm(true)}
+              onClick={handleShowPurgeConfirm}
               className="text-sm px-3 py-1.5 bg-red-600 dark:bg-red-700 text-white hover:opacity-90 font-medium transition-opacity inline-flex items-center gap-1.5 rounded"
             >
               <Trash2 className="w-4 h-4" />
@@ -387,7 +395,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
             </div>
             <div className="flex justify-end gap-3 mt-6">
               <button
-                onClick={() => setShowPurgeConfirm(false)}
+                onClick={handleHidePurgeConfirm}
                 className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
               >
                 Cancel

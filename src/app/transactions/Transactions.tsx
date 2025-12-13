@@ -120,13 +120,28 @@ const Transactions: React.FC = () => {
     []
   )
 
-  const handleEditClick = useCallback((id: string) => {
-    navigate(`/transactions/edit/${id}`)
-  }, [navigate])
-
   const handleNewTransaction = useCallback(() => {
     navigate('/transactions/new')
   }, [navigate])
+
+  const handleRowClick = useCallback((e: React.MouseEvent<HTMLTableRowElement>) => {
+    const id = e.currentTarget.getAttribute('data-id')
+    if (id) {
+      navigate(`/transactions/edit/${id}`)
+    }
+  }, [navigate])
+
+  const handleEditButtonClick = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation()
+    const id = e.currentTarget.getAttribute('data-id')
+    if (id) {
+      navigate(`/transactions/edit/${id}`)
+    }
+  }, [navigate])
+
+  const handleImageError = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
+    e.currentTarget.style.display = 'none'
+  }, [])
 
   return (
     <div className="p-6 min-h-screen ledger-background">
@@ -263,8 +278,9 @@ const Transactions: React.FC = () => {
               {filteredTransactions.map(transaction => (
                 <tr
                   key={transaction.id}
+                  data-id={transaction.id}
                   className="hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
-                  onClick={() => handleEditClick(transaction.id)}
+                  onClick={handleRowClick}
                 >
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div
@@ -315,9 +331,7 @@ const Transactions: React.FC = () => {
                                 src={token.iconUrl}
                                 alt={token.symbol}
                                 className="w-5 h-5 rounded-full"
-                                onError={e => {
-                                  e.currentTarget.style.display = 'none'
-                                }}
+                                onError={handleImageError}
                               />
                             )}
                             <div
@@ -363,10 +377,8 @@ const Transactions: React.FC = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleEditClick(transaction.id)
-                      }}
+                      data-id={transaction.id}
+                      onClick={handleEditButtonClick}
                       className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
                     >
                       <Edit2 className="w-5 h-5" />

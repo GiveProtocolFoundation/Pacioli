@@ -169,21 +169,32 @@ const Docs: React.FC = () => {
   const [expandedItems, setExpandedItems] = useState<string[]>([])
   const [selectedDoc, setSelectedDoc] = useState<string>('what-is-pacioli')
 
-  const toggleSection = (sectionId: string) => {
-    setExpandedSections(prev =>
-      prev.includes(sectionId)
-        ? prev.filter(id => id !== sectionId)
-        : [...prev, sectionId]
-    )
-  }
+  const handleSectionClick = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
+    const sectionId = e.currentTarget.getAttribute('data-section-id')
+    if (sectionId) {
+      setExpandedSections(prev =>
+        prev.includes(sectionId)
+          ? prev.filter(id => id !== sectionId)
+          : [...prev, sectionId]
+      )
+    }
+  }, [])
 
-  const toggleItem = (itemId: string) => {
-    setExpandedItems(prev =>
-      prev.includes(itemId)
-        ? prev.filter(id => id !== itemId)
-        : [...prev, itemId]
-    )
-  }
+  const handleItemClick = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
+    const itemId = e.currentTarget.getAttribute('data-item-id')
+    const hasSubItems = e.currentTarget.getAttribute('data-has-subitems') === 'true'
+    if (itemId) {
+      if (hasSubItems) {
+        setExpandedItems(prev =>
+          prev.includes(itemId)
+            ? prev.filter(id => id !== itemId)
+            : [...prev, itemId]
+        )
+      } else {
+        setSelectedDoc(itemId)
+      }
+    }
+  }, [])
 
   const handleSelectDoc = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
     const docId = e.currentTarget.getAttribute('data-doc-id')
@@ -227,7 +238,8 @@ const Docs: React.FC = () => {
                   return (
                     <div key={section.id}>
                       <button
-                        onClick={() => toggleSection(section.id)}
+                        data-section-id={section.id}
+                        onClick={handleSectionClick}
                         className="w-full flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-colors hover:bg-gray-50 dark:hover:bg-gray-800 text-left"
                       >
                         <div className="flex items-center">
@@ -253,13 +265,9 @@ const Docs: React.FC = () => {
                             return (
                               <div key={item.id}>
                                 <button
-                                  onClick={() => {
-                                    if (hasSubItems) {
-                                      toggleItem(item.id)
-                                    } else {
-                                      setSelectedDoc(item.id)
-                                    }
-                                  }}
+                                  data-item-id={item.id}
+                                  data-has-subitems={hasSubItems ? 'true' : 'false'}
+                                  onClick={handleItemClick}
                                   className={`w-full flex items-center justify-between px-3 py-1.5 text-sm rounded transition-colors text-left ${
                                     isSelected
                                       ? 'bg-[#1e3a5f]/10 dark:bg-[#3d5a80]/20 text-[#1e3a5f] dark:text-[#3d5a80] font-medium'

@@ -1,7 +1,63 @@
-import React, { useState, useMemo, useCallback } from 'react'
+import React, { useState, useMemo, useCallback, memo } from 'react'
 import { Search, X } from 'lucide-react'
 import { useTokens } from '../../contexts/TokenContext'
 import { Token, Chain } from '../../types/digitalAssets'
+
+// Memoized token button component
+interface TokenButtonProps {
+  token: Token
+  isSelected: boolean
+  onSelect: (token: Token) => void
+}
+
+const TokenButton = memo(function TokenButton({
+  token,
+  isSelected,
+  onSelect,
+}: TokenButtonProps) {
+  const handleClick = useCallback(() => {
+    onSelect(token)
+  }, [onSelect, token])
+
+  const handleImageError = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
+    e.currentTarget.style.display = 'none'
+  }, [])
+
+  return (
+    <button
+      onClick={handleClick}
+      className={`w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 ${
+        isSelected ? 'bg-blue-50 dark:bg-blue-900/20' : ''
+      }`}
+    >
+      <div className="flex items-center">
+        {token.iconUrl && (
+          <img
+            src={token.iconUrl}
+            alt={token.symbol}
+            className="w-6 h-6 mr-3 rounded-full"
+            onError={handleImageError}
+          />
+        )}
+        <div className="flex-1">
+          <div className="flex items-center">
+            <span className="font-medium text-gray-900 dark:text-white">
+              {token.symbol}
+            </span>
+            {token.contractAddress && (
+              <span className="ml-2 px-1.5 py-0.5 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded">
+                {token.tokenStandard}
+              </span>
+            )}
+          </div>
+          <div className="text-sm text-gray-500 dark:text-gray-400">
+            {token.name}
+          </div>
+        </div>
+      </div>
+    </button>
+  )
+})
 
 interface TokenSelectorProps {
   selectedTokenId?: string
@@ -77,6 +133,10 @@ const TokenSelector: React.FC<TokenSelectorProps> = ({
     }
   }, [])
 
+  const handleImageError = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
+    e.currentTarget.style.display = 'none'
+  }, [])
+
   return (
     <div className="relative">
       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -100,9 +160,7 @@ const TokenSelector: React.FC<TokenSelectorProps> = ({
                 src={selectedToken.iconUrl}
                 alt={selectedToken.symbol}
                 className="w-5 h-5 mr-2 rounded-full"
-                onError={e => {
-                  e.currentTarget.style.display = 'none'
-                }}
+                onError={handleImageError}
               />
             )}
             <span className="font-medium">{selectedToken.symbol}</span>
@@ -156,43 +214,12 @@ const TokenSelector: React.FC<TokenSelectorProps> = ({
                     {chain.chainName}
                   </div>
                   {chainTokens.map(token => (
-                    <button
+                    <TokenButton
                       key={token.id}
-                      onClick={() => handleTokenSelect(token)}
-                      className={`w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 ${
-                        selectedTokenId === token.id
-                          ? 'bg-blue-50 dark:bg-blue-900/20'
-                          : ''
-                      }`}
-                    >
-                      <div className="flex items-center">
-                        {token.iconUrl && (
-                          <img
-                            src={token.iconUrl}
-                            alt={token.symbol}
-                            className="w-6 h-6 mr-3 rounded-full"
-                            onError={e => {
-                              e.currentTarget.style.display = 'none'
-                            }}
-                          />
-                        )}
-                        <div className="flex-1">
-                          <div className="flex items-center">
-                            <span className="font-medium text-gray-900 dark:text-white">
-                              {token.symbol}
-                            </span>
-                            {token.contractAddress && (
-                              <span className="ml-2 px-1.5 py-0.5 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded">
-                                {token.tokenStandard}
-                              </span>
-                            )}
-                          </div>
-                          <div className="text-sm text-gray-500 dark:text-gray-400">
-                            {token.name}
-                          </div>
-                        </div>
-                      </div>
-                    </button>
+                      token={token}
+                      isSelected={selectedTokenId === token.id}
+                      onSelect={handleTokenSelect}
+                    />
                   ))}
                 </div>
               )

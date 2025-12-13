@@ -167,6 +167,36 @@ const TransactionForm: React.FC = () => {
     handleInputChange('transactionTypeCode', '')
   }, [handleInputChange])
 
+  const handleDateChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    handleInputChange('date', e.target.value)
+  }, [handleInputChange])
+
+  const handleWalletChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    handleInputChange('wallet', e.target.value)
+  }, [handleInputChange])
+
+  const handleDescriptionChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    handleInputChange('description', e.target.value)
+  }, [handleInputChange])
+
+  const handleCategoryChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    handleInputChange('transactionCategory', e.target.value)
+    handleInputChange('transactionSubcategory', '')
+    handleInputChange('transactionTypeCode', '')
+  }, [handleInputChange])
+
+  const handleAmountInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    handleAmountChange(e.target.value)
+  }, [handleAmountChange])
+
+  const handleHashChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    handleInputChange('hash', e.target.value)
+  }, [handleInputChange])
+
+  const handleMemoChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    handleInputChange('memo', e.target.value)
+  }, [handleInputChange])
+
   const validateForm = useCallback((): boolean => {
     const newErrors: Partial<Record<keyof TransactionFormData, string>> = {}
 
@@ -245,7 +275,7 @@ const TransactionForm: React.FC = () => {
                   id="txn-date"
                   type="datetime-local"
                   value={formData.date}
-                  onChange={e => handleInputChange('date', e.target.value)}
+                  onChange={handleDateChange}
                   className={`w-full px-4 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white ${
                     errors.date
                       ? 'border-red-500'
@@ -267,7 +297,7 @@ const TransactionForm: React.FC = () => {
                 <select
                   id="txn-wallet"
                   value={formData.wallet}
-                  onChange={e => handleInputChange('wallet', e.target.value)}
+                  onChange={handleWalletChange}
                   className={`w-full px-4 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white ${
                     errors.wallet
                       ? 'border-red-500'
@@ -304,7 +334,7 @@ const TransactionForm: React.FC = () => {
                 id="txn-description"
                 type="text"
                 value={formData.description}
-                onChange={e => handleInputChange('description', e.target.value)}
+                onChange={handleDescriptionChange}
                 placeholder="Enter transaction description"
                 className={`w-full px-4 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white ${
                   errors.description
@@ -332,11 +362,7 @@ const TransactionForm: React.FC = () => {
                   <select
                     id="txn-category"
                     value={formData.transactionCategory || ''}
-                    onChange={e => {
-                      handleInputChange('transactionCategory', e.target.value)
-                      handleInputChange('transactionSubcategory', '')
-                      handleInputChange('transactionTypeCode', '')
-                    }}
+                    onChange={handleCategoryChange}
                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">Select category</option>
@@ -438,7 +464,7 @@ const TransactionForm: React.FC = () => {
                   type="number"
                   step="0.000001"
                   value={formData.amount}
-                  onChange={e => handleAmountChange(e.target.value)}
+                  onChange={handleAmountInputChange}
                   placeholder="0.00"
                   className={`w-full px-4 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white ${
                     errors.amount
@@ -480,7 +506,7 @@ const TransactionForm: React.FC = () => {
                 id="txn-hash"
                 type="text"
                 value={formData.hash}
-                onChange={e => handleInputChange('hash', e.target.value)}
+                onChange={handleHashChange}
                 placeholder="0x..."
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
@@ -523,7 +549,7 @@ const TransactionForm: React.FC = () => {
               <textarea
                 id="txn-memo"
                 value={formData.memo}
-                onChange={e => handleInputChange('memo', e.target.value)}
+                onChange={handleMemoChange}
                 placeholder="Additional notes or comments about this transaction"
                 rows={3}
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
