@@ -98,7 +98,12 @@ const Navigation: React.FC<NavigationProps> = ({
   // Simplified navigation for individuals
   const individualNavItems: NavItem[] = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-    { name: 'Transactions', href: '/transactions', icon: Receipt, badge: pendingCount > 0 ? pendingCount : undefined },
+    {
+      name: 'Transactions',
+      href: '/transactions',
+      icon: Receipt,
+      badge: pendingCount > 0 ? pendingCount : undefined,
+    },
     { name: 'Wallets', href: '/wallets', icon: Wallet },
     { name: 'Tax Reports', href: '/reports', icon: FileText },
     {
@@ -172,7 +177,10 @@ const Navigation: React.FC<NavigationProps> = ({
               className="h-12 w-auto mix-blend-multiply dark:mix-blend-normal"
             />
             <div className="ml-3 flex flex-col">
-              <span className="brand-wordmark text-[#0056B3] dark:text-[#66B3FF]" style={{ fontSize: '24px' }}>
+              <span
+                className="brand-wordmark text-[#0056B3] dark:text-[#66B3FF]"
+                style={{ fontSize: '24px' }}
+              >
                 Pacioli
               </span>
               <span className="brand-tagline text-xs text-gray-500 dark:text-[#94a3b8]">
@@ -322,7 +330,10 @@ const Navigation: React.FC<NavigationProps> = ({
                   className="h-12 w-auto mix-blend-multiply dark:mix-blend-normal"
                 />
                 <div className="ml-3 flex flex-col">
-                  <span className="brand-wordmark text-[#0056B3] dark:text-[#66B3FF]" style={{ fontSize: '24px' }}>
+                  <span
+                    className="brand-wordmark text-[#0056B3] dark:text-[#66B3FF]"
+                    style={{ fontSize: '24px' }}
+                  >
                     Pacioli
                   </span>
                   <span className="brand-tagline text-xs text-gray-500 dark:text-[#94a3b8]">

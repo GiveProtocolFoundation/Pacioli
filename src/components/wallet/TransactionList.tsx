@@ -321,7 +321,9 @@ export const TransactionList: React.FC<TransactionListProps> = ({
             <h3 className="font-semibold text-[#dc2626] dark:text-[#ef4444]">
               Error Loading Transactions
             </h3>
-            <p className="text-sm text-gray-600 dark:text-[#94a3b8] mt-1">{error}</p>
+            <p className="text-sm text-gray-600 dark:text-[#94a3b8] mt-1">
+              {error}
+            </p>
           </div>
         </div>
       </div>
@@ -354,8 +356,8 @@ export const TransactionList: React.FC<TransactionListProps> = ({
               Transaction History
             </h3>
             <p className="text-sm text-gray-500 dark:text-[#94a3b8] mt-1">
-              {transactions.length} transaction{transactions.length !== 1 ? 's' : ''}{' '}
-              found
+              {transactions.length} transaction
+              {transactions.length !== 1 ? 's' : ''} found
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -412,8 +414,9 @@ export const TransactionList: React.FC<TransactionListProps> = ({
                   Purge Transaction Data?
                 </h3>
                 <p className="text-sm text-gray-600 dark:text-[#94a3b8]">
-                  This will permanently delete all {transactions.length} wallet transactions from IndexedDB.
-                  This action cannot be undone. You can re-sync from the blockchain anytime.
+                  This will permanently delete all {transactions.length} wallet
+                  transactions from IndexedDB. This action cannot be undone. You
+                  can re-sync from the blockchain anytime.
                 </p>
               </div>
             </div>

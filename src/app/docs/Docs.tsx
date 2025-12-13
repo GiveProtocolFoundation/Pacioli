@@ -306,23 +306,23 @@ const Docs: React.FC = () => {
                                         const isSubSelected =
                                           selectedDoc === subItem.id
 
-                                      return (
-                                        <button
-                                          key={subItem.id}
-                                          data-doc-id={subItem.id}
-                                          onClick={handleSelectDoc}
-                                          className={`w-full px-3 py-1 text-xs rounded transition-colors text-left ${
-                                            isSubSelected
-                                              ? 'bg-[#007AFF]/10 dark:bg-[#66B3FF]/20 text-[#007AFF] dark:text-[#66B3FF] font-medium'
-                                              : 'text-gray-600 dark:text-[#94a3b8] hover:bg-gray-50 dark:hover:bg-gray-800'
-                                          }`}
-                                        >
-                                          {subItem.title}
-                                        </button>
-                                      )
-                                    })}
-                                  </div>
-                                )}
+                                        return (
+                                          <button
+                                            key={subItem.id}
+                                            data-doc-id={subItem.id}
+                                            onClick={handleSelectDoc}
+                                            className={`w-full px-3 py-1 text-xs rounded transition-colors text-left ${
+                                              isSubSelected
+                                                ? 'bg-[#007AFF]/10 dark:bg-[#66B3FF]/20 text-[#007AFF] dark:text-[#66B3FF] font-medium'
+                                                : 'text-gray-600 dark:text-[#94a3b8] hover:bg-gray-50 dark:hover:bg-gray-800'
+                                            }`}
+                                          >
+                                            {subItem.title}
+                                          </button>
+                                        )
+                                      })}
+                                    </div>
+                                  )}
                               </div>
                             )
                           })}
@@ -351,8 +351,8 @@ const Docs: React.FC = () => {
                       .join(' ')}
                   </h2>
                   <p className="text-gray-500 dark:text-[#94a3b8]">
-                    This documentation page is currently being prepared and will be
-                    available soon.
+                    This documentation page is currently being prepared and will
+                    be available soon.
                   </p>
                 </div>
 

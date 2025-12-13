@@ -410,8 +410,8 @@ export const WalletConnector: React.FC<WalletConnectorProps> = ({
           </h2>
         </div>
         <p className="text-sm text-gray-500 dark:text-[#94a3b8]">
-          Connect your Polkadot or Ethereum wallet to import transaction history.
-          Pacioli only requests read-only access.
+          Connect your Polkadot or Ethereum wallet to import transaction
+          history. Pacioli only requests read-only access.
         </p>
       </div>
 
@@ -504,13 +504,17 @@ export const WalletConnector: React.FC<WalletConnectorProps> = ({
           </h3>
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
-              <span className="text-gray-600 dark:text-[#94a3b8]">Total Wallets:</span>
+              <span className="text-gray-600 dark:text-[#94a3b8]">
+                Total Wallets:
+              </span>
               <span className="font-semibold text-gray-900 dark:text-white">
                 {connectedWallets.length}
               </span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-gray-600 dark:text-[#94a3b8]">Total Accounts:</span>
+              <span className="text-gray-600 dark:text-[#94a3b8]">
+                Total Accounts:
+              </span>
               <span className="font-semibold text-gray-900 dark:text-white">
                 {connectedWallets.reduce(
                   (sum, w) => sum + w.accounts.length,
