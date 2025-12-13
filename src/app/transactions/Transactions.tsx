@@ -362,7 +362,9 @@ const Transactions: React.FC = () => {
                             </div>
                           </div>
                           <div className="text-xs text-gray-500 dark:text-[#94a3b8]">
-                            {transaction.fiatCurrency || currencySettings.primaryCurrency} {transaction.fiatValue.toLocaleString()}
+                            {transaction.fiatCurrency ||
+                              currencySettings.primaryCurrency}{' '}
+                            {transaction.fiatValue.toLocaleString()}
                           </div>
                           {chain && (
                             <div className="text-xs text-gray-500 dark:text-[#94a3b8]">

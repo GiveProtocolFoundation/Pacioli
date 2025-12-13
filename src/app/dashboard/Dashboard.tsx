@@ -137,9 +137,7 @@ const Dashboard: React.FC = () => {
         <div className="max-w-7xl mx-auto px-10 py-10">
           <div className="flex items-center justify-between">
             <div>
-              <h1>
-                Dashboard
-              </h1>
+              <h1>Dashboard</h1>
               <p className="text-sm text-gray-500 dark:text-[#94a3b8] mt-1">
                 Welcome back! Here&apos;s your crypto portfolio overview.
               </p>
@@ -326,7 +324,11 @@ const Dashboard: React.FC = () => {
                               {account.crypto}
                             </p>
                             <p className="text-sm text-gray-500 dark:text-[#94a3b8] tabular-nums">
-                              {account.amount.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} {account.crypto}
+                              {account.amount.toLocaleString('en-US', {
+                                minimumFractionDigits: 1,
+                                maximumFractionDigits: 1,
+                              })}{' '}
+                              {account.crypto}
                             </p>
                           </div>
                         </div>
@@ -368,9 +370,7 @@ const Dashboard: React.FC = () => {
             {/* Recent Transactions */}
             <div className="ledger-card border border-gray-200 dark:border-gray-700 mt-10">
               <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-<h2>
-                  Recent Transactions
-                </h2>
+                <h2>Recent Transactions</h2>
                 <button className="text-sm text-[#007AFF] dark:text-[#66B3FF] hover:opacity-90 font-medium">
                   View All
                 </button>
