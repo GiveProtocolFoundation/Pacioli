@@ -175,7 +175,7 @@ const Navigation: React.FC<NavigationProps> = ({
               <span className="brand-wordmark text-[#0056B3] dark:text-[#66B3FF]" style={{ fontSize: '24px' }}>
                 Pacioli
               </span>
-              <span className="brand-tagline text-xs text-gray-500 dark:text-gray-400">
+              <span className="brand-tagline text-xs text-gray-500 dark:text-[#94a3b8]">
                 Books & Ledgers
               </span>
             </div>
@@ -199,8 +199,8 @@ const Navigation: React.FC<NavigationProps> = ({
                       onClick={createToggleExpandedHandler(item.name)}
                       className={`w-full flex items-center justify-between px-3 py-2.5 text-sm rounded-lg transition-colors ${
                         isActive
-                          ? 'bg-[#E5F2FF] dark:bg-[#007AFF] text-[#007AFF] dark:text-white font-semibold border-l-2 border-[#007AFF] dark:border-[#66B3FF] -ml-0.5'
-                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 font-medium'
+                          ? 'bg-[#E5F2FF] dark:bg-[#66B3FF]/15 text-[#007AFF] dark:text-white font-semibold border-l-2 border-[#007AFF] dark:border-[#66B3FF] -ml-0.5'
+                          : 'text-gray-700 dark:text-[#94a3b8] hover:bg-gray-50 dark:hover:bg-gray-800 dark:hover:text-[#cbd5e1] font-medium'
                       }`}
                     >
                       <div className="flex items-center">
@@ -227,8 +227,8 @@ const Navigation: React.FC<NavigationProps> = ({
                       to={item.href}
                       className={`w-full flex items-center justify-between px-3 py-2.5 text-sm rounded-lg transition-colors ${
                         isActive
-                          ? 'bg-[#E5F2FF] dark:bg-[#007AFF] text-[#007AFF] dark:text-white font-semibold border-l-2 border-[#007AFF] dark:border-[#66B3FF] -ml-0.5'
-                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 font-medium'
+                          ? 'bg-[#E5F2FF] dark:bg-[#66B3FF]/15 text-[#007AFF] dark:text-white font-semibold border-l-2 border-[#007AFF] dark:border-[#66B3FF] -ml-0.5'
+                          : 'text-gray-700 dark:text-[#94a3b8] hover:bg-gray-50 dark:hover:bg-gray-800 dark:hover:text-[#cbd5e1] font-medium'
                       }`}
                     >
                       <div className="flex items-center">
@@ -255,8 +255,8 @@ const Navigation: React.FC<NavigationProps> = ({
                               to={subItem.href}
                               className={`block w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${
                                 isSubActive
-                                  ? 'text-[#007AFF] dark:text-white bg-[#E5F2FF] dark:bg-[#007AFF]/50 font-medium'
-                                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 font-normal'
+                                  ? 'text-[#007AFF] dark:text-[#f1f5f9] bg-[#E5F2FF] dark:bg-[#66B3FF]/15 font-medium'
+                                  : 'text-gray-600 dark:text-[#94a3b8] hover:bg-gray-50 dark:hover:bg-gray-800 dark:hover:text-[#cbd5e1] font-normal'
                               }`}
                             >
                               {subItem.name}
@@ -290,7 +290,7 @@ const Navigation: React.FC<NavigationProps> = ({
               <p className="text-sm font-medium text-gray-900 dark:text-white">
                 {userType === 'organization' ? 'Hope Foundation' : 'John Doe'}
               </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
+              <p className="text-xs text-gray-500 dark:text-[#94a3b8]">
                 {userType === 'organization' ? 'Admin' : 'Personal Account'}
               </p>
             </div>
@@ -325,7 +325,7 @@ const Navigation: React.FC<NavigationProps> = ({
                   <span className="brand-wordmark text-[#0056B3] dark:text-[#66B3FF]" style={{ fontSize: '24px' }}>
                     Pacioli
                   </span>
-                  <span className="brand-tagline text-xs text-gray-500 dark:text-gray-400">
+                  <span className="brand-tagline text-xs text-gray-500 dark:text-[#94a3b8]">
                     Books & Ledgers
                   </span>
                 </div>
@@ -450,7 +450,7 @@ const Navigation: React.FC<NavigationProps> = ({
                       ? 'Hope Foundation'
                       : 'John Doe'}
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <p className="text-xs text-gray-500 dark:text-[#94a3b8]">
                     {userType === 'organization' ? 'Admin' : 'Personal Account'}
                   </p>
                 </div>
@@ -544,7 +544,7 @@ const Navigation: React.FC<NavigationProps> = ({
                           ? 'Hope Foundation'
                           : 'John Doe'}
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      <p className="text-xs text-gray-500 dark:text-[#94a3b8] mt-1">
                         {userType === 'organization'
                           ? 'admin@hopefoundation.org'
                           : 'john.doe@email.com'}

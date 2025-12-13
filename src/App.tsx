@@ -24,7 +24,7 @@ const LoadingFallback: React.FC = () => (
   <div className="min-h-screen bg-gray-50 dark:bg-black flex items-center justify-center">
     <div className="text-center">
       <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#007AFF] dark:border-[#66B3FF]"></div>
-      <p className="mt-4 text-gray-600 dark:text-gray-400">Loading...</p>
+      <p className="mt-4 text-gray-600 dark:text-[#94a3b8]">Loading...</p>
     </div>
   </div>
 )

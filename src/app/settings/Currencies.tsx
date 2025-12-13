@@ -212,7 +212,7 @@ const Currencies: React.FC = () => {
               <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
                 Currency Settings
               </h1>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              <p className="text-sm text-gray-500 dark:text-[#94a3b8] mt-1">
                 Configure your currency preferences and conversion settings
               </p>
             </div>
@@ -251,7 +251,7 @@ const Currencies: React.FC = () => {
                 Primary Reporting Currency
               </h2>
             </div>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+            <p className="text-sm text-gray-500 dark:text-[#94a3b8] mb-4">
               Your primary currency is used for all financial reports and
               statements. Transactions in other currencies will be automatically
               converted.
@@ -297,7 +297,7 @@ const Currencies: React.FC = () => {
                 Additional Reporting Currencies
               </h2>
             </div>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+            <p className="text-sm text-gray-500 dark:text-[#94a3b8] mb-4">
               Select additional currencies to include in your reports. Values
               will be converted automatically based on current exchange rates.
             </p>
@@ -389,7 +389,7 @@ const Currencies: React.FC = () => {
                     <div className="font-medium text-gray-900 dark:text-white mb-1">
                       Spot Rate
                     </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                    <div className="text-xs text-gray-500 dark:text-[#94a3b8]">
                       Use current exchange rate for all conversions
                     </div>
                   </button>
@@ -405,7 +405,7 @@ const Currencies: React.FC = () => {
                     <div className="font-medium text-gray-900 dark:text-white mb-1">
                       Historical Rate
                     </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                    <div className="text-xs text-gray-500 dark:text-[#94a3b8]">
                       Use rate at transaction time (recommended)
                     </div>
                   </button>
@@ -421,7 +421,7 @@ const Currencies: React.FC = () => {
                     <div className="font-medium text-gray-900 dark:text-white mb-1">
                       Fixed Rate
                     </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                    <div className="text-xs text-gray-500 dark:text-[#94a3b8]">
                       Use manually set exchange rates
                     </div>
                   </button>
@@ -503,7 +503,7 @@ const Currencies: React.FC = () => {
                   onChange={handleDecimalPlacesChange}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                <p className="text-xs text-gray-500 dark:text-[#94a3b8] mt-1">
                   Number of decimal places to display (0-8)
                 </p>
               </div>
@@ -534,7 +534,7 @@ const Currencies: React.FC = () => {
                     Decimal comma (space) format - 1 234,56
                   </option>
                 </select>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                <p className="text-xs text-gray-500 dark:text-[#94a3b8] mt-1">
                   Choose how numbers are formatted with separators
                 </p>
               </div>
@@ -592,7 +592,7 @@ const Currencies: React.FC = () => {
               </button>
             </div>
 
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+            <p className="text-sm text-gray-500 dark:text-[#94a3b8] mb-4">
               Configure API keys for external exchange rate providers. These are
               optional but recommended for production use.
             </p>
@@ -614,7 +614,7 @@ const Currencies: React.FC = () => {
                     placeholder="Enter your CoinGecko API key"
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  <p className="text-xs text-gray-500 dark:text-[#94a3b8] mt-1">
                     Used for cryptocurrency price feeds.{' '}
                     <a
                       href="https://www.coingecko.com/en/api"
@@ -642,7 +642,7 @@ const Currencies: React.FC = () => {
                     placeholder="Enter your Fixer.io API key"
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  <p className="text-xs text-gray-500 dark:text-[#94a3b8] mt-1">
                     Used for fiat currency exchange rates.{' '}
                     <a
                       href="https://fixer.io/"

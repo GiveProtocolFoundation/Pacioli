@@ -312,7 +312,7 @@ const Reports: React.FC = () => {
               <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
                 Reports
               </h1>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              <p className="text-sm text-gray-500 dark:text-[#94a3b8] mt-1">
                 Financial and cryptocurrency reporting
               </p>
             </div>
@@ -333,7 +333,7 @@ const Reports: React.FC = () => {
               <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                    <p className="text-sm text-gray-500 dark:text-[#94a3b8]">
                       Total Reports
                     </p>
                     <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1 stat-value">
@@ -349,7 +349,7 @@ const Reports: React.FC = () => {
               <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                    <p className="text-sm text-gray-500 dark:text-[#94a3b8]">
                       Favorites
                     </p>
                     <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1 stat-value">
@@ -365,7 +365,7 @@ const Reports: React.FC = () => {
               <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                    <p className="text-sm text-gray-500 dark:text-[#94a3b8]">
                       Run Today
                     </p>
                     <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1 stat-value">
@@ -466,7 +466,7 @@ const Reports: React.FC = () => {
                               <Star className="w-4 h-4 ml-2 favorite-star active" />
                             )}
                           </div>
-                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                          <p className="text-xs text-gray-500 dark:text-[#94a3b8] mt-1">
                             {report.description}
                           </p>
                           {report.lastRun && (
@@ -507,7 +507,7 @@ const Reports: React.FC = () => {
                   <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">
                     No reports found
                   </h3>
-                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                  <p className="mt-1 text-sm text-gray-500 dark:text-[#94a3b8]">
                     Try adjusting your search or filters.
                   </p>
                 </div>
@@ -534,7 +534,7 @@ const Reports: React.FC = () => {
                       </p>
                       {getStatusBadge(run.status)}
                     </div>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                    <p className="text-xs text-gray-500 dark:text-[#94a3b8]">
                       By {run.ranBy}
                     </p>
                     <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">

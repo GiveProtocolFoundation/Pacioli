@@ -345,7 +345,7 @@ const WalletManager: React.FC = () => {
             Wallet Manager
           </h1>
         </div>
-        <p className="text-gray-600 dark:text-gray-400">
+        <p className="text-gray-600 dark:text-[#94a3b8]">
           Connect your Polkadot wallets and import transaction history for accounting
         </p>
 
@@ -516,7 +516,7 @@ const WalletManager: React.FC = () => {
                     <p className="text-sm text-gray-700 dark:text-gray-300">
                       Last synced: {new Date(syncStatus.lastSyncTime).toLocaleString()}
                     </p>
-                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                    <p className="text-xs text-gray-600 dark:text-[#94a3b8] mt-1">
                       Block #{syncStatus.lastSyncedBlock.toLocaleString()}
                     </p>
                   </div>
@@ -530,7 +530,7 @@ const WalletManager: React.FC = () => {
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
                   Getting Started
                 </h3>
-                <ol className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                <ol className="space-y-2 text-sm text-gray-600 dark:text-[#94a3b8]">
                   <li className="flex items-start">
                     <span className="font-semibold text-[#007AFF] dark:text-[#66B3FF] mr-2">
                       1.

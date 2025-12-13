@@ -124,7 +124,7 @@ const Analytics: React.FC = () => {
               <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
                 Analytics
               </h1>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              <p className="text-sm text-gray-500 dark:text-[#94a3b8] mt-1">
                 Performance insights and data visualization
               </p>
             </div>
@@ -161,13 +161,13 @@ const Analytics: React.FC = () => {
                   </div>
                 )}
               </div>
-              <button className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg">
+              <button className="p-2 text-gray-600 dark:text-[#94a3b8] hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg">
                 <RefreshCw className="w-5 h-5" />
               </button>
-              <button className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg">
+              <button className="p-2 text-gray-600 dark:text-[#94a3b8] hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg">
                 <Download className="w-5 h-5" />
               </button>
-              <button className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg">
+              <button className="p-2 text-gray-600 dark:text-[#94a3b8] hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg">
                 <Settings className="w-5 h-5" />
               </button>
             </div>
@@ -201,7 +201,7 @@ const Analytics: React.FC = () => {
                     {Math.abs(kpi.change)}%
                   </div>
                 </div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
+                <p className="text-sm text-gray-500 dark:text-[#94a3b8]">
                   {kpi.label}
                 </p>
                 <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
@@ -226,7 +226,7 @@ const Analytics: React.FC = () => {
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                     Portfolio Performance
                   </h3>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <p className="text-xs text-gray-500 dark:text-[#94a3b8]">
                     Total value over time
                   </p>
                 </div>
@@ -301,7 +301,7 @@ const Analytics: React.FC = () => {
                     key={`label-${point.date}`}
                     x={50 + i * 100}
                     y="245"
-                    className="text-xs fill-current text-gray-500 dark:text-gray-400"
+                    className="text-xs fill-current text-gray-500 dark:text-[#94a3b8]"
                     textAnchor="middle"
                   >
                     {point.date}
@@ -319,7 +319,7 @@ const Analytics: React.FC = () => {
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                   Asset Allocation
                 </h3>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
+                <p className="text-xs text-gray-500 dark:text-[#94a3b8]">
                   Holdings by cryptocurrency
                 </p>
               </div>
@@ -404,7 +404,7 @@ const Analytics: React.FC = () => {
                     <div className="text-sm font-medium text-gray-900 dark:text-white">
                       {asset.value}%
                     </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                    <div className="text-xs text-gray-500 dark:text-[#94a3b8]">
                       ${asset.amount.toLocaleString()}
                     </div>
                   </div>
@@ -421,7 +421,7 @@ const Analytics: React.FC = () => {
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                   Transaction Volume
                 </h3>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
+                <p className="text-xs text-gray-500 dark:text-[#94a3b8]">
                   Daily transaction activity
                 </p>
               </div>
@@ -448,7 +448,7 @@ const Analytics: React.FC = () => {
                       className="w-full bg-blue-500 dark:bg-blue-600 rounded-t hover:bg-blue-600 dark:hover:bg-blue-500 transition-colors cursor-pointer"
                       style={{ height: `${height}%` }}
                     />
-                    <span className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                    <span className="text-xs text-gray-500 dark:text-[#94a3b8] mt-2">
                       {dayName}
                     </span>
                   </div>
@@ -458,7 +458,7 @@ const Analytics: React.FC = () => {
 
             <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-500 dark:text-gray-400">
+                <span className="text-gray-500 dark:text-[#94a3b8]">
                   Total this week
                 </span>
                 <span className="font-semibold text-gray-900 dark:text-white">
@@ -477,7 +477,7 @@ const Analytics: React.FC = () => {
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                     Staking Rewards
                   </h3>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <p className="text-xs text-gray-500 dark:text-[#94a3b8]">
                     Rewards earned over time
                   </p>
                 </div>
@@ -490,7 +490,7 @@ const Analytics: React.FC = () => {
                   <p className="text-sm font-medium text-gray-900 dark:text-white">
                     DOT Staking
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <p className="text-xs text-gray-500 dark:text-[#94a3b8]">
                     12.5% APY
                   </p>
                 </div>
@@ -498,7 +498,7 @@ const Analytics: React.FC = () => {
                   <p className="text-sm font-semibold text-green-600 dark:text-green-400">
                     +$2,450.32
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <p className="text-xs text-gray-500 dark:text-[#94a3b8]">
                     This month
                   </p>
                 </div>
@@ -509,7 +509,7 @@ const Analytics: React.FC = () => {
                   <p className="text-sm font-medium text-gray-900 dark:text-white">
                     GLMR Staking
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <p className="text-xs text-gray-500 dark:text-[#94a3b8]">
                     15.2% APY
                   </p>
                 </div>
@@ -517,7 +517,7 @@ const Analytics: React.FC = () => {
                   <p className="text-sm font-semibold text-blue-600 dark:text-blue-400">
                     +$1,820.18
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <p className="text-xs text-gray-500 dark:text-[#94a3b8]">
                     This month
                   </p>
                 </div>
@@ -528,7 +528,7 @@ const Analytics: React.FC = () => {
                   <p className="text-sm font-medium text-gray-900 dark:text-white">
                     ASTR Staking
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <p className="text-xs text-gray-500 dark:text-[#94a3b8]">
                     8.7% APY
                   </p>
                 </div>
@@ -536,7 +536,7 @@ const Analytics: React.FC = () => {
                   <p className="text-sm font-semibold text-purple-600 dark:text-purple-400">
                     +$986.45
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <p className="text-xs text-gray-500 dark:text-[#94a3b8]">
                     This month
                   </p>
                 </div>
@@ -545,7 +545,7 @@ const Analytics: React.FC = () => {
 
             <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-500 dark:text-gray-400">
+                <span className="text-sm text-gray-500 dark:text-[#94a3b8]">
                   Total Rewards
                 </span>
                 <span className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -563,7 +563,7 @@ const Analytics: React.FC = () => {
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                   Revenue vs Expenses
                 </h3>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
+                <p className="text-xs text-gray-500 dark:text-[#94a3b8]">
                   Monthly comparison
                 </p>
               </div>
@@ -594,7 +594,7 @@ const Analytics: React.FC = () => {
                         style={{ height: `${data.expense}%` }}
                       />
                     </div>
-                    <span className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                    <span className="text-xs text-gray-500 dark:text-[#94a3b8] mt-2">
                       {monthName}
                     </span>
                   </div>
@@ -605,13 +605,13 @@ const Analytics: React.FC = () => {
             <div className="mt-6 flex items-center justify-center gap-6">
               <div className="flex items-center">
                 <div className="w-3 h-3 bg-green-500 rounded mr-2" />
-                <span className="text-xs text-gray-500 dark:text-gray-400">
+                <span className="text-xs text-gray-500 dark:text-[#94a3b8]">
                   Revenue
                 </span>
               </div>
               <div className="flex items-center">
                 <div className="w-3 h-3 bg-red-500 rounded mr-2" />
-                <span className="text-xs text-gray-500 dark:text-gray-400">
+                <span className="text-xs text-gray-500 dark:text-[#94a3b8]">
                   Expenses
                 </span>
               </div>

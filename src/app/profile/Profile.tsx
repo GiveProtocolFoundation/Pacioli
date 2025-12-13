@@ -151,7 +151,7 @@ const Profile: React.FC = () => {
               <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
                 Your Profile
               </h1>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              <p className="text-sm text-gray-500 dark:text-[#94a3b8] mt-1">
                 Manage your personal information and preferences
               </p>
             </div>
@@ -209,7 +209,7 @@ const Profile: React.FC = () => {
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mt-4">
                   {profile.firstName} {profile.lastName}
                 </h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
+                <p className="text-sm text-gray-500 dark:text-[#94a3b8]">
                   {profile.jobTitle}
                 </p>
               </div>
@@ -411,7 +411,7 @@ const Profile: React.FC = () => {
                           <p className="text-sm font-medium text-gray-900 dark:text-white">
                             Two-Factor Authentication
                           </p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                          <p className="text-xs text-gray-500 dark:text-[#94a3b8] mt-1">
                             Add an extra layer of security to your account
                           </p>
                         </div>
@@ -440,7 +440,7 @@ const Profile: React.FC = () => {
                           <p className="text-sm font-medium text-gray-900 dark:text-white">
                             Login Alerts
                           </p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                          <p className="text-xs text-gray-500 dark:text-[#94a3b8] mt-1">
                             Get notified of new sign-ins to your account
                           </p>
                         </div>
@@ -463,12 +463,12 @@ const Profile: React.FC = () => {
                     <div className="pt-4">
                       <button className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                         <div className="flex items-center">
-                          <Lock className="w-5 h-5 text-gray-600 dark:text-gray-400 mr-3" />
+                          <Lock className="w-5 h-5 text-gray-600 dark:text-[#94a3b8] mr-3" />
                           <div className="text-left">
                             <p className="text-sm font-medium text-gray-900 dark:text-white">
                               Change Password
                             </p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                            <p className="text-xs text-gray-500 dark:text-[#94a3b8]">
                               Last changed 30 days ago
                             </p>
                           </div>
@@ -571,7 +571,7 @@ const Profile: React.FC = () => {
                         <p className="text-sm font-medium text-gray-900 dark:text-white">
                           Email Notifications
                         </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        <p className="text-xs text-gray-500 dark:text-[#94a3b8] mt-1">
                           Receive notifications via email
                         </p>
                       </div>
@@ -596,7 +596,7 @@ const Profile: React.FC = () => {
                         <p className="text-sm font-medium text-gray-900 dark:text-white">
                           SMS Notifications
                         </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        <p className="text-xs text-gray-500 dark:text-[#94a3b8] mt-1">
                           Receive notifications via SMS
                         </p>
                       </div>

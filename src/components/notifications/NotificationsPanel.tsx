@@ -87,7 +87,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
                   <span className="inline-block w-2 h-2 bg-blue-600 rounded-full ml-2"></span>
                 )}
               </p>
-              <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+              <p className="text-xs text-gray-600 dark:text-[#94a3b8] mt-1">
                 {notification.message}
               </p>
             </div>
@@ -340,7 +340,7 @@ const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
               Notifications
             </h2>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+            <p className="text-xs text-gray-500 dark:text-[#94a3b8] mt-0.5">
               {unreadCount} unread{' '}
               {actionRequiredCount > 0 &&
                 `• ${actionRequiredCount} require action`}
@@ -371,7 +371,7 @@ const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
             className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
               filter === 'all'
                 ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
-                : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-[#94a3b8] hover:bg-gray-200 dark:hover:bg-gray-700'
             }`}
           >
             All
@@ -381,7 +381,7 @@ const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
             className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
               filter === 'financial'
                 ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
-                : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-[#94a3b8] hover:bg-gray-200 dark:hover:bg-gray-700'
             }`}
           >
             Financial
@@ -391,7 +391,7 @@ const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
             className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
               filter === 'transactional'
                 ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
-                : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-[#94a3b8] hover:bg-gray-200 dark:hover:bg-gray-700'
             }`}
           >
             Transactions
@@ -403,7 +403,7 @@ const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
                   filter === 'workflow'
                     ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-[#94a3b8] hover:bg-gray-200 dark:hover:bg-gray-700'
                 }`}
               >
                 Workflow
@@ -413,7 +413,7 @@ const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
                   filter === 'approval'
                     ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-[#94a3b8] hover:bg-gray-200 dark:hover:bg-gray-700'
                 }`}
               >
                 Approvals
@@ -430,7 +430,7 @@ const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
               <p className="text-sm font-medium text-gray-900 dark:text-white">
                 All caught up!
               </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <p className="text-xs text-gray-500 dark:text-[#94a3b8] mt-1">
                 No notifications to show
               </p>
             </div>

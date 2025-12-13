@@ -322,7 +322,7 @@ const Balances: React.FC = () => {
               <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
                 Wallet Balances
               </h1>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              <p className="text-sm text-gray-500 dark:text-[#94a3b8] mt-1">
                 Track your cryptocurrency holdings across all wallets
               </p>
             </div>
@@ -528,7 +528,7 @@ const Balances: React.FC = () => {
                   <p className="text-2xl font-semibold text-gray-900 dark:text-white mb-1">
                     {formatCurrency(balance.usdValue)}
                   </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+                  <p className="text-sm text-gray-500 dark:text-[#94a3b8] mb-2">
                     {balance.amount.toLocaleString(undefined, {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 6,
@@ -546,7 +546,7 @@ const Balances: React.FC = () => {
                       {balance.change24h >= 0 ? '+' : ''}
                       {balance.change24h}%
                     </span>
-                    <span className="text-sm text-gray-500 dark:text-gray-400 ml-1">
+                    <span className="text-sm text-gray-500 dark:text-[#94a3b8] ml-1">
                       24h
                     </span>
                   </div>
@@ -578,7 +578,7 @@ const Balances: React.FC = () => {
                         {wallet.name}
                       </h3>
                       <div className="flex items-center mt-1">
-                        <span className="text-sm text-gray-500 dark:text-gray-400">
+                        <span className="text-sm text-gray-500 dark:text-[#94a3b8]">
                           {truncateAddress(wallet.address)}
                         </span>
                         <button className="ml-2 text-gray-400 hover:text-gray-600">
@@ -594,7 +594,7 @@ const Balances: React.FC = () => {
                     <p className="text-xl font-semibold text-gray-900 dark:text-white">
                       {formatCurrency(wallet.totalUsdValue)}
                     </p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    <p className="text-sm text-gray-500 dark:text-[#94a3b8] mt-1">
                       Total Value
                     </p>
                   </div>
@@ -609,7 +609,7 @@ const Balances: React.FC = () => {
                         <p className="text-sm font-medium text-gray-900 dark:text-white">
                           {crypto}
                         </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        <p className="text-xs text-gray-500 dark:text-[#94a3b8] mt-1">
                           {balance.amount.toLocaleString(undefined, {
                             minimumFractionDigits: 2,
                             maximumFractionDigits: 6,

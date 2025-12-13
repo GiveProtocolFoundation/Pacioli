@@ -85,12 +85,12 @@ const Transactions: React.FC = () => {
       case 'pending_approval':
         return 'text-yellow-700 bg-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-400'
       case 'draft':
-        return 'text-gray-700 bg-gray-100 dark:bg-gray-900/30 dark:text-gray-400'
+        return 'text-gray-700 bg-gray-100 dark:bg-gray-900/30 dark:text-[#94a3b8]'
       case 'rejected':
       case 'failed':
         return 'text-red-700 bg-red-100 dark:bg-red-900/30 dark:text-red-400'
       default:
-        return 'text-gray-700 bg-gray-100 dark:bg-gray-900/30 dark:text-gray-400'
+        return 'text-gray-700 bg-gray-100 dark:bg-gray-900/30 dark:text-[#94a3b8]'
     }
   }
 
@@ -160,7 +160,7 @@ const Transactions: React.FC = () => {
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             Transactions
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
+          <p className="text-gray-600 dark:text-[#94a3b8] mt-1">
             View and manage all your crypto transactions
           </p>
         </div>
@@ -204,7 +204,7 @@ const Transactions: React.FC = () => {
               className={`pb-4 px-1 border-b-2 font-medium text-sm transition-colors ${
                 filter === tab.key
                   ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
+                  : 'border-transparent text-gray-500 dark:text-[#94a3b8] hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
               }`}
             >
               {tab.label}
@@ -212,7 +212,7 @@ const Transactions: React.FC = () => {
                 className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
                   filter === tab.key
                     ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
-                    : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
+                    : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-[#94a3b8]'
                 }`}
               >
                 {tab.count}
@@ -308,12 +308,12 @@ const Transactions: React.FC = () => {
                       {transaction.description}
                     </div>
                     {transaction.hash && (
-                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                      <div className="text-xs text-gray-500 dark:text-[#94a3b8]">
                         {transaction.hash}
                       </div>
                     )}
                     {transaction.memo && (
-                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      <div className="text-xs text-gray-500 dark:text-[#94a3b8] mt-1">
                         {transaction.memo}
                       </div>
                     )}
@@ -324,7 +324,7 @@ const Transactions: React.FC = () => {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                    <span className="text-sm text-gray-600 dark:text-[#94a3b8]">
                       {transaction.wallet}
                     </span>
                   </td>
@@ -361,13 +361,11 @@ const Transactions: React.FC = () => {
                               {token?.symbol || transaction.crypto}
                             </div>
                           </div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">
-                            {transaction.fiatCurrency ||
-                              currencySettings.primaryCurrency}{' '}
-                            {transaction.fiatValue.toLocaleString()}
+                          <div className="text-xs text-gray-500 dark:text-[#94a3b8]">
+                            {transaction.fiatCurrency || currencySettings.primaryCurrency} {transaction.fiatValue.toLocaleString()}
                           </div>
                           {chain && (
-                            <div className="text-xs text-gray-500 dark:text-gray-400">
+                            <div className="text-xs text-gray-500 dark:text-[#94a3b8]">
                               on {chain.chainName}
                             </div>
                           )}
@@ -410,7 +408,7 @@ const Transactions: React.FC = () => {
             <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">
               No transactions found
             </h3>
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            <p className="mt-1 text-sm text-gray-500 dark:text-[#94a3b8]">
               {searchQuery
                 ? 'Try adjusting your search'
                 : 'Get started by creating a new transaction'}

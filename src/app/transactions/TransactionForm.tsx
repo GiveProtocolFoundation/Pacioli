@@ -323,7 +323,7 @@ const TransactionForm: React.FC = () => {
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
                   {isEditMode ? 'Edit Transaction' : 'New Transaction'}
                 </h1>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                <p className="text-sm text-gray-600 dark:text-[#94a3b8] mt-1">
                   {isEditMode
                     ? 'Update transaction details below'
                     : 'Enter all transaction details below'}
@@ -599,7 +599,7 @@ const TransactionForm: React.FC = () => {
                   <p className="mt-1 text-sm text-red-600">{errors.amount}</p>
                 )}
                 {selectedToken && (
-                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  <p className="mt-1 text-xs text-gray-500 dark:text-[#94a3b8]">
                     {selectedToken.symbol} ({selectedToken.decimals} decimals)
                   </p>
                 )}

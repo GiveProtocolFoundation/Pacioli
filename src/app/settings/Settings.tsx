@@ -142,7 +142,7 @@ const Settings: React.FC<SettingsProps> = ({ userType = 'organization' }) => {
             <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
               Settings
             </h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            <p className="text-sm text-gray-500 dark:text-[#94a3b8] mt-1">
               Manage your organization settings and preferences
             </p>
           </div>
@@ -180,19 +180,19 @@ const Settings: React.FC<SettingsProps> = ({ userType = 'organization' }) => {
                             ? 'text-blue-600 dark:text-blue-400'
                             : item.comingSoon
                               ? 'text-gray-400 dark:text-gray-600'
-                              : 'text-gray-500 dark:text-gray-400'
+                              : 'text-gray-500 dark:text-[#94a3b8]'
                         }`}
                       />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <span className="truncate">{item.label}</span>
                           {item.comingSoon && (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-[#94a3b8]">
                               Soon
                             </span>
                           )}
                         </div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">
+                        <p className="text-xs text-gray-500 dark:text-[#94a3b8] mt-0.5 truncate">
                           {item.description}
                         </p>
                       </div>
@@ -234,7 +234,7 @@ const Settings: React.FC<SettingsProps> = ({ userType = 'organization' }) => {
                   <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">
                     Coming Soon
                   </h3>
-                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                  <p className="mt-1 text-sm text-gray-500 dark:text-[#94a3b8]">
                     This feature is under development.
                   </p>
                 </div>

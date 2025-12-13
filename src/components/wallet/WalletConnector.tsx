@@ -103,7 +103,7 @@ const AccountRow = memo(function AccountRow({
                 <span className="text-xs text-gray-400">({account.name})</span>
               )}
             </div>
-            <div className="text-xs text-gray-500 dark:text-gray-400 font-mono truncate">
+            <div className="text-xs text-gray-500 dark:text-[#94a3b8] font-mono truncate">
               {account.address.slice(0, 10)}...{account.address.slice(-8)}
             </div>
           </div>
@@ -391,7 +391,7 @@ export const WalletConnector: React.FC<WalletConnectorProps> = ({
       <div className="ledger-card ledger-card-financial border border-gray-200 dark:border-gray-700 p-6">
         <div className="flex items-center justify-center py-8">
           <Loader className="w-6 h-6 animate-spin text-[#007AFF] dark:text-[#66B3FF]" />
-          <span className="ml-3 text-gray-600 dark:text-gray-400">
+          <span className="ml-3 text-gray-600 dark:text-[#94a3b8]">
             Detecting wallets...
           </span>
         </div>
@@ -409,9 +409,9 @@ export const WalletConnector: React.FC<WalletConnectorProps> = ({
             Connect Wallet
           </h2>
         </div>
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          Connect your Polkadot or Ethereum wallet to import transaction
-          history. Pacioli only requests read-only access.
+        <p className="text-sm text-gray-500 dark:text-[#94a3b8]">
+          Connect your Polkadot or Ethereum wallet to import transaction history.
+          Pacioli only requests read-only access.
         </p>
       </div>
 
@@ -453,7 +453,7 @@ export const WalletConnector: React.FC<WalletConnectorProps> = ({
                       </span>
                     )}
                   </div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  <p className="text-sm text-gray-500 dark:text-[#94a3b8] mt-1">
                     {info.description}
                   </p>
 
@@ -504,17 +504,13 @@ export const WalletConnector: React.FC<WalletConnectorProps> = ({
           </h3>
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
-              <span className="text-gray-600 dark:text-gray-400">
-                Total Wallets:
-              </span>
+              <span className="text-gray-600 dark:text-[#94a3b8]">Total Wallets:</span>
               <span className="font-semibold text-gray-900 dark:text-white">
                 {connectedWallets.length}
               </span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-gray-600 dark:text-gray-400">
-                Total Accounts:
-              </span>
+              <span className="text-gray-600 dark:text-[#94a3b8]">Total Accounts:</span>
               <span className="font-semibold text-gray-900 dark:text-white">
                 {connectedWallets.reduce(
                   (sum, w) => sum + w.accounts.length,

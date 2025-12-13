@@ -131,7 +131,7 @@ const Support: React.FC = () => {
             <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
               Support
             </h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            <p className="text-sm text-gray-500 dark:text-[#94a3b8] mt-1">
               Documentation, guides, and help resources
             </p>
           </div>
@@ -158,7 +158,7 @@ const Support: React.FC = () => {
                 className={`px-3 py-1 rounded-full text-sm ${
                   selectedCategory === 'all'
                     ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-[#94a3b8]'
                 }`}
               >
                 All
@@ -168,7 +168,7 @@ const Support: React.FC = () => {
                 className={`px-3 py-1 rounded-full text-sm ${
                   selectedCategory === 'guide'
                     ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-[#94a3b8]'
                 }`}
               >
                 User Guide
@@ -178,7 +178,7 @@ const Support: React.FC = () => {
                 className={`px-3 py-1 rounded-full text-sm ${
                   selectedCategory === 'crypto'
                     ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-[#94a3b8]'
                 }`}
               >
                 Crypto
@@ -188,7 +188,7 @@ const Support: React.FC = () => {
                 className={`px-3 py-1 rounded-full text-sm ${
                   selectedCategory === 'api'
                     ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-[#94a3b8]'
                 }`}
               >
                 API
@@ -243,7 +243,7 @@ const Support: React.FC = () => {
                           <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
                             {topic.title}
                           </h3>
-                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                          <p className="text-xs text-gray-500 dark:text-[#94a3b8] mt-1">
                             {topic.description}
                           </p>
                         </div>
@@ -316,7 +316,7 @@ const Support: React.FC = () => {
                 System Status
               </h3>
               <div className="flex items-center justify-between mb-3">
-                <span className="text-sm text-gray-600 dark:text-gray-400">
+                <span className="text-sm text-gray-600 dark:text-[#94a3b8]">
                   API
                 </span>
                 <span className="flex items-center text-sm text-green-600 dark:text-green-400">
@@ -325,7 +325,7 @@ const Support: React.FC = () => {
                 </span>
               </div>
               <div className="flex items-center justify-between mb-3">
-                <span className="text-sm text-gray-600 dark:text-gray-400">
+                <span className="text-sm text-gray-600 dark:text-[#94a3b8]">
                   Web App
                 </span>
                 <span className="flex items-center text-sm text-green-600 dark:text-green-400">
@@ -334,7 +334,7 @@ const Support: React.FC = () => {
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-400">
+                <span className="text-sm text-gray-600 dark:text-[#94a3b8]">
                   Blockchain Sync
                 </span>
                 <span className="flex items-center text-sm text-green-600 dark:text-green-400">
@@ -361,7 +361,7 @@ const Support: React.FC = () => {
                   <p className="text-sm font-medium text-gray-900 dark:text-white">
                     Version 1.2.0 Released
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  <p className="text-xs text-gray-500 dark:text-[#94a3b8] mt-1">
                     New analytics features and performance improvements
                   </p>
                   <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
@@ -372,7 +372,7 @@ const Support: React.FC = () => {
                   <p className="text-sm font-medium text-gray-900 dark:text-white">
                     New Staking Support
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  <p className="text-xs text-gray-500 dark:text-[#94a3b8] mt-1">
                     Added support for GLMR and ASTR staking
                   </p>
                   <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
@@ -383,7 +383,7 @@ const Support: React.FC = () => {
                   <p className="text-sm font-medium text-gray-900 dark:text-white">
                     API v1 Launched
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  <p className="text-xs text-gray-500 dark:text-[#94a3b8] mt-1">
                     Full REST API now available
                   </p>
                   <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
@@ -398,7 +398,7 @@ const Support: React.FC = () => {
               <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
                 Full Documentation
               </h3>
-              <p className="text-xs text-gray-600 dark:text-gray-400 mb-4">
+              <p className="text-xs text-gray-600 dark:text-[#94a3b8] mb-4">
                 Access the complete Pacioli documentation site for in-depth
                 guides and references.
               </p>

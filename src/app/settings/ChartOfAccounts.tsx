@@ -205,7 +205,7 @@ const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
           Chart of Accounts
         </h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-1">
+        <p className="text-gray-600 dark:text-[#94a3b8] mt-1">
           {template.name} ({filteredAccounts.length} accounts)
         </p>
       </div>
@@ -392,7 +392,7 @@ const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
                     </span>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                    <span className="text-sm text-gray-600 dark:text-[#94a3b8]">
                       {account.description}
                     </span>
                   </td>
@@ -429,7 +429,7 @@ const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
             <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">
               No accounts found
             </h3>
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            <p className="mt-1 text-sm text-gray-500 dark:text-[#94a3b8]">
               {searchQuery
                 ? 'Try adjusting your search'
                 : 'No accounts match the selected filter'}

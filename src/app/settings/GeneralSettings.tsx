@@ -119,7 +119,7 @@ const OrganizationInformationSection: React.FC<
               />
             </label>
           </div>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+          <p className="text-xs text-gray-500 dark:text-[#94a3b8] mt-1">
             Recommended: Square image, at least 200x200px
           </p>
         </div>
@@ -400,7 +400,7 @@ const FiscalYearSection: React.FC<FiscalYearSectionProps> = ({
             <option value="11-30">November 30</option>
           </optgroup>
         </select>
-        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+        <p className="text-xs text-gray-500 dark:text-[#94a3b8] mt-1">
           Fiscal year start will be the day after the selected year end
         </p>
       </div>
@@ -456,7 +456,7 @@ const ApiKeysSection: React.FC = () => {
         </h3>
       </div>
 
-      <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+      <p className="text-sm text-gray-500 dark:text-[#94a3b8] mb-4">
         Configure API keys for external blockchain data providers. These keys are stored locally in your browser.
       </p>
 
@@ -469,7 +469,7 @@ const ApiKeysSection: React.FC = () => {
           >
             Etherscan API Key
           </label>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+          <p className="text-xs text-gray-500 dark:text-[#94a3b8] mb-2">
             Required for fetching EVM transaction history on Moonbeam, Moonriver, and other EVM chains.
           </p>
           <div className="flex space-x-2">
@@ -677,7 +677,7 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
             General Settings
           </h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          <p className="text-sm text-gray-500 dark:text-[#94a3b8] mt-1">
             Manage your organization and system preferences
           </p>
         </div>
@@ -869,7 +869,7 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({
                 <div className="font-medium text-gray-900 dark:text-white mb-1">
                   Light
                 </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400">
+                <div className="text-xs text-gray-500 dark:text-[#94a3b8]">
                   Classic light theme
                 </div>
               </button>
@@ -885,7 +885,7 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({
                 <div className="font-medium text-gray-900 dark:text-white mb-1">
                   Dark
                 </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400">
+                <div className="text-xs text-gray-500 dark:text-[#94a3b8]">
                   Easy on the eyes
                 </div>
               </button>
@@ -901,7 +901,7 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({
                 <div className="font-medium text-gray-900 dark:text-white mb-1">
                   System
                 </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400">
+                <div className="text-xs text-gray-500 dark:text-[#94a3b8]">
                   Match OS preference
                 </div>
               </button>

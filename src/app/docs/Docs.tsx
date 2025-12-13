@@ -222,7 +222,7 @@ const Docs: React.FC = () => {
             <BookOpen className="w-8 h-8 text-[#007AFF] dark:text-[#66B3FF] mr-4" />
             <div>
               <h1>Pacioli Documentation</h1>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              <p className="text-sm text-gray-500 dark:text-[#94a3b8] mt-1">
                 Comprehensive guides and references for using Pacioli accounting
                 software
               </p>
@@ -286,7 +286,7 @@ const Docs: React.FC = () => {
                                   className={`w-full flex items-center justify-between px-3 py-1.5 text-sm rounded transition-colors text-left ${
                                     isSelected
                                       ? 'bg-[#007AFF]/10 dark:bg-[#66B3FF]/20 text-[#007AFF] dark:text-[#66B3FF] font-medium'
-                                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
+                                      : 'text-gray-600 dark:text-[#94a3b8] hover:bg-gray-50 dark:hover:bg-gray-800'
                                   }`}
                                 >
                                   <span>{item.title}</span>
@@ -314,7 +314,7 @@ const Docs: React.FC = () => {
                                           className={`w-full px-3 py-1 text-xs rounded transition-colors text-left ${
                                             isSubSelected
                                               ? 'bg-[#007AFF]/10 dark:bg-[#66B3FF]/20 text-[#007AFF] dark:text-[#66B3FF] font-medium'
-                                              : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
+                                              : 'text-gray-600 dark:text-[#94a3b8] hover:bg-gray-50 dark:hover:bg-gray-800'
                                           }`}
                                         >
                                           {subItem.title}
@@ -350,9 +350,9 @@ const Docs: React.FC = () => {
                       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
                       .join(' ')}
                   </h2>
-                  <p className="text-gray-500 dark:text-gray-400">
-                    This documentation page is currently being prepared and will
-                    be available soon.
+                  <p className="text-gray-500 dark:text-[#94a3b8]">
+                    This documentation page is currently being prepared and will be
+                    available soon.
                   </p>
                 </div>
 

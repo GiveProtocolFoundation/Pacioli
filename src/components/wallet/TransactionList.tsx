@@ -277,7 +277,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
       case 'governance':
         return 'bg-[#059669]/10 text-[#059669] dark:bg-[#10b981]/20 dark:text-[#10b981]'
       default:
-        return 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400'
+        return 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-[#94a3b8]'
     }
   }
 
@@ -304,7 +304,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
       <div className="ledger-card ledger-card-financial border border-gray-200 dark:border-gray-700 p-6">
         <div className="flex items-center justify-center py-12">
           <Loader className="w-6 h-6 animate-spin text-[#007AFF] dark:text-[#66B3FF]" />
-          <span className="ml-3 text-gray-600 dark:text-gray-400">
+          <span className="ml-3 text-gray-600 dark:text-[#94a3b8]">
             Loading transaction history...
           </span>
         </div>
@@ -321,9 +321,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
             <h3 className="font-semibold text-[#dc2626] dark:text-[#ef4444]">
               Error Loading Transactions
             </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-              {error}
-            </p>
+            <p className="text-sm text-gray-600 dark:text-[#94a3b8] mt-1">{error}</p>
           </div>
         </div>
       </div>
@@ -338,7 +336,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
             No Transactions Found
           </h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+          <p className="text-sm text-gray-500 dark:text-[#94a3b8]">
             Connect a wallet and sync to view transaction history
           </p>
         </div>
@@ -355,9 +353,9 @@ export const TransactionList: React.FC<TransactionListProps> = ({
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
               Transaction History
             </h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              {transactions.length} transaction
-              {transactions.length !== 1 ? 's' : ''} found
+            <p className="text-sm text-gray-500 dark:text-[#94a3b8] mt-1">
+              {transactions.length} transaction{transactions.length !== 1 ? 's' : ''}{' '}
+              found
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -413,10 +411,9 @@ export const TransactionList: React.FC<TransactionListProps> = ({
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
                   Purge Transaction Data?
                 </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  This will permanently delete all {transactions.length} wallet
-                  transactions from IndexedDB. This action cannot be undone. You
-                  can re-sync from the blockchain anytime.
+                <p className="text-sm text-gray-600 dark:text-[#94a3b8]">
+                  This will permanently delete all {transactions.length} wallet transactions from IndexedDB.
+                  This action cannot be undone. You can re-sync from the blockchain anytime.
                 </p>
               </div>
             </div>
@@ -460,7 +457,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
               return (
                 <tr key={tx.id} className="ledger-table-row">
                   {/* Timestamp */}
-                  <td className="ledger-table-cell-text whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
+                  <td className="ledger-table-cell-text whitespace-nowrap text-sm text-gray-600 dark:text-[#94a3b8]">
                     {formatTimestamp(tx.timestamp)}
                   </td>
 
@@ -542,7 +539,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
       {/* Footer */}
       {transactions.length > 10 && (
         <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-gray-600 dark:text-[#94a3b8]">
             Showing {Math.min(10, transactions.length)} of {transactions.length}{' '}
             transactions
           </p>

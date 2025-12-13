@@ -76,10 +76,10 @@
   --color-text-secondary: #64748b;
   --color-text-muted: #94a3b8;
 
-  /* Text colors - Dark mode */
+  /* Text colors - Dark mode (improved contrast) */
   --color-text-primary-dark: #f1f5f9;
-  --color-text-secondary-dark: #94a3b8;
-  --color-text-muted-dark: #64748b;
+  --color-text-secondary-dark: #cbd5e1;  /* slate-300 - readable secondary */
+  --color-text-muted-dark: #94a3b8;      /* slate-400 - readable tertiary */
 
   /* Surface colors */
   --color-surface: #ffffff;
@@ -267,28 +267,28 @@ th,
 }
 
 .dark .ledger-card-label {
-  color: var(--color-text-muted-dark);
+  color: var(--color-text-secondary-dark);  /* Important labels need better contrast */
 }
 
-/* Stat icon container - navy tinted styling */
+/* Stat icon container - monochromatic styling */
 .stat-icon-container {
   padding: 12px;
   border-radius: 8px;
-  background: var(--color-primary-light);
+  background: var(--color-surface-secondary);
 }
 
 .stat-icon-container svg {
   width: 24px;
   height: 24px;
-  color: var(--color-primary);
+  color: var(--color-text-secondary);
 }
 
 .dark .stat-icon-container {
-  background: rgba(61, 90, 128, 0.2);
+  background: var(--color-surface-secondary-dark);
 }
 
 .dark .stat-icon-container svg {
-  color: var(--color-primary-dark);
+  color: var(--color-text-muted-dark);
 }
 
 /* Large numeric displays - tighter tracking for financial feel */
@@ -298,25 +298,25 @@ th,
   letter-spacing: -0.02em;
 }
 
-/* Status badges - muted professional styling */
+/* Status badges - semantic styling */
 .badge-completed {
-  background: rgba(107, 144, 128, 0.15);
-  color: #6b9080;
+  background: rgba(5, 150, 105, 0.1);
+  color: #059669;
 }
 
 .dark .badge-completed {
-  background: rgba(124, 154, 140, 0.2);
-  color: #7c9a8c;
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
 }
 
 .badge-on-track {
-  background: rgba(107, 144, 128, 0.15);
-  color: #6b9080;
+  background: rgba(5, 150, 105, 0.1);
+  color: #059669;
 }
 
 .dark .badge-on-track {
-  background: rgba(124, 154, 140, 0.2);
-  color: #7c9a8c;
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
 }
 
 .badge-due-soon {
@@ -582,13 +582,13 @@ th,
   }
 }
 
-/* Button styles for professional appearance - Gold accent */
+/* Button styles for professional appearance - Primary blue */
 .btn-primary {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: var(--color-accent);
-  color: #1a1a1a;
+  background: var(--color-primary);
+  color: #ffffff;
   border-radius: 4px;
   padding: 11px 24px;
   font-weight: 600;
@@ -600,7 +600,7 @@ th,
 }
 
 .btn-primary:hover {
-  background: var(--color-accent-hover);
+  background: var(--color-primary-hover);
   transform: translateY(-1px);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
@@ -611,12 +611,12 @@ th,
 }
 
 .dark .btn-primary {
-  background: var(--color-accent-dark);
-  color: #1a1a1a;
+  background: var(--color-primary);
+  color: #ffffff;
 }
 
 .dark .btn-primary:hover {
-  background: var(--color-accent-dark-hover);
+  background: var(--color-primary-hover);
 }
 
 .btn-primary:disabled {
@@ -630,11 +630,11 @@ th,
   opacity: 0.5;
   transform: none;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-  background: var(--color-accent);
+  background: var(--color-primary);
 }
 
 .dark .btn-primary:disabled:hover {
-  background: var(--color-accent-dark);
+  background: var(--color-primary);
 }
 
 .btn-primary svg,
@@ -743,9 +743,10 @@ th,
 }
 
 .dark .nav-item-active {
-  background: var(--color-primary-dark-light);
+  background: rgba(102, 179, 255, 0.15);
   color: var(--color-text-primary-dark);
-  border-left-color: var(--color-primary-dark);
+  border-left: 2px solid var(--color-primary-dark);
+  margin-left: -2px;
 }
 
 /* =============================================================================

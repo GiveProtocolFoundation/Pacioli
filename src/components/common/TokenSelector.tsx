@@ -46,11 +46,11 @@ const TokenButton = memo(function TokenButton({
           {token.symbol}
         </span>
         {token.contractAddress && (
-          <span className="ml-2 px-1.5 py-0.5 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded">
+          <span className="ml-2 px-1.5 py-0.5 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-[#94a3b8] rounded">
             {token.tokenStandard}
           </span>
         )}
-        <div className="text-sm text-gray-500 dark:text-gray-400">
+        <div className="text-sm text-gray-500 dark:text-[#94a3b8]">
           {token.name}
         </div>
       </div>
@@ -171,11 +171,11 @@ const TokenSelector: React.FC<TokenSelectorProps> = ({
             )}
             <span className="font-medium">{selectedToken.symbol}</span>
             <span className="mx-2 text-gray-400">-</span>
-            <span className="text-gray-600 dark:text-gray-400">
+            <span className="text-gray-600 dark:text-[#94a3b8]">
               {selectedToken.name}
             </span>
             <span className="mx-2 text-gray-400">on</span>
-            <span className="text-gray-600 dark:text-gray-400">
+            <span className="text-gray-600 dark:text-[#94a3b8]">
               {selectedChain.chainName}
             </span>
           </div>
@@ -216,7 +216,7 @@ const TokenSelector: React.FC<TokenSelectorProps> = ({
 
               return (
                 <div key={chainId}>
-                  <div className="px-4 py-2 bg-gray-50 dark:bg-gray-700 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider sticky top-0">
+                  <div className="px-4 py-2 bg-gray-50 dark:bg-gray-700 text-xs font-semibold text-gray-500 dark:text-[#94a3b8] uppercase tracking-wider sticky top-0">
                     {chain.chainName}
                   </div>
                   {chainTokens.map(token => (
@@ -232,7 +232,7 @@ const TokenSelector: React.FC<TokenSelectorProps> = ({
             })}
 
             {filteredTokens.length === 0 && (
-              <div className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
+              <div className="px-4 py-8 text-center text-gray-500 dark:text-[#94a3b8]">
                 No tokens found
               </div>
             )}

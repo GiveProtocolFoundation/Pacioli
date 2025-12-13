@@ -137,8 +137,10 @@ const Dashboard: React.FC = () => {
         <div className="max-w-7xl mx-auto px-10 py-10">
           <div className="flex items-center justify-between">
             <div>
-              <h1>Dashboard</h1>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              <h1>
+                Dashboard
+              </h1>
+              <p className="text-sm text-gray-500 dark:text-[#94a3b8] mt-1">
                 Welcome back! Here&apos;s your crypto portfolio overview.
               </p>
             </div>
@@ -244,7 +246,7 @@ const Dashboard: React.FC = () => {
                   })}
                 </p>
                 <div className="flex items-center mt-2">
-                  <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                  <span className="text-sm font-medium text-gray-600 dark:text-[#94a3b8]">
                     73.4%
                   </span>
                   <span className="text-sm text-gray-500 ml-1">
@@ -267,7 +269,7 @@ const Dashboard: React.FC = () => {
                   8
                 </p>
                 <div className="flex items-center mt-2">
-                  <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                  <span className="text-sm font-medium text-gray-600 dark:text-[#94a3b8]">
                     4 blockchains
                   </span>
                 </div>
@@ -323,12 +325,8 @@ const Dashboard: React.FC = () => {
                             <p className="font-medium text-gray-900 dark:text-white">
                               {account.crypto}
                             </p>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 tabular-nums">
-                              {account.amount.toLocaleString('en-US', {
-                                minimumFractionDigits: 1,
-                                maximumFractionDigits: 1,
-                              })}{' '}
-                              {account.crypto}
+                            <p className="text-sm text-gray-500 dark:text-[#94a3b8] tabular-nums">
+                              {account.amount.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} {account.crypto}
                             </p>
                           </div>
                         </div>
@@ -484,7 +482,7 @@ const Dashboard: React.FC = () => {
               </div>
               <div className="p-6 space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                  <span className="text-sm text-gray-600 dark:text-[#94a3b8]">
                     Tax Year 2025
                   </span>
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium badge-on-track">
@@ -492,7 +490,7 @@ const Dashboard: React.FC = () => {
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                  <span className="text-sm text-gray-600 dark:text-[#94a3b8]">
                     IRS Form 990
                   </span>
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium badge-due-soon">
@@ -500,7 +498,7 @@ const Dashboard: React.FC = () => {
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                  <span className="text-sm text-gray-600 dark:text-[#94a3b8]">
                     Audit Ready
                   </span>
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium badge-completed">
@@ -517,11 +515,11 @@ const Dashboard: React.FC = () => {
               </div>
               <div className="p-6">
                 <div className="space-y-3">
-                  <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                    <p className="text-sm font-medium text-yellow-800">
+                  <div className="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/30 rounded-lg">
+                    <p className="text-sm font-medium text-amber-700 dark:text-amber-400">
                       Pending Approval
                     </p>
-                    <p className="text-xs text-yellow-700 mt-1">
+                    <p className="text-xs text-amber-600 dark:text-amber-500 mt-1">
                       2 transactions need review
                     </p>
                   </div>
