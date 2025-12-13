@@ -4,6 +4,7 @@ import Navigation from './components/layout/Navigation'
 import { TransactionProvider } from './contexts/TransactionContext'
 import { TokenProvider } from './contexts/TokenContext'
 import { WalletAliasProvider } from './contexts/WalletAliasContext'
+import { ProfileProvider } from './contexts/ProfileContext'
 
 // Lazy load route components for code splitting
 const Dashboard = React.lazy(() => import('./app/dashboard/Dashboard'))
@@ -34,80 +35,82 @@ const LoadingFallback: React.FC = () => (
 const App: React.FC = () => {
   return (
     <BrowserRouter>
-      <TokenProvider>
-        <WalletAliasProvider>
-          <TransactionProvider userAccountType="organization">
-            <Suspense fallback={<LoadingFallback />}>
-              <Routes>
-                {/* Onboarding route - no navigation wrapper */}
-                <Route path="/onboarding" element={<Onboarding />} />
+      <ProfileProvider>
+        <TokenProvider>
+          <WalletAliasProvider>
+            <TransactionProvider userAccountType="organization">
+              <Suspense fallback={<LoadingFallback />}>
+                <Routes>
+                  {/* Onboarding route - no navigation wrapper */}
+                  <Route path="/onboarding" element={<Onboarding />} />
 
-                {/* Main app routes - with navigation wrapper */}
-                <Route
-                  path="/*"
-                  element={
-                    <Navigation userType="organization">
-                      <Routes>
-                        <Route
-                          path="/"
-                          element={<Navigate to="/dashboard" replace />}
-                        />
-                        <Route path="/dashboard" element={<Dashboard />} />
-                        <Route
-                          path="/transactions"
-                          element={<Transactions />}
-                        />
-                        <Route
-                          path="/transactions/new"
-                          element={<TransactionForm />}
-                        />
-                        <Route
-                          path="/transactions/edit/:id"
-                          element={<TransactionForm />}
-                        />
-                        <Route path="/wallets" element={<Balances />} />
-                        <Route
-                          path="/wallet-manager"
-                          element={<WalletManager />}
-                        />
-                        <Route path="/reports" element={<Reports />} />
-                        <Route
-                          path="/reports/financial"
-                          element={<Reports />}
-                        />
-                        <Route path="/reports/tax" element={<Reports />} />
-                        <Route path="/reports/donors" element={<Reports />} />
-                        <Route
-                          path="/reports/compliance"
-                          element={<Reports />}
-                        />
-                        <Route path="/analytics" element={<Analytics />} />
-                        <Route path="/settings" element={<Settings />} />
-                        <Route
-                          path="/settings/general"
-                          element={<Settings />}
-                        />
-                        <Route
-                          path="/settings/currencies"
-                          element={<Settings />}
-                        />
-                        <Route path="/settings/users" element={<Settings />} />
-                        <Route path="/docs" element={<Docs />} />
-                        <Route path="/support" element={<Support />} />
-                        <Route path="/profile" element={<Profile />} />
-                        <Route
-                          path="/chart-of-accounts"
-                          element={<Settings />}
-                        />
-                      </Routes>
-                    </Navigation>
-                  }
-                />
-              </Routes>
-            </Suspense>
-          </TransactionProvider>
-        </WalletAliasProvider>
-      </TokenProvider>
+                  {/* Main app routes - with navigation wrapper */}
+                  <Route
+                    path="/*"
+                    element={
+                      <Navigation userType="organization">
+                        <Routes>
+                          <Route
+                            path="/"
+                            element={<Navigate to="/dashboard" replace />}
+                          />
+                          <Route path="/dashboard" element={<Dashboard />} />
+                          <Route
+                            path="/transactions"
+                            element={<Transactions />}
+                          />
+                          <Route
+                            path="/transactions/new"
+                            element={<TransactionForm />}
+                          />
+                          <Route
+                            path="/transactions/edit/:id"
+                            element={<TransactionForm />}
+                          />
+                          <Route path="/wallets" element={<Balances />} />
+                          <Route
+                            path="/wallet-manager"
+                            element={<WalletManager />}
+                          />
+                          <Route path="/reports" element={<Reports />} />
+                          <Route
+                            path="/reports/financial"
+                            element={<Reports />}
+                          />
+                          <Route path="/reports/tax" element={<Reports />} />
+                          <Route path="/reports/donors" element={<Reports />} />
+                          <Route
+                            path="/reports/compliance"
+                            element={<Reports />}
+                          />
+                          <Route path="/analytics" element={<Analytics />} />
+                          <Route path="/settings" element={<Settings />} />
+                          <Route
+                            path="/settings/general"
+                            element={<Settings />}
+                          />
+                          <Route
+                            path="/settings/currencies"
+                            element={<Settings />}
+                          />
+                          <Route path="/settings/users" element={<Settings />} />
+                          <Route path="/docs" element={<Docs />} />
+                          <Route path="/support" element={<Support />} />
+                          <Route path="/profile" element={<Profile />} />
+                          <Route
+                            path="/chart-of-accounts"
+                            element={<Settings />}
+                          />
+                        </Routes>
+                      </Navigation>
+                    }
+                  />
+                </Routes>
+              </Suspense>
+            </TransactionProvider>
+          </WalletAliasProvider>
+        </TokenProvider>
+      </ProfileProvider>
     </BrowserRouter>
   )
 }

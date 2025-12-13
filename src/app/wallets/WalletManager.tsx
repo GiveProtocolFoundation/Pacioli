@@ -19,9 +19,11 @@ import {
   NetworkType,
   type ConnectedWallet,
   type Transaction,
+  ChainType,
 } from '../../services/wallet/types'
 import { encodeAddress, decodeAddress } from '@polkadot/util-crypto'
 import { useWalletAliases } from '../../contexts/WalletAliasContext'
+import { useProfile } from '../../contexts/ProfileContext'
 
 /**
  * Convert address to the correct SS58 format for the given network
@@ -84,6 +86,9 @@ const WalletManager: React.FC = () => {
 
   // Wallet aliases
   const { formatWalletDisplay } = useWalletAliases()
+
+  // Profile context for persistence
+  const { currentProfile, addWallet } = useProfile()
 
   // Track if we've already initialized
   const initializationStartedRef = useRef(false)
@@ -217,6 +222,25 @@ const WalletManager: React.FC = () => {
         console.error('Failed to save wallets to IndexedDB:', err)
       }
 
+      // Also save wallets to profile persistence layer (if profile exists)
+      if (currentProfile) {
+        for (const wallet of wallets) {
+          for (const account of wallet.accounts) {
+            try {
+              await addWallet({
+                address: account.address,
+                chain: account.type === ChainType.EVM ? 'evm' : 'substrate',
+                name: account.name || undefined,
+                wallet_type: wallet.type,
+              })
+            } catch (err) {
+              // Ignore errors for already existing wallets
+              console.debug('Wallet save to profile:', err)
+            }
+          }
+        }
+      }
+
       // Auto-select first available address (only if none selected)
       // Check localStorage directly to avoid race condition with state updates
       const lastSavedAddress = localStorage.getItem('pacioli_last_address')
@@ -229,7 +253,7 @@ const WalletManager: React.FC = () => {
         setSelectedAddress(wallets[0].accounts[0].address)
       }
     },
-    [selectedAddress]
+    [selectedAddress, currentProfile, addWallet]
   )
 
   // Handle address selection

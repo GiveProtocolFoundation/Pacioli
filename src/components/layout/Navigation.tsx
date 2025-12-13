@@ -178,7 +178,7 @@ const Navigation: React.FC<NavigationProps> = ({
             />
             <div className="ml-3 flex flex-col">
               <span
-                className="brand-wordmark text-[#0056B3] dark:text-[#66B3FF]"
+                className="brand-wordmark text-black dark:text-white"
                 style={{ fontSize: '24px' }}
               >
                 Pacioli
@@ -331,7 +331,7 @@ const Navigation: React.FC<NavigationProps> = ({
                 />
                 <div className="ml-3 flex flex-col">
                   <span
-                    className="brand-wordmark text-[#0056B3] dark:text-[#66B3FF]"
+                    className="brand-wordmark text-black dark:text-white"
                     style={{ fontSize: '24px' }}
                   >
                     Pacioli

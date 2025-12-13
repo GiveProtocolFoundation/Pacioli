@@ -5,8 +5,9 @@ mod evm_indexer;
 mod indexer;
 mod sync;
 
+use api::persistence::DatabaseState;
 use evm_indexer::EVMIndexer;
-use tauri::State;
+use tauri::{Manager, State};
 use tokio::sync::Mutex;
 
 // Global EVM indexer state
@@ -159,6 +160,30 @@ async fn sync_evm_transactions(
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .setup(|app| {
+            // Initialize database
+            let app_data_dir = app
+                .path()
+                .app_data_dir()
+                .expect("Failed to get app data directory");
+
+            // Ensure directory exists
+            std::fs::create_dir_all(&app_data_dir).expect("Failed to create app data directory");
+
+            let db_path = app_data_dir.join("pacioli.db");
+            let db_url = format!("sqlite:{}?mode=rwc", db_path.display());
+
+            // Initialize database state using tokio runtime
+            let db_state = tauri::async_runtime::block_on(async {
+                DatabaseState::new(&db_url)
+                    .await
+                    .expect("Failed to initialize database")
+            });
+
+            app.manage(db_state);
+
+            Ok(())
+        })
         .manage(EVMIndexerState::new(EVMIndexer::new()))
         .invoke_handler(tauri::generate_handler![
             greet,
@@ -171,7 +196,24 @@ pub fn run() {
             api::export::export_transactions_csv,
             api::export::export_tax_report,
             api::backup::create_backup,
-            api::backup::restore_backup
+            api::backup::restore_backup,
+            // Persistence commands
+            api::persistence::create_profile,
+            api::persistence::get_profiles,
+            api::persistence::update_profile,
+            api::persistence::delete_profile,
+            api::persistence::save_wallet,
+            api::persistence::get_wallets,
+            api::persistence::get_wallet_by_id,
+            api::persistence::delete_wallet,
+            api::persistence::save_transactions,
+            api::persistence::get_transactions,
+            api::persistence::get_all_transactions,
+            api::persistence::delete_transactions,
+            api::persistence::get_setting,
+            api::persistence::set_setting,
+            api::persistence::delete_setting,
+            api::persistence::get_all_settings
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
