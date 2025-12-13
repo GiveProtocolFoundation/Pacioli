@@ -66,7 +66,7 @@ class WalletService {
     // Detect MetaMask - check after a small delay to ensure extension is injected
     try {
       // Check if window.ethereum exists and is MetaMask
-      if (window.ethereum && window.ethereum.isMetaMask) {
+      if (window.ethereum?.isMetaMask) {
         status[WalletType.METAMASK] = {
           isDetected: true,
           isEnabled: true,

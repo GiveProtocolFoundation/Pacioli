@@ -376,10 +376,11 @@ const WalletManager: React.FC = () => {
 
                 {/* Network Selection */}
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label htmlFor="network-select" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Network
                   </label>
                   <select
+                    id="network-select"
                     value={selectedNetwork}
                     onChange={handleNetworkChange}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#1e3a5f] dark:focus:ring-[#3d5a80] focus:border-transparent"
@@ -395,10 +396,11 @@ const WalletManager: React.FC = () => {
 
                 {/* Address Selection */}
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label htmlFor="address-select" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Address
                   </label>
                   <select
+                    id="address-select"
                     value={selectedAddress}
                     onChange={handleAddressChange}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#1e3a5f] dark:focus:ring-[#3d5a80] focus:border-transparent"

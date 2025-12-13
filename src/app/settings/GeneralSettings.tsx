@@ -420,7 +420,7 @@ const ApiKeysSection: React.FC = () => {
   const [showApiKey, setShowApiKey] = useState(false)
   const [isSaved, setIsSaved] = useState(false)
   const [hasExistingKey, setHasExistingKey] = useState(() => {
-    return !!localStorage.getItem('etherscan_api_key')
+    return Boolean(localStorage.getItem('etherscan_api_key'))
   })
 
   const handleSaveApiKey = useCallback(() => {

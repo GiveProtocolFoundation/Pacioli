@@ -174,7 +174,7 @@ class MoonscanService {
       try {
         data = JSON.parse(responseText)
       } catch (parseError) {
-        console.error(`🔍 [Moonscan] Failed to parse JSON:`, parseError)
+        console.error('Failed to parse Moonscan JSON:', parseError)
         throw new Error(`Invalid JSON response from Etherscan API: ${responseText.substring(0, 200)}`)
       }
 

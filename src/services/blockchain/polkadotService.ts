@@ -76,7 +76,7 @@ class PolkadotService {
   ): Promise<BlockchainConnection> {
     // Check if already connected
     const existing = this.connections.get(network)
-    if (existing && existing.isConnected) {
+    if (existing?.isConnected) {
       return existing
     }
 
@@ -355,7 +355,7 @@ class PolkadotService {
           totalBlocks: 0,
           blocksScanned: 0,
           transactionsFound: 0,
-          message: `Fetching EVM transactions from Moonscan...`,
+          message: 'Fetching EVM transactions from Moonscan...',
         })
 
         const evmTransactions = await moonscanService.fetchAllTransactions(
@@ -476,7 +476,7 @@ class PolkadotService {
 
         api = this.getApi(network)
         if (!api) {
-          throw new Error(`Failed to get API connection`)
+          throw new Error('Failed to get API connection')
         }
 
         // Get current block height

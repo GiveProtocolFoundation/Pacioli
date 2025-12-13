@@ -235,13 +235,14 @@ const TransactionForm: React.FC = () => {
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="txn-date" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   <div className="flex items-center">
                     <Calendar className="w-4 h-4 mr-2" />
                     Date & Time
                   </div>
                 </label>
                 <input
+                  id="txn-date"
                   type="datetime-local"
                   value={formData.date}
                   onChange={e => handleInputChange('date', e.target.value)}
@@ -257,13 +258,14 @@ const TransactionForm: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="txn-wallet" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   <div className="flex items-center">
                     <WalletIcon className="w-4 h-4 mr-2" />
                     Wallet
                   </div>
                 </label>
                 <select
+                  id="txn-wallet"
                   value={formData.wallet}
                   onChange={e => handleInputChange('wallet', e.target.value)}
                   className={`w-full px-4 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white ${
@@ -292,13 +294,14 @@ const TransactionForm: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label htmlFor="txn-description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 <div className="flex items-center">
                   <FileText className="w-4 h-4 mr-2" />
                   Description
                 </div>
               </label>
               <input
+                id="txn-description"
                 type="text"
                 value={formData.description}
                 onChange={e => handleInputChange('description', e.target.value)}
@@ -323,10 +326,11 @@ const TransactionForm: React.FC = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label htmlFor="txn-category" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Category
                   </label>
                   <select
+                    id="txn-category"
                     value={formData.transactionCategory || ''}
                     onChange={e => {
                       handleInputChange('transactionCategory', e.target.value)
@@ -345,10 +349,11 @@ const TransactionForm: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label htmlFor="txn-subcategory" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Subcategory
                   </label>
                   <select
+                    id="txn-subcategory"
                     value={formData.transactionSubcategory || ''}
                     onChange={handleTransactionSubcategoryChange}
                     disabled={!formData.transactionCategory}
@@ -364,10 +369,11 @@ const TransactionForm: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label htmlFor="txn-type" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Transaction Type
                   </label>
                   <select
+                    id="txn-type"
                     value={formData.transactionTypeCode || ''}
                     onChange={handleTransactionTypeCodeChange}
                     disabled={!formData.transactionSubcategory}
@@ -421,13 +427,14 @@ const TransactionForm: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="txn-amount" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   <div className="flex items-center">
                     <DollarSign className="w-4 h-4 mr-2" />
                     Amount
                   </div>
                 </label>
                 <input
+                  id="txn-amount"
                   type="number"
                   step="0.000001"
                   value={formData.amount}
@@ -450,10 +457,11 @@ const TransactionForm: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="txn-fiat-value" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   {currencySettings.primaryCurrency} Value
                 </label>
                 <input
+                  id="txn-fiat-value"
                   type="number"
                   step="0.01"
                   value={formData.fiatValue}
@@ -465,10 +473,11 @@ const TransactionForm: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label htmlFor="txn-hash" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Transaction Hash (Optional)
               </label>
               <input
+                id="txn-hash"
                 type="text"
                 value={formData.hash}
                 onChange={e => handleInputChange('hash', e.target.value)}
@@ -479,10 +488,11 @@ const TransactionForm: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="txn-account-code" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Account Code (Optional)
                 </label>
                 <input
+                  id="txn-account-code"
                   type="text"
                   value={formData.accountCode}
                   onChange={handleAccountCodeChange}
@@ -492,10 +502,11 @@ const TransactionForm: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="txn-account-name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Account Name (Optional)
                 </label>
                 <input
+                  id="txn-account-name"
                   type="text"
                   value={formData.accountName}
                   onChange={handleAccountNameChange}
@@ -506,10 +517,11 @@ const TransactionForm: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label htmlFor="txn-memo" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Memo / Notes (Optional)
               </label>
               <textarea
+                id="txn-memo"
                 value={formData.memo}
                 onChange={e => handleInputChange('memo', e.target.value)}
                 placeholder="Additional notes or comments about this transaction"
