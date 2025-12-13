@@ -1,6 +1,14 @@
 import React, { useState, useCallback, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { Save, X, Calendar, DollarSign, FileText, Tag, Wallet as WalletIcon } from 'lucide-react'
+import {
+  Save,
+  X,
+  Calendar,
+  DollarSign,
+  FileText,
+  Tag,
+  Wallet as WalletIcon,
+} from 'lucide-react'
 import { useTransactions } from '../../contexts/TransactionContext'
 import { useCurrency } from '../../contexts/CurrencyContext'
 import { useTokens } from '../../contexts/TokenContext'
@@ -14,7 +22,7 @@ import {
   getAllCategories,
   getAllSubcategories,
   getTransactionTypesBySubcategory,
-  getTransactionTypeByCode
+  getTransactionTypeByCode,
 } from '../../types/transaction-categories'
 import { storageService } from '../../services/database/storageService'
 import { ConnectedWallet } from '../../services/wallet/types'
@@ -22,7 +30,8 @@ import { ConnectedWallet } from '../../services/wallet/types'
 const TransactionForm: React.FC = () => {
   const navigate = useNavigate()
   const { id } = useParams<{ id?: string }>()
-  const { addTransaction, updateTransaction, getTransaction } = useTransactions()
+  const { addTransaction, updateTransaction, getTransaction } =
+    useTransactions()
   const { settings: currencySettings } = useCurrency()
   const { getToken, getChain } = useTokens()
 
@@ -60,7 +69,8 @@ const TransactionForm: React.FC = () => {
     chainId: existingTransaction?.chainId || '',
     amount: existingTransaction?.amount || 0,
     fiatValue: existingTransaction?.fiatValue || 0,
-    fiatCurrency: existingTransaction?.fiatCurrency || currencySettings.primaryCurrency,
+    fiatCurrency:
+      existingTransaction?.fiatCurrency || currencySettings.primaryCurrency,
     hash: existingTransaction?.hash || '',
     accountCode: existingTransaction?.accountCode || '',
     accountName: existingTransaction?.accountName || '',
@@ -69,18 +79,22 @@ const TransactionForm: React.FC = () => {
     crypto: existingTransaction?.crypto,
   })
 
-  const [errors, setErrors] = useState<Partial<Record<keyof TransactionFormData, string>>>({})
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof TransactionFormData, string>>
+  >({})
   const [isSaving, setIsSaving] = useState(false)
 
   // Connected wallets and aliases
   const { formatWalletDisplay } = useWalletAliases()
-  const [connectedWallets, setConnectedWallets] = useState<ConnectedWallet[]>([])
+  const [connectedWallets, setConnectedWallets] = useState<ConnectedWallet[]>(
+    []
+  )
 
   useEffect(() => {
     if (!isEditMode) {
       setFormData(prev => ({
         ...prev,
-        fiatCurrency: currencySettings.primaryCurrency
+        fiatCurrency: currencySettings.primaryCurrency,
       }))
     }
   }, [currencySettings.primaryCurrency, isEditMode])
@@ -92,8 +106,8 @@ const TransactionForm: React.FC = () => {
   }, [])
 
   // Build wallet options from connected wallets
-  const walletOptions = connectedWallets.flatMap((wallet) =>
-    wallet.accounts.map((acc) => ({
+  const walletOptions = connectedWallets.flatMap(wallet =>
+    wallet.accounts.map(acc => ({
       address: acc.address,
       name: acc.name || 'Unnamed',
       displayName: formatWalletDisplay(acc.address, acc.name),
@@ -101,8 +115,12 @@ const TransactionForm: React.FC = () => {
     }))
   )
 
-  const selectedToken = formData.tokenId ? getToken(formData.tokenId) : undefined
-  const selectedChain = formData.chainId ? getChain(formData.chainId) : undefined
+  const selectedToken = formData.tokenId
+    ? getToken(formData.tokenId)
+    : undefined
+  const selectedChain = formData.chainId
+    ? getChain(formData.chainId)
+    : undefined
 
   // Get available options based on selections
   const availableCategories = getAllCategories()
@@ -116,92 +134,139 @@ const TransactionForm: React.FC = () => {
     ? getTransactionTypeByCode(formData.transactionTypeCode)
     : undefined
 
-  const handleInputChange = useCallback((field: keyof TransactionFormData, value: string | number) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
-    if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: undefined }))
-    }
-  }, [errors])
+  const handleInputChange = useCallback(
+    (field: keyof TransactionFormData, value: string | number) => {
+      setFormData(prev => ({ ...prev, [field]: value }))
+      if (errors[field]) {
+        setErrors(prev => ({ ...prev, [field]: undefined }))
+      }
+    },
+    [errors]
+  )
 
-  const handleTokenSelect = useCallback((token: Token, chain: Chain) => {
-    setFormData(prev => ({
-      ...prev,
-      tokenId: token.id,
-      chainId: chain.chainId,
-      digitalAssetType: token.digitalAssetType,
-      accountCode: getDigitalAssetTypeInfo(token.digitalAssetType).accountNumber,
-      accountName: getDigitalAssetTypeInfo(token.digitalAssetType).name,
-    }))
-    if (errors.tokenId) {
-      setErrors(prev => ({ ...prev, tokenId: undefined }))
-    }
-  }, [errors.tokenId])
+  const handleTokenSelect = useCallback(
+    (token: Token, chain: Chain) => {
+      setFormData(prev => ({
+        ...prev,
+        tokenId: token.id,
+        chainId: chain.chainId,
+        digitalAssetType: token.digitalAssetType,
+        accountCode: getDigitalAssetTypeInfo(token.digitalAssetType)
+          .accountNumber,
+        accountName: getDigitalAssetTypeInfo(token.digitalAssetType).name,
+      }))
+      if (errors.tokenId) {
+        setErrors(prev => ({ ...prev, tokenId: undefined }))
+      }
+    },
+    [errors.tokenId]
+  )
 
-  const handleAmountChange = useCallback((value: string) => {
-    const amount = parseFloat(value) || 0
-    handleInputChange('amount', amount)
+  const handleAmountChange = useCallback(
+    (value: string) => {
+      const amount = parseFloat(value) || 0
+      handleInputChange('amount', amount)
 
-    const estimatedFiatValue = amount * 2500
-    handleInputChange('fiatValue', estimatedFiatValue)
-  }, [handleInputChange])
+      const estimatedFiatValue = amount * 2500
+      handleInputChange('fiatValue', estimatedFiatValue)
+    },
+    [handleInputChange]
+  )
 
   // Field-specific handlers to avoid inline arrow functions
-  const handleAccountNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    handleInputChange('accountName', e.target.value)
-  }, [handleInputChange])
+  const handleAccountNameChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      handleInputChange('accountName', e.target.value)
+    },
+    [handleInputChange]
+  )
 
-  const handleAccountCodeChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    handleInputChange('accountCode', e.target.value)
-  }, [handleInputChange])
+  const handleAccountCodeChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      handleInputChange('accountCode', e.target.value)
+    },
+    [handleInputChange]
+  )
 
-  const handleFiatValueChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    handleInputChange('fiatValue', parseFloat(e.target.value) || 0)
-  }, [handleInputChange])
+  const handleFiatValueChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      handleInputChange('fiatValue', parseFloat(e.target.value) || 0)
+    },
+    [handleInputChange]
+  )
 
-  const handleTransactionTypeCodeChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    handleInputChange('transactionTypeCode', e.target.value)
-  }, [handleInputChange])
+  const handleTransactionTypeCodeChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      handleInputChange('transactionTypeCode', e.target.value)
+    },
+    [handleInputChange]
+  )
 
-  const handleTransactionSubcategoryChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    handleInputChange('transactionSubcategory', e.target.value)
-    handleInputChange('transactionTypeCode', '')
-  }, [handleInputChange])
+  const handleTransactionSubcategoryChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      handleInputChange('transactionSubcategory', e.target.value)
+      handleInputChange('transactionTypeCode', '')
+    },
+    [handleInputChange]
+  )
 
-  const handleDateChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    handleInputChange('date', e.target.value)
-  }, [handleInputChange])
+  const handleDateChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      handleInputChange('date', e.target.value)
+    },
+    [handleInputChange]
+  )
 
-  const handleWalletChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    handleInputChange('wallet', e.target.value)
-  }, [handleInputChange])
+  const handleWalletChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      handleInputChange('wallet', e.target.value)
+    },
+    [handleInputChange]
+  )
 
-  const handleDescriptionChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    handleInputChange('description', e.target.value)
-  }, [handleInputChange])
+  const handleDescriptionChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      handleInputChange('description', e.target.value)
+    },
+    [handleInputChange]
+  )
 
-  const handleCategoryChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    handleInputChange('transactionCategory', e.target.value)
-    handleInputChange('transactionSubcategory', '')
-    handleInputChange('transactionTypeCode', '')
-  }, [handleInputChange])
+  const handleCategoryChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      handleInputChange('transactionCategory', e.target.value)
+      handleInputChange('transactionSubcategory', '')
+      handleInputChange('transactionTypeCode', '')
+    },
+    [handleInputChange]
+  )
 
-  const handleAmountInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    handleAmountChange(e.target.value)
-  }, [handleAmountChange])
+  const handleAmountInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      handleAmountChange(e.target.value)
+    },
+    [handleAmountChange]
+  )
 
-  const handleHashChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    handleInputChange('hash', e.target.value)
-  }, [handleInputChange])
+  const handleHashChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      handleInputChange('hash', e.target.value)
+    },
+    [handleInputChange]
+  )
 
-  const handleMemoChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    handleInputChange('memo', e.target.value)
-  }, [handleInputChange])
+  const handleMemoChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      handleInputChange('memo', e.target.value)
+    },
+    [handleInputChange]
+  )
 
   const validateForm = useCallback((): boolean => {
     const newErrors: Partial<Record<keyof TransactionFormData, string>> = {}
 
     if (!formData.date) newErrors.date = 'Date is required'
-    if (!formData.description.trim()) newErrors.description = 'Description is required'
+    if (!formData.description.trim())
+      newErrors.description = 'Description is required'
     if (!formData.wallet) newErrors.wallet = 'Wallet is required'
     if (!formData.tokenId) newErrors.tokenId = 'Token is required'
     if (formData.amount <= 0) newErrors.amount = 'Amount must be greater than 0'
@@ -210,28 +275,39 @@ const TransactionForm: React.FC = () => {
     return Object.keys(newErrors).length === 0
   }, [formData])
 
-  const handleSubmit = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault()
 
-    if (!validateForm()) {
-      return
-    }
-
-    setIsSaving(true)
-
-    try {
-      if (isEditMode && id) {
-        await updateTransaction(id, formData)
-      } else {
-        await addTransaction(formData)
+      if (!validateForm()) {
+        return
       }
-      navigate('/transactions')
-    } catch (error) {
-      console.error('Error saving transaction:', error)
-    } finally {
-      setIsSaving(false)
-    }
-  }, [formData, isEditMode, id, validateForm, addTransaction, updateTransaction, navigate])
+
+      setIsSaving(true)
+
+      try {
+        if (isEditMode && id) {
+          await updateTransaction(id, formData)
+        } else {
+          await addTransaction(formData)
+        }
+        navigate('/transactions')
+      } catch (error) {
+        console.error('Error saving transaction:', error)
+      } finally {
+        setIsSaving(false)
+      }
+    },
+    [
+      formData,
+      isEditMode,
+      id,
+      validateForm,
+      addTransaction,
+      updateTransaction,
+      navigate,
+    ]
+  )
 
   const handleCancel = useCallback(() => {
     navigate('/transactions')
@@ -265,7 +341,10 @@ const TransactionForm: React.FC = () => {
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label htmlFor="txn-date" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label
+                  htmlFor="txn-date"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >
                   <div className="flex items-center">
                     <Calendar className="w-4 h-4 mr-2" />
                     Date & Time
@@ -288,7 +367,10 @@ const TransactionForm: React.FC = () => {
               </div>
 
               <div>
-                <label htmlFor="txn-wallet" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label
+                  htmlFor="txn-wallet"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >
                   <div className="flex items-center">
                     <WalletIcon className="w-4 h-4 mr-2" />
                     Wallet
@@ -324,7 +406,10 @@ const TransactionForm: React.FC = () => {
             </div>
 
             <div>
-              <label htmlFor="txn-description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label
+                htmlFor="txn-description"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              >
                 <div className="flex items-center">
                   <FileText className="w-4 h-4 mr-2" />
                   Description
@@ -343,7 +428,9 @@ const TransactionForm: React.FC = () => {
                 } focus:outline-none focus:ring-2 focus:ring-blue-500`}
               />
               {errors.description && (
-                <p className="mt-1 text-sm text-red-600">{errors.description}</p>
+                <p className="mt-1 text-sm text-red-600">
+                  {errors.description}
+                </p>
               )}
             </div>
 
@@ -356,7 +443,10 @@ const TransactionForm: React.FC = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label htmlFor="txn-category" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label
+                    htmlFor="txn-category"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
                     Category
                   </label>
                   <select
@@ -375,7 +465,10 @@ const TransactionForm: React.FC = () => {
                 </div>
 
                 <div>
-                  <label htmlFor="txn-subcategory" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label
+                    htmlFor="txn-subcategory"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
                     Subcategory
                   </label>
                   <select
@@ -395,7 +488,10 @@ const TransactionForm: React.FC = () => {
                 </div>
 
                 <div>
-                  <label htmlFor="txn-type" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label
+                    htmlFor="txn-type"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
                     Transaction Type
                   </label>
                   <select
@@ -417,15 +513,25 @@ const TransactionForm: React.FC = () => {
 
               {selectedTransactionType && (
                 <div className="mt-4 p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                  <h4 className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">Suggested Accounts</h4>
+                  <h4 className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                    Suggested Accounts
+                  </h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
                     <div>
-                      <span className="font-medium text-green-700 dark:text-green-400">Debit:</span>
-                      <p className="text-gray-900 dark:text-gray-100 mt-1">{selectedTransactionType.debitAccounts}</p>
+                      <span className="font-medium text-green-700 dark:text-green-400">
+                        Debit:
+                      </span>
+                      <p className="text-gray-900 dark:text-gray-100 mt-1">
+                        {selectedTransactionType.debitAccounts}
+                      </p>
                     </div>
                     <div>
-                      <span className="font-medium text-red-700 dark:text-red-400">Credit:</span>
-                      <p className="text-gray-900 dark:text-gray-100 mt-1">{selectedTransactionType.creditAccounts}</p>
+                      <span className="font-medium text-red-700 dark:text-red-400">
+                        Credit:
+                      </span>
+                      <p className="text-gray-900 dark:text-gray-100 mt-1">
+                        {selectedTransactionType.creditAccounts}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -443,9 +549,23 @@ const TransactionForm: React.FC = () => {
               {selectedToken && (
                 <div className="mt-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                   <div className="text-xs text-blue-800 dark:text-blue-300">
-                    <div><strong>Asset Type:</strong> {getDigitalAssetTypeInfo(selectedToken.digitalAssetType).name}</div>
-                    <div><strong>Account:</strong> {getDigitalAssetTypeInfo(selectedToken.digitalAssetType).accountNumber}</div>
-                    <div><strong>Chain:</strong> {selectedChain?.chainName}</div>
+                    <div>
+                      <strong>Asset Type:</strong>{' '}
+                      {
+                        getDigitalAssetTypeInfo(selectedToken.digitalAssetType)
+                          .name
+                      }
+                    </div>
+                    <div>
+                      <strong>Account:</strong>{' '}
+                      {
+                        getDigitalAssetTypeInfo(selectedToken.digitalAssetType)
+                          .accountNumber
+                      }
+                    </div>
+                    <div>
+                      <strong>Chain:</strong> {selectedChain?.chainName}
+                    </div>
                   </div>
                 </div>
               )}
@@ -453,7 +573,10 @@ const TransactionForm: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label htmlFor="txn-amount" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label
+                  htmlFor="txn-amount"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >
                   <div className="flex items-center">
                     <DollarSign className="w-4 h-4 mr-2" />
                     Amount
@@ -483,7 +606,10 @@ const TransactionForm: React.FC = () => {
               </div>
 
               <div>
-                <label htmlFor="txn-fiat-value" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label
+                  htmlFor="txn-fiat-value"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >
                   {currencySettings.primaryCurrency} Value
                 </label>
                 <input
@@ -499,7 +625,10 @@ const TransactionForm: React.FC = () => {
             </div>
 
             <div>
-              <label htmlFor="txn-hash" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label
+                htmlFor="txn-hash"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              >
                 Transaction Hash (Optional)
               </label>
               <input
@@ -514,7 +643,10 @@ const TransactionForm: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label htmlFor="txn-account-code" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label
+                  htmlFor="txn-account-code"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >
                   Account Code (Optional)
                 </label>
                 <input
@@ -528,7 +660,10 @@ const TransactionForm: React.FC = () => {
               </div>
 
               <div>
-                <label htmlFor="txn-account-name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label
+                  htmlFor="txn-account-name"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >
                   Account Name (Optional)
                 </label>
                 <input
@@ -543,7 +678,10 @@ const TransactionForm: React.FC = () => {
             </div>
 
             <div>
-              <label htmlFor="txn-memo" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label
+                htmlFor="txn-memo"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              >
                 Memo / Notes (Optional)
               </label>
               <textarea
@@ -570,7 +708,11 @@ const TransactionForm: React.FC = () => {
                 className="flex items-center px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Save className="w-4 h-4 mr-2" />
-                {isSaving ? 'Saving...' : isEditMode ? 'Update Transaction' : 'Save Transaction'}
+                {isSaving
+                  ? 'Saving...'
+                  : isEditMode
+                    ? 'Update Transaction'
+                    : 'Save Transaction'}
               </button>
             </div>
           </form>

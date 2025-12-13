@@ -1,5 +1,13 @@
 import React, { useState, useEffect, useCallback, memo } from 'react'
-import { Wallet, Check, AlertCircle, Loader, Pencil, X, Save } from 'lucide-react'
+import {
+  Wallet,
+  Check,
+  AlertCircle,
+  Loader,
+  Pencil,
+  X,
+  Save,
+} from 'lucide-react'
 import { walletService } from '../../services/wallet/walletService'
 import { storageService } from '../../services/database/storageService'
 import {
@@ -92,9 +100,7 @@ const AccountRow = memo(function AccountRow({
                 {displayName}
               </span>
               {currentAlias && account.name && (
-                <span className="text-xs text-gray-400">
-                  ({account.name})
-                </span>
+                <span className="text-xs text-gray-400">({account.name})</span>
               )}
             </div>
             <div className="text-xs text-gray-500 dark:text-gray-400 font-mono truncate">
@@ -214,8 +220,12 @@ export const WalletConnector: React.FC<WalletConnectorProps> = ({
     WalletType,
     WalletConnectionStatus
   > | null>(null)
-  const [connectedWallets, setConnectedWallets] = useState<ConnectedWallet[]>([])
-  const [connectingWallet, setConnectingWallet] = useState<WalletType | null>(null)
+  const [connectedWallets, setConnectedWallets] = useState<ConnectedWallet[]>(
+    []
+  )
+  const [connectingWallet, setConnectingWallet] = useState<WalletType | null>(
+    null
+  )
   const [error, setError] = useState<string | null>(null)
 
   // Alias editing state
@@ -253,79 +263,89 @@ export const WalletConnector: React.FC<WalletConnectorProps> = ({
     }
   }, [connectedWallets, onWalletsChange])
 
-  const connectWallet = useCallback(async (walletType: WalletType) => {
-    setConnectingWallet(walletType)
-    setError(null)
-
-    try {
-      let wallet: ConnectedWallet
-
-      if (walletType === WalletType.METAMASK) {
-        wallet = await walletService.connectEVMWallet()
-      } else {
-        wallet = await walletService.connectSubstrateWallet(walletType)
-      }
-
-      const updated = [...connectedWallets, wallet]
-      setConnectedWallets(updated)
-      storageService.saveWallets(updated)
-
-      // Update wallet status
-      if (walletStatus) {
-        setWalletStatus({
-          ...walletStatus,
-          [walletType]: {
-            ...walletStatus[walletType],
-            isConnected: true,
-          },
-        })
-      }
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Connection failed'
-      setError(`Failed to connect to ${walletType}: ${errorMessage}`)
-      console.error(err)
-    } finally {
-      setConnectingWallet(null)
-    }
-  }, [connectedWallets, walletStatus])
-
-  const disconnectWallet = useCallback(async (walletType: WalletType) => {
-    try {
-      await walletService.disconnectWallet(walletType)
-      const updated = connectedWallets.filter((w) => w.type !== walletType)
-      setConnectedWallets(updated)
-      storageService.saveWallets(updated)
-
-      // Update wallet status
-      if (walletStatus) {
-        setWalletStatus({
-          ...walletStatus,
-          [walletType]: {
-            ...walletStatus[walletType],
-            isConnected: false,
-          },
-        })
-      }
-
+  const connectWallet = useCallback(
+    async (walletType: WalletType) => {
+      setConnectingWallet(walletType)
       setError(null)
-    } catch (err) {
-      setError('Failed to disconnect wallet')
-      console.error(err)
-    }
-  }, [connectedWallets, walletStatus])
+
+      try {
+        let wallet: ConnectedWallet
+
+        if (walletType === WalletType.METAMASK) {
+          wallet = await walletService.connectEVMWallet()
+        } else {
+          wallet = await walletService.connectSubstrateWallet(walletType)
+        }
+
+        const updated = [...connectedWallets, wallet]
+        setConnectedWallets(updated)
+        storageService.saveWallets(updated)
+
+        // Update wallet status
+        if (walletStatus) {
+          setWalletStatus({
+            ...walletStatus,
+            [walletType]: {
+              ...walletStatus[walletType],
+              isConnected: true,
+            },
+          })
+        }
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : 'Connection failed'
+        setError(`Failed to connect to ${walletType}: ${errorMessage}`)
+        console.error(err)
+      } finally {
+        setConnectingWallet(null)
+      }
+    },
+    [connectedWallets, walletStatus]
+  )
+
+  const disconnectWallet = useCallback(
+    async (walletType: WalletType) => {
+      try {
+        await walletService.disconnectWallet(walletType)
+        const updated = connectedWallets.filter(w => w.type !== walletType)
+        setConnectedWallets(updated)
+        storageService.saveWallets(updated)
+
+        // Update wallet status
+        if (walletStatus) {
+          setWalletStatus({
+            ...walletStatus,
+            [walletType]: {
+              ...walletStatus[walletType],
+              isConnected: false,
+            },
+          })
+        }
+
+        setError(null)
+      } catch (err) {
+        setError('Failed to disconnect wallet')
+        console.error(err)
+      }
+    },
+    [connectedWallets, walletStatus]
+  )
 
   const isConnected = useCallback(
     (walletType: WalletType) => {
-      return connectedWallets.some((w) => w.type === walletType)
+      return connectedWallets.some(w => w.type === walletType)
     },
     [connectedWallets]
   )
 
   // Start editing an alias
-  const startEditingAlias = useCallback((address: string) => {
-    setEditingAlias(address)
-    setAliasInput(aliases[address.toLowerCase()] || '')
-  }, [aliases])
+  const startEditingAlias = useCallback(
+    (address: string) => {
+      setEditingAlias(address)
+      setAliasInput(aliases[address.toLowerCase()] || '')
+    },
+    [aliases]
+  )
 
   // Cancel editing
   const cancelEditingAlias = useCallback(() => {
@@ -334,28 +354,37 @@ export const WalletConnector: React.FC<WalletConnectorProps> = ({
   }, [])
 
   // Save alias
-  const saveAlias = useCallback(async (address: string) => {
-    const trimmedAlias = aliasInput.trim()
-    if (trimmedAlias) {
-      await setAlias(address, trimmedAlias)
-    }
-    setEditingAlias(null)
-    setAliasInput('')
-  }, [aliasInput, setAlias])
+  const saveAlias = useCallback(
+    async (address: string) => {
+      const trimmedAlias = aliasInput.trim()
+      if (trimmedAlias) {
+        await setAlias(address, trimmedAlias)
+      }
+      setEditingAlias(null)
+      setAliasInput('')
+    },
+    [aliasInput, setAlias]
+  )
 
   // Handle Enter key to save
-  const handleAliasKeyDown = useCallback((e: React.KeyboardEvent, address: string) => {
-    if (e.key === 'Enter') {
-      saveAlias(address)
-    } else if (e.key === 'Escape') {
-      cancelEditingAlias()
-    }
-  }, [saveAlias, cancelEditingAlias])
+  const handleAliasKeyDown = useCallback(
+    (e: React.KeyboardEvent, address: string) => {
+      if (e.key === 'Enter') {
+        saveAlias(address)
+      } else if (e.key === 'Escape') {
+        cancelEditingAlias()
+      }
+    },
+    [saveAlias, cancelEditingAlias]
+  )
 
   // Handle alias input change
-  const handleAliasInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setAliasInput(e.target.value)
-  }, [])
+  const handleAliasInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setAliasInput(e.target.value)
+    },
+    []
+  )
 
   if (!walletStatus) {
     return (
@@ -381,8 +410,8 @@ export const WalletConnector: React.FC<WalletConnectorProps> = ({
           </h2>
         </div>
         <p className="text-sm text-gray-500 dark:text-gray-400">
-          Connect your Polkadot or Ethereum wallet to import transaction history.
-          Pacioli only requests read-only access.
+          Connect your Polkadot or Ethereum wallet to import transaction
+          history. Pacioli only requests read-only access.
         </p>
       </div>
 
@@ -391,14 +420,16 @@ export const WalletConnector: React.FC<WalletConnectorProps> = ({
         <div className="bg-[#dc2626]/10 dark:bg-[#ef4444]/10 border-l-4 border-[#dc2626] dark:border-[#ef4444] p-4 rounded">
           <div className="flex items-start">
             <AlertCircle className="w-5 h-5 text-[#dc2626] dark:text-[#ef4444] mr-3 flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-[#dc2626] dark:text-[#ef4444]">{error}</p>
+            <p className="text-sm text-[#dc2626] dark:text-[#ef4444]">
+              {error}
+            </p>
           </div>
         </div>
       )}
 
       {/* Wallet List */}
       <div className="space-y-3">
-        {(Object.keys(walletStatus) as WalletType[]).map((walletType) => {
+        {(Object.keys(walletStatus) as WalletType[]).map(walletType => {
           const status = walletStatus[walletType]
           const info = WALLET_INFO[walletType]
           const connected = isConnected(walletType)
@@ -429,8 +460,8 @@ export const WalletConnector: React.FC<WalletConnectorProps> = ({
                   {connected && (
                     <div className="mt-3 space-y-2">
                       {connectedWallets
-                        .find((w) => w.type === walletType)
-                        ?.accounts.map((acc) => (
+                        .find(w => w.type === walletType)
+                        ?.accounts.map(acc => (
                           <AccountRow
                             key={acc.address}
                             account={acc}
@@ -473,15 +504,22 @@ export const WalletConnector: React.FC<WalletConnectorProps> = ({
           </h3>
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
-              <span className="text-gray-600 dark:text-gray-400">Total Wallets:</span>
+              <span className="text-gray-600 dark:text-gray-400">
+                Total Wallets:
+              </span>
               <span className="font-semibold text-gray-900 dark:text-white">
                 {connectedWallets.length}
               </span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-gray-600 dark:text-gray-400">Total Accounts:</span>
+              <span className="text-gray-600 dark:text-gray-400">
+                Total Accounts:
+              </span>
               <span className="font-semibold text-gray-900 dark:text-white">
-                {connectedWallets.reduce((sum, w) => sum + w.accounts.length, 0)}
+                {connectedWallets.reduce(
+                  (sum, w) => sum + w.accounts.length,
+                  0
+                )}
               </span>
             </div>
           </div>

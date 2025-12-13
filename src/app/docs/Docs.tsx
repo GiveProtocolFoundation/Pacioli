@@ -169,39 +169,49 @@ const Docs: React.FC = () => {
   const [expandedItems, setExpandedItems] = useState<string[]>([])
   const [selectedDoc, setSelectedDoc] = useState<string>('what-is-pacioli')
 
-  const handleSectionClick = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
-    const sectionId = e.currentTarget.getAttribute('data-section-id')
-    if (sectionId) {
-      setExpandedSections(prev =>
-        prev.includes(sectionId)
-          ? prev.filter(id => id !== sectionId)
-          : [...prev, sectionId]
-      )
-    }
-  }, [])
-
-  const handleItemClick = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
-    const itemId = e.currentTarget.getAttribute('data-item-id')
-    const hasSubItems = e.currentTarget.getAttribute('data-has-subitems') === 'true'
-    if (itemId) {
-      if (hasSubItems) {
-        setExpandedItems(prev =>
-          prev.includes(itemId)
-            ? prev.filter(id => id !== itemId)
-            : [...prev, itemId]
+  const handleSectionClick = useCallback(
+    (e: React.MouseEvent<HTMLButtonElement>) => {
+      const sectionId = e.currentTarget.getAttribute('data-section-id')
+      if (sectionId) {
+        setExpandedSections(prev =>
+          prev.includes(sectionId)
+            ? prev.filter(id => id !== sectionId)
+            : [...prev, sectionId]
         )
-      } else {
-        setSelectedDoc(itemId)
       }
-    }
-  }, [])
+    },
+    []
+  )
 
-  const handleSelectDoc = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
-    const docId = e.currentTarget.getAttribute('data-doc-id')
-    if (docId) {
-      setSelectedDoc(docId)
-    }
-  }, [])
+  const handleItemClick = useCallback(
+    (e: React.MouseEvent<HTMLButtonElement>) => {
+      const itemId = e.currentTarget.getAttribute('data-item-id')
+      const hasSubItems =
+        e.currentTarget.getAttribute('data-has-subitems') === 'true'
+      if (itemId) {
+        if (hasSubItems) {
+          setExpandedItems(prev =>
+            prev.includes(itemId)
+              ? prev.filter(id => id !== itemId)
+              : [...prev, itemId]
+          )
+        } else {
+          setSelectedDoc(itemId)
+        }
+      }
+    },
+    []
+  )
+
+  const handleSelectDoc = useCallback(
+    (e: React.MouseEvent<HTMLButtonElement>) => {
+      const docId = e.currentTarget.getAttribute('data-doc-id')
+      if (docId) {
+        setSelectedDoc(docId)
+      }
+    },
+    []
+  )
 
   return (
     <div className="min-h-screen ledger-background">
@@ -258,15 +268,20 @@ const Docs: React.FC = () => {
                       {isExpanded && (
                         <div className="ml-6 mt-1 space-y-1">
                           {section.items.map(item => {
-                            const hasSubItems = item.items && item.items.length > 0
-                            const isItemExpanded = expandedItems.includes(item.id)
+                            const hasSubItems =
+                              item.items && item.items.length > 0
+                            const isItemExpanded = expandedItems.includes(
+                              item.id
+                            )
                             const isSelected = selectedDoc === item.id
 
                             return (
                               <div key={item.id}>
                                 <button
                                   data-item-id={item.id}
-                                  data-has-subitems={hasSubItems ? 'true' : 'false'}
+                                  data-has-subitems={
+                                    hasSubItems ? 'true' : 'false'
+                                  }
                                   onClick={handleItemClick}
                                   className={`w-full flex items-center justify-between px-3 py-1.5 text-sm rounded transition-colors text-left ${
                                     isSelected
@@ -283,28 +298,31 @@ const Docs: React.FC = () => {
                                     ))}
                                 </button>
 
-                                {hasSubItems && isItemExpanded && item.items && (
-                                  <div className="ml-4 mt-1 space-y-1">
-                                    {item.items.map(subItem => {
-                                      const isSubSelected = selectedDoc === subItem.id
+                                {hasSubItems &&
+                                  isItemExpanded &&
+                                  item.items && (
+                                    <div className="ml-4 mt-1 space-y-1">
+                                      {item.items.map(subItem => {
+                                        const isSubSelected =
+                                          selectedDoc === subItem.id
 
-                                      return (
-                                        <button
-                                          key={subItem.id}
-                                          data-doc-id={subItem.id}
-                                          onClick={handleSelectDoc}
-                                          className={`w-full px-3 py-1 text-xs rounded transition-colors text-left ${
-                                            isSubSelected
-                                              ? 'bg-[#1e3a5f]/10 dark:bg-[#3d5a80]/20 text-[#1e3a5f] dark:text-[#3d5a80] font-medium'
-                                              : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
-                                          }`}
-                                        >
-                                          {subItem.title}
-                                        </button>
-                                      )
-                                    })}
-                                  </div>
-                                )}
+                                        return (
+                                          <button
+                                            key={subItem.id}
+                                            data-doc-id={subItem.id}
+                                            onClick={handleSelectDoc}
+                                            className={`w-full px-3 py-1 text-xs rounded transition-colors text-left ${
+                                              isSubSelected
+                                                ? 'bg-[#1e3a5f]/10 dark:bg-[#3d5a80]/20 text-[#1e3a5f] dark:text-[#3d5a80] font-medium'
+                                                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
+                                            }`}
+                                          >
+                                            {subItem.title}
+                                          </button>
+                                        )
+                                      })}
+                                    </div>
+                                  )}
                               </div>
                             )
                           })}
@@ -333,8 +351,8 @@ const Docs: React.FC = () => {
                       .join(' ')}
                   </h2>
                   <p className="text-gray-500 dark:text-gray-400">
-                    This documentation page is currently being prepared and will be
-                    available soon.
+                    This documentation page is currently being prepared and will
+                    be available soon.
                   </p>
                 </div>
 
