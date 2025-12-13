@@ -49,12 +49,9 @@ class MigrationService {
 
       // Check if already migrated
       if (await this.hasMigrated()) {
-        console.log('Migration already completed')
         result.success = true
         return result
       }
-
-      console.log('Starting migration from localStorage to IndexedDB...')
 
       // Migrate wallets
       try {
@@ -62,12 +59,11 @@ class MigrationService {
         if (wallets.length > 0) {
           await indexedDBService.saveWallets(wallets)
           result.walletsMigrated = wallets.length
-          console.log(`Migrated ${wallets.length} wallets`)
         }
       } catch (error) {
         const errorMsg = `Failed to migrate wallets: ${error}`
         result.errors.push(errorMsg)
-        console.error(errorMsg)
+        console.error('Failed to migrate wallets:', error)
       }
 
       // Migrate transactions
@@ -84,12 +80,10 @@ class MigrationService {
             result.transactionsMigrated += transactions.length
           }
         }
-
-        console.log(`Migrated ${result.transactionsMigrated} transactions`)
       } catch (error) {
         const errorMsg = `Failed to migrate transactions: ${error}`
         result.errors.push(errorMsg)
-        console.error(errorMsg)
+        console.error('Failed to migrate transactions:', error)
       }
 
       // Migrate sync status
@@ -104,19 +98,16 @@ class MigrationService {
             result.syncStatusesMigrated++
           }
         }
-
-        console.log(`Migrated ${result.syncStatusesMigrated} sync statuses`)
       } catch (error) {
         const errorMsg = `Failed to migrate sync status: ${error}`
         result.errors.push(errorMsg)
-        console.error(errorMsg)
+        console.error('Failed to migrate sync status:', error)
       }
 
       // Mark migration as complete
       await this.setMigrationCompleted()
 
       result.success = result.errors.length === 0
-      console.log('Migration completed', result)
 
       return result
     } catch (error) {
@@ -133,9 +124,6 @@ class MigrationService {
   async clearLocalStorage(): Promise<void> {
     if (await this.hasMigrated()) {
       storageService.clearAll()
-      console.log('localStorage cleared after successful migration')
-    } else {
-      console.warn('Cannot clear localStorage - migration not completed')
     }
   }
 
@@ -192,15 +180,11 @@ class MigrationService {
    * (Use if migration fails or data is corrupted)
    */
   async rollback(): Promise<void> {
-    console.warn('Rolling back migration...')
-
     // Clear IndexedDB
     await indexedDBService.clearAll()
 
     // Reset migration flag
     await indexedDBService.setMetadata('migration_completed', false)
-
-    console.log('Rollback completed - using localStorage again')
   }
 }
 

@@ -17,7 +17,6 @@ import { useWalletAliases } from '../../contexts/WalletAliasContext'
 const convertToNetworkFormat = (address: string, network: NetworkType): string => {
   // EVM addresses start with 0x - don't try to convert them
   if (address.startsWith('0x')) {
-    console.log(`📍 EVM address detected, skipping SS58 conversion: ${address}`)
     return address
   }
 
@@ -39,8 +38,6 @@ const convertToNetworkFormat = (address: string, network: NetworkType): string =
 
     // Re-encode with correct network prefix
     const networkAddress = encodeAddress(publicKey, ss58Prefix)
-
-    console.log(`📍 Address conversion: ${address} -> ${networkAddress} (${network}, prefix ${ss58Prefix})`)
 
     return networkAddress
   } catch (error) {
@@ -71,7 +68,6 @@ const WalletManager: React.FC = () => {
   useEffect(() => {
     // Prevent double initialization in React Strict Mode
     if (initializationStartedRef.current) {
-      console.log('💾 Skipping duplicate initialization')
       return
     }
     initializationStartedRef.current = true
@@ -91,7 +87,6 @@ const WalletManager: React.FC = () => {
           const result = await migrationService.migrateAll()
 
           if (result.success) {
-            console.log('Migration successful:', result)
             setMigrationStatus(`Migrated ${result.transactionsMigrated} transactions`)
             setTimeout(() => setMigrationStatus(''), 3000)
           } else {
@@ -104,10 +99,8 @@ const WalletManager: React.FC = () => {
         setMigrationStatus('')
 
         // Load saved wallets from IndexedDB
-        console.log('💾 Loading saved wallets from IndexedDB...')
         const savedWallets = await indexedDBService.loadWallets()
         if (savedWallets.length > 0) {
-          console.log(`💾 Restored ${savedWallets.length} saved wallet(s)`)
           setConnectedWallets(savedWallets)
         }
 
@@ -116,11 +109,9 @@ const WalletManager: React.FC = () => {
         const lastNetwork = localStorage.getItem('pacioli_last_network') as NetworkType | null
 
         if (lastAddress) {
-          console.log(`💾 Restoring last address: ${lastAddress}`)
           setSelectedAddress(lastAddress)
         }
         if (lastNetwork) {
-          console.log(`💾 Restoring last network: ${lastNetwork}`)
           setSelectedNetwork(lastNetwork)
         }
       } catch (err) {
@@ -138,10 +129,7 @@ const WalletManager: React.FC = () => {
     let isCurrent = true
 
     const loadData = async () => {
-      console.log(`💾 loadData called: dbInitialized=${dbInitialized}, selectedAddress=${selectedAddress}, selectedNetwork=${selectedNetwork}`)
-
       if (!dbInitialized || !selectedAddress) {
-        console.log(`💾 Early return: dbInitialized=${dbInitialized}, selectedAddress=${selectedAddress}`)
         setSyncStatus(null)
         setTransactions([])
         return
@@ -149,11 +137,7 @@ const WalletManager: React.FC = () => {
 
       try {
         // For EVM addresses (0x...), use as-is. For Substrate, convert.
-        const isEVMAddress = selectedAddress.startsWith('0x')
         const networkAddress = convertToNetworkFormat(selectedAddress, selectedNetwork)
-
-        console.log(`💾 Loading data for address: ${selectedAddress}`)
-        console.log(`💾 Is EVM: ${isEVMAddress}, Network address: ${networkAddress}`)
 
         // Load sync status
         const status = await indexedDBService.loadSyncStatus(selectedNetwork, networkAddress)
@@ -161,14 +145,11 @@ const WalletManager: React.FC = () => {
         setSyncStatus(status)
 
         // Load saved transactions from IndexedDB
-        console.log(`💾 Loading transactions for ${networkAddress} on ${selectedNetwork}...`)
         const savedTxs = await indexedDBService.getTransactionsFor(selectedNetwork, networkAddress)
-        console.log(`💾 Loaded ${savedTxs.length} saved transactions from IndexedDB`)
 
         if (!isCurrent) return // Abort if effect was cleaned up
 
         // Update transactions state
-        console.log(`💾 Setting transactions state with ${savedTxs.length} transactions for ${networkAddress}`)
         setTransactions(savedTxs)
 
         // Save selection to localStorage for persistence
@@ -194,7 +175,6 @@ const WalletManager: React.FC = () => {
     // Save wallets to IndexedDB for persistence
     try {
       await indexedDBService.saveWallets(wallets)
-      console.log(`💾 Saved ${wallets.length} wallet(s) to IndexedDB`)
     } catch (err) {
       console.error('Failed to save wallets to IndexedDB:', err)
     }
@@ -202,18 +182,13 @@ const WalletManager: React.FC = () => {
     // Auto-select first available address (only if none selected)
     // Check localStorage directly to avoid race condition with state updates
     const lastSavedAddress = localStorage.getItem('pacioli_last_address')
-    console.log(`💾 handleWalletsChange: selectedAddress='${selectedAddress}', lastSavedAddress='${lastSavedAddress}'`)
     if (wallets.length > 0 && wallets[0].accounts.length > 0 && !selectedAddress && !lastSavedAddress) {
-      console.log(`💾 Auto-selecting first address: ${wallets[0].accounts[0].address}`)
       setSelectedAddress(wallets[0].accounts[0].address)
-    } else {
-      console.log(`💾 NOT auto-selecting (conditions not met)`)
     }
   }, [selectedAddress])
 
   // Handle address selection
   const handleAddressSelect = useCallback((address: string) => {
-    console.log(`🔄 handleAddressSelect called with: ${address}`)
     setSelectedAddress(address)
     // Note: Transactions will be auto-loaded by the useEffect above
   }, [])
@@ -228,19 +203,12 @@ const WalletManager: React.FC = () => {
 
   // Sync transactions from blockchain
   const syncTransactions = useCallback(async () => {
-    console.log('=== SYNC BUTTON CLICKED ===')
-    console.log('Selected Address (from wallet):', selectedAddress)
-    console.log('Selected Network:', selectedNetwork)
-    console.log('DB Initialized:', dbInitialized)
-
     if (!selectedAddress) {
-      console.error('ERROR: No address selected')
       setError('Please select an address first')
       return
     }
 
     if (!dbInitialized) {
-      console.error('ERROR: Database not initialized')
       setError('Database not initialized')
       return
     }
@@ -248,14 +216,10 @@ const WalletManager: React.FC = () => {
     // Convert address to network-specific SS58 format
     // Wallets may return generic format (42) but we need network-specific
     const networkAddress = convertToNetworkFormat(selectedAddress, selectedNetwork)
-    console.log('Converted Address (network-specific):', networkAddress)
 
     setIsLoading(true)
     setError(null)
     setSyncProgress(null)
-
-    console.log(`✅ Starting sync for address: ${networkAddress} on ${selectedNetwork}`)
-    console.log('Calling polkadotService.connect()...')
 
     // Add timeout to prevent infinite hanging
     const syncTimeout = setTimeout(() => {
@@ -269,26 +233,15 @@ const WalletManager: React.FC = () => {
       // Fetch transactions using HYBRID approach (Subscan + RPC)
       // This is MUCH faster: ~2-3 seconds instead of minutes/hours
       // Note: RPC connection is now optional - if it fails, we still get Subscan data
-      console.log('Calling fetchTransactionHistoryHybrid...')
-      console.log('Parameters:', {
-        network: selectedNetwork,
-        address: networkAddress,
-        limit: 100
-      })
-
       const txs = await polkadotService.fetchTransactionHistoryHybrid(selectedNetwork, {
         address: networkAddress,
         limit: 100, // Increased limit since hybrid is much faster
         onProgress: (progress) => {
-          console.log('Progress update:', progress)
           setSyncProgress(progress)
         },
       })
 
-      console.log(`✅ Fetch complete! Received ${txs.length} transactions:`, txs)
-
       // Report saving stage
-      console.log('Saving transactions to IndexedDB...')
       setSyncProgress({
         stage: 'saving',
         currentBlock: 0,
@@ -300,11 +253,9 @@ const WalletManager: React.FC = () => {
 
       // Save to IndexedDB using NETWORK-SPECIFIC ADDRESS
       await indexedDBService.saveTransactions(selectedNetwork, networkAddress, txs)
-      console.log('✅ Saved to IndexedDB')
 
       // Update sync status
       if (txs.length > 0) {
-        console.log('Updating sync status...')
         const lastBlock = Math.max(...txs.map((tx) => tx.blockNumber))
         await indexedDBService.saveSyncStatus({
           network: selectedNetwork,
@@ -313,13 +264,10 @@ const WalletManager: React.FC = () => {
           lastSyncTime: new Date(),
           isSyncing: false,
         })
-        console.log(`✅ Sync status updated (last block: ${lastBlock})`)
       }
 
       // Reload from IndexedDB to get all transactions using NETWORK-SPECIFIC ADDRESS
-      console.log('Reloading all transactions from IndexedDB...')
       const allTxs = await indexedDBService.getTransactionsFor(selectedNetwork, networkAddress)
-      console.log(`✅ Loaded ${allTxs.length} total transactions from IndexedDB`)
       setTransactions(allTxs)
 
       // Update local sync status display
@@ -327,7 +275,6 @@ const WalletManager: React.FC = () => {
       setSyncStatus(newSyncStatus)
 
       // Show success
-      console.log('✅✅✅ SYNC COMPLETE ✅✅✅')
       setSyncProgress({
         stage: 'complete',
         currentBlock: 0,
@@ -354,7 +301,6 @@ const WalletManager: React.FC = () => {
       // Clear timeout on error
       clearTimeout(syncTimeout)
     } finally {
-      console.log('=== SYNC FINISHED (finally block) ===')
       setIsLoading(false)
     }
   }, [selectedAddress, selectedNetwork, dbInitialized])
@@ -362,30 +308,23 @@ const WalletManager: React.FC = () => {
   // Purge wallet transaction data
   const handlePurgeData = useCallback(async () => {
     if (!selectedAddress || !dbInitialized) {
-      console.error('Cannot purge: no address selected or DB not initialized')
       return
     }
-
-    console.log('🗑️ [Purge] Starting purge of wallet transactions...')
 
     try {
       // Clear transactions from IndexedDB for this address/network
       // Note: We can't selectively delete by address from IndexedDB easily,
       // so we'll clear all transactions and let user re-sync if needed
       await indexedDBService.clearTransactions()
-      console.log('🗑️ [Purge] Cleared all transactions from IndexedDB')
 
       // Clear local state
       setTransactions([])
       setSyncStatus(null)
-
-      console.log('🗑️ [Purge] ✅ Purge complete!')
-
     } catch (err) {
-      console.error('🗑️ [Purge] ❌ Failed to purge data:', err)
+      console.error('Failed to purge data:', err)
       setError('Failed to purge transaction data')
     }
-  }, [selectedAddress, selectedNetwork, dbInitialized])
+  }, [selectedAddress, dbInitialized])
 
   // Get all available addresses from connected wallets
   const allAddresses = connectedWallets.flatMap((wallet) =>

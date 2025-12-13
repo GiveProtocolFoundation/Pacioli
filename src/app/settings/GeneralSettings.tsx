@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react'
+import React, { useState, useCallback } from 'react'
 import {
   Building2,
   Calendar,
@@ -413,19 +413,15 @@ const FiscalYearSection: React.FC<FiscalYearSectionProps> = ({
  * Manages external API keys for blockchain data providers
  */
 const ApiKeysSection: React.FC = () => {
-  const [etherscanApiKey, setEtherscanApiKey] = useState('')
+  // Use lazy initialization to load from localStorage on first render
+  const [etherscanApiKey, setEtherscanApiKey] = useState(() => {
+    return localStorage.getItem('etherscan_api_key') || ''
+  })
   const [showApiKey, setShowApiKey] = useState(false)
   const [isSaved, setIsSaved] = useState(false)
-  const [hasExistingKey, setHasExistingKey] = useState(false)
-
-  // Load existing API key on mount
-  useEffect(() => {
-    const existingKey = localStorage.getItem('etherscan_api_key')
-    if (existingKey) {
-      setEtherscanApiKey(existingKey)
-      setHasExistingKey(true)
-    }
-  }, [])
+  const [hasExistingKey, setHasExistingKey] = useState(() => {
+    return !!localStorage.getItem('etherscan_api_key')
+  })
 
   const handleSaveApiKey = useCallback(() => {
     if (etherscanApiKey.trim()) {

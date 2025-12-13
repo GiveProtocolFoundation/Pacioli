@@ -145,11 +145,6 @@ class IndexedDBService {
     address: string,
     transactions: Transaction[]
   ): Promise<void> {
-    console.log(`💾 [IndexedDB] saveTransactions called`)
-    console.log(`💾 [IndexedDB] Network: ${network}`)
-    console.log(`💾 [IndexedDB] Address: ${address}`)
-    console.log(`💾 [IndexedDB] Transactions to save: ${transactions.length}`)
-
     const db = await this.ensureDB()
     const tx = db.transaction(STORES.TRANSACTIONS, 'readwrite')
     const store = tx.objectStore(STORES.TRANSACTIONS)
@@ -161,8 +156,6 @@ class IndexedDBService {
       network,
     }))
 
-    console.log(`💾 [IndexedDB] Tagged transactions: ${taggedTransactions.length}`)
-
     // Batch insert
     const promises = taggedTransactions.map((transaction) => {
       return new Promise<void>((resolve, reject) => {
@@ -173,7 +166,6 @@ class IndexedDBService {
     })
 
     await Promise.all(promises)
-    console.log(`💾 [IndexedDB] ✅ Successfully saved ${transactions.length} transactions`)
   }
 
   /**
@@ -247,10 +239,7 @@ class IndexedDBService {
    * Get transactions for a specific address and network
    */
   async getTransactionsFor(network: string, address: string): Promise<Transaction[]> {
-    console.log(`💾 [IndexedDB] getTransactionsFor called`)
-    console.log(`💾 [IndexedDB] Network: ${network}, Address: ${address}`)
     const result = await this.getTransactions({ network, address, limit: 10000 })
-    console.log(`💾 [IndexedDB] Found ${result.transactions.length} transactions`)
     return result.transactions
   }
 

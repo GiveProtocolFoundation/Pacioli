@@ -9,23 +9,6 @@
 
 import type { NetworkType, SubstrateTransaction } from '../wallet/types'
 
-/**
- * Sanitize a string for safe logging by removing/escaping control characters
- * Prevents log injection attacks (CWE-117)
- */
-function sanitizeForLog(input: string | number | undefined | null): string {
-  if (input === undefined || input === null) return ''
-  const str = String(input)
-  // Remove newlines, carriage returns, and other control characters
-  // Also escape backslashes to prevent escape sequence injection
-  return str
-    .replace(/\\/g, '\\\\')
-    .replace(/\r/g, '\\r')
-    .replace(/\n/g, '\\n')
-    .replace(/\t/g, '\\t')
-    .replace(/[\x00-\x1F\x7F]/g, '') // Remove other control characters
-}
-
 interface MoonscanConfig {
   chainId: number
   apiKey?: string
@@ -167,9 +150,6 @@ class MoonscanService {
       sort = 'desc',
     } = options
 
-    console.log(`🔍 [Moonscan] Fetching transactions for ${address} on ${network} (chainId: ${config.chainId})`)
-    console.log(`🔍 [Moonscan] API key present: ${!!apiKey}, length: ${apiKey.length}`)
-
     // Build V2 API URL with chainid parameter
     const params = new URLSearchParams({
       chainid: config.chainId.toString(),
@@ -185,15 +165,10 @@ class MoonscanService {
     })
 
     const url = `${ETHERSCAN_V2_BASE_URL}?${params.toString()}`
-    console.log(`🔍 [Moonscan] Request URL: ${url.replace(apiKey, '***')}`)
 
     try {
-      console.log(`🔍 [Moonscan] Making fetch request...`)
       const response = await fetch(url)
-      console.log(`🔍 [Moonscan] HTTP Response status: ${response.status}`)
-
       const responseText = await response.text()
-      console.log(`🔍 [Moonscan] Raw response (first 500 chars): ${sanitizeForLog(responseText.substring(0, 500))}`)
 
       let data: MoonscanResponse<MoonscanTransaction>
       try {
@@ -203,13 +178,10 @@ class MoonscanService {
         throw new Error(`Invalid JSON response from Etherscan API: ${responseText.substring(0, 200)}`)
       }
 
-      console.log(`🔍 [Moonscan] Response status: ${sanitizeForLog(data.status)}, message: ${sanitizeForLog(data.message)}`)
-
       if (data.status !== '1') {
         // Status '0' with "No transactions found" is not an error
         if (data.message === 'No transactions found' ||
             (data.message === 'OK' && typeof data.result === 'string' && data.result.includes('No transactions'))) {
-          console.log('🔍 [Moonscan] No transactions found for address')
           return []
         }
         // Handle specific error messages
@@ -220,15 +192,12 @@ class MoonscanService {
       }
 
       if (!Array.isArray(data.result)) {
-        console.log('🔍 [Moonscan] No results array')
         return []
       }
 
-      console.log(`🔍 [Moonscan] Received ${sanitizeForLog(data.result.length)} transactions`)
-
       return data.result.map((tx) => this.mapToSubstrateTransaction(tx, network, address))
     } catch (error) {
-      console.error('🔍 [Moonscan] Fetch error:', error)
+      console.error('Moonscan fetch error:', error)
       throw error
     }
   }
@@ -266,8 +235,6 @@ class MoonscanService {
       sort = 'desc',
     } = options
 
-    console.log(`🔍 [Moonscan] Fetching token transfers for ${address} on ${network}`)
-
     const params = new URLSearchParams({
       chainid: config.chainId.toString(),
       module: 'account',
@@ -292,7 +259,7 @@ class MoonscanService {
             (data.message === 'OK' && typeof data.result === 'string')) {
           return []
         }
-        console.warn(`🔍 [Moonscan] Token transfer API warning: ${sanitizeForLog(data.message)}`)
+        console.warn('Moonscan token transfer API warning:', data.message)
         return []
       }
 
@@ -300,11 +267,9 @@ class MoonscanService {
         return []
       }
 
-      console.log(`🔍 [Moonscan] Received ${sanitizeForLog(data.result.length)} token transfers`)
-
       return data.result.map((tx) => this.mapTokenTransferToSubstrateTransaction(tx, network, address))
     } catch (error) {
-      console.error('🔍 [Moonscan] Token transfer fetch error:', error)
+      console.error('Moonscan token transfer fetch error:', error)
       // Don't throw - token transfers are optional
       return []
     }
@@ -324,8 +289,6 @@ class MoonscanService {
     const { limit = 100, onProgress } = options
     const allTransactions: SubstrateTransaction[] = []
 
-    console.log(`🔍 [Moonscan] fetchAllTransactions for ${network}:${address}`)
-
     try {
       // 1. Fetch normal transactions
       onProgress?.('Fetching EVM transactions from Moonscan...', 0, limit)
@@ -333,7 +296,6 @@ class MoonscanService {
         offset: limit,
       })
       allTransactions.push(...normalTxs)
-      console.log(`🔍 [Moonscan] Got ${normalTxs.length} normal transactions`)
 
       // Small delay to avoid rate limiting
       await new Promise((resolve) => setTimeout(resolve, 250))
@@ -344,7 +306,6 @@ class MoonscanService {
         offset: limit,
       })
       allTransactions.push(...tokenTxs)
-      console.log(`🔍 [Moonscan] Got ${tokenTxs.length} token transfers`)
 
       // Sort by block number (newest first)
       allTransactions.sort((a, b) => b.blockNumber - a.blockNumber)
@@ -357,10 +318,9 @@ class MoonscanService {
         return true
       })
 
-      console.log(`🔍 [Moonscan] ✅ Returning ${deduplicated.length} total transactions`)
       return deduplicated.slice(0, limit)
     } catch (error) {
-      console.error('🔍 [Moonscan] fetchAllTransactions error:', error)
+      console.error('Moonscan fetchAllTransactions error:', error)
       throw error
     }
   }

@@ -85,7 +85,7 @@ const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
       })
       setIsAddingNew(false)
     },
-    [template]
+    []
   )
 
   const handleAddNew = useCallback(() => {
@@ -119,7 +119,7 @@ const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
     (account: NonNullable<typeof template>['accounts'][0]) => {
       return () => handleEdit(account)
     },
-    [handleEdit, template]
+    [handleEdit]
   )
 
   const createDeleteHandler = useCallback(

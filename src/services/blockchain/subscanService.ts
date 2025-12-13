@@ -119,8 +119,6 @@ class SubscanService {
     const { row = 100, page = 0, onProgress } = options
     const transactions: SubstrateTransaction[] = []
 
-    console.log(`🔍 [Subscan] fetchTransfers: ${network}:${address}, row=${row}, page=${page}`)
-
     try {
       // Fetch transfers (sent + received)
       // Use correct Subscan API v2 endpoint
@@ -135,35 +133,20 @@ class SubscanService {
       ).catch(err => {
         // Enhance error message for CORS issues
         if (err instanceof TypeError && err.message.includes('NetworkError')) {
-          console.error('🚨 [Subscan] CORS or Network Error - Subscan API may be blocked by browser')
-          console.error('🚨 This is likely due to CORS restrictions or browser extensions blocking the request')
-          console.error('🚨 The app will fall back to slower RPC scanning')
+          console.error('CORS or Network Error - Subscan API may be blocked by browser')
         }
         throw err
       })
 
-      console.log(`🔍 [Subscan] API Response code: ${response.code}, message: ${response.message}`)
-      console.log(`🔍 [Subscan] Total count from API: ${response.data.count}`)
-
       if (response.code === 0) {
         // Subscan might return data.transfers or data.list
         const transfers = response.data.transfers || response.data.list || []
-        console.log(`🔍 [Subscan] Received ${transfers.length} transfer records from API`)
-
-        // Debug: Log first transfer to see what data we're getting
-        if (transfers.length > 0) {
-          console.log('🔍 [Subscan] Sample transfer data:', JSON.stringify(transfers[0], null, 2))
-        }
 
         onProgress?.(transfers.length, response.data.count || 0)
 
         for (const transfer of transfers) {
           // Extract detailed action information
           const actionInfo = this.extractActionFromTransfer(transfer)
-
-          console.log(
-            `🔍 [Subscan] Transfer ${transfer.block_num}-${transfer.extrinsic_index}: ${actionInfo.section}.${actionInfo.method}`
-          )
 
           transactions.push({
             id: `${transfer.block_num}-${transfer.extrinsic_index}`,
@@ -332,12 +315,8 @@ class SubscanService {
     const { limit = 100, onProgress } = options
     const allTransactions: SubstrateTransaction[] = []
 
-    console.log(`🔍 [Subscan] fetchAllTransactions called for ${network}:${address}`)
-    console.log(`🔍 [Subscan] Limit: ${limit}`)
-
     try {
       // 1. Fetch transfers (most common)
-      console.log('🔍 [Subscan] Fetching transfers...')
       onProgress?.('Fetching transfers from Subscan...', 0, limit)
       const transfers = await this.fetchTransfers(network, address, {
         row: limit,
@@ -346,17 +325,14 @@ class SubscanService {
           onProgress?.('Fetching transfers from Subscan...', current, total)
         },
       })
-      console.log(`🔍 [Subscan] Received ${transfers.length} transfers`)
 
       // 2. Try to fetch extrinsics for detailed method names
       // Skip this if we already have good data from transfers
-      console.log('🔍 [Subscan] Attempting to fetch extrinsics for method details...')
       let extrinsics: SubstrateTransaction[] = []
 
       // Only fetch extrinsics if transfers succeeded and we want enhanced data
       // This reduces API calls and avoids rate limiting
       try {
-        console.log('🔍 [Subscan] Fetching extrinsics endpoint...')
         onProgress?.('Fetching transaction details...', 0, 0)
 
         // Add small delay to avoid rate limiting (250ms)
@@ -366,12 +342,8 @@ class SubscanService {
           row: limit,
           page: 0,
         })
-        console.log(`🔍 [Subscan] ✅ Received ${extrinsics.length} extrinsics`)
       } catch (error) {
-        console.warn('🔍 [Subscan] ⚠️  Failed to fetch extrinsics, using transfer data only')
-        console.warn('🔍 [Subscan] Error:', error)
-        console.warn('🔍 [Subscan] This may be due to rate limiting or CORS restrictions')
-        console.warn('🔍 [Subscan] Transaction types will show as generic "balances.transfer"')
+        console.warn('Failed to fetch extrinsics, using transfer data only:', error)
         // Continue without extrinsic details if this fails
       }
 
@@ -397,29 +369,24 @@ class SubscanService {
       })
 
       allTransactions.push(...enhancedTransfers)
-      console.log(`🔍 [Subscan] Enhanced ${enhancedTransfers.length} transfers with method details`)
 
       // 5. Add non-transfer extrinsics (governance, XCM, staking, etc.)
       const nonTransferExtrinsics = extrinsics.filter(
         (ext) => !(ext.section === 'balances' && ext.method.includes('transfer'))
       )
       allTransactions.push(...nonTransferExtrinsics)
-      console.log(`🔍 [Subscan] Added ${nonTransferExtrinsics.length} non-transfer extrinsics`)
 
       // 6. Fetch staking rewards (if applicable)
       if (network === 'polkadot' || network === 'kusama') {
-        console.log('🔍 [Subscan] Fetching staking rewards...')
         onProgress?.('Fetching staking rewards from Subscan...', 0, 0)
         const rewards = await this.fetchRewards(network, address, {
           row: Math.min(limit, 50),
           page: 0,
         })
-        console.log(`🔍 [Subscan] Received ${rewards.length} staking rewards`)
         allTransactions.push(...rewards)
       }
 
       // Sort by block number descending (newest first)
-      console.log(`🔍 [Subscan] Total before dedup: ${allTransactions.length}`)
       allTransactions.sort((a, b) => b.blockNumber - a.blockNumber)
 
       // Deduplicate by ID
@@ -430,10 +397,7 @@ class SubscanService {
         return true
       })
 
-      console.log(`🔍 [Subscan] After dedup: ${deduplicated.length}, returning: ${Math.min(deduplicated.length, limit)}`)
-      const result = deduplicated.slice(0, limit)
-      console.log(`🔍 [Subscan] ✅ Returning ${result.length} transactions to caller`)
-      return result
+      return deduplicated.slice(0, limit)
     } catch (error) {
       console.error('Subscan fetch failed:', error)
       throw error
@@ -456,8 +420,6 @@ class SubscanService {
       headers['X-API-Key'] = config.apiKey
     }
 
-    console.log(`Subscan API Request: ${config.baseUrl}${endpoint}`, body)
-
     const response = await fetch(`${config.baseUrl}${endpoint}`, {
       method: 'POST',
       headers,
@@ -477,9 +439,7 @@ class SubscanService {
     }
 
     try {
-      const data = JSON.parse(responseText)
-      console.log('Subscan API Response:', data)
-      return data
+      return JSON.parse(responseText)
     } catch {
       console.error('Failed to parse Subscan response:', responseText)
       throw new Error(`Invalid JSON response from Subscan: ${responseText.slice(0, 200)}`)
