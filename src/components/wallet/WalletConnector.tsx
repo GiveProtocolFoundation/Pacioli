@@ -74,7 +74,7 @@ const AccountRow = memo(function AccountRow({
             onChange={onAliasInputChange}
             onKeyDown={handleKeyDown}
             placeholder="Enter alias..."
-            className="flex-1 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#1e3a5f]"
+            className="flex-1 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#007AFF]"
           />
           <button
             onClick={handleSave}
@@ -109,7 +109,7 @@ const AccountRow = memo(function AccountRow({
           </div>
           <button
             onClick={handleStartEdit}
-            className="p-1.5 text-gray-400 hover:text-[#1e3a5f] dark:hover:text-[#3d5a80] hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
+            className="p-1.5 text-gray-400 hover:text-[#007AFF] dark:hover:text-[#66B3FF] hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
             title="Edit alias"
           >
             <Pencil className="w-3.5 h-3.5" />
@@ -390,7 +390,7 @@ export const WalletConnector: React.FC<WalletConnectorProps> = ({
     return (
       <div className="ledger-card ledger-card-financial border border-gray-200 dark:border-gray-700 p-6">
         <div className="flex items-center justify-center py-8">
-          <Loader className="w-6 h-6 animate-spin text-[#1e3a5f] dark:text-[#3d5a80]" />
+          <Loader className="w-6 h-6 animate-spin text-[#007AFF] dark:text-[#66B3FF]" />
           <span className="ml-3 text-gray-600 dark:text-gray-400">
             Detecting wallets...
           </span>
@@ -404,7 +404,7 @@ export const WalletConnector: React.FC<WalletConnectorProps> = ({
       {/* Header */}
       <div className="ledger-card ledger-card-financial border border-gray-200 dark:border-gray-700 p-6">
         <div className="flex items-center mb-4">
-          <Wallet className="w-6 h-6 text-[#1e3a5f] dark:text-[#3d5a80] mr-3" />
+          <Wallet className="w-6 h-6 text-[#007AFF] dark:text-[#66B3FF] mr-3" />
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
             Connect Wallet
           </h2>
@@ -438,7 +438,7 @@ export const WalletConnector: React.FC<WalletConnectorProps> = ({
           return (
             <div
               key={walletType}
-              className="ledger-card border border-gray-200 dark:border-gray-700 p-4 hover:border-[#1e3a5f] dark:hover:border-[#3d5a80] transition-colors"
+              className="ledger-card border border-gray-200 dark:border-gray-700 p-4 hover:border-[#007AFF] dark:hover:border-[#66B3FF] transition-colors"
             >
               <div className="flex items-center justify-between">
                 <div className="flex-1">

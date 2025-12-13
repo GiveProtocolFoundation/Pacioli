@@ -172,7 +172,7 @@ const Navigation: React.FC<NavigationProps> = ({
               className="h-12 w-auto mix-blend-multiply dark:mix-blend-normal"
             />
             <div className="ml-3 flex flex-col">
-              <span className="brand-wordmark text-[#1e3a5f] dark:text-[#93b4d4]" style={{ fontSize: '24px' }}>
+              <span className="brand-wordmark text-[#0056B3] dark:text-[#66B3FF]" style={{ fontSize: '24px' }}>
                 Pacioli
               </span>
               <span className="brand-tagline text-xs text-gray-500 dark:text-gray-400">
@@ -199,7 +199,7 @@ const Navigation: React.FC<NavigationProps> = ({
                       onClick={createToggleExpandedHandler(item.name)}
                       className={`w-full flex items-center justify-between px-3 py-2.5 text-sm rounded-lg transition-colors ${
                         isActive
-                          ? 'bg-[#e8eef4] dark:bg-[#1e3a5f] text-[#1e3a5f] dark:text-white font-semibold border-l-2 border-[#1e3a5f] dark:border-[#3d5a80] -ml-0.5'
+                          ? 'bg-[#E5F2FF] dark:bg-[#007AFF] text-[#007AFF] dark:text-white font-semibold border-l-2 border-[#007AFF] dark:border-[#66B3FF] -ml-0.5'
                           : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 font-medium'
                       }`}
                     >
@@ -227,7 +227,7 @@ const Navigation: React.FC<NavigationProps> = ({
                       to={item.href}
                       className={`w-full flex items-center justify-between px-3 py-2.5 text-sm rounded-lg transition-colors ${
                         isActive
-                          ? 'bg-[#e8eef4] dark:bg-[#1e3a5f] text-[#1e3a5f] dark:text-white font-semibold border-l-2 border-[#1e3a5f] dark:border-[#3d5a80] -ml-0.5'
+                          ? 'bg-[#E5F2FF] dark:bg-[#007AFF] text-[#007AFF] dark:text-white font-semibold border-l-2 border-[#007AFF] dark:border-[#66B3FF] -ml-0.5'
                           : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 font-medium'
                       }`}
                     >
@@ -255,7 +255,7 @@ const Navigation: React.FC<NavigationProps> = ({
                               to={subItem.href}
                               className={`block w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${
                                 isSubActive
-                                  ? 'text-[#1e3a5f] dark:text-white bg-[#e8eef4] dark:bg-[#1e3a5f]/50 font-medium'
+                                  ? 'text-[#007AFF] dark:text-white bg-[#E5F2FF] dark:bg-[#007AFF]/50 font-medium'
                                   : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 font-normal'
                               }`}
                             >
@@ -322,7 +322,7 @@ const Navigation: React.FC<NavigationProps> = ({
                   className="h-12 w-auto mix-blend-multiply dark:mix-blend-normal"
                 />
                 <div className="ml-3 flex flex-col">
-                  <span className="brand-wordmark text-gray-900 dark:text-white" style={{ fontSize: '24px', color: '#1e3a5f' }}>
+                  <span className="brand-wordmark text-[#0056B3] dark:text-[#66B3FF]" style={{ fontSize: '24px' }}>
                     Pacioli
                   </span>
                   <span className="brand-tagline text-xs text-gray-500 dark:text-gray-400">
@@ -355,7 +355,7 @@ const Navigation: React.FC<NavigationProps> = ({
                           onClick={createToggleExpandedHandler(item.name)}
                           className={`w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
                             isActive
-                              ? 'bg-[#1e3a5f]/10 text-[#1e3a5f]'
+                              ? 'bg-[#007AFF]/10 text-[#007AFF]'
                               : 'text-gray-700 hover:bg-gray-50'
                           }`}
                         >
@@ -384,7 +384,7 @@ const Navigation: React.FC<NavigationProps> = ({
                           onClick={handleCloseSidebar}
                           className={`w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
                             isActive
-                              ? 'bg-[#1e3a5f]/10 text-[#1e3a5f]'
+                              ? 'bg-[#007AFF]/10 text-[#007AFF]'
                               : 'text-gray-700 hover:bg-gray-50'
                           }`}
                         >
@@ -413,7 +413,7 @@ const Navigation: React.FC<NavigationProps> = ({
                                   onClick={handleCloseSidebar}
                                   className={`block w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${
                                     isSubActive
-                                      ? 'text-[#1e3a5f] bg-[#1e3a5f]/10'
+                                      ? 'text-[#007AFF] bg-[#007AFF]/10'
                                       : 'text-gray-600 hover:bg-gray-50'
                                   }`}
                                 >

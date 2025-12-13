@@ -269,9 +269,9 @@ export const TransactionList: React.FC<TransactionListProps> = ({
   const getTypeBadgeColor = (type: string) => {
     switch (type) {
       case 'transfer':
-        return 'bg-[#1e3a5f]/10 text-[#1e3a5f] dark:bg-[#3d5a80]/20 dark:text-[#3d5a80]'
+        return 'bg-[#007AFF]/10 text-[#007AFF] dark:bg-[#66B3FF]/20 dark:text-[#66B3FF]'
       case 'staking':
-        return 'bg-[#4a5f7a]/10 text-[#4a5f7a] dark:bg-[#6b8099]/10 dark:text-[#6b8099]'
+        return 'bg-[#0056B3]/10 text-[#0056B3] dark:bg-[#66B3FF]/10 dark:text-[#66B3FF]'
       case 'xcm':
         return 'bg-[#8b7355]/10 text-[#8b7355] dark:bg-[#a38a6f]/10 dark:text-[#a38a6f]'
       case 'governance':
@@ -303,7 +303,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
     return (
       <div className="ledger-card ledger-card-financial border border-gray-200 dark:border-gray-700 p-6">
         <div className="flex items-center justify-center py-12">
-          <Loader className="w-6 h-6 animate-spin text-[#1e3a5f] dark:text-[#3d5a80]" />
+          <Loader className="w-6 h-6 animate-spin text-[#007AFF] dark:text-[#66B3FF]" />
           <span className="ml-3 text-gray-600 dark:text-gray-400">
             Loading transaction history...
           </span>
@@ -363,7 +363,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
           <div className="flex items-center gap-3">
             <button
               onClick={exportToCSV}
-              className="text-sm text-[#1e3a5f] dark:text-[#3d5a80] hover:opacity-90 font-medium transition-opacity inline-flex items-center gap-1.5"
+              className="text-sm text-[#007AFF] dark:text-[#66B3FF] hover:opacity-90 font-medium transition-opacity inline-flex items-center gap-1.5"
             >
               <Download className="w-4 h-4" />
               Export CSV
@@ -371,7 +371,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
             <button
               onClick={importToLedger}
               disabled={importing || importSuccess}
-              className="text-sm px-3 py-1.5 bg-[#1e3a5f] dark:bg-[#3d5a80] text-white hover:opacity-90 font-medium transition-opacity inline-flex items-center gap-1.5 rounded disabled:opacity-50"
+              className="text-sm px-3 py-1.5 bg-[#007AFF] dark:bg-[#66B3FF] text-white hover:opacity-90 font-medium transition-opacity inline-flex items-center gap-1.5 rounded disabled:opacity-50"
             >
               {importing ? (
                 <>
@@ -526,7 +526,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
                       href={getExplorerUrl(tx)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-[#1e3a5f] dark:text-[#3d5a80] hover:opacity-80 transition-opacity inline-flex items-center justify-end"
+                      className="text-[#007AFF] dark:text-[#66B3FF] hover:opacity-80 transition-opacity inline-flex items-center justify-end"
                       title="View on Subscan explorer"
                     >
                       <ExternalLink className="w-4 h-4" />
@@ -546,7 +546,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
             Showing {Math.min(10, transactions.length)} of {transactions.length}{' '}
             transactions
           </p>
-          <button className="text-sm text-[#1e3a5f] dark:text-[#3d5a80] hover:opacity-90 font-medium">
+          <button className="text-sm text-[#007AFF] dark:text-[#66B3FF] hover:opacity-90 font-medium">
             Load More
           </button>
         </div>

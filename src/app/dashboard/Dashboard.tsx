@@ -122,9 +122,9 @@ const Dashboard: React.FC = () => {
       case 'expense':
         return 'text-[#dc2626] dark:text-[#ef4444] bg-[#dc2626]/10'
       case 'exchange':
-        return 'text-[#1e3a5f] dark:text-[#3d5a80] bg-[#1e3a5f]/10'
+        return 'text-[#007AFF] dark:text-[#66B3FF] bg-[#007AFF]/10'
       case 'transfer':
-        return 'text-[#4a5f7a] dark:text-[#6b8099] bg-[#4a5f7a]/10'
+        return 'text-[#0056B3] dark:text-[#66B3FF] bg-[#0056B3]/10'
       default:
         return 'text-gray-600 bg-gray-50'
     }
@@ -370,8 +370,10 @@ const Dashboard: React.FC = () => {
             {/* Recent Transactions */}
             <div className="ledger-card border border-gray-200 dark:border-gray-700 mt-10">
               <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-                <h2>Recent Transactions</h2>
-                <button className="text-sm text-[#1e3a5f] dark:text-[#3d5a80] hover:opacity-90 font-medium">
+<h2>
+                  Recent Transactions
+                </h2>
+                <button className="text-sm text-[#007AFF] dark:text-[#66B3FF] hover:opacity-90 font-medium">
                   View All
                 </button>
               </div>
@@ -523,8 +525,8 @@ const Dashboard: React.FC = () => {
                       2 transactions need review
                     </p>
                   </div>
-                  <div className="p-3 bg-[#1e3a5f]/10 dark:bg-[#3d5a80]/20 border border-[#1e3a5f]/20 dark:border-[#3d5a80]/30 rounded-lg">
-                    <p className="text-sm font-medium text-[#1e3a5f] dark:text-[#3d5a80]">
+                  <div className="p-3 bg-[#007AFF]/10 dark:bg-[#66B3FF]/20 border border-[#007AFF]/20 dark:border-[#66B3FF]/30 rounded-lg">
+                    <p className="text-sm font-medium text-[#007AFF] dark:text-[#66B3FF]">
                       Price Alert
                     </p>
                     <p className="text-xs text-[#64748b] dark:text-[#94a3b8] mt-1">

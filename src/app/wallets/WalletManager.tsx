@@ -340,7 +340,7 @@ const WalletManager: React.FC = () => {
       {/* Header */}
       <div className="max-w-7xl mx-auto mb-8">
         <div className="flex items-center mb-3">
-          <Wallet className="w-8 h-8 text-[#1e3a5f] dark:text-[#3d5a80] mr-3" />
+          <Wallet className="w-8 h-8 text-[#007AFF] dark:text-[#66B3FF] mr-3" />
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
             Wallet Manager
           </h1>
@@ -383,7 +383,7 @@ const WalletManager: React.FC = () => {
                     id="network-select"
                     value={selectedNetwork}
                     onChange={handleNetworkChange}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#1e3a5f] dark:focus:ring-[#3d5a80] focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#007AFF] dark:focus:ring-[#66B3FF] focus:border-transparent"
                   >
                     <option value={NetworkType.POLKADOT}>Polkadot</option>
                     <option value={NetworkType.KUSAMA}>Kusama</option>
@@ -403,7 +403,7 @@ const WalletManager: React.FC = () => {
                     id="address-select"
                     value={selectedAddress}
                     onChange={handleAddressChange}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#1e3a5f] dark:focus:ring-[#3d5a80] focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#007AFF] dark:focus:ring-[#66B3FF] focus:border-transparent"
                   >
                     <option value="">Select an address...</option>
                     {allAddresses.map((addr) => (
@@ -532,25 +532,25 @@ const WalletManager: React.FC = () => {
                 </h3>
                 <ol className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
                   <li className="flex items-start">
-                    <span className="font-semibold text-[#1e3a5f] dark:text-[#3d5a80] mr-2">
+                    <span className="font-semibold text-[#007AFF] dark:text-[#66B3FF] mr-2">
                       1.
                     </span>
                     Install a Polkadot wallet extension (Polkadot.js, Talisman, or SubWallet)
                   </li>
                   <li className="flex items-start">
-                    <span className="font-semibold text-[#1e3a5f] dark:text-[#3d5a80] mr-2">
+                    <span className="font-semibold text-[#007AFF] dark:text-[#66B3FF] mr-2">
                       2.
                     </span>
                     Click the &quot;Connect&quot; button for your wallet
                   </li>
                   <li className="flex items-start">
-                    <span className="font-semibold text-[#1e3a5f] dark:text-[#3d5a80] mr-2">
+                    <span className="font-semibold text-[#007AFF] dark:text-[#66B3FF] mr-2">
                       3.
                     </span>
                     Select an address and network
                   </li>
                   <li className="flex items-start">
-                    <span className="font-semibold text-[#1e3a5f] dark:text-[#3d5a80] mr-2">
+                    <span className="font-semibold text-[#007AFF] dark:text-[#66B3FF] mr-2">
                       4.
                     </span>
                     Click &quot;Sync Transactions&quot; to import your history

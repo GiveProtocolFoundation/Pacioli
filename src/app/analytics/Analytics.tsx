@@ -261,8 +261,8 @@ const Analytics: React.FC = () => {
                     y1="0"
                     y2="1"
                   >
-                    <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.3" />
-                    <stop offset="100%" stopColor="#3B82F6" stopOpacity="0" />
+                    <stop offset="0%" stopColor="#007AFF" stopOpacity="0.3" />
+                    <stop offset="100%" stopColor="#007AFF" stopOpacity="0" />
                   </linearGradient>
                 </defs>
 
@@ -270,7 +270,7 @@ const Analytics: React.FC = () => {
                 <path
                   d="M 50,120 L 150,100 L 250,135 L 350,80 L 450,55 L 550,65 L 650,40 L 750,20"
                   fill="none"
-                  stroke="#3B82F6"
+                  stroke="#007AFF"
                   strokeWidth="3"
                   strokeLinecap="round"
                 />
@@ -289,7 +289,7 @@ const Analytics: React.FC = () => {
                       cx={x}
                       cy={y}
                       r="4"
-                      fill="#3B82F6"
+                      fill="#007AFF"
                       className="hover:r-6 cursor-pointer"
                     />
                   )

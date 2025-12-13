@@ -37,17 +37,17 @@
   --font-size-small: 12px;
   --line-height-small: 1.4;
 
-  /* Navy Blue + Gold color palette - Light mode */
-  --color-primary: #1e3a5f;           /* Deep navy */
-  --color-primary-hover: #2d4a6f;
-  --color-primary-light: #e8eef4;     /* Navy tint for backgrounds */
+  /* Blue + Gold color palette - Light mode */
+  --color-primary: #007AFF;           /* Primary Brand Blue */
+  --color-primary-hover: #0056B3;
+  --color-primary-light: #E5F2FF;     /* Blue tint for backgrounds */
   --color-accent: #c9a227;            /* Antique gold */
   --color-accent-hover: #b8922a;
 
   /* Dark mode primary colors */
-  --color-primary-dark: #3d5a80;      /* Lighter navy for dark mode */
-  --color-primary-dark-hover: #4d6a90;
-  --color-primary-dark-light: #1e3a5f; /* Darker navy for dark mode contrast */
+  --color-primary-dark: #66B3FF;      /* Dark Mode Highlight Blue */
+  --color-primary-dark-hover: #4D99FF;
+  --color-primary-dark-light: #004488; /* Darker blue for dark mode contrast */
   --color-accent-dark: #d4af37;       /* Brighter gold for dark mode */
   --color-accent-dark-hover: #e4bf47;
 
@@ -66,8 +66,8 @@
   --color-error-dark-light: #7f1d1d;
 
   /* Utility colors */
-  --color-slate-blue: #4a5f7a;
-  --color-slate-blue-dark: #6b8099;
+  --color-slate-blue: #0056B3;
+  --color-slate-blue-dark: #66B3FF;
   --color-parchment: #8b7355;
   --color-parchment-dark: #a38a6f;
 
@@ -735,7 +735,7 @@ th,
    ============================================================================= */
 
 .nav-item-active {
-  background: #e8eef4;
+  background: #E5F2FF;
   color: var(--color-primary);
   font-weight: 600;
   border-left: 2px solid var(--color-primary);
