@@ -26,33 +26,29 @@ const TokenButton = memo(function TokenButton({
   return (
     <button
       onClick={handleClick}
-      className={`w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 ${
+      className={`w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center ${
         isSelected ? 'bg-blue-50 dark:bg-blue-900/20' : ''
       }`}
     >
-      <div className="flex items-center">
-        {token.iconUrl && (
-          <img
-            src={token.iconUrl}
-            alt={token.symbol}
-            className="w-6 h-6 mr-3 rounded-full"
-            onError={handleImageError}
-          />
+      {token.iconUrl && (
+        <img
+          src={token.iconUrl}
+          alt={token.symbol}
+          className="w-6 h-6 mr-3 rounded-full"
+          onError={handleImageError}
+        />
+      )}
+      <div className="flex-1">
+        <span className="font-medium text-gray-900 dark:text-white">
+          {token.symbol}
+        </span>
+        {token.contractAddress && (
+          <span className="ml-2 px-1.5 py-0.5 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded">
+            {token.tokenStandard}
+          </span>
         )}
-        <div className="flex-1">
-          <div className="flex items-center">
-            <span className="font-medium text-gray-900 dark:text-white">
-              {token.symbol}
-            </span>
-            {token.contractAddress && (
-              <span className="ml-2 px-1.5 py-0.5 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded">
-                {token.tokenStandard}
-              </span>
-            )}
-          </div>
-          <div className="text-sm text-gray-500 dark:text-gray-400">
-            {token.name}
-          </div>
+        <div className="text-sm text-gray-500 dark:text-gray-400">
+          {token.name}
         </div>
       </div>
     </button>

@@ -39,7 +39,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
   }, [transactions])
 
   // Helper: Get network decimals
-  const getNetworkDecimals = (network: string): number => {
+  const getNetworkDecimals = useCallback((network: string): number => {
     const networkDecimals: Record<string, number> = {
       polkadot: 10,
       kusama: 12,
@@ -49,10 +49,10 @@ export const TransactionList: React.FC<TransactionListProps> = ({
       acala: 12,
     }
     return networkDecimals[network] || 10
-  }
+  }, [])
 
   // Get token symbol based on network
-  const getTokenSymbol = (tx: Transaction): string => {
+  const getTokenSymbol = useCallback((tx: Transaction): string => {
     const substrateTx = tx as SubstrateTransaction
 
     // Map network to token symbol
@@ -66,10 +66,10 @@ export const TransactionList: React.FC<TransactionListProps> = ({
     }
 
     return networkTokens[substrateTx.network] || 'Token'
-  }
+  }, [])
 
   // Format amount with proper decimals and token symbol
-  const formatAmount = (tx: Transaction): string => {
+  const formatAmount = useCallback((tx: Transaction): string => {
     if (tx.value === '0') return '—'
 
     const substrateTx = tx as SubstrateTransaction
@@ -95,10 +95,10 @@ export const TransactionList: React.FC<TransactionListProps> = ({
     })
 
     return `${formatted} ${symbol}`
-  }
+  }, [getTokenSymbol])
 
   // Import wallet transactions to accounting ledger
-  const importToLedger = async () => {
+  const importToLedger = useCallback(async () => {
     setImporting(true)
     setImportSuccess(false)
 
@@ -148,15 +148,15 @@ export const TransactionList: React.FC<TransactionListProps> = ({
     } finally {
       setImporting(false)
     }
-  }
+  }, [sortedTransactions, addTransaction, getNetworkDecimals, getTokenSymbol])
 
   // Handle purge confirmation
-  const handlePurge = () => {
+  const handlePurge = useCallback(() => {
     setShowPurgeConfirm(false)
     if (onPurge) {
       onPurge()
     }
-  }
+  }, [onPurge])
 
   const handleShowPurgeConfirm = useCallback(() => {
     setShowPurgeConfirm(true)
@@ -167,7 +167,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
   }, [])
 
   // Export transactions to CSV
-  const exportToCSV = () => {
+  const exportToCSV = useCallback(() => {
     if (transactions.length === 0) return
 
     // CSV header
@@ -214,7 +214,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
-  }
+  }, [transactions.length, sortedTransactions, getTokenSymbol, formatAmount])
 
   // Get explorer URL for a transaction
   const getExplorerUrl = (tx: Transaction): string => {
