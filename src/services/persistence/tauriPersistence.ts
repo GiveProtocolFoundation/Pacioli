@@ -54,11 +54,17 @@ export const tauriPersistence: PersistenceService = {
   },
 
   // Transaction Operations
-  saveTransactions: (walletId: string, transactions: TransactionInput[]): Promise<number> => {
+  saveTransactions: (
+    walletId: string,
+    transactions: TransactionInput[]
+  ): Promise<number> => {
     return invoke<number>('save_transactions', { walletId, transactions })
   },
 
-  getTransactions: (walletId: string, options?: PaginationOptions): Promise<StoredTransaction[]> => {
+  getTransactions: (
+    walletId: string,
+    options?: PaginationOptions
+  ): Promise<StoredTransaction[]> => {
     return invoke<StoredTransaction[]>('get_transactions', {
       walletId,
       limit: options?.limit ?? null,
