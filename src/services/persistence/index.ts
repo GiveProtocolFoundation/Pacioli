@@ -34,11 +34,9 @@ const isTauri = (): boolean => {
  */
 const getPersistenceService = (): PersistenceService => {
   if (isTauri()) {
-    console.log('[Persistence] Using Tauri SQLite backend')
     return tauriPersistence
   }
 
-  console.log('[Persistence] Using IndexedDB fallback (browser mode)')
   return indexedDBPersistence
 }
 
