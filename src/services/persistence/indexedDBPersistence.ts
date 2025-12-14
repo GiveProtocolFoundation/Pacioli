@@ -24,13 +24,21 @@ const STORES = {
   SETTINGS: 'settings',
 } as const
 
+// Utility functions (standalone to avoid 'this' requirement)
+const generateId = (): string => crypto.randomUUID()
+const getNow = (): string => new Date().toISOString()
+
 class IndexedDBPersistenceService implements PersistenceService {
   private db: IDBDatabase | null = null
   private initPromise: Promise<void> | null = null
 
   private async init(): Promise<void> {
-    if (this.db) return
-    if (this.initPromise) return this.initPromise
+    if (this.db) {
+      return undefined
+    }
+    if (this.initPromise) {
+      return this.initPromise
+    }
 
     this.initPromise = new Promise((resolve, reject) => {
       const request = indexedDB.open(DB_NAME, DB_VERSION)
@@ -82,23 +90,15 @@ class IndexedDBPersistenceService implements PersistenceService {
     return this.db
   }
 
-  private generateId(): string {
-    return crypto.randomUUID()
-  }
-
-  private getNow(): string {
-    return new Date().toISOString()
-  }
-
   // ============================================================================
   // Profile Operations
   // ============================================================================
 
   async createProfile(name: string): Promise<Profile> {
     const db = await this.ensureDB()
-    const now = this.getNow()
+    const now = getNow()
     const profile: Profile = {
-      id: this.generateId(),
+      id: generateId(),
       name,
       avatar_url: null,
       created_at: now,
@@ -144,7 +144,7 @@ class IndexedDBPersistenceService implements PersistenceService {
         }
 
         profile.name = name
-        profile.updated_at = this.getNow()
+        profile.updated_at = getNow()
 
         const putRequest = store.put(profile)
         putRequest.onsuccess = () => resolve(profile)
@@ -178,7 +178,7 @@ class IndexedDBPersistenceService implements PersistenceService {
 
   async saveWallet(wallet: WalletInput): Promise<Wallet> {
     const db = await this.ensureDB()
-    const now = this.getNow()
+    const now = getNow()
 
     // Check if wallet already exists for this profile/address/chain
     const existingWallets = await this.getWallets(wallet.profile_id)
@@ -203,7 +203,7 @@ class IndexedDBPersistenceService implements PersistenceService {
 
     // Create new wallet
     const newWallet: Wallet = {
-      id: this.generateId(),
+      id: generateId(),
       profile_id: wallet.profile_id,
       address: wallet.address,
       chain: wallet.chain,
@@ -270,7 +270,7 @@ class IndexedDBPersistenceService implements PersistenceService {
 
   async saveTransactions(walletId: string, transactions: TransactionInput[]): Promise<number> {
     const db = await this.ensureDB()
-    const now = this.getNow()
+    const now = getNow()
     let savedCount = 0
 
     const tx = db.transaction(STORES.PROFILE_TRANSACTIONS, 'readwrite')
@@ -278,7 +278,7 @@ class IndexedDBPersistenceService implements PersistenceService {
 
     for (const txInput of transactions) {
       const storedTx: StoredTransaction = {
-        id: this.generateId(),
+        id: generateId(),
         wallet_id: walletId,
         hash: txInput.hash,
         block_number: txInput.block_number ?? null,
@@ -410,7 +410,7 @@ class IndexedDBPersistenceService implements PersistenceService {
     return new Promise((resolve, reject) => {
       const tx = db.transaction(STORES.SETTINGS, 'readwrite')
       const store = tx.objectStore(STORES.SETTINGS)
-      const request = store.put({ key, value, updated_at: this.getNow() })
+      const request = store.put({ key, value, updated_at: getNow() })
       request.onsuccess = () => resolve()
       request.onerror = () => reject(request.error)
     })

@@ -32,87 +32,59 @@ const LoadingFallback: React.FC = () => (
   </div>
 )
 
-const App: React.FC = () => {
-  return (
-    <BrowserRouter>
-      <ProfileProvider>
-        <TokenProvider>
-          <WalletAliasProvider>
-            <TransactionProvider userAccountType="organization">
-              <Suspense fallback={<LoadingFallback />}>
-                <Routes>
-                  {/* Onboarding route - no navigation wrapper */}
-                  <Route path="/onboarding" element={<Onboarding />} />
+// Composed providers to reduce JSX nesting depth
+const AppProviders: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <ProfileProvider>
+    <TokenProvider>
+      <WalletAliasProvider>
+        <TransactionProvider userAccountType="organization">
+          {children}
+        </TransactionProvider>
+      </WalletAliasProvider>
+    </TokenProvider>
+  </ProfileProvider>
+)
 
-                  {/* Main app routes - with navigation wrapper */}
-                  <Route
-                    path="/*"
-                    element={
-                      <Navigation userType="organization">
-                        <Routes>
-                          <Route
-                            path="/"
-                            element={<Navigate to="/dashboard" replace />}
-                          />
-                          <Route path="/dashboard" element={<Dashboard />} />
-                          <Route
-                            path="/transactions"
-                            element={<Transactions />}
-                          />
-                          <Route
-                            path="/transactions/new"
-                            element={<TransactionForm />}
-                          />
-                          <Route
-                            path="/transactions/edit/:id"
-                            element={<TransactionForm />}
-                          />
-                          <Route path="/wallets" element={<Balances />} />
-                          <Route
-                            path="/wallet-manager"
-                            element={<WalletManager />}
-                          />
-                          <Route path="/reports" element={<Reports />} />
-                          <Route
-                            path="/reports/financial"
-                            element={<Reports />}
-                          />
-                          <Route path="/reports/tax" element={<Reports />} />
-                          <Route path="/reports/donors" element={<Reports />} />
-                          <Route
-                            path="/reports/compliance"
-                            element={<Reports />}
-                          />
-                          <Route path="/analytics" element={<Analytics />} />
-                          <Route path="/settings" element={<Settings />} />
-                          <Route
-                            path="/settings/general"
-                            element={<Settings />}
-                          />
-                          <Route
-                            path="/settings/currencies"
-                            element={<Settings />}
-                          />
-                          <Route path="/settings/users" element={<Settings />} />
-                          <Route path="/docs" element={<Docs />} />
-                          <Route path="/support" element={<Support />} />
-                          <Route path="/profile" element={<Profile />} />
-                          <Route
-                            path="/chart-of-accounts"
-                            element={<Settings />}
-                          />
-                        </Routes>
-                      </Navigation>
-                    }
-                  />
-                </Routes>
-              </Suspense>
-            </TransactionProvider>
-          </WalletAliasProvider>
-        </TokenProvider>
-      </ProfileProvider>
-    </BrowserRouter>
-  )
-}
+// Main routes wrapped with navigation
+const MainRoutes: React.FC = () => (
+  <Navigation userType="organization">
+    <Routes>
+      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/transactions" element={<Transactions />} />
+      <Route path="/transactions/new" element={<TransactionForm />} />
+      <Route path="/transactions/edit/:id" element={<TransactionForm />} />
+      <Route path="/wallets" element={<Balances />} />
+      <Route path="/wallet-manager" element={<WalletManager />} />
+      <Route path="/reports" element={<Reports />} />
+      <Route path="/reports/financial" element={<Reports />} />
+      <Route path="/reports/tax" element={<Reports />} />
+      <Route path="/reports/donors" element={<Reports />} />
+      <Route path="/reports/compliance" element={<Reports />} />
+      <Route path="/analytics" element={<Analytics />} />
+      <Route path="/settings" element={<Settings />} />
+      <Route path="/settings/general" element={<Settings />} />
+      <Route path="/settings/currencies" element={<Settings />} />
+      <Route path="/settings/users" element={<Settings />} />
+      <Route path="/docs" element={<Docs />} />
+      <Route path="/support" element={<Support />} />
+      <Route path="/profile" element={<Profile />} />
+      <Route path="/chart-of-accounts" element={<Settings />} />
+    </Routes>
+  </Navigation>
+)
+
+const App: React.FC = () => (
+  <BrowserRouter>
+    <AppProviders>
+      <Suspense fallback={<LoadingFallback />}>
+        <Routes>
+          <Route path="/onboarding" element={<Onboarding />} />
+          <Route path="/*" element={<MainRoutes />} />
+        </Routes>
+      </Suspense>
+    </AppProviders>
+  </BrowserRouter>
+)
 
 export default App
