@@ -52,7 +52,7 @@ class IndexedDBPersistenceService implements PersistenceService {
         resolve()
       }
 
-      request.onupgradeneeded = (event) => {
+      request.onupgradeneeded = event => {
         const db = (event.target as IDBOpenDBRequest).result
 
         // Profiles store
@@ -62,14 +62,20 @@ class IndexedDBPersistenceService implements PersistenceService {
 
         // Wallets store
         if (!db.objectStoreNames.contains(STORES.WALLETS)) {
-          const walletStore = db.createObjectStore(STORES.WALLETS, { keyPath: 'id' })
+          const walletStore = db.createObjectStore(STORES.WALLETS, {
+            keyPath: 'id',
+          })
           walletStore.createIndex('profile_id', 'profile_id', { unique: false })
-          walletStore.createIndex('address_chain', ['address', 'chain'], { unique: false })
+          walletStore.createIndex('address_chain', ['address', 'chain'], {
+            unique: false,
+          })
         }
 
         // Profile transactions store (links transactions to wallets/profiles)
         if (!db.objectStoreNames.contains(STORES.PROFILE_TRANSACTIONS)) {
-          const txStore = db.createObjectStore(STORES.PROFILE_TRANSACTIONS, { keyPath: 'id' })
+          const txStore = db.createObjectStore(STORES.PROFILE_TRANSACTIONS, {
+            keyPath: 'id',
+          })
           txStore.createIndex('wallet_id', 'wallet_id', { unique: false })
           txStore.createIndex('hash', 'hash', { unique: false })
         }
@@ -122,7 +128,10 @@ class IndexedDBPersistenceService implements PersistenceService {
       const request = store.getAll()
       request.onsuccess = () => {
         const profiles = request.result as Profile[]
-        profiles.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        profiles.sort(
+          (a, b) =>
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        )
         resolve(profiles)
       }
       request.onerror = () => reject(request.error)
@@ -183,7 +192,7 @@ class IndexedDBPersistenceService implements PersistenceService {
     // Check if wallet already exists for this profile/address/chain
     const existingWallets = await this.getWallets(wallet.profile_id)
     const existing = existingWallets.find(
-      (w) => w.address === wallet.address && w.chain === wallet.chain
+      w => w.address === wallet.address && w.chain === wallet.chain
     )
 
     if (existing) {
@@ -231,7 +240,10 @@ class IndexedDBPersistenceService implements PersistenceService {
       const request = index.getAll(profileId)
       request.onsuccess = () => {
         const wallets = request.result as Wallet[]
-        wallets.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        wallets.sort(
+          (a, b) =>
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        )
         resolve(wallets)
       }
       request.onerror = () => reject(request.error)
@@ -268,7 +280,10 @@ class IndexedDBPersistenceService implements PersistenceService {
   // Transaction Operations
   // ============================================================================
 
-  async saveTransactions(walletId: string, transactions: TransactionInput[]): Promise<number> {
+  async saveTransactions(
+    walletId: string,
+    transactions: TransactionInput[]
+  ): Promise<number> {
     const db = await this.ensureDB()
     const now = getNow()
     let savedCount = 0
@@ -348,7 +363,9 @@ class IndexedDBPersistenceService implements PersistenceService {
     const allTransactions: StoredTransaction[] = []
 
     for (const wallet of wallets) {
-      const transactions = await this.getTransactions(wallet.id, { limit: 10000 })
+      const transactions = await this.getTransactions(wallet.id, {
+        limit: 10000,
+      })
       allTransactions.push(...transactions)
     }
 
@@ -373,7 +390,7 @@ class IndexedDBPersistenceService implements PersistenceService {
       const request = index.openCursor(walletId)
       let deletedCount = 0
 
-      request.onsuccess = (event) => {
+      request.onsuccess = event => {
         const cursor = (event.target as IDBRequest).result
         if (cursor) {
           cursor.delete()
@@ -398,7 +415,9 @@ class IndexedDBPersistenceService implements PersistenceService {
       const store = tx.objectStore(STORES.SETTINGS)
       const request = store.get(key)
       request.onsuccess = () => {
-        const result = request.result as { key: string; value: string } | undefined
+        const result = request.result as
+          | { key: string; value: string }
+          | undefined
         resolve(result?.value ?? null)
       }
       request.onerror = () => reject(request.error)
@@ -435,7 +454,7 @@ class IndexedDBPersistenceService implements PersistenceService {
       const request = store.getAll()
       request.onsuccess = () => {
         const results = request.result as Array<{ key: string; value: string }>
-        resolve(results.map((r) => [r.key, r.value]))
+        resolve(results.map(r => [r.key, r.value]))
       }
       request.onerror = () => reject(request.error)
     })

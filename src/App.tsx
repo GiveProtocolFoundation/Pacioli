@@ -33,7 +33,9 @@ const LoadingFallback: React.FC = () => (
 )
 
 // Composed providers to reduce JSX nesting depth
-const AppProviders: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+const AppProviders: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => (
   <ProfileProvider>
     <TokenProvider>
       <WalletAliasProvider>
