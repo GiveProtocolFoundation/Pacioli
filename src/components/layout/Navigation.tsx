@@ -18,6 +18,7 @@ import {
   MessageCircle,
   Moon,
   Sun,
+  Building2,
 } from 'lucide-react'
 import PacioliWhiteLogo from '../../assets/pacioli_logo_white.svg'
 import PacioliBlackLogo from '../../assets/Pacioli_logo_black.svg'
@@ -69,6 +70,7 @@ const Navigation: React.FC<NavigationProps> = ({
       ],
     },
     { name: 'Wallets', href: '/wallets', icon: Wallet },
+    { name: 'Entities', href: '/entities', icon: Building2 },
     {
       name: 'Reports',
       href: '/reports',
@@ -105,6 +107,7 @@ const Navigation: React.FC<NavigationProps> = ({
       badge: pendingCount > 0 ? pendingCount : undefined,
     },
     { name: 'Wallets', href: '/wallets', icon: Wallet },
+    { name: 'Entities', href: '/entities', icon: Building2 },
     { name: 'Tax Reports', href: '/reports', icon: FileText },
     {
       name: 'Settings',

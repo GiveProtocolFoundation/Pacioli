@@ -32,6 +32,10 @@ export interface TransactionFormData {
   transactionSubcategory?: string
   transactionTypeCode?: string
 
+  // Entity/Counterparty (vendor, customer, etc.)
+  entityId?: string
+  entityName?: string
+
   // Additional information
   memo?: string
   attachments?: File[]

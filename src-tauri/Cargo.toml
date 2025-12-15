@@ -56,3 +56,9 @@ csv = "1.3"
 # Encryption dependencies
 aes-gcm = "0.10"
 
+# Authentication dependencies
+argon2 = "0.5"              # Password hashing (Argon2id)
+jsonwebtoken = "9"          # JWT creation and validation
+rand = "0.8"                # Secure random generation
+base64 = "0.22"             # Token encoding
+

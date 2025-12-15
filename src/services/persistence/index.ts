@@ -20,6 +20,18 @@ export type {
   StoredTransaction,
   TransactionInput,
   PaginationOptions,
+  // Entity types
+  Entity,
+  EntityInput,
+  EntityUpdate,
+  EntityType,
+  EntityAddress,
+  EntityAddressInput,
+  EntityFilter,
+  KnownAddress,
+  AddressMatch,
+  PostalAddress,
+  TaxDocumentationStatus,
 } from './types'
 
 /**

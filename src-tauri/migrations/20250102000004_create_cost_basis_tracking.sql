@@ -109,15 +109,13 @@ BEGIN
     WHERE id = NEW.lot_id;
 END;
 
--- Trigger to calculate holding period
+-- Trigger to calculate holding period (runs after insert to update the record)
 CREATE TRIGGER IF NOT EXISTS calculate_holding_period
-BEFORE INSERT ON lot_disposals
-FOR EACH ROW
+AFTER INSERT ON lot_disposals
 BEGIN
-    SELECT
-        julianday(NEW.disposal_date) - julianday(tl.acquired_date) AS days,
-        CASE WHEN (julianday(NEW.disposal_date) - julianday(tl.acquired_date)) >= 365 THEN 1 ELSE 0 END AS is_long
-    INTO NEW.holding_period_days, NEW.is_long_term
+    UPDATE lot_disposals
+    SET holding_period_days = CAST(julianday(NEW.disposal_date) - julianday(tl.acquired_date) AS INTEGER),
+        is_long_term = CASE WHEN (julianday(NEW.disposal_date) - julianday(tl.acquired_date)) >= 365 THEN 1 ELSE 0 END
     FROM transaction_lots tl
-    WHERE tl.id = NEW.lot_id;
+    WHERE lot_disposals.id = NEW.id AND tl.id = NEW.lot_id;
 END;

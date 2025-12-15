@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react'
+import React, { useState, useCallback, useEffect, useMemo } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
   Save,
@@ -8,11 +8,15 @@ import {
   FileText,
   Tag,
   Wallet as WalletIcon,
+  Users,
+  Search,
+  Plus,
 } from 'lucide-react'
 import { useTransactions } from '../../contexts/TransactionContext'
 import { useCurrency } from '../../contexts/CurrencyContext'
 import { useTokens } from '../../contexts/TokenContext'
 import { useWalletAliases } from '../../contexts/WalletAliasContext'
+import { useEntity } from '../../contexts/EntityContext'
 import { TransactionFormData } from '../../types/transaction'
 import { Token, Chain } from '../../types/digitalAssets'
 import { getDigitalAssetTypeInfo } from '../../types/digitalAssets'
@@ -34,6 +38,7 @@ const TransactionForm: React.FC = () => {
     useTransactions()
   const { settings: currencySettings } = useCurrency()
   const { getToken, getChain } = useTokens()
+  const { entities } = useEntity()
 
   const isEditMode = Boolean(id)
   const existingTransaction = id ? getTransaction(id) : undefined
@@ -77,6 +82,8 @@ const TransactionForm: React.FC = () => {
     digitalAssetType: existingTransaction?.digitalAssetType || '',
     memo: existingTransaction?.memo || '',
     crypto: existingTransaction?.crypto,
+    entityId: existingTransaction?.entityId || '',
+    entityName: existingTransaction?.entityName || '',
   })
 
   const [errors, setErrors] = useState<
@@ -113,6 +120,33 @@ const TransactionForm: React.FC = () => {
       displayName: formatWalletDisplay(acc.address, acc.name),
       walletType: wallet.type,
     }))
+  )
+
+  // Entity selector state
+  const [entitySearchQuery, setEntitySearchQuery] = useState('')
+  const [showEntityDropdown, setShowEntityDropdown] = useState(false)
+
+  // Filter entities based on search query
+  const filteredEntities = useMemo(() => {
+    if (!entitySearchQuery.trim()) {
+      return entities.filter(e => e.is_active).slice(0, 10)
+    }
+    const query = entitySearchQuery.toLowerCase()
+    return entities
+      .filter(
+        e =>
+          e.is_active &&
+          (e.name.toLowerCase().includes(query) ||
+            e.display_name?.toLowerCase().includes(query) ||
+            e.category?.toLowerCase().includes(query))
+      )
+      .slice(0, 10)
+  }, [entities, entitySearchQuery])
+
+  // Get selected entity
+  const selectedEntity = useMemo(
+    () => entities.find(e => e.id === formData.entityId),
+    [entities, formData.entityId]
   )
 
   const selectedToken = formData.tokenId
@@ -260,6 +294,40 @@ const TransactionForm: React.FC = () => {
     },
     [handleInputChange]
   )
+
+  // Entity handlers
+  const handleEntitySearchChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setEntitySearchQuery(e.target.value)
+      setShowEntityDropdown(true)
+    },
+    []
+  )
+
+  const handleEntitySelect = useCallback(
+    (entityId: string, entityName: string) => {
+      handleInputChange('entityId', entityId)
+      handleInputChange('entityName', entityName)
+      setEntitySearchQuery('')
+      setShowEntityDropdown(false)
+    },
+    [handleInputChange]
+  )
+
+  const handleClearEntity = useCallback(() => {
+    handleInputChange('entityId', '')
+    handleInputChange('entityName', '')
+    setEntitySearchQuery('')
+  }, [handleInputChange])
+
+  const handleEntityInputFocus = useCallback(() => {
+    setShowEntityDropdown(true)
+  }, [])
+
+  const handleEntityInputBlur = useCallback(() => {
+    // Delay to allow click on dropdown items
+    setTimeout(() => setShowEntityDropdown(false), 200)
+  }, [])
 
   const validateForm = useCallback((): boolean => {
     const newErrors: Partial<Record<keyof TransactionFormData, string>> = {}
@@ -431,6 +499,102 @@ const TransactionForm: React.FC = () => {
                 <p className="mt-1 text-sm text-red-600">
                   {errors.description}
                 </p>
+              )}
+            </div>
+
+            {/* Entity/Counterparty Selector */}
+            <div>
+              <label
+                htmlFor="txn-entity"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              >
+                <div className="flex items-center">
+                  <Users className="w-4 h-4 mr-2" />
+                  Counterparty (Optional)
+                </div>
+              </label>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                Link this transaction to a vendor, customer, or other entity
+              </p>
+
+              {selectedEntity ? (
+                <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                  <div className="flex-1">
+                    <div className="font-medium text-gray-900 dark:text-white">
+                      {selectedEntity.display_name || selectedEntity.name}
+                    </div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                      {selectedEntity.entity_type.charAt(0).toUpperCase() +
+                        selectedEntity.entity_type.slice(1)}
+                      {selectedEntity.category && ` · ${selectedEntity.category}`}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleClearEntity}
+                    className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                <div className="relative">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <input
+                      id="txn-entity"
+                      type="text"
+                      value={entitySearchQuery}
+                      onChange={handleEntitySearchChange}
+                      onFocus={handleEntityInputFocus}
+                      onBlur={handleEntityInputBlur}
+                      placeholder="Search entities by name..."
+                      className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  {showEntityDropdown && (
+                    <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                      {filteredEntities.length > 0 ? (
+                        filteredEntities.map(entity => (
+                          <button
+                            key={entity.id}
+                            type="button"
+                            onClick={() =>
+                              handleEntitySelect(
+                                entity.id,
+                                entity.display_name || entity.name
+                              )
+                            }
+                            className="w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-between"
+                          >
+                            <div>
+                              <div className="font-medium text-gray-900 dark:text-white">
+                                {entity.display_name || entity.name}
+                              </div>
+                              <div className="text-xs text-gray-500 dark:text-gray-400">
+                                {entity.entity_type.charAt(0).toUpperCase() +
+                                  entity.entity_type.slice(1)}
+                                {entity.category && ` · ${entity.category}`}
+                              </div>
+                            </div>
+                          </button>
+                        ))
+                      ) : (
+                        <div className="px-4 py-3 text-center text-gray-500 dark:text-gray-400">
+                          <p className="text-sm">No entities found</p>
+                          <a
+                            href="/entities"
+                            className="text-xs text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center gap-1 mt-1"
+                          >
+                            <Plus className="w-3 h-3" />
+                            Create new entity
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               )}
             </div>
 

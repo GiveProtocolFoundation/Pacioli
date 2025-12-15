@@ -47,7 +47,18 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     try {
       setIsLoading(true)
       setError(null)
-      const loadedProfiles = await persistence.getProfiles()
+      let loadedProfiles = await persistence.getProfiles()
+
+      // Auto-create default profile if none exists
+      if (loadedProfiles.length === 0) {
+        try {
+          const defaultProfile = await persistence.createProfile('Default Profile')
+          loadedProfiles = [defaultProfile]
+        } catch (createErr) {
+          console.error('[ProfileContext] Failed to create default profile:', createErr)
+        }
+      }
+
       setProfiles(loadedProfiles)
 
       // Restore current profile from settings

@@ -1,4 +1,6 @@
 mod address;
+pub mod auth_helpers;
+pub mod auth_state;
 pub mod currency;
 pub mod currency_service;
 mod encryption;

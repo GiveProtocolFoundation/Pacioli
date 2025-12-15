@@ -6,6 +6,7 @@ mod indexer;
 mod sync;
 
 use api::persistence::DatabaseState;
+use core::auth_state::AuthState;
 use evm_indexer::EVMIndexer;
 use tauri::{Manager, State};
 use tokio::sync::Mutex;
@@ -182,6 +183,9 @@ pub fn run() {
 
             app.manage(db_state);
 
+            // Initialize authentication state
+            app.manage(AuthState::new());
+
             Ok(())
         })
         .manage(EVMIndexerState::new(EVMIndexer::new()))
@@ -213,7 +217,42 @@ pub fn run() {
             api::persistence::get_setting,
             api::persistence::set_setting,
             api::persistence::delete_setting,
-            api::persistence::get_all_settings
+            api::persistence::get_all_settings,
+            // Entity commands
+            api::entities::create_entity,
+            api::entities::get_entities,
+            api::entities::get_entity_by_id,
+            api::entities::update_entity,
+            api::entities::delete_entity,
+            api::entities::add_entity_address,
+            api::entities::get_entity_addresses,
+            api::entities::delete_entity_address,
+            api::entities::lookup_address,
+            api::entities::batch_lookup_addresses,
+            api::entities::get_known_addresses,
+            api::entities::create_entity_from_known,
+            api::entities::search_entities,
+            api::entities::find_entity_by_address,
+            // Authentication commands
+            api::auth::register,
+            api::auth::login,
+            api::auth::logout,
+            api::auth::refresh_token,
+            api::auth::verify_token,
+            api::auth::get_current_user,
+            api::auth::update_user,
+            api::auth::change_password,
+            api::auth::get_user_sessions,
+            api::auth::revoke_session,
+            api::auth::revoke_all_sessions,
+            api::auth::get_user_profiles,
+            api::auth::get_profile_users,
+            api::auth::update_user_role,
+            api::auth::remove_user_from_profile,
+            api::auth::create_invitation,
+            api::auth::get_profile_invitations,
+            api::auth::accept_invitation,
+            api::auth::revoke_invitation
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

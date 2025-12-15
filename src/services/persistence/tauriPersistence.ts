@@ -12,6 +12,14 @@ import type {
   StoredTransaction,
   TransactionInput,
   PaginationOptions,
+  Entity,
+  EntityInput,
+  EntityUpdate,
+  EntityFilter,
+  EntityAddress,
+  EntityAddressInput,
+  AddressMatch,
+  KnownAddress,
 } from './types'
 
 /**
@@ -102,5 +110,86 @@ export const tauriPersistence: PersistenceService = {
 
   getAllSettings: (): Promise<Array<[string, string]>> => {
     return invoke<Array<[string, string]>>('get_all_settings')
+  },
+
+  // Entity operations
+  createEntity: (entity: EntityInput): Promise<Entity> => {
+    return invoke<Entity>('create_entity', { entity })
+  },
+
+  getEntities: (profileId: string, filter?: EntityFilter): Promise<Entity[]> => {
+    return invoke<Entity[]>('get_entities', {
+      profileId,
+      entityType: filter?.entity_type ?? null,
+      isActive: filter?.is_active ?? null,
+    })
+  },
+
+  getEntityById: (id: string): Promise<Entity | null> => {
+    return invoke<Entity | null>('get_entity_by_id', { id })
+  },
+
+  updateEntity: (id: string, update: EntityUpdate): Promise<Entity> => {
+    return invoke<Entity>('update_entity', { id, update })
+  },
+
+  deleteEntity: (id: string): Promise<void> => {
+    return invoke('delete_entity', { id })
+  },
+
+  searchEntities: (profileId: string, query: string, limit?: number): Promise<Entity[]> => {
+    return invoke<Entity[]>('search_entities', { profileId, query, limit: limit ?? null })
+  },
+
+  findEntityByAddress: (
+    profileId: string,
+    address: string,
+    chain?: string
+  ): Promise<Entity | null> => {
+    return invoke<Entity | null>('find_entity_by_address', {
+      profileId,
+      address,
+      chain: chain ?? null,
+    })
+  },
+
+  // Entity address operations
+  addEntityAddress: (addressInput: EntityAddressInput): Promise<EntityAddress> => {
+    return invoke<EntityAddress>('add_entity_address', { addressInput })
+  },
+
+  getEntityAddresses: (entityId: string): Promise<EntityAddress[]> => {
+    return invoke<EntityAddress[]>('get_entity_addresses', { entityId })
+  },
+
+  deleteEntityAddress: (id: string): Promise<void> => {
+    return invoke('delete_entity_address', { id })
+  },
+
+  // Address detection operations
+  lookupAddress: (
+    profileId: string,
+    address: string,
+    chain: string
+  ): Promise<AddressMatch | null> => {
+    return invoke<AddressMatch | null>('lookup_address', { profileId, address, chain })
+  },
+
+  batchLookupAddresses: (
+    profileId: string,
+    addresses: Array<[string, string]>
+  ): Promise<AddressMatch[]> => {
+    return invoke<AddressMatch[]>('batch_lookup_addresses', { profileId, addresses })
+  },
+
+  getKnownAddresses: (chain?: string, entityType?: string): Promise<KnownAddress[]> => {
+    return invoke<KnownAddress[]>('get_known_addresses', {
+      chain: chain ?? null,
+      entityType: entityType ?? null,
+    })
+  },
+
+  createEntityFromKnown: (profileId: string, address: string, chain: string): Promise<Entity> => {
+    return invoke<Entity>('create_entity_from_known', { profileId, address, chain })
   },
 }

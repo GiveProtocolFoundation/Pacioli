@@ -5,6 +5,8 @@ import { TransactionProvider } from './contexts/TransactionContext'
 import { TokenProvider } from './contexts/TokenContext'
 import { WalletAliasProvider } from './contexts/WalletAliasContext'
 import { ProfileProvider } from './contexts/ProfileContext'
+import { EntityProvider } from './contexts/EntityContext'
+import { ProtectedRoute } from './components/auth'
 
 // Lazy load route components for code splitting
 const Dashboard = React.lazy(() => import('./app/dashboard/Dashboard'))
@@ -21,6 +23,11 @@ const Support = React.lazy(() => import('./app/support/Support'))
 const Profile = React.lazy(() => import('./app/profile/Profile'))
 const Docs = React.lazy(() => import('./app/docs/Docs'))
 const WalletManager = React.lazy(() => import('./app/wallets/WalletManager'))
+const Entities = React.lazy(() => import('./app/entities/Entities'))
+
+// Auth pages
+const Login = React.lazy(() => import('./app/auth/Login'))
+const Register = React.lazy(() => import('./app/auth/Register'))
 
 // Loading fallback component
 const LoadingFallback: React.FC = () => (
@@ -37,13 +44,15 @@ const AppProviders: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => (
   <ProfileProvider>
-    <TokenProvider>
-      <WalletAliasProvider>
-        <TransactionProvider userAccountType="organization">
-          {children}
-        </TransactionProvider>
-      </WalletAliasProvider>
-    </TokenProvider>
+    <EntityProvider>
+      <TokenProvider>
+        <WalletAliasProvider>
+          <TransactionProvider userAccountType="organization">
+            {children}
+          </TransactionProvider>
+        </WalletAliasProvider>
+      </TokenProvider>
+    </EntityProvider>
   </ProfileProvider>
 )
 
@@ -58,6 +67,7 @@ const MainRoutes: React.FC = () => (
       <Route path="/transactions/edit/:id" element={<TransactionForm />} />
       <Route path="/wallets" element={<Balances />} />
       <Route path="/wallet-manager" element={<WalletManager />} />
+      <Route path="/entities" element={<Entities />} />
       <Route path="/reports" element={<Reports />} />
       <Route path="/reports/financial" element={<Reports />} />
       <Route path="/reports/tax" element={<Reports />} />
@@ -81,8 +91,20 @@ const App: React.FC = () => (
     <AppProviders>
       <Suspense fallback={<LoadingFallback />}>
         <Routes>
+          {/* Public auth routes */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
           <Route path="/onboarding" element={<Onboarding />} />
-          <Route path="/*" element={<MainRoutes />} />
+
+          {/* Protected routes - require authentication */}
+          <Route
+            path="/*"
+            element={
+              <ProtectedRoute>
+                <MainRoutes />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </Suspense>
     </AppProviders>

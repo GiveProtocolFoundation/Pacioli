@@ -159,6 +159,11 @@ export type {
 
 export * from './errors'
 
+// =============================================================================
+// AUTHENTICATION TYPES
+// =============================================================================
+export * from './auth'
+
 // Export crypto accounting types explicitly to avoid CostBasisMethod conflict
 export type {
   CostBasisMethod as CryptoCostBasisMethod,
