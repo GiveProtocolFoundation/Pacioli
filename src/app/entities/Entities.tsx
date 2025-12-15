@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useCallback } from 'react'
 import {
   Plus,
   Search,
@@ -11,6 +11,8 @@ import {
   ExternalLink,
   Filter,
   ChevronDown,
+  AlertTriangle,
+  X,
 } from 'lucide-react'
 import { useEntity } from '../../contexts/EntityContext'
 import { useProfile } from '../../contexts/ProfileContext'
@@ -42,6 +44,7 @@ const Entities: React.FC = () => {
   const [editingEntity, setEditingEntity] = useState<Entity | null>(null)
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
 
   // Filter and search entities
   const filteredEntities = useMemo(() => {
@@ -67,23 +70,32 @@ const Entities: React.FC = () => {
     })
   }, [entities, searchQuery, filterType, showInactive])
 
-  const handleEdit = (entity: Entity) => {
+  const handleEdit = useCallback((entity: Entity) => {
     setEditingEntity(entity)
     setIsFormOpen(true)
     setMenuOpenId(null)
-  }
+  }, [])
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this entity?')) return
+  const handleDeleteClick = useCallback((id: string) => {
+    setConfirmDeleteId(id)
+    setMenuOpenId(null)
+  }, [])
+
+  const handleDeleteConfirm = useCallback(async () => {
+    if (!confirmDeleteId) return
 
     try {
-      setDeletingId(id)
-      await deleteEntity(id)
+      setDeletingId(confirmDeleteId)
+      await deleteEntity(confirmDeleteId)
     } finally {
       setDeletingId(null)
-      setMenuOpenId(null)
+      setConfirmDeleteId(null)
     }
-  }
+  }, [confirmDeleteId, deleteEntity])
+
+  const handleDeleteCancel = useCallback(() => {
+    setConfirmDeleteId(null)
+  }, [])
 
   const handleFormClose = () => {
     setIsFormOpen(false)
@@ -308,7 +320,7 @@ const Entities: React.FC = () => {
                               Edit
                             </button>
                             <button
-                              onClick={() => handleDelete(entity.id)}
+                              onClick={() => handleDeleteClick(entity.id)}
                               disabled={deletingId === entity.id}
                               className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50"
                             >
@@ -341,6 +353,55 @@ const Entities: React.FC = () => {
           onClose={handleFormClose}
           onSuccess={handleFormSuccess}
         />
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {confirmDeleteId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={handleDeleteCancel}
+          />
+          <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
+            <button
+              onClick={handleDeleteCancel}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <div className="flex items-center gap-4 mb-4">
+              <div className="flex-shrink-0 w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-400" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  Delete Entity
+                </h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  This action cannot be undone.
+                </p>
+              </div>
+            </div>
+            <p className="text-gray-600 dark:text-gray-300 mb-6">
+              Are you sure you want to delete this entity? All associated data will be permanently removed.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={handleDeleteCancel}
+                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteConfirm}
+                disabled={deletingId !== null}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors"
+              >
+                {deletingId ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

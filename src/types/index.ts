@@ -149,10 +149,10 @@ export type {
 export * from './currency'
 
 // Export user types with AccountType renamed to avoid conflict with database AccountType
+// Note: UserRole is exported via ./auth to avoid duplicate export
 export type {
   AccountType as UserAccountType,
   Jurisdiction,
-  UserRole,
   User,
   Organization
 } from './user'
@@ -162,6 +162,7 @@ export * from './errors'
 // =============================================================================
 // AUTHENTICATION TYPES
 // =============================================================================
+// Note: This also exports UserRole (re-exported from ./user)
 export * from './auth'
 
 // Export crypto accounting types explicitly to avoid CostBasisMethod conflict
