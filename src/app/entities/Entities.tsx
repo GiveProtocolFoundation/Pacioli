@@ -33,41 +33,18 @@ const entityTypeIcons: Record<EntityType, React.ReactNode> = {
   other: <Building2 className="w-4 h-4" />,
 }
 
-interface DeleteConfirmModalProps {
-  isDeleting: boolean
-  onCancel: () => void
-  onConfirm: () => void
-}
-
-const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
-  isDeleting,
-  onCancel,
-  onConfirm,
-}) => {
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault()
-        onCancel()
-      }
-    },
-    [onCancel]
-  )
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div
-        role="button"
-        tabIndex={0}
-        aria-label="Close modal"
-        className="absolute inset-0 bg-black/50"
-        onClick={onCancel}
-        onKeyDown={handleKeyDown}
-      />
-      <ModalContent isDeleting={isDeleting} onCancel={onCancel} onConfirm={onConfirm} />
+/** Header section for the delete confirmation modal with icon and title */
+const ModalHeader: React.FC = () => (
+  <div className="flex items-center gap-4 mb-4">
+    <div className="flex-shrink-0 w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+      <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-400" />
     </div>
-  )
-}
+    <div>
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Delete Entity</h3>
+      <p className="text-sm text-gray-500 dark:text-gray-400">This action cannot be undone.</p>
+    </div>
+  </div>
+)
 
 interface ModalContentProps {
   isDeleting: boolean
@@ -75,6 +52,7 @@ interface ModalContentProps {
   onConfirm: () => void
 }
 
+/** Content panel for the delete confirmation modal with actions */
 const ModalContent: React.FC<ModalContentProps> = ({ isDeleting, onCancel, onConfirm }) => (
   <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
     <button
@@ -105,17 +83,42 @@ const ModalContent: React.FC<ModalContentProps> = ({ isDeleting, onCancel, onCon
   </div>
 )
 
-const ModalHeader: React.FC = () => (
-  <div className="flex items-center gap-4 mb-4">
-    <div className="flex-shrink-0 w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-      <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-400" />
+interface DeleteConfirmModalProps {
+  isDeleting: boolean
+  onCancel: () => void
+  onConfirm: () => void
+}
+
+/** Modal dialog for confirming entity deletion with backdrop overlay */
+const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
+  isDeleting,
+  onCancel,
+  onConfirm,
+}) => {
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault()
+        onCancel()
+      }
+    },
+    [onCancel]
+  )
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div
+        role="button"
+        tabIndex={0}
+        aria-label="Close modal"
+        className="absolute inset-0 bg-black/50"
+        onClick={onCancel}
+        onKeyDown={handleKeyDown}
+      />
+      <ModalContent isDeleting={isDeleting} onCancel={onCancel} onConfirm={onConfirm} />
     </div>
-    <div>
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Delete Entity</h3>
-      <p className="text-sm text-gray-500 dark:text-gray-400">This action cannot be undone.</p>
-    </div>
-  </div>
-)
+  )
+}
 
 const Entities: React.FC = () => {
   const { currentProfile } = useProfile()
