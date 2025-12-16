@@ -10,6 +10,107 @@ import { UserRole } from './user'
 export type { UserRole }
 
 // =============================================================================
+// WALLET AUTH TYPES
+// =============================================================================
+
+/**
+ * Supported wallet types for authentication
+ */
+export type WalletType = 'substrate' | 'evm'
+
+/**
+ * Wallet authentication challenge
+ */
+export interface WalletChallenge {
+  id: string
+  nonce: string
+  message: string
+  expires_at: string
+}
+
+/**
+ * Request to generate a wallet challenge
+ */
+export interface ChallengeRequest {
+  wallet_address: string
+  wallet_type: WalletType
+}
+
+/**
+ * Request to verify a wallet signature
+ */
+export interface VerifySignatureRequest {
+  challenge_id: string
+  signature: string
+  wallet_address: string
+  wallet_name?: string
+  wallet_source?: string
+}
+
+/**
+ * Request to link a wallet to an existing account
+ */
+export interface LinkWalletRequest {
+  access_token: string
+  challenge_id: string
+  signature: string
+  wallet_address: string
+  wallet_type: WalletType
+  chain?: string
+  wallet_name?: string
+  wallet_source?: string
+}
+
+/**
+ * User's linked wallet
+ */
+export interface UserWallet {
+  id: string
+  user_id: string
+  wallet_address: string
+  wallet_type: WalletType
+  chain: string | null
+  wallet_name: string | null
+  wallet_source: string | null
+  is_primary: boolean
+  created_at: string
+  last_used_at: string | null
+}
+
+/**
+ * Supported wallet extensions/providers
+ */
+export type WalletProvider =
+  | 'polkadot-js'
+  | 'subwallet'
+  | 'talisman'
+  | 'nova'
+  | 'metamask'
+  | 'walletconnect'
+
+/**
+ * Wallet extension account
+ */
+export interface WalletAccount {
+  address: string
+  name: string
+  source: WalletProvider
+  type: WalletType
+}
+
+/**
+ * Wallet extension info
+ */
+export interface WalletExtensionInfo {
+  name: string
+  provider: WalletProvider
+  type: WalletType
+  installed: boolean
+  logo: string
+  downloadUrl: string
+}
+
+// =============================================================================
 // USER TYPES
 // =============================================================================
 
@@ -389,6 +490,14 @@ export type AuthErrorCode =
   | 'INVITATION_INVALID'
   | 'NETWORK_ERROR'
   | 'UNKNOWN_ERROR'
+  // Wallet auth errors
+  | 'WALLET_NOT_FOUND'
+  | 'WALLET_ALREADY_LINKED'
+  | 'INVALID_SIGNATURE'
+  | 'CHALLENGE_EXPIRED'
+  | 'CHALLENGE_USED'
+  | 'WALLET_EXTENSION_NOT_FOUND'
+  | 'USER_REJECTED_SIGNATURE'
 
 /**
  * Authentication error
@@ -441,6 +550,23 @@ export function parseAuthError(error: unknown): AuthError {
     }
     if (error.includes('Permission denied') || error.includes('not authorized')) {
       return createAuthError('INSUFFICIENT_PERMISSIONS', 'You do not have permission to perform this action')
+    }
+
+    // Wallet auth errors
+    if (error.includes('Challenge not found') || error.includes('Challenge') && error.includes('expired')) {
+      return createAuthError('CHALLENGE_EXPIRED', 'Sign-in challenge has expired. Please try again.')
+    }
+    if (error.includes('Challenge has already been used')) {
+      return createAuthError('CHALLENGE_USED', 'This sign-in challenge has already been used.')
+    }
+    if (error.includes('Invalid signature') || error.includes('Signature does not match')) {
+      return createAuthError('INVALID_SIGNATURE', 'Invalid wallet signature. Please try signing again.')
+    }
+    if (error.includes('already linked to another')) {
+      return createAuthError('WALLET_ALREADY_LINKED', 'This wallet is already linked to another account.')
+    }
+    if (error.includes('already linked to your')) {
+      return createAuthError('WALLET_ALREADY_LINKED', 'This wallet is already linked to your account.')
     }
 
     return createAuthError('UNKNOWN_ERROR', error)

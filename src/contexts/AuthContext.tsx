@@ -15,7 +15,7 @@ import {
   type ChangePasswordInput,
   type ProfileWithRole,
 } from '../services/auth'
-import type { Permission, UserRole } from '../types/auth'
+import type { Permission, UserRole, AuthResponse } from '../types/auth'
 import { hasPermission, ROLE_PERMISSIONS, parseAuthError } from '../types/auth'
 
 interface AuthContextType {
@@ -32,6 +32,7 @@ interface AuthContextType {
   register: (input: RegisterInput) => Promise<void>
   logout: () => Promise<void>
   refreshAuth: () => Promise<void>
+  setAuthFromWallet: (response: AuthResponse) => Promise<void>
 
   // User management
   updateUser: (input: UpdateUserInput) => Promise<void>
@@ -223,6 +224,50 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [])
 
+  const setAuthFromWallet = useCallback(async (response: AuthResponse): Promise<void> => {
+    try {
+      setIsLoading(true)
+      setError(null)
+
+      // Store session ID for logout
+      localStorage.setItem(SESSION_ID_KEY, response.user.id)
+
+      // Convert the AuthUser type from wallet auth response
+      // The backend returns User which has display_name, we map it to our AuthUser format
+      const backendUser = response.user as any
+      const user: AuthUser = {
+        id: backendUser.id,
+        email: backendUser.email,
+        name: backendUser.display_name || backendUser.name || 'Wallet User',
+        status: backendUser.status,
+        email_verified: backendUser.email_verified ?? false,
+        two_factor_enabled: backendUser.two_factor_enabled ?? false,
+        failed_login_attempts: 0,
+        locked_until: null,
+        created_at: backendUser.created_at,
+        updated_at: backendUser.updated_at,
+        last_login_at: backendUser.last_login_at || null,
+      }
+
+      setUser(user)
+      setIsAuthenticated(true)
+
+      // Load user's profiles
+      const profiles = await authService.getUserProfiles(response.access_token)
+      setUserProfiles(profiles)
+
+      if (profiles.length > 0) {
+        setCurrentProfileRole(profiles[0].role)
+      }
+    } catch (err) {
+      const authError = parseAuthError(err)
+      setError(authError.message)
+      throw err
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
+
   const logout = useCallback(async (): Promise<void> => {
     try {
       setIsLoading(true)
@@ -318,6 +363,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         register,
         logout,
         refreshAuth,
+        setAuthFromWallet,
         updateUser,
         changePassword,
         hasPermission: hasPermissionCheck,

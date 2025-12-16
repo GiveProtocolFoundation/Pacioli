@@ -252,7 +252,14 @@ pub fn run() {
             api::auth::create_invitation,
             api::auth::get_profile_invitations,
             api::auth::accept_invitation,
-            api::auth::revoke_invitation
+            api::auth::revoke_invitation,
+            // Wallet authentication commands
+            api::wallet_auth::generate_wallet_challenge,
+            api::wallet_auth::verify_wallet_signature,
+            api::wallet_auth::link_wallet_to_account,
+            api::wallet_auth::get_user_wallets,
+            api::wallet_auth::unlink_wallet,
+            api::wallet_auth::cleanup_expired_challenges
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
