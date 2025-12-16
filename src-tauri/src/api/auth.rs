@@ -5,9 +5,9 @@
 
 use crate::api::persistence::DatabaseState;
 use crate::core::auth_helpers::{
-    generate_access_token, generate_invitation_token, generate_password_reset_token,
-    generate_session_id, hash_password, hash_token, validate_email, validate_password_strength,
-    verify_access_token, verify_password, verify_refresh_token,
+    generate_access_token, generate_invitation_token, generate_session_id, hash_password,
+    hash_token, validate_email, validate_password_strength, verify_access_token, verify_password,
+    verify_refresh_token,
 };
 use crate::core::auth_state::AuthState;
 use chrono::{DateTime, Duration, Utc};
@@ -140,6 +140,7 @@ pub struct InvitationInput {
     pub message: Option<String>,
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct InvitationWithProfile {
     pub id: String,

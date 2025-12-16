@@ -9,6 +9,7 @@ use std::sync::RwLock;
 use std::time::{Duration, Instant};
 
 /// Cached session information
+#[allow(dead_code)]
 #[derive(Debug, Clone)]
 pub struct CachedSession {
     pub user_id: String,
@@ -29,6 +30,7 @@ pub struct AuthState {
     session_cache: RwLock<HashMap<String, CachedSession>>,
 
     /// Cache TTL (how long to cache session info)
+    #[allow(dead_code)]
     cache_ttl: Duration,
 }
 
@@ -87,6 +89,7 @@ impl AuthState {
     }
 
     /// Get a cached session if it exists and hasn't expired
+    #[allow(dead_code)]
     pub fn get_cached_session(&self, session_id: &str) -> Option<CachedSession> {
         if let Ok(cache) = self.session_cache.read() {
             if let Some(session) = cache.get(session_id) {
@@ -114,6 +117,7 @@ impl AuthState {
     }
 
     /// Clear expired entries from the cache
+    #[allow(dead_code)]
     pub fn cleanup_expired(&self) {
         if let Ok(mut cache) = self.session_cache.write() {
             cache.retain(|_, session| session.cached_at.elapsed() < self.cache_ttl);

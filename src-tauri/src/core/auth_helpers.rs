@@ -31,6 +31,7 @@ pub struct TokenClaims {
 }
 
 /// Result of successful authentication
+#[allow(dead_code)]
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct AuthTokens {
     pub access_token: String,
@@ -187,11 +188,13 @@ pub fn generate_session_id() -> String {
 }
 
 /// Generate a password reset token (32 bytes)
+#[allow(dead_code)]
 pub fn generate_password_reset_token() -> String {
     generate_secure_token(32)
 }
 
 /// Generate an email verification token (32 bytes)
+#[allow(dead_code)]
 pub fn generate_email_verification_token() -> String {
     generate_secure_token(32)
 }
