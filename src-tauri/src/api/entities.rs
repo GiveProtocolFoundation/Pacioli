@@ -346,8 +346,10 @@ pub async fn update_entity(
         bindings.push(v.clone());
     }
 
-    if updates.is_empty() && update.default_payment_terms.is_none()
-        && update.reportable_payee.is_none() && update.is_active.is_none()
+    if updates.is_empty()
+        && update.default_payment_terms.is_none()
+        && update.reportable_payee.is_none()
+        && update.is_active.is_none()
     {
         // Nothing to update, just return the entity
         return get_entity_by_id(state, id)
@@ -355,10 +357,7 @@ pub async fn update_entity(
             .ok_or_else(|| "Entity not found".to_string());
     }
 
-    let query = format!(
-        "UPDATE entities SET {} WHERE id = ?",
-        updates.join(", ")
-    );
+    let query = format!("UPDATE entities SET {} WHERE id = ?", updates.join(", "));
 
     let mut q = sqlx::query(&query);
     for binding in &bindings {
@@ -392,7 +391,10 @@ pub async fn update_entity(
     }
 
     if !updates.is_empty() {
-        q.bind(&id).execute(&state.pool).await.map_err(|e| e.to_string())?;
+        q.bind(&id)
+            .execute(&state.pool)
+            .await
+            .map_err(|e| e.to_string())?;
     }
 
     get_entity_by_id(state, id)
@@ -597,7 +599,8 @@ pub async fn batch_lookup_addresses(
     let mut matches = Vec::new();
 
     for (address, chain) in addresses {
-        if let Some(m) = lookup_address_internal(&state.pool, &profile_id, &address, &chain).await? {
+        if let Some(m) = lookup_address_internal(&state.pool, &profile_id, &address, &chain).await?
+        {
             matches.push(m);
         }
     }
@@ -674,7 +677,10 @@ pub async fn create_entity_from_known(
         tax_documentation_status: None,
         tax_documentation_date: None,
         tax_compliance: None,
-        notes: Some(format!("Auto-created from known address. Source: {:?}", known.source)),
+        notes: Some(format!(
+            "Auto-created from known address. Source: {:?}",
+            known.source
+        )),
     };
 
     let entity = create_entity_internal(&state.pool, entity_input).await?;
