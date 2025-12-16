@@ -98,7 +98,7 @@ pub struct UserProfileRole {
     pub updated_at: DateTime<Utc>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
 pub struct ProfileWithRole {
     pub id: String,
     pub name: String,
@@ -108,7 +108,7 @@ pub struct ProfileWithRole {
     pub created_at: DateTime<Utc>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
 pub struct UserWithRole {
     pub id: String,
     pub email: String,

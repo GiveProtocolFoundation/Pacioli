@@ -48,7 +48,7 @@ sp-core = { version = "21.0", default-features = false, features = ["std"] }
 subxt = "0.35"
 
 # Database dependencies
-sqlx = { version = "0.8", features = ["runtime-tokio-rustls", "sqlite", "chrono", "uuid", "migrate"] }
+sqlx = { version = "0.8", features = ["runtime-tokio-rustls", "sqlite", "chrono", "uuid", "migrate", "json"] }
 
 # File handling dependencies
 csv = "1.3"
