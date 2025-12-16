@@ -177,7 +177,7 @@ pub async fn register(
 
     // Check if email already exists
     let existing: Option<(String,)> = sqlx::query_as("SELECT id FROM users WHERE email = ?")
-        .bind(&input.email.to_lowercase())
+        .bind(input.email.to_lowercase())
         .fetch_optional(pool)
         .await
         .map_err(|e| format!("Database error: {}", e))?;
@@ -200,7 +200,7 @@ pub async fn register(
         "#,
     )
     .bind(&user_id)
-    .bind(&input.email.to_lowercase())
+    .bind(input.email.to_lowercase())
     .bind(&password_hash)
     .bind(&input.display_name)
     .bind(now)
@@ -932,7 +932,7 @@ pub async fn create_invitation(
         "SELECT id FROM user_profile_roles WHERE profile_id = ? AND user_id IN (SELECT id FROM users WHERE email = ?)",
     )
     .bind(&invitation.profile_id)
-    .bind(&invitation.email.to_lowercase())
+    .bind(invitation.email.to_lowercase())
     .fetch_optional(pool)
     .await
     .map_err(|e| format!("Database error: {}", e))?;
@@ -945,7 +945,7 @@ pub async fn create_invitation(
     let existing_invitation: Option<(String,)> = sqlx::query_as(
         "SELECT id FROM invitations WHERE email = ? AND profile_id = ? AND status = 'pending'",
     )
-    .bind(&invitation.email.to_lowercase())
+    .bind(invitation.email.to_lowercase())
     .bind(&invitation.profile_id)
     .fetch_optional(pool)
     .await
@@ -968,7 +968,7 @@ pub async fn create_invitation(
         "#,
     )
     .bind(&invitation_id)
-    .bind(&invitation.email.to_lowercase())
+    .bind(invitation.email.to_lowercase())
     .bind(&invitation.profile_id)
     .bind(&invitation.role)
     .bind(&invite_token)
@@ -1106,7 +1106,7 @@ pub async fn accept_invitation(
             "#,
         )
         .bind(&new_user_id)
-        .bind(&input.email.to_lowercase())
+        .bind(input.email.to_lowercase())
         .bind(&password_hash)
         .bind(&input.display_name)
         .bind(now)

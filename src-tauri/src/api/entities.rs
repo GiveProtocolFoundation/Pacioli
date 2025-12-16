@@ -148,9 +148,9 @@ pub struct AddressMatch {
 // Entity Commands
 // ============================================================================
 
-#[tauri::command]
-pub async fn create_entity(
-    state: State<'_, DatabaseState>,
+// Internal helper function for entity creation
+async fn create_entity_internal(
+    pool: &sqlx::SqlitePool,
     entity: EntityInput,
 ) -> Result<Entity, String> {
     let id = Uuid::new_v4().to_string();
@@ -197,17 +197,25 @@ pub async fn create_entity(
     .bind(&entity.notes)
     .bind(now)
     .bind(now)
-    .execute(&state.pool)
+    .execute(pool)
     .await
     .map_err(|e| e.to_string())?;
 
     let created = sqlx::query_as::<_, Entity>("SELECT * FROM entities WHERE id = ?")
         .bind(&id)
-        .fetch_one(&state.pool)
+        .fetch_one(pool)
         .await
         .map_err(|e| e.to_string())?;
 
     Ok(created)
+}
+
+#[tauri::command]
+pub async fn create_entity(
+    state: State<'_, DatabaseState>,
+    entity: EntityInput,
+) -> Result<Entity, String> {
+    create_entity_internal(&state.pool, entity).await
 }
 
 #[tauri::command]
@@ -406,9 +414,9 @@ pub async fn delete_entity(state: State<'_, DatabaseState>, id: String) -> Resul
 // Entity Address Commands
 // ============================================================================
 
-#[tauri::command]
-pub async fn add_entity_address(
-    state: State<'_, DatabaseState>,
+// Internal helper function for adding entity address
+async fn add_entity_address_internal(
+    pool: &sqlx::SqlitePool,
     address_input: EntityAddressInput,
 ) -> Result<EntityAddress, String> {
     let id = Uuid::new_v4().to_string();
@@ -445,7 +453,7 @@ pub async fn add_entity_address(
     .bind(&verified_at)
     .bind(&address_input.verification_method)
     .bind(now)
-    .execute(&state.pool)
+    .execute(pool)
     .await
     .map_err(|e| e.to_string())?;
 
@@ -455,11 +463,19 @@ pub async fn add_entity_address(
     .bind(&address_input.entity_id)
     .bind(&address_input.address)
     .bind(&address_input.chain)
-    .fetch_one(&state.pool)
+    .fetch_one(pool)
     .await
     .map_err(|e| e.to_string())?;
 
     Ok(saved)
+}
+
+#[tauri::command]
+pub async fn add_entity_address(
+    state: State<'_, DatabaseState>,
+    address_input: EntityAddressInput,
+) -> Result<EntityAddress, String> {
+    add_entity_address_internal(&state.pool, address_input).await
 }
 
 #[tauri::command]
@@ -496,12 +512,12 @@ pub async fn delete_entity_address(
 // Address Detection & Matching
 // ============================================================================
 
-#[tauri::command]
-pub async fn lookup_address(
-    state: State<'_, DatabaseState>,
-    profile_id: String,
-    address: String,
-    chain: String,
+// Internal helper function for address lookup
+async fn lookup_address_internal(
+    pool: &sqlx::SqlitePool,
+    profile_id: &str,
+    address: &str,
+    chain: &str,
 ) -> Result<Option<AddressMatch>, String> {
     // First, check entity_addresses (user's own entities)
     let entity_match = sqlx::query_as::<_, (String, String, String, Option<String>)>(
@@ -513,17 +529,17 @@ pub async fn lookup_address(
         LIMIT 1
         "#,
     )
-    .bind(&profile_id)
-    .bind(&address)
-    .bind(&chain)
-    .fetch_optional(&state.pool)
+    .bind(profile_id)
+    .bind(address)
+    .bind(chain)
+    .fetch_optional(pool)
     .await
     .map_err(|e| e.to_string())?;
 
     if let Some((entity_id, name, entity_type, category)) = entity_match {
         return Ok(Some(AddressMatch {
-            address: address.clone(),
-            chain: chain.clone(),
+            address: address.to_string(),
+            chain: chain.to_string(),
             match_type: "entity".to_string(),
             entity_id: Some(entity_id),
             entity_name: name,
@@ -537,16 +553,16 @@ pub async fn lookup_address(
     let known_match = sqlx::query_as::<_, KnownAddress>(
         "SELECT * FROM known_addresses WHERE address = ? AND chain = ? AND is_active = 1",
     )
-    .bind(&address)
-    .bind(&chain)
-    .fetch_optional(&state.pool)
+    .bind(address)
+    .bind(chain)
+    .fetch_optional(pool)
     .await
     .map_err(|e| e.to_string())?;
 
     if let Some(known) = known_match {
         return Ok(Some(AddressMatch {
-            address: address.clone(),
-            chain: chain.clone(),
+            address: address.to_string(),
+            chain: chain.to_string(),
             match_type: "known".to_string(),
             entity_id: None,
             entity_name: known.entity_name,
@@ -560,6 +576,16 @@ pub async fn lookup_address(
 }
 
 #[tauri::command]
+pub async fn lookup_address(
+    state: State<'_, DatabaseState>,
+    profile_id: String,
+    address: String,
+    chain: String,
+) -> Result<Option<AddressMatch>, String> {
+    lookup_address_internal(&state.pool, &profile_id, &address, &chain).await
+}
+
+#[tauri::command]
 pub async fn batch_lookup_addresses(
     state: State<'_, DatabaseState>,
     profile_id: String,
@@ -568,7 +594,7 @@ pub async fn batch_lookup_addresses(
     let mut matches = Vec::new();
 
     for (address, chain) in addresses {
-        if let Some(m) = lookup_address(state.clone(), profile_id.clone(), address, chain).await? {
+        if let Some(m) = lookup_address_internal(&state.pool, &profile_id, &address, &chain).await? {
             matches.push(m);
         }
     }
@@ -648,7 +674,7 @@ pub async fn create_entity_from_known(
         notes: Some(format!("Auto-created from known address. Source: {:?}", known.source)),
     };
 
-    let entity = create_entity(state.clone(), entity_input).await?;
+    let entity = create_entity_internal(&state.pool, entity_input).await?;
 
     // Add the address to entity_addresses
     let address_input = EntityAddressInput {
@@ -661,7 +687,7 @@ pub async fn create_entity_from_known(
         verification_method: Some("known_address_database".to_string()),
     };
 
-    add_entity_address(state, address_input).await?;
+    add_entity_address_internal(&state.pool, address_input).await?;
 
     Ok(entity)
 }
