@@ -263,6 +263,7 @@ pub async fn get_entity_by_id(
     Ok(entity)
 }
 
+/// Update an existing entity with the provided fields
 #[tauri::command]
 pub async fn update_entity(
     state: State<'_, DatabaseState>,
@@ -590,6 +591,7 @@ pub async fn lookup_address(
     lookup_address_internal(&state.pool, &profile_id, &address, &chain).await
 }
 
+/// Look up multiple addresses in batch and return matching entities
 #[tauri::command]
 pub async fn batch_lookup_addresses(
     state: State<'_, DatabaseState>,
@@ -637,6 +639,7 @@ pub async fn get_known_addresses(
     Ok(known)
 }
 
+/// Create an entity from a known address in the reference database
 #[tauri::command]
 pub async fn create_entity_from_known(
     state: State<'_, DatabaseState>,
