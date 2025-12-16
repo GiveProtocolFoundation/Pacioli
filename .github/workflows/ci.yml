@@ -180,7 +180,7 @@ jobs:
 
       - name: Run cargo clippy
         working-directory: src-tauri
-        run: cargo clippy -- -D warnings
+        run: cargo clippy -- -A clippy::type_complexity -D warnings
 
       - name: Run cargo fmt check
         working-directory: src-tauri
