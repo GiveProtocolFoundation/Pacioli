@@ -210,6 +210,7 @@ async fn create_entity_internal(
     Ok(created)
 }
 
+/// Create a new entity in the database
 #[tauri::command]
 pub async fn create_entity(
     state: State<'_, DatabaseState>,
@@ -470,6 +471,7 @@ async fn add_entity_address_internal(
     Ok(saved)
 }
 
+/// Add a blockchain address to an entity
 #[tauri::command]
 pub async fn add_entity_address(
     state: State<'_, DatabaseState>,
@@ -575,6 +577,7 @@ async fn lookup_address_internal(
     Ok(None)
 }
 
+/// Look up an address to find matching entities or known addresses
 #[tauri::command]
 pub async fn lookup_address(
     state: State<'_, DatabaseState>,
