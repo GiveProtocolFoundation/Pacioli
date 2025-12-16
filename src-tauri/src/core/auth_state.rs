@@ -8,12 +8,15 @@ use std::collections::HashMap;
 use std::sync::RwLock;
 use std::time::{Duration, Instant};
 
-/// Cached session information
+/// Cached session information for fast validation
 #[allow(dead_code)]
 #[derive(Debug, Clone)]
 pub struct CachedSession {
+    /// The user's unique identifier
     pub user_id: String,
+    /// The user's email address
     pub email: String,
+    /// When this session was cached
     pub cached_at: Instant,
 }
 

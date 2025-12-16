@@ -140,18 +140,29 @@ pub struct InvitationInput {
     pub message: Option<String>,
 }
 
+/// Invitation details with associated profile information
 #[allow(dead_code)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct InvitationWithProfile {
+    /// Unique invitation identifier
     pub id: String,
+    /// Email address of the invited user
     pub email: String,
+    /// Profile the user is invited to join
     pub profile_id: String,
+    /// Display name of the profile
     pub profile_name: String,
+    /// Role assigned to the invited user
     pub role: String,
+    /// Current invitation status
     pub status: String,
+    /// Optional message from the inviter
     pub message: Option<String>,
+    /// Name of the user who sent the invitation
     pub invited_by_name: String,
+    /// When the invitation token expires
     pub token_expires_at: DateTime<Utc>,
+    /// When the invitation was created
     pub created_at: DateTime<Utc>,
 }
 

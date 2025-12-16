@@ -34,8 +34,11 @@ pub struct TokenClaims {
 #[allow(dead_code)]
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct AuthTokens {
+    /// JWT access token for API authentication
     pub access_token: String,
+    /// Refresh token for obtaining new access tokens
     pub refresh_token: String,
+    /// Token expiration time in seconds
     pub expires_in: i64,
 }
 
