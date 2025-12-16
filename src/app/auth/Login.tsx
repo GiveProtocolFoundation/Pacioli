@@ -21,7 +21,11 @@ import {
   getWalletAccounts,
   walletSignIn,
 } from '../../services/auth/walletAuth'
-import type { WalletExtensionInfo, WalletAccount, WalletProvider } from '../../types/auth'
+import type {
+  WalletExtensionInfo,
+  WalletAccount,
+  WalletProvider,
+} from '../../types/auth'
 import PacioliLogo from '../../assets/Pacioli_logo_blue.png'
 
 type AuthTab = 'email' | 'wallet'
@@ -40,8 +44,11 @@ const Login: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false)
 
   // Wallet auth state
-  const [walletExtensions] = useState<WalletExtensionInfo[]>(() => getWalletExtensions())
-  const [selectedWallet, setSelectedWallet] = useState<WalletExtensionInfo | null>(null)
+  const [walletExtensions] = useState<WalletExtensionInfo[]>(() =>
+    getWalletExtensions()
+  )
+  const [selectedWallet, setSelectedWallet] =
+    useState<WalletExtensionInfo | null>(null)
   const [walletAccounts, setWalletAccounts] = useState<WalletAccount[]>([])
   const [loadingWallet, setLoadingWallet] = useState(false)
   const [walletError, setWalletError] = useState<string | null>(null)
@@ -49,22 +56,29 @@ const Login: React.FC = () => {
   const [localError, setLocalError] = useState<string | null>(null)
 
   // Get the redirect path from location state
-  const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/'
+  const from =
+    (location.state as { from?: { pathname: string } })?.from?.pathname || '/'
 
   // ==========================================================================
   // Email Auth Handlers
   // ==========================================================================
 
-  const handleEmailChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setEmail(e.target.value)
-  }, [])
+  const handleEmailChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setEmail(e.target.value)
+    },
+    []
+  )
 
-  const handlePasswordChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setPassword(e.target.value)
-  }, [])
+  const handlePasswordChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setPassword(e.target.value)
+    },
+    []
+  )
 
   const toggleShowPassword = useCallback(() => {
-    setShowPassword((prev) => !prev)
+    setShowPassword(prev => !prev)
   }, [])
 
   const handleEmailSubmit = useCallback(
@@ -96,28 +110,33 @@ const Login: React.FC = () => {
   // Wallet Auth Handlers
   // ==========================================================================
 
-  const handleWalletSelect = useCallback(async (wallet: WalletExtensionInfo) => {
-    setWalletError(null)
-    setSelectedWallet(wallet)
-    setWalletAccounts([])
+  const handleWalletSelect = useCallback(
+    async (wallet: WalletExtensionInfo) => {
+      setWalletError(null)
+      setSelectedWallet(wallet)
+      setWalletAccounts([])
 
-    if (!wallet.installed) {
-      // Open download URL in new tab
-      window.open(wallet.downloadUrl, '_blank')
-      return
-    }
+      if (!wallet.installed) {
+        // Open download URL in new tab
+        window.open(wallet.downloadUrl, '_blank')
+        return
+      }
 
-    setLoadingWallet(true)
-    try {
-      const accounts = await getWalletAccounts(wallet.provider)
-      setWalletAccounts(accounts)
-    } catch (err) {
-      setWalletError(err instanceof Error ? err.message : 'Failed to connect wallet')
-      setSelectedWallet(null)
-    } finally {
-      setLoadingWallet(false)
-    }
-  }, [])
+      setLoadingWallet(true)
+      try {
+        const accounts = await getWalletAccounts(wallet.provider)
+        setWalletAccounts(accounts)
+      } catch (err) {
+        setWalletError(
+          err instanceof Error ? err.message : 'Failed to connect wallet'
+        )
+        setSelectedWallet(null)
+      } finally {
+        setLoadingWallet(false)
+      }
+    },
+    []
+  )
 
   const handleAccountSelect = useCallback(
     async (account: WalletAccount) => {
@@ -134,7 +153,9 @@ const Login: React.FC = () => {
         if (err instanceof Error && err.message.includes('rejected')) {
           setWalletError('Signature request was rejected')
         } else {
-          setWalletError(err instanceof Error ? err.message : 'Authentication failed')
+          setWalletError(
+            err instanceof Error ? err.message : 'Authentication failed'
+          )
         }
       } finally {
         setLoadingWallet(false)
@@ -158,7 +179,10 @@ const Login: React.FC = () => {
   return (
     <div className="flex min-h-screen">
       {/* Left Panel - Branding */}
-      <div className="hidden w-1/2 lg:flex lg:flex-col lg:justify-between lg:p-12" style={{ backgroundColor: '#283747' }}>
+      <div
+        className="hidden w-1/2 lg:flex lg:flex-col lg:justify-between lg:p-12"
+        style={{ backgroundColor: '#283747' }}
+      >
         <div className="flex items-center gap-3">
           <img src={PacioliLogo} alt="Pacioli" className="h-12 w-12" />
           <div>
@@ -170,7 +194,8 @@ const Login: React.FC = () => {
         <div className="space-y-6">
           <blockquote className="border-l-4 border-primary pl-4">
             <p className="text-lg text-slate-300">
-              "Track, manage, and report your crypto assets with professional-grade accounting tools."
+              "Track, manage, and report your crypto assets with
+              professional-grade accounting tools."
             </p>
           </blockquote>
 
@@ -180,7 +205,9 @@ const Login: React.FC = () => {
               <div className="h-10 w-10 rounded-full bg-blue-500/20 ring-2 ring-slate-800" />
               <div className="h-10 w-10 rounded-full bg-green-500/20 ring-2 ring-slate-800" />
             </div>
-            <span className="text-sm">Join thousands of crypto professionals</span>
+            <span className="text-sm">
+              Join thousands of crypto professionals
+            </span>
           </div>
         </div>
 
@@ -195,8 +222,12 @@ const Login: React.FC = () => {
         <div className="w-full max-w-md space-y-8">
           {/* Header */}
           <div className="text-center">
-            <h2 className="text-2xl font-bold" style={{ color: '#1a202c' }}>Welcome back</h2>
-            <p className="mt-2" style={{ color: '#4a5568' }}>Sign in to your account</p>
+            <h2 className="text-2xl font-bold" style={{ color: '#1a202c' }}>
+              Welcome back
+            </h2>
+            <p className="mt-2" style={{ color: '#4a5568' }}>
+              Sign in to your account
+            </p>
           </div>
 
           {/* Auth Tabs */}
@@ -237,7 +268,10 @@ const Login: React.FC = () => {
           {activeTab === 'email' && (
             <form onSubmit={handleEmailSubmit} className="space-y-5">
               <div className="space-y-2">
-                <label htmlFor="email" className="block text-sm font-medium text-foreground">
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium text-foreground"
+                >
                   Email address
                 </label>
                 <input
@@ -254,7 +288,10 @@ const Login: React.FC = () => {
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <label htmlFor="password" className="block text-sm font-medium text-foreground">
+                  <label
+                    htmlFor="password"
+                    className="block text-sm font-medium text-foreground"
+                  >
                     Password
                   </label>
                   <Link
@@ -282,7 +319,11 @@ const Login: React.FC = () => {
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                     tabIndex={-1}
                   >
-                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    {showPassword ? (
+                      <EyeOff className="h-5 w-5" />
+                    ) : (
+                      <Eye className="h-5 w-5" />
+                    )}
                   </button>
                 </div>
               </div>
@@ -324,8 +365,8 @@ const Login: React.FC = () => {
                       </p>
                       <div className="space-y-2">
                         {walletExtensions
-                          .filter((w) => w.type === 'substrate')
-                          .map((wallet) => (
+                          .filter(w => w.type === 'substrate')
+                          .map(wallet => (
                             <WalletButton
                               key={wallet.provider}
                               wallet={wallet}
@@ -343,8 +384,8 @@ const Login: React.FC = () => {
                       </p>
                       <div className="space-y-2">
                         {walletExtensions
-                          .filter((w) => w.type === 'evm')
-                          .map((wallet) => (
+                          .filter(w => w.type === 'evm')
+                          .map(wallet => (
                             <WalletButton
                               key={wallet.provider}
                               wallet={wallet}
@@ -378,7 +419,7 @@ const Login: React.FC = () => {
                   </p>
 
                   <div className="space-y-2">
-                    {walletAccounts.map((account) => (
+                    {walletAccounts.map(account => (
                       <button
                         key={account.address}
                         onClick={() => handleAccountSelect(account)}
@@ -386,7 +427,9 @@ const Login: React.FC = () => {
                         className="flex w-full items-center justify-between rounded-lg border border-input bg-background p-4 text-left transition-colors hover:border-primary hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
                       >
                         <div className="min-w-0 flex-1">
-                          <p className="font-medium text-foreground">{account.name}</p>
+                          <p className="font-medium text-foreground">
+                            {account.name}
+                          </p>
                           <p className="truncate text-sm text-muted-foreground">
                             {formatAddress(account.address)}
                           </p>
@@ -406,7 +449,9 @@ const Login: React.FC = () => {
               {loadingWallet && !walletAccounts.length && (
                 <div className="flex flex-col items-center justify-center py-8">
                   <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-                  <p className="mt-4 text-sm text-muted-foreground">Connecting to wallet...</p>
+                  <p className="mt-4 text-sm text-muted-foreground">
+                    Connecting to wallet...
+                  </p>
                 </div>
               )}
             </div>
@@ -415,7 +460,10 @@ const Login: React.FC = () => {
           {/* Register Link */}
           <p className="text-center text-sm text-slate-600">
             Don&apos;t have an account?{' '}
-            <Link to="/register" className="font-medium text-blue-600 hover:underline">
+            <Link
+              to="/register"
+              className="font-medium text-blue-600 hover:underline"
+            >
               Create one
             </Link>
           </p>
@@ -435,7 +483,11 @@ interface WalletButtonProps {
   loading?: boolean
 }
 
-const WalletButton: React.FC<WalletButtonProps> = ({ wallet, onClick, loading }) => {
+const WalletButton: React.FC<WalletButtonProps> = ({
+  wallet,
+  onClick,
+  loading,
+}) => {
   return (
     <button
       onClick={onClick}

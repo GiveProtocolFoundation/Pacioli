@@ -176,18 +176,19 @@ pub async fn verify_wallet_signature(
     let pool = &db.pool;
 
     // Fetch and validate challenge
-    let challenge: Option<(String, String, String, String, Option<DateTime<Utc>>)> = sqlx::query_as(
-        r#"
+    let challenge: Option<(String, String, String, String, Option<DateTime<Utc>>)> =
+        sqlx::query_as(
+            r#"
         SELECT nonce, wallet_address, wallet_type, message, used_at
         FROM auth_challenges
         WHERE id = ? AND expires_at > ?
         "#,
-    )
-    .bind(&request.challenge_id)
-    .bind(Utc::now())
-    .fetch_optional(pool)
-    .await
-    .map_err(|e| format!("Database error: {}", e))?;
+        )
+        .bind(&request.challenge_id)
+        .bind(Utc::now())
+        .fetch_optional(pool)
+        .await
+        .map_err(|e| format!("Database error: {}", e))?;
 
     let (nonce, stored_address, wallet_type_str, message, used_at) =
         challenge.ok_or("Challenge not found or expired")?;
@@ -205,7 +206,12 @@ pub async fn verify_wallet_signature(
     let wallet_type: WalletType = wallet_type_str.parse()?;
 
     // Verify the signature
-    verify_signature(&request.wallet_address, &message, &request.signature, &wallet_type)?;
+    verify_signature(
+        &request.wallet_address,
+        &message,
+        &request.signature,
+        &wallet_type,
+    )?;
 
     // Mark challenge as used
     sqlx::query("UPDATE auth_challenges SET used_at = ? WHERE id = ?")
@@ -251,12 +257,11 @@ pub async fn verify_wallet_signature(
     };
 
     // Get user email for token
-    let user_email: (String,) =
-        sqlx::query_as("SELECT email FROM users WHERE id = ?")
-            .bind(&user_id)
-            .fetch_one(pool)
-            .await
-            .map_err(|e| format!("Failed to get user: {}", e))?;
+    let user_email: (String,) = sqlx::query_as("SELECT email FROM users WHERE id = ?")
+        .bind(&user_id)
+        .fetch_one(pool)
+        .await
+        .map_err(|e| format!("Failed to get user: {}", e))?;
 
     // Update last login
     sqlx::query("UPDATE users SET last_login_at = ? WHERE id = ?")
@@ -283,8 +288,10 @@ pub async fn link_wallet_to_account(
     let pool = &db.pool;
 
     // Verify access token
-    let claims =
-        crate::core::auth_helpers::verify_access_token(&request.access_token, auth.get_jwt_secret())?;
+    let claims = crate::core::auth_helpers::verify_access_token(
+        &request.access_token,
+        auth.get_jwt_secret(),
+    )?;
 
     let wallet_type: WalletType = request.wallet_type.parse()?;
 
@@ -316,7 +323,12 @@ pub async fn link_wallet_to_account(
     }
 
     // Verify signature
-    verify_signature(&request.wallet_address, &message, &request.signature, &wallet_type)?;
+    verify_signature(
+        &request.wallet_address,
+        &message,
+        &request.signature,
+        &wallet_type,
+    )?;
 
     // Mark challenge as used
     sqlx::query("UPDATE auth_challenges SET used_at = ? WHERE id = ?")
@@ -345,13 +357,12 @@ pub async fn link_wallet_to_account(
     }
 
     // Check if user has any wallets to determine if this should be primary
-    let wallet_count: (i64,) = sqlx::query_as(
-        "SELECT COUNT(*) FROM user_wallet_auth WHERE user_id = ?",
-    )
-    .bind(&claims.sub)
-    .fetch_one(pool)
-    .await
-    .map_err(|e| format!("Database error: {}", e))?;
+    let wallet_count: (i64,) =
+        sqlx::query_as("SELECT COUNT(*) FROM user_wallet_auth WHERE user_id = ?")
+            .bind(&claims.sub)
+            .fetch_one(pool)
+            .await
+            .map_err(|e| format!("Database error: {}", e))?;
 
     let is_primary = wallet_count.0 == 0;
 
@@ -384,7 +395,10 @@ pub async fn link_wallet_to_account(
         Some(&claims.sub),
         "wallet_link",
         "success",
-        Some(&format!("Linked {} wallet: {}", wallet_type, &request.wallet_address)),
+        Some(&format!(
+            "Linked {} wallet: {}",
+            wallet_type, &request.wallet_address
+        )),
     )
     .await;
 
@@ -651,8 +665,9 @@ fn verify_evm_signature(address: &str, message: &str, signature: &str) -> Result
     sig_data[0..32].copy_from_slice(r);
     sig_data[32..64].copy_from_slice(s);
 
-    let recoverable_sig = secp256k1::ecdsa::RecoverableSignature::from_compact(&sig_data, recovery_id)
-        .map_err(|e| format!("Invalid signature: {:?}", e))?;
+    let recoverable_sig =
+        secp256k1::ecdsa::RecoverableSignature::from_compact(&sig_data, recovery_id)
+            .map_err(|e| format!("Invalid signature: {:?}", e))?;
 
     let msg = secp256k1::Message::from_digest_slice(&message_hash)
         .map_err(|e| format!("Invalid message hash: {:?}", e))?;

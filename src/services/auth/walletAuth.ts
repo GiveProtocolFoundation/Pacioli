@@ -91,15 +91,29 @@ export const WALLET_EXTENSIONS: WalletExtensionInfo[] = [
 export function isWalletInstalled(provider: WalletProvider): boolean {
   switch (provider) {
     case 'polkadot-js':
-      return typeof window !== 'undefined' && !!(window as any).injectedWeb3?.['polkadot-js']
+      return (
+        typeof window !== 'undefined' &&
+        !!(window as any).injectedWeb3?.['polkadot-js']
+      )
     case 'subwallet':
-      return typeof window !== 'undefined' && !!(window as any).injectedWeb3?.['subwallet-js']
+      return (
+        typeof window !== 'undefined' &&
+        !!(window as any).injectedWeb3?.['subwallet-js']
+      )
     case 'talisman':
-      return typeof window !== 'undefined' && !!(window as any).injectedWeb3?.['talisman']
+      return (
+        typeof window !== 'undefined' &&
+        !!(window as any).injectedWeb3?.['talisman']
+      )
     case 'nova':
-      return typeof window !== 'undefined' && !!(window as any).injectedWeb3?.['nova-wallet']
+      return (
+        typeof window !== 'undefined' &&
+        !!(window as any).injectedWeb3?.['nova-wallet']
+      )
     case 'metamask':
-      return typeof window !== 'undefined' && !!(window as any).ethereum?.isMetaMask
+      return (
+        typeof window !== 'undefined' && !!(window as any).ethereum?.isMetaMask
+      )
     case 'walletconnect':
       return true // WalletConnect is always "available" as a protocol
     default:
@@ -111,7 +125,7 @@ export function isWalletInstalled(provider: WalletProvider): boolean {
  * Get list of wallet extensions with installation status
  */
 export function getWalletExtensions(): WalletExtensionInfo[] {
-  return WALLET_EXTENSIONS.map((wallet) => ({
+  return WALLET_EXTENSIONS.map(wallet => ({
     ...wallet,
     installed: isWalletInstalled(wallet.provider),
   }))
@@ -120,8 +134,10 @@ export function getWalletExtensions(): WalletExtensionInfo[] {
 /**
  * Get wallet extensions by type
  */
-export function getWalletExtensionsByType(type: WalletType): WalletExtensionInfo[] {
-  return getWalletExtensions().filter((w) => w.type === type)
+export function getWalletExtensionsByType(
+  type: WalletType
+): WalletExtensionInfo[] {
+  return getWalletExtensions().filter(w => w.type === type)
 }
 
 // =============================================================================
@@ -131,7 +147,9 @@ export function getWalletExtensionsByType(type: WalletType): WalletExtensionInfo
 /**
  * Get accounts from a Substrate wallet extension
  */
-export async function getSubstrateAccounts(provider: WalletProvider): Promise<WalletAccount[]> {
+export async function getSubstrateAccounts(
+  provider: WalletProvider
+): Promise<WalletAccount[]> {
   const injectedWeb3 = (window as any).injectedWeb3
 
   let extension: any
@@ -242,7 +260,10 @@ export async function getMetaMaskAccounts(): Promise<WalletAccount[]> {
 /**
  * Sign a message with MetaMask (EIP-191 personal_sign)
  */
-export async function signMetaMaskMessage(address: string, message: string): Promise<string> {
+export async function signMetaMaskMessage(
+  address: string,
+  message: string
+): Promise<string> {
   const ethereum = (window as any).ethereum
 
   if (!ethereum?.isMetaMask) {
@@ -265,7 +286,9 @@ export async function signMetaMaskMessage(address: string, message: string): Pro
 /**
  * Get accounts from any supported wallet
  */
-export async function getWalletAccounts(provider: WalletProvider): Promise<WalletAccount[]> {
+export async function getWalletAccounts(
+  provider: WalletProvider
+): Promise<WalletAccount[]> {
   switch (provider) {
     case 'polkadot-js':
     case 'subwallet':
@@ -324,8 +347,12 @@ export const walletAuthService = {
    * Verify wallet signature and authenticate
    * Returns auth tokens if successful
    */
-  async verifySignature(request: VerifySignatureRequest): Promise<AuthResponse> {
-    const response = await invoke<AuthResponse>('verify_wallet_signature', { request })
+  async verifySignature(
+    request: VerifySignatureRequest
+  ): Promise<AuthResponse> {
+    const response = await invoke<AuthResponse>('verify_wallet_signature', {
+      request,
+    })
 
     // Store tokens
     localStorage.setItem('pacioli_access_token', response.access_token)
@@ -388,7 +415,11 @@ export async function walletSignIn(
   })
 
   // Step 2: Sign the challenge message
-  const signature = await signMessage(provider, account.address, challenge.message)
+  const signature = await signMessage(
+    provider,
+    account.address,
+    challenge.message
+  )
 
   // Step 3: Verify signature and get tokens
   const response = await walletAuthService.verifySignature({
@@ -424,7 +455,11 @@ export async function linkWalletToAccount(
   })
 
   // Step 2: Sign the challenge message
-  const signature = await signMessage(provider, account.address, challenge.message)
+  const signature = await signMessage(
+    provider,
+    account.address,
+    challenge.message
+  )
 
   // Step 3: Link wallet to account
   const wallet = await walletAuthService.linkWallet({
