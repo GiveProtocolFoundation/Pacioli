@@ -259,16 +259,17 @@ pub async fn login(
     let email = credentials.email.to_lowercase();
 
     // Find user
-    let user_row: Option<(String, String, String, i32, Option<DateTime<Utc>>, i32)> = sqlx::query_as(
-        r#"
+    let user_row: Option<(String, String, String, i32, Option<DateTime<Utc>>, i32)> =
+        sqlx::query_as(
+            r#"
         SELECT id, password_hash, status, failed_login_attempts, lockout_until, two_factor_enabled
         FROM users WHERE email = ?
         "#,
-    )
-    .bind(&email)
-    .fetch_optional(pool)
-    .await
-    .map_err(|e| format!("Database error: {}", e))?;
+        )
+        .bind(&email)
+        .fetch_optional(pool)
+        .await
+        .map_err(|e| format!("Database error: {}", e))?;
 
     let (user_id, password_hash, status, failed_attempts, lockout_until, _two_factor) =
         user_row.ok_or("Invalid email or password")?;
@@ -297,15 +298,13 @@ pub async fn login(
             None
         };
 
-        sqlx::query(
-            "UPDATE users SET failed_login_attempts = ?, lockout_until = ? WHERE id = ?",
-        )
-        .bind(new_attempts)
-        .bind(lockout_time)
-        .bind(&user_id)
-        .execute(pool)
-        .await
-        .ok();
+        sqlx::query("UPDATE users SET failed_login_attempts = ?, lockout_until = ? WHERE id = ?")
+            .bind(new_attempts)
+            .bind(lockout_time)
+            .bind(&user_id)
+            .execute(pool)
+            .await
+            .ok();
 
         // Log failed attempt
         log_audit_event(
@@ -435,12 +434,8 @@ pub async fn refresh_token(
     let user = get_user_by_id(pool, &user_id).await?;
 
     // Generate new access token (keep same refresh token)
-    let access_token = generate_access_token(
-        &user.id,
-        &user.email,
-        auth.get_jwt_secret(),
-        Some(15),
-    )?;
+    let access_token =
+        generate_access_token(&user.id, &user.email, auth.get_jwt_secret(), Some(15))?;
 
     Ok(AuthResponse {
         access_token,
@@ -782,21 +777,23 @@ pub async fn update_user_role(
     // Validate role
     let valid_roles = ["user", "preparer", "approver", "admin"];
     if !valid_roles.contains(&role.as_str()) {
-        return Err(format!("Invalid role: {}. Valid roles are: {:?}", role, valid_roles));
+        return Err(format!(
+            "Invalid role: {}. Valid roles are: {:?}",
+            role, valid_roles
+        ));
     }
 
     // Verify user has admin access
     verify_profile_access(pool, &claims.sub, &profile_id, &["owner", "admin"]).await?;
 
     // Cannot change owner's role
-    let target_role: Option<(String,)> = sqlx::query_as(
-        "SELECT role FROM user_profile_roles WHERE user_id = ? AND profile_id = ?",
-    )
-    .bind(&user_id)
-    .bind(&profile_id)
-    .fetch_optional(pool)
-    .await
-    .map_err(|e| format!("Database error: {}", e))?;
+    let target_role: Option<(String,)> =
+        sqlx::query_as("SELECT role FROM user_profile_roles WHERE user_id = ? AND profile_id = ?")
+            .bind(&user_id)
+            .bind(&profile_id)
+            .fetch_optional(pool)
+            .await
+            .map_err(|e| format!("Database error: {}", e))?;
 
     if let Some((current_role,)) = target_role {
         if current_role == "owner" {
@@ -831,14 +828,12 @@ pub async fn update_user_role(
     .await;
 
     // Return updated role
-    sqlx::query_as(
-        "SELECT * FROM user_profile_roles WHERE user_id = ? AND profile_id = ?",
-    )
-    .bind(&user_id)
-    .bind(&profile_id)
-    .fetch_one(pool)
-    .await
-    .map_err(|e| format!("Database error: {}", e))
+    sqlx::query_as("SELECT * FROM user_profile_roles WHERE user_id = ? AND profile_id = ?")
+        .bind(&user_id)
+        .bind(&profile_id)
+        .fetch_one(pool)
+        .await
+        .map_err(|e| format!("Database error: {}", e))
 }
 
 /// Remove a user from a profile
@@ -857,14 +852,13 @@ pub async fn remove_user_from_profile(
     verify_profile_access(pool, &claims.sub, &profile_id, &["owner", "admin"]).await?;
 
     // Cannot remove owner
-    let target_role: Option<(String,)> = sqlx::query_as(
-        "SELECT role FROM user_profile_roles WHERE user_id = ? AND profile_id = ?",
-    )
-    .bind(&user_id)
-    .bind(&profile_id)
-    .fetch_optional(pool)
-    .await
-    .map_err(|e| format!("Database error: {}", e))?;
+    let target_role: Option<(String,)> =
+        sqlx::query_as("SELECT role FROM user_profile_roles WHERE user_id = ? AND profile_id = ?")
+            .bind(&user_id)
+            .bind(&profile_id)
+            .fetch_optional(pool)
+            .await
+            .map_err(|e| format!("Database error: {}", e))?;
 
     if let Some((role,)) = target_role {
         if role == "owner" {
@@ -926,7 +920,13 @@ pub async fn create_invitation(
     }
 
     // Verify user has admin access to invite
-    verify_profile_access(pool, &claims.sub, &invitation.profile_id, &["owner", "admin"]).await?;
+    verify_profile_access(
+        pool,
+        &claims.sub,
+        &invitation.profile_id,
+        &["owner", "admin"],
+    )
+    .await?;
 
     // Check if user already has access
     let existing_access: Option<(String,)> = sqlx::query_as(
@@ -1042,16 +1042,17 @@ pub async fn accept_invitation(
     let pool = &db.pool;
 
     // Find invitation by token
-    let invitation: Option<(String, String, String, String, String, DateTime<Utc>)> = sqlx::query_as(
-        r#"
+    let invitation: Option<(String, String, String, String, String, DateTime<Utc>)> =
+        sqlx::query_as(
+            r#"
         SELECT id, email, profile_id, role, status, token_expires_at
         FROM invitations WHERE token = ?
         "#,
-    )
-    .bind(&invitation_token)
-    .fetch_optional(pool)
-    .await
-    .map_err(|e| format!("Database error: {}", e))?;
+        )
+        .bind(&invitation_token)
+        .fetch_optional(pool)
+        .await
+        .map_err(|e| format!("Database error: {}", e))?;
 
     let (inv_id, inv_email, profile_id, role, status, expires_at) =
         invitation.ok_or("Invalid invitation token")?;
@@ -1119,7 +1120,9 @@ pub async fn accept_invitation(
         user_id = new_user_id;
         user_email = input.email.to_lowercase();
     } else {
-        return Err("Must provide either user_token (existing user) or new_user (registration)".to_string());
+        return Err(
+            "Must provide either user_token (existing user) or new_user (registration)".to_string(),
+        );
     }
 
     // Add user to profile with the invited role
