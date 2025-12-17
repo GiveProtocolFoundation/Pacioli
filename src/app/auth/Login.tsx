@@ -178,6 +178,24 @@ const Login: React.FC = () => {
     setActiveTab('wallet')
   }, [])
 
+  // Pre-create wallet select handlers to avoid inline arrow functions
+  const walletSelectHandlers = React.useMemo(() => {
+    const handlers: Record<string, () => void> = {}
+    walletExtensions.forEach(wallet => {
+      handlers[wallet.provider] = () => handleWalletSelect(wallet)
+    })
+    return handlers
+  }, [walletExtensions, handleWalletSelect])
+
+  // Pre-create account click handlers to avoid inline arrow functions
+  const accountClickHandlers = React.useMemo(() => {
+    const handlers: Record<string, () => void> = {}
+    walletAccounts.forEach(account => {
+      handlers[account.address] = () => handleAccountSelect(account)
+    })
+    return handlers
+  }, [walletAccounts, handleAccountSelect])
+
   const displayError = localError || error
 
   // ==========================================================================
@@ -397,7 +415,7 @@ const Login: React.FC = () => {
                             <WalletButton
                               key={wallet.provider}
                               wallet={wallet}
-                              onClick={getWalletClickHandler(wallet)}
+                              onClick={walletSelectHandlers[wallet.provider]}
                               loading={false}
                             />
                           ))}
@@ -430,7 +448,7 @@ const Login: React.FC = () => {
                     {walletAccounts.map(account => (
                       <button
                         key={account.address}
-                        onClick={handleAccountClick(account)}
+                        onClick={accountClickHandlers[account.address]}
                         disabled={loadingWallet}
                         className="flex w-full items-center justify-between rounded-lg border border-input bg-background p-4 text-left transition-colors hover:border-primary hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
                       >

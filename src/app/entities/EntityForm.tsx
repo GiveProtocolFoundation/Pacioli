@@ -8,6 +8,10 @@ import type {
   TaxDocumentationStatus,
 } from '../../services/persistence'
 
+// =============================================================================
+// TYPES AND CONSTANTS
+// =============================================================================
+
 interface EntityFormProps {
   entity: Entity | null
   onClose: () => void
@@ -22,19 +26,44 @@ interface FormFieldProps {
   className?: string
 }
 
-// Reusable form field wrapper component - reduces nesting depth
-const FormField: React.FC<FormFieldProps> = ({ id, label, required, children, className = '' }) => (
-  <div className={className}>
-    <label
-      htmlFor={id}
-      className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-    >
-      {label}
-      {required && ' *'}
-    </label>
-    {children}
-  </div>
-)
+interface FormData {
+  entity_type: EntityType
+  name: string
+  display_name: string
+  email: string
+  phone: string
+  website: string
+  country_code: string
+  tax_identifier: string
+  tax_identifier_type: string
+  category: string
+  default_currency: string
+  default_payment_terms: string
+  reportable_payee: boolean
+  tax_documentation_status: TaxDocumentationStatus
+  notes: string
+  is_active: boolean
+}
+
+interface SectionProps {
+  formData: FormData
+  onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void
+}
+
+interface WalletAddressesSectionProps {
+  addresses: EntityAddress[]
+  loadingAddresses: boolean
+  newAddress: { address: string; chain: string; label: string }
+  onAddressChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  onChainChange: (e: React.ChangeEvent<HTMLSelectElement>) => void
+  onAddAddress: () => void
+  removeAddressHandlers: Record<string, () => void>
+}
+
+interface AddressListProps {
+  addresses: EntityAddress[]
+  removeHandlers: Record<string, () => void>
+}
 
 const entityTypes: { value: EntityType; label: string }[] = [
   { value: 'vendor', label: 'Vendor' },
@@ -54,6 +83,298 @@ const taxDocStatuses: { value: TaxDocumentationStatus; label: string }[] = [
 const inputClassName =
   'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500'
 
+// =============================================================================
+// REUSABLE FORM COMPONENTS (defined before use)
+// =============================================================================
+
+/** Reusable form field wrapper with label and htmlFor association */
+const FormField: React.FC<FormFieldProps> = ({ id, label, required, children, className = '' }) => (
+  <div className={className}>
+    <label
+      htmlFor={id}
+      className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+    >
+      {label}
+      {required && ' *'}
+    </label>
+    {children}
+  </div>
+)
+
+/** Renders a list of wallet addresses with remove buttons */
+const AddressList: React.FC<AddressListProps> = ({ addresses, removeHandlers }) => (
+  <div className="space-y-2">
+    {addresses.map((addr) => (
+      <div key={addr.id} className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-700 rounded-lg">
+        <span className="flex-1 font-mono text-sm truncate">{addr.address}</span>
+        <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-200 dark:bg-gray-600 px-2 py-0.5 rounded">
+          {addr.chain}
+        </span>
+        {addr.is_verified && (
+          <span className="text-xs text-green-600 dark:text-green-400">Verified</span>
+        )}
+        <button
+          type="button"
+          onClick={removeHandlers[addr.id]}
+          className="p-1 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/20 rounded"
+        >
+          <Trash2 className="w-4 h-4" />
+        </button>
+      </div>
+    ))}
+  </div>
+)
+
+/** Section for managing wallet addresses with add/remove functionality */
+const WalletAddressesSection: React.FC<WalletAddressesSectionProps> = ({
+  addresses,
+  loadingAddresses,
+  newAddress,
+  onAddressChange,
+  onChainChange,
+  onAddAddress,
+  removeAddressHandlers,
+}) => (
+  <div className="space-y-4">
+    <h3 className="text-sm font-medium text-gray-900 dark:text-white">Wallet Addresses</h3>
+    <div className="flex gap-2">
+      <input
+        type="text"
+        id="wallet_address"
+        value={newAddress.address}
+        onChange={onAddressChange}
+        placeholder="Wallet address"
+        className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 text-sm font-mono"
+      />
+      <select
+        id="wallet_chain"
+        value={newAddress.chain}
+        onChange={onChainChange}
+        className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 text-sm"
+      >
+        <option value="ethereum">Ethereum</option>
+        <option value="polkadot">Polkadot</option>
+        <option value="moonbeam">Moonbeam</option>
+        <option value="moonriver">Moonriver</option>
+        <option value="astar">Astar</option>
+      </select>
+      <button
+        type="button"
+        onClick={onAddAddress}
+        disabled={!newAddress.address}
+        className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        <Plus className="w-4 h-4" />
+      </button>
+    </div>
+    {loadingAddresses ? (
+      <div className="flex items-center gap-2 text-sm text-gray-500">
+        <Loader className="w-4 h-4 animate-spin" />
+        Loading addresses...
+      </div>
+    ) : addresses.length === 0 ? (
+      <p className="text-sm text-gray-500 dark:text-gray-400">No wallet addresses added yet.</p>
+    ) : (
+      <AddressList addresses={addresses} removeHandlers={removeAddressHandlers} />
+    )}
+  </div>
+)
+
+/** Section for payment default settings (currency, terms) */
+const PaymentSection: React.FC<SectionProps> = ({ formData, onChange }) => (
+  <div className="space-y-4">
+    <h3 className="text-sm font-medium text-gray-900 dark:text-white">Payment Defaults</h3>
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <FormField id="default_currency" label="Default Currency">
+        <input
+          id="default_currency"
+          type="text"
+          name="default_currency"
+          value={formData.default_currency}
+          onChange={onChange}
+          placeholder="e.g., USD, EUR"
+          maxLength={3}
+          className={`${inputClassName} uppercase`}
+        />
+      </FormField>
+      <FormField id="default_payment_terms" label="Payment Terms (days)">
+        <input
+          id="default_payment_terms"
+          type="number"
+          name="default_payment_terms"
+          value={formData.default_payment_terms}
+          onChange={onChange}
+          placeholder="e.g., 30"
+          min="0"
+          className={inputClassName}
+        />
+      </FormField>
+    </div>
+  </div>
+)
+
+/** Grid of tax-related form fields */
+const TaxFieldsGrid: React.FC<SectionProps> = ({ formData, onChange }) => (
+  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <FormField id="country_code" label="Country">
+      <input
+        id="country_code"
+        type="text"
+        name="country_code"
+        value={formData.country_code}
+        onChange={onChange}
+        placeholder="e.g., US, GB, DE"
+        maxLength={2}
+        className={`${inputClassName} uppercase`}
+      />
+    </FormField>
+    <FormField id="tax_identifier_type" label="Tax ID Type">
+      <input
+        id="tax_identifier_type"
+        type="text"
+        name="tax_identifier_type"
+        value={formData.tax_identifier_type}
+        onChange={onChange}
+        placeholder="e.g., EIN, VAT, UTR"
+        className={inputClassName}
+      />
+    </FormField>
+    <FormField id="tax_identifier" label="Tax Identifier">
+      <input
+        id="tax_identifier"
+        type="text"
+        name="tax_identifier"
+        value={formData.tax_identifier}
+        onChange={onChange}
+        className={inputClassName}
+      />
+    </FormField>
+    <FormField id="tax_documentation_status" label="Tax Documentation">
+      <select
+        id="tax_documentation_status"
+        name="tax_documentation_status"
+        value={formData.tax_documentation_status}
+        onChange={onChange}
+        className={inputClassName}
+      >
+        {taxDocStatuses.map((status) => (
+          <option key={status.value} value={status.value}>
+            {status.label}
+          </option>
+        ))}
+      </select>
+    </FormField>
+    <div className="sm:col-span-2">
+      <label className="flex items-center gap-2">
+        <input
+          type="checkbox"
+          id="reportable_payee"
+          name="reportable_payee"
+          checked={formData.reportable_payee}
+          onChange={onChange}
+          className="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500"
+        />
+        <span className="text-sm text-gray-700 dark:text-gray-300">
+          Reportable payee (requires tax reporting when paid)
+        </span>
+      </label>
+    </div>
+  </div>
+)
+
+/** Section for tax and compliance information */
+const TaxSection: React.FC<SectionProps> = ({ formData, onChange }) => (
+  <div className="space-y-4">
+    <h3 className="text-sm font-medium text-gray-900 dark:text-white">Tax & Compliance</h3>
+    <TaxFieldsGrid formData={formData} onChange={onChange} />
+  </div>
+)
+
+/** Section for contact information (email, phone, website) */
+const ContactSection: React.FC<SectionProps> = ({ formData, onChange }) => (
+  <div className="space-y-4">
+    <h3 className="text-sm font-medium text-gray-900 dark:text-white">Contact</h3>
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <FormField id="email" label="Email">
+        <input id="email" type="email" name="email" value={formData.email} onChange={onChange} className={inputClassName} />
+      </FormField>
+      <FormField id="phone" label="Phone">
+        <input id="phone" type="tel" name="phone" value={formData.phone} onChange={onChange} className={inputClassName} />
+      </FormField>
+      <FormField id="website" label="Website" className="sm:col-span-2">
+        <input id="website" type="url" name="website" value={formData.website} onChange={onChange} placeholder="https://" className={inputClassName} />
+      </FormField>
+    </div>
+  </div>
+)
+
+/** Section for basic entity information (type, name, category) */
+const BasicInfoSection: React.FC<SectionProps> = ({ formData, onChange }) => (
+  <div className="space-y-4">
+    <h3 className="text-sm font-medium text-gray-900 dark:text-white">Basic Information</h3>
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <FormField id="entity_type" label="Type" required>
+        <select id="entity_type" name="entity_type" value={formData.entity_type} onChange={onChange} required className={inputClassName}>
+          {entityTypes.map((type) => (
+            <option key={type.value} value={type.value}>{type.label}</option>
+          ))}
+        </select>
+      </FormField>
+      <FormField id="category" label="Category">
+        <input id="category" type="text" name="category" value={formData.category} onChange={onChange} placeholder="e.g., contractor, supplier" className={inputClassName} />
+      </FormField>
+      <FormField id="name" label="Name" required>
+        <input id="name" type="text" name="name" value={formData.name} onChange={onChange} required placeholder="Legal name" className={inputClassName} />
+      </FormField>
+      <FormField id="display_name" label="Display Name">
+        <input id="display_name" type="text" name="display_name" value={formData.display_name} onChange={onChange} placeholder="Short name for UI" className={inputClassName} />
+      </FormField>
+    </div>
+  </div>
+)
+
+/** Modal header with title and close button */
+const FormHeader: React.FC<{ isEditing: boolean; onClose: () => void }> = ({ isEditing, onClose }) => (
+  <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+    <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+      {isEditing ? 'Edit Entity' : 'New Entity'}
+    </h2>
+    <button onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+      <X className="w-5 h-5 text-gray-500" />
+    </button>
+  </div>
+)
+
+/** Form footer with cancel and submit buttons */
+const FormFooter: React.FC<{ isSubmitting: boolean; isEditing: boolean; onClose: () => void }> = ({
+  isSubmitting,
+  isEditing,
+  onClose,
+}) => (
+  <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+    <button
+      type="button"
+      onClick={onClose}
+      className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+    >
+      Cancel
+    </button>
+    <button
+      type="submit"
+      disabled={isSubmitting}
+      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors inline-flex items-center gap-2"
+    >
+      {isSubmitting && <Loader className="w-4 h-4 animate-spin" />}
+      {isEditing ? 'Save Changes' : 'Create Entity'}
+    </button>
+  </div>
+)
+
+// =============================================================================
+// MAIN COMPONENT
+// =============================================================================
+
+/** Modal form for creating or editing an entity */
 const EntityForm: React.FC<EntityFormProps> = ({ entity, onClose, onSuccess }) => {
   const { createEntity, updateEntity, getEntityAddresses, addEntityAddress, removeEntityAddress } =
     useEntity()
@@ -63,8 +384,8 @@ const EntityForm: React.FC<EntityFormProps> = ({ entity, onClose, onSuccess }) =
   const [addresses, setAddresses] = useState<EntityAddress[]>([])
   const [loadingAddresses, setLoadingAddresses] = useState(false)
 
-  const [formData, setFormData] = useState({
-    entity_type: 'vendor' as EntityType,
+  const [formData, setFormData] = useState<FormData>({
+    entity_type: 'vendor',
     name: '',
     display_name: '',
     email: '',
@@ -77,16 +398,12 @@ const EntityForm: React.FC<EntityFormProps> = ({ entity, onClose, onSuccess }) =
     default_currency: '',
     default_payment_terms: '',
     reportable_payee: false,
-    tax_documentation_status: 'none' as TaxDocumentationStatus,
+    tax_documentation_status: 'none',
     notes: '',
     is_active: true,
   })
 
-  const [newAddress, setNewAddress] = useState({
-    address: '',
-    chain: 'ethereum',
-    label: '',
-  })
+  const [newAddress, setNewAddress] = useState({ address: '', chain: 'ethereum', label: '' })
 
   const handleNewAddressChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -199,11 +516,7 @@ const EntityForm: React.FC<EntityFormProps> = ({ entity, onClose, onSuccess }) =
 
     try {
       const added = await addEntityAddress(
-        {
-          address: newAddress.address,
-          chain: newAddress.chain,
-          label: newAddress.label || undefined,
-        },
+        { address: newAddress.address, chain: newAddress.chain, label: newAddress.label || undefined },
         entity.id
       )
       setAddresses((prev) => [added, ...prev])
@@ -236,18 +549,7 @@ const EntityForm: React.FC<EntityFormProps> = ({ entity, onClose, onSuccess }) =
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-            {entity ? 'Edit Entity' : 'New Entity'}
-          </h2>
-          <button
-            onClick={onClose}
-            className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
-          >
-            <X className="w-5 h-5 text-gray-500" />
-          </button>
-        </div>
-
+        <FormHeader isEditing={!!entity} onClose={onClose} />
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto">
           <div className="p-6 space-y-6">
             {error && (
@@ -255,27 +557,10 @@ const EntityForm: React.FC<EntityFormProps> = ({ entity, onClose, onSuccess }) =
                 <p className="text-red-800 dark:text-red-200 text-sm">{error}</p>
               </div>
             )}
-
-            <BasicInfoSection
-              formData={formData}
-              onChange={handleInputChange}
-            />
-
-            <ContactSection
-              formData={formData}
-              onChange={handleInputChange}
-            />
-
-            <TaxSection
-              formData={formData}
-              onChange={handleInputChange}
-            />
-
-            <PaymentSection
-              formData={formData}
-              onChange={handleInputChange}
-            />
-
+            <BasicInfoSection formData={formData} onChange={handleInputChange} />
+            <ContactSection formData={formData} onChange={handleInputChange} />
+            <TaxSection formData={formData} onChange={handleInputChange} />
+            <PaymentSection formData={formData} onChange={handleInputChange} />
             {entity && (
               <WalletAddressesSection
                 addresses={addresses}
@@ -287,18 +572,9 @@ const EntityForm: React.FC<EntityFormProps> = ({ entity, onClose, onSuccess }) =
                 removeAddressHandlers={removeAddressHandlers}
               />
             )}
-
             <FormField id="notes" label="Notes">
-              <textarea
-                id="notes"
-                name="notes"
-                value={formData.notes}
-                onChange={handleInputChange}
-                rows={3}
-                className={inputClassName}
-              />
+              <textarea id="notes" name="notes" value={formData.notes} onChange={handleInputChange} rows={3} className={inputClassName} />
             </FormField>
-
             <div>
               <label className="flex items-center gap-2">
                 <input
@@ -313,359 +589,11 @@ const EntityForm: React.FC<EntityFormProps> = ({ entity, onClose, onSuccess }) =
               </label>
             </div>
           </div>
-
-          <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors inline-flex items-center gap-2"
-            >
-              {isSubmitting && <Loader className="w-4 h-4 animate-spin" />}
-              {entity ? 'Save Changes' : 'Create Entity'}
-            </button>
-          </div>
+          <FormFooter isSubmitting={isSubmitting} isEditing={!!entity} onClose={onClose} />
         </form>
       </div>
     </div>
   )
 }
-
-// Extracted section components to reduce nesting depth
-
-interface SectionProps {
-  formData: {
-    entity_type: EntityType
-    name: string
-    display_name: string
-    email: string
-    phone: string
-    website: string
-    country_code: string
-    tax_identifier: string
-    tax_identifier_type: string
-    category: string
-    default_currency: string
-    default_payment_terms: string
-    reportable_payee: boolean
-    tax_documentation_status: TaxDocumentationStatus
-    notes: string
-    is_active: boolean
-  }
-  onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void
-}
-
-const BasicInfoSection: React.FC<SectionProps> = ({ formData, onChange }) => (
-  <div className="space-y-4">
-    <h3 className="text-sm font-medium text-gray-900 dark:text-white">Basic Information</h3>
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <FormField id="entity_type" label="Type" required>
-        <select
-          id="entity_type"
-          name="entity_type"
-          value={formData.entity_type}
-          onChange={onChange}
-          required
-          className={inputClassName}
-        >
-          {entityTypes.map((type) => (
-            <option key={type.value} value={type.value}>
-              {type.label}
-            </option>
-          ))}
-        </select>
-      </FormField>
-
-      <FormField id="category" label="Category">
-        <input
-          id="category"
-          type="text"
-          name="category"
-          value={formData.category}
-          onChange={onChange}
-          placeholder="e.g., contractor, supplier"
-          className={inputClassName}
-        />
-      </FormField>
-
-      <FormField id="name" label="Name" required>
-        <input
-          id="name"
-          type="text"
-          name="name"
-          value={formData.name}
-          onChange={onChange}
-          required
-          placeholder="Legal name"
-          className={inputClassName}
-        />
-      </FormField>
-
-      <FormField id="display_name" label="Display Name">
-        <input
-          id="display_name"
-          type="text"
-          name="display_name"
-          value={formData.display_name}
-          onChange={onChange}
-          placeholder="Short name for UI"
-          className={inputClassName}
-        />
-      </FormField>
-    </div>
-  </div>
-)
-
-const ContactSection: React.FC<SectionProps> = ({ formData, onChange }) => (
-  <div className="space-y-4">
-    <h3 className="text-sm font-medium text-gray-900 dark:text-white">Contact</h3>
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <FormField id="email" label="Email">
-        <input
-          id="email"
-          type="email"
-          name="email"
-          value={formData.email}
-          onChange={onChange}
-          className={inputClassName}
-        />
-      </FormField>
-
-      <FormField id="phone" label="Phone">
-        <input
-          id="phone"
-          type="tel"
-          name="phone"
-          value={formData.phone}
-          onChange={onChange}
-          className={inputClassName}
-        />
-      </FormField>
-
-      <FormField id="website" label="Website" className="sm:col-span-2">
-        <input
-          id="website"
-          type="url"
-          name="website"
-          value={formData.website}
-          onChange={onChange}
-          placeholder="https://"
-          className={inputClassName}
-        />
-      </FormField>
-    </div>
-  </div>
-)
-
-const TaxSection: React.FC<SectionProps> = ({ formData, onChange }) => (
-  <div className="space-y-4">
-    <h3 className="text-sm font-medium text-gray-900 dark:text-white">Tax & Compliance</h3>
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <FormField id="country_code" label="Country">
-        <input
-          id="country_code"
-          type="text"
-          name="country_code"
-          value={formData.country_code}
-          onChange={onChange}
-          placeholder="e.g., US, GB, DE"
-          maxLength={2}
-          className={`${inputClassName} uppercase`}
-        />
-      </FormField>
-
-      <FormField id="tax_identifier_type" label="Tax ID Type">
-        <input
-          id="tax_identifier_type"
-          type="text"
-          name="tax_identifier_type"
-          value={formData.tax_identifier_type}
-          onChange={onChange}
-          placeholder="e.g., EIN, VAT, UTR"
-          className={inputClassName}
-        />
-      </FormField>
-
-      <FormField id="tax_identifier" label="Tax Identifier">
-        <input
-          id="tax_identifier"
-          type="text"
-          name="tax_identifier"
-          value={formData.tax_identifier}
-          onChange={onChange}
-          className={inputClassName}
-        />
-      </FormField>
-
-      <FormField id="tax_documentation_status" label="Tax Documentation">
-        <select
-          id="tax_documentation_status"
-          name="tax_documentation_status"
-          value={formData.tax_documentation_status}
-          onChange={onChange}
-          className={inputClassName}
-        >
-          {taxDocStatuses.map((status) => (
-            <option key={status.value} value={status.value}>
-              {status.label}
-            </option>
-          ))}
-        </select>
-      </FormField>
-
-      <div className="sm:col-span-2">
-        <label className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            id="reportable_payee"
-            name="reportable_payee"
-            checked={formData.reportable_payee}
-            onChange={onChange}
-            className="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500"
-          />
-          <span className="text-sm text-gray-700 dark:text-gray-300">
-            Reportable payee (requires tax reporting when paid)
-          </span>
-        </label>
-      </div>
-    </div>
-  </div>
-)
-
-const PaymentSection: React.FC<SectionProps> = ({ formData, onChange }) => (
-  <div className="space-y-4">
-    <h3 className="text-sm font-medium text-gray-900 dark:text-white">Payment Defaults</h3>
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <FormField id="default_currency" label="Default Currency">
-        <input
-          id="default_currency"
-          type="text"
-          name="default_currency"
-          value={formData.default_currency}
-          onChange={onChange}
-          placeholder="e.g., USD, EUR"
-          maxLength={3}
-          className={`${inputClassName} uppercase`}
-        />
-      </FormField>
-
-      <FormField id="default_payment_terms" label="Payment Terms (days)">
-        <input
-          id="default_payment_terms"
-          type="number"
-          name="default_payment_terms"
-          value={formData.default_payment_terms}
-          onChange={onChange}
-          placeholder="e.g., 30"
-          min="0"
-          className={inputClassName}
-        />
-      </FormField>
-    </div>
-  </div>
-)
-
-interface WalletAddressesSectionProps {
-  addresses: EntityAddress[]
-  loadingAddresses: boolean
-  newAddress: { address: string; chain: string; label: string }
-  onAddressChange: (e: React.ChangeEvent<HTMLInputElement>) => void
-  onChainChange: (e: React.ChangeEvent<HTMLSelectElement>) => void
-  onAddAddress: () => void
-  removeAddressHandlers: Record<string, () => void>
-}
-
-const WalletAddressesSection: React.FC<WalletAddressesSectionProps> = ({
-  addresses,
-  loadingAddresses,
-  newAddress,
-  onAddressChange,
-  onChainChange,
-  onAddAddress,
-  removeAddressHandlers,
-}) => (
-  <div className="space-y-4">
-    <h3 className="text-sm font-medium text-gray-900 dark:text-white">Wallet Addresses</h3>
-
-    <div className="flex gap-2">
-      <input
-        type="text"
-        id="wallet_address"
-        value={newAddress.address}
-        onChange={onAddressChange}
-        placeholder="Wallet address"
-        className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 text-sm font-mono"
-      />
-      <select
-        id="wallet_chain"
-        value={newAddress.chain}
-        onChange={onChainChange}
-        className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 text-sm"
-      >
-        <option value="ethereum">Ethereum</option>
-        <option value="polkadot">Polkadot</option>
-        <option value="moonbeam">Moonbeam</option>
-        <option value="moonriver">Moonriver</option>
-        <option value="astar">Astar</option>
-      </select>
-      <button
-        type="button"
-        onClick={onAddAddress}
-        disabled={!newAddress.address}
-        className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        <Plus className="w-4 h-4" />
-      </button>
-    </div>
-
-    {loadingAddresses ? (
-      <div className="flex items-center gap-2 text-sm text-gray-500">
-        <Loader className="w-4 h-4 animate-spin" />
-        Loading addresses...
-      </div>
-    ) : addresses.length === 0 ? (
-      <p className="text-sm text-gray-500 dark:text-gray-400">No wallet addresses added yet.</p>
-    ) : (
-      <AddressList addresses={addresses} removeHandlers={removeAddressHandlers} />
-    )}
-  </div>
-)
-
-interface AddressListProps {
-  addresses: EntityAddress[]
-  removeHandlers: Record<string, () => void>
-}
-
-const AddressList: React.FC<AddressListProps> = ({ addresses, removeHandlers }) => (
-  <div className="space-y-2">
-    {addresses.map((addr) => (
-      <div
-        key={addr.id}
-        className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-700 rounded-lg"
-      >
-        <span className="flex-1 font-mono text-sm truncate">{addr.address}</span>
-        <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-200 dark:bg-gray-600 px-2 py-0.5 rounded">
-          {addr.chain}
-        </span>
-        {addr.is_verified && (
-          <span className="text-xs text-green-600 dark:text-green-400">Verified</span>
-        )}
-        <button
-          type="button"
-          onClick={removeHandlers[addr.id]}
-          className="p-1 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/20 rounded"
-        >
-          <Trash2 className="w-4 h-4" />
-        </button>
-      </div>
-    ))}
-  </div>
-)
 
 export default EntityForm

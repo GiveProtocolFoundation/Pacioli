@@ -314,6 +314,16 @@ const TransactionForm: React.FC = () => {
     [handleInputChange]
   )
 
+  // Pre-create click handlers for entity dropdown to avoid inline arrow functions
+  const entityClickHandlers = useMemo(() => {
+    const handlers: Record<string, () => void> = {}
+    filteredEntities.forEach(entity => {
+      handlers[entity.id] = () =>
+        handleEntitySelect(entity.id, entity.display_name || entity.name)
+    })
+    return handlers
+  }, [filteredEntities, handleEntitySelect])
+
   const handleClearEntity = useCallback(() => {
     handleInputChange('entityId', '')
     handleInputChange('entityName', '')
@@ -556,18 +566,6 @@ const TransactionForm: React.FC = () => {
                   {showEntityDropdown && (
                     <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-60 overflow-y-auto">
                       {filteredEntities.length > 0 ? (
-                        const entityClickHandlers = useMemo(() => {
-                          const handlers: Record<number, () => void> = {}
-                          filteredEntities.forEach(entity => {
-                            handlers[entity.id] = () =>
-                              handleEntitySelect(
-                                entity.id,
-                                entity.display_name || entity.name
-                              )
-                          })
-                          return handlers
-                        }, [filteredEntities, handleEntitySelect])
-
                         filteredEntities.map(entity => (
                           <button
                             key={entity.id}
