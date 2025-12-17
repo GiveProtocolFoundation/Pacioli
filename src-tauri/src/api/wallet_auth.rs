@@ -23,7 +23,9 @@ use uuid::Uuid;
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "lowercase")]
 pub enum WalletType {
+    /// Substrate wallet type using sr25519 cryptography.
     Substrate,
+    /// EVM wallet type using secp256k1 cryptography.
     Evm,
 }
 
@@ -51,54 +53,83 @@ impl std::str::FromStr for WalletType {
 /// A linked wallet for a user
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
 pub struct UserWallet {
+    /// Unique identifier for the user wallet.
     pub id: String,
+    /// Identifier of the user who owns this wallet.
     pub user_id: String,
+    /// The wallet's blockchain address.
     pub wallet_address: String,
+    /// The wallet type (e.g., "substrate" or "evm").
     pub wallet_type: String,
+    /// Optional blockchain chain identifier.
     pub chain: Option<String>,
+    /// Optional user-defined name for the wallet.
     pub wallet_name: Option<String>,
+    /// Optional source or platform of the wallet.
     pub wallet_source: Option<String>,
+    /// Indicates if this wallet is the primary one for the user.
     pub is_primary: bool,
+    /// Timestamp when the wallet was created.
     pub created_at: DateTime<Utc>,
+    /// Optional timestamp when the wallet was last used.
     pub last_used_at: Option<DateTime<Utc>>,
 }
 
 /// Challenge for wallet sign-in
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WalletChallenge {
+    /// Unique identifier for the challenge.
     pub id: String,
+    /// Nonce value that must be signed by the wallet.
     pub nonce: String,
+    /// The message constructed for signing.
     pub message: String,
+    /// Expiration time of the challenge.
     pub expires_at: DateTime<Utc>,
 }
 
 /// Input for generating a wallet challenge
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ChallengeRequest {
+    /// The wallet address requesting the challenge.
     pub wallet_address: String,
+    /// The type of wallet (e.g., "substrate" or "evm").
     pub wallet_type: String,
 }
 
 /// Input for verifying a wallet signature
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct VerifySignatureRequest {
+    /// Identifier of the challenge being verified.
     pub challenge_id: String,
+    /// Wallet signature over the challenge message.
     pub signature: String,
+    /// The wallet address used for verification.
     pub wallet_address: String,
+    /// Optional user-defined name of the wallet.
     pub wallet_name: Option<String>,
+    /// Optional source or platform of the wallet.
     pub wallet_source: Option<String>,
 }
 
 /// Input for linking a wallet to an existing account
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LinkWalletRequest {
+    /// Access token of the existing user session.
     pub access_token: String,
+    /// Identifier of the challenge used for linking.
     pub challenge_id: String,
+    /// Signature of the challenge message by the wallet.
     pub signature: String,
+    /// The wallet address to link.
     pub wallet_address: String,
+    /// The type of wallet being linked.
     pub wallet_type: String,
+    /// Optional blockchain chain identifier.
     pub chain: Option<String>,
+    /// Optional user-defined name for the wallet.
     pub wallet_name: Option<String>,
+    /// Optional source or platform of the wallet.
     pub wallet_source: Option<String>,
 }
 
@@ -708,13 +739,15 @@ async fn create_user_with_wallet(
     .to_lowercase();
 
     // Default display name
-    let display_name = wallet_name.unwrap_or(&format!(
-        "{} Wallet",
-        match wallet_type {
-            WalletType::Substrate => "Substrate",
-            WalletType::Evm => "Ethereum",
-        }
-    ));
+    let display_name = wallet_name.unwrap_or_else(|| {
+        format!(
+            "{} Wallet",
+            match wallet_type {
+                WalletType::Substrate => "Substrate",
+                WalletType::Evm => "Ethereum",
+            }
+        )
+    });
 
     // Create user
     sqlx::query(
