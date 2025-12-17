@@ -29,9 +29,18 @@ const taxDocStatuses: { value: TaxDocumentationStatus; label: string }[] = [
   { value: 'expired', label: 'Expired' },
 ]
 
-const EntityForm: React.FC<EntityFormProps> = ({ entity, onClose, onSuccess }) => {
-  const { createEntity, updateEntity, getEntityAddresses, addEntityAddress, removeEntityAddress } =
-    useEntity()
+const EntityForm: React.FC<EntityFormProps> = ({
+  entity,
+  onClose,
+  onSuccess,
+}) => {
+  const {
+    createEntity,
+    updateEntity,
+    getEntityAddresses,
+    addEntityAddress,
+    removeEntityAddress,
+  } = useEntity()
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -107,12 +116,15 @@ const EntityForm: React.FC<EntityFormProps> = ({ entity, onClose, onSuccess }) =
   }, [entity, loadAddresses])
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
   ) => {
     const { name, value, type } = e.target
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
-      [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value,
+      [name]:
+        type === 'checkbox' ? (e.target as HTMLInputElement).checked : value,
     }))
   }
 
@@ -169,7 +181,7 @@ const EntityForm: React.FC<EntityFormProps> = ({ entity, onClose, onSuccess }) =
         },
         entity.id
       )
-      setAddresses((prev) => [added, ...prev])
+      setAddresses(prev => [added, ...prev])
       setNewAddress({ address: '', chain: 'ethereum', label: '' })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to add address')
@@ -179,7 +191,7 @@ const EntityForm: React.FC<EntityFormProps> = ({ entity, onClose, onSuccess }) =
   const handleRemoveAddress = async (id: string) => {
     try {
       await removeEntityAddress(id)
-      setAddresses((prev) => prev.filter((a) => a.id !== id))
+      setAddresses(prev => prev.filter(a => a.id !== id))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to remove address')
     }
@@ -206,7 +218,9 @@ const EntityForm: React.FC<EntityFormProps> = ({ entity, onClose, onSuccess }) =
           <div className="p-6 space-y-6">
             {error && (
               <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-                <p className="text-red-800 dark:text-red-200 text-sm">{error}</p>
+                <p className="text-red-800 dark:text-red-200 text-sm">
+                  {error}
+                </p>
               </div>
             )}
 
@@ -218,17 +232,21 @@ const EntityForm: React.FC<EntityFormProps> = ({ entity, onClose, onSuccess }) =
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label
+                    htmlFor="entity_type"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                  >
                     Type *
                   </label>
                   <select
+                    id="entity_type"
                     name="entity_type"
                     value={formData.entity_type}
                     onChange={handleInputChange}
                     required
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
                   >
-                    {entityTypes.map((type) => (
+                    {entityTypes.map(type => (
                       <option key={type.value} value={type.value}>
                         {type.label}
                       </option>
@@ -237,10 +255,14 @@ const EntityForm: React.FC<EntityFormProps> = ({ entity, onClose, onSuccess }) =
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label
+                    htmlFor="category"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                  >
                     Category
                   </label>
                   <input
+                    id="category"
                     type="text"
                     name="category"
                     value={formData.category}
@@ -251,10 +273,14 @@ const EntityForm: React.FC<EntityFormProps> = ({ entity, onClose, onSuccess }) =
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label
+                    htmlFor="name"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                  >
                     Name *
                   </label>
                   <input
+                    id="name"
                     type="text"
                     name="name"
                     value={formData.name}
@@ -266,10 +292,14 @@ const EntityForm: React.FC<EntityFormProps> = ({ entity, onClose, onSuccess }) =
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label
+                    htmlFor="display_name"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                  >
                     Display Name
                   </label>
                   <input
+                    id="display_name"
                     type="text"
                     name="display_name"
                     value={formData.display_name}
@@ -283,14 +313,20 @@ const EntityForm: React.FC<EntityFormProps> = ({ entity, onClose, onSuccess }) =
 
             {/* Contact Info */}
             <div className="space-y-4">
-              <h3 className="text-sm font-medium text-gray-900 dark:text-white">Contact</h3>
+              <h3 className="text-sm font-medium text-gray-900 dark:text-white">
+                Contact
+              </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label
+                    htmlFor="email"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                  >
                     Email
                   </label>
                   <input
+                    id="email"
                     type="email"
                     name="email"
                     value={formData.email}
@@ -300,29 +336,37 @@ const EntityForm: React.FC<EntityFormProps> = ({ entity, onClose, onSuccess }) =
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label
+                    htmlFor="phone"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                  >
                     Phone
                   </label>
                   <input
+                    id="phone"
                     type="tel"
                     name="phone"
                     value={formData.phone}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2;border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
 
                 <div className="sm:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label
+                    htmlFor="website"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                  >
                     Website
                   </label>
                   <input
+                    id="website"
                     type="url"
                     name="website"
                     value={formData.website}
                     onChange={handleInputChange}
                     placeholder="https://"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2;border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
               </div>
@@ -336,232 +380,280 @@ const EntityForm: React.FC<EntityFormProps> = ({ entity, onClose, onSuccess }) =
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label
+                    htmlFor="country_code"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                  >
                     Country
                   </label>
                   <input
+                    id="country_code"
                     type="text"
                     name="country_code"
                     value={formData.country_code}
                     onChange={handleInputChange}
                     placeholder="e.g., US, GB, DE"
                     maxLength={2}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 uppercase"
+                    className="w-full px-3 py-2;border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 uppercase"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label
+                    htmlFor="tax_identifier_type"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                  >
                     Tax ID Type
                   </label>
                   <input
+                    id="tax_identifier_type"
                     type="text"
                     name="tax_identifier_type"
                     value={formData.tax_identifier_type}
                     onChange={handleInputChange}
                     placeholder="e.g., EIN, VAT, UTR"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2;border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label
+                    htmlFor="tax_identifier"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                  >
                     Tax Identifier
                   </label>
                   <input
+                    id="tax_identifier"
                     type="text"
                     name="tax_identifier"
                     value={formData.tax_identifier}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2;border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
                   />
-                </div>
+          const handleNewAddressChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+            setNewAddress(prev => ({
+              ...prev,
+              address: e.target.value,
+            }));
+          }, []);
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Tax Documentation
-                  </label>
-                  <select
-                    name="tax_documentation_status"
-                    value={formData.tax_documentation_status}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
-                  >
-                    {taxDocStatuses.map((status) => (
-                      <option key={status.value} value={status.value}>
-                        {status.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+          const handleNewChainChange = React.useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+            setNewAddress(prev => ({
+              ...prev,
+              chain: e.target.value,
+            }));
+          }, []);
 
-                <div className="sm:col-span-2">
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      name="reportable_payee"
-                      checked={formData.reportable_payee}
-                      onChange={handleInputChange}
-                      className="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500"
-                    />
-                    <span className="text-sm text-gray-700 dark:text-gray-300">
-                      Reportable payee (requires tax reporting when paid)
-                    </span>
-                  </label>
-                </div>
-              </div>
-            </div>
+          const removeAddressHandlers = React.useMemo(() => {
+            const handlers: Record<string, () => void> = {};
+            addresses.forEach(addr => {
+              handlers[addr.id] = () => handleRemoveAddress(addr.id);
+            });
+            return handlers;
+          }, [addresses, handleRemoveAddress]);
 
-            {/* Payment Defaults */}
-            <div className="space-y-4">
-              <h3 className="text-sm font-medium text-gray-900 dark:text-white">
-                Payment Defaults
-              </h3>
+                          </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Default Currency
-                  </label>
-                  <input
-                    type="text"
-                    name="default_currency"
-                    value={formData.default_currency}
-                    onChange={handleInputChange}
-                    placeholder="e.g., USD, EUR"
-                    maxLength={3}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 uppercase"
-                  />
-                </div>
+                          <div>
+                            <label
+                              htmlFor="tax_documentation_status"
+                              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                            >
+                              Tax Documentation
+                            </label>
+                            <select
+                              id="tax_documentation_status"
+                              name="tax_documentation_status"
+                              value={formData.tax_documentation_status}
+                              onChange={handleInputChange}
+                              className="w-full px-3 py-2;border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                            >
+                              {taxDocStatuses.map(status => (
+                                <option key={status.value} value={status.value}>
+                                  {status.label}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Payment Terms (days)
-                  </label>
-                  <input
-                    type="number"
-                    name="default_payment_terms"
-                    value={formData.default_payment_terms}
-                    onChange={handleInputChange}
-                    placeholder="e.g., 30"
-                    min="0"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Wallet Addresses (only when editing) */}
-            {entity && (
-              <div className="space-y-4">
-                <h3 className="text-sm font-medium text-gray-900 dark:text-white">
-                  Wallet Addresses
-                </h3>
-
-                {/* Add address form */}
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={newAddress.address}
-                    onChange={(e) =>
-                      setNewAddress((prev) => ({ ...prev, address: e.target.value }))
-                    }
-                    placeholder="Wallet address"
-                    className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 text-sm font-mono"
-                  />
-                  <select
-                    value={newAddress.chain}
-                    onChange={(e) =>
-                      setNewAddress((prev) => ({ ...prev, chain: e.target.value }))
-                    }
-                    className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 text-sm"
-                  >
-                    <option value="ethereum">Ethereum</option>
-                    <option value="polkadot">Polkadot</option>
-                    <option value="moonbeam">Moonbeam</option>
-                    <option value="moonriver">Moonriver</option>
-                    <option value="astar">Astar</option>
-                  </select>
-                  <button
-                    type="button"
-                    onClick={handleAddAddress}
-                    disabled={!newAddress.address}
-                    className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <Plus className="w-4 h-4" />
-                  </button>
-                </div>
-
-                {/* Address list */}
-                {loadingAddresses ? (
-                  <div className="flex items-center gap-2 text-sm text-gray-500">
-                    <Loader className="w-4 h-4 animate-spin" />
-                    Loading addresses...
-                  </div>
-                ) : addresses.length === 0 ? (
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    No wallet addresses added yet.
-                  </p>
-                ) : (
-                  <div className="space-y-2">
-                    {addresses.map((addr) => (
-                      <div
-                        key={addr.id}
-                        className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-700 rounded-lg"
-                      >
-                        <span className="flex-1 font-mono text-sm truncate">
-                          {addr.address}
-                        </span>
-                        <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-200 dark:bg-gray-600 px-2 py-0.5 rounded">
-                          {addr.chain}
-                        </span>
-                        {addr.is_verified && (
-                          <span className="text-xs text-green-600 dark:text-green-400">
-                            Verified
-                          </span>
-                        )}
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveAddress(addr.id)}
-                          className="p-1 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/20 rounded"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                          <div className="sm:col-span-2">
+                            <label className="flex items-center gap-2">
+                              <input
+                                type="checkbox"
+                                name="reportable_payee"
+                                checked={formData.reportable_payee}
+                                onChange={handleInputChange}
+                                className="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500"
+                              />
+                              <span className="text-sm text-gray-700 dark:text-gray-300">
+                                Reportable payee (requires tax reporting when paid)
+                              </span>
+                            </label>
+                          </div>
+                        </div>
                       </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
 
-            {/* Notes */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Notes
-              </label>
-              <textarea
-                name="notes"
-                value={formData.notes}
-                onChange={handleInputChange}
-                rows={3}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
+                      {/* Payment Defaults */}
+                      <div className="space-y-4">
+                        <h3 className="text-sm font-medium text-gray-900 dark:text-white">
+                          Payment Defaults
+                        </h3>
 
-            {/* Status */}
-            <div>
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  name="is_active"
-                  checked={formData.is_active}
-                  onChange={handleInputChange}
-                  className="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500"
-                />
-                <span className="text-sm text-gray-700 dark:text-gray-300">Active</span>
-              </label>
-            </div>
-          </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div>
+                            <label
+                              htmlFor="default_currency"
+                              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                            >
+                              Default Currency
+                            </label>
+                            <input
+                              id="default_currency"
+                              type="text"
+                              name="default_currency"
+                              value={formData.default_currency}
+                              onChange={handleInputChange}
+                              placeholder="e.g., USD, EUR"
+                              maxLength={3}
+                              className="w-full px-3 py-2;border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 uppercase"
+                            />
+                          </div>
+
+                          <div>
+                            <label
+                              htmlFor="default_payment_terms"
+                              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                            >
+                              Payment Terms (days)
+                            </label>
+                            <input
+                              id="default_payment_terms"
+                              type="number"
+                              name="default_payment_terms"
+                              value={formData.default_payment_terms}
+                              onChange={handleInputChange}
+                              placeholder="e.g., 30"
+                              min="0"
+                              className="w-full px-3 py-2;border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Wallet Addresses (only when editing) */}
+                      {entity && (
+                        <div className="space-y-4">
+                          <h3 className="text-sm font-medium text-gray-900 dark:text-white">
+                            Wallet Addresses
+                          </h3>
+
+                          {/* Add address form */}
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              value={newAddress.address}
+                              onChange={handleNewAddressChange}
+                              placeholder="Wallet address"
+                              className="flex-1 px-3 py-2;border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 text-sm font-mono"
+                            />
+                            <select
+                              value={newAddress.chain}
+                              onChange={handleNewChainChange}
+                              className="px-3 py-2:border border-gray-300 dark:border-gray-600 rounded-lg:bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 text-sm"
+                            >
+                              <option value="ethereum">Ethereum</option>
+                              <option value="polkadot">Polkadot</option>
+                              <option value="moonbeam">Moonbeam</option>
+                              <option value="moonriver">Moonriver</option>
+                              <option value="astar">Astar</option>
+                            </select>
+                            <button
+                              type="button"
+                              onClick={handleAddAddress}
+                              disabled={!newAddress.address}
+                              className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              <Plus className="w-4 h-4" />
+                            </button>
+                          </div>
+
+                          {/* Address list */}
+                          {loadingAddresses ? (
+                            <div className="flex items-center gap-2 text-sm text-gray-500">
+                              <Loader className="w-4 h-4 animate-spin" />
+                              Loading addresses...
+                            </div>
+                          ) : addresses.length === 0 ? (
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                              No wallet addresses added yet.
+                            </p>
+                          ) : (
+                            <div className="space-y-2">
+                              {addresses.map(addr => (
+                                <div
+                                  key={addr.id}
+                                  className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-700 rounded-lg"
+                                >
+                                  <span className="flex-1 font-mono text-sm truncate">
+                                    {addr.address}
+                                  </span>
+                                  <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-200 dark:bg-gray-600 px-2 py-0.5 rounded">
+                                    {addr.chain}
+                                  </span>
+                                  {addr.is_verified && (
+                                    <span className="text-xs text-green-600 dark:text-green-400">
+                                      Verified
+                                    </span>
+                                  )}
+                                  <button
+                                    type="button"
+                                    onClick={removeAddressHandlers[addr.id]}
+                                    className="p-1 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/20 rounded"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Notes */}
+                      <div>
+                        <label
+                          htmlFor="notes"
+                          className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                        >
+                          Notes
+                        </label>
+                        <textarea
+                          id="notes"
+                          name="notes"
+                          value={formData.notes}
+                          onChange={handleInputChange}
+                          rows={3}
+                          className="w-full px-3 py-2;border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+
+                      {/* Status */}
+                      <div>
+                        <label className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            name="is_active"
+                            checked={formData.is_active}
+                            onChange={handleInputChange}
+                            className="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500"
+                          />
+                          <span className="text-sm text-gray-700 dark:text-gray-300">
+                            Active
+                          </span>
+                        </label>
+                      </div>
+                    </div>
 
           {/* Footer */}
           <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
