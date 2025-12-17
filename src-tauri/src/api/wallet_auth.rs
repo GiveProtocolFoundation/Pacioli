@@ -10,6 +10,7 @@ use crate::core::auth_helpers::{
 };
 use crate::core::auth_state::AuthState;
 use chrono::{DateTime, Duration, Utc};
+use sp_core::Pair;
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 use tauri::State;
@@ -221,7 +222,7 @@ pub async fn verify_wallet_signature(
         .await
         .map_err(|e| format!("Database error: {}", e))?;
 
-    let (nonce, stored_address, wallet_type_str, message, used_at) =
+    let (_nonce, stored_address, wallet_type_str, message, used_at) =
         challenge.ok_or("Challenge not found or expired")?;
 
     // Check if challenge was already used
@@ -739,7 +740,7 @@ async fn create_user_with_wallet(
     .to_lowercase();
 
     // Default display name
-    let display_name = wallet_name.unwrap_or_else(|| {
+    let display_name = wallet_name.map(String::from).unwrap_or_else(|| {
         format!(
             "{} Wallet",
             match wallet_type {
