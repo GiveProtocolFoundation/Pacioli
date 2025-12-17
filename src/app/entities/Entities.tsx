@@ -40,8 +40,12 @@ const ModalHeader: React.FC = () => (
       <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-400" />
     </div>
     <div>
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Delete Entity</h3>
-      <p className="text-sm text-gray-500 dark:text-gray-400">This action cannot be undone.</p>
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+        Delete Entity
+      </h3>
+      <p className="text-sm text-gray-500 dark:text-gray-400">
+        This action cannot be undone.
+      </p>
     </div>
   </div>
 )
@@ -53,7 +57,11 @@ interface ModalContentProps {
 }
 
 /** Content panel for the delete confirmation modal with actions */
-const ModalContent: React.FC<ModalContentProps> = ({ isDeleting, onCancel, onConfirm }) => (
+const ModalContent: React.FC<ModalContentProps> = ({
+  isDeleting,
+  onCancel,
+  onConfirm,
+}) => (
   <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
     <button
       onClick={onCancel}
@@ -63,7 +71,8 @@ const ModalContent: React.FC<ModalContentProps> = ({ isDeleting, onCancel, onCon
     </button>
     <ModalHeader />
     <p className="text-gray-600 dark:text-gray-300 mb-6">
-      Are you sure you want to delete this entity? All associated data will be permanently removed.
+      Are you sure you want to delete this entity? All associated data will be
+      permanently removed.
     </p>
     <div className="flex justify-end gap-3">
       <button
@@ -115,7 +124,11 @@ const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
         onClick={onCancel}
         onKeyDown={handleKeyDown}
       />
-      <ModalContent isDeleting={isDeleting} onCancel={onCancel} onConfirm={onConfirm} />
+      <ModalContent
+        isDeleting={isDeleting}
+        onCancel={onCancel}
+        onConfirm={onConfirm}
+      />
     </div>
   )
 }
@@ -135,12 +148,13 @@ const Entities: React.FC = () => {
 
   // Filter and search entities
   const filteredEntities = useMemo(() => {
-    return entities.filter((entity) => {
+    return entities.filter(entity => {
       // Filter by active status
       if (!showInactive && !entity.is_active) return false
 
       // Filter by type
-      if (filterType !== 'all' && entity.entity_type !== filterType) return false
+      if (filterType !== 'all' && entity.entity_type !== filterType)
+        return false
 
       // Search filter
       if (searchQuery) {
@@ -220,7 +234,7 @@ const Entities: React.FC = () => {
 
   const getMenuToggleHandler = useCallback(
     (id: string) => () => {
-      setMenuOpenId((prev) => (prev === id ? null : id))
+      setMenuOpenId(prev => (prev === id ? null : id))
     },
     []
   )
@@ -374,7 +388,7 @@ const Entities: React.FC = () => {
               </tr>
             </thead>
             <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-              {filteredEntities.map((entity) => (
+              {filteredEntities.map(entity => (
                 <tr
                   key={entity.id}
                   className={`hover:bg-gray-50 dark:hover:bg-gray-700 ${
@@ -456,7 +470,9 @@ const Entities: React.FC = () => {
                               className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50"
                             >
                               <Trash2 className="w-4 h-4" />
-                              {deletingId === entity.id ? 'Deleting...' : 'Delete'}
+                              {deletingId === entity.id
+                                ? 'Deleting...'
+                                : 'Delete'}
                             </button>
                           </div>
                         </div>
