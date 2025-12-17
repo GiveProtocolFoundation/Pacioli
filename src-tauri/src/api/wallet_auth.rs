@@ -10,8 +10,8 @@ use crate::core::auth_helpers::{
 };
 use crate::core::auth_state::AuthState;
 use chrono::{DateTime, Duration, Utc};
-use sp_core::Pair;
 use serde::{Deserialize, Serialize};
+use sp_core::Pair;
 use sqlx::FromRow;
 use tauri::State;
 use uuid::Uuid;
