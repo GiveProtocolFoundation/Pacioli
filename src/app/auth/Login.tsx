@@ -28,8 +28,109 @@ import type {
 } from '../../types/auth'
 import PacioliLogo from '../../assets/Pacioli_logo_blue.png'
 
+// =============================================================================
+// Types
+// =============================================================================
+
 type AuthTab = 'email' | 'wallet'
 
+// =============================================================================
+// Helper Component Interfaces
+// =============================================================================
+
+interface WalletLogoProps {
+  provider: WalletProvider
+}
+
+interface WalletButtonProps {
+  wallet: WalletExtensionInfo
+  onClick: () => void
+  loading?: boolean
+}
+
+// =============================================================================
+// Helper Functions
+// =============================================================================
+
+/** Format a wallet address for display (truncate middle) */
+function formatAddress(address: string): string {
+  if (address.length <= 16) return address
+  return `${address.slice(0, 8)}...${address.slice(-8)}`
+}
+
+// =============================================================================
+// Helper Components
+// =============================================================================
+
+/** Displays wallet provider logo with initials */
+const WalletLogo: React.FC<WalletLogoProps> = ({ provider }) => {
+  // Use text placeholders for now - logos can be added later
+  const initials: Record<WalletProvider, string> = {
+    'polkadot-js': 'PJ',
+    subwallet: 'SW',
+    talisman: 'TA',
+    nova: 'NV',
+    metamask: 'MM',
+    walletconnect: 'WC',
+  }
+
+  const colors: Record<WalletProvider, string> = {
+    'polkadot-js': 'bg-pink-500',
+    subwallet: 'bg-green-500',
+    talisman: 'bg-red-500',
+    nova: 'bg-blue-500',
+    metamask: 'bg-orange-500',
+    walletconnect: 'bg-blue-600',
+  }
+
+  return (
+    <div
+      className={`flex h-8 w-8 items-center justify-center rounded-md text-xs font-bold text-white ${colors[provider]}`}
+    >
+      {initials[provider]}
+    </div>
+  )
+}
+
+/** Button for selecting a wallet provider */
+const WalletButton: React.FC<WalletButtonProps> = ({
+  wallet,
+  onClick,
+  loading,
+}) => {
+  return (
+    <button
+      onClick={onClick}
+      disabled={loading}
+      className="flex w-full items-center justify-between rounded-lg border border-input bg-background p-4 transition-colors hover:border-primary hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
+    >
+      <div className="flex items-center gap-3">
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
+          <WalletLogo provider={wallet.provider} />
+        </div>
+        <div className="text-left">
+          <p className="font-medium text-foreground">{wallet.name}</p>
+          {!wallet.installed && (
+            <p className="flex items-center gap-1 text-xs text-muted-foreground">
+              Not installed <ExternalLink className="h-3 w-3" />
+            </p>
+          )}
+        </div>
+      </div>
+      {loading ? (
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      ) : (
+        <ChevronRight className="h-5 w-5 text-muted-foreground" />
+      )}
+    </button>
+  )
+}
+
+// =============================================================================
+// Main Component
+// =============================================================================
+
+/** Login page with email and wallet authentication options */
 const Login: React.FC = () => {
   const navigate = useNavigate()
   const location = useLocation()
@@ -497,91 +598,6 @@ const Login: React.FC = () => {
       </div>
     </div>
   )
-}
-
-// =============================================================================
-// Helper Components
-// =============================================================================
-
-interface WalletButtonProps {
-  wallet: WalletExtensionInfo
-  onClick: () => void
-  loading?: boolean
-}
-
-const WalletButton: React.FC<WalletButtonProps> = ({
-  wallet,
-  onClick,
-  loading,
-}) => {
-  return (
-    <button
-      onClick={onClick}
-      disabled={loading}
-      className="flex w-full items-center justify-between rounded-lg border border-input bg-background p-4 transition-colors hover:border-primary hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
-    >
-      <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
-          <WalletLogo provider={wallet.provider} />
-        </div>
-        <div className="text-left">
-          <p className="font-medium text-foreground">{wallet.name}</p>
-          {!wallet.installed && (
-            <p className="flex items-center gap-1 text-xs text-muted-foreground">
-              Not installed <ExternalLink className="h-3 w-3" />
-            </p>
-          )}
-        </div>
-      </div>
-      {loading ? (
-        <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-      ) : (
-        <ChevronRight className="h-5 w-5 text-muted-foreground" />
-      )}
-    </button>
-  )
-}
-
-interface WalletLogoProps {
-  provider: WalletProvider
-}
-
-const WalletLogo: React.FC<WalletLogoProps> = ({ provider }) => {
-  // Use text placeholders for now - logos can be added later
-  const initials: Record<WalletProvider, string> = {
-    'polkadot-js': 'PJ',
-    subwallet: 'SW',
-    talisman: 'TA',
-    nova: 'NV',
-    metamask: 'MM',
-    walletconnect: 'WC',
-  }
-
-  const colors: Record<WalletProvider, string> = {
-    'polkadot-js': 'bg-pink-500',
-    subwallet: 'bg-green-500',
-    talisman: 'bg-red-500',
-    nova: 'bg-blue-500',
-    metamask: 'bg-orange-500',
-    walletconnect: 'bg-blue-600',
-  }
-
-  return (
-    <div
-      className={`flex h-8 w-8 items-center justify-center rounded-md text-xs font-bold text-white ${colors[provider]}`}
-    >
-      {initials[provider]}
-    </div>
-  )
-}
-
-// =============================================================================
-// Helper Functions
-// =============================================================================
-
-function formatAddress(address: string): string {
-  if (address.length <= 16) return address
-  return `${address.slice(0, 8)}...${address.slice(-8)}`
 }
 
 export default Login
