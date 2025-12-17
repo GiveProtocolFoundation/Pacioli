@@ -22,7 +22,12 @@ import {
   type ChangePasswordInput,
   type ProfileWithRole,
 } from '../services/auth'
-import type { Permission, UserRole, AuthResponse, UserStatus } from '../types/auth'
+import type {
+  Permission,
+  UserRole,
+  AuthResponse,
+  UserStatus,
+} from '../types/auth'
 import { hasPermission, ROLE_PERMISSIONS, parseAuthError } from '../types/auth'
 
 /**
