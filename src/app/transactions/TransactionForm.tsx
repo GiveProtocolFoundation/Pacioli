@@ -556,16 +556,23 @@ const TransactionForm: React.FC = () => {
                   {showEntityDropdown && (
                     <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-60 overflow-y-auto">
                       {filteredEntities.length > 0 ? (
-                        filteredEntities.map(entity => (
-                          <button
-                            key={entity.id}
-                            type="button"
-                            onClick={() =>
+                        const entityClickHandlers = useMemo(() => {
+                          const handlers: Record<number, () => void> = {}
+                          filteredEntities.forEach(entity => {
+                            handlers[entity.id] = () =>
                               handleEntitySelect(
                                 entity.id,
                                 entity.display_name || entity.name
                               )
-                            }
+                          })
+                          return handlers
+                        }, [filteredEntities, handleEntitySelect])
+
+                        filteredEntities.map(entity => (
+                          <button
+                            key={entity.id}
+                            type="button"
+                            onClick={entityClickHandlers[entity.id]}
                             className="w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-between"
                           >
                             <div>
