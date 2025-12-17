@@ -203,7 +203,7 @@ const recentRuns: RecentRun[] = [
   {
     id: '1',
     reportName: 'Crypto Holdings Report',
-    ranAt: '2025-10-17T08:00:00Z',
+  ranAt: '2025-10-17T08:00:00Z',
     ranBy: 'John Smith',
     format: 'pdf',
     status: 'completed',
@@ -233,6 +233,33 @@ const recentRuns: RecentRun[] = [
     status: 'completed',
   },
 ]
+
+const SearchInput: React.FC<{ searchQuery: string; onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void }> = ({ searchQuery, onSearchChange }) => (
+  <div className="relative flex-1">
+    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+    <input
+      type="text"
+      placeholder="Search reports..."
+      value={searchQuery}
+      onChange={onSearchChange}
+      className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+    />
+  </div>
+)
+
+const FavoritesToggle: React.FC<{ showFavoritesOnly: boolean; onToggle: () => void }> = ({ showFavoritesOnly, onToggle }) => (
+  <button
+    onClick={onToggle}
+    className={`px-4 py-2 rounded-lg border flex items-center justify-center transition-colors ${
+      showFavoritesOnly
+        ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
+        : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
+    }`}
+  >
+    <Star className="w-4 h-4 mr-2" />
+    Favorites
+  </button>
+)
 
 const Reports: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<
@@ -385,25 +412,12 @@ const Reports: React.FC = () => {
             {/* Search and Filters */}
             <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
               <div className="flex flex-col sm:flex-row gap-4">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder="Search reports..."
-                    value={searchQuery}
-                    onChange={handleSearchChange}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <button
-                  onClick={handleToggleFavorites}
-                  className={`px-4 py-2 rounded-lg border flex items-center justify-center transition-colors ${
-                    showFavoritesOnly
-                      ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
-                      : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
-                  }`}
-                >
-                  <Star
+                <SearchInput searchQuery={searchQuery} onSearchChange={handleSearchChange} />
+                <FavoritesToggle showFavoritesOnly={showFavoritesOnly} onToggle={handleToggleFavorites} />
+              </div>
+            </div>
+
+            {/* ... rest of component unchanged ... */}
                     className={`w-4 h-4 mr-2 ${showFavoritesOnly ? 'fill-current' : ''}`}
                   />
                   Favorites
@@ -445,6 +459,31 @@ const Reports: React.FC = () => {
 
             {/* Reports List */}
             <div className="space-y-3">
+              const ReportInfo = ({ report, Icon }) => (
+                <div className="flex items-start flex-1">
+                  <div className="report-icon-container flex-shrink-0">
+                    <Icon />
+                  </div>
+                  <div className="ml-4 flex-1">
+                    <div className="flex items-center">
+                      <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+                        {report.name}
+                      </h3>
+                      {report.favorite && (
+                        <Star className="w-4 h-4 ml-2 favorite-star active" />
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-500 dark:text-[#94a3b8] mt-1">
+                      {report.description}
+                    </p>
+                    {report.lastRun && (
+                      <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
+                        Last run: {formatDate(report.lastRun)}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              );
               {filteredReports.map(report => {
                 const Icon = report.icon
                 return (
@@ -453,29 +492,7 @@ const Reports: React.FC = () => {
                     className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:border-gray-300 dark:hover:border-gray-600 transition-colors"
                   >
                     <div className="flex items-start justify-between">
-                      <div className="flex items-start flex-1">
-                        <div className="report-icon-container flex-shrink-0">
-                          <Icon />
-                        </div>
-                        <div className="ml-4 flex-1">
-                          <div className="flex items-center">
-                            <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
-                              {report.name}
-                            </h3>
-                            {report.favorite && (
-                              <Star className="w-4 h-4 ml-2 favorite-star active" />
-                            )}
-                          </div>
-                          <p className="text-xs text-gray-500 dark:text-[#94a3b8] mt-1">
-                            {report.description}
-                          </p>
-                          {report.lastRun && (
-                            <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
-                              Last run: {formatDate(report.lastRun)}
-                            </p>
-                          )}
-                        </div>
-                      </div>
+                      <ReportInfo report={report} Icon={Icon} />
                       <div className="flex items-center space-x-2 ml-4">
                         <button
                           className="p-2 action-icon hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors"

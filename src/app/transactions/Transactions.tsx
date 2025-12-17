@@ -152,6 +152,56 @@ const Transactions: React.FC = () => {
     []
   )
 
+  const FilterTabs = ({ filter, transactions }: { filter: string; transactions: any[] }) => (
+    <div className="mb-6 border-b border-gray-200 dark:border-gray-700">
+      <nav className="flex space-x-8">
+        {[
+          {
+            key: 'all',
+            label: 'All Transactions',
+            count: transactions.length,
+          },
+          {
+            key: 'revenue',
+            label: 'Revenue',
+            count: transactions.filter(t => t.type === 'revenue').length,
+          },
+          {
+            key: 'expense',
+            label: 'Expense',
+            count: transactions.filter(t => t.type === 'expense').length,
+          },
+          {
+            key: 'transfers',
+            label: 'Transfers',
+            count: transactions.filter(t => t.type === 'transfer').length,
+          },
+        ].map(tab => (
+          <Link
+            key={tab.key}
+            to={`/transactions?filter=${tab.key}`}
+            className={`pb-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+              filter === tab.key
+                ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                : 'border-transparent text-gray-500 dark:text-[#94a3b8] hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
+            }`}
+          >
+            {tab.label}
+            <span
+              className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
+                filter === tab.key
+                  ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
+                  : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-[#94a3b8]'
+              }`}
+            >
+              {tab.count}
+            </span>
+          </Link>
+        ))}
+      </nav>
+    </div>
+  )
+
   return (
     <div className="p-6 min-h-screen ledger-background">
       {/* Header */}
@@ -174,53 +224,7 @@ const Transactions: React.FC = () => {
       </div>
 
       {/* Filter Tabs */}
-      <div className="mb-6 border-b border-gray-200 dark:border-gray-700">
-        <nav className="flex space-x-8">
-          {[
-            {
-              key: 'all',
-              label: 'All Transactions',
-              count: transactions.length,
-            },
-            {
-              key: 'revenue',
-              label: 'Revenue',
-              count: transactions.filter(t => t.type === 'revenue').length,
-            },
-            {
-              key: 'expense',
-              label: 'Expense',
-              count: transactions.filter(t => t.type === 'expense').length,
-            },
-            {
-              key: 'transfers',
-              label: 'Transfers',
-              count: transactions.filter(t => t.type === 'transfer').length,
-            },
-          ].map(tab => (
-            <Link
-              key={tab.key}
-              to={`/transactions?filter=${tab.key}`}
-              className={`pb-4 px-1 border-b-2 font-medium text-sm transition-colors ${
-                filter === tab.key
-                  ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                  : 'border-transparent text-gray-500 dark:text-[#94a3b8] hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
-              }`}
-            >
-              {tab.label}
-              <span
-                className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
-                  filter === tab.key
-                    ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
-                    : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-[#94a3b8]'
-                }`}
-              >
-                {tab.count}
-              </span>
-            </Link>
-          ))}
-        </nav>
-      </div>
+      <FilterTabs filter={filter} transactions={transactions} />
 
       {/* Search and Actions Bar */}
       <div className="mb-6 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">

@@ -88,6 +88,69 @@ const assetAllocation = [
   { name: 'Others', value: 7, amount: 134993, color: '#8B5CF6' },
 ]
 
+const KPICard: React.FC<{ kpi: KPI }> = ({ kpi }) => {
+  const Icon = kpi.icon
+  const TrendIcon = kpi.trend === 'up' ? ArrowUpRight : ArrowDownRight
+  return (
+    <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+      <div className="flex items-center justify-between mb-4">
+        <div className="w-12 h-12 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+          <Icon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+        </div>
+        <div
+          className={`flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+            kpi.trend === 'up'
+              ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+              : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+          }`}
+        >
+          <TrendIcon className="w-3 h-3 mr-1" />
+          {Math.abs(kpi.change)}%
+        </div>
+      </div>
+      <p className="text-sm text-gray-500 dark:text-[#94a3b8]">{kpi.label}</p>
+      <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">{kpi.value}</p>
+      <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">{kpi.changeLabel}</p>
+    </div>
+  )
+}
+
+const TimePeriodDropdown: React.FC<{
+  timePeriods: { value: TimePeriod; label: string }[]
+  current: TimePeriod
+  show: boolean
+  onToggle: () => void
+  onSelect: (value: TimePeriod) => void
+}> = ({ timePeriods, current, show, onToggle, onSelect }) => (
+  <div className="relative">
+    <button
+      onClick={onToggle}
+      className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center"
+    >
+      <Calendar className="w-4 h-4 mr-2" />
+      {timePeriods.find(p => p.value === current)?.label}
+      <ChevronDown className="w-4 h-4 ml-2" />
+    </button>
+    {show && (
+      <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-10">
+        {timePeriods.map(period => (
+          <button
+            key={period.value}
+            onClick={() => onSelect(period.value)}
+            className={`w-full px-4 py-2 text-sm text-left hover:bg-gray-50 dark:hover:bg-gray-800 first:rounded-t-lg last:rounded-b-lg ${
+              current === period.value
+                ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30'
+                : 'text-gray-700 dark:text-gray-300'
+            }`}
+          >
+            {period.label}
+          </button>
+        ))}
+      </div>
+    )}
+  </div>
+)
+
 const Analytics: React.FC = () => {
   const [timePeriod, setTimePeriod] = useState<TimePeriod>('30d')
   const [showPeriodDropdown, setShowPeriodDropdown] = useState(false)
@@ -129,38 +192,16 @@ const Analytics: React.FC = () => {
               </p>
             </div>
             <div className="flex items-center space-x-3">
-              <div className="relative">
-                <button
-                  onClick={handleTogglePeriodDropdown}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center"
-                >
-                  <Calendar className="w-4 h-4 mr-2" />
-                  {currentPeriodLabel}
-                  <ChevronDown className="w-4 h-4 ml-2" />
-                </button>
-                {showPeriodDropdown && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-10">
-                    {timePeriods.map(period => {
-                      const handleClick = createPeriodSelectHandler(
-                        period.value
-                      )
-                      return (
-                        <button
-                          key={period.value}
-                          onClick={handleClick}
-                          className={`w-full px-4 py-2 text-sm text-left hover:bg-gray-50 dark:hover:bg-gray-800 first:rounded-t-lg last:rounded-b-lg ${
-                            timePeriod === period.value
-                              ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30'
-                              : 'text-gray-700 dark:text-gray-300'
-                          }`}
-                        >
-                          {period.label}
-                        </button>
-                      )
-                    })}
-                  </div>
-                )}
-              </div>
+              <TimePeriodDropdown
+                timePeriods={timePeriods}
+                current={timePeriod}
+                show={showPeriodDropdown}
+                onToggle={handleTogglePeriodDropdown}
+                onSelect={value => {
+                  setTimePeriod(value)
+                  setShowPeriodDropdown(false)
+                }}
+              />
               <button className="p-2 text-gray-600 dark:text-[#94a3b8] hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg">
                 <RefreshCw className="w-5 h-5" />
               </button>
@@ -178,41 +219,9 @@ const Analytics: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* KPIs */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          {kpis.map(kpi => {
-            const Icon = kpi.icon
-            const TrendIcon = kpi.trend === 'up' ? ArrowUpRight : ArrowDownRight
-            return (
-              <div
-                key={kpi.id}
-                className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-6"
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-12 h-12 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                    <Icon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                  </div>
-                  <div
-                    className={`flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                      kpi.trend === 'up'
-                        ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
-                        : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
-                    }`}
-                  >
-                    <TrendIcon className="w-3 h-3 mr-1" />
-                    {Math.abs(kpi.change)}%
-                  </div>
-                </div>
-                <p className="text-sm text-gray-500 dark:text-[#94a3b8]">
-                  {kpi.label}
-                </p>
-                <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
-                  {kpi.value}
-                </p>
-                <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
-                  {kpi.changeLabel}
-                </p>
-              </div>
-            )
-          })}
+          {kpis.map(kpi => (
+            <KPICard key={kpi.id} kpi={kpi} />
+          ))}
         </div>
 
         {/* Charts Grid */}

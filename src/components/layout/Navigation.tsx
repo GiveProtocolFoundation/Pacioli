@@ -167,6 +167,35 @@ const Navigation: React.FC<NavigationProps> = ({
     [toggleExpanded]
   )
 
+  // Extracted sub-navigation items into a separate component
+  const SubNavItems: React.FC<{
+    subItems: NavItem[]
+    expandedItems: string[]
+    location: ReturnType<typeof useLocation>
+    onLinkClick?: () => void
+  }> = ({ subItems, location, onLinkClick }) => (
+    <ul className="mt-1 ml-8 space-y-1">
+      {subItems.map(subItem => {
+        const isSubActive = location.pathname + location.search === subItem.href
+        return (
+          <li key={subItem.name}>
+            <Link
+              to={subItem.href}
+              onClick={onLinkClick}
+              className={`block w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${
+                isSubActive
+                  ? 'text-[#007AFF] dark:text-[#f1f5f9] bg-[#E5F2FF] dark:bg-[#66B3FF]/15 font-medium'
+                  : 'text-gray-600 dark:text-[#94a3b8] hover:bg-gray-50 dark:hover:bg-gray-800 dark:hover:text-[#cbd5e1] font-normal'
+              }`}
+            >
+              {subItem.name}
+            </Link>
+          </li>
+        )
+      })}
+    </ul>
+  )
+
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-black">
       {/* Sidebar for desktop */}
@@ -256,26 +285,7 @@ const Navigation: React.FC<NavigationProps> = ({
 
                   {/* Sub-items */}
                   {item.subItems && expandedItems.includes(item.name) && (
-                    <ul className="mt-1 ml-8 space-y-1">
-                      {item.subItems.map(subItem => {
-                        const isSubActive =
-                          location.pathname + location.search === subItem.href
-                        return (
-                          <li key={subItem.name}>
-                            <Link
-                              to={subItem.href}
-                              className={`block w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${
-                                isSubActive
-                                  ? 'text-[#007AFF] dark:text-[#f1f5f9] bg-[#E5F2FF] dark:bg-[#66B3FF]/15 font-medium'
-                                  : 'text-gray-600 dark:text-[#94a3b8] hover:bg-gray-50 dark:hover:bg-gray-800 dark:hover:text-[#cbd5e1] font-normal'
-                              }`}
-                            >
-                              {subItem.name}
-                            </Link>
-                          </li>
-                        )
-                      })}
-                    </ul>
+                    <SubNavItems subItems={item.subItems} expandedItems={expandedItems} location={location} />
                   )}
                 </li>
               )
@@ -412,6 +422,22 @@ const Navigation: React.FC<NavigationProps> = ({
                             </span>
                           )}
                         </Link>
+                      )}
+
+                      {/* Sub-items */}
+                      {item.subItems && expandedItems.includes(item.name) && (
+                        <SubNavItems
+                          subItems={item.subItems}
+                          expandedItems={expandedItems}
+                          location={location}
+                          onLinkClick={handleCloseSidebar}
+                        />
+                      )}
+                    </li>
+                  )
+                })}
+              </ul>
+            </nav>
                       )}
 
                       {item.subItems && expandedItems.includes(item.name) && (

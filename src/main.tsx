@@ -7,16 +7,22 @@ import { CurrencyProvider } from './contexts/CurrencyContext'
 import { OrganizationProvider } from './contexts/OrganizationContext'
 import { AuthProvider } from './contexts/AuthContext'
 
+const Providers: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <AuthProvider>
+    <ThemeProvider>
+      <CurrencyProvider>
+        <OrganizationProvider>
+          {children}
+        </OrganizationProvider>
+      </CurrencyProvider>
+    </ThemeProvider>
+  </AuthProvider>
+)
+
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
-    <AuthProvider>
-      <ThemeProvider>
-        <CurrencyProvider>
-          <OrganizationProvider>
-            <App />
-          </OrganizationProvider>
-        </CurrencyProvider>
-      </ThemeProvider>
-    </AuthProvider>
+    <Providers>
+      <App />
+    </Providers>
   </React.StrictMode>
 )

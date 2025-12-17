@@ -546,49 +546,53 @@ const EntityForm: React.FC<EntityFormProps> = ({ entity, onClose, onSuccess }) =
     return handlers
   }, [addresses, handleRemoveAddress])
 
+  const BodySection = () => (
+    <div className="p-6 space-y-6">
+      {error && (
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+          <p className="text-red-800 dark:text-red-200 text-sm">{error}</p>
+        </div>
+      )}
+      <BasicInfoSection formData={formData} onChange={handleInputChange} />
+      <ContactSection formData={formData} onChange={handleInputChange} />
+      <TaxSection formData={formData} onChange={handleInputChange} />
+      <PaymentSection formData={formData} onChange={handleInputChange} />
+      {entity && (
+        <WalletAddressesSection
+          addresses={addresses}
+          loadingAddresses={loadingAddresses}
+          newAddress={newAddress}
+          onAddressChange={handleNewAddressChange}
+          onChainChange={handleNewAddressChainChange}
+          onAddAddress={handleAddAddress}
+          removeAddressHandlers={removeAddressHandlers}
+        />
+      )}
+      <FormField id="notes" label="Notes">
+        <textarea id="notes" name="notes" value={formData.notes} onChange={handleInputChange} rows={3} className={inputClassName} />
+      </FormField>
+      <div>
+        <label className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            id="is_active"
+            name="is_active"
+            checked={formData.is_active}
+            onChange={handleInputChange}
+            className="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500"
+          />
+          <span className="text-sm text-gray-700 dark:text-gray-300">Active</span>
+        </label>
+      </div>
+    </div>
+  )
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         <FormHeader isEditing={!!entity} onClose={onClose} />
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto">
-          <div className="p-6 space-y-6">
-            {error && (
-              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-                <p className="text-red-800 dark:text-red-200 text-sm">{error}</p>
-              </div>
-            )}
-            <BasicInfoSection formData={formData} onChange={handleInputChange} />
-            <ContactSection formData={formData} onChange={handleInputChange} />
-            <TaxSection formData={formData} onChange={handleInputChange} />
-            <PaymentSection formData={formData} onChange={handleInputChange} />
-            {entity && (
-              <WalletAddressesSection
-                addresses={addresses}
-                loadingAddresses={loadingAddresses}
-                newAddress={newAddress}
-                onAddressChange={handleNewAddressChange}
-                onChainChange={handleNewAddressChainChange}
-                onAddAddress={handleAddAddress}
-                removeAddressHandlers={removeAddressHandlers}
-              />
-            )}
-            <FormField id="notes" label="Notes">
-              <textarea id="notes" name="notes" value={formData.notes} onChange={handleInputChange} rows={3} className={inputClassName} />
-            </FormField>
-            <div>
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="is_active"
-                  name="is_active"
-                  checked={formData.is_active}
-                  onChange={handleInputChange}
-                  className="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500"
-                />
-                <span className="text-sm text-gray-700 dark:text-gray-300">Active</span>
-              </label>
-            </div>
-          </div>
+          <BodySection />
           <FormFooter isSubmitting={isSubmitting} isEditing={!!entity} onClose={onClose} />
         </form>
       </div>

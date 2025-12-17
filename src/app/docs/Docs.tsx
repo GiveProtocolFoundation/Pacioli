@@ -162,6 +162,68 @@ const documentationStructure: DocSection[] = [
   },
 ]
 
+const SectionItems: React.FC<{
+  items: { id: string; title: string; items?: { id: string; title: string }[] }[];
+  expandedItems: string[];
+  selectedDoc: string;
+  onItemClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
+  onSelectDoc: (e: React.MouseEvent<HTMLButtonElement>) => void;
+}> = ({ items, expandedItems, selectedDoc, onItemClick, onSelectDoc }) => (
+  <div className="ml-6 mt-1 space-y-1">
+    {items.map(item => {
+      const hasSubItems = item.items && item.items.length > 0
+      const isItemExpanded = expandedItems.includes(item.id)
+      const isSelected = selectedDoc === item.id
+
+      return (
+        <div key={item.id}>
+          <button
+            data-item-id={item.id}
+            data-has-subitems={hasSubItems ? 'true' : 'false'}
+            onClick={onItemClick}
+            className={`w-full flex items-center justify-between px-3 py-1.5 text-sm rounded transition-colors text-left ${
+              isSelected
+                ? 'bg-[#007AFF]/10 dark:bg-[#66B3FF]/20 text-[#007AFF] dark:text-[#66B3FF] font-medium'
+                : 'text-gray-600 dark:text-[#94a3b8] hover:bg-gray-50 dark:hover:bg-gray-800'
+            }`}
+          >
+            <span>{item.title}</span>
+            {hasSubItems &&
+              (isItemExpanded ? (
+                <ChevronDown className="w-3 h-3" />
+              ) : (
+                <ChevronRight className="w-3 h-3" />
+              ))}
+          </button>
+
+          {hasSubItems && isItemExpanded && item.items && (
+            <div className="ml-4 mt-1 space-y-1">
+              {item.items.map(subItem => {
+                const isSubSelected = selectedDoc === subItem.id
+
+                return (
+                  <button
+                    key={subItem.id}
+                    data-doc-id={subItem.id}
+                    onClick={onSelectDoc}
+                    className={`w-full px-3 py-1 text-xs rounded transition-colors text-left ${
+                      isSubSelected
+                        ? 'bg-[#007AFF]/10 dark:bg-[#66B3FF]/20 text-[#007AFF] dark:text-[#66B3FF] font-medium'
+                        : 'text-gray-600 dark:text-[#94a3b8] hover:bg-gray-50 dark:hover:bg-gray-800'
+                    }`}
+                  >
+                    {subItem.title}
+                  </button>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      )
+    })}
+  </div>
+)
+
 const Docs: React.FC = () => {
   const [expandedSections, setExpandedSections] = useState<string[]>([
     'getting-started',
@@ -266,55 +328,20 @@ const Docs: React.FC = () => {
                       </button>
 
                       {isExpanded && (
-                        <div className="ml-6 mt-1 space-y-1">
-                          {section.items.map(item => {
-                            const hasSubItems =
-                              item.items && item.items.length > 0
-                            const isItemExpanded = expandedItems.includes(
-                              item.id
-                            )
-                            const isSelected = selectedDoc === item.id
-
-                            return (
-                              <div key={item.id}>
-                                <button
-                                  data-item-id={item.id}
-                                  data-has-subitems={
-                                    hasSubItems ? 'true' : 'false'
-                                  }
-                                  onClick={handleItemClick}
-                                  className={`w-full flex items-center justify-between px-3 py-1.5 text-sm rounded transition-colors text-left ${
-                                    isSelected
-                                      ? 'bg-[#007AFF]/10 dark:bg-[#66B3FF]/20 text-[#007AFF] dark:text-[#66B3FF] font-medium'
-                                      : 'text-gray-600 dark:text-[#94a3b8] hover:bg-gray-50 dark:hover:bg-gray-800'
-                                  }`}
-                                >
-                                  <span>{item.title}</span>
-                                  {hasSubItems &&
-                                    (isItemExpanded ? (
-                                      <ChevronDown className="w-3 h-3" />
-                                    ) : (
-                                      <ChevronRight className="w-3 h-3" />
-                                    ))}
-                                </button>
-
-                                {hasSubItems &&
-                                  isItemExpanded &&
-                                  item.items && (
-                                    <div className="ml-4 mt-1 space-y-1">
-                                      {item.items.map(subItem => {
-                                        const isSubSelected =
-                                          selectedDoc === subItem.id
-
-                                        return (
-                                          <button
-                                            key={subItem.id}
-                                            data-doc-id={subItem.id}
-                                            onClick={handleSelectDoc}
-                                            className={`w-full px-3 py-1 text-xs rounded transition-colors text-left ${
-                                              isSubSelected
-                                                ? 'bg-[#007AFF]/10 dark:bg-[#66B3FF]/20 text-[#007AFF] dark:text-[#66B3FF] font-medium'
-                                                : 'text-gray-600 dark:text-[#94a3b8] hover:bg-gray-50 dark:hover:bg-gray-800'
+                        <SectionItems
+                          items={section.items}
+                          expandedItems={expandedItems}
+                          selectedDoc={selectedDoc}
+                          onItemClick={handleItemClick}
+                          onSelectDoc={handleSelectDoc}
+                        />
+                      )}
+                    </div>
+                  )
+                })}
+              </nav>
+            </div>
+          </aside>
                                             }`}
                                           >
                                             {subItem.title}

@@ -141,6 +141,161 @@ const Profile: React.FC = () => {
     [handleSecurityChange]
   )
 
+  // Extracted components to reduce JSX nesting
+  const PersonalInfo: React.FC<{
+    profile: UserProfile
+    createProfileInputHandler: (
+      key: keyof UserProfile
+    ) => (
+      e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    ) => void
+  }> = ({ profile, createProfileInputHandler }) => (
+    <>
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+        Personal Information
+      </h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label
+            htmlFor="firstName"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+          >
+            First Name
+          </label>
+          <input
+            id="firstName"
+            type="text"
+            value={profile.firstName}
+            onChange={createProfileInputHandler('firstName')}
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+        <div>
+          <label
+            htmlFor="lastName"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+          >
+            Last Name
+          </label>
+          <input
+            id="lastName"
+            type="text"
+            value={profile.lastName}
+            onChange={createProfileInputHandler('lastName')}
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+        <div>
+          <label
+            htmlFor="email"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+          >
+            Email Address
+          </label>
+          <div className="relative">
+            <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              id="email"
+              type="email"
+              value={profile.email}
+              onChange={createProfileInputHandler('email')}
+              className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        </div>
+        <div>
+          <label
+            htmlFor="phone"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+          >
+            Phone Number
+          </label>
+          <div className="relative">
+            <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              id="phone"
+              type="tel"
+              value={profile.phone}
+              onChange={createProfileInputHandler('phone')}
+              className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        </div>
+      </div>
+    </>
+  )
+
+  const WorkInfo: React.FC<{
+    profile: UserProfile
+    createProfileInputHandler: (
+      key: keyof UserProfile
+    ) => (
+      e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    ) => void
+  }> = ({ profile, createProfileInputHandler }) => (
+    <>
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+        Work Information
+      </h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label
+            htmlFor="jobTitle"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+          >
+            Job Title
+          </label>
+          <div className="relative">
+            <Briefcase className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              id="jobTitle"
+              type="text"
+              value={profile.jobTitle}
+              onChange={createProfileInputHandler('jobTitle')}
+              className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        </div>
+        <div>
+          <label
+            htmlFor="department"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+          >
+            Department
+          </label>
+          <div className="relative">
+            <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              id="department"
+              type="text"
+              value={profile.department}
+              onChange={createProfileInputHandler('department')}
+              className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        </div>
+        <div className="md:col-span-2">
+          <label
+            htmlFor="location"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+          >
+            Location
+          </label>
+          <div className="relative">
+            <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              id="location"
+              type="text"
+              value={profile.location}
+              onChange={createProfileInputHandler('location')}
+              className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        </div>
+      </div>
+    </>
+  )
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black">
       {/* Header */}
@@ -259,139 +414,16 @@ const Profile: React.FC = () => {
               {activeTab === 'profile' && (
                 <div className="space-y-6">
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                      Personal Information
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label
-                          htmlFor="firstName"
-                          className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                        >
-                          First Name
-                        </label>
-                        <input
-                          id="firstName"
-                          type="text"
-                          value={profile.firstName}
-                          onChange={createProfileInputHandler('firstName')}
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                      </div>
-                      <div>
-                        <label
-                          htmlFor="lastName"
-                          className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                        >
-                          Last Name
-                        </label>
-                        <input
-                          id="lastName"
-                          type="text"
-                          value={profile.lastName}
-                          onChange={createProfileInputHandler('lastName')}
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                      </div>
-                      <div>
-                        <label
-                          htmlFor="email"
-                          className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                        >
-                          Email Address
-                        </label>
-                        <div className="relative">
-                          <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                          <input
-                            id="email"
-                            type="email"
-                            value={profile.email}
-                            onChange={createProfileInputHandler('email')}
-                            className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          />
-                        </div>
-                      </div>
-                      <div>
-                        <label
-                          htmlFor="phone"
-                          className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                        >
-                          Phone Number
-                        </label>
-                        <div className="relative">
-                          <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                          <input
-                            id="phone"
-                            type="tel"
-                            value={profile.phone}
-                            onChange={createProfileInputHandler('phone')}
-                            className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          />
-                        </div>
-                      </div>
-                    </div>
+                    <PersonalInfo
+                      profile={profile}
+                      createProfileInputHandler={createProfileInputHandler}
+                    />
                   </div>
-
                   <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                      Work Information
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label
-                          htmlFor="jobTitle"
-                          className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                        >
-                          Job Title
-                        </label>
-                        <div className="relative">
-                          <Briefcase className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                          <input
-                            id="jobTitle"
-                            type="text"
-                            value={profile.jobTitle}
-                            onChange={createProfileInputHandler('jobTitle')}
-                            className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          />
-                        </div>
-                      </div>
-                      <div>
-                        <label
-                          htmlFor="department"
-                          className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                        >
-                          Department
-                        </label>
-                        <div className="relative">
-                          <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                          <input
-                            id="department"
-                            type="text"
-                            value={profile.department}
-                            onChange={createProfileInputHandler('department')}
-                            className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          />
-                        </div>
-                      </div>
-                      <div className="md:col-span-2">
-                        <label
-                          htmlFor="location"
-                          className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                        >
-                          Location
-                        </label>
-                        <div className="relative">
-                          <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                          <input
-                            id="location"
-                            type="text"
-                            value={profile.location}
-                            onChange={createProfileInputHandler('location')}
-                            className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          />
-                        </div>
-                      </div>
-                    </div>
+                    <WorkInfo
+                      profile={profile}
+                      createProfileInputHandler={createProfileInputHandler}
+                    />
                   </div>
                 </div>
               )}
@@ -582,6 +614,12 @@ const Profile: React.FC = () => {
                         <input
                           type="checkbox"
                           checked={security.emailNotifications}
+                          onChange={createSecurityToggleHandler('emailNotifications')}
+                          className="sr-only peer"
+                        />
+                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600" />
+                      </label>
+                    </div>
                           onChange={createSecurityToggleHandler(
                             'emailNotifications'
                           )}
