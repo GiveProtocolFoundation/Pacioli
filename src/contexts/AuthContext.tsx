@@ -3,7 +3,14 @@
  * Manages user authentication state and provides auth operations across the application
  */
 
-import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react'
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+  useRef,
+} from 'react'
 import {
   authService,
   isAuthenticated as checkIsAuthenticated,
@@ -52,13 +59,17 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 // Session ID storage key
 const SESSION_ID_KEY = 'pacioli_session_id'
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [user, setUser] = useState<AuthUser | null>(null)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [userProfiles, setUserProfiles] = useState<ProfileWithRole[]>([])
-  const [currentProfileRole, setCurrentProfileRole] = useState<UserRole | null>(null)
+  const [currentProfileRole, setCurrentProfileRole] = useState<UserRole | null>(
+    null
+  )
 
   // Ref to track if we're initializing
   const initializingRef = useRef(false)
@@ -85,18 +96,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       // Try to get current user with auto-refresh
-      const currentUser = await withAutoRefresh((token) => authService.getCurrentUser(token))
+      const currentUser = await withAutoRefresh(token =>
+        authService.getCurrentUser(token)
+      )
       setUser(currentUser)
       setIsAuthenticated(true)
 
       // Load user's profiles
-      const profiles = await withAutoRefresh((token) => authService.getUserProfiles(token))
+      const profiles = await withAutoRefresh(token =>
+        authService.getUserProfiles(token)
+      )
       setUserProfiles(profiles)
 
       // Set current profile role if we have a stored profile selection
       const storedProfileId = localStorage.getItem('currentProfileId')
       if (storedProfileId) {
-        const currentProfileData = profiles.find((p) => p.profile_id === storedProfileId)
+        const currentProfileData = profiles.find(
+          p => p.profile_id === storedProfileId
+        )
         if (currentProfileData) {
           setCurrentProfileRole(currentProfileData.role)
         } else if (profiles.length > 0) {
@@ -161,7 +178,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'currentProfileId' && e.newValue) {
-        const profile = userProfiles.find((p) => p.profile_id === e.newValue)
+        const profile = userProfiles.find(p => p.profile_id === e.newValue)
         if (profile) {
           setCurrentProfileRole(profile.role)
         }
@@ -172,34 +189,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => window.removeEventListener('storage', handleStorageChange)
   }, [userProfiles])
 
-  const login = useCallback(async (credentials: LoginCredentials): Promise<void> => {
-    try {
-      setIsLoading(true)
-      setError(null)
+  const login = useCallback(
+    async (credentials: LoginCredentials): Promise<void> => {
+      try {
+        setIsLoading(true)
+        setError(null)
 
-      const response = await authService.login(credentials)
+        const response = await authService.login(credentials)
 
-      // Store session ID for logout
-      localStorage.setItem(SESSION_ID_KEY, response.user.id)
+        // Store session ID for logout
+        localStorage.setItem(SESSION_ID_KEY, response.user.id)
 
-      setUser(response.user)
-      setIsAuthenticated(true)
+        setUser(response.user)
+        setIsAuthenticated(true)
 
-      // Load user's profiles
-      const profiles = await authService.getUserProfiles(response.access_token)
-      setUserProfiles(profiles)
+        // Load user's profiles
+        const profiles = await authService.getUserProfiles(
+          response.access_token
+        )
+        setUserProfiles(profiles)
 
-      if (profiles.length > 0) {
-        setCurrentProfileRole(profiles[0].role)
+        if (profiles.length > 0) {
+          setCurrentProfileRole(profiles[0].role)
+        }
+      } catch (err) {
+        const authError = parseAuthError(err)
+        setError(authError.message)
+        throw err
+      } finally {
+        setIsLoading(false)
       }
-    } catch (err) {
-      const authError = parseAuthError(err)
-      setError(authError.message)
-      throw err
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
+    },
+    []
+  )
 
   const register = useCallback(async (input: RegisterInput): Promise<void> => {
     try {
@@ -224,49 +246,54 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [])
 
-  const setAuthFromWallet = useCallback(async (response: AuthResponse): Promise<void> => {
-    try {
-      setIsLoading(true)
-      setError(null)
+  const setAuthFromWallet = useCallback(
+    async (response: AuthResponse): Promise<void> => {
+      try {
+        setIsLoading(true)
+        setError(null)
 
-      // Store session ID for logout
-      localStorage.setItem(SESSION_ID_KEY, response.user.id)
+        // Store session ID for logout
+        localStorage.setItem(SESSION_ID_KEY, response.user.id)
 
-      // Convert the AuthUser type from wallet auth response
-      // The backend returns User which has display_name, we map it to our AuthUser format
-      const backendUser = response.user as any
-      const user: AuthUser = {
-        id: backendUser.id,
-        email: backendUser.email,
-        name: backendUser.display_name || backendUser.name || 'Wallet User',
-        status: backendUser.status,
-        email_verified: backendUser.email_verified ?? false,
-        two_factor_enabled: backendUser.two_factor_enabled ?? false,
-        failed_login_attempts: 0,
-        locked_until: null,
-        created_at: backendUser.created_at,
-        updated_at: backendUser.updated_at,
-        last_login_at: backendUser.last_login_at || null,
+        // Convert the AuthUser type from wallet auth response
+        // The backend returns User which has display_name, we map it to our AuthUser format
+        const backendUser = response.user as any
+        const user: AuthUser = {
+          id: backendUser.id,
+          email: backendUser.email,
+          name: backendUser.display_name || backendUser.name || 'Wallet User',
+          status: backendUser.status,
+          email_verified: backendUser.email_verified ?? false,
+          two_factor_enabled: backendUser.two_factor_enabled ?? false,
+          failed_login_attempts: 0,
+          locked_until: null,
+          created_at: backendUser.created_at,
+          updated_at: backendUser.updated_at,
+          last_login_at: backendUser.last_login_at || null,
+        }
+
+        setUser(user)
+        setIsAuthenticated(true)
+
+        // Load user's profiles
+        const profiles = await authService.getUserProfiles(
+          response.access_token
+        )
+        setUserProfiles(profiles)
+
+        if (profiles.length > 0) {
+          setCurrentProfileRole(profiles[0].role)
+        }
+      } catch (err) {
+        const authError = parseAuthError(err)
+        setError(authError.message)
+        throw err
+      } finally {
+        setIsLoading(false)
       }
-
-      setUser(user)
-      setIsAuthenticated(true)
-
-      // Load user's profiles
-      const profiles = await authService.getUserProfiles(response.access_token)
-      setUserProfiles(profiles)
-
-      if (profiles.length > 0) {
-        setCurrentProfileRole(profiles[0].role)
-      }
-    } catch (err) {
-      const authError = parseAuthError(err)
-      setError(authError.message)
-      throw err
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
+    },
+    []
+  )
 
   const logout = useCallback(async (): Promise<void> => {
     try {
@@ -299,30 +326,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await initializeAuth()
   }, [initializeAuth])
 
-  const updateUser = useCallback(async (input: UpdateUserInput): Promise<void> => {
-    try {
-      setError(null)
+  const updateUser = useCallback(
+    async (input: UpdateUserInput): Promise<void> => {
+      try {
+        setError(null)
 
-      const updatedUser = await withAutoRefresh((token) => authService.updateUser(token, input))
-      setUser(updatedUser)
-    } catch (err) {
-      const authError = parseAuthError(err)
-      setError(authError.message)
-      throw err
-    }
-  }, [])
+        const updatedUser = await withAutoRefresh(token =>
+          authService.updateUser(token, input)
+        )
+        setUser(updatedUser)
+      } catch (err) {
+        const authError = parseAuthError(err)
+        setError(authError.message)
+        throw err
+      }
+    },
+    []
+  )
 
-  const changePassword = useCallback(async (input: ChangePasswordInput): Promise<void> => {
-    try {
-      setError(null)
+  const changePassword = useCallback(
+    async (input: ChangePasswordInput): Promise<void> => {
+      try {
+        setError(null)
 
-      await withAutoRefresh((token) => authService.changePassword(token, input))
-    } catch (err) {
-      const authError = parseAuthError(err)
-      setError(authError.message)
-      throw err
-    }
-  }, [])
+        await withAutoRefresh(token => authService.changePassword(token, input))
+      } catch (err) {
+        const authError = parseAuthError(err)
+        setError(authError.message)
+        throw err
+      }
+    },
+    []
+  )
 
   const hasPermissionCheck = useCallback(
     (permission: Permission): boolean => {
@@ -333,14 +368,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const canAccessProfile = useCallback(
     (profileId: string): boolean => {
-      return userProfiles.some((p) => p.profile_id === profileId)
+      return userProfiles.some(p => p.profile_id === profileId)
     },
     [userProfiles]
   )
 
   const getProfileRole = useCallback(
     (profileId: string): UserRole | null => {
-      const profile = userProfiles.find((p) => p.profile_id === profileId)
+      const profile = userProfiles.find(p => p.profile_id === profileId)
       return profile?.role ?? null
     },
     [userProfiles]

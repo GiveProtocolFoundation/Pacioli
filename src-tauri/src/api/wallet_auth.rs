@@ -23,7 +23,9 @@ use uuid::Uuid;
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "lowercase")]
 pub enum WalletType {
+    /// Substrate wallet type using sr25519 cryptography.
     Substrate,
+    /// EVM wallet type using secp256k1 cryptography.
     Evm,
 }
 
@@ -51,54 +53,83 @@ impl std::str::FromStr for WalletType {
 /// A linked wallet for a user
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
 pub struct UserWallet {
+    /// Unique identifier for the user wallet.
     pub id: String,
+    /// Identifier of the user who owns this wallet.
     pub user_id: String,
+    /// The wallet's blockchain address.
     pub wallet_address: String,
+    /// The wallet type (e.g., "substrate" or "evm").
     pub wallet_type: String,
+    /// Optional blockchain chain identifier.
     pub chain: Option<String>,
+    /// Optional user-defined name for the wallet.
     pub wallet_name: Option<String>,
+    /// Optional source or platform of the wallet.
     pub wallet_source: Option<String>,
+    /// Indicates if this wallet is the primary one for the user.
     pub is_primary: bool,
+    /// Timestamp when the wallet was created.
     pub created_at: DateTime<Utc>,
+    /// Optional timestamp when the wallet was last used.
     pub last_used_at: Option<DateTime<Utc>>,
 }
 
 /// Challenge for wallet sign-in
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WalletChallenge {
+    /// Unique identifier for the challenge.
     pub id: String,
+    /// Nonce value that must be signed by the wallet.
     pub nonce: String,
+    /// The message constructed for signing.
     pub message: String,
+    /// Expiration time of the challenge.
     pub expires_at: DateTime<Utc>,
 }
 
 /// Input for generating a wallet challenge
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ChallengeRequest {
+    /// The wallet address requesting the challenge.
     pub wallet_address: String,
+    /// The type of wallet (e.g., "substrate" or "evm").
     pub wallet_type: String,
 }
 
 /// Input for verifying a wallet signature
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct VerifySignatureRequest {
+    /// Identifier of the challenge being verified.
     pub challenge_id: String,
+    /// Wallet signature over the challenge message.
     pub signature: String,
+    /// The wallet address used for verification.
     pub wallet_address: String,
+    /// Optional user-defined name of the wallet.
     pub wallet_name: Option<String>,
+    /// Optional source or platform of the wallet.
     pub wallet_source: Option<String>,
 }
 
 /// Input for linking a wallet to an existing account
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LinkWalletRequest {
+    /// Access token of the existing user session.
     pub access_token: String,
+    /// Identifier of the challenge used for linking.
     pub challenge_id: String,
+    /// Signature of the challenge message by the wallet.
     pub signature: String,
+    /// The wallet address to link.
     pub wallet_address: String,
+    /// The type of wallet being linked.
     pub wallet_type: String,
+    /// Optional blockchain chain identifier.
     pub chain: Option<String>,
+    /// Optional user-defined name for the wallet.
     pub wallet_name: Option<String>,
+    /// Optional source or platform of the wallet.
     pub wallet_source: Option<String>,
 }
 
@@ -176,18 +207,19 @@ pub async fn verify_wallet_signature(
     let pool = &db.pool;
 
     // Fetch and validate challenge
-    let challenge: Option<(String, String, String, String, Option<DateTime<Utc>>)> = sqlx::query_as(
-        r#"
+    let challenge: Option<(String, String, String, String, Option<DateTime<Utc>>)> =
+        sqlx::query_as(
+            r#"
         SELECT nonce, wallet_address, wallet_type, message, used_at
         FROM auth_challenges
         WHERE id = ? AND expires_at > ?
         "#,
-    )
-    .bind(&request.challenge_id)
-    .bind(Utc::now())
-    .fetch_optional(pool)
-    .await
-    .map_err(|e| format!("Database error: {}", e))?;
+        )
+        .bind(&request.challenge_id)
+        .bind(Utc::now())
+        .fetch_optional(pool)
+        .await
+        .map_err(|e| format!("Database error: {}", e))?;
 
     let (nonce, stored_address, wallet_type_str, message, used_at) =
         challenge.ok_or("Challenge not found or expired")?;
@@ -205,7 +237,12 @@ pub async fn verify_wallet_signature(
     let wallet_type: WalletType = wallet_type_str.parse()?;
 
     // Verify the signature
-    verify_signature(&request.wallet_address, &message, &request.signature, &wallet_type)?;
+    verify_signature(
+        &request.wallet_address,
+        &message,
+        &request.signature,
+        &wallet_type,
+    )?;
 
     // Mark challenge as used
     sqlx::query("UPDATE auth_challenges SET used_at = ? WHERE id = ?")
@@ -251,12 +288,11 @@ pub async fn verify_wallet_signature(
     };
 
     // Get user email for token
-    let user_email: (String,) =
-        sqlx::query_as("SELECT email FROM users WHERE id = ?")
-            .bind(&user_id)
-            .fetch_one(pool)
-            .await
-            .map_err(|e| format!("Failed to get user: {}", e))?;
+    let user_email: (String,) = sqlx::query_as("SELECT email FROM users WHERE id = ?")
+        .bind(&user_id)
+        .fetch_one(pool)
+        .await
+        .map_err(|e| format!("Failed to get user: {}", e))?;
 
     // Update last login
     sqlx::query("UPDATE users SET last_login_at = ? WHERE id = ?")
@@ -283,8 +319,10 @@ pub async fn link_wallet_to_account(
     let pool = &db.pool;
 
     // Verify access token
-    let claims =
-        crate::core::auth_helpers::verify_access_token(&request.access_token, auth.get_jwt_secret())?;
+    let claims = crate::core::auth_helpers::verify_access_token(
+        &request.access_token,
+        auth.get_jwt_secret(),
+    )?;
 
     let wallet_type: WalletType = request.wallet_type.parse()?;
 
@@ -316,7 +354,12 @@ pub async fn link_wallet_to_account(
     }
 
     // Verify signature
-    verify_signature(&request.wallet_address, &message, &request.signature, &wallet_type)?;
+    verify_signature(
+        &request.wallet_address,
+        &message,
+        &request.signature,
+        &wallet_type,
+    )?;
 
     // Mark challenge as used
     sqlx::query("UPDATE auth_challenges SET used_at = ? WHERE id = ?")
@@ -345,13 +388,12 @@ pub async fn link_wallet_to_account(
     }
 
     // Check if user has any wallets to determine if this should be primary
-    let wallet_count: (i64,) = sqlx::query_as(
-        "SELECT COUNT(*) FROM user_wallet_auth WHERE user_id = ?",
-    )
-    .bind(&claims.sub)
-    .fetch_one(pool)
-    .await
-    .map_err(|e| format!("Database error: {}", e))?;
+    let wallet_count: (i64,) =
+        sqlx::query_as("SELECT COUNT(*) FROM user_wallet_auth WHERE user_id = ?")
+            .bind(&claims.sub)
+            .fetch_one(pool)
+            .await
+            .map_err(|e| format!("Database error: {}", e))?;
 
     let is_primary = wallet_count.0 == 0;
 
@@ -384,7 +426,10 @@ pub async fn link_wallet_to_account(
         Some(&claims.sub),
         "wallet_link",
         "success",
-        Some(&format!("Linked {} wallet: {}", wallet_type, &request.wallet_address)),
+        Some(&format!(
+            "Linked {} wallet: {}",
+            wallet_type, &request.wallet_address
+        )),
     )
     .await;
 
@@ -651,8 +696,9 @@ fn verify_evm_signature(address: &str, message: &str, signature: &str) -> Result
     sig_data[0..32].copy_from_slice(r);
     sig_data[32..64].copy_from_slice(s);
 
-    let recoverable_sig = secp256k1::ecdsa::RecoverableSignature::from_compact(&sig_data, recovery_id)
-        .map_err(|e| format!("Invalid signature: {:?}", e))?;
+    let recoverable_sig =
+        secp256k1::ecdsa::RecoverableSignature::from_compact(&sig_data, recovery_id)
+            .map_err(|e| format!("Invalid signature: {:?}", e))?;
 
     let msg = secp256k1::Message::from_digest_slice(&message_hash)
         .map_err(|e| format!("Invalid message hash: {:?}", e))?;
@@ -693,13 +739,15 @@ async fn create_user_with_wallet(
     .to_lowercase();
 
     // Default display name
-    let display_name = wallet_name.unwrap_or(&format!(
-        "{} Wallet",
-        match wallet_type {
-            WalletType::Substrate => "Substrate",
-            WalletType::Evm => "Ethereum",
-        }
-    ));
+    let display_name = wallet_name.unwrap_or_else(|| {
+        format!(
+            "{} Wallet",
+            match wallet_type {
+                WalletType::Substrate => "Substrate",
+                WalletType::Evm => "Ethereum",
+            }
+        )
+    });
 
     // Create user
     sqlx::query(
