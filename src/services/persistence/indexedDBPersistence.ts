@@ -810,7 +810,7 @@ class IndexedDBPersistenceService implements PersistenceService {
       const request = store.get([address, chain])
       request.onsuccess = () => {
         const result = request.result as KnownAddress | undefined
-        resolve(result && result.is_active ? result : null)
+        resolve(result?.is_active ? result : null)
       }
       request.onerror = () => reject(request.error)
     })

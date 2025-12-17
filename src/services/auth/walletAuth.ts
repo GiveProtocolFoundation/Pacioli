@@ -322,7 +322,7 @@ export async function getMetaMaskAccounts(): Promise<WalletAccount[]> {
 
   return accounts.map((address: string) => ({
     address,
-    name: `MetaMask Account`,
+    name: 'MetaMask Account',
     source: 'metamask' as WalletProvider,
     type: 'evm' as WalletType,
   }))
