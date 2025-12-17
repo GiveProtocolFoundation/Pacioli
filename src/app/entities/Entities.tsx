@@ -193,6 +193,52 @@ const Entities: React.FC = () => {
     handleFormClose()
   }
 
+  const handleAddEntityOpen = useCallback(() => {
+    setIsFormOpen(true)
+  }, [])
+
+  const handleSearchChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setSearchQuery(e.target.value)
+    },
+    []
+  )
+
+  const handleFilterTypeChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      setFilterType(e.target.value as EntityType | 'all')
+    },
+    []
+  )
+
+  const handleShowInactiveChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setShowInactive(e.target.checked)
+    },
+    []
+  )
+
+  const getMenuToggleHandler = useCallback(
+    (id: string) => () => {
+      setMenuOpenId((prev) => (prev === id ? null : id))
+    },
+    []
+  )
+
+  const getEntityEditHandler = useCallback(
+    (entity: Entity) => () => {
+      handleEdit(entity)
+    },
+    [handleEdit]
+  )
+
+  const getEntityDeleteClickHandler = useCallback(
+    (id: string) => () => {
+      handleDeleteClick(id)
+    },
+    [handleDeleteClick]
+  )
+
   if (!currentProfile) {
     return (
       <div className="p-6">
@@ -218,7 +264,7 @@ const Entities: React.FC = () => {
           </p>
         </div>
         <button
-          onClick={() => setIsFormOpen(true)}
+          onClick={handleAddEntityOpen}
           className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
         >
           <Plus className="w-4 h-4" />
@@ -242,7 +288,7 @@ const Entities: React.FC = () => {
             type="text"
             placeholder="Search entities..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={handleSearchChange}
             className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>
@@ -251,7 +297,7 @@ const Entities: React.FC = () => {
         <div className="relative">
           <select
             value={filterType}
-            onChange={(e) => setFilterType(e.target.value as EntityType | 'all')}
+            onChange={handleFilterTypeChange}
             className="appearance-none pl-10 pr-10 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
             <option value="all">All Types</option>
@@ -269,7 +315,7 @@ const Entities: React.FC = () => {
           <input
             type="checkbox"
             checked={showInactive}
-            onChange={(e) => setShowInactive(e.target.checked)}
+            onChange={handleShowInactiveChange}
             className="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500"
           />
           Show inactive
@@ -294,7 +340,7 @@ const Entities: React.FC = () => {
           </p>
           {!searchQuery && filterType === 'all' && (
             <button
-              onClick={() => setIsFormOpen(true)}
+              onClick={handleAddEntityOpen}
               className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
               <Plus className="w-4 h-4" />
@@ -389,9 +435,7 @@ const Entities: React.FC = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="relative">
                       <button
-                        onClick={() =>
-                          setMenuOpenId(menuOpenId === entity.id ? null : entity.id)
-                        }
+                        onClick={getMenuToggleHandler(entity.id)}
                         className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
                       >
                         <MoreVertical className="w-5 h-5 text-gray-400" />
@@ -400,14 +444,14 @@ const Entities: React.FC = () => {
                         <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 z-10">
                           <div className="py-1">
                             <button
-                              onClick={() => handleEdit(entity)}
+                              onClick={getEntityEditHandler(entity)}
                               className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
                             >
                               <Pencil className="w-4 h-4" />
                               Edit
                             </button>
                             <button
-                              onClick={() => handleDeleteClick(entity.id)}
+                              onClick={getEntityDeleteClickHandler(entity.id)}
                               disabled={deletingId === entity.id}
                               className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50"
                             >

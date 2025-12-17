@@ -170,6 +170,14 @@ const Login: React.FC = () => {
     setWalletError(null)
   }, [])
 
+  const handleEmailTabClick = useCallback(() => {
+    setActiveTab('email')
+  }, [])
+
+  const handleWalletTabClick = useCallback(() => {
+    setActiveTab('wallet')
+  }, [])
+
   const displayError = localError || error
 
   // ==========================================================================
@@ -233,7 +241,7 @@ const Login: React.FC = () => {
           {/* Auth Tabs */}
           <div className="flex rounded-lg bg-muted p-1">
             <button
-              onClick={() => setActiveTab('email')}
+              onClick={handleEmailTabClick}
               className={`flex flex-1 items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm font-medium transition-colors ${
                 activeTab === 'email'
                   ? 'bg-background text-foreground shadow-sm'
@@ -244,7 +252,7 @@ const Login: React.FC = () => {
               Email
             </button>
             <button
-              onClick={() => setActiveTab('wallet')}
+              onClick={handleWalletTabClick}
               className={`flex flex-1 items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm font-medium transition-colors ${
                 activeTab === 'wallet'
                   ? 'bg-background text-foreground shadow-sm'
@@ -370,7 +378,7 @@ const Login: React.FC = () => {
                             <WalletButton
                               key={wallet.provider}
                               wallet={wallet}
-                              onClick={() => handleWalletSelect(wallet)}
+                              onClick={walletSelectHandlers[wallet.provider]}
                               loading={false}
                             />
                           ))}
@@ -389,7 +397,7 @@ const Login: React.FC = () => {
                             <WalletButton
                               key={wallet.provider}
                               wallet={wallet}
-                              onClick={() => handleWalletSelect(wallet)}
+                              onClick={getWalletClickHandler(wallet)}
                               loading={false}
                             />
                           ))}
@@ -422,7 +430,7 @@ const Login: React.FC = () => {
                     {walletAccounts.map(account => (
                       <button
                         key={account.address}
-                        onClick={() => handleAccountSelect(account)}
+                        onClick={handleAccountClick(account)}
                         disabled={loadingWallet}
                         className="flex w-full items-center justify-between rounded-lg border border-input bg-background p-4 text-left transition-colors hover:border-primary hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
                       >
