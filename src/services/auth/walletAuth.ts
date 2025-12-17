@@ -68,7 +68,7 @@ interface InjectedExtension {
 interface InjectedWeb3 {
   'polkadot-js'?: InjectedExtension
   'subwallet-js'?: InjectedExtension
-  'talisman'?: InjectedExtension
+  talisman?: InjectedExtension
   'nova-wallet'?: InjectedExtension
   [key: string]: InjectedExtension | undefined
 }
@@ -157,7 +157,9 @@ export const WALLET_EXTENSIONS: WalletExtensionInfo[] = [
  * Get the window object with wallet extension types
  */
 function getWalletWindow(): WalletWindowProperties | undefined {
-  return typeof window !== 'undefined' ? (window as unknown as WalletWindowProperties) : undefined
+  return typeof window !== 'undefined'
+    ? (window as unknown as WalletWindowProperties)
+    : undefined
 }
 
 /**
@@ -314,7 +316,9 @@ export async function getMetaMaskAccounts(): Promise<WalletAccount[]> {
   }
 
   // Request account access
-  const accounts = await ethereum.request({ method: 'eth_requestAccounts' }) as string[]
+  const accounts = (await ethereum.request({
+    method: 'eth_requestAccounts',
+  })) as string[]
 
   return accounts.map((address: string) => ({
     address,
@@ -339,10 +343,10 @@ export async function signMetaMaskMessage(
   }
 
   // Use personal_sign for EIP-191 signed message
-  const signature = await ethereum.request({
+  const signature = (await ethereum.request({
     method: 'personal_sign',
     params: [message, address],
-  }) as string
+  })) as string
 
   return signature
 }
