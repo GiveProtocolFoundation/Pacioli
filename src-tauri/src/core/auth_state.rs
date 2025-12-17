@@ -139,7 +139,11 @@ impl AuthState {
 
 impl Default for AuthState {
     fn default() -> Self {
-        Self::new()
+        Self {
+            is_authenticated: false,
+            user_id: None,
+            token: None,
+        }
     }
 }
 
