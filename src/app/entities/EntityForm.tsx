@@ -121,58 +121,62 @@ const EntityForm: React.FC<EntityFormProps> = ({ entity, onClose, onSuccess }) =
     }
   }, [entity, loadAddresses])
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value, type } = e.target
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value,
-    }))
-  }
+  const handleInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+      const { name, value, type } = e.target
+      setFormData((prev) => ({
+        ...prev,
+        [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value,
+      }))
+    },
+    []
+  )
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError(null)
-    setIsSubmitting(true)
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault()
+      setError(null)
+      setIsSubmitting(true)
 
-    try {
-      const data = {
-        entity_type: formData.entity_type,
-        name: formData.name,
-        display_name: formData.display_name || undefined,
-        email: formData.email || undefined,
-        phone: formData.phone || undefined,
-        website: formData.website || undefined,
-        country_code: formData.country_code || undefined,
-        tax_identifier: formData.tax_identifier || undefined,
-        tax_identifier_type: formData.tax_identifier_type || undefined,
-        category: formData.category || undefined,
-        default_currency: formData.default_currency || undefined,
-        default_payment_terms: formData.default_payment_terms
-          ? parseInt(formData.default_payment_terms)
-          : undefined,
-        reportable_payee: formData.reportable_payee,
-        tax_documentation_status: formData.tax_documentation_status,
-        notes: formData.notes || undefined,
-        is_active: formData.is_active,
+      try {
+        const data = {
+          entity_type: formData.entity_type,
+          name: formData.name,
+          display_name: formData.display_name || undefined,
+          email: formData.email || undefined,
+          phone: formData.phone || undefined,
+          website: formData.website || undefined,
+          country_code: formData.country_code || undefined,
+          tax_identifier: formData.tax_identifier || undefined,
+          tax_identifier_type: formData.tax_identifier_type || undefined,
+          category: formData.category || undefined,
+          default_currency: formData.default_currency || undefined,
+          default_payment_terms: formData.default_payment_terms
+            ? parseInt(formData.default_payment_terms)
+            : undefined,
+          reportable_payee: formData.reportable_payee,
+          tax_documentation_status: formData.tax_documentation_status,
+          notes: formData.notes || undefined,
+          is_active: formData.is_active,
+        }
+
+        if (entity) {
+          await updateEntity(entity.id, data)
+        } else {
+          await createEntity(data)
+        }
+
+        onSuccess()
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to save entity')
+      } finally {
+        setIsSubmitting(false)
       }
+    },
+    [formData, entity, updateEntity, createEntity, onSuccess]
+  )
 
-      if (entity) {
-        await updateEntity(entity.id, data)
-      } else {
-        await createEntity(data)
-      }
-
-      onSuccess()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save entity')
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
-  const handleAddAddress = async () => {
+  const handleAddAddress = useCallback(async () => {
     if (!entity || !newAddress.address) return
 
     try {
@@ -189,16 +193,28 @@ const EntityForm: React.FC<EntityFormProps> = ({ entity, onClose, onSuccess }) =
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to add address')
     }
-  }
+  }, [entity, newAddress, addEntityAddress])
 
-  const handleRemoveAddress = async (id: string) => {
-    try {
-      await removeEntityAddress(id)
-      setAddresses((prev) => prev.filter((a) => a.id !== id))
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to remove address')
-    }
-  }
+  const handleRemoveAddress = useCallback(
+    async (id: string) => {
+      try {
+        await removeEntityAddress(id)
+        setAddresses((prev) => prev.filter((a) => a.id !== id))
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to remove address')
+      }
+    },
+    [removeEntityAddress]
+  )
+
+  // Create memoized remove handlers to avoid recreating functions on each render
+  const removeAddressHandlers = React.useMemo(() => {
+    const handlers: Record<string, () => void> = {}
+    addresses.forEach((addr) => {
+      handlers[addr.id] = () => handleRemoveAddress(addr.id)
+    })
+    return handlers
+  }, [addresses, handleRemoveAddress])
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -533,7 +549,7 @@ const EntityForm: React.FC<EntityFormProps> = ({ entity, onClose, onSuccess }) =
                         )}
                         <button
                           type="button"
-                          onClick={() => handleRemoveAddress(addr.id)}
+                          onClick={removeAddressHandlers[addr.id]}
                           className="p-1 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/20 rounded"
                         >
                           <Trash2 className="w-4 h-4" />
