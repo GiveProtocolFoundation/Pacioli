@@ -740,15 +740,18 @@ async fn create_user_with_wallet(
     .to_lowercase();
 
     // Default display name
-    let display_name = wallet_name.map_or_else(|| {
-        format!(
-            "{} Wallet",
-            match wallet_type {
-                WalletType::Substrate => "Substrate",
-                WalletType::Evm => "Ethereum",
-            }
-        )
-    }, String::from);
+    let display_name = wallet_name.map_or_else(
+        || {
+            format!(
+                "{} Wallet",
+                match wallet_type {
+                    WalletType::Substrate => "Substrate",
+                    WalletType::Evm => "Ethereum",
+                }
+            )
+        },
+        String::from,
+    );
 
     // Create user
     sqlx::query(
