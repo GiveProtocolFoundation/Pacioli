@@ -393,7 +393,8 @@ const Entities: React.FC = () => {
                   key={entity.id}
                   className={`hover:bg-gray-50 dark:hover:bg-gray-700 ${
                     !entity.is_active ? 'opacity-50' : ''
-                  }`}>
+                  }`}
+                >
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="flex-shrink-0 h-10 w-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
