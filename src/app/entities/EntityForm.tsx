@@ -218,10 +218,11 @@ const EntityForm: React.FC<EntityFormProps> = ({ entity, onClose, onSuccess }) =
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label htmlFor="entity_type" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Type *
                   </label>
                   <select
+                    id="entity_type"
                     name="entity_type"
                     value={formData.entity_type}
                     onChange={handleInputChange}
@@ -237,10 +238,11 @@ const EntityForm: React.FC<EntityFormProps> = ({ entity, onClose, onSuccess }) =
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label htmlFor="category" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Category
                   </label>
                   <input
+                    id="category"
                     type="text"
                     name="category"
                     value={formData.category}
@@ -251,10 +253,11 @@ const EntityForm: React.FC<EntityFormProps> = ({ entity, onClose, onSuccess }) =
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Name *
                   </label>
                   <input
+                    id="name"
                     type="text"
                     name="name"
                     value={formData.name}
@@ -266,10 +269,11 @@ const EntityForm: React.FC<EntityFormProps> = ({ entity, onClose, onSuccess }) =
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label htmlFor="display_name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Display Name
                   </label>
                   <input
+                    id="display_name"
                     type="text"
                     name="display_name"
                     value={formData.display_name}
@@ -287,10 +291,11 @@ const EntityForm: React.FC<EntityFormProps> = ({ entity, onClose, onSuccess }) =
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Email
                   </label>
                   <input
+                    id="email"
                     type="email"
                     name="email"
                     value={formData.email}
@@ -300,29 +305,31 @@ const EntityForm: React.FC<EntityFormProps> = ({ entity, onClose, onSuccess }) =
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label htmlFor="phone" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Phone
                   </label>
                   <input
+                    id="phone"
                     type="tel"
                     name="phone"
                     value={formData.phone}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2;border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
 
                 <div className="sm:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label htmlFor="website" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Website
                   </label>
                   <input
+                    id="website"
                     type="url"
                     name="website"
                     value={formData.website}
                     onChange={handleInputChange}
                     placeholder="https://"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2;border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
               </div>
@@ -336,56 +343,60 @@ const EntityForm: React.FC<EntityFormProps> = ({ entity, onClose, onSuccess }) =
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label htmlFor="country_code" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Country
                   </label>
                   <input
+                    id="country_code"
                     type="text"
                     name="country_code"
                     value={formData.country_code}
                     onChange={handleInputChange}
                     placeholder="e.g., US, GB, DE"
                     maxLength={2}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 uppercase"
+                    className="w-full px-3 py-2;border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 uppercase"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label htmlFor="tax_identifier_type" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Tax ID Type
                   </label>
                   <input
+                    id="tax_identifier_type"
                     type="text"
                     name="tax_identifier_type"
                     value={formData.tax_identifier_type}
                     onChange={handleInputChange}
                     placeholder="e.g., EIN, VAT, UTR"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2;border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label htmlFor="tax_identifier" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Tax Identifier
                   </label>
                   <input
+                    id="tax_identifier"
                     type="text"
                     name="tax_identifier"
                     value={formData.tax_identifier}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2;border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label htmlFor="tax_documentation_status" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Tax Documentation
                   </label>
                   <select
+                    id="tax_documentation_status"
                     name="tax_documentation_status"
                     value={formData.tax_documentation_status}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2;border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
                   >
                     {taxDocStatuses.map((status) => (
                       <option key={status.value} value={status.value}>
@@ -420,32 +431,34 @@ const EntityForm: React.FC<EntityFormProps> = ({ entity, onClose, onSuccess }) =
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label htmlFor="default_currency" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Default Currency
                   </label>
                   <input
+                    id="default_currency"
                     type="text"
                     name="default_currency"
                     value={formData.default_currency}
                     onChange={handleInputChange}
                     placeholder="e.g., USD, EUR"
                     maxLength={3}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 uppercase"
+                    className="w-full px-3 py-2;border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 uppercase"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label htmlFor="default_payment_terms" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Payment Terms (days)
                   </label>
                   <input
+                    id="default_payment_terms"
                     type="number"
                     name="default_payment_terms"
                     value={formData.default_payment_terms}
                     onChange={handleInputChange}
                     placeholder="e.g., 30"
                     min="0"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2;border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
               </div>
@@ -467,14 +480,14 @@ const EntityForm: React.FC<EntityFormProps> = ({ entity, onClose, onSuccess }) =
                       setNewAddress((prev) => ({ ...prev, address: e.target.value }))
                     }
                     placeholder="Wallet address"
-                    className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 text-sm font-mono"
+                    className="flex-1 px-3 py-2;border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 text-sm font-mono"
                   />
                   <select
                     value={newAddress.chain}
                     onChange={(e) =>
-                      setNewAddress((prev) => ({ ...prev, chain: e.target.value }))
+pmodule.exports = setNewAddress((prev) => ({ ...prev, chain: e.target.value }))
                     }
-                    className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 text-sm"
+                    className="px-3 py-2:border border-gray-300 dark:border-gray-600 rounded-lg:bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 text-sm"
                   >
                     <option value="ethereum">Ethereum</option>
                     <option value="polkadot">Polkadot</option>
@@ -506,8 +519,7 @@ const EntityForm: React.FC<EntityFormProps> = ({ entity, onClose, onSuccess }) =
                   <div className="space-y-2">
                     {addresses.map((addr) => (
                       <div
-                        key={addr.id}
-                        className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-700 rounded-lg"
+                        key={addr.id} className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-700 rounded-lg"
                       >
                         <span className="flex-1 font-mono text-sm truncate">
                           {addr.address}
@@ -536,15 +548,16 @@ const EntityForm: React.FC<EntityFormProps> = ({ entity, onClose, onSuccess }) =
 
             {/* Notes */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label htmlFor="notes" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Notes
               </label>
               <textarea
+                id="notes"
                 name="notes"
                 value={formData.notes}
                 onChange={handleInputChange}
                 rows={3}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2;border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
