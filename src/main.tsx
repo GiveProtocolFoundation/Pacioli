@@ -11,9 +11,7 @@ const Providers: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <AuthProvider>
     <ThemeProvider>
       <CurrencyProvider>
-        <OrganizationProvider>
-          {children}
-        </OrganizationProvider>
+        <OrganizationProvider>{children}</OrganizationProvider>
       </CurrencyProvider>
     </ThemeProvider>
   </AuthProvider>

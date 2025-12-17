@@ -57,9 +57,7 @@ const AppProviders: React.FC<{ children: React.ReactNode }> = ({
 }) => (
   <ProfileProvider>
     <EntityProvider>
-      <DataProviders>
-        {children}
-      </DataProviders>
+      <DataProviders>{children}</DataProviders>
     </EntityProvider>
   </ProfileProvider>
 )

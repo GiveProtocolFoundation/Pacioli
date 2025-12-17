@@ -52,11 +52,11 @@ const NotificationActions: React.FC = () => (
       <ArrowRight className="w-3 h-3 ml-1" />
     </button>
   </div>
-);
+)
 
 const NotificationBody: React.FC<{
-  notification: NotificationItemProps['notification'];
-  formatTimestamp: NotificationItemProps['formatTimestamp'];
+  notification: NotificationItemProps['notification']
+  formatTimestamp: NotificationItemProps['formatTimestamp']
 }> = ({ notification, formatTimestamp }) => (
   <div className="flex-1 min-w-0">
     <div className="flex items-start justify-between">
@@ -79,7 +79,7 @@ const NotificationBody: React.FC<{
       {notification.actionRequired && <NotificationActions />}
     </div>
   </div>
-);
+)
 
 const NotificationItem: React.FC<NotificationItemProps> = ({
   notification,
@@ -122,7 +122,10 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
         >
           <Icon className="w-5 h-5" />
         </div>
-        <NotificationBody notification={notification} formatTimestamp={formatTimestamp} />
+        <NotificationBody
+          notification={notification}
+          formatTimestamp={formatTimestamp}
+        />
       </div>
     </div>
   )
@@ -243,14 +246,22 @@ const mockNotifications: Notification[] = [
 ]
 
 const FilterTabs: React.FC<{
-  filter: 'all' | 'financial' | 'transactional' | 'workflow' | 'approval';
-  userType: 'individual' | 'organization';
-  onAll: () => void;
-  onFinancial: () => void;
-  onTransactional: () => void;
-  onWorkflow: () => void;
-  onApproval: () => void;
-}> = ({ filter, userType, onAll, onFinancial, onTransactional, onWorkflow, onApproval }) => (
+  filter: 'all' | 'financial' | 'transactional' | 'workflow' | 'approval'
+  userType: 'individual' | 'organization'
+  onAll: () => void
+  onFinancial: () => void
+  onTransactional: () => void
+  onWorkflow: () => void
+  onApproval: () => void
+}> = ({
+  filter,
+  userType,
+  onAll,
+  onFinancial,
+  onTransactional,
+  onWorkflow,
+  onApproval,
+}) => (
   <div className="flex items-center space-x-2 p-4 border-b border-gray-200 dark:border-gray-700 overflow-x-auto">
     <button
       onClick={onAll}

@@ -253,7 +253,7 @@ const Entities: React.FC = () => {
   )
 
   // Extracted ActionsMenu component to reduce JSX nesting depth
-  const ActionsMenu: React.FC<{entity: Entity}> = ({entity}) => (
+  const ActionsMenu: React.FC<{ entity: Entity }> = ({ entity }) => (
     <div className="relative">
       <button
         onClick={getMenuToggleHandler(entity.id)}

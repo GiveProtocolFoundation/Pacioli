@@ -109,8 +109,12 @@ const KPICard: React.FC<{ kpi: KPI }> = ({ kpi }) => {
         </div>
       </div>
       <p className="text-sm text-gray-500 dark:text-[#94a3b8]">{kpi.label}</p>
-      <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">{kpi.value}</p>
-      <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">{kpi.changeLabel}</p>
+      <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
+        {kpi.value}
+      </p>
+      <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
+        {kpi.changeLabel}
+      </p>
     </div>
   )
 }

@@ -102,19 +102,19 @@ const SettingsHeader: React.FC = () => (
       </div>
     </div>
   </header>
-);
+)
 
 const SidebarNavigation: React.FC<{
-  items: typeof navigationItems;
-  activeSection: SettingsSection;
-  onSectionChange: (section: SettingsSection) => void;
+  items: typeof navigationItems
+  activeSection: SettingsSection
+  onSectionChange: (section: SettingsSection) => void
 }> = ({ items, activeSection, onSectionChange }) => (
   <aside className="lg:w-64 flex-shrink-0">
     <nav className="space-y-1">
       {items.map(item => {
-        const Icon = item.icon;
-        const isActive = activeSection === item.id;
-        const handleClick = () => onSectionChange(item.id);
+        const Icon = item.icon
+        const isActive = activeSection === item.id
+        const handleClick = () => onSectionChange(item.id)
 
         return (
           <button
@@ -157,7 +157,7 @@ const SidebarNavigation: React.FC<{
               <ChevronRight className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0 ml-2" />
             )}
           </button>
-        );
+        )
       })}
     </nav>
 
@@ -170,7 +170,7 @@ const SidebarNavigation: React.FC<{
       </div>
     </div>
   </aside>
-);
+)
 
 const Settings: React.FC<SettingsProps> = ({ userType = 'organization' }) => {
   const location = useLocation()

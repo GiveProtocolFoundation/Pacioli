@@ -47,7 +47,11 @@ interface FormData {
 
 interface SectionProps {
   formData: FormData
-  onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void
+  onChange: (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
+  ) => void
 }
 
 interface WalletAddressesSectionProps {
@@ -88,7 +92,13 @@ const inputClassName =
 // =============================================================================
 
 /** Reusable form field wrapper with label and htmlFor association */
-const FormField: React.FC<FormFieldProps> = ({ id, label, required, children, className = '' }) => (
+const FormField: React.FC<FormFieldProps> = ({
+  id,
+  label,
+  required,
+  children,
+  className = '',
+}) => (
   <div className={className}>
     <label
       htmlFor={id}
@@ -102,16 +112,26 @@ const FormField: React.FC<FormFieldProps> = ({ id, label, required, children, cl
 )
 
 /** Renders a list of wallet addresses with remove buttons */
-const AddressList: React.FC<AddressListProps> = ({ addresses, removeHandlers }) => (
+const AddressList: React.FC<AddressListProps> = ({
+  addresses,
+  removeHandlers,
+}) => (
   <div className="space-y-2">
-    {addresses.map((addr) => (
-      <div key={addr.id} className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-700 rounded-lg">
-        <span className="flex-1 font-mono text-sm truncate">{addr.address}</span>
+    {addresses.map(addr => (
+      <div
+        key={addr.id}
+        className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-700 rounded-lg"
+      >
+        <span className="flex-1 font-mono text-sm truncate">
+          {addr.address}
+        </span>
         <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-200 dark:bg-gray-600 px-2 py-0.5 rounded">
           {addr.chain}
         </span>
         {addr.is_verified && (
-          <span className="text-xs text-green-600 dark:text-green-400">Verified</span>
+          <span className="text-xs text-green-600 dark:text-green-400">
+            Verified
+          </span>
         )}
         <button
           type="button"
@@ -136,7 +156,9 @@ const WalletAddressesSection: React.FC<WalletAddressesSectionProps> = ({
   removeAddressHandlers,
 }) => (
   <div className="space-y-4">
-    <h3 className="text-sm font-medium text-gray-900 dark:text-white">Wallet Addresses</h3>
+    <h3 className="text-sm font-medium text-gray-900 dark:text-white">
+      Wallet Addresses
+    </h3>
     <div className="flex gap-2">
       <input
         type="text"
@@ -173,9 +195,14 @@ const WalletAddressesSection: React.FC<WalletAddressesSectionProps> = ({
         Loading addresses...
       </div>
     ) : addresses.length === 0 ? (
-      <p className="text-sm text-gray-500 dark:text-gray-400">No wallet addresses added yet.</p>
+      <p className="text-sm text-gray-500 dark:text-gray-400">
+        No wallet addresses added yet.
+      </p>
     ) : (
-      <AddressList addresses={addresses} removeHandlers={removeAddressHandlers} />
+      <AddressList
+        addresses={addresses}
+        removeHandlers={removeAddressHandlers}
+      />
     )}
   </div>
 )
@@ -183,7 +210,9 @@ const WalletAddressesSection: React.FC<WalletAddressesSectionProps> = ({
 /** Section for payment default settings (currency, terms) */
 const PaymentSection: React.FC<SectionProps> = ({ formData, onChange }) => (
   <div className="space-y-4">
-    <h3 className="text-sm font-medium text-gray-900 dark:text-white">Payment Defaults</h3>
+    <h3 className="text-sm font-medium text-gray-900 dark:text-white">
+      Payment Defaults
+    </h3>
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <FormField id="default_currency" label="Default Currency">
         <input
@@ -257,7 +286,7 @@ const TaxFieldsGrid: React.FC<SectionProps> = ({ formData, onChange }) => (
         onChange={onChange}
         className={inputClassName}
       >
-        {taxDocStatuses.map((status) => (
+        {taxDocStatuses.map(status => (
           <option key={status.value} value={status.value}>
             {status.label}
           </option>
@@ -285,7 +314,9 @@ const TaxFieldsGrid: React.FC<SectionProps> = ({ formData, onChange }) => (
 /** Section for tax and compliance information */
 const TaxSection: React.FC<SectionProps> = ({ formData, onChange }) => (
   <div className="space-y-4">
-    <h3 className="text-sm font-medium text-gray-900 dark:text-white">Tax & Compliance</h3>
+    <h3 className="text-sm font-medium text-gray-900 dark:text-white">
+      Tax & Compliance
+    </h3>
     <TaxFieldsGrid formData={formData} onChange={onChange} />
   </div>
 )
@@ -293,16 +324,40 @@ const TaxSection: React.FC<SectionProps> = ({ formData, onChange }) => (
 /** Section for contact information (email, phone, website) */
 const ContactSection: React.FC<SectionProps> = ({ formData, onChange }) => (
   <div className="space-y-4">
-    <h3 className="text-sm font-medium text-gray-900 dark:text-white">Contact</h3>
+    <h3 className="text-sm font-medium text-gray-900 dark:text-white">
+      Contact
+    </h3>
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <FormField id="email" label="Email">
-        <input id="email" type="email" name="email" value={formData.email} onChange={onChange} className={inputClassName} />
+        <input
+          id="email"
+          type="email"
+          name="email"
+          value={formData.email}
+          onChange={onChange}
+          className={inputClassName}
+        />
       </FormField>
       <FormField id="phone" label="Phone">
-        <input id="phone" type="tel" name="phone" value={formData.phone} onChange={onChange} className={inputClassName} />
+        <input
+          id="phone"
+          type="tel"
+          name="phone"
+          value={formData.phone}
+          onChange={onChange}
+          className={inputClassName}
+        />
       </FormField>
       <FormField id="website" label="Website" className="sm:col-span-2">
-        <input id="website" type="url" name="website" value={formData.website} onChange={onChange} placeholder="https://" className={inputClassName} />
+        <input
+          id="website"
+          type="url"
+          name="website"
+          value={formData.website}
+          onChange={onChange}
+          placeholder="https://"
+          className={inputClassName}
+        />
       </FormField>
     </div>
   </div>
@@ -311,46 +366,88 @@ const ContactSection: React.FC<SectionProps> = ({ formData, onChange }) => (
 /** Section for basic entity information (type, name, category) */
 const BasicInfoSection: React.FC<SectionProps> = ({ formData, onChange }) => (
   <div className="space-y-4">
-    <h3 className="text-sm font-medium text-gray-900 dark:text-white">Basic Information</h3>
+    <h3 className="text-sm font-medium text-gray-900 dark:text-white">
+      Basic Information
+    </h3>
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <FormField id="entity_type" label="Type" required>
-        <select id="entity_type" name="entity_type" value={formData.entity_type} onChange={onChange} required className={inputClassName}>
-          {entityTypes.map((type) => (
-            <option key={type.value} value={type.value}>{type.label}</option>
+        <select
+          id="entity_type"
+          name="entity_type"
+          value={formData.entity_type}
+          onChange={onChange}
+          required
+          className={inputClassName}
+        >
+          {entityTypes.map(type => (
+            <option key={type.value} value={type.value}>
+              {type.label}
+            </option>
           ))}
         </select>
       </FormField>
       <FormField id="category" label="Category">
-        <input id="category" type="text" name="category" value={formData.category} onChange={onChange} placeholder="e.g., contractor, supplier" className={inputClassName} />
+        <input
+          id="category"
+          type="text"
+          name="category"
+          value={formData.category}
+          onChange={onChange}
+          placeholder="e.g., contractor, supplier"
+          className={inputClassName}
+        />
       </FormField>
       <FormField id="name" label="Name" required>
-        <input id="name" type="text" name="name" value={formData.name} onChange={onChange} required placeholder="Legal name" className={inputClassName} />
+        <input
+          id="name"
+          type="text"
+          name="name"
+          value={formData.name}
+          onChange={onChange}
+          required
+          placeholder="Legal name"
+          className={inputClassName}
+        />
       </FormField>
       <FormField id="display_name" label="Display Name">
-        <input id="display_name" type="text" name="display_name" value={formData.display_name} onChange={onChange} placeholder="Short name for UI" className={inputClassName} />
+        <input
+          id="display_name"
+          type="text"
+          name="display_name"
+          value={formData.display_name}
+          onChange={onChange}
+          placeholder="Short name for UI"
+          className={inputClassName}
+        />
       </FormField>
     </div>
   </div>
 )
 
 /** Modal header with title and close button */
-const FormHeader: React.FC<{ isEditing: boolean; onClose: () => void }> = ({ isEditing, onClose }) => (
+const FormHeader: React.FC<{ isEditing: boolean; onClose: () => void }> = ({
+  isEditing,
+  onClose,
+}) => (
   <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
     <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
       {isEditing ? 'Edit Entity' : 'New Entity'}
     </h2>
-    <button onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+    <button
+      onClick={onClose}
+      className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+    >
       <X className="w-5 h-5 text-gray-500" />
     </button>
   </div>
 )
 
 /** Form footer with cancel and submit buttons */
-const FormFooter: React.FC<{ isSubmitting: boolean; isEditing: boolean; onClose: () => void }> = ({
-  isSubmitting,
-  isEditing,
-  onClose,
-}) => (
+const FormFooter: React.FC<{
+  isSubmitting: boolean
+  isEditing: boolean
+  onClose: () => void
+}> = ({ isSubmitting, isEditing, onClose }) => (
   <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
     <button
       type="button"
@@ -375,9 +472,18 @@ const FormFooter: React.FC<{ isSubmitting: boolean; isEditing: boolean; onClose:
 // =============================================================================
 
 /** Modal form for creating or editing an entity */
-const EntityForm: React.FC<EntityFormProps> = ({ entity, onClose, onSuccess }) => {
-  const { createEntity, updateEntity, getEntityAddresses, addEntityAddress, removeEntityAddress } =
-    useEntity()
+const EntityForm: React.FC<EntityFormProps> = ({
+  entity,
+  onClose,
+  onSuccess,
+}) => {
+  const {
+    createEntity,
+    updateEntity,
+    getEntityAddresses,
+    addEntityAddress,
+    removeEntityAddress,
+  } = useEntity()
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -403,18 +509,22 @@ const EntityForm: React.FC<EntityFormProps> = ({ entity, onClose, onSuccess }) =
     is_active: true,
   })
 
-  const [newAddress, setNewAddress] = useState({ address: '', chain: 'ethereum', label: '' })
+  const [newAddress, setNewAddress] = useState({
+    address: '',
+    chain: 'ethereum',
+    label: '',
+  })
 
   const handleNewAddressChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      setNewAddress((prev) => ({ ...prev, address: e.target.value }))
+      setNewAddress(prev => ({ ...prev, address: e.target.value }))
     },
     []
   )
 
   const handleNewAddressChainChange = useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
-      setNewAddress((prev) => ({ ...prev, chain: e.target.value }))
+      setNewAddress(prev => ({ ...prev, chain: e.target.value }))
     },
     []
   )
@@ -457,11 +567,16 @@ const EntityForm: React.FC<EntityFormProps> = ({ entity, onClose, onSuccess }) =
   }, [entity, loadAddresses])
 
   const handleInputChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    (
+      e: React.ChangeEvent<
+        HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+      >
+    ) => {
       const { name, value, type } = e.target
-      setFormData((prev) => ({
+      setFormData(prev => ({
         ...prev,
-        [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value,
+        [name]:
+          type === 'checkbox' ? (e.target as HTMLInputElement).checked : value,
       }))
     },
     []
@@ -516,10 +631,14 @@ const EntityForm: React.FC<EntityFormProps> = ({ entity, onClose, onSuccess }) =
 
     try {
       const added = await addEntityAddress(
-        { address: newAddress.address, chain: newAddress.chain, label: newAddress.label || undefined },
+        {
+          address: newAddress.address,
+          chain: newAddress.chain,
+          label: newAddress.label || undefined,
+        },
         entity.id
       )
-      setAddresses((prev) => [added, ...prev])
+      setAddresses(prev => [added, ...prev])
       setNewAddress({ address: '', chain: 'ethereum', label: '' })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to add address')
@@ -530,9 +649,11 @@ const EntityForm: React.FC<EntityFormProps> = ({ entity, onClose, onSuccess }) =
     async (id: string) => {
       try {
         await removeEntityAddress(id)
-        setAddresses((prev) => prev.filter((a) => a.id !== id))
+        setAddresses(prev => prev.filter(a => a.id !== id))
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to remove address')
+        setError(
+          err instanceof Error ? err.message : 'Failed to remove address'
+        )
       }
     },
     [removeEntityAddress]
@@ -540,7 +661,7 @@ const EntityForm: React.FC<EntityFormProps> = ({ entity, onClose, onSuccess }) =
 
   const removeAddressHandlers = React.useMemo(() => {
     const handlers: Record<string, () => void> = {}
-    addresses.forEach((addr) => {
+    addresses.forEach(addr => {
       handlers[addr.id] = () => handleRemoveAddress(addr.id)
     })
     return handlers
@@ -569,7 +690,14 @@ const EntityForm: React.FC<EntityFormProps> = ({ entity, onClose, onSuccess }) =
         />
       )}
       <FormField id="notes" label="Notes">
-        <textarea id="notes" name="notes" value={formData.notes} onChange={handleInputChange} rows={3} className={inputClassName} />
+        <textarea
+          id="notes"
+          name="notes"
+          value={formData.notes}
+          onChange={handleInputChange}
+          rows={3}
+          className={inputClassName}
+        />
       </FormField>
       <div>
         <label className="flex items-center gap-2">
@@ -581,7 +709,9 @@ const EntityForm: React.FC<EntityFormProps> = ({ entity, onClose, onSuccess }) =
             onChange={handleInputChange}
             className="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500"
           />
-          <span className="text-sm text-gray-700 dark:text-gray-300">Active</span>
+          <span className="text-sm text-gray-700 dark:text-gray-300">
+            Active
+          </span>
         </label>
       </div>
     </div>
@@ -593,7 +723,11 @@ const EntityForm: React.FC<EntityFormProps> = ({ entity, onClose, onSuccess }) =
         <FormHeader isEditing={!!entity} onClose={onClose} />
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto">
           <BodySection />
-          <FormFooter isSubmitting={isSubmitting} isEditing={!!entity} onClose={onClose} />
+          <FormFooter
+            isSubmitting={isSubmitting}
+            isEditing={!!entity}
+            onClose={onClose}
+          />
         </form>
       </div>
     </div>

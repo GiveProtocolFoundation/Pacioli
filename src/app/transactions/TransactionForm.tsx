@@ -604,7 +604,8 @@ const TransactionForm: React.FC = () => {
                     <div className="text-xs text-gray-500 dark:text-gray-400">
                       {selectedEntity.entity_type.charAt(0).toUpperCase() +
                         selectedEntity.entity_type.slice(1)}
-                      {selectedEntity.category && ` · ${selectedEntity.category}`}
+                      {selectedEntity.category &&
+                        ` · ${selectedEntity.category}`}
                     </div>
                   </div>
                   <button

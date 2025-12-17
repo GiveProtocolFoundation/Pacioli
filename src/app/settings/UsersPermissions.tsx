@@ -567,7 +567,10 @@ const UsersPermissions: React.FC = () => {
     </>
   )
 
-  const RolesView: React.FC<{ roles: typeof roles; users: typeof users }> = ({ roles, users }) => (
+  const RolesView: React.FC<{ roles: typeof roles; users: typeof users }> = ({
+    roles,
+    users,
+  }) => (
     <>
       {/* Roles View */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -758,7 +761,11 @@ const UsersPermissions: React.FC = () => {
     </>
   )
 
-  const InviteUserModal: React.FC<{ roles: typeof roles; handleClose: () => void; handleSend: () => void }> = ({ roles, handleClose, handleSend }) => (
+  const InviteUserModal: React.FC<{
+    roles: typeof roles
+    handleClose: () => void
+    handleSend: () => void
+  }> = ({ roles, handleClose, handleSend }) => (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl max-w-md w-full p-6 border border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between mb-4">
@@ -812,8 +819,8 @@ const UsersPermissions: React.FC = () => {
             <div className="flex">
               <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
               <p className="ml-3 text-xs text-blue-800 dark:text-blue-400">
-                An invitation email will be sent to the user with
-                instructions to set up their account.
+                An invitation email will be sent to the user with instructions
+                to set up their account.
               </p>
             </div>
           </div>
