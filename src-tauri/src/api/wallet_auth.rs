@@ -759,7 +759,7 @@ async fn create_user_with_wallet(
     )
     .bind(&user_id)
     .bind(&email)
-    .bind(display_name)
+    .bind(&display_name)
     .bind(now)
     .bind(now)
     .execute(pool)
