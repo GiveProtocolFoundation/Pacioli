@@ -23,7 +23,13 @@ interface FormFieldProps {
 }
 
 // Reusable form field wrapper component - reduces nesting depth
-const FormField: React.FC<FormFieldProps> = ({ id, label, required, children, className = '' }) => (
+const FormField: React.FC<FormFieldProps> = ({
+  id,
+  label,
+  required,
+  children,
+  className = '',
+}) => (
   <div className={className}>
     <label
       htmlFor={id}
@@ -54,9 +60,18 @@ const taxDocStatuses: { value: TaxDocumentationStatus; label: string }[] = [
 const inputClassName =
   'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500'
 
-const EntityForm: React.FC<EntityFormProps> = ({ entity, onClose, onSuccess }) => {
-  const { createEntity, updateEntity, getEntityAddresses, addEntityAddress, removeEntityAddress } =
-    useEntity()
+const EntityForm: React.FC<EntityFormProps> = ({
+  entity,
+  onClose,
+  onSuccess,
+}) => {
+  const {
+    createEntity,
+    updateEntity,
+    getEntityAddresses,
+    addEntityAddress,
+    removeEntityAddress,
+  } = useEntity()
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -90,14 +105,14 @@ const EntityForm: React.FC<EntityFormProps> = ({ entity, onClose, onSuccess }) =
 
   const handleNewAddressChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      setNewAddress((prev) => ({ ...prev, address: e.target.value }))
+      setNewAddress(prev => ({ ...prev, address: e.target.value }))
     },
     []
   )
 
   const handleNewAddressChainChange = useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
-      setNewAddress((prev) => ({ ...prev, chain: e.target.value }))
+      setNewAddress(prev => ({ ...prev, chain: e.target.value }))
     },
     []
   )
@@ -140,11 +155,16 @@ const EntityForm: React.FC<EntityFormProps> = ({ entity, onClose, onSuccess }) =
   }, [entity, loadAddresses])
 
   const handleInputChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    (
+      e: React.ChangeEvent<
+        HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+      >
+    ) => {
       const { name, value, type } = e.target
-      setFormData((prev) => ({
+      setFormData(prev => ({
         ...prev,
-        [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value,
+        [name]:
+          type === 'checkbox' ? (e.target as HTMLInputElement).checked : value,
       }))
     },
     []
@@ -206,7 +226,7 @@ const EntityForm: React.FC<EntityFormProps> = ({ entity, onClose, onSuccess }) =
         },
         entity.id
       )
-      setAddresses((prev) => [added, ...prev])
+      setAddresses(prev => [added, ...prev])
       setNewAddress({ address: '', chain: 'ethereum', label: '' })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to add address')
@@ -217,9 +237,11 @@ const EntityForm: React.FC<EntityFormProps> = ({ entity, onClose, onSuccess }) =
     async (id: string) => {
       try {
         await removeEntityAddress(id)
-        setAddresses((prev) => prev.filter((a) => a.id !== id))
+        setAddresses(prev => prev.filter(a => a.id !== id))
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to remove address')
+        setError(
+          err instanceof Error ? err.message : 'Failed to remove address'
+        )
       }
     },
     [removeEntityAddress]
@@ -227,7 +249,7 @@ const EntityForm: React.FC<EntityFormProps> = ({ entity, onClose, onSuccess }) =
 
   const removeAddressHandlers = React.useMemo(() => {
     const handlers: Record<string, () => void> = {}
-    addresses.forEach((addr) => {
+    addresses.forEach(addr => {
       handlers[addr.id] = () => handleRemoveAddress(addr.id)
     })
     return handlers
@@ -252,7 +274,9 @@ const EntityForm: React.FC<EntityFormProps> = ({ entity, onClose, onSuccess }) =
           <div className="p-6 space-y-6">
             {error && (
               <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-                <p className="text-red-800 dark:text-red-200 text-sm">{error}</p>
+                <p className="text-red-800 dark:text-red-200 text-sm">
+                  {error}
+                </p>
               </div>
             )}
 
@@ -261,20 +285,11 @@ const EntityForm: React.FC<EntityFormProps> = ({ entity, onClose, onSuccess }) =
               onChange={handleInputChange}
             />
 
-            <ContactSection
-              formData={formData}
-              onChange={handleInputChange}
-            />
+            <ContactSection formData={formData} onChange={handleInputChange} />
 
-            <TaxSection
-              formData={formData}
-              onChange={handleInputChange}
-            />
+            <TaxSection formData={formData} onChange={handleInputChange} />
 
-            <PaymentSection
-              formData={formData}
-              onChange={handleInputChange}
-            />
+            <PaymentSection formData={formData} onChange={handleInputChange} />
 
             {entity && (
               <WalletAddressesSection
@@ -309,7 +324,9 @@ const EntityForm: React.FC<EntityFormProps> = ({ entity, onClose, onSuccess }) =
                   onChange={handleInputChange}
                   className="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500"
                 />
-                <span className="text-sm text-gray-700 dark:text-gray-300">Active</span>
+                <span className="text-sm text-gray-700 dark:text-gray-300">
+                  Active
+                </span>
               </label>
             </div>
           </div>
@@ -358,12 +375,18 @@ interface SectionProps {
     notes: string
     is_active: boolean
   }
-  onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void
+  onChange: (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
+  ) => void
 }
 
 const BasicInfoSection: React.FC<SectionProps> = ({ formData, onChange }) => (
   <div className="space-y-4">
-    <h3 className="text-sm font-medium text-gray-900 dark:text-white">Basic Information</h3>
+    <h3 className="text-sm font-medium text-gray-900 dark:text-white">
+      Basic Information
+    </h3>
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <FormField id="entity_type" label="Type" required>
         <select
@@ -374,7 +397,7 @@ const BasicInfoSection: React.FC<SectionProps> = ({ formData, onChange }) => (
           required
           className={inputClassName}
         >
-          {entityTypes.map((type) => (
+          {entityTypes.map(type => (
             <option key={type.value} value={type.value}>
               {type.label}
             </option>
@@ -424,7 +447,9 @@ const BasicInfoSection: React.FC<SectionProps> = ({ formData, onChange }) => (
 
 const ContactSection: React.FC<SectionProps> = ({ formData, onChange }) => (
   <div className="space-y-4">
-    <h3 className="text-sm font-medium text-gray-900 dark:text-white">Contact</h3>
+    <h3 className="text-sm font-medium text-gray-900 dark:text-white">
+      Contact
+    </h3>
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <FormField id="email" label="Email">
         <input
@@ -465,7 +490,9 @@ const ContactSection: React.FC<SectionProps> = ({ formData, onChange }) => (
 
 const TaxSection: React.FC<SectionProps> = ({ formData, onChange }) => (
   <div className="space-y-4">
-    <h3 className="text-sm font-medium text-gray-900 dark:text-white">Tax & Compliance</h3>
+    <h3 className="text-sm font-medium text-gray-900 dark:text-white">
+      Tax & Compliance
+    </h3>
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <FormField id="country_code" label="Country">
         <input
@@ -511,7 +538,7 @@ const TaxSection: React.FC<SectionProps> = ({ formData, onChange }) => (
           onChange={onChange}
           className={inputClassName}
         >
-          {taxDocStatuses.map((status) => (
+          {taxDocStatuses.map(status => (
             <option key={status.value} value={status.value}>
               {status.label}
             </option>
@@ -540,7 +567,9 @@ const TaxSection: React.FC<SectionProps> = ({ formData, onChange }) => (
 
 const PaymentSection: React.FC<SectionProps> = ({ formData, onChange }) => (
   <div className="space-y-4">
-    <h3 className="text-sm font-medium text-gray-900 dark:text-white">Payment Defaults</h3>
+    <h3 className="text-sm font-medium text-gray-900 dark:text-white">
+      Payment Defaults
+    </h3>
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <FormField id="default_currency" label="Default Currency">
         <input
@@ -591,7 +620,9 @@ const WalletAddressesSection: React.FC<WalletAddressesSectionProps> = ({
   removeAddressHandlers,
 }) => (
   <div className="space-y-4">
-    <h3 className="text-sm font-medium text-gray-900 dark:text-white">Wallet Addresses</h3>
+    <h3 className="text-sm font-medium text-gray-900 dark:text-white">
+      Wallet Addresses
+    </h3>
 
     <div className="flex gap-2">
       <input
@@ -630,9 +661,14 @@ const WalletAddressesSection: React.FC<WalletAddressesSectionProps> = ({
         Loading addresses...
       </div>
     ) : addresses.length === 0 ? (
-      <p className="text-sm text-gray-500 dark:text-gray-400">No wallet addresses added yet.</p>
+      <p className="text-sm text-gray-500 dark:text-gray-400">
+        No wallet addresses added yet.
+      </p>
     ) : (
-      <AddressList addresses={addresses} removeHandlers={removeAddressHandlers} />
+      <AddressList
+        addresses={addresses}
+        removeHandlers={removeAddressHandlers}
+      />
     )}
   </div>
 )
@@ -642,19 +678,26 @@ interface AddressListProps {
   removeHandlers: Record<string, () => void>
 }
 
-const AddressList: React.FC<AddressListProps> = ({ addresses, removeHandlers }) => (
+const AddressList: React.FC<AddressListProps> = ({
+  addresses,
+  removeHandlers,
+}) => (
   <div className="space-y-2">
-    {addresses.map((addr) => (
+    {addresses.map(addr => (
       <div
         key={addr.id}
         className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-700 rounded-lg"
       >
-        <span className="flex-1 font-mono text-sm truncate">{addr.address}</span>
+        <span className="flex-1 font-mono text-sm truncate">
+          {addr.address}
+        </span>
         <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-200 dark:bg-gray-600 px-2 py-0.5 rounded">
           {addr.chain}
         </span>
         {addr.is_verified && (
-          <span className="text-xs text-green-600 dark:text-green-400">Verified</span>
+          <span className="text-xs text-green-600 dark:text-green-400">
+            Verified
+          </span>
         )}
         <button
           type="button"
