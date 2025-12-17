@@ -100,24 +100,40 @@ class IndexedDBPersistenceService implements PersistenceService {
 
         // Entities store
         if (!db.objectStoreNames.contains(STORES.ENTITIES)) {
-          const entityStore = db.createObjectStore(STORES.ENTITIES, { keyPath: 'id' })
-          entityStore.createIndex('profile_id', 'profile_id', { unique: false })
-          entityStore.createIndex('entity_type', 'entity_type', { unique: false })
-          entityStore.createIndex('name', 'name', { unique: false })
-          entityStore.createIndex('profile_name_type', ['profile_id', 'name', 'entity_type'], {
-            unique: true,
+          const entityStore = db.createObjectStore(STORES.ENTITIES, {
+            keyPath: 'id',
           })
+          entityStore.createIndex('profile_id', 'profile_id', { unique: false })
+          entityStore.createIndex('entity_type', 'entity_type', {
+            unique: false,
+          })
+          entityStore.createIndex('name', 'name', { unique: false })
+          entityStore.createIndex(
+            'profile_name_type',
+            ['profile_id', 'name', 'entity_type'],
+            {
+              unique: true,
+            }
+          )
         }
 
         // Entity addresses store
         if (!db.objectStoreNames.contains(STORES.ENTITY_ADDRESSES)) {
-          const addrStore = db.createObjectStore(STORES.ENTITY_ADDRESSES, { keyPath: 'id' })
+          const addrStore = db.createObjectStore(STORES.ENTITY_ADDRESSES, {
+            keyPath: 'id',
+          })
           addrStore.createIndex('entity_id', 'entity_id', { unique: false })
           addrStore.createIndex('address', 'address', { unique: false })
-          addrStore.createIndex('address_chain', ['address', 'chain'], { unique: false })
-          addrStore.createIndex('entity_address_chain', ['entity_id', 'address', 'chain'], {
-            unique: true,
+          addrStore.createIndex('address_chain', ['address', 'chain'], {
+            unique: false,
           })
+          addrStore.createIndex(
+            'entity_address_chain',
+            ['entity_id', 'address', 'chain'],
+            {
+              unique: true,
+            }
+          )
         }
 
         // Known addresses store
@@ -125,8 +141,12 @@ class IndexedDBPersistenceService implements PersistenceService {
           const knownStore = db.createObjectStore(STORES.KNOWN_ADDRESSES, {
             keyPath: ['address', 'chain'],
           })
-          knownStore.createIndex('entity_name', 'entity_name', { unique: false })
-          knownStore.createIndex('entity_type', 'entity_type', { unique: false })
+          knownStore.createIndex('entity_name', 'entity_name', {
+            unique: false,
+          })
+          knownStore.createIndex('entity_type', 'entity_type', {
+            unique: false,
+          })
           knownStore.createIndex('chain', 'chain', { unique: false })
         }
       }
@@ -538,7 +558,8 @@ class IndexedDBPersistenceService implements PersistenceService {
       default_payment_terms: entity.default_payment_terms ?? null,
       default_currency: entity.default_currency ?? null,
       reportable_payee: entity.reportable_payee ?? false,
-      tax_documentation_status: (entity.tax_documentation_status ?? 'none') as TaxDocumentationStatus,
+      tax_documentation_status: (entity.tax_documentation_status ??
+        'none') as TaxDocumentationStatus,
       tax_documentation_date: entity.tax_documentation_date ?? null,
       tax_compliance: entity.tax_compliance ?? null,
       notes: entity.notes ?? null,
@@ -556,7 +577,10 @@ class IndexedDBPersistenceService implements PersistenceService {
     })
   }
 
-  async getEntities(profileId: string, filter?: EntityFilter): Promise<Entity[]> {
+  async getEntities(
+    profileId: string,
+    filter?: EntityFilter
+  ): Promise<Entity[]> {
     const db = await this.ensureDB()
     return new Promise((resolve, reject) => {
       const tx = db.transaction(STORES.ENTITIES, 'readonly')
@@ -569,10 +593,10 @@ class IndexedDBPersistenceService implements PersistenceService {
 
         // Apply filters
         if (filter?.entity_type) {
-          entities = entities.filter((e) => e.entity_type === filter.entity_type)
+          entities = entities.filter(e => e.entity_type === filter.entity_type)
         }
         if (filter?.is_active !== undefined) {
-          entities = entities.filter((e) => e.is_active === filter.is_active)
+          entities = entities.filter(e => e.is_active === filter.is_active)
         }
 
         // Sort by name
@@ -609,15 +633,19 @@ class IndexedDBPersistenceService implements PersistenceService {
         }
 
         // Apply updates
-        if (update.entity_type !== undefined) entity.entity_type = update.entity_type
+        if (update.entity_type !== undefined)
+          entity.entity_type = update.entity_type
         if (update.name !== undefined) entity.name = update.name
-        if (update.display_name !== undefined) entity.display_name = update.display_name
+        if (update.display_name !== undefined)
+          entity.display_name = update.display_name
         if (update.email !== undefined) entity.email = update.email
         if (update.phone !== undefined) entity.phone = update.phone
         if (update.website !== undefined) entity.website = update.website
         if (update.address !== undefined) entity.address = update.address
-        if (update.country_code !== undefined) entity.country_code = update.country_code
-        if (update.tax_identifier !== undefined) entity.tax_identifier = update.tax_identifier
+        if (update.country_code !== undefined)
+          entity.country_code = update.country_code
+        if (update.tax_identifier !== undefined)
+          entity.tax_identifier = update.tax_identifier
         if (update.tax_identifier_type !== undefined)
           entity.tax_identifier_type = update.tax_identifier_type
         if (update.default_wallet_address !== undefined)
@@ -626,13 +654,16 @@ class IndexedDBPersistenceService implements PersistenceService {
         if (update.tags !== undefined) entity.tags = update.tags
         if (update.default_payment_terms !== undefined)
           entity.default_payment_terms = update.default_payment_terms
-        if (update.default_currency !== undefined) entity.default_currency = update.default_currency
-        if (update.reportable_payee !== undefined) entity.reportable_payee = update.reportable_payee
+        if (update.default_currency !== undefined)
+          entity.default_currency = update.default_currency
+        if (update.reportable_payee !== undefined)
+          entity.reportable_payee = update.reportable_payee
         if (update.tax_documentation_status !== undefined)
           entity.tax_documentation_status = update.tax_documentation_status
         if (update.tax_documentation_date !== undefined)
           entity.tax_documentation_date = update.tax_documentation_date
-        if (update.tax_compliance !== undefined) entity.tax_compliance = update.tax_compliance
+        if (update.tax_compliance !== undefined)
+          entity.tax_compliance = update.tax_compliance
         if (update.notes !== undefined) entity.notes = update.notes
         if (update.is_active !== undefined) entity.is_active = update.is_active
 
@@ -664,13 +695,17 @@ class IndexedDBPersistenceService implements PersistenceService {
     })
   }
 
-  async searchEntities(profileId: string, query: string, limit?: number): Promise<Entity[]> {
+  async searchEntities(
+    profileId: string,
+    query: string,
+    limit?: number
+  ): Promise<Entity[]> {
     const entities = await this.getEntities(profileId, { is_active: true })
     const searchLower = query.toLowerCase()
     const maxResults = limit ?? 20
 
     const filtered = entities.filter(
-      (e) =>
+      e =>
         e.name.toLowerCase().includes(searchLower) ||
         e.display_name?.toLowerCase().includes(searchLower) ||
         e.email?.toLowerCase().includes(searchLower) ||
@@ -689,21 +724,23 @@ class IndexedDBPersistenceService implements PersistenceService {
     const db = await this.ensureDB()
 
     // Get all entity addresses matching the address (and optionally chain)
-    const entityAddresses = await new Promise<EntityAddress[]>((resolve, reject) => {
-      const tx = db.transaction(STORES.ENTITY_ADDRESSES, 'readonly')
-      const store = tx.objectStore(STORES.ENTITY_ADDRESSES)
-      const index = store.index('address')
-      const request = index.getAll(address)
+    const entityAddresses = await new Promise<EntityAddress[]>(
+      (resolve, reject) => {
+        const tx = db.transaction(STORES.ENTITY_ADDRESSES, 'readonly')
+        const store = tx.objectStore(STORES.ENTITY_ADDRESSES)
+        const index = store.index('address')
+        const request = index.getAll(address)
 
-      request.onsuccess = () => {
-        let results = request.result as EntityAddress[]
-        if (chain) {
-          results = results.filter((ea) => ea.chain === chain)
+        request.onsuccess = () => {
+          let results = request.result as EntityAddress[]
+          if (chain) {
+            results = results.filter(ea => ea.chain === chain)
+          }
+          resolve(results)
         }
-        resolve(results)
+        request.onerror = () => reject(request.error)
       }
-      request.onerror = () => reject(request.error)
-    })
+    )
 
     if (entityAddresses.length === 0) return null
 
@@ -722,7 +759,9 @@ class IndexedDBPersistenceService implements PersistenceService {
   // Entity Address Operations
   // ============================================================================
 
-  async addEntityAddress(addressInput: EntityAddressInput): Promise<EntityAddress> {
+  async addEntityAddress(
+    addressInput: EntityAddressInput
+  ): Promise<EntityAddress> {
     const db = await this.ensureDB()
     const now = getNow()
 
@@ -759,7 +798,8 @@ class IndexedDBPersistenceService implements PersistenceService {
       request.onsuccess = () => {
         const addresses = request.result as EntityAddress[]
         addresses.sort(
-          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          (a, b) =>
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
         )
         resolve(addresses)
       }
@@ -847,7 +887,10 @@ class IndexedDBPersistenceService implements PersistenceService {
     return matches
   }
 
-  async getKnownAddresses(chain?: string, entityType?: string): Promise<KnownAddress[]> {
+  async getKnownAddresses(
+    chain?: string,
+    entityType?: string
+  ): Promise<KnownAddress[]> {
     const db = await this.ensureDB()
     return new Promise((resolve, reject) => {
       const tx = db.transaction(STORES.KNOWN_ADDRESSES, 'readonly')
@@ -856,13 +899,13 @@ class IndexedDBPersistenceService implements PersistenceService {
 
       request.onsuccess = () => {
         let results = request.result as KnownAddress[]
-        results = results.filter((k) => k.is_active)
+        results = results.filter(k => k.is_active)
 
         if (chain) {
-          results = results.filter((k) => k.chain === chain)
+          results = results.filter(k => k.chain === chain)
         }
         if (entityType) {
-          results = results.filter((k) => k.entity_type === entityType)
+          results = results.filter(k => k.entity_type === entityType)
         }
 
         results.sort((a, b) => a.entity_name.localeCompare(b.entity_name))
@@ -872,7 +915,11 @@ class IndexedDBPersistenceService implements PersistenceService {
     })
   }
 
-  async createEntityFromKnown(profileId: string, address: string, chain: string): Promise<Entity> {
+  async createEntityFromKnown(
+    profileId: string,
+    address: string,
+    chain: string
+  ): Promise<Entity> {
     const db = await this.ensureDB()
 
     // Get known address
@@ -880,7 +927,8 @@ class IndexedDBPersistenceService implements PersistenceService {
       const tx = db.transaction(STORES.KNOWN_ADDRESSES, 'readonly')
       const store = tx.objectStore(STORES.KNOWN_ADDRESSES)
       const request = store.get([address, chain])
-      request.onsuccess = () => resolve((request.result as KnownAddress) || null)
+      request.onsuccess = () =>
+        resolve((request.result as KnownAddress) || null)
       request.onerror = () => reject(request.error)
     })
 
