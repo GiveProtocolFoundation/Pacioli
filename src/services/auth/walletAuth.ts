@@ -22,6 +22,74 @@ import type {
 } from '../../types/auth'
 
 // =============================================================================
+// WALLET EXTENSION TYPE DEFINITIONS
+// =============================================================================
+
+/**
+ * Substrate wallet extension account from injectedWeb3
+ */
+interface InjectedAccount {
+  address: string
+  name?: string
+  type?: string
+}
+
+/**
+ * Substrate wallet extension signer
+ */
+interface InjectedSigner {
+  signRaw: (payload: {
+    address: string
+    data: string
+    type: string
+  }) => Promise<{ signature: string }>
+}
+
+/**
+ * Enabled Substrate wallet extension
+ */
+interface EnabledExtension {
+  accounts: {
+    get: () => Promise<InjectedAccount[]>
+  }
+  signer: InjectedSigner
+}
+
+/**
+ * Substrate wallet extension (before enabling)
+ */
+interface InjectedExtension {
+  enable: (appName: string) => Promise<EnabledExtension>
+}
+
+/**
+ * Map of injected Substrate wallets
+ */
+interface InjectedWeb3 {
+  'polkadot-js'?: InjectedExtension
+  'subwallet-js'?: InjectedExtension
+  'talisman'?: InjectedExtension
+  'nova-wallet'?: InjectedExtension
+  [key: string]: InjectedExtension | undefined
+}
+
+/**
+ * EVM wallet provider (MetaMask-compatible)
+ */
+interface EthereumProvider {
+  isMetaMask?: boolean
+  request: (args: { method: string; params?: unknown[] }) => Promise<unknown>
+}
+
+/**
+ * Window properties for wallet extensions
+ */
+interface WalletWindowProperties {
+  injectedWeb3?: InjectedWeb3
+  ethereum?: EthereumProvider
+}
+
+// =============================================================================
 // WALLET EXTENSION DEFINITIONS
 // =============================================================================
 
@@ -86,34 +154,30 @@ export const WALLET_EXTENSIONS: WalletExtensionInfo[] = [
 // =============================================================================
 
 /**
+ * Get the window object with wallet extension types
+ */
+function getWalletWindow(): WalletWindowProperties | undefined {
+  return typeof window !== 'undefined' ? (window as unknown as WalletWindowProperties) : undefined
+}
+
+/**
  * Check if a wallet extension is installed
  */
 export function isWalletInstalled(provider: WalletProvider): boolean {
+  const walletWindow = getWalletWindow()
+  if (!walletWindow) return false
+
   switch (provider) {
     case 'polkadot-js':
-      return (
-        typeof window !== 'undefined' &&
-        !!(window as any).injectedWeb3?.['polkadot-js']
-      )
+      return Boolean(walletWindow.injectedWeb3?.['polkadot-js'])
     case 'subwallet':
-      return (
-        typeof window !== 'undefined' &&
-        !!(window as any).injectedWeb3?.['subwallet-js']
-      )
+      return Boolean(walletWindow.injectedWeb3?.['subwallet-js'])
     case 'talisman':
-      return (
-        typeof window !== 'undefined' &&
-        !!(window as any).injectedWeb3?.['talisman']
-      )
+      return Boolean(walletWindow.injectedWeb3?.['talisman'])
     case 'nova':
-      return (
-        typeof window !== 'undefined' &&
-        !!(window as any).injectedWeb3?.['nova-wallet']
-      )
+      return Boolean(walletWindow.injectedWeb3?.['nova-wallet'])
     case 'metamask':
-      return (
-        typeof window !== 'undefined' && !!(window as any).ethereum?.isMetaMask
-      )
+      return Boolean(walletWindow.ethereum?.isMetaMask)
     case 'walletconnect':
       return true // WalletConnect is always "available" as a protocol
     default:
@@ -150,9 +214,10 @@ export function getWalletExtensionsByType(
 export async function getSubstrateAccounts(
   provider: WalletProvider
 ): Promise<WalletAccount[]> {
-  const injectedWeb3 = (window as any).injectedWeb3
+  const walletWindow = getWalletWindow()
+  const injectedWeb3 = walletWindow?.injectedWeb3
 
-  let extension: any
+  let extension: InjectedExtension | undefined
   switch (provider) {
     case 'polkadot-js':
       extension = injectedWeb3?.['polkadot-js']
@@ -180,7 +245,7 @@ export async function getSubstrateAccounts(
   // Get accounts
   const accounts = await enabledExtension.accounts.get()
 
-  return accounts.map((account: any) => ({
+  return accounts.map((account: InjectedAccount) => ({
     address: account.address,
     name: account.name || 'Unknown Account',
     source: provider,
@@ -196,9 +261,10 @@ export async function signSubstrateMessage(
   address: string,
   message: string
 ): Promise<string> {
-  const injectedWeb3 = (window as any).injectedWeb3
+  const walletWindow = getWalletWindow()
+  const injectedWeb3 = walletWindow?.injectedWeb3
 
-  let extension: any
+  let extension: InjectedExtension | undefined
   switch (provider) {
     case 'polkadot-js':
       extension = injectedWeb3?.['polkadot-js']
@@ -240,14 +306,15 @@ export async function signSubstrateMessage(
  * Get accounts from MetaMask
  */
 export async function getMetaMaskAccounts(): Promise<WalletAccount[]> {
-  const ethereum = (window as any).ethereum
+  const walletWindow = getWalletWindow()
+  const ethereum = walletWindow?.ethereum
 
   if (!ethereum?.isMetaMask) {
     throw new Error('MetaMask not found')
   }
 
   // Request account access
-  const accounts = await ethereum.request({ method: 'eth_requestAccounts' })
+  const accounts = await ethereum.request({ method: 'eth_requestAccounts' }) as string[]
 
   return accounts.map((address: string) => ({
     address,
@@ -264,7 +331,8 @@ export async function signMetaMaskMessage(
   address: string,
   message: string
 ): Promise<string> {
-  const ethereum = (window as any).ethereum
+  const walletWindow = getWalletWindow()
+  const ethereum = walletWindow?.ethereum
 
   if (!ethereum?.isMetaMask) {
     throw new Error('MetaMask not found')
@@ -274,7 +342,7 @@ export async function signMetaMaskMessage(
   const signature = await ethereum.request({
     method: 'personal_sign',
     params: [message, address],
-  })
+  }) as string
 
   return signature
 }

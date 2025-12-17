@@ -22,8 +22,25 @@ import {
   type ChangePasswordInput,
   type ProfileWithRole,
 } from '../services/auth'
-import type { Permission, UserRole, AuthResponse } from '../types/auth'
+import type { Permission, UserRole, AuthResponse, UserStatus } from '../types/auth'
 import { hasPermission, ROLE_PERMISSIONS, parseAuthError } from '../types/auth'
+
+/**
+ * Backend user response type (differs slightly from frontend AuthUser)
+ * The backend may return display_name instead of name
+ */
+interface BackendUser {
+  id: string
+  email: string
+  display_name?: string
+  name?: string
+  status: UserStatus
+  email_verified?: boolean
+  two_factor_enabled?: boolean
+  created_at: string
+  updated_at: string
+  last_login_at?: string | null
+}
 
 interface AuthContextType {
   // State
@@ -257,7 +274,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
         // Convert the AuthUser type from wallet auth response
         // The backend returns User which has display_name, we map it to our AuthUser format
-        const backendUser = response.user as any
+        const backendUser = response.user as unknown as BackendUser
         const user: AuthUser = {
           id: backendUser.id,
           email: backendUser.email,

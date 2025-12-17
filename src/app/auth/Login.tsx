@@ -194,8 +194,8 @@ const Login: React.FC = () => {
         <div className="space-y-6">
           <blockquote className="border-l-4 border-primary pl-4">
             <p className="text-lg text-slate-300">
-              "Track, manage, and report your crypto assets with
-              professional-grade accounting tools."
+              &quot;Track, manage, and report your crypto assets with
+              professional-grade accounting tools.&quot;
             </p>
           </blockquote>
 
