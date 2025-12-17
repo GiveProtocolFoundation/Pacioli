@@ -220,7 +220,6 @@ const Support: React.FC = () => {
                 )
               })}
             </div>
-
             {/* Popular Topics */}
             <div>
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
@@ -320,7 +319,7 @@ const Support: React.FC = () => {
                   API
                 </span>
                 <span className="flex items-center text-sm text-green-600 dark:text-green-400">
-                  <span className="w-2 h-2 bg-green-600 rounded-full mr-2"></span>
+                  <span className="w-2 h-2 bg-green-600 rounded-full mr-2" />
                   Operational
                 </span>
               </div>
@@ -329,7 +328,7 @@ const Support: React.FC = () => {
                   Web App
                 </span>
                 <span className="flex items-center text-sm text-green-600 dark:text-green-400">
-                  <span className="w-2 h-2 bg-green-600 rounded-full mr-2"></span>
+                  <span className="w-2 h-2 bg-green-600 rounded-full mr-2" />
                   Operational
                 </span>
               </div>
@@ -338,7 +337,7 @@ const Support: React.FC = () => {
                   Blockchain Sync
                 </span>
                 <span className="flex items-center text-sm text-green-600 dark:text-green-400">
-                  <span className="w-2 h-2 bg-green-600 rounded-full mr-2"></span>
+                  <span className="w-2 h-2 bg-green-600 rounded-full mr-2" />
                   Operational
                 </span>
               </div>

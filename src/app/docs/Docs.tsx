@@ -359,10 +359,10 @@ const Docs: React.FC = () => {
                 {/* Placeholder Content Blocks */}
                 <div className="space-y-6">
                   <div>
-                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-3"></div>
-                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full mb-2"></div>
-                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-5/6 mb-2"></div>
-                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-4/5"></div>
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-3" />
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full mb-2" />
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-5/6 mb-2" />
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-4/5" />
                   </div>
 
                   <div className="bg-[#007AFF]/5 dark:bg-[#66B3FF]/10 border-l-4 border-[#007AFF] dark:border-[#66B3FF] p-4 rounded">
@@ -376,10 +376,10 @@ const Docs: React.FC = () => {
                   </div>
 
                   <div>
-                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3 mb-3"></div>
-                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full mb-2"></div>
-                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-11/12 mb-2"></div>
-                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-5/6"></div>
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3 mb-3" />
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full mb-2" />
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-11/12 mb-2" />
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-5/6" />
                   </div>
 
                   <div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-lg">

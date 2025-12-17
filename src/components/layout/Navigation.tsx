@@ -507,7 +507,7 @@ const Navigation: React.FC<NavigationProps> = ({
                 className="relative p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
               >
                 <Bell className="w-6 h-6" />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-[#dc2626] dark:bg-[#ef4444] rounded-full"></span>
+                <span className="absolute top-1 right-1 w-2 h-2 bg-[#dc2626] dark:bg-[#ef4444] rounded-full" />
               </button>
 
               {/* Help */}
@@ -585,7 +585,7 @@ const Navigation: React.FC<NavigationProps> = ({
                       <HelpCircle className="w-4 h-4 mr-3" />
                       Help & Support
                     </Link>
-                    <div className="border-t border-gray-200 dark:border-gray-700 mt-1"></div>
+                    <div className="border-t border-gray-200 dark:border-gray-700 mt-1" />
                     <button className="w-full px-4 py-2 text-sm text-left text-[#dc2626] dark:text-[#ef4444] hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center">
                       <LogOut className="w-4 h-4 mr-3" />
                       Sign Out
