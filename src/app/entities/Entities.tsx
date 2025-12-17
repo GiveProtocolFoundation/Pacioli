@@ -339,7 +339,7 @@ const Entities: React.FC = () => {
       {/* Entity list */}
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
         </div>
       ) : filteredEntities.length === 0 ? (
         <div className="text-center py-12">
@@ -393,8 +393,7 @@ const Entities: React.FC = () => {
                   key={entity.id}
                   className={`hover:bg-gray-50 dark:hover:bg-gray-700 ${
                     !entity.is_active ? 'opacity-50' : ''
-                  }`}
-                >
+                  }`}>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="flex-shrink-0 h-10 w-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">

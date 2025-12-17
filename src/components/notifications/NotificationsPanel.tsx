@@ -84,7 +84,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
               <p className="text-sm font-medium text-gray-900 dark:text-white">
                 {notification.title}
                 {!notification.read && (
-                  <span className="inline-block w-2 h-2 bg-blue-600 rounded-full ml-2"></span>
+                  <span className="inline-block w-2 h-2 bg-blue-600 rounded-full ml-2" />
                 )}
               </p>
               <p className="text-xs text-gray-600 dark:text-[#94a3b8] mt-1">
