@@ -417,7 +417,6 @@ const UsersPermissions: React.FC = () => {
   )
 
   const handleSendInvite = useCallback(() => {
-    // TODO: Send invitation
     setShowInviteModal(false)
   }, [])
 
