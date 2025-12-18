@@ -157,7 +157,7 @@ const Transactions: React.FC = () => {
     transactions,
   }: {
     filter: string
-    transactions: any[]
+    transactions: { type: TransactionType }[]
   }) => (
     <div className="mb-6 border-b border-gray-200 dark:border-gray-700">
       <nav className="flex space-x-8">
