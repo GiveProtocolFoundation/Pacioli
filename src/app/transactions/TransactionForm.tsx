@@ -378,22 +378,24 @@ const TransactionForm: React.FC = () => {
         {showEntityDropdown && (
           <ul className="absolute z-10 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-auto">
             {filteredEntities.map(entity => (
-              <li
-                key={entity.id}
-                onMouseDown={entityClickHandlers[entity.id]}
-                className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-900 dark:text-white">
-                      {entity.display_name || entity.name}
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-[#94a3b8]">
-                      {entity.name}
-                    </p>
+              <li key={entity.id}>
+                <button
+                  type="button"
+                  onClick={entityClickHandlers[entity.id]}
+                  className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-900 dark:text-white">
+                        {entity.display_name || entity.name}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-[#94a3b8]">
+                        {entity.name}
+                      </p>
+                    </div>
+                    <X className="w-4 h-4 text-gray-400" />
                   </div>
-                  <X className="w-4 h-4 text-gray-400" />
-                </div>
+                </button>
               </li>
             ))}
           </ul>
