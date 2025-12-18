@@ -111,10 +111,18 @@ const SidebarNavigation: React.FC<{
 }> = ({ items, activeSection, onSectionChange }) => (
   <aside className="lg:w-64 flex-shrink-0">
     <nav className="space-y-1">
+      const handleClicksMap = useMemo(() => {
+        const map: Record<string, () => void> = {}
+        items.forEach(item => {
+          map[item.id] = () => onSectionChange(item.id)
+        })
+        return map
+      }, [items, onSectionChange])
+
       {items.map(item => {
         const Icon = item.icon
         const isActive = activeSection === item.id
-        const handleClick = () => onSectionChange(item.id)
+        const handleClick = handleClicksMap[item.id]
 
         return (
           <button

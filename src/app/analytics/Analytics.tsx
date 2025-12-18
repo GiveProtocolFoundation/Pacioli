@@ -102,8 +102,7 @@ const KPICard: React.FC<{ kpi: KPI }> = ({ kpi }) => {
             kpi.trend === 'up'
               ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
               : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
-          }`}
-        >
+          }`}>
           <TrendIcon className="w-3 h-3 mr-1" />
           {Math.abs(kpi.change)}%
         </div>
@@ -125,35 +124,43 @@ const TimePeriodDropdown: React.FC<{
   show: boolean
   onToggle: () => void
   onSelect: (value: TimePeriod) => void
-}> = ({ timePeriods, current, show, onToggle, onSelect }) => (
-  <div className="relative">
-    <button
-      onClick={onToggle}
-      className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center"
-    >
-      <Calendar className="w-4 h-4 mr-2" />
-      {timePeriods.find(p => p.value === current)?.label}
-      <ChevronDown className="w-4 h-4 ml-2" />
-    </button>
-    {show && (
-      <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-10">
-        {timePeriods.map(period => (
-          <button
-            key={period.value}
-            onClick={() => onSelect(period.value)}
-            className={`w-full px-4 py-2 text-sm text-left hover:bg-gray-50 dark:hover:bg-gray-800 first:rounded-t-lg last:rounded-b-lg ${
-              current === period.value
-                ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30'
-                : 'text-gray-700 dark:text-gray-300'
-            }`}
-          >
-            {period.label}
-          </button>
-        ))}
-      </div>
-    )}
-  </div>
-)
+}> = ({ timePeriods, current, show, onToggle, onSelect }) => {
+  const handleSelect = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
+    const value = e.currentTarget.getAttribute('data-value') as TimePeriod
+    onSelect(value)
+  }, [onSelect])
+
+  return (
+    <div className="relative">
+      <button
+        onClick={onToggle}
+        className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center"
+      >
+        <Calendar className="w-4 h-4 mr-2" />
+        {timePeriods.find(p => p.value === current)?.label}
+        <ChevronDown className="w-4 h-4 ml-2" />
+      </button>
+      {show && (
+        <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-10">
+          {timePeriods.map(period => (
+            <button
+              key={period.value}
+              data-value={period.value}
+              onClick={handleSelect}
+              className={`w-full px-4 py-2 text-sm text-left hover:bg-gray-50 dark:hover:bg-gray-800 first:rounded-t-lg last:rounded-b-lg ${
+                current === period.value
+                  ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30'
+                  : 'text-gray-700 dark:text-gray-300'
+              }`}
+            >
+              {period.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
 
 const Analytics: React.FC = () => {
   const [timePeriod, setTimePeriod] = useState<TimePeriod>('30d')
@@ -174,11 +181,9 @@ const Analytics: React.FC = () => {
     setShowPeriodDropdown(!showPeriodDropdown)
   }, [showPeriodDropdown])
 
-  const createPeriodSelectHandler = useCallback((periodValue: TimePeriod) => {
-    return () => {
-      setTimePeriod(periodValue)
-      setShowPeriodDropdown(false)
-    }
+  const handleSelectPeriod = useCallback((value: TimePeriod) => {
+    setTimePeriod(value)
+    setShowPeriodDropdown(false)
   }, [])
 
   return (
@@ -201,10 +206,7 @@ const Analytics: React.FC = () => {
                 current={timePeriod}
                 show={showPeriodDropdown}
                 onToggle={handleTogglePeriodDropdown}
-                onSelect={value => {
-                  setTimePeriod(value)
-                  setShowPeriodDropdown(false)
-                }}
+                onSelect={handleSelectPeriod}
               />
               <button className="p-2 text-gray-600 dark:text-[#94a3b8] hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg">
                 <RefreshCw className="w-5 h-5" />
