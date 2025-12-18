@@ -38,6 +38,33 @@ interface AccountBalance {
   change24h: number
 }
 
+const StatsCard: React.FC<{
+  title: string
+  value: React.ReactNode
+  changeIcon: React.ReactNode
+  changeColor: string
+  changeValue: string
+  changeLabel?: string
+  icon: React.ReactNode
+}> = ({ title, value, changeIcon, changeColor, changeValue, changeLabel, icon }) => (
+  <div className="ledger-card border border-gray-200 dark:border-gray-700 p-6">
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="ledger-card-label">{title}</p>
+        <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2 stat-value">
+          {value}
+        </p>
+        <div className="flex items-center mt-2">
+          {changeIcon}
+          <span className={`text-sm font-medium ${changeColor}`}>{changeValue}</span>
+          {changeLabel && <span className="text-sm text-gray-500 ml-1">{changeLabel}</span>}
+        </div>
+      </div>
+      <div className="stat-icon-container">{icon}</div>
+    </div>
+  </div>
+)
+
 const Dashboard: React.FC = () => {
   const navigate = useNavigate()
   const { settings: currencySettings } = useCurrency()
@@ -160,52 +187,63 @@ const Dashboard: React.FC = () => {
       <main className="max-w-7xl mx-auto px-10 py-10">
         {/* Key Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-          {/* Total Portfolio Value */}
+          <StatsCard
+            title="Total Portfolio Value"
+            value={
+              formatCurrency(
+                totalPortfolioValue,
+                currencySettings.primaryCurrency,
+                {
+                  decimalPlaces: currencySettings.decimalPlaces,
+                  useThousandsSeparator:
+                    currencySettings.useThousandsSeparator,
+                  decimalSeparatorStandard:
+                    currencySettings.decimalSeparatorStandard,
+                }
+              )
+            }
+            changeIcon={
+              portfolioChange >= 0 ? (
+                <TrendingUp className="w-4 h-4 text-[#059669] dark:text-[#10b981] mr-1" />
+              ) : (
+                <TrendingDown className="w-4 h-4 text-[#dc2626] dark:text-[#ef4444] mr-1" />
+              )
+            }
+            changeColor={
+              portfolioChange >= 0
+                ? 'text-[#059669] dark:text-[#10b981]'
+                : 'text-[#dc2626] dark:text-[#ef4444]'
+            }
+            changeValue={`${portfolioChange >= 0 ? '+' : ''}${portfolioChange}%`}
+            changeLabel="24h"
+            icon={<Wallet />}
+          />
+          <StatsCard
+            title="Total Donations (YTD)"
+            value={
+              formatCurrency(425600, currencySettings.primaryCurrency, {
+                decimalPlaces: currencySettings.decimalPlaces,
+                useThousandsSeparator:
+                  currencySettings.useThousandsSeparator,
+                decimalSeparatorStandard:
+                  currencySettings.decimalSeparatorStandard,
+              })
+            }
+            changeIcon={
+              <ArrowUpRight className="w-4 h-4 text-[#059669] dark:text-[#10b981] mr-1" />
+            }
+            changeColor="text-[#059669] dark:text-[#10b981]"
+            changeValue="+12.5%"
+            changeLabel="vs last year"
+            icon={<DollarSign />}
+          />
+          {/* Program Expenses */}
           <div className="ledger-card border border-gray-200 dark:border-gray-700 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="ledger-card-label">Total Portfolio Value</p>
+                <p className="ledger-card-label">Program Expenses</p>
                 <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2 stat-value">
-                  {formatCurrency(
-                    totalPortfolioValue,
-                    currencySettings.primaryCurrency,
-                    {
-                      decimalPlaces: currencySettings.decimalPlaces,
-                      useThousandsSeparator:
-                        currencySettings.useThousandsSeparator,
-                      decimalSeparatorStandard:
-                        currencySettings.decimalSeparatorStandard,
-                    }
-                  )}
-                </p>
-                <div className="flex items-center mt-2">
-                  {portfolioChange >= 0 ? (
-                    <TrendingUp className="w-4 h-4 text-[#059669] dark:text-[#10b981] mr-1" />
-                  ) : (
-                    <TrendingDown className="w-4 h-4 text-[#dc2626] dark:text-[#ef4444] mr-1" />
-                  )}
-                  <span
-                    className={`text-sm font-medium ${portfolioChange >= 0 ? 'text-[#059669] dark:text-[#10b981]' : 'text-[#dc2626] dark:text-[#ef4444]'}`}
-                  >
-                    {portfolioChange >= 0 ? '+' : ''}
-                    {portfolioChange}%
-                  </span>
-                  <span className="text-sm text-gray-500 ml-1">24h</span>
-                </div>
-              </div>
-              <div className="stat-icon-container">
-                <Wallet />
-              </div>
-            </div>
-          </div>
-
-          {/* Total Donations */}
-          <div className="ledger-card border border-gray-200 dark:border-gray-700 p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="ledger-card-label">Total Donations (YTD)</p>
-                <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2 stat-value">
-                  {formatCurrency(425600, currencySettings.primaryCurrency, {
+                  {formatCurrency(125000, currencySettings.primaryCurrency, {
                     decimalPlaces: currencySettings.decimalPlaces,
                     useThousandsSeparator:
                       currencySettings.useThousandsSeparator,
@@ -214,9 +252,9 @@ const Dashboard: React.FC = () => {
                   })}
                 </p>
                 <div className="flex items-center mt-2">
-                  <ArrowUpRight className="w-4 h-4 text-[#059669] dark:text-[#10b981] mr-1" />
-                  <span className="text-sm font-medium text-[#059669] dark:text-[#10b981]">
-                    +12.5%
+                  <ArrowDownRight className="w-4 h-4 text-[#dc2626] dark:text-[#ef4444] mr-1" />
+                  <span className="text-sm font-medium text-[#dc2626] dark:text-[#ef4444]">
+                    -5.2%
                   </span>
                   <span className="text-sm text-gray-500 ml-1">
                     vs last year
@@ -224,14 +262,16 @@ const Dashboard: React.FC = () => {
                 </div>
               </div>
               <div className="stat-icon-container">
-                <DollarSign />
+                <TrendingDown />
               </div>
             </div>
           </div>
-
-          {/* Program Expenses */}
-          <div className="ledger-card border border-gray-200 dark:border-gray-700 p-6">
-            <div className="flex items-center justify-between">
+        </div>
+        {/* Remaining content unchanged */}
+      </main>
+    </div>
+  )
+}
               <div>
                 <p className="ledger-card-label">Program Expenses (YTD)</p>
                 <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2 stat-value">

@@ -166,7 +166,6 @@ const Entities: React.FC = () => {
           entity.category?.toLowerCase().includes(query)
         )
       }
-
       return true
     })
   }, [entities, searchQuery, filterType, showInactive])
@@ -251,6 +250,39 @@ const Entities: React.FC = () => {
       handleDeleteClick(id)
     },
     [handleDeleteClick]
+  )
+
+  // Extracted ActionsMenu component to reduce JSX nesting depth
+  const ActionsMenu: React.FC<{ entity: Entity }> = ({ entity }) => (
+    <div className="relative">
+      <button
+        onClick={getMenuToggleHandler(entity.id)}
+        className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+      >
+        <MoreVertical className="w-5 h-5 text-gray-400" />
+      </button>
+      {menuOpenId === entity.id && (
+        <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 z-10">
+          <div className="py-1">
+            <button
+              onClick={getEntityEditHandler(entity)}
+              className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+            >
+              <Pencil className="w-4 h-4" />
+              Edit
+            </button>
+            <button
+              onClick={getEntityDeleteClickHandler(entity.id)}
+              disabled={deletingId === entity.id}
+              className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50"
+            >
+              <Trash2 className="w-4 h-4" />
+              {deletingId === entity.id ? 'Deleting...' : 'Delete'}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
   )
 
   if (!currentProfile) {
@@ -447,37 +479,7 @@ const Entities: React.FC = () => {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div className="relative">
-                      <button
-                        onClick={getMenuToggleHandler(entity.id)}
-                        className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
-                      >
-                        <MoreVertical className="w-5 h-5 text-gray-400" />
-                      </button>
-                      {menuOpenId === entity.id && (
-                        <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 z-10">
-                          <div className="py-1">
-                            <button
-                              onClick={getEntityEditHandler(entity)}
-                              className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-                            >
-                              <Pencil className="w-4 h-4" />
-                              Edit
-                            </button>
-                            <button
-                              onClick={getEntityDeleteClickHandler(entity.id)}
-                              disabled={deletingId === entity.id}
-                              className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                              {deletingId === entity.id
-                                ? 'Deleting...'
-                                : 'Delete'}
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
+                    <ActionsMenu entity={entity} />
                   </td>
                 </tr>
               ))}

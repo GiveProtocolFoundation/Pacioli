@@ -299,6 +299,51 @@ export const TransactionList: React.FC<TransactionListProps> = ({
     })
   }
 
+  // Purge Confirmation Modal Component
+  const PurgeConfirmationModal: React.FC<{
+    show: boolean
+    transactionsCount: number
+    onCancel: () => void
+    onPurge: () => void
+  }> = ({ show, transactionsCount, onCancel, onPurge }) => {
+    if (!show) return null
+    return (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl p-6 max-w-md mx-4">
+          <div className="flex items-start mb-4">
+            <div className="flex-shrink-0">
+              <AlertCircle className="w-6 h-6 text-red-600 dark:text-red-500" />
+            </div>
+            <div className="ml-3">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                Purge Transaction Data?
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-[#94a3b8]">
+                This will permanently delete all {transactionsCount} wallet
+                transactions from IndexedDB. This action cannot be undone. You
+                can re-sync from the blockchain anytime.
+              </p>
+            </div>
+          </div>
+          <div className="flex justify-end gap-3 mt-6">
+            <button
+              onClick={onCancel}
+              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={onPurge}
+              className="px-4 py-2 text-sm font-medium text-white bg-red-600 dark:bg-red-700 rounded hover:bg-red-700 dark:hover:bg-red-800 transition-colors"
+            >
+              Yes, Purge Data
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   if (isLoading) {
     return (
       <div className="ledger-card ledger-card-financial border border-gray-200 dark:border-gray-700 p-6">
@@ -402,41 +447,12 @@ export const TransactionList: React.FC<TransactionListProps> = ({
       </div>
 
       {/* Purge Confirmation Modal */}
-      {showPurgeConfirm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl p-6 max-w-md mx-4">
-            <div className="flex items-start mb-4">
-              <div className="flex-shrink-0">
-                <AlertCircle className="w-6 h-6 text-red-600 dark:text-red-500" />
-              </div>
-              <div className="ml-3">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                  Purge Transaction Data?
-                </h3>
-                <p className="text-sm text-gray-600 dark:text-[#94a3b8]">
-                  This will permanently delete all {transactions.length} wallet
-                  transactions from IndexedDB. This action cannot be undone. You
-                  can re-sync from the blockchain anytime.
-                </p>
-              </div>
-            </div>
-            <div className="flex justify-end gap-3 mt-6">
-              <button
-                onClick={handleHidePurgeConfirm}
-                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handlePurge}
-                className="px-4 py-2 text-sm font-medium text-white bg-red-600 dark:bg-red-700 rounded hover:bg-red-700 dark:hover:bg-red-800 transition-colors"
-              >
-                Yes, Purge Data
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <PurgeConfirmationModal
+        show={showPurgeConfirm}
+        transactionsCount={transactions.length}
+        onCancel={handleHidePurgeConfirm}
+        onPurge={handlePurge}
+      />
 
       {/* Transaction Table */}
       <div className="ledger-table-wrapper">

@@ -339,6 +339,72 @@ const TransactionForm: React.FC = () => {
     setTimeout(() => setShowEntityDropdown(false), 200)
   }, [])
 
+  // Extracted EntityDropdown component to reduce JSX nesting
+  const EntityDropdown: React.FC = () => (
+    <div>
+      <label
+        htmlFor="txn-entity"
+        className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+      >
+        <div className="flex items-center">
+          <Users className="w-4 h-4 mr-2" />
+          Entity
+        </div>
+      </label>
+      <div className="relative">
+        <input
+          id="txn-entity"
+          type="text"
+          value={entitySearchQuery}
+          onChange={handleEntitySearchChange}
+          onFocus={handleEntityInputFocus}
+          onBlur={handleEntityInputBlur}
+          className={`w-full px-4 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white ${
+            errors.entityId
+              ? 'border-red-500'
+              : 'border-gray-300 dark:border-gray-600'
+          } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+          placeholder="Search entity"
+        />
+        {entitySearchQuery && (
+          <button
+            type="button"
+            onClick={handleClearEntity}
+            className="absolute right-2 top-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        )}
+        {showEntityDropdown && (
+          <ul className="absolute z-10 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-auto">
+            {filteredEntities.map(entity => (
+              <li
+                key={entity.id}
+                onMouseDown={entityClickHandlers[entity.id]}
+                className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-900 dark:text-white">
+                      {entity.display_name || entity.name}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-[#94a3b8]">
+                      {entity.name}
+                    </p>
+                  </div>
+                  <X className="w-4 h-4 text-gray-400" />
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+      {errors.entityId && (
+        <p className="mt-1 text-sm text-red-600">{errors.entityId}</p>
+      )}
+    </div>
+  )
+
   const validateForm = useCallback((): boolean => {
     const newErrors: Partial<Record<keyof TransactionFormData, string>> = {}
 
@@ -483,6 +549,8 @@ const TransactionForm: React.FC = () => {
               </div>
             </div>
 
+            <EntityDropdown />
+
             <div>
               <label
                 htmlFor="txn-description"
@@ -536,7 +604,8 @@ const TransactionForm: React.FC = () => {
                     <div className="text-xs text-gray-500 dark:text-gray-400">
                       {selectedEntity.entity_type.charAt(0).toUpperCase() +
                         selectedEntity.entity_type.slice(1)}
-                      {selectedEntity.category && ` · ${selectedEntity.category}`}
+                      {selectedEntity.category &&
+                        ` · ${selectedEntity.category}`}
                     </div>
                   </div>
                   <button

@@ -299,6 +299,47 @@ const Login: React.FC = () => {
 
   const displayError = localError || error
 
+  // Extracted Branding Panel to reduce JSX nesting depth
+  const BrandingPanel = () => (
+    <div
+      className="hidden w-1/2 lg:flex lg:flex-col lg:justify-between lg:p-12"
+      style={{ backgroundColor: '#283747' }}
+    >
+      <div className="flex items-center gap-3">
+        <img src={PacioliLogo} alt="Pacioli" className="h-12 w-12" />
+        <div>
+          <h1 className="text-3xl font-bold text-white">Pacioli</h1>
+          <p className="text-slate-400">Crypto Accounting Platform</p>
+        </div>
+      </div>
+
+      <div className="space-y-6">
+        <blockquote className="border-l-4 border-primary pl-4">
+          <p className="text-lg text-slate-300">
+            &quot;Track, manage, and report your crypto assets with
+            professional-grade accounting tools.&quot;
+          </p>
+        </blockquote>
+
+        <div className="flex items-center gap-4 text-slate-400">
+          <div className="flex -space-x-2">
+            <div className="h-10 w-10 rounded-full bg-primary/20 ring-2 ring-slate-800" />
+            <div className="h-10 w-10 rounded-full bg-blue-500/20 ring-2 ring-slate-800" />
+            <div className="h-10 w-10 rounded-full bg-green-500/20 ring-2 ring-slate-800" />
+          </div>
+          <span className="text-sm">
+            Join thousands of crypto professionals
+          </span>
+        </div>
+      </div>
+
+      <div className="text-sm text-slate-500">
+        <p>Polkadot Ecosystem Ready</p>
+        <p className="mt-1">Supporting Substrate & EVM chains</p>
+      </div>
+    </div>
+  )
+
   // ==========================================================================
   // Render
   // ==========================================================================
@@ -306,43 +347,7 @@ const Login: React.FC = () => {
   return (
     <div className="flex min-h-screen">
       {/* Left Panel - Branding */}
-      <div
-        className="hidden w-1/2 lg:flex lg:flex-col lg:justify-between lg:p-12"
-        style={{ backgroundColor: '#283747' }}
-      >
-        <div className="flex items-center gap-3">
-          <img src={PacioliLogo} alt="Pacioli" className="h-12 w-12" />
-          <div>
-            <h1 className="text-3xl font-bold text-white">Pacioli</h1>
-            <p className="text-slate-400">Crypto Accounting Platform</p>
-          </div>
-        </div>
-
-        <div className="space-y-6">
-          <blockquote className="border-l-4 border-primary pl-4">
-            <p className="text-lg text-slate-300">
-              &quot;Track, manage, and report your crypto assets with
-              professional-grade accounting tools.&quot;
-            </p>
-          </blockquote>
-
-          <div className="flex items-center gap-4 text-slate-400">
-            <div className="flex -space-x-2">
-              <div className="h-10 w-10 rounded-full bg-primary/20 ring-2 ring-slate-800" />
-              <div className="h-10 w-10 rounded-full bg-blue-500/20 ring-2 ring-slate-800" />
-              <div className="h-10 w-10 rounded-full bg-green-500/20 ring-2 ring-slate-800" />
-            </div>
-            <span className="text-sm">
-              Join thousands of crypto professionals
-            </span>
-          </div>
-        </div>
-
-        <div className="text-sm text-slate-500">
-          <p>Polkadot Ecosystem Ready</p>
-          <p className="mt-1">Supporting Substrate & EVM chains</p>
-        </div>
-      </div>
+      <BrandingPanel />
 
       {/* Right Panel - Auth Form */}
       <div className="flex w-full items-center justify-center bg-white px-6 py-12 lg:w-1/2">

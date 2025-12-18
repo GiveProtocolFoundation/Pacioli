@@ -89,6 +89,89 @@ interface SettingsProps {
   userType?: 'individual' | 'organization'
 }
 
+const SettingsHeader: React.FC = () => (
+  <header className="bg-white dark:bg-black border-b border-gray-200 dark:border-gray-700">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div>
+        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
+          Settings
+        </h1>
+        <p className="text-sm text-gray-500 dark:text-[#94a3b8] mt-1">
+          Manage your organization settings and preferences
+        </p>
+      </div>
+    </div>
+  </header>
+)
+
+const SidebarNavigation: React.FC<{
+  items: typeof navigationItems
+  activeSection: SettingsSection
+  onSectionChange: (section: SettingsSection) => void
+}> = ({ items, activeSection, onSectionChange }) => (
+  <aside className="lg:w-64 flex-shrink-0">
+    <nav className="space-y-1">
+      {items.map(item => {
+        const Icon = item.icon
+        const isActive = activeSection === item.id
+        const handleClick = () => onSectionChange(item.id)
+
+        return (
+          <button
+            key={item.id}
+            onClick={handleClick}
+            disabled={item.comingSoon}
+            className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
+              isActive
+                ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-700'
+                : item.comingSoon
+                  ? 'text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 border border-transparent'
+            }`}
+          >
+            <div className="flex items-center flex-1 text-left">
+              <Icon
+                className={`w-5 h-5 mr-3 flex-shrink-0 ${
+                  isActive
+                    ? 'text-blue-600 dark:text-blue-400'
+                    : item.comingSoon
+                      ? 'text-gray-400 dark:text-gray-600'
+                      : 'text-gray-500 dark:text-[#94a3b8]'
+                }`}
+              />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="truncate">{item.label}</span>
+                  {item.comingSoon && (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-[#94a3b8]">
+                      Soon
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-gray-500 dark:text-[#94a3b8] mt-0.5 truncate">
+                  {item.description}
+                </p>
+              </div>
+            </div>
+            {isActive && !item.comingSoon && (
+              <ChevronRight className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0 ml-2" />
+            )}
+          </button>
+        )
+      })}
+    </nav>
+
+    <div className="lg:hidden mt-4 p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-700">
+      <div className="flex items-center text-sm">
+        <SettingsIcon className="w-4 h-4 text-blue-600 dark:text-blue-400 mr-2" />
+        <span className="text-blue-700 dark:text-blue-400 font-medium">
+          {items.find(item => item.id === activeSection)?.label}
+        </span>
+      </div>
+    </div>
+  </aside>
+)
+
 const Settings: React.FC<SettingsProps> = ({ userType = 'organization' }) => {
   const location = useLocation()
   const navigate = useNavigate()
@@ -135,89 +218,16 @@ const Settings: React.FC<SettingsProps> = ({ userType = 'organization' }) => {
 
   return (
     <div className="min-h-screen ledger-background">
-      {/* Header */}
-      <header className="bg-white dark:bg-black border-b border-gray-200 dark:border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div>
-            <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
-              Settings
-            </h1>
-            <p className="text-sm text-gray-500 dark:text-[#94a3b8] mt-1">
-              Manage your organization settings and preferences
-            </p>
-          </div>
-        </div>
-      </header>
+      <SettingsHeader />
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* Sidebar Navigation */}
-          <aside className="lg:w-64 flex-shrink-0">
-            <nav className="space-y-1">
-              {navigationItems.map(item => {
-                const Icon = item.icon
-                const isActive = activeSection === item.id
-                const handleClick = createSectionHandler(item.id)
-
-                return (
-                  <button
-                    key={item.id}
-                    onClick={handleClick}
-                    disabled={item.comingSoon}
-                    className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
-                      isActive
-                        ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-700'
-                        : item.comingSoon
-                          ? 'text-gray-400 dark:text-gray-600 cursor-not-allowed'
-                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 border border-transparent'
-                    }`}
-                  >
-                    <div className="flex items-center flex-1 text-left">
-                      <Icon
-                        className={`w-5 h-5 mr-3 flex-shrink-0 ${
-                          isActive
-                            ? 'text-blue-600 dark:text-blue-400'
-                            : item.comingSoon
-                              ? 'text-gray-400 dark:text-gray-600'
-                              : 'text-gray-500 dark:text-[#94a3b8]'
-                        }`}
-                      />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="truncate">{item.label}</span>
-                          {item.comingSoon && (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-[#94a3b8]">
-                              Soon
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-xs text-gray-500 dark:text-[#94a3b8] mt-0.5 truncate">
-                          {item.description}
-                        </p>
-                      </div>
-                    </div>
-                    {isActive && !item.comingSoon && (
-                      <ChevronRight className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0 ml-2" />
-                    )}
-                  </button>
-                )
-              })}
-            </nav>
-
-            {/* Mobile Breadcrumb */}
-            <div className="lg:hidden mt-4 p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-700">
-              <div className="flex items-center text-sm">
-                <SettingsIcon className="w-4 h-4 text-blue-600 dark:text-blue-400 mr-2" />
-                <span className="text-blue-700 dark:text-blue-400 font-medium">
-                  {
-                    navigationItems.find(item => item.id === activeSection)
-                      ?.label
-                  }
-                </span>
-              </div>
-            </div>
-          </aside>
+          <SidebarNavigation
+            items={navigationItems}
+            activeSection={activeSection}
+            onSectionChange={handleSectionChange}
+          />
 
           {/* Content Area */}
           <main className="flex-1 min-w-0">

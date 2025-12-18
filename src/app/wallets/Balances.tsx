@@ -213,8 +213,7 @@ const Balances: React.FC = () => {
         const glmrRatio = 0.25 + Math.sin(i / 6) * 0.06
         const astrRatio = 0.15 + Math.cos(i / 5) * 0.04
         const iBtcRatio = 1 - dotRatio - ksmRatio - glmrRatio - astrRatio
-
-        data.push({
+      data.push({
           date: format(
             date,
             period.includes('year') || period === '90_days' ? 'MMM d' : 'MMM d'
@@ -252,7 +251,6 @@ const Balances: React.FC = () => {
     0
   )
 
-  // Calculate total balances by currency across all wallets
   const totalBalancesByCurrency = useMemo(() => {
     const balances: {
       [crypto: string]: { amount: number; usdValue: number; change24h: number }
@@ -310,6 +308,56 @@ const Balances: React.FC = () => {
       setSelectedPeriod(period)
     },
     []
+  )
+
+  const ChartGradients = ({ currencyColors }: { currencyColors: { [key: string]: string } }) => (
+    <>
+      {Object.keys(currencyColors).map(currency => (
+        <linearGradient key={currency} id={`color${currency}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="5%" stopColor={currencyColors[currency]} stopOpacity={0.8} />
+          <stop offset="95%" stopColor={currencyColors[currency]} stopOpacity={0.1} />
+        </linearGradient>
+      ))}
+    </>
+  )
+
+  const WalletBalanceChart = ({
+    chartData,
+    currencyColors,
+    formatYAxisTick,
+    formatCurrency,
+  }: {
+    chartData: any
+    currencyColors: { [key: string]: string }
+    formatYAxisTick: (value: number) => string
+    formatCurrency: (value: number) => string
+  }) => (
+    <ResponsiveContainer width="100%" height={400}>
+      <AreaChart data={chartData}>
+        <defs>
+          <ChartGradients currencyColors={currencyColors} />
+        </defs>
+        <XAxis dataKey="date" stroke="#888888" />
+        <YAxis tickFormatter={formatYAxisTick} />
+        {Object.keys(currencyColors).map(currency => (
+          <Area
+            key={currency}
+            type="monotone"
+            dataKey={currency}
+            stackId="1"
+            stroke={currencyColors[currency]}
+            fillOpacity={1}
+            fill={`url(#color${currency})`}
+          />
+        ))}
+        <Tooltip
+          formatter={(value: number) => formatCurrency(value)}
+          contentStyle={{ backgroundColor: '#1F2937' }}
+          itemStyle={{ color: '#f9fafb' }}
+          labelStyle={{ color: '#e5e7eb' }}
+        />
+      </AreaChart>
+    </ResponsiveContainer>
   )
 
   return (
@@ -392,28 +440,17 @@ const Balances: React.FC = () => {
             </div>
           </div>
           <div className="p-6">
-            <ResponsiveContainer width="100%" height={400}>
-              <AreaChart data={chartData}>
-                <defs>
-                  {Object.keys(currencyColors).map(currency => (
-                    <linearGradient
-                      key={currency}
-                      id={`color${currency}`}
-                      x1="0"
-                      y1="0"
-                      x2="0"
-                      y2="1"
-                    >
-                      <stop
-                        offset="5%"
-                        stopColor={currencyColors[currency]}
-                        stopOpacity={0.8}
-                      />
-                      <stop
-                        offset="95%"
-                        stopColor={currencyColors[currency]}
-                        stopOpacity={0.1}
-                      />
+            <WalletBalanceChart
+              chartData={chartData}
+              currencyColors={currencyColors}
+              formatYAxisTick={formatYAxisTick}
+              formatCurrency={formatCurrency}
+            />
+          </div>
+        </div>
+      </main>
+    </div>
+  )
                     </linearGradient>
                   ))}
                 </defs>
@@ -563,11 +600,8 @@ const Balances: React.FC = () => {
             </h2>
           </div>
           <div className="divide-y divide-gray-200 dark:divide-gray-700">
-            {wallets.map(wallet => (
-              <div
-                key={wallet.id}
-                className="p-6 hover:bg-gray-50 dark:hover:bg-gray-800"
-              >
+            const WalletDetails = ({ wallet }) => (
+              <>
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-start space-x-4">
                     <div className="p-3 bg-blue-50 rounded-lg">
@@ -636,6 +670,15 @@ const Balances: React.FC = () => {
                     </div>
                   ))}
                 </div>
+              </>
+            );
+
+            {wallets.map(wallet => (
+              <div
+                key={wallet.id}
+                className="p-6 hover:bg-gray-50 dark:hover:bg-gray-800"
+              >
+                <WalletDetails wallet={wallet} />
               </div>
             ))}
           </div>

@@ -39,6 +39,48 @@ interface NotificationItemProps {
   getSeverityStyles: (severity: Notification['severity']) => string
 }
 
+const NotificationActions: React.FC = () => (
+  <div className="flex items-center space-x-2">
+    <button className="p-1.5 text-green-600 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/30 rounded">
+      <Check className="w-4 h-4" />
+    </button>
+    <button className="p-1.5 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 rounded">
+      <X className="w-4 h-4" />
+    </button>
+    <button className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center">
+      View
+      <ArrowRight className="w-3 h-3 ml-1" />
+    </button>
+  </div>
+)
+
+const NotificationBody: React.FC<{
+  notification: NotificationItemProps['notification']
+  formatTimestamp: NotificationItemProps['formatTimestamp']
+}> = ({ notification, formatTimestamp }) => (
+  <div className="flex-1 min-w-0">
+    <div className="flex items-start justify-between">
+      <div className="flex-1">
+        <p className="text-sm font-medium text-gray-900 dark:text-white">
+          {notification.title}
+          {!notification.read && (
+            <span className="inline-block w-2 h-2 bg-blue-600 rounded-full ml-2" />
+          )}
+        </p>
+        <p className="text-xs text-gray-600 dark:text-[#94a3b8] mt-1">
+          {notification.message}
+        </p>
+      </div>
+    </div>
+    <div className="flex items-center justify-between mt-2">
+      <span className="text-xs text-gray-400 dark:text-gray-500">
+        {formatTimestamp(notification.timestamp)}
+      </span>
+      {notification.actionRequired && <NotificationActions />}
+    </div>
+  </div>
+)
+
 const NotificationItem: React.FC<NotificationItemProps> = ({
   notification,
   onMarkAsRead,
@@ -74,44 +116,16 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
     >
       <div className="flex items-start space-x-3">
         <div
-          className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${getSeverityStyles(notification.severity)}`}
+          className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${getSeverityStyles(
+            notification.severity
+          )}`}
         >
           <Icon className="w-5 h-5" />
         </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <p className="text-sm font-medium text-gray-900 dark:text-white">
-                {notification.title}
-                {!notification.read && (
-                  <span className="inline-block w-2 h-2 bg-blue-600 rounded-full ml-2" />
-                )}
-              </p>
-              <p className="text-xs text-gray-600 dark:text-[#94a3b8] mt-1">
-                {notification.message}
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center justify-between mt-2">
-            <span className="text-xs text-gray-400 dark:text-gray-500">
-              {formatTimestamp(notification.timestamp)}
-            </span>
-            {notification.actionRequired && (
-              <div className="flex items-center space-x-2">
-                <button className="p-1.5 text-green-600 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/30 rounded">
-                  <Check className="w-4 h-4" />
-                </button>
-                <button className="p-1.5 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 rounded">
-                  <X className="w-4 h-4" />
-                </button>
-                <button className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center">
-                  View
-                  <ArrowRight className="w-3 h-3 ml-1" />
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
+        <NotificationBody
+          notification={notification}
+          formatTimestamp={formatTimestamp}
+        />
       </div>
     </div>
   )
@@ -230,6 +244,81 @@ const mockNotifications: Notification[] = [
     actionRequired: true,
   },
 ]
+
+const FilterTabs: React.FC<{
+  filter: 'all' | 'financial' | 'transactional' | 'workflow' | 'approval'
+  userType: 'individual' | 'organization'
+  onAll: () => void
+  onFinancial: () => void
+  onTransactional: () => void
+  onWorkflow: () => void
+  onApproval: () => void
+}> = ({
+  filter,
+  userType,
+  onAll,
+  onFinancial,
+  onTransactional,
+  onWorkflow,
+  onApproval,
+}) => (
+  <div className="flex items-center space-x-2 p-4 border-b border-gray-200 dark:border-gray-700 overflow-x-auto">
+    <button
+      onClick={onAll}
+      className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
+        filter === 'all'
+          ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+          : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-[#94a3b8] hover:bg-gray-200 dark:hover:bg-gray-700'
+      }`}
+    >
+      All
+    </button>
+    <button
+      onClick={onFinancial}
+      className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
+        filter === 'financial'
+          ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+          : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-[#94a3b8] hover:bg-gray-200 dark:hover:bg-gray-700'
+      }`}
+    >
+      Financial
+    </button>
+    <button
+      onClick={onTransactional}
+      className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
+        filter === 'transactional'
+          ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+          : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-[#94a3b8] hover:bg-gray-200 dark:hover:bg-gray-700'
+      }`}
+    >
+      Transactions
+    </button>
+    {userType === 'organization' && (
+      <>
+        <button
+          onClick={onWorkflow}
+          className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
+            filter === 'workflow'
+              ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+              : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-[#94a3b8] hover:bg-gray-200 dark:hover:bg-gray-700'
+          }`}
+        >
+          Workflow
+        </button>
+        <button
+          onClick={onApproval}
+          className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
+            filter === 'approval'
+              ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+              : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-[#94a3b8] hover:bg-gray-200 dark:hover:bg-gray-700'
+          }`}
+        >
+          Approvals
+        </button>
+      </>
+    )}
+  </div>
+)
 
 const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
   isOpen,
@@ -365,62 +454,15 @@ const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
         </div>
 
         {/* Filter Tabs */}
-        <div className="flex items-center space-x-2 p-4 border-b border-gray-200 dark:border-gray-700 overflow-x-auto">
-          <button
-            onClick={handleFilterAll}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
-              filter === 'all'
-                ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
-                : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-[#94a3b8] hover:bg-gray-200 dark:hover:bg-gray-700'
-            }`}
-          >
-            All
-          </button>
-          <button
-            onClick={handleFilterFinancial}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
-              filter === 'financial'
-                ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
-                : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-[#94a3b8] hover:bg-gray-200 dark:hover:bg-gray-700'
-            }`}
-          >
-            Financial
-          </button>
-          <button
-            onClick={handleFilterTransactional}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
-              filter === 'transactional'
-                ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
-                : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-[#94a3b8] hover:bg-gray-200 dark:hover:bg-gray-700'
-            }`}
-          >
-            Transactions
-          </button>
-          {userType === 'organization' && (
-            <>
-              <button
-                onClick={handleFilterWorkflow}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
-                  filter === 'workflow'
-                    ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-[#94a3b8] hover:bg-gray-200 dark:hover:bg-gray-700'
-                }`}
-              >
-                Workflow
-              </button>
-              <button
-                onClick={handleFilterApproval}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
-                  filter === 'approval'
-                    ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-[#94a3b8] hover:bg-gray-200 dark:hover:bg-gray-700'
-                }`}
-              >
-                Approvals
-              </button>
-            </>
-          )}
-        </div>
+        <FilterTabs
+          filter={filter}
+          userType={userType}
+          onAll={handleFilterAll}
+          onFinancial={handleFilterFinancial}
+          onTransactional={handleFilterTransactional}
+          onWorkflow={handleFilterWorkflow}
+          onApproval={handleFilterApproval}
+        />
 
         {/* Notifications List */}
         <div className="flex-1 overflow-y-auto">

@@ -179,15 +179,126 @@ const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
     []
   )
 
+  const AccountsTable: React.FC<{
+    filteredAccounts: typeof filteredAccounts
+    editingAccount: typeof editingAccount
+    isAddingNew: boolean
+    handleEditingCodeChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+    handleEditingNameChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+    handleEditingTypeChange: (e: React.ChangeEvent<HTMLSelectElement>) => void
+    handleEditingDescriptionChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+    createEditHandler: (account: NonNullable<typeof template>['accounts'][0]) => () => void
+    createDeleteHandler: (code: string) => () => void
+    handleSave: () => void
+    handleCancel: () => void
+    canEdit: boolean
+  }> = ({
+    filteredAccounts,
+    editingAccount,
+    isAddingNew,
+    handleEditingCodeChange,
+    handleEditingNameChange,
+    handleEditingTypeChange,
+    handleEditingDescriptionChange,
+    createEditHandler,
+    createDeleteHandler,
+    handleSave,
+    handleCancel,
+    canEdit,
+  }) => (
+    <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Code</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Account Name</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+              {canEdit && (
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+              )}
+            </tr>
+          </thead>
+          <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+            {editingAccount && (
+              <tr className="bg-blue-50">
+                <td className="px-6 py-4">
+                  <input
+                    type="text"
+                    value={editingAccount.code}
+                    onChange={handleEditingCodeChange}
+                    placeholder="Code"
+                    className="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    disabled={!isAddingNew}
+                  />
+                </td>
+                <td className="px-6 py-4">
+                  <input
+                    type="text"
+                    value={editingAccount.name}
+                    onChange={handleEditingNameChange}
+                    placeholder="Name"
+                    className="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </td>
+                <td className="px-6 py-4">
+                  <select
+                    value={editingAccount.type}
+                    onChange={handleEditingTypeChange}
+                    className="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    {accountTypes.map(type => (
+                      <option key={type} value={type}>
+                        {type}
+                      </option>
+                    ))}
+                  </select>
+                </td>
+                <td className="px-6 py-4">
+                  <input
+                    type="text"
+                    value={editingAccount.description}
+                    onChange={handleEditingDescriptionChange}
+                    placeholder="Description"
+                    className="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </td>
+                <td className="px-6 py-4 text-right">
+                  <button onClick={handleSave} className="text-blue-600 hover:text-blue-900 mr-2">Save</button>
+                  <button onClick={handleCancel} className="text-gray-600 hover:text-gray-900">Cancel</button>
+                </td>
+              </tr>
+            )}
+            {filteredAccounts.map(account =>
+              !editingAccount || editingAccount.code !== account.code ? (
+                <tr key={account.code}>
+                  <td className="px-6 py-4">{account.code}</td>
+                  <td className="px-6 py-4">{account.name}</td>
+                  <td className="px-6 py-4">{account.type}</td>
+                  <td className="px-6 py-4">{account.description}</td>
+                  {canEdit && (
+                    <td className="px-6 py-4 text-right">
+                      <button onClick={createEditHandler(account)} className="text-blue-600 hover:text-blue-900 mr-2">Edit</button>
+                      <button onClick={createDeleteHandler(account.code)} className="text-red-600 hover:text-red-900">Delete</button>
+                    </td>
+                  )}
+                </tr>
+              ) : null
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+
   if (!template) {
     return (
       <div className="p-6 min-h-screen bg-gray-50 dark:bg-black">
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start">
           <AlertCircle className="w-5 h-5 text-yellow-600 mr-3 mt-0.5" />
           <div>
-            <h3 className="text-sm font-medium text-yellow-800">
-              Chart of Accounts Not Found
-            </h3>
+            <h3 className="text-sm font-medium text-yellow-800">Chart of Accounts Not Found</h3>
             <p className="text-sm text-yellow-700 mt-1">
               No chart of accounts template found for{' '}
               {jurisdiction.toUpperCase()} - {accountType}.
@@ -264,42 +375,32 @@ const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
       </div>
 
       {/* Accounts Table */}
-      <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Code
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Account Name
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Type
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Description
-                </th>
-                {canEdit && (
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                )}
-              </tr>
-            </thead>
-            <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
-              {/* Editing/Adding Row */}
-              {editingAccount && (
-                <tr className="bg-blue-50">
-                  <td className="px-6 py-4">
-                    <input
-                      type="text"
-                      value={editingAccount.code}
-                      onChange={handleEditingCodeChange}
-                      placeholder="Code"
-                      className="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      disabled={!isAddingNew}
+      <AccountsTable
+        filteredAccounts={filteredAccounts}
+        editingAccount={editingAccount}
+        isAddingNew={isAddingNew}
+        handleEditingCodeChange={handleEditingCodeChange}
+        handleEditingNameChange={handleEditingNameChange}
+        handleEditingTypeChange={handleEditingTypeChange}
+        handleEditingDescriptionChange={handleEditingDescriptionChange}
+        createEditHandler={createEditHandler}
+        createDeleteHandler={createDeleteHandler}
+        handleSave={handleSave}
+        handleCancel={handleCancel}
+        canEdit={canEdit}
+      />
+
+      {editingAccount && (
+        <tr className="bg-blue-50">
+          <td className="px-6 py-4">
+            <input
+              type="text"
+              value={editingAccount.code}
+              onChange={handleEditingCodeChange}
+              placeholder="Code"
+              className="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              disabled={!isAddingNew}
+            />
                     />
                   </td>
                   <td className="px-6 py-4">

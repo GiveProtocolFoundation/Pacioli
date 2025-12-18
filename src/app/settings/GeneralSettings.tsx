@@ -57,6 +57,45 @@ interface OrganizationInformationSectionProps {
   onLogoUpload: (e: React.ChangeEvent<HTMLInputElement>) => void
 }
 
+const LogoUpload: React.FC<{
+  logo: string | null
+  onLogoUpload: (e: React.ChangeEvent<HTMLInputElement>) => void
+}> = ({ logo, onLogoUpload }) => (
+  <div>
+    <div className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+      Organization Logo
+    </div>
+    <div className="flex items-center space-x-4">
+      {logo ? (
+        <img
+          src={logo}
+          alt="Organization logo"
+          className="w-16 h-16 rounded-lg border border-gray-200 dark:border-gray-700 object-cover"
+        />
+      ) : (
+        <div className="w-16 h-16 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center">
+          <Building2 className="w-6 h-6 text-gray-400" />
+        </div>
+      )}
+      <label className="cursor-pointer">
+        <span className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 inline-flex items-center">
+          <Upload className="w-4 h-4 mr-2" />
+          Upload Logo
+        </span>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={onLogoUpload}
+          className="hidden"
+        />
+      </label>
+    </div>
+    <p className="text-xs text-gray-500 dark:text-[#94a3b8] mt-1">
+      Recommended: Square image, at least 200x200px
+    </p>
+  </div>
+)
+
 const OrganizationInformationSection: React.FC<
   OrganizationInformationSectionProps
 > = ({ organizationSettings, onOrganizationChange, onLogoUpload }) => {
@@ -90,39 +129,7 @@ const OrganizationInformationSection: React.FC<
 
       <div className="space-y-4">
         {/* Logo Upload */}
-        <div>
-          <div className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Organization Logo
-          </div>
-          <div className="flex items-center space-x-4">
-            {organizationSettings.logo ? (
-              <img
-                src={organizationSettings.logo}
-                alt="Organization logo"
-                className="w-16 h-16 rounded-lg border border-gray-200 dark:border-gray-700 object-cover"
-              />
-            ) : (
-              <div className="w-16 h-16 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center">
-                <Building2 className="w-6 h-6 text-gray-400" />
-              </div>
-            )}
-            <label className="cursor-pointer">
-              <span className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 inline-flex items-center">
-                <Upload className="w-4 h-4 mr-2" />
-                Upload Logo
-              </span>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={onLogoUpload}
-                className="hidden"
-              />
-            </label>
-          </div>
-          <p className="text-xs text-gray-500 dark:text-[#94a3b8] mt-1">
-            Recommended: Square image, at least 200x200px
-          </p>
-        </div>
+        <LogoUpload logo={organizationSettings.logo} onLogoUpload={onLogoUpload} />
 
         {/* Organization Type */}
         <div>
@@ -181,6 +188,16 @@ const OrganizationInformationSection: React.FC<
             <label
               htmlFor="taxId"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            >
+              Tax Id
+            </label>
+            <input
+              id="taxId"
+              type="text"
+              value={organizationSettings.taxId}
+              onChange={createTextHandler('taxId')}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
             >
               Tax ID / EIN
             </label>
@@ -336,6 +353,39 @@ interface FiscalYearSectionProps {
   ) => void
 }
 
+const FiscalYearWarning: React.FC = () => (
+  <div className="flex">
+    <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+    <div className="ml-3">
+      <p className="text-sm text-blue-800 dark:text-blue-400">
+        Changing the fiscal year will affect all date-based reports and
+        analytics. Consult with your accountant before making changes.
+      </p>
+    </div>
+  </div>
+);
+
+const FiscalYearOptions: React.FC = () => (
+  <>
+    <optgroup label="Calendar Year End">
+      <option value="12-31">December 31</option>
+    </optgroup>
+    <optgroup label="Fiscal Year Ends (Non-Calendar)">
+      <option value="01-31">January 31</option>
+      <option value="02-28">February 28/29</option>
+      <option value="03-31">March 31</option>
+      <option value="04-30">April 30</option>
+      <option value="05-31">May 31</option>
+      <option value="06-30">June 30</option>
+      <option value="07-31">July 31</option>
+      <option value="08-31">August 31</option>
+      <option value="09-30">September 30</option>
+      <option value="10-31">October 31</option>
+      <option value="11-30">November 30</option>
+    </optgroup>
+  </>
+);
+
 const FiscalYearSection: React.FC<FiscalYearSectionProps> = ({
   systemSettings,
   onSystemChange,
@@ -359,15 +409,7 @@ const FiscalYearSection: React.FC<FiscalYearSectionProps> = ({
       </div>
 
       <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
-        <div className="flex">
-          <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
-          <div className="ml-3">
-            <p className="text-sm text-blue-800 dark:text-blue-400">
-              Changing the fiscal year will affect all date-based reports and
-              analytics. Consult with your accountant before making changes.
-            </p>
-          </div>
-        </div>
+        <FiscalYearWarning />
       </div>
 
       <div>
@@ -383,22 +425,7 @@ const FiscalYearSection: React.FC<FiscalYearSectionProps> = ({
           onChange={createHandler('fiscalYearEnd')}
           className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
-          <optgroup label="Calendar Year End">
-            <option value="12-31">December 31</option>
-          </optgroup>
-          <optgroup label="Fiscal Year Ends (Non-Calendar)">
-            <option value="01-31">January 31</option>
-            <option value="02-28">February 28/29</option>
-            <option value="03-31">March 31</option>
-            <option value="04-30">April 30</option>
-            <option value="05-31">May 31</option>
-            <option value="06-30">June 30</option>
-            <option value="07-31">July 31</option>
-            <option value="08-31">August 31</option>
-            <option value="09-30">September 30</option>
-            <option value="10-31">October 31</option>
-            <option value="11-30">November 30</option>
-          </optgroup>
+          <FiscalYearOptions />
         </select>
         <p className="text-xs text-gray-500 dark:text-[#94a3b8] mt-1">
           Fiscal year start will be the day after the selected year end
@@ -412,6 +439,121 @@ const FiscalYearSection: React.FC<FiscalYearSectionProps> = ({
  * API Keys Section Component
  * Manages external API keys for blockchain data providers
  */
+const EtherscanApiKeySection: React.FC<{
+  etherscanApiKey: string
+  showApiKey: boolean
+  isSaved: boolean
+  hasExistingKey: boolean
+  onKeyChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  onToggleShow: () => void
+  onSave: () => void
+  onClear: () => void
+}> = ({
+  etherscanApiKey,
+  showApiKey,
+  isSaved,
+  hasExistingKey,
+  onKeyChange,
+  onToggleShow,
+  onSave,
+  onClear,
+}) => {
+  return (
+    <div className="space-y-4">
+      <div>
+        <label
+          htmlFor="etherscanApiKey"
+          className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+        >
+          Etherscan API Key
+        </label>
+        <p className="text-xs text-gray-500 dark:text-[#94a3b8] mb-2">
+          Required for fetching EVM transaction history on Moonbeam,
+          Moonriver, and other EVM chains.
+        </p>
+        <div className="flex space-x-2">
+          <div className="relative flex-1">
+            <input
+              id="etherscanApiKey"
+              type={showApiKey ? 'text' : 'password'}
+              value={etherscanApiKey}
+              onChange={onKeyChange}
+              placeholder="Enter your Etherscan API key"
+              className="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
+            />
+            <button
+              type="button"
+              onClick={onToggleShow}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            >
+              {showApiKey ? (
+                <EyeOff className="w-4 h-4" />
+              ) : (
+                <Eye className="w-4 h-4" />
+              )}
+            </button>
+          </div>
+          <button
+            onClick={onSave}
+            disabled={!etherscanApiKey.trim()}
+            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+          >
+            {isSaved ? (
+              <>
+                <Check className="w-4 h-4 mr-1" />
+                Saved
+              </>
+            ) : (
+              <>
+                <Save className="w-4 h-4 mr-1" />
+                Save
+              </>
+            )}
+          </button>
+          {hasExistingKey && (
+            <button
+              onClick={onClear}
+              className="px-4 py-2 text-sm font-medium text-red-600 dark:text-red-400 border border-red-300 dark:border-red-600 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20"
+            >
+              Clear
+            </button>
+          )}
+        </div>
+        {hasExistingKey && !isSaved && (
+          <div className="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
+            <Check className="w-4 h-4 mr-1" />
+            API key configured
+          </div>
+        )}
+        <div className="mt-3 flex items-center">
+          <a
+            href="https://etherscan.io/myapikey"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center"
+          >
+            Get a free Etherscan API key
+            <ExternalLink className="w-3 h-3 ml-1" />
+          </a>
+        </div>
+        <div className="mt-4 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+          <div className="flex">
+            <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+            <div className="ml-3">
+              <p className="text-sm text-blue-800 dark:text-blue-400">
+                The Etherscan API is used to fetch transaction history for
+                EVM-compatible chains (Moonbeam, Moonriver). The free tier
+                allows up to 5 requests per second, which is sufficient for
+                most use cases.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 const ApiKeysSection: React.FC = () => {
   // Use lazy initialization to load from localStorage on first render
   const [etherscanApiKey, setEtherscanApiKey] = useState(() => {
@@ -465,104 +607,16 @@ const ApiKeysSection: React.FC = () => {
       </p>
 
       {/* Etherscan API Key */}
-      <div className="space-y-4">
-        <div>
-          <label
-            htmlFor="etherscanApiKey"
-            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-          >
-            Etherscan API Key
-          </label>
-          <p className="text-xs text-gray-500 dark:text-[#94a3b8] mb-2">
-            Required for fetching EVM transaction history on Moonbeam,
-            Moonriver, and other EVM chains.
-          </p>
-          <div className="flex space-x-2">
-            <div className="relative flex-1">
-              <input
-                id="etherscanApiKey"
-                type={showApiKey ? 'text' : 'password'}
-                value={etherscanApiKey}
-                onChange={handleKeyChange}
-                placeholder="Enter your Etherscan API key"
-                className="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
-              />
-              <button
-                type="button"
-                onClick={toggleShowApiKey}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-              >
-                {showApiKey ? (
-                  <EyeOff className="w-4 h-4" />
-                ) : (
-                  <Eye className="w-4 h-4" />
-                )}
-              </button>
-            </div>
-            <button
-              onClick={handleSaveApiKey}
-              disabled={!etherscanApiKey.trim()}
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-            >
-              {isSaved ? (
-                <>
-                  <Check className="w-4 h-4 mr-1" />
-                  Saved
-                </>
-              ) : (
-                <>
-                  <Save className="w-4 h-4 mr-1" />
-                  Save
-                </>
-              )}
-            </button>
-            {hasExistingKey && (
-              <button
-                onClick={handleClearApiKey}
-                className="px-4 py-2 text-sm font-medium text-red-600 dark:text-red-400 border border-red-300 dark:border-red-600 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20"
-              >
-                Clear
-              </button>
-            )}
-          </div>
-
-          {/* Status indicator */}
-          {hasExistingKey && !isSaved && (
-            <div className="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
-              <Check className="w-4 h-4 mr-1" />
-              API key configured
-            </div>
-          )}
-
-          {/* Get API Key Link */}
-          <div className="mt-3 flex items-center">
-            <a
-              href="https://etherscan.io/myapikey"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center"
-            >
-              Get a free Etherscan API key
-              <ExternalLink className="w-3 h-3 ml-1" />
-            </a>
-          </div>
-
-          {/* Info box */}
-          <div className="mt-4 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-            <div className="flex">
-              <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
-              <div className="ml-3">
-                <p className="text-sm text-blue-800 dark:text-blue-400">
-                  The Etherscan API is used to fetch transaction history for
-                  EVM-compatible chains (Moonbeam, Moonriver). The free tier
-                  allows up to 5 requests per second, which is sufficient for
-                  most use cases.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <EtherscanApiKeySection
+        etherscanApiKey={etherscanApiKey}
+        showApiKey={showApiKey}
+        isSaved={isSaved}
+        hasExistingKey={hasExistingKey}
+        onKeyChange={handleKeyChange}
+        onToggleShow={toggleShowApiKey}
+        onSave={handleSaveApiKey}
+        onClear={handleClearApiKey}
+      />
     </div>
   )
 }
@@ -675,6 +729,49 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({
     [handleSystemChange]
   )
 
+  // Extracted component to reduce nesting depth
+  const TimezoneSelect: React.FC<{ value: string; onChange: (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => void }> = ({ value, onChange }) => (
+    <div>
+      <label
+        htmlFor="timezone"
+        className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+      >
+        Timezone
+      </label>
+      <select
+        id="timezone"
+        value={value}
+        onChange={onChange}
+        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+      >
+        <option value="Etc/GMT+12">
+          UTC-12:00 - International Date Line West (AoE) - Baker Island, Howland Island
+        </option>
+        <option value="Pacific/Samoa">
+          UTC-11:00 - Samoa Standard Time (SST) - Samoa, Niue
+        </option>
+        <option value="Pacific/Honolulu">
+          UTC-10:00 - Hawaii-Aleutian Standard Time (HST) - Honolulu, Tahiti
+        </option>
+        <option value="Pacific/Marquesas">
+          UTC-09:30 - Marquesas Time (MART) - Marquesas Islands (French Polynesia)
+        </option>
+        <option value="America/Anchorage">
+          UTC-09:00 - Alaska Standard Time (AKST) - Anchorage, Juneau
+        </option>
+        <option value="America/Los_Angeles">
+          UTC-08:00 - Pacific Standard Time (PST) - Los Angeles, Vancouver, San Francisco
+        </option>
+        <option value="America/Denver">
+          UTC-07:00 - Mountain Standard Time (MST) - Denver, Phoenix, Calgary
+        </option>
+        <option value="America/Chicago">
+          UTC-06:00 - Central Standard Time (CST) - Chicago, Houston, Mexico City
+        </option>
+      </select>
+    </div>
+  )
+
   return (
     <div className="p-6">
       {/* Header */}
@@ -737,46 +834,12 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label
-                htmlFor="timezone"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-              >
-                Timezone
-              </label>
-              <select
-                id="timezone"
-                value={systemSettings.timezone}
-                onChange={createSystemSelectHandler('timezone')}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="Etc/GMT+12">
-                  UTC-12:00 - International Date Line West (AoE) - Baker Island,
-                  Howland Island
-                </option>
-                <option value="Pacific/Samoa">
-                  UTC-11:00 - Samoa Standard Time (SST) - Samoa, Niue
-                </option>
-                <option value="Pacific/Honolulu">
-                  UTC-10:00 - Hawaii-Aleutian Standard Time (HST) - Honolulu,
-                  Tahiti
-                </option>
-                <option value="Pacific/Marquesas">
-                  UTC-09:30 - Marquesas Time (MART) - Marquesas Islands (French
-                  Polynesia)
-                </option>
-                <option value="America/Anchorage">
-                  UTC-09:00 - Alaska Standard Time (AKST) - Anchorage, Juneau
-                </option>
-                <option value="America/Los_Angeles">
-                  UTC-08:00 - Pacific Standard Time (PST) - Los Angeles,
-                  Vancouver, San Francisco
-                </option>
-                <option value="America/Denver">
-                  UTC-07:00 - Mountain Standard Time (MST) - Denver, Phoenix,
-                  Calgary
-                </option>
-                <option value="America/Chicago">
+            <TimezoneSelect
+              value={systemSettings.timezone}
+              onChange={createSystemSelectHandler('timezone')}
+            />
+          </div>
+        </div>
                   UTC-06:00 - Central Standard Time (CST) - Chicago, Mexico
                   City, Dallas
                 </option>
