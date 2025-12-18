@@ -98,14 +98,14 @@ class MoonscanService {
    * Check if Moonscan is available for a network
    */
   isAvailable(network: NetworkType): boolean {
-    return !!this.NETWORK_CONFIGS[network]
+    return Boolean(this.NETWORK_CONFIGS[network])
   }
 
   /**
    * Check if API key is configured
    */
   hasApiKey(): boolean {
-    return !!this.getApiKey()
+    return Boolean(this.getApiKey())
   }
 
   /**

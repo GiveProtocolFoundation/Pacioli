@@ -684,7 +684,7 @@ class SubscanService {
    * Check if Subscan is available for a network
    */
   isAvailable(network: NetworkType): boolean {
-    return !!this.NETWORK_CONFIGS[network]
+    return Boolean(this.NETWORK_CONFIGS[network])
   }
 
   /**

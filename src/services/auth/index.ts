@@ -307,7 +307,7 @@ export function isAuthenticated(): boolean {
 
   // If access token is expired but we have refresh token, we're still "authenticated"
   // (will need to refresh before making requests)
-  return !!refreshTokenValue
+  return Boolean(refreshTokenValue)
 }
 
 // Re-export types
