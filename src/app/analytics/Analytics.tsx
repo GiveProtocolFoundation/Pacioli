@@ -102,7 +102,8 @@ const KPICard: React.FC<{ kpi: KPI }> = ({ kpi }) => {
             kpi.trend === 'up'
               ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
               : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
-          }`}>
+          }`}
+        >
           <TrendIcon className="w-3 h-3 mr-1" />
           {Math.abs(kpi.change)}%
         </div>
@@ -125,10 +126,13 @@ const TimePeriodDropdown: React.FC<{
   onToggle: () => void
   onSelect: (value: TimePeriod) => void
 }> = ({ timePeriods, current, show, onToggle, onSelect }) => {
-  const handleSelect = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
-    const value = e.currentTarget.getAttribute('data-value') as TimePeriod
-    onSelect(value)
-  }, [onSelect])
+  const handleSelect = useCallback(
+    (e: React.MouseEvent<HTMLButtonElement>) => {
+      const value = e.currentTarget.getAttribute('data-value') as TimePeriod
+      onSelect(value)
+    },
+    [onSelect]
+  )
 
   return (
     <div className="relative">
