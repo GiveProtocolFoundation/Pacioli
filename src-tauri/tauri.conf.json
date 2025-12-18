@@ -59,25 +59,6 @@
     "resources": ["resources/token-lists/*"]
   },
   "plugins": {
-    "opener": {
-      "allowlist": [
-        {
-          "urls": ["https://polkadot.js.org/**"],
-          "name": "Polkadot.js Apps"
-        },
-        {
-          "urls": ["https://app.moonbeam.network/**"],
-          "name": "Moonbeam Portal"
-        },
-        {
-          "urls": ["https://moonriver.moonscan.io/**"],
-          "name": "Moonriver Explorer"
-        },
-        {
-          "urls": ["https://blockscout.moonbeam.network/**"],
-          "name": "Moonbeam Explorer"
-        }
-      ]
-    }
+    "opener": {}
   }
 }

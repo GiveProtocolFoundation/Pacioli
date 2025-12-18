@@ -235,7 +235,7 @@ const WalletManager: React.FC = () => {
               })
             } catch (err) {
               // Ignore errors for already existing wallets
-              console.debug('Wallet save to profile:', err)
+              console.warn('Wallet save to profile:', err)
             }
           }
         }

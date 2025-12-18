@@ -1,8 +1,8 @@
 interface EthereumProvider {
-  request(args: { method: string; params?: any[] }): Promise<any>
-  send(method: string, params: any[]): Promise<any>
-  on(event: string, callback: (data: any) => void): void
-  removeListener(event: string, callback: (data: any) => void): void
+  request(args: { method: string; params?: unknown[] }): Promise<unknown>
+  send(method: string, params: unknown[]): Promise<unknown>
+  on(event: string, callback: (data: unknown) => void): void
+  removeListener(event: string, callback: (data: unknown) => void): void
   isMetaMask?: boolean
   selectedAddress?: string
   networkVersion?: string
