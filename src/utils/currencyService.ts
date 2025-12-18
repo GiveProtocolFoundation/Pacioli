@@ -140,7 +140,6 @@ export class CurrencyService {
       }
     }
 
-    // TODO: Call Tauri command to fetch rate from backend
     // For now, return a mock conversion
     // In production, this would be:
     // const response = await invoke('get_exchange_rate', { fromCurrency, toCurrency, timestamp });
