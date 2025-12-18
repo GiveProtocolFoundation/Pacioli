@@ -70,7 +70,9 @@ interface MoonscanResponse<T> {
 
 class MoonscanService {
   // Etherscan V2 uses chain IDs instead of separate base URLs
-  private readonly NETWORK_CONFIGS: Partial<Record<NetworkType, MoonscanConfig>> = {
+  private readonly NETWORK_CONFIGS: Partial<
+    Record<NetworkType, MoonscanConfig>
+  > = {
     moonbeam: {
       chainId: 1284,
     },
@@ -87,7 +89,10 @@ class MoonscanService {
 
     // Check for environment variable (build-time configured)
     // Note: In Vite, env vars must be prefixed with VITE_
-    if (typeof import.meta !== 'undefined' && import.meta.env?.VITE_ETHERSCAN_API_KEY) {
+    if (
+      typeof import.meta !== 'undefined' &&
+      import.meta.env?.VITE_ETHERSCAN_API_KEY
+    ) {
       return import.meta.env.VITE_ETHERSCAN_API_KEY
     }
 
@@ -138,7 +143,7 @@ class MoonscanService {
     if (!apiKey) {
       throw new Error(
         'Etherscan API key required for EVM transaction history. ' +
-        'Get a free key at https://etherscan.io/myapikey and add it in Settings.'
+          'Get a free key at https://etherscan.io/myapikey and add it in Settings.'
       )
     }
 
@@ -175,13 +180,19 @@ class MoonscanService {
         data = JSON.parse(responseText)
       } catch (parseError) {
         console.error('Failed to parse Moonscan JSON:', parseError)
-        throw new Error(`Invalid JSON response from Etherscan API: ${responseText.substring(0, 200)}`)
+        throw new Error(
+          `Invalid JSON response from Etherscan API: ${responseText.substring(0, 200)}`
+        )
       }
 
       if (data.status !== '1') {
         // Status '0' with "No transactions found" is not an error
-        if (data.message === 'No transactions found' ||
-            (data.message === 'OK' && typeof data.result === 'string' && data.result.includes('No transactions'))) {
+        if (
+          data.message === 'No transactions found' ||
+          (data.message === 'OK' &&
+            typeof data.result === 'string' &&
+            data.result.includes('No transactions'))
+        ) {
           return []
         }
         // Handle specific error messages
@@ -195,7 +206,9 @@ class MoonscanService {
         return []
       }
 
-      return data.result.map((tx) => this.mapToSubstrateTransaction(tx, network, address))
+      return data.result.map(tx =>
+        this.mapToSubstrateTransaction(tx, network, address)
+      )
     } catch (error) {
       console.error('Moonscan fetch error:', error)
       throw error
@@ -252,7 +265,8 @@ class MoonscanService {
 
     try {
       const response = await fetch(url)
-      const data: MoonscanResponse<MoonscanTokenTransfer> = await response.json()
+      const data: MoonscanResponse<MoonscanTokenTransfer> =
+        await response.json()
 
       if (data.status !== '1') {
         // No transactions found or other non-error status - return empty
@@ -263,7 +277,9 @@ class MoonscanService {
         return []
       }
 
-      return data.result.map((tx) => this.mapTokenTransferToSubstrateTransaction(tx, network, address))
+      return data.result.map(tx =>
+        this.mapTokenTransferToSubstrateTransaction(tx, network, address)
+      )
     } catch (error) {
       console.error('Moonscan token transfer fetch error:', error)
       // Don't throw - token transfers are optional
@@ -294,10 +310,14 @@ class MoonscanService {
       allTransactions.push(...normalTxs)
 
       // Small delay to avoid rate limiting
-      await new Promise((resolve) => setTimeout(resolve, 250))
+      await new Promise(resolve => setTimeout(resolve, 250))
 
       // 2. Fetch token transfers
-      onProgress?.('Fetching token transfers from Moonscan...', normalTxs.length, limit)
+      onProgress?.(
+        'Fetching token transfers from Moonscan...',
+        normalTxs.length,
+        limit
+      )
       const tokenTxs = await this.fetchTokenTransfers(network, address, {
         offset: limit,
       })
@@ -308,7 +328,7 @@ class MoonscanService {
 
       // Deduplicate by hash (token transfers might duplicate normal txs)
       const seen = new Set<string>()
-      const deduplicated = allTransactions.filter((tx) => {
+      const deduplicated = allTransactions.filter(tx => {
         if (seen.has(tx.hash)) return false
         seen.add(tx.hash)
         return true
