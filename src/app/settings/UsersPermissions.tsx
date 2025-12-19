@@ -871,51 +871,54 @@ const UsersPermissions: React.FC = () => {
           <button
             onClick={handleViewModeUsers}
             className={`px-4 py-2 text-sm font-medium rounded-md transition-colors flex items-center ${
-              viewMode === 'users'
-                ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
-                : 'text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
-            }`}
-          >
-            <Users className="w-4 h-4 mr-2" />
-            Users
-          </button>
-          <button
-            onClick={handleViewModeRoles}
-            className={`px-4 py-2 text-sm font-medium rounded-md transition-colors flex items-center ${
-              viewMode === 'roles'
-                ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
-                : 'text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
-            }`}
-          >
-            <Shield className="w-4 h-4 mr-2" />
-            Roles
-          </button>
+              <button
+                onClick={handleViewModeUsers}
+                className={`px-4 py-2 text-sm font-medium rounded-md transition-colors flex items-center ${
+                  viewMode === 'users'
+                    ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+                    : 'text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
+                }`}
+              >
+                <Users className="w-4 h-4 mr-2" />
+                Users
+              </button>
+              <button
+                onClick={handleViewModeRoles}
+                className={`px-4 py-2 text-sm font-medium rounded-md transition-colors flex items-center ${
+                  viewMode === 'roles'
+                    ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+                    : 'text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
+                }`}
+              >
+                <Shield className="w-4 h-4 mr-2" />
+                Roles
+              </button>
+            </div>
+          </div>
+
+          {viewMode === 'users' ? (
+            <UsersTable
+              filteredUsers={filteredUsers}
+              formatLastLogin={formatLastLogin}
+              getStatusBadge={getStatusBadge}
+              searchQuery={searchQuery}
+              handleSearchChange={handleSearchChange}
+              statusFilter={statusFilter}
+              handleStatusFilterChange={handleStatusFilterChange}
+            />
+          ) : (
+            <RolesView roles={roles} users={users} />
+          )}
+
+          {showInviteModal && (
+            <InviteUserModal
+              roles={roles}
+              handleClose={handleCloseInviteModal}
+              handleSend={handleSendInvite}
+            />
+          )}
         </div>
-      </div>
-
-      {viewMode === 'users' ? (
-        <UsersTable
-          filteredUsers={filteredUsers}
-          formatLastLogin={formatLastLogin}
-          getStatusBadge={getStatusBadge}
-          searchQuery={searchQuery}
-          handleSearchChange={handleSearchChange}
-          statusFilter={statusFilter}
-          handleStatusFilterChange={handleStatusFilterChange}
-        />
-      ) : (
-        <RolesView roles={roles} users={users} />
-      )}
-
-      {showInviteModal && (
-        <InviteUserModal
-          roles={roles}
-          handleClose={handleCloseInviteModal}
-          handleSend={handleSendInvite}
-        />
-      )}
-    </div>
-  )
+      )
 }
 
 export default UsersPermissions
