@@ -38,7 +38,11 @@ const TOKEN_KEYS = {
 /**
  * Store tokens in localStorage
  */
-function storeTokens(accessToken: string, refreshToken: string, expiresAt: string): void {
+function storeTokens(
+  accessToken: string,
+  refreshToken: string,
+  expiresAt: string
+): void {
   localStorage.setItem(TOKEN_KEYS.ACCESS_TOKEN, accessToken)
   localStorage.setItem(TOKEN_KEYS.REFRESH_TOKEN, refreshToken)
   localStorage.setItem(TOKEN_KEYS.TOKEN_EXPIRES, expiresAt)
@@ -114,13 +118,28 @@ export interface AuthService {
   // Profile roles
   getUserProfiles(token: string): Promise<ProfileWithRole[]>
   getProfileUsers(token: string, profileId: string): Promise<ProfileUser[]>
-  updateUserRole(token: string, profileId: string, userId: string, role: UserRole): Promise<void>
-  removeUserFromProfile(token: string, profileId: string, userId: string): Promise<void>
+  updateUserRole(
+    token: string,
+    profileId: string,
+    userId: string,
+    role: UserRole
+  ): Promise<void>
+  removeUserFromProfile(
+    token: string,
+    profileId: string,
+    userId: string
+  ): Promise<void>
 
   // Invitations
-  createInvitation(token: string, input: CreateInvitationInput): Promise<Invitation>
+  createInvitation(
+    token: string,
+    input: CreateInvitationInput
+  ): Promise<Invitation>
   getProfileInvitations(token: string, profileId: string): Promise<Invitation[]>
-  acceptInvitation(invitationToken: string, accessToken?: string): Promise<AuthResponse>
+  acceptInvitation(
+    invitationToken: string,
+    accessToken?: string
+  ): Promise<AuthResponse>
   revokeInvitation(token: string, invitationId: string): Promise<void>
 }
 
@@ -137,13 +156,21 @@ export const authService: AuthService = {
   // Authentication
   async register(input: RegisterInput): Promise<AuthResponse> {
     const response = await invoke<AuthResponse>('register', { input })
-    storeTokens(response.access_token, response.refresh_token, response.expires_at)
+    storeTokens(
+      response.access_token,
+      response.refresh_token,
+      response.expires_at
+    )
     return response
   },
 
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     const response = await invoke<AuthResponse>('login', { credentials })
-    storeTokens(response.access_token, response.refresh_token, response.expires_at)
+    storeTokens(
+      response.access_token,
+      response.refresh_token,
+      response.expires_at
+    )
     return response
   },
 
@@ -186,10 +213,17 @@ export const authService: AuthService = {
   },
 
   async updateUser(token: string, input: UpdateUserInput): Promise<AuthUser> {
-    return invoke<AuthUser>('update_user', { token, name: input.name, email: input.email })
+    return invoke<AuthUser>('update_user', {
+      token,
+      name: input.name,
+      email: input.email,
+    })
   },
 
-  async changePassword(token: string, input: ChangePasswordInput): Promise<void> {
+  async changePassword(
+    token: string,
+    input: ChangePasswordInput
+  ): Promise<void> {
     return invoke('change_password', {
       token,
       currentPassword: input.current_password,
@@ -215,7 +249,10 @@ export const authService: AuthService = {
     return invoke<ProfileWithRole[]>('get_user_profiles', { token })
   },
 
-  async getProfileUsers(token: string, profileId: string): Promise<ProfileUser[]> {
+  async getProfileUsers(
+    token: string,
+    profileId: string
+  ): Promise<ProfileUser[]> {
     return invoke<ProfileUser[]>('get_profile_users', { token, profileId })
   },
 
@@ -225,15 +262,31 @@ export const authService: AuthService = {
     userId: string,
     role: UserRole
   ): Promise<void> {
-    return invoke('update_user_role', { token, profileId, targetUserId: userId, newRole: role })
+    return invoke('update_user_role', {
+      token,
+      profileId,
+      targetUserId: userId,
+      newRole: role,
+    })
   },
 
-  async removeUserFromProfile(token: string, profileId: string, userId: string): Promise<void> {
-    return invoke('remove_user_from_profile', { token, profileId, targetUserId: userId })
+  async removeUserFromProfile(
+    token: string,
+    profileId: string,
+    userId: string
+  ): Promise<void> {
+    return invoke('remove_user_from_profile', {
+      token,
+      profileId,
+      targetUserId: userId,
+    })
   },
 
   // Invitations
-  async createInvitation(token: string, input: CreateInvitationInput): Promise<Invitation> {
+  async createInvitation(
+    token: string,
+    input: CreateInvitationInput
+  ): Promise<Invitation> {
     return invoke<Invitation>('create_invitation', {
       token,
       profileId: input.profile_id,
@@ -242,11 +295,17 @@ export const authService: AuthService = {
     })
   },
 
-  async getProfileInvitations(token: string, profileId: string): Promise<Invitation[]> {
+  async getProfileInvitations(
+    token: string,
+    profileId: string
+  ): Promise<Invitation[]> {
     return invoke<Invitation[]>('get_profile_invitations', { token, profileId })
   },
 
-  async acceptInvitation(invitationToken: string, accessToken?: string): Promise<AuthResponse> {
+  async acceptInvitation(
+    invitationToken: string,
+    accessToken?: string
+  ): Promise<AuthResponse> {
     const response = await invoke<AuthResponse>('accept_invitation', {
       invitationToken,
       accessToken: accessToken ?? null,
@@ -254,7 +313,11 @@ export const authService: AuthService = {
 
     // Store new tokens if returned
     if (response.access_token) {
-      storeTokens(response.access_token, response.refresh_token, response.expires_at)
+      storeTokens(
+        response.access_token,
+        response.refresh_token,
+        response.expires_at
+      )
     }
 
     return response
@@ -307,7 +370,7 @@ export function isAuthenticated(): boolean {
 
   // If access token is expired but we have refresh token, we're still "authenticated"
   // (will need to refresh before making requests)
-  return !!refreshTokenValue
+  return Boolean(refreshTokenValue)
 }
 
 // Re-export types
