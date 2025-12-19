@@ -58,8 +58,13 @@ class IndexedDBService {
    * Initialize the database
    */
   async init(): Promise<void> {
-    if (this.db) return
-    if (this.initPromise) return this.initPromise
+    if (this.db) {
+      return;
+    }
+    if (this.initPromise) {
+      await this.initPromise;
+      return;
+    }
 
     this.initPromise = new Promise((resolve, reject) => {
       const request = indexedDB.open(DB_NAME, DB_VERSION)
@@ -118,6 +123,7 @@ class IndexedDBService {
         if (!db.objectStoreNames.contains(STORES.WALLET_ALIASES)) {
           db.createObjectStore(STORES.WALLET_ALIASES, { keyPath: 'address' })
         }
+        return null
       }
     })
 

@@ -168,7 +168,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         clearInterval(refreshIntervalRef.current)
         refreshIntervalRef.current = null
       }
-      return
+      return null
     }
 
     // Refresh token every 10 minutes (access tokens last 15 minutes)
