@@ -97,33 +97,9 @@ function SelectionButton<T>({
         </div>
         <div className="flex-1 text-left">
           <h3 className="text-lg font-semibold text-gray-900 mb-2">{title}</h3>
-function SelectionDetails({description, subtitle}: {description: string; subtitle: string}) {
-  return (
-    <div className="flex flex-col items-start space-y-1">
-      <p className="text-sm text-gray-600">{description}</p>
-      <p className="text-xs text-gray-500 mt-2">{subtitle}</p>
-    </div>
-  )
-}
-
-function SelectionButton<T>({
-  icon: Icon,
-  title,
-  description,
-  subtitle,
-  isSelected,
-  onClick,
-  value
-}: SelectionButtonProps<T>) {
-  return (
-    <button
-      type="button"
-      onClick={() => onClick(value)}
-      className="w-full bg-white border border-gray-200 rounded-lg p-4 flex items-center justify-between hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-    >
-      <div className="flex items-center space-x-3">
-        <Icon className="w-6 h-6 text-gray-900 shrink-0" />
-        <SelectionDetails description={description} subtitle={subtitle} />
+          <p className="text-sm text-gray-600">{description}</p>
+          <p className="text-xs text-gray-500 mt-2">{subtitle}</p>
+        </div>
         {isSelected && (
           <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center shrink-0">
             <Check className="w-4 h-4 text-white" />
@@ -131,18 +107,6 @@ function SelectionButton<T>({
         )}
       </div>
     </button>
-  )
-}
-
-interface GridSelectionButtonProps<T> extends SelectionButtonProps<T> {
-  gridLayout?: boolean
-}
-
-function GridSelectionButton<T>(props: GridSelectionButtonProps<T>) {
-  return (
-    <div className={props.gridLayout ? '' : 'w-full'}>
-      <SelectionButton {...props} />
-    </div>
   )
 }
 

@@ -438,37 +438,6 @@ const Navigation: React.FC<NavigationProps> = ({
                 })}
               </ul>
             </nav>
-                      )}
-
-                      {item.subItems && expandedItems.includes(item.name) && (
-                        <ul className="mt-1 ml-8 space-y-1">
-                          {item.subItems.map(subItem => {
-                            const isSubActive =
-                              location.pathname + location.search ===
-                              subItem.href
-                            return (
-                              <li key={subItem.name}>
-                                <Link
-                                  to={subItem.href}
-                                  onClick={handleCloseSidebar}
-                                  className={`block w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${
-                                    isSubActive
-                                      ? 'text-[#007AFF] bg-[#007AFF]/10'
-                                      : 'text-gray-600 hover:bg-gray-50'
-                                  }`}
-                                >
-                                  {subItem.name}
-                                </Link>
-                              </li>
-                            )
-                          })}
-                        </ul>
-                      )}
-                    </li>
-                  )
-                })}
-              </ul>
-            </nav>
 
             {/* User section */}
             <div className="border-t border-gray-200 dark:border-gray-700 p-4">

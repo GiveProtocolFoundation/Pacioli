@@ -261,6 +261,32 @@ const FavoritesToggle: React.FC<{ showFavoritesOnly: boolean; onToggle: () => vo
   </button>
 )
 
+const ReportInfo = ({ report, Icon }: { report: { name: string; favorite: boolean; description: string; lastRun: string | null }; Icon: React.ComponentType<{ className?: string }> }) => (
+  <div className="flex items-start flex-1">
+    <div className="report-icon-container flex-shrink-0">
+      <Icon />
+    </div>
+    <div className="ml-4 flex-1">
+      <div className="flex items-center">
+        <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+          {report.name}
+        </h3>
+        {report.favorite && (
+          <Star className="w-4 h-4 ml-2 favorite-star active" />
+        )}
+      </div>
+      <p className="text-xs text-gray-500 dark:text-[#94a3b8] mt-1">
+        {report.description}
+      </p>
+      {report.lastRun && (
+        <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
+          Last run: {formatDate(report.lastRun)}
+        </p>
+      )}
+    </div>
+  </div>
+)
+
 const Reports: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<
     ReportCategory | 'all'
@@ -417,14 +443,6 @@ const Reports: React.FC = () => {
               </div>
             </div>
 
-            {/* ... rest of component unchanged ... */}
-                    className={`w-4 h-4 mr-2 ${showFavoritesOnly ? 'fill-current' : ''}`}
-                  />
-                  Favorites
-                </button>
-              </div>
-            </div>
-
             {/* Category Tabs */}
             <div className="flex flex-wrap gap-2">
               <button
@@ -459,31 +477,6 @@ const Reports: React.FC = () => {
 
             {/* Reports List */}
             <div className="space-y-3">
-              const ReportInfo = ({ report, Icon }) => (
-                <div className="flex items-start flex-1">
-                  <div className="report-icon-container flex-shrink-0">
-                    <Icon />
-                  </div>
-                  <div className="ml-4 flex-1">
-                    <div className="flex items-center">
-                      <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
-                        {report.name}
-                      </h3>
-                      {report.favorite && (
-                        <Star className="w-4 h-4 ml-2 favorite-star active" />
-                      )}
-                    </div>
-                    <p className="text-xs text-gray-500 dark:text-[#94a3b8] mt-1">
-                      {report.description}
-                    </p>
-                    {report.lastRun && (
-                      <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
-                        Last run: {formatDate(report.lastRun)}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              );
               {filteredReports.map(report => {
                 const Icon = report.icon
                 return (

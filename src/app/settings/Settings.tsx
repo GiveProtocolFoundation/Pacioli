@@ -108,18 +108,19 @@ const SidebarNavigation: React.FC<{
   items: typeof navigationItems
   activeSection: SettingsSection
   onSectionChange: (section: SettingsSection) => void
-}> = ({ items, activeSection, onSectionChange }) => (
-  <aside className="lg:w-64 flex-shrink-0">
-    <nav className="space-y-1">
-      const handleClicksMap = useMemo(() => {
-        const map: Record<string, () => void> = {}
-        items.forEach(item => {
-          map[item.id] = () => onSectionChange(item.id)
-        })
-        return map
-      }, [items, onSectionChange])
+}> = ({ items, activeSection, onSectionChange }) => {
+  const handleClicksMap = useMemo(() => {
+    const map: Record<string, () => void> = {}
+    items.forEach(item => {
+      map[item.id] = () => onSectionChange(item.id)
+    })
+    return map
+  }, [items, onSectionChange])
 
-      {items.map(item => {
+  return (
+    <aside className="lg:w-64 flex-shrink-0">
+      <nav className="space-y-1">
+        {items.map(item => {
         const Icon = item.icon
         const isActive = activeSection === item.id
         const handleClick = handleClicksMap[item.id]
@@ -178,7 +179,8 @@ const SidebarNavigation: React.FC<{
       </div>
     </div>
   </aside>
-)
+  )
+}
 
 const Settings: React.FC<SettingsProps> = ({ userType = 'organization' }) => {
   const location = useLocation()

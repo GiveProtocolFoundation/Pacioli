@@ -429,45 +429,6 @@ export const WalletConnector: React.FC<WalletConnectorProps> = ({
 
       {/* Wallet List */}
       <div className="space-y-3">
-        const AccountList = memo(({
-          accounts,
-          editingAlias,
-          aliases,
-          aliasInput,
-          onAliasInputChange,
-          onKeyDown,
-          onSave,
-          onCancel,
-          onStartEdit,
-        }: {
-          accounts: WalletAccount[]
-          editingAlias: string | null
-          aliases: Record<string, string>
-          aliasInput: string
-          onAliasInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void
-          onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void
-          onSave: (address: string) => void
-          onCancel: () => void
-          onStartEdit: (address: string) => void
-        }) => (
-          <div className="mt-3 space-y-2">
-            {accounts.map(acc => (
-              <AccountRow
-                key={acc.address}
-                account={acc}
-                isEditing={editingAlias === acc.address}
-                currentAlias={aliases[acc.address.toLowerCase()]}
-                aliasInput={aliasInput}
-                onAliasInputChange={onAliasInputChange}
-                onKeyDown={onKeyDown}
-                onSave={onSave}
-                onCancel={onCancel}
-                onStartEdit={onStartEdit}
-              />
-            ))}
-          </div>
-        ))
-
         {(Object.keys(walletStatus) as WalletType[]).map(walletType => {
           const status = walletStatus[walletType]
           const info = WALLET_INFO[walletType]

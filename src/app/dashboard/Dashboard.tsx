@@ -266,12 +266,10 @@ const Dashboard: React.FC = () => {
               </div>
             </div>
           </div>
-        </div>
-        {/* Remaining content unchanged */}
-      </main>
-    </div>
-  )
-}
+
+          {/* Program Expenses (YTD) */}
+          <div className="ledger-card border border-gray-200 dark:border-gray-700 p-6">
+            <div className="flex items-center justify-between">
               <div>
                 <p className="ledger-card-label">Program Expenses (YTD)</p>
                 <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2 stat-value">

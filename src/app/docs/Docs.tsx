@@ -342,25 +342,6 @@ const Docs: React.FC = () => {
               </nav>
             </div>
           </aside>
-                                            }`}
-                                          >
-                                            {subItem.title}
-                                          </button>
-                                        )
-                                      })}
-                                    </div>
-                                  )}
-                              </div>
-                            )
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  )
-                })}
-              </nav>
-            </div>
-          </aside>
 
           {/* Main Content Area */}
           <main className="lg:col-span-3">

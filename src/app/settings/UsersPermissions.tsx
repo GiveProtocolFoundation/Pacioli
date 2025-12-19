@@ -336,6 +336,90 @@ const mockRoles: Role[] = [
 
 type ViewMode = 'users' | 'roles'
 
+const InviteUserModal: React.FC<{
+  roles: Role[]
+  handleClose: () => void
+  handleSend: () => void
+}> = ({ roles, handleClose, handleSend }) => (
+  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl max-w-md w-full p-6 border border-gray-200 dark:border-gray-700">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+          Invite User
+        </h3>
+        <button
+          onClick={handleClose}
+          className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+        >
+          <X className="w-5 h-5" />
+        </button>
+      </div>
+
+      <div className="space-y-4">
+        <div>
+          <label
+            htmlFor="inviteEmail"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+          >
+            Email Address
+          </label>
+          <input
+            id="inviteEmail"
+            type="email"
+            placeholder="user@example.org"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        <div>
+          <label
+            htmlFor="inviteRole"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+          >
+            Role
+          </label>
+          <select
+            id="inviteRole"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            {roles.map(role => (
+              <option key={role.id} value={role.id}>
+                {role.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+          <div className="flex">
+            <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+            <p className="ml-3 text-xs text-blue-800 dark:text-blue-400">
+              An invitation email will be sent to the user with instructions
+              to set up their account.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center space-x-3 pt-4">
+          <button
+            onClick={handleClose}
+            className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSend}
+            className="flex-1 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 flex items-center justify-center"
+          >
+            <Mail className="w-4 h-4 mr-2" />
+            Send Invite
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+)
+
 const UsersPermissions: React.FC = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('users')
   const [users] = useState<User[]>(mockUsers)
@@ -758,90 +842,6 @@ const UsersPermissions: React.FC = () => {
         </div>
       </div>
     </>
-  )
-
-  const InviteUserModal: React.FC<{
-    roles: typeof roles
-    handleClose: () => void
-    handleSend: () => void
-  }> = ({ roles, handleClose, handleSend }) => (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl max-w-md w-full p-6 border border-gray-200 dark:border-gray-700">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-            Invite User
-          </h3>
-          <button
-            onClick={handleClose}
-            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        <div className="space-y-4">
-          <div>
-            <label
-              htmlFor="inviteEmail"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-            >
-              Email Address
-            </label>
-            <input
-              id="inviteEmail"
-              type="email"
-              placeholder="user@example.org"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="inviteRole"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-            >
-              Role
-            </label>
-            <select
-              id="inviteRole"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              {roles.map(role => (
-                <option key={role.id} value={role.id}>
-                  {role.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
-            <div className="flex">
-              <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
-              <p className="ml-3 text-xs text-blue-800 dark:text-blue-400">
-                An invitation email will be sent to the user with instructions
-                to set up their account.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center space-x-3 pt-4">
-            <button
-              onClick={handleClose}
-              className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleSend}
-              className="flex-1 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 flex items-center justify-center"
-            >
-              <Mail className="w-4 h-4 mr-2" />
-              Send Invite
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
   )
 
   return (
