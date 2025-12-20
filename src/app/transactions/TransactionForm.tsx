@@ -18,8 +18,7 @@ import { useTokens } from '../../contexts/TokenContext'
 import { useWalletAliases } from '../../contexts/WalletAliasContext'
 import { useEntity } from '../../contexts/EntityContext'
 import { TransactionFormData } from '../../types/transaction'
-import { Token, Chain } from '../../types/digitalAssets'
-import { getDigitalAssetTypeInfo } from '../../types/digitalAssets'
+import { Token, Chain, getDigitalAssetTypeInfo } from '../../types/digitalAssets'
 import TokenSelector from '../../components/common/TokenSelector'
 import {
   TransactionCategory,
