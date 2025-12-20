@@ -139,7 +139,12 @@ impl AuthState {
 
 impl Default for AuthState {
     fn default() -> Self {
-        Self::with_cache_ttl(Duration::from_secs(300))
+        AuthState {
+            access_token: None,
+            refresh_token: None,
+            user: None,
+            cache_ttl: Duration::from_secs(300),
+        }
     }
 }
 
