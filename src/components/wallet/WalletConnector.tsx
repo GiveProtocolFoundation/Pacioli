@@ -17,8 +17,8 @@ import {
   type WalletAccount,
 } from '../../services/wallet/types'
 import { useWalletAliases } from '../../contexts/WalletAliasContext'
-
-interface WalletConnectorProps {
+import AccountList from './AccountList'
+import WalletActions from './WalletActions'
   onWalletsChange?: (wallets: ConnectedWallet[]) => void
 }
 
