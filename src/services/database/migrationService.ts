@@ -19,7 +19,9 @@ class MigrationService {
    * Check if migration has been completed
    */
   static async hasMigrated(): Promise<boolean> {
-    const migrationFlag = await indexedDBService.getMetadata<boolean>('migration_completed')
+    const migrationFlag = await indexedDBService.getMetadata<boolean>(
+      'migration_completed'
+    )
     return migrationFlag === true
   }
 
@@ -28,7 +30,10 @@ class MigrationService {
    */
   private static async setMigrationCompleted(): Promise<void> {
     await indexedDBService.setMetadata('migration_completed', true)
-    await indexedDBService.setMetadata('migration_date', new Date().toISOString())
+    await indexedDBService.setMetadata(
+      'migration_date',
+      new Date().toISOString()
+    )
   }
 
   /**
@@ -76,7 +81,11 @@ class MigrationService {
           const transactions = allTransactions[key]
 
           if (transactions && transactions.length > 0) {
-            await indexedDBService.saveTransactions(network, address, transactions)
+            await indexedDBService.saveTransactions(
+              network,
+              address,
+              transactions
+            )
             result.transactionsMigrated += transactions.length
           }
         }
@@ -145,7 +154,8 @@ class MigrationService {
     }
   }> {
     const migrated = await this.hasMigrated()
-    const migrationDate = await indexedDBService.getMetadata<string>('migration_date')
+    const migrationDate =
+      await indexedDBService.getMetadata<string>('migration_date')
 
     // Count localStorage data
     const lsWallets = storageService.loadWallets().length
@@ -154,7 +164,9 @@ class MigrationService {
       (sum, txs) => sum + txs.length,
       0
     )
-    const lsSyncStatuses = Object.keys(storageService.loadAllSyncStatus()).length
+    const lsSyncStatuses = Object.keys(
+      storageService.loadAllSyncStatus()
+    ).length
 
     // Count IndexedDB data
     const stats = await indexedDBService.getStats()

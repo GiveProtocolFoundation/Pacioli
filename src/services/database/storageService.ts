@@ -55,25 +55,29 @@ class StorageService {
   /**
    * Save transactions (appends to existing)
    */
-  saveTransactions(network: string, address: string, transactions: Transaction[]): void {
+  saveTransactions(
+    network: string,
+    address: string,
+    transactions: Transaction[]
+  ): void {
     try {
       const allTransactions = this.loadTransactions()
       const key = `${network}:${address}`
 
-      allTransactions[key] = [
-        ...(allTransactions[key] || []),
-        ...transactions,
-      ]
+      allTransactions[key] = [...(allTransactions[key] || []), ...transactions]
 
       // Deduplicate by ID
       allTransactions[key] = Array.from(
-        new Map(allTransactions[key].map((tx) => [tx.id, tx])).values()
+        new Map(allTransactions[key].map(tx => [tx.id, tx])).values()
       )
 
       // Sort by block number (newest first)
       allTransactions[key].sort((a, b) => b.blockNumber - a.blockNumber)
 
-      localStorage.setItem(STORAGE_KEYS.TRANSACTIONS, JSON.stringify(allTransactions))
+      localStorage.setItem(
+        STORAGE_KEYS.TRANSACTIONS,
+        JSON.stringify(allTransactions)
+      )
     } catch (error) {
       console.error('Error saving transactions:', error)
     }

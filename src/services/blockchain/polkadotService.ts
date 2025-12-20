@@ -487,7 +487,10 @@ class PolkadotService {
           startBlock
         )
       } catch (rpcError) {
-        console.warn('RPC connection failed, skipping recent block scan:', rpcError)
+        console.warn(
+          'RPC connection failed, skipping recent block scan:',
+          rpcError
+        )
 
         // Skip Phase 2 if RPC fails - we already have historical data from Subscan
         // Deduplicate and return what we have
