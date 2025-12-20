@@ -49,6 +49,11 @@ type TimePeriod =
   | 'this_year'
   | 'last_year'
 
+/**
+ * Balances component renders the list of wallet balances and allows selection of time periods.
+ *
+ * @returns {JSX.Element} The rendered Balances component.
+ */
 const Balances: React.FC = () => {
   const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>('30_days')
   const { theme: _theme } = useTheme()
@@ -275,6 +280,12 @@ const Balances: React.FC = () => {
     []
   )
 
+  /**
+   * Renders SVG linear gradients for chart fills based on provided currency colors.
+   *
+   * @param currencyColors - An object mapping currency codes to color hex strings.
+   * @returns JSX elements defining linear gradients for each currency.
+   */
   const ChartGradients = ({
     currencyColors,
   }: {
@@ -305,6 +316,15 @@ const Balances: React.FC = () => {
     </>
   )
 
+  /**
+   * Renders an area chart displaying wallet balance over time for multiple currencies.
+   *
+   * @param chartData - Array of objects containing date and currency values to plot.
+   * @param currencyColors - An object mapping currency codes to color hex strings.
+   * @param formatYAxisTick - Function to format Y-axis tick values.
+   * @param formatCurrency - Function to format currency values for tooltips or labels.
+   * @returns A ResponsiveContainer component wrapping the area chart.
+   */
   const WalletBalanceChart = ({
     chartData,
     currencyColors,
