@@ -33,6 +33,144 @@ const entityTypeIcons: Record<EntityType, React.ReactNode> = {
   other: <Building2 className="w-4 h-4" />,
 }
 
+// Extracted EntityNameCell to reduce JSX nesting depth
+interface EntityNameCellProps {
+  entity: Entity
+}
+
+const EntityNameCell: React.FC<EntityNameCellProps> = ({ entity }) => (
+  <div className="flex items-center">
+    <div className="flex-shrink-0 h-10 w-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+      {entityTypeIcons[entity.entity_type]}
+    </div>
+    <div className="ml-4">
+      <div className="text-sm font-medium text-gray-900 dark:text-white">
+        {entity.display_name || entity.name}
+      </div>
+      {entity.display_name && (
+        <div className="text-sm text-gray-500 dark:text-gray-400">
+          {entity.name}
+        </div>
+      )}
+    </div>
+  </div>
+)
+
+// Extracted EntityContactCell to reduce JSX nesting depth
+interface EntityContactCellProps {
+  email: string | undefined
+  website: string | undefined
+}
+
+const EntityContactCell: React.FC<EntityContactCellProps> = ({
+  email,
+  website,
+}) => (
+  <>
+    <div className="text-sm text-gray-900 dark:text-white">{email || '-'}</div>
+    {website && (
+      <a
+        href={website}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-sm text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center gap-1"
+      >
+        Website <ExternalLink className="w-3 h-3" />
+      </a>
+    )}
+  </>
+)
+
+// Extracted EntityRow to reduce JSX nesting depth in table
+interface EntityRowProps {
+  entity: Entity
+  actionsMenu: React.ReactNode
+}
+
+const EntityRow: React.FC<EntityRowProps> = ({ entity, actionsMenu }) => (
+  <tr
+    className={`hover:bg-gray-50 dark:hover:bg-gray-700 ${
+      !entity.is_active ? 'opacity-50' : ''
+    }`}
+  >
+    <td className="px-6 py-4 whitespace-nowrap">
+      <EntityNameCell entity={entity} />
+    </td>
+    <td className="px-6 py-4 whitespace-nowrap">
+      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
+        {entityTypeLabels[entity.entity_type]}
+      </span>
+    </td>
+    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+      {entity.category || '-'}
+    </td>
+    <td className="px-6 py-4 whitespace-nowrap">
+      <EntityContactCell email={entity.email} website={entity.website} />
+    </td>
+    <td className="px-6 py-4 whitespace-nowrap">
+      <span
+        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+          entity.is_active
+            ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
+            : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
+        }`}
+      >
+        {entity.is_active ? 'Active' : 'Inactive'}
+      </span>
+    </td>
+    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+      {actionsMenu}
+    </td>
+  </tr>
+)
+
+// Extracted EntitiesTable to reduce JSX nesting depth
+interface EntitiesTableProps {
+  entities: Entity[]
+  renderActionsMenu: (entity: Entity) => React.ReactNode
+}
+
+const EntitiesTable: React.FC<EntitiesTableProps> = ({
+  entities,
+  renderActionsMenu,
+}) => (
+  <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+      <thead className="bg-gray-50 dark:bg-gray-900">
+        <tr>
+          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+            Name
+          </th>
+          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+            Type
+          </th>
+          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+            Category
+          </th>
+          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+            Contact
+          </th>
+          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+            Status
+          </th>
+          <th className="relative px-6 py-3">
+            <span className="sr-only">Actions</span>
+          </th>
+        </tr>
+      </thead>
+      <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+        {entities.map(entity => (
+          <EntityRow
+            key={entity.id}
+            entity={entity}
+            actionsMenu={renderActionsMenu(entity)}
+          />
+        ))}
+      </tbody>
+    </table>
+  </div>
+)
+
 /** Header section for the delete confirmation modal with icon and title */
 const ModalHeader: React.FC = () => (
   <div className="flex items-center gap-4 mb-4">
@@ -197,14 +335,15 @@ const Entities: React.FC = () => {
     setConfirmDeleteId(null)
   }, [])
 
-  const handleFormClose = () => {
+  const handleFormClose = useCallback(() => {
     setIsFormOpen(false)
     setEditingEntity(null)
-  }
+  }, [])
 
-  const handleFormSuccess = () => {
-    handleFormClose()
-  }
+  const handleFormSuccess = useCallback(() => {
+    setIsFormOpen(false)
+    setEditingEntity(null)
+  }, [])
 
   const handleAddEntityOpen = useCallback(() => {
     setIsFormOpen(true)
@@ -395,99 +534,11 @@ const Entities: React.FC = () => {
           )}
         </div>
       ) : (
-        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-gray-900">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Name
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Type
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Category
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Contact
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="relative px-6 py-3">
-                  <span className="sr-only">Actions</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-              {filteredEntities.map(entity => (
-                <tr
-                  key={entity.id}
-                  className={`hover:bg-gray-50 dark:hover:bg-gray-700 ${
-                    !entity.is_active ? 'opacity-50' : ''
-                  }`}
-                >
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 h-10 w-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
-                        {entityTypeIcons[entity.entity_type]}
-                      </div>
-                      <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900 dark:text-white">
-                          {entity.display_name || entity.name}
-                        </div>
-                        {entity.display_name && (
-                          <div className="text-sm text-gray-500 dark:text-gray-400">
-                            {entity.name}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
-                      {entityTypeLabels[entity.entity_type]}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                    {entity.category || '-'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900 dark:text-white">
-                      {entity.email || '-'}
-                    </div>
-                    {entity.website && (
-                      <a
-                        href={entity.website}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center gap-1"
-                      >
-                        Website <ExternalLink className="w-3 h-3" />
-                      </a>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        entity.is_active
-                          ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
-                          : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
-                      }`}
-                    >
-                      {entity.is_active ? 'Active' : 'Inactive'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <ActionsMenu entity={entity} />
-                  </td>
-                </tr>
-              ))}
-
-          </tbody>
-        </table>
-      </div>
-    )}
+        <EntitiesTable
+          entities={filteredEntities}
+          renderActionsMenu={entity => <ActionsMenu entity={entity} />}
+        />
+      )}
 
     {/* Summary */}
     <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
