@@ -15,7 +15,7 @@ import {
 } from 'lucide-react'
 import { useTheme } from '../../contexts/ThemeContext'
 import { useOrganization } from '../../contexts/OrganizationContext'
-import { moonscanService } from '../../ervices/blockchain/moonscanService'
+import { moonscanService } from '../../services/blockchain/moonscanService'
 
 interface OrganizationSettings {
   name: string
