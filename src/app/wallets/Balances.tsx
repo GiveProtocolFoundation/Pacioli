@@ -315,34 +315,40 @@ const Balances: React.FC = () => {
     currencyColors: { [key: string]: string }
     formatYAxisTick: (value: number) => string
     formatCurrency: (value: number) => string
-  }) => (
-    <ResponsiveContainer width="100%" height={400}>
-      <AreaChart data={chartData}>
-        <defs>
-          <ChartGradients currencyColors={currencyColors} />
-        </defs>
-        <XAxis dataKey="date" stroke="#888888" />
-        <YAxis tickFormatter={formatYAxisTick} />
-        {Object.keys(currencyColors).map(currency => (
-          <Area
-            key={currency}
-            type="monotone"
-            dataKey={currency}
-            stackId="1"
-            stroke={currencyColors[currency]}
-            fillOpacity={1}
-            fill={`url(#color${currency})`}
+  }) => {
+    const tooltipFormatter = React.useCallback(
+      (value: number) => formatCurrency(value),
+      [formatCurrency]
+    );
+    return (
+      <ResponsiveContainer width="100%" height={400}>
+        <AreaChart data={chartData}>
+          <defs>
+            <ChartGradients currencyColors={currencyColors} />
+          </defs>
+          <XAxis dataKey="date" stroke="#888888" />
+          <YAxis tickFormatter={formatYAxisTick} />
+          {Object.keys(currencyColors).map(currency => (
+            <Area
+              key={currency}
+              type="monotone"
+              dataKey={currency}
+              stackId="1"
+              stroke={currencyColors[currency]}
+              fillOpacity={1}
+              fill={`url(#color${currency})`}
+            />
+          ))}
+          <Tooltip
+            formatter={tooltipFormatter}
+            contentStyle={{ backgroundColor: '#1F2937' }}
+            itemStyle={{ color: '#f9fafb' }}
+            labelStyle={{ color: '#e5e7eb' }}
           />
-        ))}
-        <Tooltip
-          formatter={(value: number) => formatCurrency(value)}
-          contentStyle={{ backgroundColor: '#1F2937' }}
-          itemStyle={{ color: '#f9fafb' }}
-          labelStyle={{ color: '#e5e7eb' }}
-        />
-      </AreaChart>
-    </ResponsiveContainer>
-  )
+        </AreaChart>
+      </ResponsiveContainer>
+    );
+  }
 
   return (
     <div className="min-h-screen ledger-background">
