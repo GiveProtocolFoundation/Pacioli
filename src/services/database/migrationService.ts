@@ -18,7 +18,7 @@ class MigrationService {
   /**
    * Check if migration has been completed
    */
-  async hasMigrated(): Promise<boolean> {
+  static async hasMigrated(): Promise<boolean> {
     const migrationFlag = await indexedDBService.getMetadata<boolean>('migration_completed')
     return migrationFlag === true
   }
@@ -26,7 +26,7 @@ class MigrationService {
   /**
    * Mark migration as completed
    */
-  private async setMigrationCompleted(): Promise<void> {
+  private static async setMigrationCompleted(): Promise<void> {
     await indexedDBService.setMetadata('migration_completed', true)
     await indexedDBService.setMetadata('migration_date', new Date().toISOString())
   }
@@ -179,7 +179,7 @@ class MigrationService {
    * Rollback - restore data from localStorage
    * (Use if migration fails or data is corrupted)
    */
-  async rollback(): Promise<void> {
+  static async rollback(): Promise<void> {
     // Clear IndexedDB
     await indexedDBService.clearAll()
 

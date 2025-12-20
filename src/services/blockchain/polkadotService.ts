@@ -837,7 +837,7 @@ class PolkadotService {
   /**
    * Classify transaction type based on method and section
    */
-  private classifyTransactionType(
+  private static classifyTransactionType(
     section: string,
     method: string
   ): SubstrateTransaction['type'] {

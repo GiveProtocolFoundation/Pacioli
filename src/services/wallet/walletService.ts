@@ -265,7 +265,7 @@ class WalletService {
   /**
    * Subscribe to account changes (Substrate wallets)
    */
-  subscribeToAccounts(
+  static subscribeToAccounts(
     walletType: WalletType,
     callback: (accounts: WalletAccount[]) => void
   ): (() => void) | undefined {
