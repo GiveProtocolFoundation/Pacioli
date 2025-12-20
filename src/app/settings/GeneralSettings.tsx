@@ -129,7 +129,10 @@ const OrganizationInformationSection: React.FC<
 
       <div className="space-y-4">
         {/* Logo Upload */}
-        <LogoUpload logo={organizationSettings.logo} onLogoUpload={onLogoUpload} />
+        <LogoUpload
+          logo={organizationSettings.logo}
+          onLogoUpload={onLogoUpload}
+        />
 
         {/* Organization Type */}
         <div>
@@ -353,7 +356,7 @@ const FiscalYearWarning: React.FC = () => (
       </p>
     </div>
   </div>
-);
+)
 
 const FiscalYearOptions: React.FC = () => (
   <>
@@ -374,7 +377,7 @@ const FiscalYearOptions: React.FC = () => (
       <option value="11-30">November 30</option>
     </optgroup>
   </>
-);
+)
 
 const FiscalYearSection: React.FC<FiscalYearSectionProps> = ({
   systemSettings,
@@ -458,8 +461,8 @@ const EtherscanApiKeySection: React.FC<{
           Etherscan API Key
         </label>
         <p className="text-xs text-gray-500 dark:text-[#94a3b8] mb-2">
-          Required for fetching EVM transaction history on Moonbeam,
-          Moonriver, and other EVM chains.
+          Required for fetching EVM transaction history on Moonbeam, Moonriver,
+          and other EVM chains.
         </p>
         <div className="flex space-x-2">
           <div className="relative flex-1">
@@ -533,8 +536,8 @@ const EtherscanApiKeySection: React.FC<{
               <p className="text-sm text-blue-800 dark:text-blue-400">
                 The Etherscan API is used to fetch transaction history for
                 EVM-compatible chains (Moonbeam, Moonriver). The free tier
-                allows up to 5 requests per second, which is sufficient for
-                most use cases.
+                allows up to 5 requests per second, which is sufficient for most
+                use cases.
               </p>
             </div>
           </div>
@@ -720,7 +723,12 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({
   )
 
   // Extracted component to reduce nesting depth
-  const TimezoneSelect: React.FC<{ value: string; onChange: (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => void }> = ({ value, onChange }) => (
+  const TimezoneSelect: React.FC<{
+    value: string
+    onChange: (
+      e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>
+    ) => void
+  }> = ({ value, onChange }) => (
     <div>
       <label
         htmlFor="timezone"
@@ -735,7 +743,8 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({
         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
       >
         <option value="Etc/GMT+12">
-          UTC-12:00 - International Date Line West (AoE) - Baker Island, Howland Island
+          UTC-12:00 - International Date Line West (AoE) - Baker Island, Howland
+          Island
         </option>
         <option value="Pacific/Samoa">
           UTC-11:00 - Samoa Standard Time (SST) - Samoa, Niue
@@ -744,19 +753,22 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({
           UTC-10:00 - Hawaii-Aleutian Standard Time (HST) - Honolulu, Tahiti
         </option>
         <option value="Pacific/Marquesas">
-          UTC-09:30 - Marquesas Time (MART) - Marquesas Islands (French Polynesia)
+          UTC-09:30 - Marquesas Time (MART) - Marquesas Islands (French
+          Polynesia)
         </option>
         <option value="America/Anchorage">
           UTC-09:00 - Alaska Standard Time (AKST) - Anchorage, Juneau
         </option>
         <option value="America/Los_Angeles">
-          UTC-08:00 - Pacific Standard Time (PST) - Los Angeles, Vancouver, San Francisco
+          UTC-08:00 - Pacific Standard Time (PST) - Los Angeles, Vancouver, San
+          Francisco
         </option>
         <option value="America/Denver">
           UTC-07:00 - Mountain Standard Time (MST) - Denver, Phoenix, Calgary
         </option>
         <option value="America/Chicago">
-          UTC-06:00 - Central Standard Time (CST) - Chicago, Houston, Mexico City
+          UTC-06:00 - Central Standard Time (CST) - Chicago, Houston, Mexico
+          City
         </option>
       </select>
     </div>
