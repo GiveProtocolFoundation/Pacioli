@@ -5,6 +5,7 @@ import {
   TrendingDown,
   Wallet,
   ArrowUpRight,
+  ArrowDownRight,
   DollarSign,
   PieChart,
   BarChart3,

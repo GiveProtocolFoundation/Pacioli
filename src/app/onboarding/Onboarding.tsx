@@ -2,6 +2,7 @@ import React, { useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Globe, Building2, User, Check, LucideIcon } from 'lucide-react'
 import PacioliBlackLogo from '../../assets/Pacioli_logo_black.svg'
+import { GridSelectionButton } from '../../components/GridSelectionButton'
 
 type Step = 'jurisdiction' | 'account-type' | 'complete'
 type Jurisdiction = 'us-gaap' | 'ifrs'
