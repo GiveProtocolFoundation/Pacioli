@@ -179,6 +179,24 @@ const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
     []
   )
 
+  /**
+   * AccountsTable component renders a table displaying the filtered accounts,
+   * allows editing, saving, canceling, editing creation, and deletion of accounts.
+   *
+   * @param filteredAccounts - Array of accounts filtered based on search or criteria.
+   * @param editingAccount - The account currently being edited or null if none.
+   * @param isAddingNew - Flag indicating if a new account row is being added.
+   * @param handleEditingCodeChange - Callback for handling changes to the account code input.
+   * @param handleEditingNameChange - Callback for handling changes to the account name input.
+   * @param handleEditingTypeChange - Callback for handling changes to the account type select.
+   * @param handleEditingDescriptionChange - Callback for handling changes to the account description input.
+   * @param createEditHandler - Function that returns an edit handler for a given account.
+   * @param createDeleteHandler - Function that returns a delete handler for a given account code.
+   * @param handleSave - Callback invoked when saving changes.
+   * @param handleCancel - Callback invoked when canceling edits.
+   * @param canEdit - Boolean indicating whether editing is permitted.
+   * @returns JSX.Element - The rendered table element.
+   */
   const AccountsTable: React.FC<{
     filteredAccounts: typeof filteredAccounts
     editingAccount: typeof editingAccount
@@ -186,8 +204,12 @@ const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
     handleEditingCodeChange: (e: React.ChangeEvent<HTMLInputElement>) => void
     handleEditingNameChange: (e: React.ChangeEvent<HTMLInputElement>) => void
     handleEditingTypeChange: (e: React.ChangeEvent<HTMLSelectElement>) => void
-    handleEditingDescriptionChange: (e: React.ChangeEvent<HTMLInputElement>) => void
-    createEditHandler: (account: NonNullable<typeof template>['accounts'][0]) => () => void
+    handleEditingDescriptionChange: (
+      e: React.ChangeEvent<HTMLInputElement>
+    ) => void
+    createEditHandler: (
+      account: NonNullable<typeof template>['accounts'][0]
+    ) => () => void
     createDeleteHandler: (code: string) => () => void
     handleSave: () => void
     handleCancel: () => void
@@ -211,12 +233,22 @@ const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
         <table className="w-full">
           <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Code</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Account Name</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Code
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Account Name
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Type
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Description
+              </th>
               {canEdit && (
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
+                </th>
               )}
             </tr>
           </thead>
@@ -265,8 +297,18 @@ const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
                   />
                 </td>
                 <td className="px-6 py-4 text-right">
-                  <button onClick={handleSave} className="text-blue-600 hover:text-blue-900 mr-2">Save</button>
-                  <button onClick={handleCancel} className="text-gray-600 hover:text-gray-900">Cancel</button>
+                  <button
+                    onClick={handleSave}
+                    className="text-blue-600 hover:text-blue-900 mr-2"
+                  >
+                    Save
+                  </button>
+                  <button
+                    onClick={handleCancel}
+                    className="text-gray-600 hover:text-gray-900"
+                  >
+                    Cancel
+                  </button>
                 </td>
               </tr>
             )}
@@ -279,8 +321,18 @@ const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
                   <td className="px-6 py-4">{account.description}</td>
                   {canEdit && (
                     <td className="px-6 py-4 text-right">
-                      <button onClick={createEditHandler(account)} className="text-blue-600 hover:text-blue-900 mr-2">Edit</button>
-                      <button onClick={createDeleteHandler(account.code)} className="text-red-600 hover:text-red-900">Delete</button>
+                      <button
+                        onClick={createEditHandler(account)}
+                        className="text-blue-600 hover:text-blue-900 mr-2"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={createDeleteHandler(account.code)}
+                        className="text-red-600 hover:text-red-900"
+                      >
+                        Delete
+                      </button>
                     </td>
                   )}
                 </tr>
@@ -298,7 +350,9 @@ const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start">
           <AlertCircle className="w-5 h-5 text-yellow-600 mr-3 mt-0.5" />
           <div>
-            <h3 className="text-sm font-medium text-yellow-800">Chart of Accounts Not Found</h3>
+            <h3 className="text-sm font-medium text-yellow-800">
+              Chart of Accounts Not Found
+            </h3>
             <p className="text-sm text-yellow-700 mt-1">
               No chart of accounts template found for{' '}
               {jurisdiction.toUpperCase()} - {accountType}.

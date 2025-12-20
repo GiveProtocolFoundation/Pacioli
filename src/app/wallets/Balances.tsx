@@ -213,7 +213,7 @@ const Balances: React.FC = () => {
         const glmrRatio = 0.25 + Math.sin(i / 6) * 0.06
         const astrRatio = 0.15 + Math.cos(i / 5) * 0.04
         const iBtcRatio = 1 - dotRatio - ksmRatio - glmrRatio - astrRatio
-      data.push({
+        data.push({
           date: format(
             date,
             period.includes('year') || period === '90_days' ? 'MMM d' : 'MMM d'
@@ -310,12 +310,31 @@ const Balances: React.FC = () => {
     []
   )
 
-  const ChartGradients = ({ currencyColors }: { currencyColors: { [key: string]: string } }) => (
+  const ChartGradients = ({
+    currencyColors,
+  }: {
+    currencyColors: { [key: string]: string }
+  }) => (
     <>
       {Object.keys(currencyColors).map(currency => (
-        <linearGradient key={currency} id={`color${currency}`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="5%" stopColor={currencyColors[currency]} stopOpacity={0.8} />
-          <stop offset="95%" stopColor={currencyColors[currency]} stopOpacity={0.1} />
+        <linearGradient
+          key={currency}
+          id={`color${currency}`}
+          x1="0"
+          y1="0"
+          x2="0"
+          y2="1"
+        >
+          <stop
+            offset="5%"
+            stopColor={currencyColors[currency]}
+            stopOpacity={0.8}
+          />
+          <stop
+            offset="95%"
+            stopColor={currencyColors[currency]}
+            stopOpacity={0.1}
+          />
         </linearGradient>
       ))}
     </>

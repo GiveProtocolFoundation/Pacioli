@@ -285,7 +285,11 @@ const Navigation: React.FC<NavigationProps> = ({
 
                   {/* Sub-items */}
                   {item.subItems && expandedItems.includes(item.name) && (
-                    <SubNavItems subItems={item.subItems} expandedItems={expandedItems} location={location} />
+                    <SubNavItems
+                      subItems={item.subItems}
+                      expandedItems={expandedItems}
+                      location={location}
+                    />
                   )}
                 </li>
               )

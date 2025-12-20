@@ -203,7 +203,7 @@ const recentRuns: RecentRun[] = [
   {
     id: '1',
     reportName: 'Crypto Holdings Report',
-  ranAt: '2025-10-17T08:00:00Z',
+    ranAt: '2025-10-17T08:00:00Z',
     ranBy: 'John Smith',
     format: 'pdf',
     status: 'completed',
@@ -234,7 +234,16 @@ const recentRuns: RecentRun[] = [
   },
 ]
 
-const SearchInput: React.FC<{ searchQuery: string; onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void }> = ({ searchQuery, onSearchChange }) => (
+/**
+ * SearchInput component that renders a search input field.
+ * @param {string} searchQuery - Current search query string.
+ * @param {(e: React.ChangeEvent<HTMLInputElement>) => void} onSearchChange - Callback for search input change.
+ * @returns {JSX.Element} The rendered SearchInput component.
+ */
+const SearchInput: React.FC<{
+  searchQuery: string
+  onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+}> = ({ searchQuery, onSearchChange }) => (
   <div className="relative flex-1">
     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
     <input
@@ -247,7 +256,16 @@ const SearchInput: React.FC<{ searchQuery: string; onSearchChange: (e: React.Cha
   </div>
 )
 
-const FavoritesToggle: React.FC<{ showFavoritesOnly: boolean; onToggle: () => void }> = ({ showFavoritesOnly, onToggle }) => (
+/**
+ * FavoritesToggle component that renders a toggle button for favorite reports.
+ * @param {boolean} showFavoritesOnly - Whether to show only favorite reports.
+ * @param {() => void} onToggle - Callback to toggle favorites filter.
+ * @returns {JSX.Element} The rendered FavoritesToggle component.
+ */
+const FavoritesToggle: React.FC<{
+  showFavoritesOnly: boolean
+  onToggle: () => void
+}> = ({ showFavoritesOnly, onToggle }) => (
   <button
     onClick={onToggle}
     className={`px-4 py-2 rounded-lg border flex items-center justify-center transition-colors ${
@@ -261,7 +279,18 @@ const FavoritesToggle: React.FC<{ showFavoritesOnly: boolean; onToggle: () => vo
   </button>
 )
 
-const ReportInfo = ({ report, Icon }: { report: { name: string; favorite: boolean; description: string; lastRun: string | null }; Icon: React.ComponentType<{ className?: string }> }) => (
+const ReportInfo = ({
+  report,
+  Icon,
+}: {
+  report: {
+    name: string
+    favorite: boolean
+    description: string
+    lastRun: string | null
+  }
+  Icon: React.ComponentType<{ className?: string }>
+}) => (
   <div className="flex items-start flex-1">
     <div className="report-icon-container flex-shrink-0">
       <Icon />
@@ -438,8 +467,14 @@ const Reports: React.FC = () => {
             {/* Search and Filters */}
             <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
               <div className="flex flex-col sm:flex-row gap-4">
-                <SearchInput searchQuery={searchQuery} onSearchChange={handleSearchChange} />
-                <FavoritesToggle showFavoritesOnly={showFavoritesOnly} onToggle={handleToggleFavorites} />
+                <SearchInput
+                  searchQuery={searchQuery}
+                  onSearchChange={handleSearchChange}
+                />
+                <FavoritesToggle
+                  showFavoritesOnly={showFavoritesOnly}
+                  onToggle={handleToggleFavorites}
+                />
               </div>
             </div>
 
