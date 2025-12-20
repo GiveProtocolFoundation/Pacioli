@@ -3,7 +3,6 @@ import {
   Building2,
   Calendar,
   Globe2,
-  Palette,
   Save,
   X,
   Upload,
@@ -16,7 +15,7 @@ import {
 } from 'lucide-react'
 import { useTheme } from '../../contexts/ThemeContext'
 import { useOrganization } from '../../contexts/OrganizationContext'
-import { moonscanService } from '../../services/blockchain/moonscanService'
+import { moonscanService } from '../../ervices/blockchain/moonscanService'
 
 interface OrganizationSettings {
   name: string
@@ -547,7 +546,7 @@ const EtherscanApiKeySection: React.FC<{
   )
 }
 
-const ApiKeysSection: React.FC = () => {
+const _ApiKeysSection: React.FC = () => {
   // Use lazy initialization to load from localStorage on first render
   const [etherscanApiKey, setEtherscanApiKey] = useState(() => {
     return localStorage.getItem('etherscan_api_key') || ''
@@ -696,20 +695,6 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({
       }
     },
     [handleOrganizationChange, setOrganizationLogo]
-  )
-
-  // Theme button handlers
-  const handleThemeLight = useCallback(
-    () => handleSystemChange('theme', 'light'),
-    [handleSystemChange]
-  )
-  const handleThemeDark = useCallback(
-    () => handleSystemChange('theme', 'dark'),
-    [handleSystemChange]
-  )
-  const handleThemeSystem = useCallback(
-    () => handleSystemChange('theme', 'system'),
-    [handleSystemChange]
   )
 
   // Factory function for system select handlers (used in main component)
