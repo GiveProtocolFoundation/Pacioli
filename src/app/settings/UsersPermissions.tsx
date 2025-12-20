@@ -394,8 +394,8 @@ const InviteUserModal: React.FC<{
           <div className="flex">
             <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
             <p className="ml-3 text-xs text-blue-800 dark:text-blue-400">
-              An invitation email will be sent to the user with instructions
-              to set up their account.
+              An invitation email will be sent to the user with instructions to
+              set up their account.
             </p>
           </div>
         </div>
@@ -894,28 +894,28 @@ const UsersPermissions: React.FC = () => {
       </div>
 
       {viewMode === 'users' ? (
-            <UsersTable
-              filteredUsers={filteredUsers}
-              formatLastLogin={formatLastLogin}
-              getStatusBadge={getStatusBadge}
-              searchQuery={searchQuery}
-              handleSearchChange={handleSearchChange}
-              statusFilter={statusFilter}
-              handleStatusFilterChange={handleStatusFilterChange}
-            />
-          ) : (
-            <RolesView roles={roles} users={users} />
-          )}
+        <UsersTable
+          filteredUsers={filteredUsers}
+          formatLastLogin={formatLastLogin}
+          getStatusBadge={getStatusBadge}
+          searchQuery={searchQuery}
+          handleSearchChange={handleSearchChange}
+          statusFilter={statusFilter}
+          handleStatusFilterChange={handleStatusFilterChange}
+        />
+      ) : (
+        <RolesView roles={roles} users={users} />
+      )}
 
-          {showInviteModal && (
-            <InviteUserModal
-              roles={roles}
-              handleClose={handleCloseInviteModal}
-              handleSend={handleSendInvite}
-            />
-          )}
-        </div>
-      )
+      {showInviteModal && (
+        <InviteUserModal
+          roles={roles}
+          handleClose={handleCloseInviteModal}
+          handleSend={handleSendInvite}
+        />
+      )}
+    </div>
+  )
 }
 
 export default UsersPermissions

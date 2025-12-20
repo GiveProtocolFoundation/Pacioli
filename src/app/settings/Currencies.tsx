@@ -203,11 +203,11 @@ const Currencies: React.FC = () => {
   )
 
   // Extracted components to reduce nesting depth
-  const ChangeActions: React.FC<{ hasChanges: boolean; onReset: () => void; onSave: () => void }> = ({
-    hasChanges,
-    onReset,
-    onSave,
-  }) => {
+  const ChangeActions: React.FC<{
+    hasChanges: boolean
+    onReset: () => void
+    onSave: () => void
+  }> = ({ hasChanges, onReset, onSave }) => {
     if (!hasChanges) return null
     return (
       <div className="flex items-center space-x-3">
@@ -241,9 +241,8 @@ const Currencies: React.FC = () => {
         </h2>
       </div>
       <p className="text-sm text-gray-500 dark:text-[#94a3b8] mb-4">
-        Your primary currency is used for all financial reports and
-        statements. Transactions in other currencies will be automatically
-        converted.
+        Your primary currency is used for all financial reports and statements.
+        Transactions in other currencies will be automatically converted.
       </p>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
