@@ -103,6 +103,11 @@ const Currencies: React.FC = () => {
       case 'comma-space':
         // 1 234,56 - space for thousands, comma for decimal
         return `${integerPart.replace(/,/g, ' ')},${decimalPart}`
+      default:
+        return `${integerPart}.${decimalPart}`
+    }
+  }
+
   // Memoized event handlers
   const handlePrimaryCurrencyChange = useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {

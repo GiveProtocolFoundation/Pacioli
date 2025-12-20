@@ -198,16 +198,6 @@ const OrganizationInformationSection: React.FC<
               onChange={createTextHandler('taxId')}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-            >
-              Tax ID / EIN
-            </label>
-            <input
-              id="taxId"
-              type="text"
-              value={organizationSettings.taxId}
-              onChange={createTextHandler('taxId')}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
           </div>
 
           <div>
@@ -840,121 +830,12 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({
             />
           </div>
         </div>
-                  UTC-06:00 - Central Standard Time (CST) - Chicago, Mexico
-                  City, Dallas
-                </option>
-                <option value="America/New_York">
-                  UTC-05:00 - Eastern Standard Time (EST) - New York, Toronto,
-                  Miami, Lima
-                </option>
-                <option value="America/Halifax">
-                  UTC-04:00 - Atlantic Standard Time (AST) - Halifax, Caracas,
-                  San Juan
-                </option>
-                <option value="America/St_Johns">
-                  UTC-03:30 - Newfoundland Standard Time (NST) - St. John&apos;s
-                  (Canada)
-                </option>
-                <option value="America/Argentina/Buenos_Aires">
-                  UTC-03:00 - Argentina Time (ART) / Brasília Time (BRT) -
-                  Buenos Aires, São Paulo
-                </option>
-                <option value="Atlantic/South_Georgia">
-                  UTC-02:00 - Coordinated Universal Time -2 - Fernando de
-                  Noronha, South Georgia
-                </option>
-                <option value="Atlantic/Azores">
-                  UTC-01:00 - Azores Time (AZOT) - Azores, Cape Verde
-                </option>
-                <option value="UTC">
-                  UTC+00:00 - Greenwich Mean Time (GMT) / UTC - London, Lisbon,
-                  Accra, Reykjavik
-                </option>
-                <option value="Europe/Paris">
-                  UTC+01:00 - Central European Time (CET) - Paris, Berlin, Rome,
-                  Madrid, Lagos
-                </option>
-                <option value="Europe/Athens">
-                  UTC+02:00 - Eastern European Time (EET) - Cairo, Athens,
-                  Jerusalem, Johannesburg
-                </option>
-                <option value="Europe/Moscow">
-                  UTC+03:00 - Moscow Time (MSK) / Arabia Standard Time (AST) -
-                  Moscow, Riyadh, Istanbul, Nairobi
-                </option>
-                <option value="Asia/Tehran">
-                  UTC+03:30 - Iran Standard Time (IRST) - Tehran
-                </option>
-                <option value="Asia/Dubai">
-                  UTC+04:00 - Gulf Standard Time (GST) - Dubai, Abu Dhabi, Baku
-                </option>
-                <option value="Asia/Kabul">
-                  UTC+04:30 - Afghanistan Time (AFT) - Kabul
-                </option>
-                <option value="Asia/Karachi">
-                  UTC+05:00 - Pakistan Standard Time (PKT) - Karachi, Tashkent
-                </option>
-                <option value="Asia/Kolkata">
-                  UTC+05:30 - Indian Standard Time (IST) - New Delhi, Mumbai,
-                  Chennai
-                </option>
-                <option value="Asia/Kathmandu">
-                  UTC+05:45 - Nepal Time (NPT) - Kathmandu
-                </option>
-                <option value="Asia/Dhaka">
-                  UTC+06:00 - Bangladesh Standard Time (BST) - Dhaka, Almaty
-                </option>
-                <option value="Asia/Yangon">
-                  UTC+06:30 - Myanmar Standard Time (MMT) - Yangon
-                </option>
-                <option value="Asia/Bangkok">
-                  UTC+07:00 - Indochina Time (ICT) - Bangkok, Jakarta, Hanoi
-                </option>
-                <option value="Asia/Shanghai">
-                  UTC+08:00 - China Standard Time (CST) - Beijing, Hong Kong,
-                  Singapore, Perth
-                </option>
-                <option value="Australia/Eucla">
-                  UTC+08:45 - Australian Central Western Standard Time (ACWST) -
-                  Eucla (Australia)
-                </option>
-                <option value="Asia/Tokyo">
-                  UTC+09:00 - Japan Standard Time (JST) / Korea Standard Time
-                  (KST) - Tokyo, Seoul
-                </option>
-                <option value="Australia/Adelaide">
-                  UTC+09:30 - Australian Central Standard Time (ACST) -
-                  Adelaide, Darwin
-                </option>
-                <option value="Australia/Sydney">
-                  UTC+10:00 - Australian Eastern Standard Time (AEST) - Sydney,
-                  Melbourne, Brisbane, Guam
-                </option>
-                <option value="Australia/Lord_Howe">
-                  UTC+10:30 - Lord Howe Standard Time (LHST) - Lord Howe Island
-                  (Australia)
-                </option>
-                <option value="Pacific/Guadalcanal">
-                  UTC+11:00 - Solomon Islands Time (SBT) - Vladivostok, New
-                  Caledonia
-                </option>
-                <option value="Pacific/Auckland">
-                  UTC+12:00 - New Zealand Standard Time (NZST) - Auckland, Fiji
-                </option>
-                <option value="Pacific/Chatham">
-                  UTC+12:45 - Chatham Standard Time (CHAST) - Chatham Islands
-                  (New Zealand)
-                </option>
-                <option value="Pacific/Tongatapu">
-                  UTC+13:00 - Phoenix Island Time (PHOT) - Tonga, Phoenix
-                  Islands
-                </option>
-                <option value="Pacific/Kiritimati">
-                  UTC+14:00 - Line Islands Time (LINT) - Kiribati
-                </option>
-              </select>
-            </div>
 
+        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            Language Settings
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label
                 htmlFor="language"
@@ -1007,80 +888,12 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({
                 onChange={createSystemSelectHandler('timeFormat')}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option value="12h">12-hour (1:00 PM)</option>
-                <option value="24h">24-hour (13:00)</option>
+                <option value="12h">12-hour (AM/PM)</option>
+                <option value="24h">24-hour</option>
               </select>
             </div>
           </div>
         </div>
-
-        {/* Appearance */}
-        <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-6">
-          <div className="flex items-center mb-4">
-            <Palette className="w-5 h-5 text-blue-600 mr-2" />
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Appearance
-            </h3>
-          </div>
-
-          <div>
-            <div className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-              Theme
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <button
-                onClick={handleThemeLight}
-                className={`p-4 rounded-lg border-2 transition-colors ${
-                  systemSettings.theme === 'light'
-                    ? 'border-blue-600 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/30'
-                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
-                }`}
-              >
-                <div className="font-medium text-gray-900 dark:text-white mb-1">
-                  Light
-                </div>
-                <div className="text-xs text-gray-500 dark:text-[#94a3b8]">
-                  Classic light theme
-                </div>
-              </button>
-
-              <button
-                onClick={handleThemeDark}
-                className={`p-4 rounded-lg border-2 transition-colors ${
-                  systemSettings.theme === 'dark'
-                    ? 'border-blue-600 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/30'
-                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
-                }`}
-              >
-                <div className="font-medium text-gray-900 dark:text-white mb-1">
-                  Dark
-                </div>
-                <div className="text-xs text-gray-500 dark:text-[#94a3b8]">
-                  Easy on the eyes
-                </div>
-              </button>
-
-              <button
-                onClick={handleThemeSystem}
-                className={`p-4 rounded-lg border-2 transition-colors ${
-                  systemSettings.theme === 'system'
-                    ? 'border-blue-600 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/30'
-                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
-                }`}
-              >
-                <div className="font-medium text-gray-900 dark:text-white mb-1">
-                  System
-                </div>
-                <div className="text-xs text-gray-500 dark:text-[#94a3b8]">
-                  Match OS preference
-                </div>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* API Keys */}
-        <ApiKeysSection />
       </div>
     </div>
   )
