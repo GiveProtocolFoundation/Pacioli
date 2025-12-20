@@ -4,7 +4,10 @@
  */
 
 import { web3Accounts, web3Enable } from '@polkadot/extension-dapp'
-import type { InjectedAccountWithMeta, InjectedExtension } from '@polkadot/extension-inject/types'
+import type {
+  InjectedAccountWithMeta,
+  InjectedExtension,
+} from '@polkadot/extension-inject/types'
 import detectEthereumProvider from '@metamask/detect-provider'
 
 import {
@@ -26,10 +29,26 @@ class WalletService {
    */
   async detectWallets(): Promise<Record<WalletType, WalletConnectionStatus>> {
     const status: Record<WalletType, WalletConnectionStatus> = {
-      [WalletType.POLKADOT_JS]: { isDetected: false, isEnabled: false, isConnected: false },
-      [WalletType.TALISMAN]: { isDetected: false, isEnabled: false, isConnected: false },
-      [WalletType.SUBWALLET]: { isDetected: false, isEnabled: false, isConnected: false },
-      [WalletType.METAMASK]: { isDetected: false, isEnabled: false, isConnected: false },
+      [WalletType.POLKADOT_JS]: {
+        isDetected: false,
+        isEnabled: false,
+        isConnected: false,
+      },
+      [WalletType.TALISMAN]: {
+        isDetected: false,
+        isEnabled: false,
+        isConnected: false,
+      },
+      [WalletType.SUBWALLET]: {
+        isDetected: false,
+        isEnabled: false,
+        isConnected: false,
+      },
+      [WalletType.METAMASK]: {
+        isDetected: false,
+        isEnabled: false,
+        isConnected: false,
+      },
     }
 
     // Detect Substrate wallets
@@ -75,7 +94,7 @@ class WalletService {
       } else if (window.ethereum?.providers) {
         // Check for MetaMask in providers array (multiple wallet extensions)
         const metamaskProvider = window.ethereum.providers.find(
-          (p) => p.isMetaMask && !p.isTalisman && !p.isSubWallet
+          p => p.isMetaMask && !p.isTalisman && !p.isSubWallet
         )
         if (metamaskProvider) {
           status[WalletType.METAMASK] = {
@@ -105,7 +124,9 @@ class WalletService {
   /**
    * Connect to a Substrate wallet (Polkadot.js, Talisman, SubWallet)
    */
-  async connectSubstrateWallet(walletType: WalletType): Promise<ConnectedWallet> {
+  async connectSubstrateWallet(
+    walletType: WalletType
+  ): Promise<ConnectedWallet> {
     if (walletType === WalletType.METAMASK) {
       throw new Error('Use connectEVMWallet for MetaMask')
     }
@@ -116,10 +137,12 @@ class WalletService {
         this.enabledExtensions = await web3Enable(APP_NAME)
       }
 
-      const extension = this.enabledExtensions.find((ext) => {
-        if (walletType === WalletType.POLKADOT_JS) return ext.name === 'polkadot-js'
+      const extension = this.enabledExtensions.find(ext => {
+        if (walletType === WalletType.POLKADOT_JS)
+          return ext.name === 'polkadot-js'
         if (walletType === WalletType.TALISMAN) return ext.name === 'talisman'
-        if (walletType === WalletType.SUBWALLET) return ext.name === 'subwallet-js'
+        if (walletType === WalletType.SUBWALLET)
+          return ext.name === 'subwallet-js'
         return false
       })
 
@@ -130,7 +153,7 @@ class WalletService {
       // Get accounts
       const injectedAccounts = await web3Accounts()
       const accounts: WalletAccount[] = injectedAccounts
-        .filter((account) => account.meta.source === extension.name)
+        .filter(account => account.meta.source === extension.name)
         .map((account: InjectedAccountWithMeta) => ({
           address: account.address,
           name: account.meta.name,
@@ -167,7 +190,7 @@ class WalletService {
       // If multiple providers exist (e.g., MetaMask + SubWallet), find MetaMask specifically
       if (window.ethereum?.providers) {
         const metamaskProvider = window.ethereum.providers.find(
-          (p) => p.isMetaMask && !p.isTalisman && !p.isSubWallet
+          p => p.isMetaMask && !p.isTalisman && !p.isSubWallet
         )
         if (metamaskProvider) {
           provider = metamaskProvider
@@ -175,34 +198,45 @@ class WalletService {
       }
 
       if (!provider) {
-        throw new Error('MetaMask not installed. Please install MetaMask extension.')
+        throw new Error(
+          'MetaMask not installed. Please install MetaMask extension.'
+        )
       }
 
       // Verify it's actually MetaMask
       if (!provider.isMetaMask) {
-        throw new Error('MetaMask not detected. Please install MetaMask extension.')
+        throw new Error(
+          'MetaMask not detected. Please install MetaMask extension.'
+        )
       }
 
       // Request account access with timeout
       const accountsRaw = await Promise.race([
         provider.request({
-          method: 'eth_requestAccounts'
+          method: 'eth_requestAccounts',
         }),
         new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Connection timeout - please try again')), 60000)
-        )
+          setTimeout(
+            () => reject(new Error('Connection timeout - please try again')),
+            60000
+          )
+        ),
       ])
 
       if (!accountsRaw || (accountsRaw as string[]).length === 0) {
-        throw new Error('No accounts found. Please unlock MetaMask and try again.')
+        throw new Error(
+          'No accounts found. Please unlock MetaMask and try again.'
+        )
       }
 
-      const accounts: WalletAccount[] = (accountsRaw as string[]).map((address: string) => ({
-        address,
-        name: 'MetaMask Account',
-        source: WalletType.METAMASK,
-        type: ChainType.EVM,
-      }))
+      const accounts: WalletAccount[] = (accountsRaw as string[]).map(
+        (address: string) => ({
+          address,
+          name: 'MetaMask Account',
+          source: WalletType.METAMASK,
+          type: ChainType.EVM,
+        })
+      )
 
       const connectedWallet: ConnectedWallet = {
         type: WalletType.METAMASK,
@@ -265,7 +299,7 @@ class WalletService {
   /**
    * Subscribe to account changes (Substrate wallets)
    */
-  subscribeToAccounts(
+  static subscribeToAccounts(
     walletType: WalletType,
     callback: (accounts: WalletAccount[]) => void
   ): (() => void) | undefined {
@@ -274,7 +308,7 @@ class WalletService {
       const handleAccountsChanged = (accounts: unknown) => {
         const accountAddresses = accounts as string[]
         callback(
-          accountAddresses.map((address) => ({
+          accountAddresses.map(address => ({
             address,
             name: 'MetaMask Account',
             source: WalletType.METAMASK,
@@ -285,7 +319,10 @@ class WalletService {
 
       window.ethereum?.on('accountsChanged', handleAccountsChanged)
       return () => {
-        window.ethereum?.removeListener('accountsChanged', handleAccountsChanged)
+        window.ethereum?.removeListener(
+          'accountsChanged',
+          handleAccountsChanged
+        )
       }
     }
 
@@ -301,17 +338,29 @@ declare global {
       isMetaMask?: boolean
       isTalisman?: boolean
       isSubWallet?: boolean
-      request: (args: { method: string; params?: unknown[] }) => Promise<unknown>
+      request: (args: {
+        method: string
+        params?: unknown[]
+      }) => Promise<unknown>
       on: (event: string, handler: (...args: unknown[]) => void) => void
-      removeListener: (event: string, handler: (...args: unknown[]) => void) => void
+      removeListener: (
+        event: string,
+        handler: (...args: unknown[]) => void
+      ) => void
       version?: string
       providers?: Array<{
         isMetaMask?: boolean
         isTalisman?: boolean
         isSubWallet?: boolean
-        request: (args: { method: string; params?: unknown[] }) => Promise<unknown>
+        request: (args: {
+          method: string
+          params?: unknown[]
+        }) => Promise<unknown>
         on: (event: string, handler: (...args: unknown[]) => void) => void
-        removeListener: (event: string, handler: (...args: unknown[]) => void) => void
+        removeListener: (
+          event: string,
+          handler: (...args: unknown[]) => void
+        ) => void
         version?: string
       }>
     }

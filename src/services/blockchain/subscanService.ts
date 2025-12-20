@@ -410,7 +410,7 @@ class SubscanService {
   /**
    * Make HTTP request to Subscan API
    */
-  private async makeRequest<T>(
+  private static async makeRequest<T>(
     config: SubscanConfig,
     endpoint: string,
     body: Record<string, unknown>
@@ -638,7 +638,7 @@ class SubscanService {
   /**
    * Detect action type using heuristics when explicit data is missing
    */
-  private detectActionHeuristic(transfer: SubscanTransfer): {
+  private static detectActionHeuristic(transfer: SubscanTransfer): {
     method: string
     section: string
     type: SubstrateTransaction['type']
@@ -685,7 +685,7 @@ class SubscanService {
   /**
    * Classify extrinsic type based on module and function
    */
-  private classifyExtrinsicType(
+  private static classifyExtrinsicType(
     module: string,
     _method: string
   ): SubstrateTransaction['type'] {

@@ -24,7 +24,7 @@ class StorageService {
   /**
    * Save connected wallets
    */
-  saveWallets(wallets: ConnectedWallet[]): void {
+  static saveWallets(wallets: ConnectedWallet[]): void {
     try {
       localStorage.setItem(STORAGE_KEYS.WALLETS, JSON.stringify(wallets))
     } catch (error) {
@@ -35,7 +35,7 @@ class StorageService {
   /**
    * Load connected wallets
    */
-  loadWallets(): ConnectedWallet[] {
+  static loadWallets(): ConnectedWallet[] {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.WALLETS)
       return data ? JSON.parse(data) : []
@@ -48,32 +48,36 @@ class StorageService {
   /**
    * Clear saved wallets
    */
-  clearWallets(): void {
+  static clearWallets(): void {
     localStorage.removeItem(STORAGE_KEYS.WALLETS)
   }
 
   /**
    * Save transactions (appends to existing)
    */
-  saveTransactions(network: string, address: string, transactions: Transaction[]): void {
+  saveTransactions(
+    network: string,
+    address: string,
+    transactions: Transaction[]
+  ): void {
     try {
       const allTransactions = this.loadTransactions()
       const key = `${network}:${address}`
 
-      allTransactions[key] = [
-        ...(allTransactions[key] || []),
-        ...transactions,
-      ]
+      allTransactions[key] = [...(allTransactions[key] || []), ...transactions]
 
       // Deduplicate by ID
       allTransactions[key] = Array.from(
-        new Map(allTransactions[key].map((tx) => [tx.id, tx])).values()
+        new Map(allTransactions[key].map(tx => [tx.id, tx])).values()
       )
 
       // Sort by block number (newest first)
       allTransactions[key].sort((a, b) => b.blockNumber - a.blockNumber)
 
-      localStorage.setItem(STORAGE_KEYS.TRANSACTIONS, JSON.stringify(allTransactions))
+      localStorage.setItem(
+        STORAGE_KEYS.TRANSACTIONS,
+        JSON.stringify(allTransactions)
+      )
     } catch (error) {
       console.error('Error saving transactions:', error)
     }
@@ -82,7 +86,7 @@ class StorageService {
   /**
    * Load all transactions
    */
-  loadTransactions(): Record<string, Transaction[]> {
+  static loadTransactions(): Record<string, Transaction[]> {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.TRANSACTIONS)
       return data ? JSON.parse(data) : {}
@@ -104,7 +108,7 @@ class StorageService {
   /**
    * Clear all transactions
    */
-  clearTransactions(): void {
+  static clearTransactions(): void {
     localStorage.removeItem(STORAGE_KEYS.TRANSACTIONS)
   }
 
@@ -139,7 +143,7 @@ class StorageService {
   /**
    * Load all sync statuses
    */
-  loadAllSyncStatus(): Record<string, SyncStatus> {
+  static loadAllSyncStatus(): Record<string, SyncStatus> {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.SYNC_STATUS)
       return data ? JSON.parse(data) : {}
