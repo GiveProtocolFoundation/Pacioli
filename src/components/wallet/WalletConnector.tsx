@@ -17,11 +17,6 @@ import {
   type WalletAccount,
 } from '../../services/wallet/types'
 import { useWalletAliases } from '../../contexts/WalletAliasContext'
-import AccountList from './AccountList'
-import WalletActions from './WalletActions'
-  onWalletsChange?: (wallets: ConnectedWallet[]) => void
-}
-
 // Memoized account row component to prevent unnecessary re-renders
 interface AccountRowProps {
   account: WalletAccount
@@ -187,6 +182,54 @@ const WalletActions = memo(function WalletActions({
         'Connect'
       )}
     </button>
+  )
+})
+
+// Memoized account list component
+interface AccountListProps {
+  accounts: WalletAccount[]
+  editingAlias: string | null
+  aliases: Record<string, string>
+  aliasInput: string
+  onAliasInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  onKeyDown: (e: React.KeyboardEvent, address: string) => void
+  onSave: (address: string) => void
+  onCancel: () => void
+  onStartEdit: (address: string) => void
+}
+
+const AccountList = memo(function AccountList({
+  accounts,
+  editingAlias,
+  aliases,
+  aliasInput,
+  onAliasInputChange,
+  onKeyDown,
+  onSave,
+  onCancel,
+  onStartEdit,
+}: AccountListProps) {
+  if (accounts.length === 0) {
+    return null
+  }
+
+  return (
+    <div className="mt-3 space-y-2">
+      {accounts.map(account => (
+        <AccountRow
+          key={account.address}
+          account={account}
+          isEditing={editingAlias === account.address}
+          currentAlias={aliases[account.address]}
+          aliasInput={aliasInput}
+          onAliasInputChange={onAliasInputChange}
+          onKeyDown={onKeyDown}
+          onSave={onSave}
+          onCancel={onCancel}
+          onStartEdit={onStartEdit}
+        />
+      ))}
+    </div>
   )
 })
 

@@ -39,6 +39,22 @@ interface Permission {
   approve?: boolean
 }
 
+// Props interfaces for extracted components
+interface UsersTableProps {
+  filteredUsers: User[]
+  formatLastLogin: (date: string | null) => string
+  getStatusBadge: (status: User['status']) => React.ReactNode
+  searchQuery: string
+  handleSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  statusFilter: 'all' | 'active' | 'inactive' | 'pending'
+  handleStatusFilterChange: (e: React.ChangeEvent<HTMLSelectElement>) => void
+}
+
+interface RolesViewProps {
+  roles: Role[]
+  users: User[]
+}
+
 // Mock data for users
 const mockUsers: User[] = [
   {
@@ -420,6 +436,327 @@ const InviteUserModal: React.FC<{
   </div>
 )
 
+// Extracted UsersTable component to avoid recreation on every render
+const UsersTable: React.FC<UsersTableProps> = ({
+  filteredUsers,
+  formatLastLogin,
+  getStatusBadge,
+  searchQuery,
+  handleSearchChange,
+  statusFilter,
+  handleStatusFilterChange,
+}) => (
+  <>
+    {/* Search and Filters */}
+    <div className="mb-6 flex flex-col sm:flex-row gap-4">
+      <div className="relative flex-1">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+        <input
+          type="text"
+          placeholder="Search users..."
+          value={searchQuery}
+          onChange={handleSearchChange}
+          className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+      <select
+        value={statusFilter}
+        onChange={handleStatusFilterChange}
+        className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+      >
+        <option value="all">All Status</option>
+        <option value="active">Active</option>
+        <option value="inactive">Inactive</option>
+        <option value="pending">Pending</option>
+      </select>
+    </div>
+
+    {/* Users Table */}
+    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#94a3b8] uppercase tracking-wider">
+                User
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#94a3b8] uppercase tracking-wider">
+                Role
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#94a3b8] uppercase tracking-wider">
+                Status
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#94a3b8] uppercase tracking-wider">
+                Last Login
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#94a3b8] uppercase tracking-wider">
+                2FA
+              </th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-[#94a3b8] uppercase tracking-wider">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+            {filteredUsers.map(user => (
+              <tr
+                key={user.id}
+                className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+              >
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="flex items-center">
+                    <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                      <span className="text-sm font-medium text-blue-700 dark:text-blue-400">
+                        {user.name
+                          .split(' ')
+                          .map(n => n[0])
+                          .join('')}
+                      </span>
+                    </div>
+                    <div className="ml-4">
+                      <div className="text-sm font-medium text-gray-900 dark:text-white">
+                        {user.name}
+                      </div>
+                      <div className="text-sm text-gray-500 dark:text-[#94a3b8]">
+                        {user.email}
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm text-gray-900 dark:text-white">
+                    {user.role.name}
+                  </div>
+                  <div className="text-xs text-gray-500 dark:text-[#94a3b8]">
+                    {user.role.description}
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  {getStatusBadge(user.status)}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-[#94a3b8]">
+                  {formatLastLogin(user.lastLogin)}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  {user.twoFactorEnabled ? (
+                    <span className="inline-flex items-center text-green-600 dark:text-green-400">
+                      <Check className="w-4 h-4" />
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center text-gray-400">
+                      <X className="w-4 h-4" />
+                    </span>
+                  )}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <button className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                    <MoreVertical className="w-5 h-5" />
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {filteredUsers.length === 0 && (
+        <div className="p-12 text-center">
+          <Users className="mx-auto h-12 w-12 text-gray-400" />
+          <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">
+            No users found
+          </h3>
+          <p className="mt-1 text-sm text-gray-500 dark:text-[#94a3b8]">
+            Try adjusting your search or filters.
+          </p>
+        </div>
+      )}
+    </div>
+  </>
+)
+
+// Extracted RolesView component to avoid recreation on every render
+const RolesView: React.FC<RolesViewProps> = ({ roles, users }) => (
+  <>
+    {/* Roles View */}
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {roles.map(role => (
+        <div
+          key={role.id}
+          className="border border-gray-200 dark:border-gray-700 rounded-lg p-6 bg-white dark:bg-gray-900"
+        >
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex items-center">
+              <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                <Shield className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+                  {role.name}
+                </h3>
+                {role.isCustom && (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-400 border border-purple-200 dark:border-purple-800 mt-1">
+                    Custom
+                  </span>
+                )}
+              </div>
+            </div>
+            <button className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+              <MoreVertical className="w-5 h-5" />
+            </button>
+          </div>
+
+          <p className="text-sm text-gray-500 dark:text-[#94a3b8] mb-4">
+            {role.description}
+          </p>
+
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-xs">
+              <span className="font-medium text-gray-700 dark:text-gray-300">
+                Module
+              </span>
+              <div className="flex items-center space-x-2">
+                <span className="text-gray-500 dark:text-[#94a3b8]">View</span>
+                <span className="text-gray-500 dark:text-[#94a3b8]">Create</span>
+                <span className="text-gray-500 dark:text-[#94a3b8]">Edit</span>
+                <span className="text-gray-500 dark:text-[#94a3b8]">Delete</span>
+              </div>
+            </div>
+            <div className="max-h-48 overflow-y-auto space-y-2">
+              {role.permissions.map(permission => (
+                <div
+                  key={permission.module}
+                  className="flex items-center justify-between text-xs py-1 border-b border-gray-100 dark:border-gray-800"
+                >
+                  <span className="text-gray-700 dark:text-gray-300">
+                    {permission.module}
+                  </span>
+                  <div className="flex items-center space-x-2">
+                    <span className="w-12 text-center">
+                      {permission.view ? (
+                        <Check className="w-3 h-3 inline text-green-600 dark:text-green-400" />
+                      ) : (
+                        <X className="w-3 h-3 inline text-gray-300 dark:text-gray-600" />
+                      )}
+                    </span>
+                    <span className="w-12 text-center">
+                      {permission.create ? (
+                        <Check className="w-3 h-3 inline text-green-600 dark:text-green-400" />
+                      ) : (
+                        <X className="w-3 h-3 inline text-gray-300 dark:text-gray-600" />
+                      )}
+                    </span>
+                    <span className="w-12 text-center">
+                      {permission.edit ? (
+                        <Check className="w-3 h-3 inline text-green-600 dark:text-green-400" />
+                      ) : (
+                        <X className="w-3 h-3 inline text-gray-300 dark:text-gray-600" />
+                      )}
+                    </span>
+                    <span className="w-12 text-center">
+                      {permission.delete ? (
+                        <Check className="w-3 h-3 inline text-green-600 dark:text-green-400" />
+                      ) : (
+                        <X className="w-3 h-3 inline text-gray-300 dark:text-gray-600" />
+                      )}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between text-xs text-gray-500 dark:text-[#94a3b8]">
+              <span>
+                {users.filter(u => u.role.id === role.id).length} users assigned
+              </span>
+              {!role.isCustom && (
+                <span className="text-blue-600 dark:text-blue-400 hover:underline cursor-pointer">
+                  View details
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+      ))}
+
+      {/* Create Custom Role Card */}
+      <button className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 hover:border-blue-400 dark:hover:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors flex flex-col items-center justify-center text-center min-h-[300px]">
+        <div className="w-12 h-12 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-3">
+          <Shield className="w-6 h-6 text-gray-400" />
+        </div>
+        <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-1">
+          Create Custom Role
+        </h3>
+        <p className="text-xs text-gray-500 dark:text-[#94a3b8]">
+          Define custom permissions for specific needs
+        </p>
+      </button>
+    </div>
+    {/* Security Settings */}
+    <div className="mt-8 border border-gray-200 dark:border-gray-700 rounded-lg p-6 bg-white dark:bg-gray-900">
+      <div className="flex items-center mb-4">
+        <Lock className="w-5 h-5 text-blue-600 mr-2" />
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+          Security Settings
+        </h3>
+      </div>
+
+      <div className="space-y-4">
+        <div className="flex items-center justify-between py-3 border-b border-gray-200 dark:border-gray-700">
+          <div>
+            <div className="text-sm font-medium text-gray-900 dark:text-white">
+              Require Two-Factor Authentication
+            </div>
+            <div className="text-xs text-gray-500 dark:text-[#94a3b8]">
+              Force all users to enable 2FA for enhanced security
+            </div>
+          </div>
+          <label
+            aria-label="Require Two-Factor Authentication"
+            className="relative inline-flex items-center cursor-pointer"
+          >
+            <input type="checkbox" className="sr-only peer" />
+            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600" />
+          </label>
+        </div>
+
+        <div className="flex items-center justify-between py-3 border-b border-gray-200 dark:border-gray-700">
+          <div>
+            <div className="text-sm font-medium text-gray-900 dark:text-white">
+              Session Timeout
+            </div>
+            <div className="text-xs text-gray-500 dark:text-[#94a3b8]">
+              Automatically log out inactive users
+            </div>
+          </div>
+          <select className="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option>15 minutes</option>
+            <option>30 minutes</option>
+            <option>1 hour</option>
+            <option>2 hours</option>
+            <option>Never</option>
+          </select>
+        </div>
+
+        <div className="flex items-center justify-between py-3">
+          <div>
+            <div className="text-sm font-medium text-gray-900 dark:text-white">
+              IP Whitelisting
+            </div>
+            <div className="text-xs text-gray-500 dark:text-[#94a3b8]">
+              Restrict access to specific IP addresses
+            </div>
+          </div>
+          <button className="px-3 py-1.5 text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors">
+            Configure
+          </button>
+        </div>
+      </div>
+    </div>
+  </>
+)
+
 const UsersPermissions: React.FC = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('users')
   const [users] = useState<User[]>(mockUsers)
@@ -503,346 +840,6 @@ const UsersPermissions: React.FC = () => {
   const handleSendInvite = useCallback(() => {
     setShowInviteModal(false)
   }, [])
-
-  // Extracted components to reduce nesting
-  const UsersTable: React.FC<{
-    filteredUsers: typeof filteredUsers
-    formatLastLogin: typeof formatLastLogin
-    getStatusBadge: typeof getStatusBadge
-    searchQuery: string
-    handleSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void
-    statusFilter: typeof statusFilter
-    handleStatusFilterChange: (e: React.ChangeEvent<HTMLSelectElement>) => void
-  }> = ({
-    filteredUsers,
-    formatLastLogin,
-    getStatusBadge,
-    searchQuery,
-    handleSearchChange,
-    statusFilter,
-    handleStatusFilterChange,
-  }) => (
-    <>
-      {/* Search and Filters */}
-      <div className="mb-6 flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search users..."
-            value={searchQuery}
-            onChange={handleSearchChange}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-        <select
-          value={statusFilter}
-          onChange={handleStatusFilterChange}
-          className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="all">All Status</option>
-          <option value="active">Active</option>
-          <option value="inactive">Inactive</option>
-          <option value="pending">Pending</option>
-        </select>
-      </div>
-
-      {/* Users Table */}
-      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#94a3b8] uppercase tracking-wider">
-                  User
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#94a3b8] uppercase tracking-wider">
-                  Role
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#94a3b8] uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#94a3b8] uppercase tracking-wider">
-                  Last Login
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#94a3b8] uppercase tracking-wider">
-                  2FA
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-[#94a3b8] uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {filteredUsers.map(user => (
-                <tr
-                  key={user.id}
-                  className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                >
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                        <span className="text-sm font-medium text-blue-700 dark:text-blue-400">
-                          {user.name
-                            .split(' ')
-                            .map(n => n[0])
-                            .join('')}
-                        </span>
-                      </div>
-                      <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900 dark:text-white">
-                          {user.name}
-                        </div>
-                        <div className="text-sm text-gray-500 dark:text-[#94a3b8]">
-                          {user.email}
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900 dark:text-white">
-                      {user.role.name}
-                    </div>
-                    <div className="text-xs text-gray-500 dark:text-[#94a3b8]">
-                      {user.role.description}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {getStatusBadge(user.status)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-[#94a3b8]">
-                    {formatLastLogin(user.lastLogin)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {user.twoFactorEnabled ? (
-                      <span className="inline-flex items-center text-green-600 dark:text-green-400">
-                        <Check className="w-4 h-4" />
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center text-gray-400">
-                        <X className="w-4 h-4" />
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                      <MoreVertical className="w-5 h-5" />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {filteredUsers.length === 0 && (
-          <div className="p-12 text-center">
-            <Users className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">
-              No users found
-            </h3>
-            <p className="mt-1 text-sm text-gray-500 dark:text-[#94a3b8]">
-              Try adjusting your search or filters.
-            </p>
-          </div>
-        )}
-      </div>
-    </>
-  )
-
-  const RolesView: React.FC<{ roles: typeof roles; users: typeof users }> = ({
-    roles,
-    users,
-  }) => (
-    <>
-      {/* Roles View */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {roles.map(role => (
-          <div
-            key={role.id}
-            className="border border-gray-200 dark:border-gray-700 rounded-lg p-6 bg-white dark:bg-gray-900"
-          >
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex items-center">
-                <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                  <Shield className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                </div>
-                <div className="ml-3">
-                  <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
-                    {role.name}
-                  </h3>
-                  {role.isCustom && (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-400 border border-purple-200 dark:border-purple-800 mt-1">
-                      Custom
-                    </span>
-                  )}
-                </div>
-              </div>
-              <button className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                <MoreVertical className="w-5 h-5" />
-              </button>
-            </div>
-
-            <p className="text-sm text-gray-500 dark:text-[#94a3b8] mb-4">
-              {role.description}
-            </p>
-
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-xs">
-                <span className="font-medium text-gray-700 dark:text-gray-300">
-                  Module
-                </span>
-                <div className="flex items-center space-x-2">
-                  <span className="text-gray-500 dark:text-[#94a3b8]">
-                    View
-                  </span>
-                  <span className="text-gray-500 dark:text-[#94a3b8]">
-                    Create
-                  </span>
-                  <span className="text-gray-500 dark:text-[#94a3b8]">
-                    Edit
-                  </span>
-                  <span className="text-gray-500 dark:text-[#94a3b8]">
-                    Delete
-                  </span>
-                </div>
-              </div>
-              <div className="max-h-48 overflow-y-auto space-y-2">
-                {role.permissions.map(permission => (
-                  <div
-                    key={permission.module}
-                    className="flex items-center justify-between text-xs py-1 border-b border-gray-100 dark:border-gray-800"
-                  >
-                    <span className="text-gray-700 dark:text-gray-300">
-                      {permission.module}
-                    </span>
-                    <div className="flex items-center space-x-2">
-                      <span className="w-12 text-center">
-                        {permission.view ? (
-                          <Check className="w-3 h-3 inline text-green-600 dark:text-green-400" />
-                        ) : (
-                          <X className="w-3 h-3 inline text-gray-300 dark:text-gray-600" />
-                        )}
-                      </span>
-                      <span className="w-12 text-center">
-                        {permission.create ? (
-                          <Check className="w-3 h-3 inline text-green-600 dark:text-green-400" />
-                        ) : (
-                          <X className="w-3 h-3 inline text-gray-300 dark:text-gray-600" />
-                        )}
-                      </span>
-                      <span className="w-12 text-center">
-                        {permission.edit ? (
-                          <Check className="w-3 h-3 inline text-green-600 dark:text-green-400" />
-                        ) : (
-                          <X className="w-3 h-3 inline text-gray-300 dark:text-gray-600" />
-                        )}
-                      </span>
-                      <span className="w-12 text-center">
-                        {permission.delete ? (
-                          <Check className="w-3 h-3 inline text-green-600 dark:text-green-400" />
-                        ) : (
-                          <X className="w-3 h-3 inline text-gray-300 dark:text-gray-600" />
-                        )}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-              <div className="flex items-center justify-between text-xs text-gray-500 dark:text-[#94a3b8]">
-                <span>
-                  {users.filter(u => u.role.id === role.id).length} users
-                  assigned
-                </span>
-                {!role.isCustom && (
-                  <span className="text-blue-600 dark:text-blue-400 hover:underline cursor-pointer">
-                    View details
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
-        ))}
-
-        {/* Create Custom Role Card */}
-        <button className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 hover:border-blue-400 dark:hover:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors flex flex-col items-center justify-center text-center min-h-[300px]">
-          <div className="w-12 h-12 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-3">
-            <Shield className="w-6 h-6 text-gray-400" />
-          </div>
-          <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-1">
-            Create Custom Role
-          </h3>
-          <p className="text-xs text-gray-500 dark:text-[#94a3b8]">
-            Define custom permissions for specific needs
-          </p>
-        </button>
-      </div>
-      {/* Security Settings */}
-      <div className="mt-8 border border-gray-200 dark:border-gray-700 rounded-lg p-6 bg-white dark:bg-gray-900">
-        <div className="flex items-center mb-4">
-          <Lock className="w-5 h-5 text-blue-600 mr-2" />
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-            Security Settings
-          </h3>
-        </div>
-
-        <div className="space-y-4">
-          <div className="flex items-center justify-between py-3 border-b border-gray-200 dark:border-gray-700">
-            <div>
-              <div className="text-sm font-medium text-gray-900 dark:text-white">
-                Require Two-Factor Authentication
-              </div>
-              <div className="text-xs text-gray-500 dark:text-[#94a3b8]">
-                Force all users to enable 2FA for enhanced security
-              </div>
-            </div>
-            <label
-              aria-label="Require Two-Factor Authentication"
-              className="relative inline-flex items-center cursor-pointer"
-            >
-              <input type="checkbox" className="sr-only peer" />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600" />
-            </label>
-          </div>
-
-          <div className="flex items-center justify-between py-3 border-b border-gray-200 dark:border-gray-700">
-            <div>
-              <div className="text-sm font-medium text-gray-900 dark:text-white">
-                Session Timeout
-              </div>
-              <div className="text-xs text-gray-500 dark:text-[#94a3b8]">
-                Automatically log out inactive users
-              </div>
-            </div>
-            <select className="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
-              <option>15 minutes</option>
-              <option>30 minutes</option>
-              <option>1 hour</option>
-              <option>2 hours</option>
-              <option>Never</option>
-            </select>
-          </div>
-
-          <div className="flex items-center justify-between py-3">
-            <div>
-              <div className="text-sm font-medium text-gray-900 dark:text-white">
-                IP Whitelisting
-              </div>
-              <div className="text-xs text-gray-500 dark:text-[#94a3b8]">
-                Restrict access to specific IP addresses
-              </div>
-            </div>
-            <button className="px-3 py-1.5 text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors">
-              Configure
-            </button>
-          </div>
-        </div>
-      </div>
-    </>
-  )
 
   return (
     <div className="p-6">
