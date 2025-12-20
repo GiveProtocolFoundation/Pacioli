@@ -344,6 +344,35 @@ const Balances: React.FC = () => {
             contentStyle={{ backgroundColor: '#1F2937' }}
             itemStyle={{ color: '#f9fafb' }}
             labelStyle={{ color: '#e5e7eb' }}
+  const BalancesHeader: React.FC<{ onConnect: () => void }> = ({ onConnect }) => (
+    <header className="bg-white dark:bg-black border-b border-gray-200 dark:border-gray-700">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
+              Wallet Balances
+            </h1>
+            <p className="text-sm text-gray-500 dark:text-[#94a3b8] mt-1">
+              Track your cryptocurrency holdings across all wallets
+            </p>
+          </div>
+          <div className="flex items-center space-x-3">
+            <button className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
+              Export Data
+            </button>
+            <button
+              onClick={onConnect}
+              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 flex items-center"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Connect Wallet
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+  )
+
           />
         </AreaChart>
       </ResponsiveContainer>
@@ -352,31 +381,7 @@ const Balances: React.FC = () => {
 
   return (
     <div className="min-h-screen ledger-background">
-      {/* Header */}
-      <header className="bg-white dark:bg-black border-b border-gray-200 dark:border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
-                Wallet Balances
-              </h1>
-              <p className="text-sm text-gray-500 dark:text-[#94a3b8] mt-1">
-                Track your cryptocurrency holdings across all wallets
-              </p>
-            </div>
-            <div className="flex items-center space-x-3">
-              <button className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
-                Export Data
-              </button>
-              <button
-                onClick={handleConnectWallet}
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 flex items-center"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Connect Wallet
-              </button>
-            </div>
-          </div>
+      <BalancesHeader onConnect={handleConnectWallet} />
         </div>
       </header>
 

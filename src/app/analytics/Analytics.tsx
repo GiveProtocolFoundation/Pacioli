@@ -166,6 +166,38 @@ const TimePeriodDropdown: React.FC<{
   )
 }
 
+const AnalyticsHeader: React.FC<{ timePeriods: { value: TimePeriod; label: string }[]; current: TimePeriod; show: boolean; onToggle: () => void; onSelect: (value: TimePeriod) => void; }> = ({ timePeriods, current, show, onToggle, onSelect }) => (
+  <header className="bg-white dark:bg-black border-b border-gray-200 dark:border-gray-700">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
+            Analytics
+          </h1>
+          <p className="text-sm text-gray-500 dark:text-[#94a3b8] mt-1">
+            Performance insights and data visualization
+          </p>
+        </div>
+        <div className="flex items-center space-x-3">
+          <TimePeriodDropdown
+            timePeriods={timePeriods}
+            current={current}
+            show={show}
+            onToggle={onToggle}
+            onSelect={onSelect}
+          />
+          <button className="p-2 text-gray-600 dark:text-[#94a3b8] hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg">
+            <RefreshCw className="w-5 h-5" />
+          </button>
+          <button className="p-2 text-gray-600 dark:text-[#94a3b8] hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg">
+            <Download className="w-5 h-5" />
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+)
+
 const Analytics: React.FC = () => {
   const [timePeriod, setTimePeriod] = useState<TimePeriod>('30d')
   const [showPeriodDropdown, setShowPeriodDropdown] = useState(false)
@@ -189,31 +221,19 @@ const Analytics: React.FC = () => {
 
   return (
     <div className="min-h-screen ledger-background">
-      {/* Header */}
-      <header className="bg-white dark:bg-black border-b border-gray-200 dark:border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
-                Analytics
-              </h1>
-              <p className="text-sm text-gray-500 dark:text-[#94a3b8] mt-1">
-                Performance insights and data visualization
-              </p>
-            </div>
-            <div className="flex items-center space-x-3">
-              <TimePeriodDropdown
-                timePeriods={timePeriods}
-                current={timePeriod}
-                show={showPeriodDropdown}
-                onToggle={handleTogglePeriodDropdown}
-                onSelect={handleSelectPeriod}
-              />
-              <button className="p-2 text-gray-600 dark:text-[#94a3b8] hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg">
-                <RefreshCw className="w-5 h-5" />
-              </button>
-              <button className="p-2 text-gray-600 dark:text-[#94a3b8] hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg">
-                <Download className="w-5 h-5" />
+      <AnalyticsHeader
+        timePeriods={timePeriods}
+        current={timePeriod}
+        show={showPeriodDropdown}
+        onToggle={handleTogglePeriodDropdown}
+        onSelect={handleSelectPeriod}
+      />
+      <button className="p-2 text-gray-600 dark:text-[#94a3b8] hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg">
+        <RefreshCw className="w-5 h-5" />
+      </button>
+      <button className="p-2 text-gray-600 dark:text-[#94a3b8] hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg">
+        <Download className="w-5 h-5" />
+      </button>
               </button>
               <button className="p-2 text-gray-600 dark:text-[#94a3b8] hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg">
                 <Settings className="w-5 h-5" />

@@ -195,7 +195,6 @@ const Settings: React.FC<SettingsProps> = ({ userType = 'organization' }) => {
     if (path === '/chart-of-accounts') return 'chart-of-accounts'
     return 'general'
   }, [location.pathname])
-
   const handleSectionChange = useCallback(
     (section: SettingsSection) => {
       const item = navigationItems.find(item => item.id === section)
@@ -219,6 +218,27 @@ const Settings: React.FC<SettingsProps> = ({ userType = 'organization' }) => {
     item => item.id === activeSection
   )?.component
 
+  const SettingsContent = () => (
+    <main className="flex-1 min-w-0">
+      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+        {ActiveComponent ? (
+          activeSection === 'general' ? (
+            <GeneralSettings userType={userType} />
+          ) : (
+            <ActiveComponent />
+          )
+        ) : (
+          <div className="p-12 text-center">
+            <SettingsIcon className="mx-auto h-12 w-12 text-gray-400" />
+            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">
+              Coming Soon
+            </h3>
+          </div>
+        )}
+      </div>
+    </main>
+  )
+
   return (
     <div className="min-h-screen ledger-background">
       <SettingsHeader />
@@ -232,20 +252,11 @@ const Settings: React.FC<SettingsProps> = ({ userType = 'organization' }) => {
             onSectionChange={handleSectionChange}
           />
 
-          {/* Content Area */}
-          <main className="flex-1 min-w-0">
-            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-              {ActiveComponent ? (
-                activeSection === 'general' ? (
-                  <GeneralSettings userType={userType} />
-                ) : (
-                  <ActiveComponent />
-                )
-              ) : (
-                <div className="p-12 text-center">
-                  <SettingsIcon className="mx-auto h-12 w-12 text-gray-400" />
-                  <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">
-                    Coming Soon
+          <SettingsContent />
+        </div>
+      </div>
+    </div>
+  )
                   </h3>
                   <p className="mt-1 text-sm text-gray-500 dark:text-[#94a3b8]">
                     This feature is under development.

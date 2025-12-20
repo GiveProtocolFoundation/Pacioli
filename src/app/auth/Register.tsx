@@ -166,30 +166,24 @@ const Register: React.FC = () => {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4 py-8">
       <div className="w-full max-w-md space-y-8">
-        {/* Header */}
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-foreground">
-            Create an account
-          </h1>
-          <p className="mt-2 text-muted-foreground">Get started with Pacioli</p>
-        </div>
+        <HeaderSection />
 
-        {/* Error Alert */}
-        {displayError && (
-          <div className="flex items-center gap-3 rounded-lg bg-destructive/10 p-4 text-destructive">
-            <AlertCircle className="h-5 w-5 flex-shrink-0" />
-            <p className="text-sm">{displayError}</p>
-          </div>
-        )}
+        {displayError && <ErrorAlert message={displayError} />}
 
-        {/* Register Form */}
-        <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Name Field */}
-          <div className="space-y-2">
-            <label
-              htmlFor="name"
-              className="block text-sm font-medium text-foreground"
-            >
+        <RegisterForm
+          handleSubmit={handleSubmit}
+          name={name}
+          setName={setName}
+          email={email}
+          setEmail={setEmail}
+          password={password}
+          setPassword={setPassword}
+          confirmPassword={confirmPassword}
+          setConfirmPassword={setConfirmPassword}
+        />
+      </div>
+    </div>
+  )
               Full name
             </label>
             <input
