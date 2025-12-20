@@ -163,11 +163,15 @@ const documentationStructure: DocSection[] = [
 ]
 
 const SectionItems: React.FC<{
-  items: { id: string; title: string; items?: { id: string; title: string }[] }[];
-  expandedItems: string[];
-  selectedDoc: string;
-  onItemClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
-  onSelectDoc: (e: React.MouseEvent<HTMLButtonElement>) => void;
+  items: {
+    id: string
+    title: string
+    items?: { id: string; title: string }[]
+  }[]
+  expandedItems: string[]
+  selectedDoc: string
+  onItemClick: (e: React.MouseEvent<HTMLButtonElement>) => void
+  onSelectDoc: (e: React.MouseEvent<HTMLButtonElement>) => void
 }> = ({ items, expandedItems, selectedDoc, onItemClick, onSelectDoc }) => (
   <div className="ml-6 mt-1 space-y-1">
     {items.map(item => {

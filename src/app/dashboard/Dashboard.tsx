@@ -46,7 +46,15 @@ const StatsCard: React.FC<{
   changeValue: string
   changeLabel?: string
   icon: React.ReactNode
-}> = ({ title, value, changeIcon, changeColor, changeValue, changeLabel, icon }) => (
+}> = ({
+  title,
+  value,
+  changeIcon,
+  changeColor,
+  changeValue,
+  changeLabel,
+  icon,
+}) => (
   <div className="ledger-card border border-gray-200 dark:border-gray-700 p-6">
     <div className="flex items-center justify-between">
       <div>
@@ -56,8 +64,12 @@ const StatsCard: React.FC<{
         </p>
         <div className="flex items-center mt-2">
           {changeIcon}
-          <span className={`text-sm font-medium ${changeColor}`}>{changeValue}</span>
-          {changeLabel && <span className="text-sm text-gray-500 ml-1">{changeLabel}</span>}
+          <span className={`text-sm font-medium ${changeColor}`}>
+            {changeValue}
+          </span>
+          {changeLabel && (
+            <span className="text-sm text-gray-500 ml-1">{changeLabel}</span>
+          )}
         </div>
       </div>
       <div className="stat-icon-container">{icon}</div>
@@ -189,19 +201,16 @@ const Dashboard: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
           <StatsCard
             title="Total Portfolio Value"
-            value={
-              formatCurrency(
-                totalPortfolioValue,
-                currencySettings.primaryCurrency,
-                {
-                  decimalPlaces: currencySettings.decimalPlaces,
-                  useThousandsSeparator:
-                    currencySettings.useThousandsSeparator,
-                  decimalSeparatorStandard:
-                    currencySettings.decimalSeparatorStandard,
-                }
-              )
-            }
+            value={formatCurrency(
+              totalPortfolioValue,
+              currencySettings.primaryCurrency,
+              {
+                decimalPlaces: currencySettings.decimalPlaces,
+                useThousandsSeparator: currencySettings.useThousandsSeparator,
+                decimalSeparatorStandard:
+                  currencySettings.decimalSeparatorStandard,
+              }
+            )}
             changeIcon={
               portfolioChange >= 0 ? (
                 <TrendingUp className="w-4 h-4 text-[#059669] dark:text-[#10b981] mr-1" />
@@ -220,15 +229,12 @@ const Dashboard: React.FC = () => {
           />
           <StatsCard
             title="Total Donations (YTD)"
-            value={
-              formatCurrency(425600, currencySettings.primaryCurrency, {
-                decimalPlaces: currencySettings.decimalPlaces,
-                useThousandsSeparator:
-                  currencySettings.useThousandsSeparator,
-                decimalSeparatorStandard:
-                  currencySettings.decimalSeparatorStandard,
-              })
-            }
+            value={formatCurrency(425600, currencySettings.primaryCurrency, {
+              decimalPlaces: currencySettings.decimalPlaces,
+              useThousandsSeparator: currencySettings.useThousandsSeparator,
+              decimalSeparatorStandard:
+                currencySettings.decimalSeparatorStandard,
+            })}
             changeIcon={
               <ArrowUpRight className="w-4 h-4 text-[#059669] dark:text-[#10b981] mr-1" />
             }
