@@ -178,9 +178,6 @@ const Analytics: React.FC = () => {
     { value: 'all', label: 'All time' },
   ]
 
-  const currentPeriodLabel =
-    timePeriods.find(p => p.value === timePeriod)?.label || 'Last 30 days'
-
   const handleTogglePeriodDropdown = useCallback(() => {
     setShowPeriodDropdown(!showPeriodDropdown)
   }, [showPeriodDropdown])

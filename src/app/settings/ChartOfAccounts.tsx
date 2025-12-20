@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react'
-import { Search, Plus, Edit2, Trash2, Save, X, AlertCircle } from 'lucide-react'
+import { Search, Plus, AlertCircle } from 'lucide-react'
 import {
   getChartOfAccountsTemplate,
   groupAccountsByType,
