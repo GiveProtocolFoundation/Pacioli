@@ -474,6 +474,17 @@ const Entities: React.FC = () => {
                           ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
                           : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
                       }`}
+            {filteredEntities.map((entity) => {
+              const onToggleActiveClick = React.useCallback(
+                () => handleToggleActive(entity.id),
+                [handleToggleActive, entity.id]
+              );
+              return (
+                <tr key={entity.id}>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span
+                      className="cursor-pointer inline-flex px-2 text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100"
+                      onClick={onToggleActiveClick}
                     >
                       {entity.is_active ? 'Active' : 'Inactive'}
                     </span>
@@ -482,38 +493,39 @@ const Entities: React.FC = () => {
                     <ActionsMenu entity={entity} />
                   </td>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      {/* Summary */}
-      <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
-        <span>
-          Showing {filteredEntities.length} of {entities.length} entities
-        </span>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
+    )}
 
-      {/* Entity Form Modal */}
-      {isFormOpen && (
-        <EntityForm
-          entity={editingEntity}
-          onClose={handleFormClose}
-          onSuccess={handleFormSuccess}
-        />
-      )}
-
-      {/* Delete Confirmation Modal */}
-      {confirmDeleteId && (
-        <DeleteConfirmModal
-          isDeleting={deletingId !== null}
-          onCancel={handleDeleteCancel}
-          onConfirm={handleDeleteConfirm}
-        />
-      )}
+    {/* Summary */}
+    <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
+      <span>
+        Showing {filteredEntities.length} of {entities.length} entities
+      </span>
     </div>
-  )
+
+    {/* Entity Form Modal */}
+    {isFormOpen && (
+      <EntityForm
+        entity={editingEntity}
+        onClose={handleFormClose}
+        onSuccess={handleFormSuccess}
+      />
+    )}
+
+    {/* Delete Confirmation Modal */}
+    {confirmDeleteId && (
+      <DeleteConfirmModal
+        isDeleting={deletingId !== null}
+        onCancel={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+      />
+    )}
+  </div>
+)
 }
 
 export default Entities
