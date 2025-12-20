@@ -1,33 +1,9 @@
-import React, { useState, useMemo, useCallback } from 'react'
+import React, { useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import {
-  Wallet,
-  TrendingUp,
-  TrendingDown,
-  ExternalLink,
-  Plus,
-} from 'lucide-react'
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
-} from 'recharts'
-import {
-  format,
-  subDays,
-  subMonths,
-  startOfMonth,
-  endOfMonth,
-  startOfYear,
-  subYears,
-} from 'date-fns'
+import { Plus } from 'lucide-react'
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
+import { format, subDays, subMonths, startOfMonth, endOfMonth, startOfYear, subYears } from 'date-fns'
 import { useTheme } from '../../contexts/ThemeContext'
-import { getCryptoLogoPath, getCryptoBrandColor } from '../../utils/cryptoLogos'
 
 interface WalletBalance {
   id: string
@@ -60,7 +36,7 @@ type TimePeriod =
 
 const Balances: React.FC = () => {
   const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>('30_days')
-  const { theme } = useTheme()
+  const { theme: _theme } = useTheme()
   const navigate = useNavigate()
 
   const handleConnectWallet = useCallback(() => {
@@ -251,28 +227,6 @@ const Balances: React.FC = () => {
     0
   )
 
-  const totalBalancesByCurrency = useMemo(() => {
-    const balances: {
-      [crypto: string]: { amount: number; usdValue: number; change24h: number }
-    } = {}
-
-    wallets.forEach(wallet => {
-      Object.entries(wallet.balances).forEach(([crypto, balance]) => {
-        if (!balances[crypto]) {
-          balances[crypto] = {
-            amount: 0,
-            usdValue: 0,
-            change24h: balance.change24h,
-          }
-        }
-        balances[crypto].amount += balance.amount
-        balances[crypto].usdValue += balance.usdValue
-      })
-    })
-
-    return balances
-  }, [wallets])
-
   const currencyColors: { [key: string]: string } = {
     DOT: '#E6007A', // Polkadot pink
     KSM: '#000000', // Kusama black
@@ -297,10 +251,6 @@ const Balances: React.FC = () => {
     (value: number) => `$${(value / 1000).toFixed(0)}k`,
     []
   )
-
-  const truncateAddress = useCallback((address: string) => {
-    return `${address.slice(0, 6)}...${address.slice(-4)}`
-  }, [])
 
   const handlePeriodChange = useCallback(
     (event: React.MouseEvent<HTMLButtonElement>) => {

@@ -63,7 +63,7 @@ interface SelectionButtonProps<T> {
   value: T
 }
 
-function SelectionButton<T>({
+function _SelectionButton<T>({
   icon: Icon,
   title,
   description,

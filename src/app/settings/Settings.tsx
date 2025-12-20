@@ -215,13 +215,6 @@ const Settings: React.FC<SettingsProps> = ({ userType = 'organization' }) => {
     [navigate]
   )
 
-  const createSectionHandler = useCallback(
-    (section: SettingsSection) => {
-      return () => handleSectionChange(section)
-    },
-    [handleSectionChange]
-  )
-
   const ActiveComponent = navigationItems.find(
     item => item.id === activeSection
   )?.component
