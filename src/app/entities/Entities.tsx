@@ -33,11 +33,11 @@ const entityTypeIcons: Record<EntityType, React.ReactNode> = {
   other: <Building2 className="w-4 h-4" />,
 }
 
-// Extracted EntityNameCell to reduce JSX nesting depth
 interface EntityNameCellProps {
   entity: Entity
 }
 
+/** Renders entity name with icon and display name in a table cell */
 const EntityNameCell: React.FC<EntityNameCellProps> = ({ entity }) => (
   <div className="flex items-center">
     <div className="flex-shrink-0 h-10 w-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
@@ -56,12 +56,12 @@ const EntityNameCell: React.FC<EntityNameCellProps> = ({ entity }) => (
   </div>
 )
 
-// Extracted EntityContactCell to reduce JSX nesting depth
 interface EntityContactCellProps {
   email: string | undefined
   website: string | undefined
 }
 
+/** Renders entity contact information with email and website link */
 const EntityContactCell: React.FC<EntityContactCellProps> = ({
   email,
   website,
@@ -81,12 +81,12 @@ const EntityContactCell: React.FC<EntityContactCellProps> = ({
   </>
 )
 
-// Extracted EntityRow to reduce JSX nesting depth in table
 interface EntityRowProps {
   entity: Entity
   actionsMenu: React.ReactNode
 }
 
+/** Renders a single entity row in the entities table */
 const EntityRow: React.FC<EntityRowProps> = ({ entity, actionsMenu }) => (
   <tr
     className={`hover:bg-gray-50 dark:hover:bg-gray-700 ${
@@ -124,12 +124,36 @@ const EntityRow: React.FC<EntityRowProps> = ({ entity, actionsMenu }) => (
   </tr>
 )
 
-// Extracted EntitiesTable to reduce JSX nesting depth
+/** Table header row for the entities table */
+const EntitiesTableHeader: React.FC = () => (
+  <tr>
+    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+      Name
+    </th>
+    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+      Type
+    </th>
+    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+      Category
+    </th>
+    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+      Contact
+    </th>
+    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+      Status
+    </th>
+    <th className="relative px-6 py-3">
+      <span className="sr-only">Actions</span>
+    </th>
+  </tr>
+)
+
 interface EntitiesTableProps {
   entities: Entity[]
   renderActionsMenu: (entity: Entity) => React.ReactNode
 }
 
+/** Displays a table of entities with sortable columns and action menus */
 const EntitiesTable: React.FC<EntitiesTableProps> = ({
   entities,
   renderActionsMenu,
@@ -137,26 +161,7 @@ const EntitiesTable: React.FC<EntitiesTableProps> = ({
   <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
     <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
       <thead className="bg-gray-50 dark:bg-gray-900">
-        <tr>
-          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-            Name
-          </th>
-          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-            Type
-          </th>
-          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-            Category
-          </th>
-          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-            Contact
-          </th>
-          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-            Status
-          </th>
-          <th className="relative px-6 py-3">
-            <span className="sr-only">Actions</span>
-          </th>
-        </tr>
+        <EntitiesTableHeader />
       </thead>
       <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
         {entities.map(entity => (
@@ -424,6 +429,11 @@ const Entities: React.FC = () => {
     </div>
   )
 
+  const renderActionsMenu = useCallback(
+    (entity: Entity) => <ActionsMenu entity={entity} />,
+    [getMenuToggleHandler, menuOpenId, getEntityEditHandler, getEntityDeleteClickHandler, deletingId]
+  )
+
   if (!currentProfile) {
     return (
       <div className="p-6">
@@ -536,7 +546,7 @@ const Entities: React.FC = () => {
       ) : (
         <EntitiesTable
           entities={filteredEntities}
-          renderActionsMenu={entity => <ActionsMenu entity={entity} />}
+          renderActionsMenu={renderActionsMenu}
         />
       )}
 
