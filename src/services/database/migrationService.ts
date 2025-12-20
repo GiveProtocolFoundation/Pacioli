@@ -18,7 +18,7 @@ class MigrationService {
   /**
    * Check if migration has been completed
    */
-  static async hasMigrated(): Promise<boolean> {
+  async hasMigrated(): Promise<boolean> {
     const migrationFlag = await indexedDBService.getMetadata<boolean>(
       'migration_completed'
     )
@@ -28,7 +28,7 @@ class MigrationService {
   /**
    * Mark migration as completed
    */
-  private static async setMigrationCompleted(): Promise<void> {
+  private async setMigrationCompleted(): Promise<void> {
     await indexedDBService.setMetadata('migration_completed', true)
     await indexedDBService.setMetadata(
       'migration_date',
@@ -161,7 +161,7 @@ class MigrationService {
     const lsWallets = storageService.loadWallets().length
     const lsTransactions = storageService.loadTransactions()
     const lsTxCount = Object.values(lsTransactions).reduce(
-      (sum, txs) => sum + txs.length,
+      (sum: number, txs: unknown[]) => sum + txs.length,
       0
     )
     const lsSyncStatuses = Object.keys(

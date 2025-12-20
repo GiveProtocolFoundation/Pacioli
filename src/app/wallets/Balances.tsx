@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Plus } from 'lucide-react'
 import {
@@ -311,7 +311,7 @@ const Balances: React.FC = () => {
     formatYAxisTick,
     formatCurrency,
   }: {
-    chartData: { date: string; [key: string]: number }[]
+    chartData: { date: string; [key: string]: string | number }[]
     currencyColors: { [key: string]: string }
     formatYAxisTick: (value: number) => string
     formatCurrency: (value: number) => string

@@ -17,6 +17,11 @@ import {
   type WalletAccount,
 } from '../../services/wallet/types'
 import { useWalletAliases } from '../../contexts/WalletAliasContext'
+
+interface WalletConnectorProps {
+  onWalletsChange?: (wallets: ConnectedWallet[]) => void
+}
+
 // Memoized account row component to prevent unnecessary re-renders
 interface AccountRowProps {
   account: WalletAccount

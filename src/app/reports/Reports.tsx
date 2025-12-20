@@ -20,6 +20,17 @@ import {
   Plus,
 } from 'lucide-react'
 
+const formatDate = (dateString: string): string => {
+  const date = new Date(dateString)
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
 interface Report {
   id: string
   name: string
@@ -285,11 +296,11 @@ const ReportInfo = ({
 }: {
   report: {
     name: string
-    favorite: boolean
+    favorite?: boolean
     description: string
-    lastRun: string | null
+    lastRun?: string | null
   }
-  Icon: React.ComponentType<{ className?: string }>
+  Icon: React.ElementType
 }) => (
   <div className="flex items-start flex-1">
     <div className="report-icon-container flex-shrink-0">

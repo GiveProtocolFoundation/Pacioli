@@ -130,7 +130,7 @@ class SubscanService {
           page,
           address,
         }
-      ).catch(err => {
+      ).catch((err: Error) => {
         // Enhance error message for CORS issues
         if (err instanceof TypeError && err.message.includes('NetworkError')) {
           console.error(
@@ -410,7 +410,7 @@ class SubscanService {
   /**
    * Make HTTP request to Subscan API
    */
-  private static async makeRequest<T>(
+  private async makeRequest<T>(
     config: SubscanConfig,
     endpoint: string,
     body: Record<string, unknown>
@@ -638,7 +638,7 @@ class SubscanService {
   /**
    * Detect action type using heuristics when explicit data is missing
    */
-  private static detectActionHeuristic(transfer: SubscanTransfer): {
+  private detectActionHeuristic(transfer: SubscanTransfer): {
     method: string
     section: string
     type: SubstrateTransaction['type']
@@ -685,7 +685,7 @@ class SubscanService {
   /**
    * Classify extrinsic type based on module and function
    */
-  private static classifyExtrinsicType(
+  private classifyExtrinsicType(
     module: string,
     _method: string
   ): SubstrateTransaction['type'] {

@@ -57,8 +57,8 @@ const EntityNameCell: React.FC<EntityNameCellProps> = ({ entity }) => (
 )
 
 interface EntityContactCellProps {
-  email: string | undefined
-  website: string | undefined
+  email: string | null | undefined
+  website: string | null | undefined
 }
 
 /** Renders entity contact information with email and website link */

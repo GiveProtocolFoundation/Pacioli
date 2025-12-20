@@ -82,7 +82,7 @@ class MoonscanService {
   }
 
   // API key can be set via environment variable or localStorage
-  private static getApiKey(): string | null {
+  private getApiKey(): string | null {
     // Check localStorage first (user-configured)
     const storedKey = localStorage.getItem('etherscan_api_key')
     if (storedKey) return storedKey
@@ -344,7 +344,7 @@ class MoonscanService {
   /**
    * Map Moonscan transaction to SubstrateTransaction format
    */
-  private static mapToSubstrateTransaction(
+  private mapToSubstrateTransaction(
     tx: MoonscanTransaction,
     network: NetworkType,
     _userAddress: string
@@ -389,7 +389,7 @@ class MoonscanService {
   /**
    * Map token transfer to SubstrateTransaction format
    */
-  private static mapTokenTransferToSubstrateTransaction(
+  private mapTokenTransferToSubstrateTransaction(
     tx: MoonscanTokenTransfer,
     network: NetworkType,
     _userAddress: string

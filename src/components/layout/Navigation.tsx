@@ -169,7 +169,7 @@ const Navigation: React.FC<NavigationProps> = ({
 
   // Extracted sub-navigation items into a separate component
   const SubNavItems: React.FC<{
-    subItems: NavItem[]
+    subItems: { name: string; href: string }[]
     expandedItems: string[]
     location: ReturnType<typeof useLocation>
     onLinkClick?: () => void

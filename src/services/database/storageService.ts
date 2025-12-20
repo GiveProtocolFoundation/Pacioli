@@ -24,7 +24,7 @@ class StorageService {
   /**
    * Save connected wallets
    */
-  static saveWallets(wallets: ConnectedWallet[]): void {
+  saveWallets(wallets: ConnectedWallet[]): void {
     try {
       localStorage.setItem(STORAGE_KEYS.WALLETS, JSON.stringify(wallets))
     } catch (error) {
@@ -35,7 +35,7 @@ class StorageService {
   /**
    * Load connected wallets
    */
-  static loadWallets(): ConnectedWallet[] {
+  loadWallets(): ConnectedWallet[] {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.WALLETS)
       return data ? JSON.parse(data) : []
@@ -48,7 +48,7 @@ class StorageService {
   /**
    * Clear saved wallets
    */
-  static clearWallets(): void {
+  clearWallets(): void {
     localStorage.removeItem(STORAGE_KEYS.WALLETS)
   }
 
@@ -68,11 +68,11 @@ class StorageService {
 
       // Deduplicate by ID
       allTransactions[key] = Array.from(
-        new Map(allTransactions[key].map(tx => [tx.id, tx])).values()
+        new Map(allTransactions[key].map((tx: Transaction) => [tx.id, tx])).values()
       )
 
       // Sort by block number (newest first)
-      allTransactions[key].sort((a, b) => b.blockNumber - a.blockNumber)
+      allTransactions[key].sort((a: Transaction, b: Transaction) => b.blockNumber - a.blockNumber)
 
       localStorage.setItem(
         STORAGE_KEYS.TRANSACTIONS,
@@ -86,7 +86,7 @@ class StorageService {
   /**
    * Load all transactions
    */
-  static loadTransactions(): Record<string, Transaction[]> {
+  loadTransactions(): Record<string, Transaction[]> {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.TRANSACTIONS)
       return data ? JSON.parse(data) : {}
@@ -108,7 +108,7 @@ class StorageService {
   /**
    * Clear all transactions
    */
-  static clearTransactions(): void {
+  clearTransactions(): void {
     localStorage.removeItem(STORAGE_KEYS.TRANSACTIONS)
   }
 
@@ -143,7 +143,7 @@ class StorageService {
   /**
    * Load all sync statuses
    */
-  static loadAllSyncStatus(): Record<string, SyncStatus> {
+  loadAllSyncStatus(): Record<string, SyncStatus> {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.SYNC_STATUS)
       return data ? JSON.parse(data) : {}

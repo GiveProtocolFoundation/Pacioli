@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Globe, Building2, User, Check, LucideIcon } from 'lucide-react'
+import { Globe, Building2, User, Check } from 'lucide-react'
 import PacioliBlackLogo from '../../assets/Pacioli_logo_black.svg'
 import { GridSelectionButton } from '../../components/GridSelectionButton'
 
@@ -53,63 +53,6 @@ const ProgressConnector: React.FC<ProgressConnectorProps> = ({
   </div>
 )
 
-interface SelectionButtonProps<T> {
-  icon: LucideIcon
-  title: string
-  description: string
-  subtitle: string
-  isSelected: boolean
-  onClick: () => void
-  value: T
-}
-
-function _SelectionButton<T>({
-  icon: Icon,
-  title,
-  description,
-  subtitle,
-  isSelected,
-  onClick,
-}: SelectionButtonProps<T>) {
-  const getButtonClassName = () => {
-    return isSelected
-      ? 'border-blue-600 bg-blue-50 shadow-md'
-      : 'border-gray-200 hover:border-gray-300'
-  }
-
-  const getIconContainerClassName = () => {
-    return isSelected ? 'bg-blue-600' : 'bg-gray-100'
-  }
-
-  const getIconClassName = () => {
-    return isSelected ? 'text-white' : 'text-gray-600'
-  }
-
-  return (
-    <button
-      onClick={onClick}
-      className={`p-6 border-2 rounded-xl transition-all hover:shadow-lg ${getButtonClassName()}`}
-    >
-      <div className="flex items-start space-x-4">
-        <div
-          className={`w-12 h-12 rounded-lg flex items-center justify-center ${getIconContainerClassName()}`}
-        >
-          <Icon className={`w-6 h-6 ${getIconClassName()}`} />
-        </div>
-        <div className="flex-1 text-left">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">{title}</h3>
-          <p className="text-sm text-gray-600">{description}</p>
-          <p className="text-xs text-gray-500 mt-2">{subtitle}</p>
-        </div>
-        {isSelected && (
-          <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center shrink-0">
-            <Check className="w-4 h-4 text-white" />
-          </div>
-        )}
-      </div>
-    </button>
-  )
-}
 
 const Onboarding: React.FC = () => {
   const navigate = useNavigate()

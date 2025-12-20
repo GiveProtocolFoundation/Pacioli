@@ -386,7 +386,7 @@ class IndexedDBService {
     const statuses = await this.getAllFromStore<SyncStatus>(store)
 
     const record: Record<string, SyncStatus> = {}
-    statuses.forEach(status => {
+    statuses.forEach((status: SyncStatus) => {
       const key = `${status.network}:${status.address}`
       record[key] = status
     })
@@ -429,7 +429,7 @@ class IndexedDBService {
   /**
    * Get all items from a store
    */
-  private static async getAllFromStore<T>(store: IDBObjectStore): Promise<T[]> {
+  private async getAllFromStore<T>(store: IDBObjectStore): Promise<T[]> {
     return new Promise((resolve, reject) => {
       const request = store.getAll()
       request.onsuccess = () => resolve(request.result)
@@ -440,7 +440,7 @@ class IndexedDBService {
   /**
    * Get items from an index with a range
    */
-  private static async getFromIndex<T>(
+  private async getFromIndex<T>(
     index: IDBIndex,
     range?: IDBKeyRange
   ): Promise<T[]> {
@@ -454,7 +454,7 @@ class IndexedDBService {
   /**
    * Promisify an IDBRequest
    */
-  private static promisifyRequest<T>(request: IDBRequest<T>): Promise<T> {
+  private promisifyRequest<T>(request: IDBRequest<T>): Promise<T> {
     return new Promise((resolve, reject) => {
       request.onsuccess = () => resolve(request.result)
       request.onerror = () => reject(request.error)
