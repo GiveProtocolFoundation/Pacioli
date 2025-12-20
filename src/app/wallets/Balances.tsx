@@ -1,8 +1,23 @@
 import React, { useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Plus } from 'lucide-react'
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
-import { format, subDays, subMonths, startOfMonth, endOfMonth, startOfYear, subYears } from 'date-fns'
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts'
+import {
+  format,
+  subDays,
+  subMonths,
+  startOfMonth,
+  endOfMonth,
+  startOfYear,
+  subYears,
+} from 'date-fns'
 import { useTheme } from '../../contexts/ThemeContext'
 
 interface WalletBalance {
