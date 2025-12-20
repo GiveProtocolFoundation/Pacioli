@@ -223,6 +223,13 @@ const Profile: React.FC = () => {
     </>
   )
 
+  /**
+   * Component that renders the work information section of the user profile form.
+   * @param {Object} props - Component props.
+   * @param {UserProfile} props.profile - The user's profile data.
+   * @param {(key: keyof UserProfile) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void} props.createProfileInputHandler - Function to create input change handlers for profile fields.
+   * @returns {JSX.Element} The work information form section.
+   */
   const WorkInfo: React.FC<{
     profile: UserProfile
     createProfileInputHandler: (

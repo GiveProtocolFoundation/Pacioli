@@ -234,48 +234,60 @@ const recentRuns: RecentRun[] = [
   },
 ]
 
-const SearchInput: React.FC<{
-  searchQuery: string
-  onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void
-}> = ({ searchQuery, onSearchChange }) => (
-  <div className="relative flex-1">
-    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-    <input
-      type="text"
-      placeholder="Search reports..."
-      value={searchQuery}
-      onChange={onSearchChange}
-      className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-    />
-  </div>
-)
+  /**
+   * SearchInput component that renders a search input field.
+   * @param {string} searchQuery - Current search query string.
+   * @param {(e: React.ChangeEvent<HTMLInputElement>) => void} onSearchChange - Callback for search input change.
+   * @returns {JSX.Element} The rendered SearchInput component.
+   */
+  const SearchInput: React.FC<{
+    searchQuery: string
+    onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  }> = ({ searchQuery, onSearchChange }) => (
+    <div className="relative flex-1">
+      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+      <input
+        type="text"
+        placeholder="Search reports..."
+        value={searchQuery}
+        onChange={onSearchChange}
+        className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+    </div>
+  )
 
-const FavoritesToggle: React.FC<{
-  showFavoritesOnly: boolean
-  onToggle: () => void
-}> = ({ showFavoritesOnly, onToggle }) => (
-  <button
-    onClick={onToggle}
-    className={`px-4 py-2 rounded-lg border flex items-center justify-center transition-colors ${
-      showFavoritesOnly
-        ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
-        : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
-    }`}
-  >
-    <Star className="w-4 h-4 mr-2" />
-    Favorites
-  </button>
-)
+  /**
+   * FavoritesToggle component that renders a toggle button for favorite reports.
+   * @param {boolean} showFavoritesOnly - Whether to show only favorite reports.
+   * @param {() => void} onToggle - Callback to toggle favorites filter.
+   * @returns {JSX.Element} The rendered FavoritesToggle component.
+   */
+  const FavoritesToggle: React.FC<{
+    showFavoritesOnly: boolean
+    onToggle: () => void
+  }> = ({ showFavoritesOnly, onToggle }) => (
+    <button
+      onClick={onToggle}
+      className={`px-4 py-2 rounded-lg border flex items-center justify-center transition-colors ${
+        showFavoritesOnly
+          ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
+          : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
+      }`}
+    >
+      <Star className="w-4 h-4 mr-2" />
+      Favorites
+    </button>
+  )
 
-const ReportInfo = ({
-  report,
-  Icon,
-}: {
-  report: {
-    name: string
-    favorite: boolean
-    description: string
-    lastRun: string | null
+  const ReportInfo = ({
+    report,
+    Icon,
+  }: {
+    report: {
+      name: string
+      favorite: boolean
+      description: string
+      lastRun: string | null
   }
   Icon: React.ComponentType<{ className?: string }>
 }) => (

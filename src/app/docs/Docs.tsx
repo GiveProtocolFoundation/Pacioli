@@ -162,6 +162,15 @@ const documentationStructure: DocSection[] = [
   },
 ]
 
+/**
+ * Renders a list of section items with support for expandable sub-items and document selection.
+ * @param items - Array of section items to display; each item includes an id, title, and optional sub-items.
+ * @param expandedItems - List of item ids that are currently expanded.
+ * @param selectedDoc - The id of the currently selected document item.
+ * @param onItemClick - Event handler called when a section item is clicked.
+ * @param onSelectDoc - Event handler called when a documentation item is selected.
+ * @returns A React element representing the section items.
+ */
 const SectionItems: React.FC<{
   items: {
     id: string
@@ -187,7 +196,7 @@ const SectionItems: React.FC<{
             onClick={onItemClick}
             className={`w-full flex items-center justify-between px-3 py-1.5 text-sm rounded transition-colors text-left ${
               isSelected
-                ? 'bg-[#007AFF]/10 dark:bg-[#66B3FF]/20 text-[#007AFF] dark:text-[#66B3FF] font-medium'
+                ? 'bg-[#007AFF]/10 dark:bg-[#66B3FF]/20 text-[#007AFF] dark:text-[#66B3FF] font-medium'`,
                 : 'text-gray-600 dark:text-[#94a3b8] hover:bg-gray-50 dark:hover:bg-gray-800'
             }`}
           >

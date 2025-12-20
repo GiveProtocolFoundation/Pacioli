@@ -179,6 +179,24 @@ const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
     []
   )
 
+  /**
+   * AccountsTable component renders a table displaying the filtered accounts,
+   * allows editing, saving, canceling, editing creation, and deletion of accounts.
+   *
+   * @param filteredAccounts - Array of accounts filtered based on search or criteria.
+   * @param editingAccount - The account currently being edited or null if none.
+   * @param isAddingNew - Flag indicating if a new account row is being added.
+   * @param handleEditingCodeChange - Callback for handling changes to the account code input.
+   * @param handleEditingNameChange - Callback for handling changes to the account name input.
+   * @param handleEditingTypeChange - Callback for handling changes to the account type select.
+   * @param handleEditingDescriptionChange - Callback for handling changes to the account description input.
+   * @param createEditHandler - Function that returns an edit handler for a given account.
+   * @param createDeleteHandler - Function that returns a delete handler for a given account code.
+   * @param handleSave - Callback invoked when saving changes.
+   * @param handleCancel - Callback invoked when canceling edits.
+   * @param canEdit - Boolean indicating whether editing is permitted.
+   * @returns JSX.Element - The rendered table element.
+   */
   const AccountsTable: React.FC<{
     filteredAccounts: typeof filteredAccounts
     editingAccount: typeof editingAccount
