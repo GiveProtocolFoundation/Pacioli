@@ -346,7 +346,7 @@ const Balances: React.FC = () => {
     formatYAxisTick,
     formatCurrency,
   }: {
-    chartData: any
+    chartData: { date: string; [key: string]: number }[]
     currencyColors: { [key: string]: string }
     formatYAxisTick: (value: number) => string
     formatCurrency: (value: number) => string
