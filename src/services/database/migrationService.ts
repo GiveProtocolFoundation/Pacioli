@@ -3,7 +3,7 @@
  * Migrates data from localStorage to IndexedDB
  */
 
-import { storageService } from './storageService'
+import { storageService, StorageService } from './storageService'
 import { indexedDBService } from './indexedDBService'
 
 export interface MigrationResult {
@@ -14,11 +14,11 @@ export interface MigrationResult {
   errors: string[]
 }
 
-class MigrationService {
+export class MigrationService {
   /**
    * Check if migration has been completed
    */
-  async hasMigrated(): Promise<boolean> {
+  static async hasMigrated(): Promise<boolean> {
     const migrationFlag = await indexedDBService.getMetadata<boolean>(
       'migration_completed'
     )
@@ -28,7 +28,7 @@ class MigrationService {
   /**
    * Mark migration as completed
    */
-  private async setMigrationCompleted(): Promise<void> {
+  private static async setMigrationCompleted(): Promise<void> {
     await indexedDBService.setMetadata('migration_completed', true)
     await indexedDBService.setMetadata(
       'migration_date',
@@ -53,14 +53,14 @@ class MigrationService {
       await indexedDBService.init()
 
       // Check if already migrated
-      if (await this.hasMigrated()) {
+      if (await MigrationService.hasMigrated()) {
         result.success = true
         return result
       }
 
       // Migrate wallets
       try {
-        const wallets = storageService.loadWallets()
+        const wallets = StorageService.loadWallets()
         if (wallets.length > 0) {
           await indexedDBService.saveWallets(wallets)
           result.walletsMigrated = wallets.length
@@ -73,7 +73,7 @@ class MigrationService {
 
       // Migrate transactions
       try {
-        const allTransactions = storageService.loadTransactions()
+        const allTransactions = StorageService.loadTransactions()
         const transactionKeys = Object.keys(allTransactions)
 
         for (const key of transactionKeys) {
@@ -97,7 +97,7 @@ class MigrationService {
 
       // Migrate sync status
       try {
-        const allSyncStatus = storageService.loadAllSyncStatus()
+        const allSyncStatus = StorageService.loadAllSyncStatus()
         const statusKeys = Object.keys(allSyncStatus)
 
         for (const key of statusKeys) {
@@ -114,7 +114,7 @@ class MigrationService {
       }
 
       // Mark migration as complete
-      await this.setMigrationCompleted()
+      await MigrationService.setMigrationCompleted()
 
       result.success = result.errors.length === 0
 
@@ -131,7 +131,7 @@ class MigrationService {
    * (Only call this after verifying IndexedDB data is correct)
    */
   async clearLocalStorage(): Promise<void> {
-    if (await this.hasMigrated()) {
+    if (await MigrationService.hasMigrated()) {
       storageService.clearAll()
     }
   }
@@ -153,19 +153,19 @@ class MigrationService {
       syncStatuses: number
     }
   }> {
-    const migrated = await this.hasMigrated()
+    const migrated = await MigrationService.hasMigrated()
     const migrationDate =
       await indexedDBService.getMetadata<string>('migration_date')
 
     // Count localStorage data
-    const lsWallets = storageService.loadWallets().length
-    const lsTransactions = storageService.loadTransactions()
+    const lsWallets = StorageService.loadWallets().length
+    const lsTransactions = StorageService.loadTransactions()
     const lsTxCount = Object.values(lsTransactions).reduce(
       (sum: number, txs: unknown[]) => sum + txs.length,
       0
     )
     const lsSyncStatuses = Object.keys(
-      storageService.loadAllSyncStatus()
+      StorageService.loadAllSyncStatus()
     ).length
 
     // Count IndexedDB data

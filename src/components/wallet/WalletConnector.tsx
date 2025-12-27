@@ -9,7 +9,7 @@ import {
   Save,
 } from 'lucide-react'
 import { walletService } from '../../services/wallet/walletService'
-import { storageService } from '../../services/database/storageService'
+import { StorageService } from '../../services/database/storageService'
 import {
   WalletType,
   type ConnectedWallet,
@@ -292,7 +292,7 @@ export const WalletConnector: React.FC<WalletConnectorProps> = ({
   }, [])
 
   const loadSavedWallets = useCallback(() => {
-    const saved = storageService.loadWallets()
+    const saved = StorageService.loadWallets()
     if (saved.length > 0) {
       setConnectedWallets(saved)
     }
@@ -327,7 +327,7 @@ export const WalletConnector: React.FC<WalletConnectorProps> = ({
 
         const updated = [...connectedWallets, wallet]
         setConnectedWallets(updated)
-        storageService.saveWallets(updated)
+        StorageService.saveWallets(updated)
 
         // Update wallet status
         if (walletStatus) {
@@ -357,7 +357,7 @@ export const WalletConnector: React.FC<WalletConnectorProps> = ({
         await walletService.disconnectWallet(walletType)
         const updated = connectedWallets.filter(w => w.type !== walletType)
         setConnectedWallets(updated)
-        storageService.saveWallets(updated)
+        StorageService.saveWallets(updated)
 
         // Update wallet status
         if (walletStatus) {

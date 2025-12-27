@@ -740,7 +740,7 @@ class PolkadotService {
 
           // Determine value and transaction type
           let value = transferData?.amount || '0'
-          let transactionType = this.classifyTransactionType(section, method)
+          let transactionType = PolkadotService.classifyTransactionType(section, method)
           let from = transferData?.from || signerAddress || ''
           let to = transferData?.to || ''
 
@@ -840,7 +840,7 @@ class PolkadotService {
   /**
    * Classify transaction type based on method and section
    */
-  private classifyTransactionType(
+  private static classifyTransactionType(
     section: string,
     method: string
   ): SubstrateTransaction['type'] {

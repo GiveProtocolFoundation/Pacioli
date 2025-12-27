@@ -122,7 +122,7 @@ class SubscanService {
     try {
       // Fetch transfers (sent + received)
       // Use correct Subscan API v2 endpoint
-      const response = await this.makeRequest<SubscanResponse<SubscanTransfer>>(
+      const response = await SubscanService.makeRequest<SubscanResponse<SubscanTransfer>>(
         config,
         '/api/v2/scan/transfers',
         {
@@ -197,7 +197,7 @@ class SubscanService {
     const transactions: SubstrateTransaction[] = []
 
     try {
-      const response = await this.makeRequest<SubscanResponse<SubscanReward>>(
+      const response = await SubscanService.makeRequest<SubscanResponse<SubscanReward>>(
         config,
         '/api/scan/account/reward_slash',
         {
@@ -258,7 +258,7 @@ class SubscanService {
     const transactions: SubstrateTransaction[] = []
 
     try {
-      const response = await this.makeRequest<
+      const response = await SubscanService.makeRequest<
         SubscanResponse<SubscanExtrinsic>
       >(config, '/api/scan/extrinsics', {
         address,
@@ -268,7 +268,7 @@ class SubscanService {
 
       if (response.code === 0 && response.data.list) {
         for (const extrinsic of response.data.list) {
-          const type = this.classifyExtrinsicType(
+          const type = SubscanService.classifyExtrinsicType(
             extrinsic.call_module,
             extrinsic.call_module_function
           )
@@ -410,7 +410,7 @@ class SubscanService {
   /**
    * Make HTTP request to Subscan API
    */
-  private async makeRequest<T>(
+  private static async makeRequest<T>(
     config: SubscanConfig,
     endpoint: string,
     body: Record<string, unknown>
@@ -576,7 +576,7 @@ class SubscanService {
       return {
         method: transfer.call_module_function,
         section: transfer.call_module,
-        type: this.classifyExtrinsicType(
+        type: SubscanService.classifyExtrinsicType(
           transfer.call_module,
           transfer.call_module_function
         ),
@@ -591,7 +591,7 @@ class SubscanService {
       return {
         method: transfer.extrinsic.call_module_function,
         section: transfer.extrinsic.call_module,
-        type: this.classifyExtrinsicType(
+        type: SubscanService.classifyExtrinsicType(
           transfer.extrinsic.call_module,
           transfer.extrinsic.call_module_function
         ),
@@ -603,7 +603,7 @@ class SubscanService {
       return {
         method: transfer.event.event_id,
         section: transfer.event.module_id,
-        type: this.classifyExtrinsicType(
+        type: SubscanService.classifyExtrinsicType(
           transfer.event.module_id,
           transfer.event.event_id
         ),
@@ -614,7 +614,7 @@ class SubscanService {
       return {
         method: transfer.event_id,
         section: transfer.module || 'balances',
-        type: this.classifyExtrinsicType(
+        type: SubscanService.classifyExtrinsicType(
           transfer.module || 'balances',
           transfer.event_id
         ),
@@ -622,7 +622,7 @@ class SubscanService {
     }
 
     // Priority 4: Use heuristics based on transfer characteristics
-    const heuristic = this.detectActionHeuristic(transfer)
+    const heuristic = SubscanService.detectActionHeuristic(transfer)
     if (heuristic) {
       return heuristic
     }
@@ -638,7 +638,7 @@ class SubscanService {
   /**
    * Detect action type using heuristics when explicit data is missing
    */
-  private detectActionHeuristic(transfer: SubscanTransfer): {
+  private static detectActionHeuristic(transfer: SubscanTransfer): {
     method: string
     section: string
     type: SubstrateTransaction['type']
@@ -685,7 +685,7 @@ class SubscanService {
   /**
    * Classify extrinsic type based on module and function
    */
-  private classifyExtrinsicType(
+  private static classifyExtrinsicType(
     module: string,
     _method: string
   ): SubstrateTransaction['type'] {

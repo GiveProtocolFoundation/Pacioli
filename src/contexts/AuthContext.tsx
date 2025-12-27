@@ -163,35 +163,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // Setup token refresh interval
   useEffect(() => {
-    if (!isAuthenticated) {
-      if (refreshIntervalRef.current) {
-        clearInterval(refreshIntervalRef.current)
-        refreshIntervalRef.current = null
-      }
-      return
+    // Clear any existing interval first
+    if (refreshIntervalRef.current) {
+      clearInterval(refreshIntervalRef.current)
+      refreshIntervalRef.current = null
     }
 
-    // Refresh token every 10 minutes (access tokens last 15 minutes)
-    refreshIntervalRef.current = window.setInterval(
-      async () => {
-        if (authService.isTokenExpired()) {
-          try {
-            await authService.refreshToken()
-          } catch {
-            // If refresh fails, log out
-            authService.clearTokens()
-            setIsAuthenticated(false)
-            setUser(null)
-            setUserProfiles([])
+    // Only set up refresh interval when authenticated
+    if (isAuthenticated) {
+      // Refresh token every 10 minutes (access tokens last 15 minutes)
+      refreshIntervalRef.current = window.setInterval(
+        async () => {
+          if (authService.isTokenExpired()) {
+            try {
+              await authService.refreshToken()
+            } catch {
+              // If refresh fails, log out
+              authService.clearTokens()
+              setIsAuthenticated(false)
+              setUser(null)
+              setUserProfiles([])
+            }
           }
-        }
-      },
-      10 * 60 * 1000
-    )
+        },
+        10 * 60 * 1000
+      )
+    }
 
     return () => {
       if (refreshIntervalRef.current) {
         clearInterval(refreshIntervalRef.current)
+        refreshIntervalRef.current = null
       }
     }
   }, [isAuthenticated])

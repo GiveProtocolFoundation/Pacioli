@@ -31,7 +31,7 @@ import {
   getTransactionTypesBySubcategory,
   getTransactionTypeByCode,
 } from '../../types/transaction-categories'
-import { storageService } from '../../services/database/storageService'
+import { StorageService } from '../../services/database/storageService'
 import { ConnectedWallet } from '../../services/wallet/types'
 
 const TransactionForm: React.FC = () => {
@@ -111,7 +111,7 @@ const TransactionForm: React.FC = () => {
 
   // Load connected wallets on mount
   useEffect(() => {
-    const savedWallets = storageService.loadWallets()
+    const savedWallets = StorageService.loadWallets()
     setConnectedWallets(savedWallets)
   }, [])
 

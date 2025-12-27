@@ -213,20 +213,20 @@ class IndexedDBService {
       // Use compound index for network + address
       const index = store.index('network_address')
       const range = IDBKeyRange.only([network, address])
-      results = await this.getFromIndex(index, range)
+      results = await IndexedDBService.getFromIndex(index, range)
     } else if (address) {
       // Use address index
       const index = store.index('address')
       const range = IDBKeyRange.only(address)
-      results = await this.getFromIndex(index, range)
+      results = await IndexedDBService.getFromIndex(index, range)
     } else if (network) {
       // Use network index
       const index = store.index('network')
       const range = IDBKeyRange.only(network)
-      results = await this.getFromIndex(index, range)
+      results = await IndexedDBService.getFromIndex(index, range)
     } else {
       // Full scan (less efficient)
-      results = await this.getAllFromStore(store)
+      results = await IndexedDBService.getAllFromStore(store)
     }
 
     // Apply additional filters
@@ -304,7 +304,7 @@ class IndexedDBService {
     const db = await this.ensureDB()
     const tx = db.transaction(STORES.TRANSACTIONS, 'readwrite')
     const store = tx.objectStore(STORES.TRANSACTIONS)
-    await this.promisifyRequest(store.clear())
+    await IndexedDBService.promisifyRequest(store.clear())
   }
 
   // ==================== WALLET OPERATIONS ====================
@@ -335,7 +335,7 @@ class IndexedDBService {
     const db = await this.ensureDB()
     const tx = db.transaction(STORES.WALLETS, 'readonly')
     const store = tx.objectStore(STORES.WALLETS)
-    return this.getAllFromStore(store)
+    return IndexedDBService.getAllFromStore(store)
   }
 
   /**
@@ -345,7 +345,7 @@ class IndexedDBService {
     const db = await this.ensureDB()
     const tx = db.transaction(STORES.WALLETS, 'readwrite')
     const store = tx.objectStore(STORES.WALLETS)
-    await this.promisifyRequest(store.clear())
+    await IndexedDBService.promisifyRequest(store.clear())
   }
 
   // ==================== SYNC STATUS OPERATIONS ====================
@@ -357,7 +357,7 @@ class IndexedDBService {
     const db = await this.ensureDB()
     const tx = db.transaction(STORES.SYNC_STATUS, 'readwrite')
     const store = tx.objectStore(STORES.SYNC_STATUS)
-    await this.promisifyRequest(store.put(status))
+    await IndexedDBService.promisifyRequest(store.put(status))
   }
 
   /**
@@ -370,7 +370,7 @@ class IndexedDBService {
     const db = await this.ensureDB()
     const tx = db.transaction(STORES.SYNC_STATUS, 'readonly')
     const store = tx.objectStore(STORES.SYNC_STATUS)
-    const result = await this.promisifyRequest<SyncStatus>(
+    const result = await IndexedDBService.promisifyRequest<SyncStatus>(
       store.get([network, address])
     )
     return result || null
@@ -383,7 +383,7 @@ class IndexedDBService {
     const db = await this.ensureDB()
     const tx = db.transaction(STORES.SYNC_STATUS, 'readonly')
     const store = tx.objectStore(STORES.SYNC_STATUS)
-    const statuses = await this.getAllFromStore<SyncStatus>(store)
+    const statuses = await IndexedDBService.getAllFromStore<SyncStatus>(store)
 
     const record: Record<string, SyncStatus> = {}
     statuses.forEach((status: SyncStatus) => {
@@ -402,7 +402,7 @@ class IndexedDBService {
     const db = await this.ensureDB()
     const tx = db.transaction(STORES.METADATA, 'readwrite')
     const store = tx.objectStore(STORES.METADATA)
-    await this.promisifyRequest(
+    await IndexedDBService.promisifyRequest(
       store.put({
         key,
         value,
@@ -418,7 +418,7 @@ class IndexedDBService {
     const db = await this.ensureDB()
     const tx = db.transaction(STORES.METADATA, 'readonly')
     const store = tx.objectStore(STORES.METADATA)
-    const result = await this.promisifyRequest<{ key: string; value: T }>(
+    const result = await IndexedDBService.promisifyRequest<{ key: string; value: T }>(
       store.get(key)
     )
     return result?.value || null
@@ -429,7 +429,7 @@ class IndexedDBService {
   /**
    * Get all items from a store
    */
-  private async getAllFromStore<T>(store: IDBObjectStore): Promise<T[]> {
+  private static async getAllFromStore<T>(store: IDBObjectStore): Promise<T[]> {
     return new Promise((resolve, reject) => {
       const request = store.getAll()
       request.onsuccess = () => resolve(request.result)
@@ -440,7 +440,7 @@ class IndexedDBService {
   /**
    * Get items from an index with a range
    */
-  private async getFromIndex<T>(
+  private static async getFromIndex<T>(
     index: IDBIndex,
     range?: IDBKeyRange
   ): Promise<T[]> {
@@ -454,7 +454,7 @@ class IndexedDBService {
   /**
    * Promisify an IDBRequest
    */
-  private promisifyRequest<T>(request: IDBRequest<T>): Promise<T> {
+  private static promisifyRequest<T>(request: IDBRequest<T>): Promise<T> {
     return new Promise((resolve, reject) => {
       request.onsuccess = () => resolve(request.result)
       request.onerror = () => reject(request.error)
@@ -493,7 +493,7 @@ class IndexedDBService {
   ): Promise<number> {
     const tx = db.transaction(storeName, 'readonly')
     const store = tx.objectStore(storeName)
-    return this.promisifyRequest(store.count())
+    return IndexedDBService.promisifyRequest(store.count())
   }
 
   /**
@@ -508,8 +508,8 @@ class IndexedDBService {
       [STORES.SYNC_STATUS, STORES.METADATA],
       'readwrite'
     )
-    await this.promisifyRequest(tx.objectStore(STORES.SYNC_STATUS).clear())
-    await this.promisifyRequest(tx.objectStore(STORES.METADATA).clear())
+    await IndexedDBService.promisifyRequest(tx.objectStore(STORES.SYNC_STATUS).clear())
+    await IndexedDBService.promisifyRequest(tx.objectStore(STORES.METADATA).clear())
   }
 
   /**
@@ -539,7 +539,7 @@ class IndexedDBService {
       updatedAt: new Date(),
     }
 
-    await this.promisifyRequest(store.put(walletAlias))
+    await IndexedDBService.promisifyRequest(store.put(walletAlias))
   }
 
   /**
@@ -550,7 +550,7 @@ class IndexedDBService {
     const tx = db.transaction(STORES.WALLET_ALIASES, 'readonly')
     const store = tx.objectStore(STORES.WALLET_ALIASES)
 
-    const result = await this.promisifyRequest<WalletAlias>(
+    const result = await IndexedDBService.promisifyRequest<WalletAlias>(
       store.get(address.toLowerCase())
     )
     return result?.alias || null
@@ -564,7 +564,7 @@ class IndexedDBService {
     const tx = db.transaction(STORES.WALLET_ALIASES, 'readonly')
     const store = tx.objectStore(STORES.WALLET_ALIASES)
 
-    const aliases = await this.getAllFromStore<WalletAlias>(store)
+    const aliases = await IndexedDBService.getAllFromStore<WalletAlias>(store)
     const aliasMap: Record<string, string> = {}
 
     for (const entry of aliases) {
@@ -581,7 +581,7 @@ class IndexedDBService {
     const db = await this.ensureDB()
     const tx = db.transaction(STORES.WALLET_ALIASES, 'readwrite')
     const store = tx.objectStore(STORES.WALLET_ALIASES)
-    await this.promisifyRequest(store.delete(address.toLowerCase()))
+    await IndexedDBService.promisifyRequest(store.delete(address.toLowerCase()))
   }
 
   /**
@@ -591,7 +591,7 @@ class IndexedDBService {
     const db = await this.ensureDB()
     const tx = db.transaction(STORES.WALLET_ALIASES, 'readwrite')
     const store = tx.objectStore(STORES.WALLET_ALIASES)
-    await this.promisifyRequest(store.clear())
+    await IndexedDBService.promisifyRequest(store.clear())
   }
 }
 

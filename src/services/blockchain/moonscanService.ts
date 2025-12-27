@@ -82,7 +82,7 @@ class MoonscanService {
   }
 
   // API key can be set via environment variable or localStorage
-  private getApiKey(): string | null {
+  private static getApiKey(): string | null {
     // Check localStorage first (user-configured)
     const storedKey = localStorage.getItem('etherscan_api_key')
     if (storedKey) return storedKey
@@ -110,7 +110,7 @@ class MoonscanService {
    * Check if API key is configured
    */
   hasApiKey(): boolean {
-    return Boolean(this.getApiKey())
+    return Boolean(MoonscanService.getApiKey())
   }
 
   /**
@@ -139,7 +139,7 @@ class MoonscanService {
       throw new Error(`Moonscan not configured for ${network}`)
     }
 
-    const apiKey = this.getApiKey()
+    const apiKey = MoonscanService.getApiKey()
     if (!apiKey) {
       throw new Error(
         'Etherscan API key required for EVM transaction history. ' +
@@ -207,7 +207,7 @@ class MoonscanService {
       }
 
       return data.result.map(tx =>
-        this.mapToSubstrateTransaction(tx, network, address)
+        MoonscanService.mapToSubstrateTransaction(tx, network, address)
       )
     } catch (error) {
       console.error('Moonscan fetch error:', error)
@@ -234,7 +234,7 @@ class MoonscanService {
       throw new Error(`Moonscan not configured for ${network}`)
     }
 
-    const apiKey = this.getApiKey()
+    const apiKey = MoonscanService.getApiKey()
     if (!apiKey) {
       // Skip token transfers if no API key (already checked in fetchTransactions)
       return []
@@ -278,7 +278,7 @@ class MoonscanService {
       }
 
       return data.result.map(tx =>
-        this.mapTokenTransferToSubstrateTransaction(tx, network, address)
+        MoonscanService.mapTokenTransferToSubstrateTransaction(tx, network, address)
       )
     } catch (error) {
       console.error('Moonscan token transfer fetch error:', error)
@@ -344,7 +344,7 @@ class MoonscanService {
   /**
    * Map Moonscan transaction to SubstrateTransaction format
    */
-  private mapToSubstrateTransaction(
+  private static mapToSubstrateTransaction(
     tx: MoonscanTransaction,
     network: NetworkType,
     _userAddress: string
@@ -389,7 +389,7 @@ class MoonscanService {
   /**
    * Map token transfer to SubstrateTransaction format
    */
-  private mapTokenTransferToSubstrateTransaction(
+  private static mapTokenTransferToSubstrateTransaction(
     tx: MoonscanTokenTransfer,
     network: NetworkType,
     _userAddress: string

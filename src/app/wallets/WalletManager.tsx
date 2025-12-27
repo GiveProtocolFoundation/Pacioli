@@ -14,7 +14,7 @@ import {
   type SyncProgress,
 } from '../../services/blockchain/polkadotService'
 import { indexedDBService } from '../../services/database/indexedDBService'
-import { migrationService } from '../../services/database/migrationService'
+import { migrationService, MigrationService } from '../../services/database/migrationService'
 import {
   NetworkType,
   type ConnectedWallet,
@@ -109,7 +109,7 @@ const WalletManager: React.FC = () => {
         await indexedDBService.init()
 
         // Check if migration is needed
-        const hasMigrated = await migrationService.hasMigrated()
+        const hasMigrated = await MigrationService.hasMigrated()
 
         if (!hasMigrated) {
           setMigrationStatus('Migrating data from localStorage...')

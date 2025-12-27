@@ -20,11 +20,11 @@ export interface SyncStatus {
   isSyncing: boolean
 }
 
-class StorageService {
+export class StorageService {
   /**
    * Save connected wallets
    */
-  saveWallets(wallets: ConnectedWallet[]): void {
+  static saveWallets(wallets: ConnectedWallet[]): void {
     try {
       localStorage.setItem(STORAGE_KEYS.WALLETS, JSON.stringify(wallets))
     } catch (error) {
@@ -35,7 +35,7 @@ class StorageService {
   /**
    * Load connected wallets
    */
-  loadWallets(): ConnectedWallet[] {
+  static loadWallets(): ConnectedWallet[] {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.WALLETS)
       return data ? JSON.parse(data) : []
@@ -48,7 +48,7 @@ class StorageService {
   /**
    * Clear saved wallets
    */
-  clearWallets(): void {
+  static clearWallets(): void {
     localStorage.removeItem(STORAGE_KEYS.WALLETS)
   }
 
@@ -61,7 +61,7 @@ class StorageService {
     transactions: Transaction[]
   ): void {
     try {
-      const allTransactions = this.loadTransactions()
+      const allTransactions = StorageService.loadTransactions()
       const key = `${network}:${address}`
 
       allTransactions[key] = [...(allTransactions[key] || []), ...transactions]
@@ -86,7 +86,7 @@ class StorageService {
   /**
    * Load all transactions
    */
-  loadTransactions(): Record<string, Transaction[]> {
+  static loadTransactions(): Record<string, Transaction[]> {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.TRANSACTIONS)
       return data ? JSON.parse(data) : {}
@@ -100,7 +100,7 @@ class StorageService {
    * Load transactions for specific address and network
    */
   loadTransactionsFor(network: string, address: string): Transaction[] {
-    const allTransactions = this.loadTransactions()
+    const allTransactions = StorageService.loadTransactions()
     const key = `${network}:${address}`
     return allTransactions[key] || []
   }
@@ -108,7 +108,7 @@ class StorageService {
   /**
    * Clear all transactions
    */
-  clearTransactions(): void {
+  static clearTransactions(): void {
     localStorage.removeItem(STORAGE_KEYS.TRANSACTIONS)
   }
 
@@ -117,7 +117,7 @@ class StorageService {
    */
   saveSyncStatus(status: SyncStatus): void {
     try {
-      const allStatus = this.loadAllSyncStatus()
+      const allStatus = StorageService.loadAllSyncStatus()
       const key = `${status.network}:${status.address}`
       allStatus[key] = status
       localStorage.setItem(STORAGE_KEYS.SYNC_STATUS, JSON.stringify(allStatus))
@@ -131,7 +131,7 @@ class StorageService {
    */
   loadSyncStatus(network: string, address: string): SyncStatus | null {
     try {
-      const allStatus = this.loadAllSyncStatus()
+      const allStatus = StorageService.loadAllSyncStatus()
       const key = `${network}:${address}`
       return allStatus[key] || null
     } catch (error) {
@@ -143,7 +143,7 @@ class StorageService {
   /**
    * Load all sync statuses
    */
-  loadAllSyncStatus(): Record<string, SyncStatus> {
+  static loadAllSyncStatus(): Record<string, SyncStatus> {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.SYNC_STATUS)
       return data ? JSON.parse(data) : {}
@@ -157,8 +157,8 @@ class StorageService {
    * Clear all stored data
    */
   clearAll(): void {
-    this.clearWallets()
-    this.clearTransactions()
+    StorageService.clearWallets()
+    StorageService.clearTransactions()
     localStorage.removeItem(STORAGE_KEYS.SYNC_STATUS)
   }
 }
