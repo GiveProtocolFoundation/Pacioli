@@ -421,6 +421,55 @@ const FiscalYearSection: React.FC<FiscalYearSectionProps> = ({
   )
 }
 
+interface TimezoneSelectProps {
+  value: string
+  onChange: (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => void
+}
+
+const TimezoneSelect: React.FC<TimezoneSelectProps> = ({ value, onChange }) => (
+  <div>
+    <label
+      htmlFor="timezone"
+      className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+    >
+      Timezone
+    </label>
+    <select
+      id="timezone"
+      value={value}
+      onChange={onChange}
+      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+    >
+      <option value="Etc/GMT+12">
+        UTC-12:00 - International Date Line West (AoE) - Baker Island, Howland
+        Island
+      </option>
+      <option value="Pacific/Samoa">
+        UTC-11:00 - Samoa Standard Time (SST) - Samoa, Niue
+      </option>
+      <option value="Pacific/Honolulu">
+        UTC-10:00 - Hawaii-Aleutian Standard Time (HST) - Honolulu, Tahiti
+      </option>
+      <option value="Pacific/Marquesas">
+        UTC-09:30 - Marquesas Time (MART) - Marquesas Islands (French Polynesia)
+      </option>
+      <option value="America/Anchorage">
+        UTC-09:00 - Alaska Standard Time (AKST) - Anchorage, Juneau
+      </option>
+      <option value="America/Los_Angeles">
+        UTC-08:00 - Pacific Standard Time (PST) - Los Angeles, Vancouver, San
+        Francisco
+      </option>
+      <option value="America/Denver">
+        UTC-07:00 - Mountain Standard Time (MST) - Denver, Phoenix, Calgary
+      </option>
+      <option value="America/Chicago">
+        UTC-06:00 - Central Standard Time (CST) - Chicago, Houston, Mexico City
+      </option>
+    </select>
+  </div>
+)
+
 const GeneralSettings: React.FC<GeneralSettingsProps> = ({
   userType = 'organization',
 }) => {
@@ -513,58 +562,6 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({
       }
     },
     [handleSystemChange]
-  )
-
-  // Extracted component to reduce nesting depth
-  const TimezoneSelect: React.FC<{
-    value: string
-    onChange: (
-      e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>
-    ) => void
-  }> = ({ value, onChange }) => (
-    <div>
-      <label
-        htmlFor="timezone"
-        className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-      >
-        Timezone
-      </label>
-      <select
-        id="timezone"
-        value={value}
-        onChange={onChange}
-        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-      >
-        <option value="Etc/GMT+12">
-          UTC-12:00 - International Date Line West (AoE) - Baker Island, Howland
-          Island
-        </option>
-        <option value="Pacific/Samoa">
-          UTC-11:00 - Samoa Standard Time (SST) - Samoa, Niue
-        </option>
-        <option value="Pacific/Honolulu">
-          UTC-10:00 - Hawaii-Aleutian Standard Time (HST) - Honolulu, Tahiti
-        </option>
-        <option value="Pacific/Marquesas">
-          UTC-09:30 - Marquesas Time (MART) - Marquesas Islands (French
-          Polynesia)
-        </option>
-        <option value="America/Anchorage">
-          UTC-09:00 - Alaska Standard Time (AKST) - Anchorage, Juneau
-        </option>
-        <option value="America/Los_Angeles">
-          UTC-08:00 - Pacific Standard Time (PST) - Los Angeles, Vancouver, San
-          Francisco
-        </option>
-        <option value="America/Denver">
-          UTC-07:00 - Mountain Standard Time (MST) - Denver, Phoenix, Calgary
-        </option>
-        <option value="America/Chicago">
-          UTC-06:00 - Central Standard Time (CST) - Chicago, Houston, Mexico
-          City
-        </option>
-      </select>
-    </div>
   )
 
   return (

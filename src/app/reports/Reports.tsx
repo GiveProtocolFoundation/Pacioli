@@ -20,6 +20,11 @@ import {
   Plus,
 } from 'lucide-react'
 
+/**
+ * Formats an ISO date string into a human-readable format.
+ * @param dateString - ISO 8601 date string to format
+ * @returns Formatted date string (e.g., "Oct 15, 2025, 02:30 PM")
+ */
 const formatDate = (dateString: string): string => {
   const date = new Date(dateString)
   return date.toLocaleDateString('en-US', {

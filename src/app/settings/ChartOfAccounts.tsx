@@ -4,6 +4,7 @@ import {
   getChartOfAccountsTemplate,
   groupAccountsByType,
 } from '../../utils/chartOfAccounts'
+import type { ChartOfAccountsEntry } from '../../types/chartOfAccounts'
 
 interface ChartOfAccountsProps {
   jurisdiction?: 'us-gaap' | 'ifrs'
@@ -17,6 +18,153 @@ interface EditingAccount {
   type: string
   description: string
 }
+
+interface AccountsTableProps {
+  filteredAccounts: ChartOfAccountsEntry[]
+  editingAccount: EditingAccount | null
+  isAddingNew: boolean
+  accountTypes: string[]
+  handleEditingCodeChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  handleEditingNameChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  handleEditingTypeChange: (e: React.ChangeEvent<HTMLSelectElement>) => void
+  handleEditingDescriptionChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  createEditHandler: (account: ChartOfAccountsEntry) => () => void
+  createDeleteHandler: (code: string) => () => void
+  handleSave: () => void
+  handleCancel: () => void
+  canEdit: boolean
+}
+
+const AccountsTable: React.FC<AccountsTableProps> = ({
+  filteredAccounts,
+  editingAccount,
+  isAddingNew,
+  accountTypes,
+  handleEditingCodeChange,
+  handleEditingNameChange,
+  handleEditingTypeChange,
+  handleEditingDescriptionChange,
+  createEditHandler,
+  createDeleteHandler,
+  handleSave,
+  handleCancel,
+  canEdit,
+}) => (
+  <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+    <div className="overflow-x-auto">
+      <table className="w-full">
+        <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+          <tr>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Code
+            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Account Name
+            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Type
+            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Description
+            </th>
+            {canEdit && (
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Actions
+              </th>
+            )}
+          </tr>
+        </thead>
+        <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+          {editingAccount && (
+            <tr className="bg-blue-50">
+              <td className="px-6 py-4">
+                <input
+                  type="text"
+                  value={editingAccount.code}
+                  onChange={handleEditingCodeChange}
+                  placeholder="Code"
+                  className="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  disabled={!isAddingNew}
+                />
+              </td>
+              <td className="px-6 py-4">
+                <input
+                  type="text"
+                  value={editingAccount.name}
+                  onChange={handleEditingNameChange}
+                  placeholder="Name"
+                  className="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </td>
+              <td className="px-6 py-4">
+                <select
+                  value={editingAccount.type}
+                  onChange={handleEditingTypeChange}
+                  className="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  {accountTypes.map(type => (
+                    <option key={type} value={type}>
+                      {type}
+                    </option>
+                  ))}
+                </select>
+              </td>
+              <td className="px-6 py-4">
+                <input
+                  type="text"
+                  value={editingAccount.description}
+                  onChange={handleEditingDescriptionChange}
+                  placeholder="Description"
+                  className="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </td>
+              <td className="px-6 py-4 text-right">
+                <button
+                  onClick={handleSave}
+                  className="text-blue-600 hover:text-blue-900 mr-2"
+                >
+                  Save
+                </button>
+                <button
+                  onClick={handleCancel}
+                  className="text-gray-600 hover:text-gray-900"
+                >
+                  Cancel
+                </button>
+              </td>
+            </tr>
+          )}
+          {filteredAccounts.map(account =>
+            !editingAccount || editingAccount.code !== account.code ? (
+              <tr key={account.code}>
+                <td className="px-6 py-4">{account.code}</td>
+                <td className="px-6 py-4">{account.name}</td>
+                <td className="px-6 py-4">{account.type}</td>
+                <td className="px-6 py-4">{account.description}</td>
+                {canEdit && (
+                  <td className="px-6 py-4 text-right">
+                    <button
+                      onClick={createEditHandler(account)}
+                      className="text-blue-600 hover:text-blue-900 mr-2"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={createDeleteHandler(account.code)}
+                      className="text-red-600 hover:text-red-900"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                )}
+              </tr>
+            ) : null
+          )}
+        </tbody>
+      </table>
+    </div>
+  </div>
+)
 
 const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
   jurisdiction = 'us-gaap',
@@ -179,171 +327,6 @@ const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
     []
   )
 
-  /**
-   * AccountsTable component renders a table displaying the filtered accounts,
-   * allows editing, saving, canceling, editing creation, and deletion of accounts.
-   *
-   * @param filteredAccounts - Array of accounts filtered based on search or criteria.
-   * @param editingAccount - The account currently being edited or null if none.
-   * @param isAddingNew - Flag indicating if a new account row is being added.
-   * @param handleEditingCodeChange - Callback for handling changes to the account code input.
-   * @param handleEditingNameChange - Callback for handling changes to the account name input.
-   * @param handleEditingTypeChange - Callback for handling changes to the account type select.
-   * @param handleEditingDescriptionChange - Callback for handling changes to the account description input.
-   * @param createEditHandler - Function that returns an edit handler for a given account.
-   * @param createDeleteHandler - Function that returns a delete handler for a given account code.
-   * @param handleSave - Callback invoked when saving changes.
-   * @param handleCancel - Callback invoked when canceling edits.
-   * @param canEdit - Boolean indicating whether editing is permitted.
-   * @returns JSX.Element - The rendered table element.
-   */
-  const AccountsTable: React.FC<{
-    filteredAccounts: typeof filteredAccounts
-    editingAccount: typeof editingAccount
-    isAddingNew: boolean
-    handleEditingCodeChange: (e: React.ChangeEvent<HTMLInputElement>) => void
-    handleEditingNameChange: (e: React.ChangeEvent<HTMLInputElement>) => void
-    handleEditingTypeChange: (e: React.ChangeEvent<HTMLSelectElement>) => void
-    handleEditingDescriptionChange: (
-      e: React.ChangeEvent<HTMLInputElement>
-    ) => void
-    createEditHandler: (
-      account: NonNullable<typeof template>['accounts'][0]
-    ) => () => void
-    createDeleteHandler: (code: string) => () => void
-    handleSave: () => void
-    handleCancel: () => void
-    canEdit: boolean
-  }> = ({
-    filteredAccounts,
-    editingAccount,
-    isAddingNew,
-    handleEditingCodeChange,
-    handleEditingNameChange,
-    handleEditingTypeChange,
-    handleEditingDescriptionChange,
-    createEditHandler,
-    createDeleteHandler,
-    handleSave,
-    handleCancel,
-    canEdit,
-  }) => (
-    <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Code
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Account Name
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Type
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Description
-              </th>
-              {canEdit && (
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              )}
-            </tr>
-          </thead>
-          <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
-            {editingAccount && (
-              <tr className="bg-blue-50">
-                <td className="px-6 py-4">
-                  <input
-                    type="text"
-                    value={editingAccount.code}
-                    onChange={handleEditingCodeChange}
-                    placeholder="Code"
-                    className="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    disabled={!isAddingNew}
-                  />
-                </td>
-                <td className="px-6 py-4">
-                  <input
-                    type="text"
-                    value={editingAccount.name}
-                    onChange={handleEditingNameChange}
-                    placeholder="Name"
-                    className="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </td>
-                <td className="px-6 py-4">
-                  <select
-                    value={editingAccount.type}
-                    onChange={handleEditingTypeChange}
-                    className="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    {accountTypes.map(type => (
-                      <option key={type} value={type}>
-                        {type}
-                      </option>
-                    ))}
-                  </select>
-                </td>
-                <td className="px-6 py-4">
-                  <input
-                    type="text"
-                    value={editingAccount.description}
-                    onChange={handleEditingDescriptionChange}
-                    placeholder="Description"
-                    className="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </td>
-                <td className="px-6 py-4 text-right">
-                  <button
-                    onClick={handleSave}
-                    className="text-blue-600 hover:text-blue-900 mr-2"
-                  >
-                    Save
-                  </button>
-                  <button
-                    onClick={handleCancel}
-                    className="text-gray-600 hover:text-gray-900"
-                  >
-                    Cancel
-                  </button>
-                </td>
-              </tr>
-            )}
-            {filteredAccounts.map(account =>
-              !editingAccount || editingAccount.code !== account.code ? (
-                <tr key={account.code}>
-                  <td className="px-6 py-4">{account.code}</td>
-                  <td className="px-6 py-4">{account.name}</td>
-                  <td className="px-6 py-4">{account.type}</td>
-                  <td className="px-6 py-4">{account.description}</td>
-                  {canEdit && (
-                    <td className="px-6 py-4 text-right">
-                      <button
-                        onClick={createEditHandler(account)}
-                        className="text-blue-600 hover:text-blue-900 mr-2"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={createDeleteHandler(account.code)}
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  )}
-                </tr>
-              ) : null
-            )}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  )
-
   if (!template) {
     return (
       <div className="p-6 min-h-screen bg-gray-50 dark:bg-black">
@@ -433,6 +416,7 @@ const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
         filteredAccounts={filteredAccounts}
         editingAccount={editingAccount}
         isAddingNew={isAddingNew}
+        accountTypes={accountTypes}
         handleEditingCodeChange={handleEditingCodeChange}
         handleEditingNameChange={handleEditingNameChange}
         handleEditingTypeChange={handleEditingTypeChange}

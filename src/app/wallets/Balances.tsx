@@ -51,7 +51,7 @@ type TimePeriod =
 
 const Balances: React.FC = () => {
   const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>('30_days')
-  const { theme: _theme } = useTheme()
+  useTheme() // Hook called for potential side effects
   const navigate = useNavigate()
 
   const handleConnectWallet = useCallback(() => {

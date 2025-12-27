@@ -31,6 +31,92 @@ interface CurrencySettings {
   fixerApiKey?: string
 }
 
+interface ChangeActionsProps {
+  hasChanges: boolean
+  onReset: () => void
+  onSave: () => void
+}
+
+const ChangeActions: React.FC<ChangeActionsProps> = ({
+  hasChanges,
+  onReset,
+  onSave,
+}) => {
+  if (!hasChanges) return null
+  return (
+    <div className="flex items-center space-x-3">
+      <button
+        onClick={onReset}
+        className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center"
+      >
+        <X className="w-4 h-4 mr-2" />
+        Cancel
+      </button>
+      <button
+        onClick={onSave}
+        className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 flex items-center"
+      >
+        <Save className="w-4 h-4 mr-2" />
+        Save Changes
+      </button>
+    </div>
+  )
+}
+
+interface PrimaryCurrencySectionProps {
+  value: string
+  onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void
+}
+
+const PrimaryCurrencySection: React.FC<PrimaryCurrencySectionProps> = ({
+  value,
+  onChange,
+}) => (
+  <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+    <div className="flex items-center mb-4">
+      <DollarSign className="w-5 h-5 text-blue-600 mr-2" />
+      <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+        Primary Reporting Currency
+      </h2>
+    </div>
+    <p className="text-sm text-gray-500 dark:text-[#94a3b8] mb-4">
+      Your primary currency is used for all financial reports and statements.
+      Transactions in other currencies will be automatically converted.
+    </p>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label
+          htmlFor="primary-currency"
+          className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+        >
+          Select Primary Currency
+        </label>
+        <select
+          id="primary-currency"
+          value={value}
+          onChange={onChange}
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <optgroup label="Fiat Currencies">
+            {SUPPORTED_FIAT_CURRENCIES.map(currency => (
+              <option key={currency} value={currency}>
+                {currency}
+              </option>
+            ))}
+          </optgroup>
+          <optgroup label="Cryptocurrencies">
+            {SUPPORTED_CRYPTO_CURRENCIES.map(currency => (
+              <option key={currency} value={currency}>
+                {currency}
+              </option>
+            ))}
+          </optgroup>
+        </select>
+      </div>
+    </div>
+  </div>
+)
+
 const Currencies: React.FC = () => {
   const { settings: contextSettings, updateSettings: updateContextSettings } =
     useCurrency()
@@ -200,82 +286,6 @@ const Currencies: React.FC = () => {
       handleChange('fixerApiKey', e.target.value)
     },
     [handleChange]
-  )
-
-  // Extracted components to reduce nesting depth
-  const ChangeActions: React.FC<{
-    hasChanges: boolean
-    onReset: () => void
-    onSave: () => void
-  }> = ({ hasChanges, onReset, onSave }) => {
-    if (!hasChanges) return null
-    return (
-      <div className="flex items-center space-x-3">
-        <button
-          onClick={onReset}
-          className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center"
-        >
-          <X className="w-4 h-4 mr-2" />
-          Cancel
-        </button>
-        <button
-          onClick={onSave}
-          className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 flex items-center"
-        >
-          <Save className="w-4 h-4 mr-2" />
-          Save Changes
-        </button>
-      </div>
-    )
-  }
-
-  const PrimaryCurrencySection: React.FC<{
-    value: string
-    onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void
-  }> = ({ value, onChange }) => (
-    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-      <div className="flex items-center mb-4">
-        <DollarSign className="w-5 h-5 text-blue-600 mr-2" />
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-          Primary Reporting Currency
-        </h2>
-      </div>
-      <p className="text-sm text-gray-500 dark:text-[#94a3b8] mb-4">
-        Your primary currency is used for all financial reports and statements.
-        Transactions in other currencies will be automatically converted.
-      </p>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label
-            htmlFor="primary-currency"
-            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-          >
-            Select Primary Currency
-          </label>
-          <select
-            id="primary-currency"
-            value={value}
-            onChange={onChange}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <optgroup label="Fiat Currencies">
-              {SUPPORTED_FIAT_CURRENCIES.map(currency => (
-                <option key={currency} value={currency}>
-                  {currency}
-                </option>
-              ))}
-            </optgroup>
-            <optgroup label="Cryptocurrencies">
-              {SUPPORTED_CRYPTO_CURRENCIES.map(currency => (
-                <option key={currency} value={currency}>
-                  {currency}
-                </option>
-              ))}
-            </optgroup>
-          </select>
-        </div>
-      </div>
-    </div>
   )
 
   return (
