@@ -32,6 +32,21 @@ pub struct User {
     pub last_login_at: Option<DateTime<Utc>>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
+    // Extended profile fields
+    pub first_name: Option<String>,
+    pub last_name: Option<String>,
+    pub phone: Option<String>,
+    pub company: Option<String>,
+    pub job_title: Option<String>,
+    pub department: Option<String>,
+    pub location: Option<String>,
+    pub timezone: Option<String>,
+    pub language: Option<String>,
+    pub date_format: Option<String>,
+    // Notification preferences
+    pub email_notifications: Option<bool>,
+    pub sms_notifications: Option<bool>,
+    pub login_alerts: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -61,6 +76,21 @@ pub struct RegisterInput {
 pub struct UserUpdate {
     pub display_name: Option<String>,
     pub avatar_url: Option<String>,
+    // Extended profile fields
+    pub first_name: Option<String>,
+    pub last_name: Option<String>,
+    pub phone: Option<String>,
+    pub company: Option<String>,
+    pub job_title: Option<String>,
+    pub department: Option<String>,
+    pub location: Option<String>,
+    pub timezone: Option<String>,
+    pub language: Option<String>,
+    pub date_format: Option<String>,
+    // Notification preferences
+    pub email_notifications: Option<bool>,
+    pub sms_notifications: Option<bool>,
+    pub login_alerts: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
@@ -491,39 +521,56 @@ pub async fn update_user(
     let claims = verify_access_token(&token, auth.get_jwt_secret())?;
     let pool = &db.pool;
 
-    let mut updates = Vec::new();
-    let mut params: Vec<String> = Vec::new();
-
+    // Validate display_name if provided
     if let Some(ref name) = update.display_name {
         if name.trim().is_empty() {
             return Err("Display name cannot be empty".to_string());
         }
-        updates.push("display_name = ?");
-        params.push(name.clone());
     }
 
-    if let Some(ref url) = update.avatar_url {
-        updates.push("avatar_url = ?");
-        params.push(url.clone());
-    }
+    // Use a more flexible approach with direct SQL building
+    let now = Utc::now();
 
-    if updates.is_empty() {
-        return get_user_by_id(pool, &claims.sub).await;
-    }
-
-    updates.push("updated_at = ?");
-    let now = Utc::now().to_rfc3339();
-    params.push(now);
-    params.push(claims.sub.clone());
-
-    let query = format!("UPDATE users SET {} WHERE id = ?", updates.join(", "));
-
-    let mut q = sqlx::query(&query);
-    for param in &params {
-        q = q.bind(param);
-    }
-
-    q.execute(pool)
+    sqlx::query(
+        r#"
+        UPDATE users SET
+            display_name = COALESCE(?, display_name),
+            avatar_url = COALESCE(?, avatar_url),
+            first_name = COALESCE(?, first_name),
+            last_name = COALESCE(?, last_name),
+            phone = COALESCE(?, phone),
+            company = COALESCE(?, company),
+            job_title = COALESCE(?, job_title),
+            department = COALESCE(?, department),
+            location = COALESCE(?, location),
+            timezone = COALESCE(?, timezone),
+            language = COALESCE(?, language),
+            date_format = COALESCE(?, date_format),
+            email_notifications = COALESCE(?, email_notifications),
+            sms_notifications = COALESCE(?, sms_notifications),
+            login_alerts = COALESCE(?, login_alerts),
+            updated_at = ?
+        WHERE id = ?
+        "#,
+    )
+    .bind(&update.display_name)
+    .bind(&update.avatar_url)
+    .bind(&update.first_name)
+    .bind(&update.last_name)
+    .bind(&update.phone)
+    .bind(&update.company)
+    .bind(&update.job_title)
+    .bind(&update.department)
+    .bind(&update.location)
+    .bind(&update.timezone)
+    .bind(&update.language)
+    .bind(&update.date_format)
+    .bind(&update.email_notifications)
+    .bind(&update.sms_notifications)
+    .bind(&update.login_alerts)
+    .bind(now)
+    .bind(&claims.sub)
+    .execute(pool)
         .await
         .map_err(|e| format!("Failed to update user: {}", e))?;
 
@@ -1211,7 +1258,10 @@ async fn get_user_by_id(pool: &sqlx::SqlitePool, user_id: &str) -> Result<User, 
     sqlx::query_as(
         r#"
         SELECT id, email, email_verified, display_name, avatar_url, status,
-               two_factor_enabled, last_login_at, created_at, updated_at
+               two_factor_enabled, last_login_at, created_at, updated_at,
+               first_name, last_name, phone, company, job_title, department, location,
+               timezone, language, date_format,
+               email_notifications, sms_notifications, login_alerts
         FROM users WHERE id = ?
         "#,
     )

@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useEffect, useMemo } from 'react'
 import {
   User,
   Mail,
@@ -15,14 +15,17 @@ import {
   Globe,
   Calendar,
   Briefcase,
+  Loader2,
 } from 'lucide-react'
 import { useOrganization } from '../../contexts/OrganizationContext'
+import { useAuth } from '../../contexts/AuthContext'
 
 interface UserProfile {
   firstName: string
   lastName: string
   email: string
   phone: string
+  company: string
   jobTitle: string
   department: string
   location: string
@@ -141,6 +144,25 @@ const WorkInfo: React.FC<WorkInfoProps> = ({
       Work Information
     </h3>
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="md:col-span-2">
+        <label
+          htmlFor="company"
+          className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+        >
+          Company
+        </label>
+        <div className="relative">
+          <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <input
+            id="company"
+            type="text"
+            value={profile.company}
+            onChange={createProfileInputHandler('company')}
+            placeholder="Your company or organization"
+            className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+      </div>
       <div>
         <label
           htmlFor="jobTitle"
@@ -201,32 +223,49 @@ const WorkInfo: React.FC<WorkInfoProps> = ({
 
 const Profile: React.FC = () => {
   const { userAvatar, setUserAvatar } = useOrganization()
+  const { user, updateUser, isLoading: authLoading, error: authError } = useAuth()
 
-  const [profile, setProfile] = useState<UserProfile>({
-    firstName: 'John',
-    lastName: 'Smith',
-    email: 'john.smith@example.org',
-    phone: '+1 (555) 123-4567',
-    jobTitle: 'Chief Financial Officer',
-    department: 'Finance',
-    location: 'San Francisco, CA',
-    timezone: 'America/Los_Angeles',
-    language: 'en',
-    dateFormat: 'MM/DD/YYYY',
-    avatar: userAvatar,
-  })
+  // Initialize profile from authenticated user
+  const initialProfile = useMemo<UserProfile>(() => ({
+    firstName: user?.first_name || '',
+    lastName: user?.last_name || '',
+    email: user?.email || '',
+    phone: user?.phone || '',
+    company: user?.company || '',
+    jobTitle: user?.job_title || '',
+    department: user?.department || '',
+    location: user?.location || '',
+    timezone: user?.timezone || 'UTC',
+    language: user?.language || 'en',
+    dateFormat: user?.date_format || 'MM/DD/YYYY',
+    avatar: user?.avatar_url || userAvatar,
+  }), [user, userAvatar])
 
-  const [security, setSecurity] = useState<SecuritySettings>({
-    twoFactorEnabled: true,
-    emailNotifications: true,
-    smsNotifications: false,
-    loginAlerts: true,
-  })
+  const initialSecurity = useMemo<SecuritySettings>(() => ({
+    twoFactorEnabled: user?.two_factor_enabled || false,
+    emailNotifications: user?.email_notifications ?? true,
+    smsNotifications: user?.sms_notifications ?? false,
+    loginAlerts: user?.login_alerts ?? true,
+  }), [user])
 
+  const [profile, setProfile] = useState<UserProfile>(initialProfile)
+  const [security, setSecurity] = useState<SecuritySettings>(initialSecurity)
   const [hasChanges, setHasChanges] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
+  const [saveSuccess, setSaveSuccess] = useState(false)
   const [activeTab, setActiveTab] = useState<
     'profile' | 'security' | 'preferences'
   >('profile')
+
+  // Update profile when user data changes
+  useEffect(() => {
+    if (user) {
+      setProfile(initialProfile)
+      setSecurity(initialSecurity)
+      setHasChanges(false)
+    }
+  }, [user, initialProfile, initialSecurity])
 
   const handleProfileChange = useCallback(
     <K extends keyof UserProfile>(key: K, value: UserProfile[K]) => {
@@ -244,17 +283,49 @@ const Profile: React.FC = () => {
     []
   )
 
-  const handleSave = useCallback(() => {
-    // TODO: Save to backend
-    // console.log('Saving profile:', { profile, security })
-    setHasChanges(false)
-    // Show success message
-  }, [])
+  const handleSave = useCallback(async () => {
+    if (!user) return
+
+    setIsSaving(true)
+    setSaveError(null)
+    setSaveSuccess(false)
+
+    try {
+      await updateUser({
+        display_name: `${profile.firstName} ${profile.lastName}`.trim() || user.display_name,
+        avatar_url: profile.avatar || undefined,
+        first_name: profile.firstName || undefined,
+        last_name: profile.lastName || undefined,
+        phone: profile.phone || undefined,
+        company: profile.company || undefined,
+        job_title: profile.jobTitle || undefined,
+        department: profile.department || undefined,
+        location: profile.location || undefined,
+        timezone: profile.timezone || undefined,
+        language: profile.language || undefined,
+        date_format: profile.dateFormat || undefined,
+        email_notifications: security.emailNotifications,
+        sms_notifications: security.smsNotifications,
+        login_alerts: security.loginAlerts,
+      })
+      setHasChanges(false)
+      setSaveSuccess(true)
+      // Clear success message after 3 seconds
+      setTimeout(() => setSaveSuccess(false), 3000)
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : 'Failed to save profile')
+    } finally {
+      setIsSaving(false)
+    }
+  }, [user, profile, security, updateUser])
 
   const handleCancel = useCallback(() => {
-    // Reset changes
+    // Reset to initial values from user data
+    setProfile(initialProfile)
+    setSecurity(initialSecurity)
     setHasChanges(false)
-  }, [])
+    setSaveError(null)
+  }, [initialProfile, initialSecurity])
 
   const handleAvatarUpload = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -301,6 +372,18 @@ const Profile: React.FC = () => {
     [handleSecurityChange]
   )
 
+  // Show loading state while auth is initializing
+  if (authLoading && !user) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-black flex items-center justify-center">
+        <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
+          <Loader2 className="w-6 h-6 animate-spin" />
+          <span>Loading profile...</span>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black">
       {/* Header */}
@@ -315,24 +398,44 @@ const Profile: React.FC = () => {
                 Manage your personal information and preferences
               </p>
             </div>
-            {hasChanges && (
-              <div className="flex items-center space-x-3">
-                <button
-                  onClick={handleCancel}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center"
-                >
-                  <X className="w-4 h-4 mr-2" />
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSave}
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 flex items-center"
-                >
-                  <Save className="w-4 h-4 mr-2" />
-                  Save Changes
-                </button>
-              </div>
-            )}
+            <div className="flex items-center space-x-3">
+              {/* Success message */}
+              {saveSuccess && (
+                <span className="text-sm text-green-600 dark:text-green-400">
+                  Profile saved successfully!
+                </span>
+              )}
+              {/* Error message */}
+              {(saveError || authError) && (
+                <span className="text-sm text-red-600 dark:text-red-400">
+                  {saveError || authError}
+                </span>
+              )}
+              {hasChanges && (
+                <>
+                  <button
+                    onClick={handleCancel}
+                    disabled={isSaving}
+                    className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center disabled:opacity-50"
+                  >
+                    <X className="w-4 h-4 mr-2" />
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSave}
+                    disabled={isSaving}
+                    className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 flex items-center disabled:opacity-50"
+                  >
+                    {isSaving ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <Save className="w-4 h-4 mr-2" />
+                    )}
+                    {isSaving ? 'Saving...' : 'Save Changes'}
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </header>
@@ -367,10 +470,12 @@ const Profile: React.FC = () => {
                   </label>
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mt-4">
-                  {profile.firstName} {profile.lastName}
+                  {profile.firstName || profile.lastName
+                    ? `${profile.firstName} ${profile.lastName}`.trim()
+                    : user?.display_name || 'User'}
                 </h3>
                 <p className="text-sm text-gray-500 dark:text-[#94a3b8]">
-                  {profile.jobTitle}
+                  {profile.jobTitle || profile.email}
                 </p>
               </div>
 

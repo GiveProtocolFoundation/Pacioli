@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard,
   Receipt,
@@ -25,6 +25,7 @@ import PacioliBlackLogo from '../../assets/Pacioli_logo_black.svg'
 import { useTheme } from '../../contexts/ThemeContext'
 import { useOrganization } from '../../contexts/OrganizationContext'
 import { useTransactions } from '../../contexts/TransactionContext'
+import { useAuth } from '../../contexts/AuthContext'
 import NotificationsPanel from '../notifications/NotificationsPanel'
 
 interface NavigationProps {
@@ -48,9 +49,27 @@ const Navigation: React.FC<NavigationProps> = ({
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const location = useLocation()
+  const navigate = useNavigate()
   const { theme, toggleTheme } = useTheme()
   const { organizationLogo, userAvatar } = useOrganization()
   const { pendingApprovals } = useTransactions()
+  const { user, logout } = useAuth()
+
+  // Get display name from user data
+  const displayName = user?.first_name && user?.last_name
+    ? `${user.first_name} ${user.last_name}`
+    : user?.display_name || 'User'
+  const userEmail = user?.email || ''
+
+  // Handle logout
+  const handleLogout = useCallback(async () => {
+    try {
+      await logout()
+      navigate('/login')
+    } catch (error) {
+      console.error('Logout failed:', error)
+    }
+  }, [logout, navigate])
 
   const pendingCount = pendingApprovals.length
 
@@ -300,10 +319,10 @@ const Navigation: React.FC<NavigationProps> = ({
         {/* User section at bottom */}
         <div className="border-t border-gray-200 dark:border-gray-700 p-4">
           <div className="flex items-center">
-            {userType === 'organization' && organizationLogo ? (
+            {userAvatar || (userType === 'organization' && organizationLogo) ? (
               <img
-                src={organizationLogo}
-                alt="Organization"
+                src={userAvatar || organizationLogo || ''}
+                alt="User"
                 className="w-10 h-10 rounded-full object-cover border-2 border-gray-200 dark:border-gray-700"
               />
             ) : (
@@ -313,10 +332,10 @@ const Navigation: React.FC<NavigationProps> = ({
             )}
             <div className="ml-3 flex-1">
               <p className="text-sm font-medium text-gray-900 dark:text-white">
-                {userType === 'organization' ? 'Hope Foundation' : 'John Doe'}
+                {displayName}
               </p>
               <p className="text-xs text-gray-500 dark:text-[#94a3b8]">
-                {userType === 'organization' ? 'Admin' : 'Personal Account'}
+                {userEmail || (userType === 'organization' ? 'Admin' : 'Personal Account')}
               </p>
             </div>
           </div>
@@ -446,10 +465,10 @@ const Navigation: React.FC<NavigationProps> = ({
             {/* User section */}
             <div className="border-t border-gray-200 dark:border-gray-700 p-4">
               <div className="flex items-center">
-                {userType === 'organization' && organizationLogo ? (
+                {userAvatar || (userType === 'organization' && organizationLogo) ? (
                   <img
-                    src={organizationLogo}
-                    alt="Organization"
+                    src={userAvatar || organizationLogo || ''}
+                    alt="User"
                     className="w-10 h-10 rounded-full object-cover border-2 border-gray-200 dark:border-gray-700"
                   />
                 ) : (
@@ -459,12 +478,10 @@ const Navigation: React.FC<NavigationProps> = ({
                 )}
                 <div className="ml-3 flex-1">
                   <p className="text-sm font-medium text-gray-900 dark:text-white">
-                    {userType === 'organization'
-                      ? 'Hope Foundation'
-                      : 'John Doe'}
+                    {displayName}
                   </p>
                   <p className="text-xs text-gray-500 dark:text-[#94a3b8]">
-                    {userType === 'organization' ? 'Admin' : 'Personal Account'}
+                    {userEmail || (userType === 'organization' ? 'Admin' : 'Personal Account')}
                   </p>
                 </div>
               </div>
@@ -553,14 +570,10 @@ const Navigation: React.FC<NavigationProps> = ({
                   <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-black rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1">
                     <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
                       <p className="text-sm font-medium text-gray-900 dark:text-white">
-                        {userType === 'organization'
-                          ? 'Hope Foundation'
-                          : 'John Doe'}
+                        {displayName}
                       </p>
                       <p className="text-xs text-gray-500 dark:text-[#94a3b8] mt-1">
-                        {userType === 'organization'
-                          ? 'admin@hopefoundation.org'
-                          : 'john.doe@email.com'}
+                        {userEmail}
                       </p>
                     </div>
                     <Link
@@ -585,7 +598,10 @@ const Navigation: React.FC<NavigationProps> = ({
                       Help & Support
                     </Link>
                     <div className="border-t border-gray-200 dark:border-gray-700 mt-1" />
-                    <button className="w-full px-4 py-2 text-sm text-left text-[#dc2626] dark:text-[#ef4444] hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center">
+                    <button
+                      onClick={handleLogout}
+                      className="w-full px-4 py-2 text-sm text-left text-[#dc2626] dark:text-[#ef4444] hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center"
+                    >
                       <LogOut className="w-4 h-4 mr-3" />
                       Sign Out
                     </button>

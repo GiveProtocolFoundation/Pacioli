@@ -887,7 +887,10 @@ async fn get_user_by_id(pool: &sqlx::SqlitePool, user_id: &str) -> Result<User, 
     sqlx::query_as::<_, User>(
         r#"
         SELECT id, email, email_verified, display_name, avatar_url, status,
-               two_factor_enabled, last_login_at, created_at, updated_at
+               two_factor_enabled, last_login_at, created_at, updated_at,
+               first_name, last_name, phone, company, job_title, department, location,
+               timezone, language, date_format,
+               email_notifications, sms_notifications, login_alerts
         FROM users WHERE id = ?
         "#,
     )

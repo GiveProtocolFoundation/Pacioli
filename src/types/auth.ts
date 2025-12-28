@@ -129,15 +129,29 @@ export type UserStatus =
 export interface AuthUser {
   id: string
   email: string
-  name: string
+  display_name: string
   status: UserStatus
   email_verified: boolean
   two_factor_enabled: boolean
-  failed_login_attempts: number
-  locked_until: string | null
+  avatar_url: string | null
   created_at: string
   updated_at: string
   last_login_at: string | null
+  // Extended profile fields
+  first_name: string | null
+  last_name: string | null
+  phone: string | null
+  company: string | null
+  job_title: string | null
+  department: string | null
+  location: string | null
+  timezone: string | null
+  language: string | null
+  date_format: string | null
+  // Notification preferences
+  email_notifications: boolean | null
+  sms_notifications: boolean | null
+  login_alerts: boolean | null
 }
 
 /**
@@ -146,7 +160,7 @@ export interface AuthUser {
 export interface UserDisplay {
   id: string
   email: string
-  name: string
+  display_name: string
   status: UserStatus
   email_verified: boolean
   two_factor_enabled: boolean
@@ -174,9 +188,7 @@ export interface LoginCredentials {
 export interface RegisterInput {
   email: string
   password: string
-  name: string
-  device_name?: string
-  ip_address?: string
+  display_name: string
 }
 
 /**
@@ -191,8 +203,23 @@ export interface ChangePasswordInput {
  * User update input
  */
 export interface UpdateUserInput {
-  name?: string
-  email?: string
+  display_name?: string
+  avatar_url?: string
+  // Extended profile fields
+  first_name?: string
+  last_name?: string
+  phone?: string
+  company?: string
+  job_title?: string
+  department?: string
+  location?: string
+  timezone?: string
+  language?: string
+  date_format?: string
+  // Notification preferences
+  email_notifications?: boolean
+  sms_notifications?: boolean
+  login_alerts?: boolean
 }
 
 /**
@@ -289,7 +316,7 @@ export interface ProfileWithRole {
 export interface ProfileUser {
   user_id: string
   email: string
-  name: string
+  display_name: string
   role: UserRole
   granted_at: string
   status: UserStatus

@@ -215,8 +215,7 @@ export const authService: AuthService = {
   async updateUser(token: string, input: UpdateUserInput): Promise<AuthUser> {
     return invoke<AuthUser>('update_user', {
       token,
-      name: input.name,
-      email: input.email,
+      update: input,
     })
   },
 

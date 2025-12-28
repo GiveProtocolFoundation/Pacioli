@@ -31,20 +31,34 @@ import type {
 import { hasPermission, ROLE_PERMISSIONS, parseAuthError } from '../types/auth'
 
 /**
- * Backend user response type (differs slightly from frontend AuthUser)
- * The backend may return display_name instead of name
+ * Backend user response type (matches Rust User struct)
  */
 interface BackendUser {
   id: string
   email: string
-  display_name?: string
-  name?: string
+  display_name: string
   status: UserStatus
   email_verified?: boolean
   two_factor_enabled?: boolean
+  avatar_url?: string | null
   created_at: string
   updated_at: string
   last_login_at?: string | null
+  // Extended profile fields
+  first_name?: string | null
+  last_name?: string | null
+  phone?: string | null
+  company?: string | null
+  job_title?: string | null
+  department?: string | null
+  location?: string | null
+  timezone?: string | null
+  language?: string | null
+  date_format?: string | null
+  // Notification preferences
+  email_notifications?: boolean | null
+  sms_notifications?: boolean | null
+  login_alerts?: boolean | null
 }
 
 interface AuthContextType {
@@ -285,15 +299,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         const user: AuthUser = {
           id: backendUser.id,
           email: backendUser.email,
-          name: backendUser.display_name || backendUser.name || 'Wallet User',
+          display_name: backendUser.display_name || 'Wallet User',
           status: backendUser.status,
           email_verified: backendUser.email_verified ?? false,
           two_factor_enabled: backendUser.two_factor_enabled ?? false,
-          failed_login_attempts: 0,
-          locked_until: null,
+          avatar_url: backendUser.avatar_url ?? null,
           created_at: backendUser.created_at,
           updated_at: backendUser.updated_at,
-          last_login_at: backendUser.last_login_at || null,
+          last_login_at: backendUser.last_login_at ?? null,
+          // Extended profile fields
+          first_name: backendUser.first_name ?? null,
+          last_name: backendUser.last_name ?? null,
+          phone: backendUser.phone ?? null,
+          company: backendUser.company ?? null,
+          job_title: backendUser.job_title ?? null,
+          department: backendUser.department ?? null,
+          location: backendUser.location ?? null,
+          timezone: backendUser.timezone ?? null,
+          language: backendUser.language ?? null,
+          date_format: backendUser.date_format ?? null,
+          // Notification preferences
+          email_notifications: backendUser.email_notifications ?? null,
+          sms_notifications: backendUser.sms_notifications ?? null,
+          login_alerts: backendUser.login_alerts ?? null,
         }
 
         setUser(user)
