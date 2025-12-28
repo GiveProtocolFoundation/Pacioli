@@ -616,9 +616,13 @@ const RolesView: React.FC<RolesViewProps> = ({ roles, users }) => (
               </span>
               <div className="flex items-center space-x-2">
                 <span className="text-gray-500 dark:text-[#94a3b8]">View</span>
-                <span className="text-gray-500 dark:text-[#94a3b8]">Create</span>
+                <span className="text-gray-500 dark:text-[#94a3b8]">
+                  Create
+                </span>
                 <span className="text-gray-500 dark:text-[#94a3b8]">Edit</span>
-                <span className="text-gray-500 dark:text-[#94a3b8]">Delete</span>
+                <span className="text-gray-500 dark:text-[#94a3b8]">
+                  Delete
+                </span>
               </div>
             </div>
             <div className="max-h-48 overflow-y-auto space-y-2">
