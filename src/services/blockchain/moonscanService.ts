@@ -278,7 +278,11 @@ class MoonscanService {
       }
 
       return data.result.map(tx =>
-        MoonscanService.mapTokenTransferToSubstrateTransaction(tx, network, address)
+        MoonscanService.mapTokenTransferToSubstrateTransaction(
+          tx,
+          network,
+          address
+        )
       )
     } catch (error) {
       console.error('Moonscan token transfer fetch error:', error)

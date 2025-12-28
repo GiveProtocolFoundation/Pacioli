@@ -27,7 +27,9 @@ interface AccountsTableProps {
   handleEditingCodeChange: (e: React.ChangeEvent<HTMLInputElement>) => void
   handleEditingNameChange: (e: React.ChangeEvent<HTMLInputElement>) => void
   handleEditingTypeChange: (e: React.ChangeEvent<HTMLSelectElement>) => void
-  handleEditingDescriptionChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  handleEditingDescriptionChange: (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => void
   createEditHandler: (account: ChartOfAccountsEntry) => () => void
   createDeleteHandler: (code: string) => () => void
   handleSave: () => void

@@ -122,15 +122,13 @@ class SubscanService {
     try {
       // Fetch transfers (sent + received)
       // Use correct Subscan API v2 endpoint
-      const response = await SubscanService.makeRequest<SubscanResponse<SubscanTransfer>>(
-        config,
-        '/api/v2/scan/transfers',
-        {
-          row,
-          page,
-          address,
-        }
-      ).catch((err: Error) => {
+      const response = await SubscanService.makeRequest<
+        SubscanResponse<SubscanTransfer>
+      >(config, '/api/v2/scan/transfers', {
+        row,
+        page,
+        address,
+      }).catch((err: Error) => {
         // Enhance error message for CORS issues
         if (err instanceof TypeError && err.message.includes('NetworkError')) {
           console.error(
@@ -197,16 +195,14 @@ class SubscanService {
     const transactions: SubstrateTransaction[] = []
 
     try {
-      const response = await SubscanService.makeRequest<SubscanResponse<SubscanReward>>(
-        config,
-        '/api/scan/account/reward_slash',
-        {
-          address,
-          row,
-          page,
-          is_stash: true,
-        }
-      )
+      const response = await SubscanService.makeRequest<
+        SubscanResponse<SubscanReward>
+      >(config, '/api/scan/account/reward_slash', {
+        address,
+        row,
+        page,
+        is_stash: true,
+      })
 
       if (response.code === 0 && response.data.list) {
         for (const reward of response.data.list) {
