@@ -393,12 +393,20 @@ describe('costBasisService', () => {
       const invalidLot = createLot('bad', 'not-a-date', '1.0', '20000')
       const result = validateLots([invalidLot])
       expect(result.isValid).toBe(false)
-      expect(result.errors.some(e => e.includes('Invalid acquisition date'))).toBe(true)
+      expect(
+        result.errors.some(e => e.includes('Invalid acquisition date'))
+      ).toBe(true)
     })
 
     it('should collect multiple errors', () => {
       const invalidLot1 = createLot('bad1', '2023-01-01', '1.0', '20000', '2.0')
-      const invalidLot2 = createLot('bad2', '2023-01-01', '1.0', '20000', '-0.5')
+      const invalidLot2 = createLot(
+        'bad2',
+        '2023-01-01',
+        '1.0',
+        '20000',
+        '-0.5'
+      )
       const result = validateLots([invalidLot1, invalidLot2])
       expect(result.isValid).toBe(false)
       expect(result.errors.length).toBeGreaterThanOrEqual(2)
