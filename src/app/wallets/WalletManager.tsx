@@ -14,7 +14,10 @@ import {
   type SyncProgress,
 } from '../../services/blockchain/polkadotService'
 import { indexedDBService } from '../../services/database/indexedDBService'
-import { migrationService, MigrationService } from '../../services/database/migrationService'
+import {
+  migrationService,
+  MigrationService,
+} from '../../services/database/migrationService'
 import {
   NetworkType,
   type ConnectedWallet,

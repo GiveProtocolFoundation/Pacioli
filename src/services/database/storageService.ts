@@ -68,11 +68,15 @@ export class StorageService {
 
       // Deduplicate by ID
       allTransactions[key] = Array.from(
-        new Map(allTransactions[key].map((tx: Transaction) => [tx.id, tx])).values()
+        new Map(
+          allTransactions[key].map((tx: Transaction) => [tx.id, tx])
+        ).values()
       )
 
       // Sort by block number (newest first)
-      allTransactions[key].sort((a: Transaction, b: Transaction) => b.blockNumber - a.blockNumber)
+      allTransactions[key].sort(
+        (a: Transaction, b: Transaction) => b.blockNumber - a.blockNumber
+      )
 
       localStorage.setItem(
         STORAGE_KEYS.TRANSACTIONS,

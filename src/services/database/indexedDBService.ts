@@ -418,9 +418,10 @@ class IndexedDBService {
     const db = await this.ensureDB()
     const tx = db.transaction(STORES.METADATA, 'readonly')
     const store = tx.objectStore(STORES.METADATA)
-    const result = await IndexedDBService.promisifyRequest<{ key: string; value: T }>(
-      store.get(key)
-    )
+    const result = await IndexedDBService.promisifyRequest<{
+      key: string
+      value: T
+    }>(store.get(key))
     return result?.value || null
   }
 
@@ -508,8 +509,12 @@ class IndexedDBService {
       [STORES.SYNC_STATUS, STORES.METADATA],
       'readwrite'
     )
-    await IndexedDBService.promisifyRequest(tx.objectStore(STORES.SYNC_STATUS).clear())
-    await IndexedDBService.promisifyRequest(tx.objectStore(STORES.METADATA).clear())
+    await IndexedDBService.promisifyRequest(
+      tx.objectStore(STORES.SYNC_STATUS).clear()
+    )
+    await IndexedDBService.promisifyRequest(
+      tx.objectStore(STORES.METADATA).clear()
+    )
   }
 
   /**
