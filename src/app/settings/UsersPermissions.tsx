@@ -775,7 +775,7 @@ const UsersPermissions: React.FC = () => {
     return matchesSearch && matchesStatus
   })
 
-  const getStatusBadge = (status: User['status']) => {
+  const getStatusBadge = useCallback((status: User['status']) => {
     const styles = {
       active:
         'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 border-green-200 dark:border-green-800',
@@ -792,8 +792,9 @@ const UsersPermissions: React.FC = () => {
         {status.charAt(0).toUpperCase() + status.slice(1)}
       </span>
     )
-  }
-  const formatLastLogin = (date: string | null) => {
+  }, [])
+
+  const formatLastLogin = useCallback((date: string | null) => {
     if (!date) return 'Never'
     const loginDate = new Date(date)
     const now = new Date()
@@ -805,7 +806,7 @@ const UsersPermissions: React.FC = () => {
     if (diffInHours < 24) return `${diffInHours}h ago`
     if (diffInHours < 48) return 'Yesterday'
     return loginDate.toLocaleDateString()
-  }
+  }, [])
 
   const handleOpenInviteModal = useCallback(() => {
     setShowInviteModal(true)
