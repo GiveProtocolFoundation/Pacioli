@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeAll } from 'vitest'
 import {
   getChartOfAccountsTemplate,
   getTemplatesByJurisdiction,
@@ -7,6 +7,7 @@ import {
   getAccountsByType,
   groupAccountsByType,
 } from '../chartOfAccounts'
+import type { ChartOfAccountsTemplate } from '../../types/chartOfAccounts'
 
 describe('chartOfAccounts', () => {
   describe('getChartOfAccountsTemplate', () => {
@@ -100,7 +101,15 @@ describe('chartOfAccounts', () => {
   })
 
   describe('searchAccounts', () => {
-    const template = getChartOfAccountsTemplate('us-gaap', 'individual')!
+    let template: ChartOfAccountsTemplate
+
+    beforeAll(() => {
+      const result = getChartOfAccountsTemplate('us-gaap', 'individual')
+      if (!result) {
+        throw new Error('Template not found for testing')
+      }
+      template = result
+    })
 
     it('should find accounts by code', () => {
       // Most templates have accounts starting with common codes like 1000
@@ -146,7 +155,15 @@ describe('chartOfAccounts', () => {
   })
 
   describe('getAccountsByType', () => {
-    const template = getChartOfAccountsTemplate('us-gaap', 'individual')!
+    let template: ChartOfAccountsTemplate
+
+    beforeAll(() => {
+      const result = getChartOfAccountsTemplate('us-gaap', 'individual')
+      if (!result) {
+        throw new Error('Template not found for testing')
+      }
+      template = result
+    })
 
     it('should filter Asset accounts', () => {
       const assets = getAccountsByType(template, 'Asset')
@@ -201,7 +218,15 @@ describe('chartOfAccounts', () => {
   })
 
   describe('groupAccountsByType', () => {
-    const template = getChartOfAccountsTemplate('us-gaap', 'individual')!
+    let template: ChartOfAccountsTemplate
+
+    beforeAll(() => {
+      const result = getChartOfAccountsTemplate('us-gaap', 'individual')
+      if (!result) {
+        throw new Error('Template not found for testing')
+      }
+      template = result
+    })
 
     it('should group accounts by type', () => {
       const grouped = groupAccountsByType(template)

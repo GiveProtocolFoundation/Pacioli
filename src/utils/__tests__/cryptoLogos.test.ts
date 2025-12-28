@@ -151,13 +151,16 @@ describe('cryptoLogos', () => {
 
     it('should override existing cryptocurrency logo', () => {
       const originalPath = getCryptoLogoPath('USDC')
+      const originalColor = getCryptoBrandColor('USDC')
       addCryptoLogo('USDC', '/crypto-icons/usdc-new.svg', '#FF00FF')
 
       expect(getCryptoLogoPath('USDC')).toBe('/crypto-icons/usdc-new.svg')
       expect(getCryptoBrandColor('USDC')).toBe('#FF00FF')
 
       // Restore original for other tests
-      addCryptoLogo('USDC', originalPath!, '#2775CA')
+      if (originalPath) {
+        addCryptoLogo('USDC', originalPath, originalColor)
+      }
     })
   })
 
