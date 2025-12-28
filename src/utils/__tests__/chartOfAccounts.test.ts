@@ -94,7 +94,6 @@ describe('chartOfAccounts', () => {
 
     it('should have unique templates', () => {
       const templates = getAllTemplates()
-      const names = templates.map(t => t.name)
       // Note: sme may share template with for-profit-enterprise, so we check length is reasonable
       expect(templates.length).toBeGreaterThanOrEqual(5)
     })

@@ -30,10 +30,14 @@ function createLot(
     fairValueAtAcquisition: costPerUnit,
     currentFairValue: costPerUnit,
     lastFairValueUpdate: acquisitionDate,
-    assetSymbol: 'BTC',
-    classification: 'held-for-investment',
-    measurementBasis: 'historical-cost',
-  } as CryptoLot
+    classification: 'Investment',
+    activeMarket: {
+      hasActiveMarket: true,
+      lastUpdated: acquisitionDate,
+    },
+    impairmentHistory: [],
+    cumulativeImpairment: '0',
+  }
 }
 
 describe('costBasisService', () => {
