@@ -44,7 +44,17 @@ describe('cryptoLogos', () => {
     })
 
     it('should return logo paths for all major cryptocurrencies', () => {
-      const cryptos = ['BTC', 'DOT', 'KSM', 'GLMR', 'ASTR', 'BNC', 'IBTC', 'USDC', 'USDT']
+      const cryptos = [
+        'BTC',
+        'DOT',
+        'KSM',
+        'GLMR',
+        'ASTR',
+        'BNC',
+        'IBTC',
+        'USDC',
+        'USDT',
+      ]
       cryptos.forEach(symbol => {
         expect(getCryptoLogoPath(symbol)).not.toBeNull()
       })
