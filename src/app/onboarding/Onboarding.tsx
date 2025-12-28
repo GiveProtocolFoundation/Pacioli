@@ -53,7 +53,6 @@ const ProgressConnector: React.FC<ProgressConnectorProps> = ({
   </div>
 )
 
-
 const Onboarding: React.FC = () => {
   const navigate = useNavigate()
   const [currentStep, setCurrentStep] = useState<Step>('jurisdiction')
