@@ -223,30 +223,41 @@ const WorkInfo: React.FC<WorkInfoProps> = ({
 
 const Profile: React.FC = () => {
   const { userAvatar, setUserAvatar } = useOrganization()
-  const { user, updateUser, isLoading: authLoading, error: authError } = useAuth()
+  const {
+    user,
+    updateUser,
+    isLoading: authLoading,
+    error: authError,
+  } = useAuth()
 
   // Initialize profile from authenticated user
-  const initialProfile = useMemo<UserProfile>(() => ({
-    firstName: user?.first_name || '',
-    lastName: user?.last_name || '',
-    email: user?.email || '',
-    phone: user?.phone || '',
-    company: user?.company || '',
-    jobTitle: user?.job_title || '',
-    department: user?.department || '',
-    location: user?.location || '',
-    timezone: user?.timezone || 'UTC',
-    language: user?.language || 'en',
-    dateFormat: user?.date_format || 'MM/DD/YYYY',
-    avatar: user?.avatar_url || userAvatar,
-  }), [user, userAvatar])
+  const initialProfile = useMemo<UserProfile>(
+    () => ({
+      firstName: user?.first_name || '',
+      lastName: user?.last_name || '',
+      email: user?.email || '',
+      phone: user?.phone || '',
+      company: user?.company || '',
+      jobTitle: user?.job_title || '',
+      department: user?.department || '',
+      location: user?.location || '',
+      timezone: user?.timezone || 'UTC',
+      language: user?.language || 'en',
+      dateFormat: user?.date_format || 'MM/DD/YYYY',
+      avatar: user?.avatar_url || userAvatar,
+    }),
+    [user, userAvatar]
+  )
 
-  const initialSecurity = useMemo<SecuritySettings>(() => ({
-    twoFactorEnabled: user?.two_factor_enabled || false,
-    emailNotifications: user?.email_notifications ?? true,
-    smsNotifications: user?.sms_notifications ?? false,
-    loginAlerts: user?.login_alerts ?? true,
-  }), [user])
+  const initialSecurity = useMemo<SecuritySettings>(
+    () => ({
+      twoFactorEnabled: user?.two_factor_enabled || false,
+      emailNotifications: user?.email_notifications ?? true,
+      smsNotifications: user?.sms_notifications ?? false,
+      loginAlerts: user?.login_alerts ?? true,
+    }),
+    [user]
+  )
 
   const [profile, setProfile] = useState<UserProfile>(initialProfile)
   const [security, setSecurity] = useState<SecuritySettings>(initialSecurity)
@@ -292,7 +303,9 @@ const Profile: React.FC = () => {
 
     try {
       await updateUser({
-        display_name: `${profile.firstName} ${profile.lastName}`.trim() || user.display_name,
+        display_name:
+          `${profile.firstName} ${profile.lastName}`.trim() ||
+          user.display_name,
         avatar_url: profile.avatar || undefined,
         first_name: profile.firstName || undefined,
         last_name: profile.lastName || undefined,
@@ -313,7 +326,9 @@ const Profile: React.FC = () => {
       // Clear success message after 3 seconds
       setTimeout(() => setSaveSuccess(false), 3000)
     } catch (err) {
-      setSaveError(err instanceof Error ? err.message : 'Failed to save profile')
+      setSaveError(
+        err instanceof Error ? err.message : 'Failed to save profile'
+      )
     } finally {
       setIsSaving(false)
     }

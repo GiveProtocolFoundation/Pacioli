@@ -138,11 +138,16 @@ const AccountsTable: React.FC<AccountsTableProps> = ({
           )}
           {filteredAccounts.map(account =>
             !editingAccount || editingAccount.code !== account.code ? (
-              <tr key={account.code} className="text-gray-900 dark:text-gray-100">
+              <tr
+                key={account.code}
+                className="text-gray-900 dark:text-gray-100"
+              >
                 <td className="px-6 py-4">{account.code}</td>
                 <td className="px-6 py-4">{account.name}</td>
                 <td className="px-6 py-4">{account.type}</td>
-                <td className="px-6 py-4 text-gray-600 dark:text-gray-400">{account.description}</td>
+                <td className="px-6 py-4 text-gray-600 dark:text-gray-400">
+                  {account.description}
+                </td>
                 {canEdit && (
                   <td className="px-6 py-4 text-right">
                     <button
