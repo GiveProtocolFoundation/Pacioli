@@ -571,8 +571,8 @@ pub async fn update_user(
     .bind(now)
     .bind(&claims.sub)
     .execute(pool)
-        .await
-        .map_err(|e| format!("Failed to update user: {}", e))?;
+    .await
+    .map_err(|e| format!("Failed to update user: {}", e))?;
 
     get_user_by_id(pool, &claims.sub).await
 }
