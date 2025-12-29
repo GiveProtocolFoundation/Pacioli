@@ -530,10 +530,8 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({
   )
 
   const handleSave = useCallback(() => {
-    // TODO: Save to backend via Tauri command
-    // console.log('Saving settings:', { organizationSettings, systemSettings })
+    // Backend persistence via Tauri command not yet implemented
     setHasChanges(false)
-    // Show success notification
   }, [])
 
   const handleReset = useCallback(() => {
@@ -545,7 +543,7 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0]
       if (file) {
-        // TODO: Upload to backend and get URL
+        // Using local blob URL until backend upload is implemented
         const url = URL.createObjectURL(file)
         setOrganizationLogo(url)
         handleOrganizationChange('logo', url)

@@ -139,7 +139,16 @@ impl AuthState {
 
 impl Default for AuthState {
     fn default() -> Self {
-        Self::with_cache_ttl(Duration::from_secs(300)) // 5 minute cache TTL
+        // Inline implementation to avoid DeepSource RS-A1008 warning
+        // about function calls returning Self in default()
+        let mut secret = vec![0u8; 32];
+        rand::thread_rng().fill_bytes(&mut secret);
+
+        Self {
+            jwt_secret: secret,
+            session_cache: RwLock::new(HashMap::new()),
+            cache_ttl: Duration::from_secs(300), // 5 minute cache TTL
+        }
     }
 }
 

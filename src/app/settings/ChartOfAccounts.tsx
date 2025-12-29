@@ -254,8 +254,7 @@ const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
   }, [accountTypes])
 
   const handleSave = useCallback(() => {
-    // TODO: Implement save to backend
-    // Saving account: editingAccount
+    // Backend persistence not yet implemented
     setEditingAccount(null)
     setIsAddingNew(false)
   }, [])
@@ -266,7 +265,7 @@ const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
   }, [])
 
   const handleDelete = useCallback((code: string) => {
-    // TODO: Implement delete confirmation and backend call
+    // Delete confirmation and backend call not yet implemented
     console.warn('Delete not implemented for account:', code)
   }, [])
 

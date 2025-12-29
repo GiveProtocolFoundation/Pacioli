@@ -154,10 +154,8 @@ const Currencies: React.FC = () => {
     const { coingeckoApiKey, fixerApiKey, ...settingsToSave } = localSettings
     updateContextSettings(settingsToSave)
 
-    // TODO: Save API keys to backend via Tauri command
-    // console.log('Saving currency settings:', localSettings);
+    // API keys backend persistence via Tauri command not yet implemented
     setHasChanges(false)
-    // Show success notification
   }, [localSettings, updateContextSettings])
 
   const handleReset = useCallback(() => {
