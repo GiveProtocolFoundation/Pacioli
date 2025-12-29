@@ -925,3 +925,129 @@ async fn log_wallet_audit(
     .await
     .ok();
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_create_sign_message_substrate() {
+        let address = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY";
+        let nonce = "abc123";
+        let message = create_sign_message(address, nonce, &WalletType::Substrate);
+
+        assert!(message.contains(address));
+        assert!(message.contains(nonce));
+        assert!(message.contains("Pacioli"));
+    }
+
+    #[test]
+    fn test_create_sign_message_evm() {
+        let address = "0x742d35Cc6634C0532925a3b844Bc9e7595f8B123";
+        let nonce = "xyz789";
+        let message = create_sign_message(address, nonce, &WalletType::Evm);
+
+        assert!(message.contains(address));
+        assert!(message.contains(nonce));
+        assert!(message.contains("Pacioli"));
+    }
+
+    #[test]
+    fn test_validate_substrate_address_valid() {
+        // Valid Substrate addresses (SS58 format)
+        let valid_addresses = [
+            "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY", // Alice
+            "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty", // Bob
+        ];
+
+        for addr in valid_addresses {
+            assert!(
+                validate_wallet_address(addr, &WalletType::Substrate).is_ok(),
+                "Should accept valid Substrate address: {}",
+                addr
+            );
+        }
+    }
+
+    #[test]
+    fn test_validate_substrate_address_invalid() {
+        let invalid_addresses = ["", "0x123", "invalid", "12345"];
+
+        for addr in invalid_addresses {
+            assert!(
+                validate_wallet_address(addr, &WalletType::Substrate).is_err(),
+                "Should reject invalid Substrate address: {}",
+                addr
+            );
+        }
+    }
+
+    #[test]
+    fn test_validate_evm_address_valid() {
+        let valid_addresses = [
+            "0x742d35Cc6634C0532925a3b844Bc9e7595f8B123",
+            "0x0000000000000000000000000000000000000000",
+            "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
+        ];
+
+        for addr in valid_addresses {
+            assert!(
+                validate_wallet_address(addr, &WalletType::Evm).is_ok(),
+                "Should accept valid EVM address: {}",
+                addr
+            );
+        }
+    }
+
+    #[test]
+    fn test_validate_evm_address_invalid() {
+        let invalid_addresses = [
+            "",
+            "0x123",                                        // Too short
+            "742d35Cc6634C0532925a3b844Bc9e7595f8B123",      // Missing 0x
+            "0x742d35Cc6634C0532925a3b844Bc9e7595f8B12345", // Too long
+            "0xGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG",   // Invalid hex
+        ];
+
+        for addr in invalid_addresses {
+            assert!(
+                validate_wallet_address(addr, &WalletType::Evm).is_err(),
+                "Should reject invalid EVM address: {}",
+                addr
+            );
+        }
+    }
+
+    #[test]
+    fn test_addresses_match_case_insensitive() {
+        assert!(addresses_match(
+            "0x742d35Cc6634C0532925a3b844Bc9e7595f8B123",
+            "0x742D35CC6634C0532925A3B844BC9E7595F8B123"
+        ));
+
+        assert!(addresses_match("ABC", "abc"));
+        assert!(!addresses_match("abc", "def"));
+    }
+
+    #[test]
+    fn test_verify_evm_signature_invalid_format() {
+        // Test with invalid signature format
+        let result = verify_evm_signature(
+            "0x742d35Cc6634C0532925a3b844Bc9e7595f8B123",
+            "Test message",
+            "invalid_signature",
+        );
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_verify_substrate_signature_invalid_format() {
+        // Test with invalid signature format
+        let result = verify_substrate_signature(
+            "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+            "Test message",
+            "invalid_signature",
+        );
+        assert!(result.is_err());
+    }
+}
