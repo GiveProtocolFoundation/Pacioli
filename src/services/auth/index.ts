@@ -23,6 +23,8 @@ import type {
   Invitation,
   CreateInvitationInput,
   UserRole,
+  EmailChangeResponse,
+  EmailChangeStatus,
 } from '../../types/auth'
 
 // =============================================================================
@@ -141,6 +143,16 @@ export interface AuthService {
     accessToken?: string
   ): Promise<AuthResponse>
   revokeInvitation(token: string, invitationId: string): Promise<void>
+
+  // Email change
+  requestEmailChange(
+    token: string,
+    currentPassword: string,
+    newEmail: string
+  ): Promise<EmailChangeResponse>
+  verifyEmailChange(verificationToken: string): Promise<string>
+  cancelEmailChange(cancellationToken: string): Promise<string>
+  getEmailChangeStatus(token: string): Promise<EmailChangeStatus>
 }
 
 /**
@@ -324,6 +336,33 @@ export const authService: AuthService = {
 
   async revokeInvitation(token: string, invitationId: string): Promise<void> {
     return invoke('revoke_invitation', { token, invitationId })
+  },
+
+  // Email change
+  async requestEmailChange(
+    token: string,
+    currentPassword: string,
+    newEmail: string
+  ): Promise<EmailChangeResponse> {
+    return invoke<EmailChangeResponse>('request_email_change', {
+      token,
+      request: {
+        current_password: currentPassword,
+        new_email: newEmail,
+      },
+    })
+  },
+
+  async verifyEmailChange(verificationToken: string): Promise<string> {
+    return invoke<string>('verify_email_change', { verificationToken })
+  },
+
+  async cancelEmailChange(cancellationToken: string): Promise<string> {
+    return invoke<string>('cancel_email_change', { cancellationToken })
+  },
+
+  async getEmailChangeStatus(token: string): Promise<EmailChangeStatus> {
+    return invoke<EmailChangeStatus>('get_email_change_status', { token })
   },
 }
 

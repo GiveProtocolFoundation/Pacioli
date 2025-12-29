@@ -200,6 +200,32 @@ export interface ChangePasswordInput {
 }
 
 /**
+ * Email change request input
+ */
+export interface EmailChangeRequest {
+  current_password: string
+  new_email: string
+}
+
+/**
+ * Email change response from request
+ */
+export interface EmailChangeResponse {
+  message: string
+  expires_at: string
+}
+
+/**
+ * Email change status
+ */
+export interface EmailChangeStatus {
+  pending: boolean
+  new_email?: string
+  expires_at?: string
+  created_at?: string
+}
+
+/**
  * User update input
  */
 export interface UpdateUserInput {

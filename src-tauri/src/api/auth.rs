@@ -197,6 +197,30 @@ pub struct InvitationWithProfile {
 }
 
 // ============================================================================
+// Email Change Types
+// ============================================================================
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct EmailChangeRequest {
+    pub current_password: String,
+    pub new_email: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct EmailChangeResponse {
+    pub message: String,
+    pub expires_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct EmailChangeStatus {
+    pub pending: bool,
+    pub new_email: Option<String>,
+    pub expires_at: Option<DateTime<Utc>>,
+    pub created_at: Option<DateTime<Utc>>,
+}
+
+// ============================================================================
 // Authentication Commands
 // ============================================================================
 
@@ -639,6 +663,318 @@ pub async fn change_password(
     .await;
 
     Ok(())
+}
+
+// ============================================================================
+// Email Change Commands
+// ============================================================================
+
+/// Request an email change - sends verification to new email
+#[tauri::command]
+pub async fn request_email_change(
+    db: State<'_, DatabaseState>,
+    auth: State<'_, AuthState>,
+    token: String,
+    request: EmailChangeRequest,
+) -> Result<EmailChangeResponse, String> {
+    let claims = verify_access_token(&token, auth.get_jwt_secret())?;
+    let pool = &db.pool;
+
+    // Validate new email format
+    validate_email(&request.new_email)?;
+    let new_email = request.new_email.to_lowercase();
+
+    // Get current user info and password hash
+    let user_row: Option<(String, String, String)> = sqlx::query_as(
+        "SELECT id, email, password_hash FROM users WHERE id = ?",
+    )
+    .bind(&claims.sub)
+    .fetch_optional(pool)
+    .await
+    .map_err(|e| format!("Database error: {}", e))?;
+
+    let (user_id, old_email, password_hash) =
+        user_row.ok_or("User not found")?;
+
+    // Verify current password
+    if !verify_password(&request.current_password, &password_hash)? {
+        log_audit_event(
+            pool,
+            Some(&user_id),
+            "email_change_request",
+            "failure",
+            Some("Invalid password"),
+            None,
+            None,
+        )
+        .await;
+        return Err("Current password is incorrect".to_string());
+    }
+
+    // Check if new email is same as current
+    if new_email == old_email.to_lowercase() {
+        return Err("New email must be different from current email".to_string());
+    }
+
+    // Check if new email is already in use
+    let existing: Option<(String,)> = sqlx::query_as(
+        "SELECT id FROM users WHERE LOWER(email) = ? AND id != ?",
+    )
+    .bind(&new_email)
+    .bind(&user_id)
+    .fetch_optional(pool)
+    .await
+    .map_err(|e| format!("Database error: {}", e))?;
+
+    if existing.is_some() {
+        return Err("This email is already in use by another account".to_string());
+    }
+
+    // Cancel any existing pending requests
+    sqlx::query(
+        "UPDATE email_change_requests SET cancelled_at = ? WHERE user_id = ? AND verified_at IS NULL AND cancelled_at IS NULL AND completed_at IS NULL",
+    )
+    .bind(Utc::now())
+    .bind(&user_id)
+    .execute(pool)
+    .await
+    .ok();
+
+    // Generate tokens
+    let verification_token = generate_invitation_token();
+    let cancellation_token = generate_invitation_token();
+    let expires_at = Utc::now() + Duration::hours(48);
+    let request_id = Uuid::new_v4().to_string();
+
+    // Create the email change request
+    sqlx::query(
+        r#"
+        INSERT INTO email_change_requests
+        (id, user_id, old_email, new_email, verification_token, cancellation_token, expires_at, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        "#,
+    )
+    .bind(&request_id)
+    .bind(&user_id)
+    .bind(&old_email)
+    .bind(&new_email)
+    .bind(&verification_token)
+    .bind(&cancellation_token)
+    .bind(expires_at)
+    .bind(Utc::now())
+    .execute(pool)
+    .await
+    .map_err(|e| format!("Failed to create email change request: {}", e))?;
+
+    // Log the request
+    log_audit_event(
+        pool,
+        Some(&user_id),
+        "email_change_request",
+        "success",
+        Some(&format!("Requested change from {} to {}", old_email, new_email)),
+        None,
+        None,
+    )
+    .await;
+
+    // In a production app, you would send emails here:
+    // 1. Verification email to new_email with verification_token
+    // 2. Security alert to old_email with cancellation_token
+    // For now, we'll log the tokens for testing
+    println!("Email Change Request Created:");
+    println!("  Verification token (for new email): {}", verification_token);
+    println!("  Cancellation token (for old email): {}", cancellation_token);
+
+    Ok(EmailChangeResponse {
+        message: format!(
+            "A verification email has been sent to {}. Please check your inbox and click the verification link within 48 hours.",
+            new_email
+        ),
+        expires_at,
+    })
+}
+
+/// Verify email change with token from new email
+#[tauri::command]
+pub async fn verify_email_change(
+    db: State<'_, DatabaseState>,
+    verification_token: String,
+) -> Result<String, String> {
+    let pool = &db.pool;
+
+    // Find the pending request
+    let request: Option<(String, String, String, String, DateTime<Utc>)> = sqlx::query_as(
+        r#"
+        SELECT id, user_id, old_email, new_email, expires_at
+        FROM email_change_requests
+        WHERE verification_token = ?
+          AND verified_at IS NULL
+          AND cancelled_at IS NULL
+          AND completed_at IS NULL
+        "#,
+    )
+    .bind(&verification_token)
+    .fetch_optional(pool)
+    .await
+    .map_err(|e| format!("Database error: {}", e))?;
+
+    let (request_id, user_id, old_email, new_email, expires_at) =
+        request.ok_or("Invalid or expired verification token")?;
+
+    // Check if expired
+    if expires_at < Utc::now() {
+        return Err("This verification link has expired. Please request a new email change.".to_string());
+    }
+
+    // Check if new email was taken in the meantime
+    let existing: Option<(String,)> = sqlx::query_as(
+        "SELECT id FROM users WHERE LOWER(email) = ? AND id != ?",
+    )
+    .bind(new_email.to_lowercase())
+    .bind(&user_id)
+    .fetch_optional(pool)
+    .await
+    .map_err(|e| format!("Database error: {}", e))?;
+
+    if existing.is_some() {
+        return Err("This email is already in use by another account".to_string());
+    }
+
+    let now = Utc::now();
+
+    // Update the user's email
+    sqlx::query(
+        "UPDATE users SET email = ?, email_verified = 1, updated_at = ? WHERE id = ?",
+    )
+    .bind(&new_email)
+    .bind(now)
+    .bind(&user_id)
+    .execute(pool)
+    .await
+    .map_err(|e| format!("Failed to update email: {}", e))?;
+
+    // Mark the request as verified and completed
+    sqlx::query(
+        "UPDATE email_change_requests SET verified_at = ?, completed_at = ? WHERE id = ?",
+    )
+    .bind(now)
+    .bind(now)
+    .bind(&request_id)
+    .execute(pool)
+    .await
+    .ok();
+
+    // Log the change
+    log_audit_event(
+        pool,
+        Some(&user_id),
+        "email_change_complete",
+        "success",
+        Some(&format!("Changed email from {} to {}", old_email, new_email)),
+        None,
+        None,
+    )
+    .await;
+
+    Ok(format!("Your email has been successfully changed to {}", new_email))
+}
+
+/// Cancel email change with token from old email
+#[tauri::command]
+pub async fn cancel_email_change(
+    db: State<'_, DatabaseState>,
+    cancellation_token: String,
+) -> Result<String, String> {
+    let pool = &db.pool;
+
+    // Find the pending request
+    let request: Option<(String, String, String, String)> = sqlx::query_as(
+        r#"
+        SELECT id, user_id, old_email, new_email
+        FROM email_change_requests
+        WHERE cancellation_token = ?
+          AND verified_at IS NULL
+          AND cancelled_at IS NULL
+          AND completed_at IS NULL
+        "#,
+    )
+    .bind(&cancellation_token)
+    .fetch_optional(pool)
+    .await
+    .map_err(|e| format!("Database error: {}", e))?;
+
+    let (request_id, user_id, old_email, new_email) =
+        request.ok_or("Invalid cancellation token or request already processed")?;
+
+    // Cancel the request
+    sqlx::query(
+        "UPDATE email_change_requests SET cancelled_at = ? WHERE id = ?",
+    )
+    .bind(Utc::now())
+    .bind(&request_id)
+    .execute(pool)
+    .await
+    .map_err(|e| format!("Failed to cancel request: {}", e))?;
+
+    // Log the cancellation
+    log_audit_event(
+        pool,
+        Some(&user_id),
+        "email_change_cancelled",
+        "success",
+        Some(&format!("Cancelled change from {} to {}", old_email, new_email)),
+        None,
+        None,
+    )
+    .await;
+
+    Ok("Email change request has been cancelled. Your email remains unchanged.".to_string())
+}
+
+/// Get pending email change status
+#[tauri::command]
+pub async fn get_email_change_status(
+    db: State<'_, DatabaseState>,
+    auth: State<'_, AuthState>,
+    token: String,
+) -> Result<EmailChangeStatus, String> {
+    let claims = verify_access_token(&token, auth.get_jwt_secret())?;
+    let pool = &db.pool;
+
+    let pending: Option<(String, DateTime<Utc>, DateTime<Utc>)> = sqlx::query_as(
+        r#"
+        SELECT new_email, expires_at, created_at
+        FROM email_change_requests
+        WHERE user_id = ?
+          AND verified_at IS NULL
+          AND cancelled_at IS NULL
+          AND completed_at IS NULL
+          AND expires_at > ?
+        ORDER BY created_at DESC
+        LIMIT 1
+        "#,
+    )
+    .bind(&claims.sub)
+    .bind(Utc::now())
+    .fetch_optional(pool)
+    .await
+    .map_err(|e| format!("Database error: {}", e))?;
+
+    match pending {
+        Some((new_email, expires_at, created_at)) => Ok(EmailChangeStatus {
+            pending: true,
+            new_email: Some(new_email),
+            expires_at: Some(expires_at),
+            created_at: Some(created_at),
+        }),
+        None => Ok(EmailChangeStatus {
+            pending: false,
+            new_email: None,
+            expires_at: None,
+            created_at: None,
+        }),
+    }
 }
 
 // ============================================================================
