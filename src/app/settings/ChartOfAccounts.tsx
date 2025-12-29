@@ -102,7 +102,7 @@ const AccountsTable: React.FC<AccountsTableProps> = ({
                 <select
                   value={editingAccount.type}
                   onChange={handleEditingTypeChange}
-                  className="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="select-input w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   {accountTypes.map(type => (
                     <option key={type} value={type}>
@@ -138,11 +138,11 @@ const AccountsTable: React.FC<AccountsTableProps> = ({
           )}
           {filteredAccounts.map(account =>
             !editingAccount || editingAccount.code !== account.code ? (
-              <tr key={account.code}>
+              <tr key={account.code} className="text-gray-900 dark:text-gray-100">
                 <td className="px-6 py-4">{account.code}</td>
                 <td className="px-6 py-4">{account.name}</td>
                 <td className="px-6 py-4">{account.type}</td>
-                <td className="px-6 py-4">{account.description}</td>
+                <td className="px-6 py-4 text-gray-600 dark:text-gray-400">{account.description}</td>
                 {canEdit && (
                   <td className="px-6 py-4 text-right">
                     <button
@@ -392,7 +392,7 @@ const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
         <select
           value={selectedType}
           onChange={handleTypeChange}
-          className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="select-input px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           {accountTypes.map(type => (
             <option key={type} value={type}>

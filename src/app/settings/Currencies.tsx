@@ -95,7 +95,7 @@ const PrimaryCurrencySection: React.FC<PrimaryCurrencySectionProps> = ({
           id="primary-currency"
           value={value}
           onChange={onChange}
-          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="select-input w-full px-3 pr-8 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <optgroup label="Fiat Currencies">
             {SUPPORTED_FIAT_CURRENCIES.map(currency => (
@@ -510,7 +510,7 @@ const Currencies: React.FC = () => {
                   id="currency-display-format"
                   value={localSettings.currencyDisplayFormat}
                   onChange={handleDisplayFormatChange}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="select-input w-full px-3 pr-8 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="symbol">Symbol ($1,234.56)</option>
                   <option value="code">Code (1,234.56 USD)</option>
@@ -550,7 +550,7 @@ const Currencies: React.FC = () => {
                   id="decimal-separator"
                   value={localSettings.decimalSeparatorStandard}
                   onChange={handleSeparatorStandardChange}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="select-input w-full px-3 pr-8 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="point-comma">
                     Decimal point format - 1,234.56

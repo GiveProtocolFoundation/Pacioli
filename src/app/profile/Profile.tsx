@@ -642,7 +642,7 @@ const Profile: React.FC = () => {
                             id="timezone"
                             value={profile.timezone}
                             onChange={createProfileInputHandler('timezone')}
-                            className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="select-input w-full pl-10 pr-8 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                           >
                             <option value="America/Los_Angeles">
                               Pacific Time (US & Canada)
@@ -671,7 +671,7 @@ const Profile: React.FC = () => {
                           id="language"
                           value={profile.language}
                           onChange={createProfileInputHandler('language')}
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="select-input w-full px-3 pr-8 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
                           <option value="en">English</option>
                           <option value="es">Español</option>
@@ -692,7 +692,7 @@ const Profile: React.FC = () => {
                             id="dateFormat"
                             value={profile.dateFormat}
                             onChange={createProfileInputHandler('dateFormat')}
-                            className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="select-input w-full pl-10 pr-8 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                           >
                             <option value="MM/DD/YYYY">MM/DD/YYYY (US)</option>
                             <option value="DD/MM/YYYY">DD/MM/YYYY (EU)</option>

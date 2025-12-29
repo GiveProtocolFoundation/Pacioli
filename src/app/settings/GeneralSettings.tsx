@@ -139,7 +139,7 @@ const OrganizationInformationSection: React.FC<
             id="organizationType"
             value={organizationSettings.organizationType}
             onChange={handleOrgTypeChange}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="select-input w-full px-3 pr-8 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="not-for-profit">Not-for-Profit Organization</option>
             <option value="for-profit-enterprise">For-Profit Enterprise</option>
@@ -409,7 +409,7 @@ const FiscalYearSection: React.FC<FiscalYearSectionProps> = ({
           id="fiscalYearEnd"
           value={systemSettings.fiscalYearEnd}
           onChange={createHandler('fiscalYearEnd')}
-          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="select-input w-full px-3 pr-8 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <FiscalYearOptions />
         </select>
@@ -438,7 +438,7 @@ const TimezoneSelect: React.FC<TimezoneSelectProps> = ({ value, onChange }) => (
       id="timezone"
       value={value}
       onChange={onChange}
-      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+      className="select-input w-full px-3 pr-8 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
     >
       <option value="Etc/GMT+12">
         UTC-12:00 - International Date Line West (AoE) - Baker Island, Howland
@@ -649,7 +649,7 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({
                 id="language"
                 value={systemSettings.language}
                 onChange={createSystemSelectHandler('language')}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="select-input w-full px-3 pr-8 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="en">English</option>
                 <option value="es">Español</option>
@@ -669,7 +669,7 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({
                 id="dateFormat"
                 value={systemSettings.dateFormat}
                 onChange={createSystemSelectHandler('dateFormat')}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="select-input w-full px-3 pr-8 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="MM/DD/YYYY">MM/DD/YYYY (US)</option>
                 <option value="DD/MM/YYYY">DD/MM/YYYY (EU)</option>
@@ -688,7 +688,7 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({
                 id="timeFormat"
                 value={systemSettings.timeFormat}
                 onChange={createSystemSelectHandler('timeFormat')}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="select-input w-full px-3 pr-8 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="12h">12-hour (AM/PM)</option>
                 <option value="24h">24-hour</option>
