@@ -685,16 +685,14 @@ pub async fn request_email_change(
     let new_email = request.new_email.to_lowercase();
 
     // Get current user info and password hash
-    let user_row: Option<(String, String, String)> = sqlx::query_as(
-        "SELECT id, email, password_hash FROM users WHERE id = ?",
-    )
-    .bind(&claims.sub)
-    .fetch_optional(pool)
-    .await
-    .map_err(|e| format!("Database error: {}", e))?;
+    let user_row: Option<(String, String, String)> =
+        sqlx::query_as("SELECT id, email, password_hash FROM users WHERE id = ?")
+            .bind(&claims.sub)
+            .fetch_optional(pool)
+            .await
+            .map_err(|e| format!("Database error: {}", e))?;
 
-    let (user_id, old_email, password_hash) =
-        user_row.ok_or("User not found")?;
+    let (user_id, old_email, password_hash) = user_row.ok_or("User not found")?;
 
     // Verify current password
     if !verify_password(&request.current_password, &password_hash)? {
@@ -717,14 +715,13 @@ pub async fn request_email_change(
     }
 
     // Check if new email is already in use
-    let existing: Option<(String,)> = sqlx::query_as(
-        "SELECT id FROM users WHERE LOWER(email) = ? AND id != ?",
-    )
-    .bind(&new_email)
-    .bind(&user_id)
-    .fetch_optional(pool)
-    .await
-    .map_err(|e| format!("Database error: {}", e))?;
+    let existing: Option<(String,)> =
+        sqlx::query_as("SELECT id FROM users WHERE LOWER(email) = ? AND id != ?")
+            .bind(&new_email)
+            .bind(&user_id)
+            .fetch_optional(pool)
+            .await
+            .map_err(|e| format!("Database error: {}", e))?;
 
     if existing.is_some() {
         return Err("This email is already in use by another account".to_string());
@@ -772,7 +769,10 @@ pub async fn request_email_change(
         Some(&user_id),
         "email_change_request",
         "success",
-        Some(&format!("Requested change from {} to {}", old_email, new_email)),
+        Some(&format!(
+            "Requested change from {} to {}",
+            old_email, new_email
+        )),
         None,
         None,
     )
@@ -783,8 +783,14 @@ pub async fn request_email_change(
     // 2. Security alert to old_email with cancellation_token
     // For now, we'll log the tokens for testing
     println!("Email Change Request Created:");
-    println!("  Verification token (for new email): {}", verification_token);
-    println!("  Cancellation token (for old email): {}", cancellation_token);
+    println!(
+        "  Verification token (for new email): {}",
+        verification_token
+    );
+    println!(
+        "  Cancellation token (for old email): {}",
+        cancellation_token
+    );
 
     Ok(EmailChangeResponse {
         message: format!(
@@ -824,18 +830,19 @@ pub async fn verify_email_change(
 
     // Check if expired
     if expires_at < Utc::now() {
-        return Err("This verification link has expired. Please request a new email change.".to_string());
+        return Err(
+            "This verification link has expired. Please request a new email change.".to_string(),
+        );
     }
 
     // Check if new email was taken in the meantime
-    let existing: Option<(String,)> = sqlx::query_as(
-        "SELECT id FROM users WHERE LOWER(email) = ? AND id != ?",
-    )
-    .bind(new_email.to_lowercase())
-    .bind(&user_id)
-    .fetch_optional(pool)
-    .await
-    .map_err(|e| format!("Database error: {}", e))?;
+    let existing: Option<(String,)> =
+        sqlx::query_as("SELECT id FROM users WHERE LOWER(email) = ? AND id != ?")
+            .bind(new_email.to_lowercase())
+            .bind(&user_id)
+            .fetch_optional(pool)
+            .await
+            .map_err(|e| format!("Database error: {}", e))?;
 
     if existing.is_some() {
         return Err("This email is already in use by another account".to_string());
@@ -844,26 +851,22 @@ pub async fn verify_email_change(
     let now = Utc::now();
 
     // Update the user's email
-    sqlx::query(
-        "UPDATE users SET email = ?, email_verified = 1, updated_at = ? WHERE id = ?",
-    )
-    .bind(&new_email)
-    .bind(now)
-    .bind(&user_id)
-    .execute(pool)
-    .await
-    .map_err(|e| format!("Failed to update email: {}", e))?;
+    sqlx::query("UPDATE users SET email = ?, email_verified = 1, updated_at = ? WHERE id = ?")
+        .bind(&new_email)
+        .bind(now)
+        .bind(&user_id)
+        .execute(pool)
+        .await
+        .map_err(|e| format!("Failed to update email: {}", e))?;
 
     // Mark the request as verified and completed
-    sqlx::query(
-        "UPDATE email_change_requests SET verified_at = ?, completed_at = ? WHERE id = ?",
-    )
-    .bind(now)
-    .bind(now)
-    .bind(&request_id)
-    .execute(pool)
-    .await
-    .ok();
+    sqlx::query("UPDATE email_change_requests SET verified_at = ?, completed_at = ? WHERE id = ?")
+        .bind(now)
+        .bind(now)
+        .bind(&request_id)
+        .execute(pool)
+        .await
+        .ok();
 
     // Log the change
     log_audit_event(
@@ -871,13 +874,19 @@ pub async fn verify_email_change(
         Some(&user_id),
         "email_change_complete",
         "success",
-        Some(&format!("Changed email from {} to {}", old_email, new_email)),
+        Some(&format!(
+            "Changed email from {} to {}",
+            old_email, new_email
+        )),
         None,
         None,
     )
     .await;
 
-    Ok(format!("Your email has been successfully changed to {}", new_email))
+    Ok(format!(
+        "Your email has been successfully changed to {}",
+        new_email
+    ))
 }
 
 /// Cancel email change with token from old email
@@ -908,14 +917,12 @@ pub async fn cancel_email_change(
         request.ok_or("Invalid cancellation token or request already processed")?;
 
     // Cancel the request
-    sqlx::query(
-        "UPDATE email_change_requests SET cancelled_at = ? WHERE id = ?",
-    )
-    .bind(Utc::now())
-    .bind(&request_id)
-    .execute(pool)
-    .await
-    .map_err(|e| format!("Failed to cancel request: {}", e))?;
+    sqlx::query("UPDATE email_change_requests SET cancelled_at = ? WHERE id = ?")
+        .bind(Utc::now())
+        .bind(&request_id)
+        .execute(pool)
+        .await
+        .map_err(|e| format!("Failed to cancel request: {}", e))?;
 
     // Log the cancellation
     log_audit_event(
@@ -923,7 +930,10 @@ pub async fn cancel_email_change(
         Some(&user_id),
         "email_change_cancelled",
         "success",
-        Some(&format!("Cancelled change from {} to {}", old_email, new_email)),
+        Some(&format!(
+            "Cancelled change from {} to {}",
+            old_email, new_email
+        )),
         None,
         None,
     )

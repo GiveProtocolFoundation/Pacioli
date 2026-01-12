@@ -1004,7 +1004,7 @@ mod tests {
         let invalid_addresses = [
             "",
             "0x123",                                        // Too short
-            "742d35Cc6634C0532925a3b844Bc9e7595f8B123",      // Missing 0x
+            "742d35Cc6634C0532925a3b844Bc9e7595f8B123",     // Missing 0x
             "0x742d35Cc6634C0532925a3b844Bc9e7595f8B12345", // Too long
             "0xGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG",   // Invalid hex
         ];
