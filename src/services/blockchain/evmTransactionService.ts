@@ -504,7 +504,7 @@ class EVMTransactionService {
   /**
    * Format balance with proper decimals
    */
-  formatBalance(value: string, decimals: number = 18): string {
+  static formatBalance(value: string, decimals = 18): string {
     try {
       return ethers.formatUnits(value, decimals)
     } catch {
