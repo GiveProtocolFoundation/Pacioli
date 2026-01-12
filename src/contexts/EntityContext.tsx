@@ -5,7 +5,13 @@
  * Provides entity state and actions across the application
  */
 
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react'
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+} from 'react'
 import {
   persistence,
   type Entity,
@@ -37,24 +43,40 @@ interface EntityContextType {
 
   // Entity address state and actions
   getEntityAddresses: (entityId: string) => Promise<EntityAddress[]>
-  addEntityAddress: (address: Omit<EntityAddressInput, 'entity_id'>, entityId: string) => Promise<EntityAddress>
+  addEntityAddress: (
+    address: Omit<EntityAddressInput, 'entity_id'>,
+    entityId: string
+  ) => Promise<EntityAddress>
   removeEntityAddress: (id: string) => Promise<void>
 
   // Address detection
-  lookupAddress: (address: string, chain: string) => Promise<AddressMatch | null>
-  batchLookupAddresses: (addresses: Array<[string, string]>) => Promise<AddressMatch[]>
-  findEntityByAddress: (address: string, chain?: string) => Promise<Entity | null>
+  lookupAddress: (
+    address: string,
+    chain: string
+  ) => Promise<AddressMatch | null>
+  batchLookupAddresses: (
+    addresses: Array<[string, string]>
+  ) => Promise<AddressMatch[]>
+  findEntityByAddress: (
+    address: string,
+    chain?: string
+  ) => Promise<Entity | null>
 
   // Known addresses
   knownAddresses: KnownAddress[]
   knownAddressesLoading: boolean
-  getKnownAddresses: (chain?: string, entityType?: string) => Promise<KnownAddress[]>
+  getKnownAddresses: (
+    chain?: string,
+    entityType?: string
+  ) => Promise<KnownAddress[]>
   createEntityFromKnown: (address: string, chain: string) => Promise<Entity>
 }
 
 const EntityContext = createContext<EntityContextType | undefined>(undefined)
 
-export const EntityProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const EntityProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const { currentProfile } = useProfile()
 
   const [entities, setEntities] = useState<Entity[]>([])
@@ -115,23 +137,30 @@ export const EntityProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         profile_id: currentProfile.id,
       })
 
-      setEntities((prev) => [...prev, newEntity].sort((a, b) => a.name.localeCompare(b.name)))
+      setEntities(prev =>
+        [...prev, newEntity].sort((a, b) => a.name.localeCompare(b.name))
+      )
       return newEntity
     },
     [currentProfile]
   )
 
-  const updateEntity = useCallback(async (id: string, update: EntityUpdate): Promise<Entity> => {
-    const updatedEntity = await persistence.updateEntity(id, update)
-    setEntities((prev) =>
-      prev.map((e) => (e.id === id ? updatedEntity : e)).sort((a, b) => a.name.localeCompare(b.name))
-    )
-    return updatedEntity
-  }, [])
+  const updateEntity = useCallback(
+    async (id: string, update: EntityUpdate): Promise<Entity> => {
+      const updatedEntity = await persistence.updateEntity(id, update)
+      setEntities(prev =>
+        prev
+          .map(e => (e.id === id ? updatedEntity : e))
+          .sort((a, b) => a.name.localeCompare(b.name))
+      )
+      return updatedEntity
+    },
+    []
+  )
 
   const deleteEntity = useCallback(async (id: string): Promise<void> => {
     await persistence.deleteEntity(id)
-    setEntities((prev) => prev.filter((e) => e.id !== id))
+    setEntities(prev => prev.filter(e => e.id !== id))
   }, [])
 
   const refreshEntities = useCallback(async () => {
@@ -144,10 +173,10 @@ export const EntityProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       let result = entities
 
       if (filter?.entity_type) {
-        result = result.filter((e) => e.entity_type === filter.entity_type)
+        result = result.filter(e => e.entity_type === filter.entity_type)
       }
       if (filter?.is_active !== undefined) {
-        result = result.filter((e) => e.is_active === filter.is_active)
+        result = result.filter(e => e.is_active === filter.is_active)
       }
 
       return result
@@ -236,8 +265,14 @@ export const EntityProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         throw new Error('No profile selected')
       }
 
-      const newEntity = await persistence.createEntityFromKnown(currentProfile.id, address, chain)
-      setEntities((prev) => [...prev, newEntity].sort((a, b) => a.name.localeCompare(b.name)))
+      const newEntity = await persistence.createEntityFromKnown(
+        currentProfile.id,
+        address,
+        chain
+      )
+      setEntities(prev =>
+        [...prev, newEntity].sort((a, b) => a.name.localeCompare(b.name))
+      )
       return newEntity
     },
     [currentProfile]
@@ -283,12 +318,18 @@ export const useEntity = () => {
 // Convenience hooks for specific entity types
 export const useVendors = () => {
   const { getFilteredEntities, ...rest } = useEntity()
-  const vendors = getFilteredEntities({ entity_type: 'vendor', is_active: true })
+  const vendors = getFilteredEntities({
+    entity_type: 'vendor',
+    is_active: true,
+  })
   return { vendors, ...rest }
 }
 
 export const useCustomers = () => {
   const { getFilteredEntities, ...rest } = useEntity()
-  const customers = getFilteredEntities({ entity_type: 'customer', is_active: true })
+  const customers = getFilteredEntities({
+    entity_type: 'customer',
+    is_active: true,
+  })
   return { customers, ...rest }
 }
