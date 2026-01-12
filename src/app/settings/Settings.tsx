@@ -93,9 +93,7 @@ const SettingsHeader: React.FC = () => (
   <header className="bg-white dark:bg-black border-b border-gray-200 dark:border-gray-700">
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
       <div>
-        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
-          Settings
-        </h1>
+        <h1>Settings</h1>
         <p className="text-sm text-gray-500 dark:text-[#94a3b8] mt-1">
           Manage your organization settings and preferences
         </p>

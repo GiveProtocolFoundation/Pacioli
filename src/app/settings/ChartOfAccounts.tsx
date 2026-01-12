@@ -356,9 +356,7 @@ const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
     <div className="p-6 min-h-screen bg-gray-50 dark:bg-black">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-          Chart of Accounts
-        </h1>
+        <h1>Chart of Accounts</h1>
         <p className="text-gray-600 dark:text-[#94a3b8] mt-1">
           {template.name} ({filteredAccounts.length} accounts)
         </p>

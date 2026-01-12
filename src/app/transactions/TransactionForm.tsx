@@ -469,9 +469,7 @@ const TransactionForm: React.FC = () => {
           <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {isEditMode ? 'Edit Transaction' : 'New Transaction'}
-                </h1>
+                <h1>{isEditMode ? 'Edit Transaction' : 'New Transaction'}</h1>
                 <p className="text-sm text-gray-600 dark:text-[#94a3b8] mt-1">
                   {isEditMode
                     ? 'Update transaction details below'

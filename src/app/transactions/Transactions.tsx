@@ -213,9 +213,7 @@ const Transactions: React.FC = () => {
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Transactions
-          </h1>
+          <h1>Transactions</h1>
           <p className="text-gray-600 dark:text-[#94a3b8] mt-1">
             View and manage all your crypto transactions
           </p>
