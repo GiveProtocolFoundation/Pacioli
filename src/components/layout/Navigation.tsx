@@ -203,7 +203,7 @@ const Navigation: React.FC<NavigationProps> = ({
               onClick={onLinkClick}
               className={`block w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${
                 isSubActive
-                  ? 'text-[#007AFF] dark:text-[#f1f5f9] bg-[#E5F2FF] dark:bg-[#66B3FF]/15 font-medium'
+                  ? 'text-[#2563EB] dark:text-[#f1f5f9] bg-[#DBEAFE] dark:bg-[#0EA5E9]/15 font-medium'
                   : 'text-gray-600 dark:text-[#94a3b8] hover:bg-gray-50 dark:hover:bg-gray-800 dark:hover:text-[#cbd5e1] font-normal'
               }`}
             >
@@ -258,7 +258,7 @@ const Navigation: React.FC<NavigationProps> = ({
                       onClick={createToggleExpandedHandler(item.name)}
                       className={`w-full flex items-center justify-between px-3 py-2.5 text-sm rounded-lg transition-colors ${
                         isActive
-                          ? 'bg-[#E5F2FF] dark:bg-[#66B3FF]/15 text-[#007AFF] dark:text-white font-semibold border-l-2 border-[#007AFF] dark:border-[#66B3FF] -ml-0.5'
+                          ? 'bg-[#DBEAFE] dark:bg-[#0EA5E9]/15 text-[#2563EB] dark:text-white font-semibold border-l-2 border-[#2563EB] dark:border-[#0EA5E9] -ml-0.5'
                           : 'text-gray-700 dark:text-[#94a3b8] hover:bg-gray-50 dark:hover:bg-gray-800 dark:hover:text-[#cbd5e1] font-medium'
                       }`}
                     >
@@ -286,7 +286,7 @@ const Navigation: React.FC<NavigationProps> = ({
                       to={item.href}
                       className={`w-full flex items-center justify-between px-3 py-2.5 text-sm rounded-lg transition-colors ${
                         isActive
-                          ? 'bg-[#E5F2FF] dark:bg-[#66B3FF]/15 text-[#007AFF] dark:text-white font-semibold border-l-2 border-[#007AFF] dark:border-[#66B3FF] -ml-0.5'
+                          ? 'bg-[#DBEAFE] dark:bg-[#0EA5E9]/15 text-[#2563EB] dark:text-white font-semibold border-l-2 border-[#2563EB] dark:border-[#0EA5E9] -ml-0.5'
                           : 'text-gray-700 dark:text-[#94a3b8] hover:bg-gray-50 dark:hover:bg-gray-800 dark:hover:text-[#cbd5e1] font-medium'
                       }`}
                     >
@@ -402,7 +402,7 @@ const Navigation: React.FC<NavigationProps> = ({
                           onClick={createToggleExpandedHandler(item.name)}
                           className={`w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
                             isActive
-                              ? 'bg-[#007AFF]/10 text-[#007AFF]'
+                              ? 'bg-[#2563EB]/10 text-[#2563EB]'
                               : 'text-gray-700 hover:bg-gray-50'
                           }`}
                         >
@@ -431,7 +431,7 @@ const Navigation: React.FC<NavigationProps> = ({
                           onClick={handleCloseSidebar}
                           className={`w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
                             isActive
-                              ? 'bg-[#007AFF]/10 text-[#007AFF]'
+                              ? 'bg-[#2563EB]/10 text-[#2563EB]'
                               : 'text-gray-700 hover:bg-gray-50'
                           }`}
                         >

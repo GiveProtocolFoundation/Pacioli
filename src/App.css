@@ -1,5 +1,5 @@
 .logo.vite:hover {
-  filter: drop-shadow(0 0 2em #007aff);
+  filter: drop-shadow(0 0 2em #2563eb);
 }
 
 .logo.react:hover {
@@ -54,12 +54,12 @@
 
 a {
   font-weight: 500;
-  color: #007aff;
+  color: #2563eb;
   text-decoration: inherit;
 }
 
 a:hover {
-  color: #0056b3;
+  color: #1d4ed8;
 }
 
 /* h1 styling is handled in index.css typography system */
@@ -83,10 +83,10 @@ button {
 }
 
 button:hover {
-  border-color: #007aff;
+  border-color: #2563eb;
 }
 button:active {
-  border-color: #007aff;
+  border-color: #2563eb;
   background-color: #e8e8e8;
 }
 

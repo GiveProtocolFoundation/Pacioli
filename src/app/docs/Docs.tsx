@@ -196,7 +196,7 @@ const SectionItems: React.FC<{
             onClick={onItemClick}
             className={`w-full flex items-center justify-between px-3 py-1.5 text-sm rounded transition-colors text-left ${
               isSelected
-                ? 'bg-[#007AFF]/10 dark:bg-[#66B3FF]/20 text-[#007AFF] dark:text-[#66B3FF] font-medium'
+                ? 'bg-[#2563EB]/10 dark:bg-[#0EA5E9]/20 text-[#2563EB] dark:text-[#0EA5E9] font-medium'
                 : 'text-gray-600 dark:text-[#94a3b8] hover:bg-gray-50 dark:hover:bg-gray-800'
             }`}
           >
@@ -221,7 +221,7 @@ const SectionItems: React.FC<{
                     onClick={onSelectDoc}
                     className={`w-full px-3 py-1 text-xs rounded transition-colors text-left ${
                       isSubSelected
-                        ? 'bg-[#007AFF]/10 dark:bg-[#66B3FF]/20 text-[#007AFF] dark:text-[#66B3FF] font-medium'
+                        ? 'bg-[#2563EB]/10 dark:bg-[#0EA5E9]/20 text-[#2563EB] dark:text-[#0EA5E9] font-medium'
                         : 'text-gray-600 dark:text-[#94a3b8] hover:bg-gray-50 dark:hover:bg-gray-800'
                     }`}
                   >
@@ -294,7 +294,7 @@ const Docs: React.FC = () => {
       <header className="bg-white dark:bg-black border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-10 py-10">
           <div className="flex items-center">
-            <BookOpen className="w-8 h-8 text-[#007AFF] dark:text-[#66B3FF] mr-4" />
+            <BookOpen className="w-8 h-8 text-[#2563EB] dark:text-[#0EA5E9] mr-4" />
             <div>
               <h1>Pacioli Documentation</h1>
               <p className="text-sm text-gray-500 dark:text-[#94a3b8] mt-1">
@@ -328,7 +328,7 @@ const Docs: React.FC = () => {
                         className="w-full flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-colors hover:bg-gray-50 dark:hover:bg-gray-800 text-left"
                       >
                         <div className="flex items-center">
-                          <Icon className="w-4 h-4 mr-2 text-[#007AFF] dark:text-[#66B3FF]" />
+                          <Icon className="w-4 h-4 mr-2 text-[#2563EB] dark:text-[#0EA5E9]" />
                           <span className="font-medium text-gray-900 dark:text-white">
                             {section.title}
                           </span>
@@ -386,9 +386,9 @@ const Docs: React.FC = () => {
                     <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-4/5" />
                   </div>
 
-                  <div className="bg-[#007AFF]/5 dark:bg-[#66B3FF]/10 border-l-4 border-[#007AFF] dark:border-[#66B3FF] p-4 rounded">
+                  <div className="bg-[#2563EB]/5 dark:bg-[#0EA5E9]/10 border-l-4 border-[#2563EB] dark:border-[#0EA5E9] p-4 rounded">
                     <p className="text-sm text-gray-700 dark:text-gray-300">
-                      <strong className="text-[#007AFF] dark:text-[#66B3FF]">
+                      <strong className="text-[#2563EB] dark:text-[#0EA5E9]">
                         Note:
                       </strong>{' '}
                       Documentation content will be added here covering detailed
