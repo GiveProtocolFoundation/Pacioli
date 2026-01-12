@@ -20,22 +20,25 @@ export interface SyncStatus {
   isSyncing: boolean
 }
 
-export class StorageService {
+/**
+ * Storage service for managing wallet and transaction data in localStorage.
+ */
+export const StorageService = {
   /**
    * Save connected wallets
    */
-  static saveWallets(wallets: ConnectedWallet[]): void {
+  saveWallets(wallets: ConnectedWallet[]): void {
     try {
       localStorage.setItem(STORAGE_KEYS.WALLETS, JSON.stringify(wallets))
     } catch (error) {
       console.error('Error saving wallets:', error)
     }
-  }
+  },
 
   /**
    * Load connected wallets
    */
-  static loadWallets(): ConnectedWallet[] {
+  loadWallets(): ConnectedWallet[] {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.WALLETS)
       return data ? JSON.parse(data) : []
@@ -43,19 +46,19 @@ export class StorageService {
       console.error('Error loading wallets:', error)
       return []
     }
-  }
+  },
 
   /**
    * Clear saved wallets
    */
-  static clearWallets(): void {
+  clearWallets(): void {
     localStorage.removeItem(STORAGE_KEYS.WALLETS)
-  }
+  },
 
   /**
    * Save transactions (appends to existing)
    */
-  static saveTransactions(
+  saveTransactions(
     network: string,
     address: string,
     transactions: Transaction[]
@@ -85,12 +88,12 @@ export class StorageService {
     } catch (error) {
       console.error('Error saving transactions:', error)
     }
-  }
+  },
 
   /**
    * Load all transactions
    */
-  static loadTransactions(): Record<string, Transaction[]> {
+  loadTransactions(): Record<string, Transaction[]> {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.TRANSACTIONS)
       return data ? JSON.parse(data) : {}
@@ -98,28 +101,28 @@ export class StorageService {
       console.error('Error loading transactions:', error)
       return {}
     }
-  }
+  },
 
   /**
    * Load transactions for specific address and network
    */
-  static loadTransactionsFor(network: string, address: string): Transaction[] {
+  loadTransactionsFor(network: string, address: string): Transaction[] {
     const allTransactions = StorageService.loadTransactions()
     const key = `${network}:${address}`
     return allTransactions[key] || []
-  }
+  },
 
   /**
    * Clear all transactions
    */
-  static clearTransactions(): void {
+  clearTransactions(): void {
     localStorage.removeItem(STORAGE_KEYS.TRANSACTIONS)
-  }
+  },
 
   /**
    * Save sync status
    */
-  static saveSyncStatus(status: SyncStatus): void {
+  saveSyncStatus(status: SyncStatus): void {
     try {
       const allStatus = StorageService.loadAllSyncStatus()
       const key = `${status.network}:${status.address}`
@@ -128,12 +131,12 @@ export class StorageService {
     } catch (error) {
       console.error('Error saving sync status:', error)
     }
-  }
+  },
 
   /**
    * Load sync status
    */
-  static loadSyncStatus(network: string, address: string): SyncStatus | null {
+  loadSyncStatus(network: string, address: string): SyncStatus | null {
     try {
       const allStatus = StorageService.loadAllSyncStatus()
       const key = `${network}:${address}`
@@ -142,12 +145,12 @@ export class StorageService {
       console.error('Error loading sync status:', error)
       return null
     }
-  }
+  },
 
   /**
    * Load all sync statuses
    */
-  static loadAllSyncStatus(): Record<string, SyncStatus> {
+  loadAllSyncStatus(): Record<string, SyncStatus> {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.SYNC_STATUS)
       return data ? JSON.parse(data) : {}
@@ -155,16 +158,14 @@ export class StorageService {
       console.error('Error loading sync status:', error)
       return {}
     }
-  }
+  },
 
   /**
    * Clear all stored data
    */
-  static clearAll(): void {
+  clearAll(): void {
     StorageService.clearWallets()
     StorageService.clearTransactions()
     localStorage.removeItem(STORAGE_KEYS.SYNC_STATUS)
-  }
+  },
 }
-
-export const storageService = new StorageService()

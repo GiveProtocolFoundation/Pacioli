@@ -89,6 +89,10 @@ interface SubscanResponse<T> {
   }
 }
 
+/**
+ * Service for fetching blockchain transaction data from Subscan API.
+ * Provides fast transaction retrieval using Subscan's indexed blockchain data.
+ */
 class SubscanService {
   private readonly NETWORK_CONFIGS: Record<NetworkType, SubscanConfig> = {
     polkadot: { baseUrl: 'https://polkadot.api.subscan.io' },
@@ -469,7 +473,7 @@ class SubscanService {
 
     // Parse display strings for action classification
     if (fromDisplay || toDisplay) {
-      const displayText = (fromDisplay + ' ' + toDisplay).toLowerCase()
+      const displayText = `${fromDisplay} ${toDisplay}`.toLowerCase()
 
       // Staking rewards - from nomination pools or validators
       if (

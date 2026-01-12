@@ -14,32 +14,31 @@ export interface MigrationResult {
   errors: string[]
 }
 
-export class MigrationService {
+/**
+ * Mark migration as completed (internal helper)
+ */
+async function setMigrationCompleted(): Promise<void> {
+  await indexedDBService.setMetadata('migration_completed', true)
+  await indexedDBService.setMetadata('migration_date', new Date().toISOString())
+}
+
+/**
+ * Migration service for moving data from localStorage to IndexedDB.
+ */
+export const MigrationService = {
   /**
    * Check if migration has been completed
    */
-  static async hasMigrated(): Promise<boolean> {
-    const migrationFlag = await indexedDBService.getMetadata<boolean>(
-      'migration_completed'
-    )
+  async hasMigrated(): Promise<boolean> {
+    const migrationFlag =
+      await indexedDBService.getMetadata<boolean>('migration_completed')
     return migrationFlag === true
-  }
-
-  /**
-   * Mark migration as completed
-   */
-  private static async setMigrationCompleted(): Promise<void> {
-    await indexedDBService.setMetadata('migration_completed', true)
-    await indexedDBService.setMetadata(
-      'migration_date',
-      new Date().toISOString()
-    )
-  }
+  },
 
   /**
    * Migrate all data from localStorage to IndexedDB
    */
-  static async migrateAll(): Promise<MigrationResult> {
+  async migrateAll(): Promise<MigrationResult> {
     const result: MigrationResult = {
       success: false,
       walletsMigrated: 0,
@@ -114,7 +113,7 @@ export class MigrationService {
       }
 
       // Mark migration as complete
-      await MigrationService.setMigrationCompleted()
+      await setMigrationCompleted()
 
       result.success = result.errors.length === 0
 
@@ -124,22 +123,22 @@ export class MigrationService {
       console.error('Migration failed:', error)
       return result
     }
-  }
+  },
 
   /**
    * Clear localStorage after successful migration
    * (Only call this after verifying IndexedDB data is correct)
    */
-  static async clearLocalStorage(): Promise<void> {
+  async clearLocalStorage(): Promise<void> {
     if (await MigrationService.hasMigrated()) {
       StorageService.clearAll()
     }
-  }
+  },
 
   /**
    * Get migration status and statistics
    */
-  static async getMigrationStatus(): Promise<{
+  async getMigrationStatus(): Promise<{
     migrated: boolean
     migrationDate: string | null
     localStorageData: {
@@ -164,9 +163,7 @@ export class MigrationService {
       (sum: number, txs: unknown[]) => sum + txs.length,
       0
     )
-    const lsSyncStatuses = Object.keys(
-      StorageService.loadAllSyncStatus()
-    ).length
+    const lsSyncStatuses = Object.keys(StorageService.loadAllSyncStatus()).length
 
     // Count IndexedDB data
     const stats = await indexedDBService.getStats()
@@ -185,19 +182,17 @@ export class MigrationService {
         syncStatuses: stats.syncStatusCount,
       },
     }
-  }
+  },
 
   /**
    * Rollback - restore data from localStorage
    * (Use if migration fails or data is corrupted)
    */
-  static async rollback(): Promise<void> {
+  async rollback(): Promise<void> {
     // Clear IndexedDB
     await indexedDBService.clearAll()
 
     // Reset migration flag
     await indexedDBService.setMetadata('migration_completed', false)
-  }
+  },
 }
-
-export const migrationService = new MigrationService()

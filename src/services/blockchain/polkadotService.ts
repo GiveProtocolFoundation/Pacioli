@@ -517,7 +517,7 @@ class PolkadotService {
 
       onProgress?.({
         stage: 'fetching',
-        currentBlock: currentBlock,
+        currentBlock,
         totalBlocks: RECENT_BLOCKS_CUTOFF,
         blocksScanned: 0,
         transactionsFound: allTransactions.length,
@@ -568,7 +568,7 @@ class PolkadotService {
 
       onProgress?.({
         stage: 'processing',
-        currentBlock: currentBlock,
+        currentBlock,
         totalBlocks: RECENT_BLOCKS_CUTOFF,
         blocksScanned,
         transactionsFound: allTransactions.length,
@@ -591,7 +591,7 @@ class PolkadotService {
 
       onProgress?.({
         stage: 'complete',
-        currentBlock: currentBlock,
+        currentBlock,
         totalBlocks: RECENT_BLOCKS_CUTOFF,
         blocksScanned,
         transactionsFound: final.length,

@@ -50,6 +50,10 @@ export interface TransactionPage {
   hasMore: boolean
 }
 
+/**
+ * IndexedDB service for storing blockchain transactions and wallet data.
+ * Supports 100k+ transactions with proper indexing and querying.
+ */
 class IndexedDBService {
   private db: IDBDatabase | null = null
   private initPromise: Promise<void> | null = null
@@ -137,7 +141,7 @@ class IndexedDBService {
       }
     })
 
-    return this.initPromise
+    await this.initPromise
   }
 
   /**
@@ -488,6 +492,9 @@ class IndexedDBService {
     }
   }
 
+  /**
+   * Get the count of items in a store.
+   */
   private static async getStoreCount(
     db: IDBDatabase,
     storeName: string
