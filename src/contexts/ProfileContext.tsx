@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 /**
  * Profile Context
  * Manages user profiles and provides profile state across the application

@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useState, ReactNode, useMemo } from 'react'
 import { Chain, Token, TokenBalance, TokenPrice } from '../types/digitalAssets'
 import { SEED_CHAINS, SEED_TOKENS, getTokenById, getTokensByChain, getChainById, searchTokens as searchTokensUtil } from '../data/tokenSeedData'

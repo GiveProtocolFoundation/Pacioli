@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useState, ReactNode, useCallback } from 'react'
 import { Transaction, TransactionFormData, TransactionStatus } from '../types/transaction'
 

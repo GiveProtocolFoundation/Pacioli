@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 /**
  * Entity Context
  * Manages entities (vendors, customers, counterparties) for the current profile

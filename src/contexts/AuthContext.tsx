@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 /**
  * Authentication Context
  * Manages user authentication state and provides auth operations across the application
