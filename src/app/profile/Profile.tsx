@@ -293,7 +293,9 @@ const Profile: React.FC = () => {
   const [emailChangeNewEmail, setEmailChangeNewEmail] = useState('')
   const [emailChangeLoading, setEmailChangeLoading] = useState(false)
   const [emailChangeError, setEmailChangeError] = useState<string | null>(null)
-  const [emailChangeSuccess, setEmailChangeSuccess] = useState<string | null>(null)
+  const [emailChangeSuccess, setEmailChangeSuccess] = useState<string | null>(
+    null
+  )
 
   // Update profile when user data changes
   useEffect(() => {
@@ -888,8 +890,9 @@ const Profile: React.FC = () => {
             ) : (
               <div className="space-y-4">
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  To change your email address, please enter your current password and new email below.
-                  We&apos;ll send a verification link to your new email address.
+                  To change your email address, please enter your current
+                  password and new email below. We&apos;ll send a verification
+                  link to your new email address.
                 </p>
 
                 {emailChangeError && (
