@@ -24,6 +24,7 @@ const Profile = React.lazy(() => import('./app/profile/Profile'))
 const Docs = React.lazy(() => import('./app/docs/Docs'))
 const WalletManager = React.lazy(() => import('./app/wallets/WalletManager'))
 const Entities = React.lazy(() => import('./app/entities/Entities'))
+const Team = React.lazy(() => import('./app/team/Team'))
 
 // Auth pages
 const Login = React.lazy(() => import('./app/auth/Login'))
@@ -74,6 +75,7 @@ const MainRoutes: React.FC = () => (
       <Route path="/wallets" element={<Balances />} />
       <Route path="/wallet-manager" element={<WalletManager />} />
       <Route path="/entities" element={<Entities />} />
+      <Route path="/team" element={<Team />} />
       <Route path="/reports" element={<Reports />} />
       <Route path="/reports/financial" element={<Reports />} />
       <Route path="/reports/tax" element={<Reports />} />

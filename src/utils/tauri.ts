@@ -40,7 +40,7 @@ export function warnIfNotTauri(serviceName: string): void {
   if (!isTauriAvailable() && isDevelopment()) {
     console.warn(
       `[${serviceName}] Tauri is not available. Using mock implementation for browser development. ` +
-        `Run 'npm run tauri:dev' to use the full application.`
+        "Run 'npm run tauri:dev' to use the full application."
     )
   }
 }

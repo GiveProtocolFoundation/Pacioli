@@ -14,6 +14,7 @@ import {
   ChevronDown,
   LogOut,
   User,
+  Users,
   HelpCircle,
   MessageCircle,
   Moon,
@@ -43,7 +44,7 @@ interface NavItem {
 
 const Navigation: React.FC<NavigationProps> = ({
   children,
-  userType = 'organization',
+  userType: userTypeProp,
 }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
@@ -53,7 +54,10 @@ const Navigation: React.FC<NavigationProps> = ({
   const { theme, toggleTheme } = useTheme()
   const { organizationLogo, userAvatar } = useOrganization()
   const { pendingApprovals } = useTransactions()
-  const { user, logout } = useAuth()
+  const { user, logout, isBusinessAccount } = useAuth()
+
+  // Determine user type from auth context, fall back to prop for backwards compatibility
+  const userType = userTypeProp ?? (isBusinessAccount ? 'organization' : 'individual')
 
   // Get display name from user data
   const displayName = user?.first_name && user?.last_name
@@ -102,6 +106,7 @@ const Navigation: React.FC<NavigationProps> = ({
       ],
     },
     { name: 'Analytics', href: '/analytics', icon: BarChart3 },
+    { name: 'Team', href: '/team', icon: Users },
     { name: 'Support', href: '/support', icon: MessageCircle },
     {
       name: 'Settings',

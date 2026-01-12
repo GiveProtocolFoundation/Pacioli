@@ -30,6 +30,8 @@ import type {
   UserStatus,
 } from '../types/auth'
 import { hasPermission, ROLE_PERMISSIONS, parseAuthError } from '../types/auth'
+import type { AccountType } from '../types/user'
+import { persistence } from '../services/persistence'
 
 /**
  * Backend user response type (matches Rust User struct)
@@ -70,6 +72,8 @@ interface AuthContextType {
   error: string | null
   userProfiles: ProfileWithRole[]
   currentProfileRole: UserRole | null
+  accountType: AccountType | null
+  isBusinessAccount: boolean
 
   // Authentication actions
   login: (credentials: LoginCredentials) => Promise<void>
@@ -107,6 +111,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [currentProfileRole, setCurrentProfileRole] = useState<UserRole | null>(
     null
   )
+  const [accountType, setAccountType] = useState<AccountType | null>(null)
+
+  // Computed: true if account is any business type (not individual)
+  const isBusinessAccount = accountType !== null && accountType !== 'individual'
 
   // Ref to track if we're initializing
   const initializingRef = useRef(false)
@@ -158,6 +166,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         }
       } else if (profiles.length > 0) {
         setCurrentProfileRole(profiles[0].role)
+      }
+
+      // Load account type from persistence
+      try {
+        const storedAccountType = await persistence.getSetting('accountType')
+        if (storedAccountType) {
+          setAccountType(storedAccountType as AccountType)
+        }
+      } catch {
+        // Ignore errors loading account type - will default to null
       }
     } catch (err) {
       console.error('[AuthContext] Failed to initialize auth:', err)
@@ -370,6 +388,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       setIsAuthenticated(false)
       setUserProfiles([])
       setCurrentProfileRole(null)
+      setAccountType(null)
       setError(null)
       setIsLoading(false)
     }
@@ -447,6 +466,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         error,
         userProfiles,
         currentProfileRole,
+        accountType,
+        isBusinessAccount,
         login,
         register,
         logout,

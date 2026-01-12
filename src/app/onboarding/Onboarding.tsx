@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Globe, Building2, User, Check } from 'lucide-react'
 import PacioliBlackLogo from '../../assets/Pacioli_logo_black.svg'
 import { GridSelectionButton } from '../../components/GridSelectionButton'
+import { persistence } from '../../services/persistence'
 
 type Step = 'jurisdiction' | 'account-type' | 'complete'
 type Jurisdiction = 'us-gaap' | 'ifrs'
@@ -67,12 +68,19 @@ const Onboarding: React.FC = () => {
     setAccountType(selected)
   }, [])
 
-  const handleContinue = useCallback(() => {
+  const handleContinue = useCallback(async () => {
     if (currentStep === 'jurisdiction' && jurisdiction) {
       setCurrentStep('account-type')
     } else if (currentStep === 'account-type' && accountType) {
-      // TODO: Save to backend/context
-      // Selected: { jurisdiction, accountType }
+      // Save settings to persistence
+      try {
+        await persistence.setSetting('accountType', accountType)
+        if (jurisdiction) {
+          await persistence.setSetting('jurisdiction', jurisdiction)
+        }
+      } catch (err) {
+        console.error('[Onboarding] Failed to save settings:', err)
+      }
       // Navigate to dashboard
       navigate('/dashboard')
     }

@@ -20,6 +20,8 @@ import {
 import { useOrganization } from '../../contexts/OrganizationContext'
 import { useAuth } from '../../contexts/AuthContext'
 
+// Check if account is a business type (not individual)
+
 interface UserProfile {
   firstName: string
   lastName: string
@@ -48,12 +50,14 @@ interface PersonalInfoProps {
     key: keyof UserProfile
   ) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void
   onChangeEmail: () => void
+  showPhone?: boolean
 }
 
 const PersonalInfo: React.FC<PersonalInfoProps> = ({
   profile,
   createProfileInputHandler,
   onChangeEmail,
+  showPhone = true,
 }) => (
   <>
     <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
@@ -117,24 +121,26 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({
           </button>
         </div>
       </div>
-      <div>
-        <label
-          htmlFor="phone"
-          className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-        >
-          Phone Number
-        </label>
-        <div className="relative">
-          <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-          <input
-            id="phone"
-            type="tel"
-            value={profile.phone}
-            onChange={createProfileInputHandler('phone')}
-            className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+      {showPhone && (
+        <div>
+          <label
+            htmlFor="phone"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+          >
+            Phone Number
+          </label>
+          <div className="relative">
+            <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              id="phone"
+              type="tel"
+              value={profile.phone}
+              onChange={createProfileInputHandler('phone')}
+              className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
         </div>
-      </div>
+      )}
     </div>
   </>
 )
@@ -239,6 +245,7 @@ const Profile: React.FC = () => {
     updateUser,
     isLoading: authLoading,
     error: authError,
+    isBusinessAccount,
   } = useAuth()
 
   // Initialize profile from authenticated user
@@ -615,14 +622,17 @@ const Profile: React.FC = () => {
                       profile={profile}
                       createProfileInputHandler={createProfileInputHandler}
                       onChangeEmail={handleOpenEmailChange}
+                      showPhone={isBusinessAccount}
                     />
                   </div>
-                  <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
-                    <WorkInfo
-                      profile={profile}
-                      createProfileInputHandler={createProfileInputHandler}
-                    />
-                  </div>
+                  {isBusinessAccount && (
+                    <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+                      <WorkInfo
+                        profile={profile}
+                        createProfileInputHandler={createProfileInputHandler}
+                      />
+                    </div>
+                  )}
                 </div>
               )}
 
