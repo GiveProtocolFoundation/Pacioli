@@ -8,6 +8,8 @@
  */
 
 import { invoke } from '@tauri-apps/api/core'
+import { isTauriAvailable, warnIfNotTauri } from '../../utils/tauri'
+import { mockAuthService } from './mockAuth'
 import type {
   AuthUser,
   AuthResponse,
@@ -158,7 +160,7 @@ export interface AuthService {
 /**
  * Tauri-based authentication service implementation
  */
-export const authService: AuthService = {
+const tauriAuthService: AuthService = {
   // Token management
   getAccessToken,
   getRefreshToken,
@@ -365,6 +367,20 @@ export const authService: AuthService = {
     return invoke<EmailChangeStatus>('get_email_change_status', { token })
   },
 }
+
+// =============================================================================
+// CONDITIONAL SERVICE EXPORT
+// =============================================================================
+
+/**
+ * Auth service - uses Tauri backend when available, falls back to mock for browser development
+ */
+export const authService: AuthService = isTauriAvailable()
+  ? tauriAuthService
+  : (() => {
+      warnIfNotTauri('AuthService')
+      return mockAuthService
+    })()
 
 /**
  * Helper to auto-refresh token if needed before making authenticated request

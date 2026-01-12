@@ -10,6 +10,7 @@
 import type { PersistenceService } from './types'
 import { tauriPersistence } from './tauriPersistence'
 import { indexedDBPersistence } from './indexedDBPersistence'
+import { isTauriAvailable, warnIfNotTauri } from '../../utils/tauri'
 
 // Re-export types
 export type {
@@ -35,20 +36,14 @@ export type {
 } from './types'
 
 /**
- * Check if running in Tauri environment
- */
-const isTauri = (): boolean => {
-  return typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window
-}
-
-/**
  * Get the appropriate persistence service based on environment
  */
 const getPersistenceService = (): PersistenceService => {
-  if (isTauri()) {
+  if (isTauriAvailable()) {
     return tauriPersistence
   }
 
+  warnIfNotTauri('PersistenceService')
   return indexedDBPersistence
 }
 
