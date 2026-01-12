@@ -409,7 +409,9 @@ export const mockAuthService: AuthService = {
       status: 'pending',
       invited_by: 'mock_user_id',
       created_at: now.toISOString(),
-      expires_at: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      expires_at: new Date(
+        now.getTime() + 7 * 24 * 60 * 60 * 1000
+      ).toISOString(),
       accepted_at: null,
     }
   },
