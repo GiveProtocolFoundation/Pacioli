@@ -145,7 +145,12 @@ class EVMTransactionService {
         message: 'Fetching transaction history...',
       })
 
-      const normalTxs = await EVMTransactionService.fetchNormalTransactions(chain, address, limit, explorerConfig)
+      const normalTxs = await EVMTransactionService.fetchNormalTransactions(
+        chain,
+        address,
+        limit,
+        explorerConfig
+      )
 
       onProgress?.({
         stage: 'processing',
@@ -158,7 +163,11 @@ class EVMTransactionService {
 
       // Convert to EVMTransaction format
       for (const tx of normalTxs) {
-        const evmTx = EVMTransactionService.convertToEVMTransaction(tx, chain, config)
+        const evmTx = EVMTransactionService.convertToEVMTransaction(
+          tx,
+          chain,
+          config
+        )
         transactions.push(evmTx)
       }
 
@@ -172,10 +181,20 @@ class EVMTransactionService {
         message: 'Fetching token transfers...',
       })
 
-      const tokenTxs = await EVMTransactionService.fetchTokenTransfers(chain, address, limit, explorerConfig)
+      const tokenTxs = await EVMTransactionService.fetchTokenTransfers(
+        chain,
+        address,
+        limit,
+        explorerConfig
+      )
 
       for (const tx of tokenTxs) {
-        const evmTx = EVMTransactionService.convertTokenTransferToEVMTransaction(tx, chain, config)
+        const evmTx =
+          EVMTransactionService.convertTokenTransferToEVMTransaction(
+            tx,
+            chain,
+            config
+          )
         // Only add if not already in list (by hash)
         if (!transactions.some(t => t.hash === evmTx.hash)) {
           transactions.push(evmTx)
@@ -260,7 +279,9 @@ class EVMTransactionService {
 
     try {
       // Add rate limiting delay
-      await new Promise(resolve => setTimeout(resolve, explorerConfig.rateLimit))
+      await new Promise(resolve =>
+        setTimeout(resolve, explorerConfig.rateLimit)
+      )
 
       const params = new URLSearchParams({
         module: 'account',
@@ -331,7 +352,11 @@ class EVMTransactionService {
       const batchSize = 20
       const addressLower = address.toLowerCase()
 
-      for (let i = currentBlock; i > startBlock && transactions.length < limit; i -= batchSize) {
+      for (
+        let i = currentBlock;
+        i > startBlock && transactions.length < limit;
+        i -= batchSize
+      ) {
         const batchEnd = i
         const batchStart = Math.max(i - batchSize + 1, startBlock)
 
@@ -360,7 +385,9 @@ class EVMTransactionService {
                 from: tx.from || '',
                 to: tx.to || '',
                 value: tx.value.toString(),
-                fee: receipt ? (receipt.gasUsed * (receipt.gasPrice || 0n)).toString() : '0',
+                fee: receipt
+                  ? (receipt.gasUsed * (receipt.gasPrice || 0n)).toString()
+                  : '0',
                 status: receipt?.status === 1 ? 'success' : 'failed',
                 network: EVM_NETWORK_MAP[chain] || ('moonbeam' as NetworkType),
                 type: tx.data === '0x' ? 'transfer' : 'contract',
@@ -425,7 +452,12 @@ class EVMTransactionService {
       fee,
       status: tx.isError === '0' ? 'success' : 'failed',
       network: EVM_NETWORK_MAP[chain] || ('moonbeam' as NetworkType),
-      type: tx.input === '0x' ? 'transfer' : tx.contractAddress ? 'contract' : 'contract',
+      type:
+        tx.input === '0x'
+          ? 'transfer'
+          : tx.contractAddress
+            ? 'contract'
+            : 'contract',
       gasUsed: tx.gasUsed,
       gasPrice: tx.gasPrice,
       input: tx.input,
