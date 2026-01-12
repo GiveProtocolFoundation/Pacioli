@@ -57,12 +57,14 @@ const Navigation: React.FC<NavigationProps> = ({
   const { user, logout, isBusinessAccount } = useAuth()
 
   // Determine user type from auth context, fall back to prop for backwards compatibility
-  const userType = userTypeProp ?? (isBusinessAccount ? 'organization' : 'individual')
+  const userType =
+    userTypeProp ?? (isBusinessAccount ? 'organization' : 'individual')
 
   // Get display name from user data
-  const displayName = user?.first_name && user?.last_name
-    ? `${user.first_name} ${user.last_name}`
-    : user?.display_name || 'User'
+  const displayName =
+    user?.first_name && user?.last_name
+      ? `${user.first_name} ${user.last_name}`
+      : user?.display_name || 'User'
   const userEmail = user?.email || ''
 
   // Handle logout
@@ -340,7 +342,8 @@ const Navigation: React.FC<NavigationProps> = ({
                 {displayName}
               </p>
               <p className="text-xs text-gray-500 dark:text-[#94a3b8]">
-                {userEmail || (userType === 'organization' ? 'Admin' : 'Personal Account')}
+                {userEmail ||
+                  (userType === 'organization' ? 'Admin' : 'Personal Account')}
               </p>
             </div>
           </div>
@@ -470,7 +473,8 @@ const Navigation: React.FC<NavigationProps> = ({
             {/* User section */}
             <div className="border-t border-gray-200 dark:border-gray-700 p-4">
               <div className="flex items-center">
-                {userAvatar || (userType === 'organization' && organizationLogo) ? (
+                {userAvatar ||
+                (userType === 'organization' && organizationLogo) ? (
                   <img
                     src={userAvatar || organizationLogo || ''}
                     alt="User"
@@ -486,7 +490,10 @@ const Navigation: React.FC<NavigationProps> = ({
                     {displayName}
                   </p>
                   <p className="text-xs text-gray-500 dark:text-[#94a3b8]">
-                    {userEmail || (userType === 'organization' ? 'Admin' : 'Personal Account')}
+                    {userEmail ||
+                      (userType === 'organization'
+                        ? 'Admin'
+                        : 'Personal Account')}
                   </p>
                 </div>
               </div>

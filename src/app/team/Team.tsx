@@ -1,12 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import {
-  Users,
-  Mail,
-  Settings,
-  Loader2,
-  UserCircle,
-} from 'lucide-react'
+import { Users, Mail, Settings, Loader2, UserCircle } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { authService, withAutoRefresh } from '../../services/auth'
 import type { ProfileUser } from '../../types/auth'
@@ -198,7 +192,8 @@ const Team: React.FC = () => {
               No team members yet
             </h3>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-              Invite team members to collaborate on your organization&apos;s finances.
+              Invite team members to collaborate on your organization&apos;s
+              finances.
             </p>
             <Link
               to="/settings/users"
