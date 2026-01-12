@@ -55,7 +55,7 @@ export class StorageService {
   /**
    * Save transactions (appends to existing)
    */
-  saveTransactions(
+  static saveTransactions(
     network: string,
     address: string,
     transactions: Transaction[]
@@ -103,7 +103,7 @@ export class StorageService {
   /**
    * Load transactions for specific address and network
    */
-  loadTransactionsFor(network: string, address: string): Transaction[] {
+  static loadTransactionsFor(network: string, address: string): Transaction[] {
     const allTransactions = StorageService.loadTransactions()
     const key = `${network}:${address}`
     return allTransactions[key] || []
@@ -119,7 +119,7 @@ export class StorageService {
   /**
    * Save sync status
    */
-  saveSyncStatus(status: SyncStatus): void {
+  static saveSyncStatus(status: SyncStatus): void {
     try {
       const allStatus = StorageService.loadAllSyncStatus()
       const key = `${status.network}:${status.address}`
@@ -133,7 +133,7 @@ export class StorageService {
   /**
    * Load sync status
    */
-  loadSyncStatus(network: string, address: string): SyncStatus | null {
+  static loadSyncStatus(network: string, address: string): SyncStatus | null {
     try {
       const allStatus = StorageService.loadAllSyncStatus()
       const key = `${network}:${address}`
@@ -160,7 +160,7 @@ export class StorageService {
   /**
    * Clear all stored data
    */
-  clearAll(): void {
+  static clearAll(): void {
     StorageService.clearWallets()
     StorageService.clearTransactions()
     localStorage.removeItem(STORAGE_KEYS.SYNC_STATUS)

@@ -3,7 +3,7 @@
  * Migrates data from localStorage to IndexedDB
  */
 
-import { storageService, StorageService } from './storageService'
+import { StorageService } from './storageService'
 import { indexedDBService } from './indexedDBService'
 
 export interface MigrationResult {
@@ -39,7 +39,7 @@ export class MigrationService {
   /**
    * Migrate all data from localStorage to IndexedDB
    */
-  async migrateAll(): Promise<MigrationResult> {
+  static async migrateAll(): Promise<MigrationResult> {
     const result: MigrationResult = {
       success: false,
       walletsMigrated: 0,
@@ -130,16 +130,16 @@ export class MigrationService {
    * Clear localStorage after successful migration
    * (Only call this after verifying IndexedDB data is correct)
    */
-  async clearLocalStorage(): Promise<void> {
+  static async clearLocalStorage(): Promise<void> {
     if (await MigrationService.hasMigrated()) {
-      storageService.clearAll()
+      StorageService.clearAll()
     }
   }
 
   /**
    * Get migration status and statistics
    */
-  async getMigrationStatus(): Promise<{
+  static async getMigrationStatus(): Promise<{
     migrated: boolean
     migrationDate: string | null
     localStorageData: {

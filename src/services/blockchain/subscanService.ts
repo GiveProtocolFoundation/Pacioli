@@ -146,7 +146,7 @@ class SubscanService {
 
         for (const transfer of transfers) {
           // Extract detailed action information
-          const actionInfo = this.extractActionFromTransfer(transfer)
+          const actionInfo = SubscanService.extractActionFromTransfer(transfer)
 
           transactions.push({
             id: `${transfer.block_num}-${transfer.extrinsic_index}`,
@@ -451,7 +451,7 @@ class SubscanService {
    * Extract detailed action from transfer data
    * This provides better classification than just "transfer"
    */
-  private extractActionFromTransfer(transfer: SubscanTransfer): {
+  private static extractActionFromTransfer(transfer: SubscanTransfer): {
     method: string
     section: string
     type: SubstrateTransaction['type']

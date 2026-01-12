@@ -275,7 +275,7 @@ class PolkadotService {
 
         // OPTIMIZATION: Parallel block fetching with Promise.all
         const blockDataPromises = blocksToFetch.map(async blockNum => {
-          return this.fetchBlockTransactions(api, blockNum, address, network)
+          return PolkadotService.fetchBlockTransactions(api, blockNum, address, network)
         })
 
         const blockDataResults = await Promise.all(blockDataPromises)
@@ -549,7 +549,7 @@ class PolkadotService {
 
         // Parallel block fetching
         const blockDataPromises = blocksToFetch.map(async blockNum => {
-          return this.fetchBlockTransactions(api, blockNum, address, network)
+          return PolkadotService.fetchBlockTransactions(api, blockNum, address, network)
         })
 
         const blockDataResults = await Promise.all(blockDataPromises)
@@ -628,7 +628,7 @@ class PolkadotService {
    * Fetch all transactions from a single block for a given address
    * OPTIMIZED: Extracts fees and staking rewards
    */
-  private async fetchBlockTransactions(
+  private static async fetchBlockTransactions(
     api: ApiPromise,
     blockNum: number,
     address: string,

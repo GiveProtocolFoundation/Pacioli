@@ -109,7 +109,7 @@ class MoonscanService {
   /**
    * Check if API key is configured
    */
-  hasApiKey(): boolean {
+  static hasApiKey(): boolean {
     return Boolean(MoonscanService.getApiKey())
   }
 

@@ -473,9 +473,9 @@ class IndexedDBService {
   }> {
     const db = await this.ensureDB()
 
-    const txCount = await this.getStoreCount(db, STORES.TRANSACTIONS)
-    const walletCount = await this.getStoreCount(db, STORES.WALLETS)
-    const syncCount = await this.getStoreCount(db, STORES.SYNC_STATUS)
+    const txCount = await IndexedDBService.getStoreCount(db, STORES.TRANSACTIONS)
+    const walletCount = await IndexedDBService.getStoreCount(db, STORES.WALLETS)
+    const syncCount = await IndexedDBService.getStoreCount(db, STORES.SYNC_STATUS)
 
     // Estimate size (rough approximation)
     const estimatedSize = `~${Math.round((txCount * 2) / 1024)} MB`
@@ -488,7 +488,7 @@ class IndexedDBService {
     }
   }
 
-  private async getStoreCount(
+  private static async getStoreCount(
     db: IDBDatabase,
     storeName: string
   ): Promise<number> {
