@@ -91,14 +91,17 @@ class EVMTransactionService {
    * Get or create a provider for a chain
    */
   private getProvider(chain: string): ethers.JsonRpcProvider {
-    if (!this.providers.has(chain)) {
-      const config = EVM_CHAINS[chain]
-      if (!config) throw new Error(`Unknown chain: ${chain}`)
-
-      const provider = new ethers.JsonRpcProvider(config.rpcUrl)
-      this.providers.set(chain, provider)
+    const existingProvider = this.providers.get(chain)
+    if (existingProvider) {
+      return existingProvider
     }
-    return this.providers.get(chain)!
+
+    const config = EVM_CHAINS[chain]
+    if (!config) throw new Error(`Unknown chain: ${chain}`)
+
+    const provider = new ethers.JsonRpcProvider(config.rpcUrl)
+    this.providers.set(chain, provider)
+    return provider
   }
 
   /**
@@ -142,7 +145,7 @@ class EVMTransactionService {
         message: 'Fetching transaction history...',
       })
 
-      const normalTxs = await this.fetchNormalTransactions(chain, address, limit, explorerConfig)
+      const normalTxs = await EVMTransactionService.fetchNormalTransactions(chain, address, limit, explorerConfig)
 
       onProgress?.({
         stage: 'processing',
@@ -155,7 +158,7 @@ class EVMTransactionService {
 
       // Convert to EVMTransaction format
       for (const tx of normalTxs) {
-        const evmTx = this.convertToEVMTransaction(tx, chain, config)
+        const evmTx = EVMTransactionService.convertToEVMTransaction(tx, chain, config)
         transactions.push(evmTx)
       }
 
@@ -169,10 +172,10 @@ class EVMTransactionService {
         message: 'Fetching token transfers...',
       })
 
-      const tokenTxs = await this.fetchTokenTransfers(chain, address, limit, explorerConfig)
+      const tokenTxs = await EVMTransactionService.fetchTokenTransfers(chain, address, limit, explorerConfig)
 
       for (const tx of tokenTxs) {
-        const evmTx = this.convertTokenTransferToEVMTransaction(tx, chain, config)
+        const evmTx = EVMTransactionService.convertTokenTransferToEVMTransaction(tx, chain, config)
         // Only add if not already in list (by hash)
         if (!transactions.some(t => t.hash === evmTx.hash)) {
           transactions.push(evmTx)
@@ -206,7 +209,7 @@ class EVMTransactionService {
   /**
    * Fetch normal (ETH) transactions from block explorer
    */
-  private async fetchNormalTransactions(
+  private static async fetchNormalTransactions(
     chain: string,
     address: string,
     limit: number,
@@ -220,7 +223,7 @@ class EVMTransactionService {
       const params = new URLSearchParams({
         module: 'account',
         action: 'txlist',
-        address: address,
+        address,
         startblock: '0',
         endblock: '99999999',
         page: '1',
@@ -245,7 +248,7 @@ class EVMTransactionService {
   /**
    * Fetch ERC20 token transfers from block explorer
    */
-  private async fetchTokenTransfers(
+  private static async fetchTokenTransfers(
     chain: string,
     address: string,
     limit: number,
@@ -262,7 +265,7 @@ class EVMTransactionService {
       const params = new URLSearchParams({
         module: 'account',
         action: 'tokentx',
-        address: address,
+        address,
         startblock: '0',
         endblock: '99999999',
         page: '1',
@@ -402,7 +405,7 @@ class EVMTransactionService {
   /**
    * Convert block explorer transaction to EVMTransaction
    */
-  private convertToEVMTransaction(
+  private static convertToEVMTransaction(
     tx: BlockExplorerTx,
     chain: string,
     _config: EVMChain
@@ -433,7 +436,7 @@ class EVMTransactionService {
   /**
    * Convert token transfer to EVMTransaction
    */
-  private convertTokenTransferToEVMTransaction(
+  private static convertTokenTransferToEVMTransaction(
     tx: TokenTransferTx,
     chain: string,
     _config: EVMChain
@@ -465,7 +468,7 @@ class EVMTransactionService {
   /**
    * Get current chain ID from MetaMask
    */
-  async getCurrentChainId(): Promise<number | null> {
+  static async getCurrentChainId(): Promise<number | null> {
     if (!window.ethereum) return null
 
     try {
@@ -480,7 +483,7 @@ class EVMTransactionService {
   /**
    * Get chain key from chain ID
    */
-  getChainKeyFromId(chainId: number): string | null {
+  static getChainKeyFromId(chainId: number): string | null {
     for (const [key, config] of Object.entries(EVM_CHAINS)) {
       if (config.chainId === chainId) {
         return key
