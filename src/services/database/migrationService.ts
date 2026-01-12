@@ -30,8 +30,9 @@ export const MigrationService = {
    * Check if migration has been completed
    */
   async hasMigrated(): Promise<boolean> {
-    const migrationFlag =
-      await indexedDBService.getMetadata<boolean>('migration_completed')
+    const migrationFlag = await indexedDBService.getMetadata<boolean>(
+      'migration_completed'
+    )
     return migrationFlag === true
   },
 
@@ -163,7 +164,9 @@ export const MigrationService = {
       (sum: number, txs: unknown[]) => sum + txs.length,
       0
     )
-    const lsSyncStatuses = Object.keys(StorageService.loadAllSyncStatus()).length
+    const lsSyncStatuses = Object.keys(
+      StorageService.loadAllSyncStatus()
+    ).length
 
     // Count IndexedDB data
     const stats = await indexedDBService.getStats()
