@@ -68,6 +68,9 @@ interface MoonscanResponse<T> {
   result: T[] | string // Can be array or error string
 }
 
+/**
+ * Service for fetching EVM transaction history using Etherscan V2 API.
+ */
 class MoonscanService {
   // Etherscan V2 uses chain IDs instead of separate base URLs
   private readonly NETWORK_CONFIGS: Partial<

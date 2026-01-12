@@ -45,6 +45,9 @@ export interface SyncProgress {
   message: string
 }
 
+/**
+ * Service for connecting to Polkadot/Kusama networks and fetching transaction history.
+ */
 class PolkadotService {
   private connections: Map<NetworkType, BlockchainConnection> = new Map()
   private wsProviders: Map<NetworkType, WsProvider> = new Map()

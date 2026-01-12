@@ -41,6 +41,9 @@ const STORES = {
 const generateId = (): string => crypto.randomUUID()
 const getNow = (): string => new Date().toISOString()
 
+/**
+ * IndexedDB-based persistence service for storing application data.
+ */
 class IndexedDBPersistenceService implements PersistenceService {
   private db: IDBDatabase | null = null
   private initPromise: Promise<void> | null = null

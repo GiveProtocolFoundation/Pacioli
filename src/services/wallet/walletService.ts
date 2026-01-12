@@ -20,6 +20,9 @@ import {
 
 const APP_NAME = 'Pacioli'
 
+/**
+ * Service for managing wallet connections across multiple blockchain networks.
+ */
 class WalletService {
   private enabledExtensions: InjectedExtension[] = []
   private connectedWallets: Map<WalletType, ConnectedWallet> = new Map()
