@@ -425,6 +425,20 @@ const Profile: React.FC = () => {
     }
   }, [emailChangePassword, emailChangeNewEmail])
 
+  const handleEmailChangePasswordChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setEmailChangePassword(e.target.value)
+    },
+    []
+  )
+
+  const handleEmailChangeNewEmailChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setEmailChangeNewEmail(e.target.value)
+    },
+    []
+  )
+
   const handleAvatarUpload = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0]
@@ -916,7 +930,7 @@ const Profile: React.FC = () => {
                       id="emailChangePassword"
                       type="password"
                       value={emailChangePassword}
-                      onChange={e => setEmailChangePassword(e.target.value)}
+                      onChange={handleEmailChangePasswordChange}
                       placeholder="Enter your current password"
                       className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
@@ -936,7 +950,7 @@ const Profile: React.FC = () => {
                       id="emailChangeNewEmail"
                       type="email"
                       value={emailChangeNewEmail}
-                      onChange={e => setEmailChangeNewEmail(e.target.value)}
+                      onChange={handleEmailChangeNewEmailChange}
                       placeholder="Enter your new email address"
                       className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
