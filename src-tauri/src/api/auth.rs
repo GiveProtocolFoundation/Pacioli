@@ -789,13 +789,17 @@ pub async fn request_email_change(
     .await;
 
     // Send verification email to new email address
-    if let Err(e) = email::send_email_change_verification(&new_email, &verification_token, &new_email).await {
+    if let Err(e) =
+        email::send_email_change_verification(&new_email, &verification_token, &new_email).await
+    {
         eprintln!("Failed to send verification email: {}", e);
         // Continue anyway - user can request again
     }
 
     // Send security alert to old email address
-    if let Err(e) = email::send_email_change_alert(&old_email, &cancellation_token, &new_email).await {
+    if let Err(e) =
+        email::send_email_change_alert(&old_email, &cancellation_token, &new_email).await
+    {
         eprintln!("Failed to send security alert email: {}", e);
         // Continue anyway
     }
