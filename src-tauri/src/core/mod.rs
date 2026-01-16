@@ -3,6 +3,7 @@ pub mod auth_helpers;
 pub mod auth_state;
 pub mod currency;
 pub mod currency_service;
+pub mod email;
 mod encryption;
 pub mod substrate_currency;
 

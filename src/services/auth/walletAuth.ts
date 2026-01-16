@@ -8,7 +8,6 @@
  */
 
 import { invoke } from '@tauri-apps/api/core'
-import { isTauriAvailable, warnIfNotTauri } from '../../utils/tauri'
 import type {
   AuthResponse,
   WalletChallenge,
@@ -402,30 +401,24 @@ export async function signMessage(
 }
 
 // =============================================================================
-// WALLET AUTH SERVICE INTERFACE
-// =============================================================================
-
-interface WalletAuthServiceInterface {
-  generateChallenge(request: ChallengeRequest): Promise<WalletChallenge>
-  verifySignature(request: VerifySignatureRequest): Promise<AuthResponse>
-  linkWallet(request: LinkWalletRequest): Promise<UserWallet>
-  getUserWallets(token: string): Promise<UserWallet[]>
-  unlinkWallet(token: string, walletId: string): Promise<void>
-  cleanupExpiredChallenges(): Promise<number>
-}
-
-// =============================================================================
 // TAURI BACKEND SERVICE
 // =============================================================================
 
 /**
  * Wallet authentication service for Tauri backend interaction
  */
-const tauriWalletAuthService: WalletAuthServiceInterface = {
+export const walletAuthService = {
+  /**
+   * Generate a challenge for wallet sign-in
+   */
   async generateChallenge(request: ChallengeRequest): Promise<WalletChallenge> {
     return invoke<WalletChallenge>('generate_wallet_challenge', { request })
   },
 
+  /**
+   * Verify wallet signature and authenticate
+   * Returns auth tokens if successful
+   */
   async verifySignature(
     request: VerifySignatureRequest
   ): Promise<AuthResponse> {
@@ -433,129 +426,41 @@ const tauriWalletAuthService: WalletAuthServiceInterface = {
       request,
     })
 
+    // Store tokens
     localStorage.setItem('pacioli_access_token', response.access_token)
     localStorage.setItem('pacioli_refresh_token', response.refresh_token)
 
     return response
   },
 
+  /**
+   * Link a wallet to an existing authenticated account
+   */
   async linkWallet(request: LinkWalletRequest): Promise<UserWallet> {
     return invoke<UserWallet>('link_wallet_to_account', { request })
   },
 
+  /**
+   * Get all wallets linked to the current user
+   */
   async getUserWallets(token: string): Promise<UserWallet[]> {
     return invoke<UserWallet[]>('get_user_wallets', { token })
   },
 
+  /**
+   * Unlink a wallet from the current user
+   */
   async unlinkWallet(token: string, walletId: string): Promise<void> {
     return invoke('unlink_wallet', { token, walletId })
   },
 
+  /**
+   * Clean up expired challenges (maintenance)
+   */
   async cleanupExpiredChallenges(): Promise<number> {
     return invoke<number>('cleanup_expired_challenges')
   },
 }
-
-// =============================================================================
-// MOCK SERVICE FOR BROWSER DEVELOPMENT
-// =============================================================================
-
-function generateMockId(): string {
-  return `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-}
-
-const mockWalletAuthService: WalletAuthServiceInterface = {
-  async generateChallenge(request: ChallengeRequest): Promise<WalletChallenge> {
-    const nonce = generateMockId()
-    return {
-      id: generateMockId(),
-      nonce,
-      message: `Sign this message to authenticate with Pacioli.\n\nWallet: ${request.wallet_address}\nNonce: ${nonce}\nTimestamp: ${new Date().toISOString()}`,
-      expires_at: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
-    }
-  },
-
-  async verifySignature(
-    request: VerifySignatureRequest
-  ): Promise<AuthResponse> {
-    const now = new Date()
-    const expiresAt = new Date(now.getTime() + 24 * 60 * 60 * 1000)
-    const accessToken = `mock_token_${generateMockId()}`
-    const refreshToken = `mock_refresh_${generateMockId()}`
-
-    localStorage.setItem('pacioli_access_token', accessToken)
-    localStorage.setItem('pacioli_refresh_token', refreshToken)
-
-    return {
-      user: {
-        id: generateMockId(),
-        email: '',
-        display_name: request.wallet_name || 'Wallet User',
-        status: 'active',
-        email_verified: false,
-        two_factor_enabled: false,
-        avatar_url: null,
-        created_at: now.toISOString(),
-        updated_at: now.toISOString(),
-        last_login_at: now.toISOString(),
-        first_name: null,
-        last_name: null,
-        phone: null,
-        company: null,
-        job_title: null,
-        department: null,
-        location: null,
-        timezone: null,
-        language: null,
-        date_format: null,
-        email_notifications: null,
-        sms_notifications: null,
-        login_alerts: null,
-      },
-      access_token: accessToken,
-      refresh_token: refreshToken,
-      expires_at: expiresAt.toISOString(),
-    }
-  },
-
-  async linkWallet(request: LinkWalletRequest): Promise<UserWallet> {
-    return {
-      id: generateMockId(),
-      user_id: 'mock_user_id',
-      wallet_address: request.wallet_address,
-      wallet_type: request.wallet_type,
-      chain: request.chain ?? null,
-      wallet_name: request.wallet_name ?? null,
-      wallet_source: request.wallet_source ?? null,
-      is_primary: false,
-      created_at: new Date().toISOString(),
-      last_used_at: null,
-    }
-  },
-
-  async getUserWallets(_token: string): Promise<UserWallet[]> {
-    return []
-  },
-
-  async unlinkWallet(_token: string, _walletId: string): Promise<void> {
-    // No-op for mock
-  },
-
-  async cleanupExpiredChallenges(): Promise<number> {
-    return 0
-  },
-}
-
-// =============================================================================
-// CONDITIONAL SERVICE EXPORT
-// =============================================================================
-
-export const walletAuthService: WalletAuthServiceInterface = isTauriAvailable()
-  ? tauriWalletAuthService
-  : (() => {
-      warnIfNotTauri('WalletAuthService')
-      return mockWalletAuthService
-    })()
 
 // =============================================================================
 // HIGH-LEVEL WALLET AUTH FLOW

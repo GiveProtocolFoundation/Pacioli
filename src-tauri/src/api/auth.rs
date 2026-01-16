@@ -10,6 +10,7 @@ use crate::core::auth_helpers::{
     verify_refresh_token,
 };
 use crate::core::auth_state::AuthState;
+use crate::core::email;
 use chrono::{DateTime, Duration, Utc};
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
@@ -308,6 +309,15 @@ pub async fn register(
     .execute(pool)
     .await
     .map_err(|e| format!("Failed to assign profile role: {}", e))?;
+
+    // Send welcome email (non-blocking, don't fail registration if email fails)
+    let email_addr = input.email.clone();
+    let display_name = input.display_name.clone();
+    tokio::spawn(async move {
+        if let Err(e) = email::send_welcome_email(&email_addr, &display_name).await {
+            eprintln!("Failed to send welcome email: {}", e);
+        }
+    });
 
     // Create session and return tokens
     create_session_and_tokens(&db, &auth, &user_id, &input.email, None, None).await
@@ -778,10 +788,19 @@ pub async fn request_email_change(
     )
     .await;
 
-    // In a production app, you would send emails here:
-    // 1. Verification email to new_email with verification_token
-    // 2. Security alert to old_email with cancellation_token
-    // For now, we'll log the tokens for testing
+    // Send verification email to new email address
+    if let Err(e) = email::send_email_change_verification(&new_email, &verification_token, &new_email).await {
+        eprintln!("Failed to send verification email: {}", e);
+        // Continue anyway - user can request again
+    }
+
+    // Send security alert to old email address
+    if let Err(e) = email::send_email_change_alert(&old_email, &cancellation_token, &new_email).await {
+        eprintln!("Failed to send security alert email: {}", e);
+        // Continue anyway
+    }
+
+    // Also log tokens for debugging (can be removed in production)
     println!("Email Change Request Created:");
     println!(
         "  Verification token (for new email): {}",

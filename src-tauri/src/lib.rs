@@ -7,6 +7,7 @@ mod sync;
 
 use api::persistence::DatabaseState;
 use core::auth_state::AuthState;
+use core::email;
 use evm_indexer::EVMIndexer;
 use tauri::{Manager, State};
 use tokio::sync::Mutex;
@@ -185,6 +186,16 @@ pub fn run() {
 
             // Initialize authentication state
             app.manage(AuthState::new());
+
+            // Initialize email service
+            // Load from environment variable or .env file
+            let _ = dotenvy::dotenv(); // Ignore error if .env doesn't exist
+            if let Ok(api_key) = std::env::var("RESEND_API_KEY") {
+                email::init(api_key);
+                println!("Email service initialized");
+            } else {
+                eprintln!("Warning: RESEND_API_KEY not set, email sending disabled");
+            }
 
             Ok(())
         })

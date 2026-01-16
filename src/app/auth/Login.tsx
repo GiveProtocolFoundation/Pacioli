@@ -309,7 +309,7 @@ const Login: React.FC = () => {
         <img src={PacioliLogo} alt="Pacioli" className="h-12 w-12" />
         <div>
           <h1 className="text-3xl font-bold text-white">Pacioli</h1>
-          <p className="text-slate-400">Crypto Accounting Platform</p>
+          <p className="text-slate-400">Crypto-Inclusive Accounting Platform</p>
         </div>
       </div>
 
@@ -334,8 +334,7 @@ const Login: React.FC = () => {
       </div>
 
       <div className="text-sm text-slate-500">
-        <p>Polkadot Ecosystem Ready</p>
-        <p className="mt-1">Supporting Substrate & EVM chains</p>
+        <p>Currently Supporting Substrate & EVM chains</p>
       </div>
     </div>
   )

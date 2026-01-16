@@ -297,6 +297,12 @@ const Profile: React.FC = () => {
     null
   )
 
+  // Email verification state
+  const [showVerifyEmailModal, setShowVerifyEmailModal] = useState(false)
+  const [verificationCode, setVerificationCode] = useState('')
+  const [verifyEmailLoading, setVerifyEmailLoading] = useState(false)
+  const [verifyEmailError, setVerifyEmailError] = useState<string | null>(null)
+
   // Update profile when user data changes
   useEffect(() => {
     if (user) {
@@ -411,15 +417,18 @@ const Profile: React.FC = () => {
       setEmailChangeSuccess(response.message)
       setEmailChangePassword('')
       setEmailChangeNewEmail('')
-      // Close modal after 5 seconds on success
-      setTimeout(() => {
-        setShowEmailChangeModal(false)
-        setEmailChangeSuccess(null)
-      }, 5000)
+      // Don't auto-close - let user click "Enter Verification Code" button
     } catch (err) {
-      setEmailChangeError(
-        err instanceof Error ? err.message : 'Failed to request email change'
-      )
+      // Handle both Error objects and string errors from Tauri
+      let errorMessage = 'Failed to request email change'
+      if (err instanceof Error) {
+        errorMessage = err.message
+      } else if (typeof err === 'string') {
+        errorMessage = err
+      } else if (err && typeof err === 'object' && 'message' in err) {
+        errorMessage = String((err as { message: unknown }).message)
+      }
+      setEmailChangeError(errorMessage)
     } finally {
       setEmailChangeLoading(false)
     }
@@ -438,6 +447,49 @@ const Profile: React.FC = () => {
     },
     []
   )
+
+  // Email verification handlers
+  const handleOpenVerifyEmail = useCallback(() => {
+    setShowVerifyEmailModal(true)
+    setVerificationCode('')
+    setVerifyEmailError(null)
+  }, [])
+
+  const handleCloseVerifyEmail = useCallback(() => {
+    setShowVerifyEmailModal(false)
+    setVerificationCode('')
+    setVerifyEmailError(null)
+  }, [])
+
+  const handleSubmitVerification = useCallback(async () => {
+    if (!verificationCode.trim()) {
+      setVerifyEmailError('Please enter the verification code')
+      return
+    }
+
+    setVerifyEmailLoading(true)
+    setVerifyEmailError(null)
+
+    try {
+      const { authService } = await import('../../services/auth')
+
+      const message = await authService.verifyEmailChange(verificationCode.trim())
+
+      // Show success and close modal
+      alert(message || 'Email address updated successfully!')
+      setShowVerifyEmailModal(false)
+      setVerificationCode('')
+
+      // Refresh user data
+      window.location.reload()
+    } catch (err) {
+      setVerifyEmailError(
+        err instanceof Error ? err.message : 'Failed to verify email change'
+      )
+    } finally {
+      setVerifyEmailLoading(false)
+    }
+  }, [verificationCode])
 
   const handleAvatarUpload = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -896,10 +948,24 @@ const Profile: React.FC = () => {
             </div>
 
             {emailChangeSuccess ? (
-              <div className="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg p-4">
-                <p className="text-sm text-green-800 dark:text-green-400">
-                  {emailChangeSuccess}
+              <div className="space-y-4">
+                <div className="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg p-4">
+                  <p className="text-sm text-green-800 dark:text-green-400">
+                    {emailChangeSuccess}
+                  </p>
+                </div>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Check your new email for the verification code, then click below to enter it.
                 </p>
+                <button
+                  onClick={() => {
+                    setShowEmailChangeModal(false)
+                    handleOpenVerifyEmail()
+                  }}
+                  className="w-full px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"
+                >
+                  Enter Verification Code
+                </button>
               </div>
             ) : (
               <div className="space-y-4">
@@ -981,6 +1047,80 @@ const Profile: React.FC = () => {
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Email Verification Modal */}
+      {showVerifyEmailModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl max-w-md w-full p-6 border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                Verify Email Change
+              </h3>
+              <button
+                onClick={handleCloseVerifyEmail}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Enter the verification code sent to your new email address.
+              </p>
+
+              {verifyEmailError && (
+                <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg p-3">
+                  <p className="text-sm text-red-800 dark:text-red-400">
+                    {verifyEmailError}
+                  </p>
+                </div>
+              )}
+
+              <div>
+                <label
+                  htmlFor="verificationCode"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >
+                  Verification Code
+                </label>
+                <input
+                  id="verificationCode"
+                  type="text"
+                  value={verificationCode}
+                  onChange={e => setVerificationCode(e.target.value)}
+                  placeholder="Enter the code from your email"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
+                  autoComplete="off"
+                />
+              </div>
+
+              <div className="flex items-center space-x-3 pt-4">
+                <button
+                  onClick={handleCloseVerifyEmail}
+                  className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSubmitVerification}
+                  disabled={verifyEmailLoading}
+                  className="flex-1 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                >
+                  {verifyEmailLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Verifying...
+                    </>
+                  ) : (
+                    'Verify Email'
+                  )}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
