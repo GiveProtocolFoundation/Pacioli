@@ -102,7 +102,7 @@ pub async fn send_email(
         let error: ResendError = response
             .json()
             .await
-            .unwrap_or(ResendError {
+            .unwrap_or_else(|_| ResendError {
                 message: "Unknown error".to_string(),
             });
         Err(format!("Email API error: {}", error.message))
