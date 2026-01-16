@@ -99,12 +99,9 @@ pub async fn send_email(
     if response.status().is_success() {
         Ok(())
     } else {
-        let error: ResendError = response
-            .json()
-            .await
-            .unwrap_or_else(|_| ResendError {
-                message: "Unknown error".to_string(),
-            });
+        let error: ResendError = response.json().await.unwrap_or_else(|_| ResendError {
+            message: "Unknown error".to_string(),
+        });
         Err(format!("Email API error: {}", error.message))
     }
 }
