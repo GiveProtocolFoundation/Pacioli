@@ -66,3 +66,7 @@ base64 = "0.22"             # Token encoding
 reqwest = { version = "0.12", features = ["json", "rustls-tls"], default-features = false }
 dotenvy = "0.15"            # Environment variable loading
 
+# Chain adapter dependencies
+async-trait = "0.1"         # Async trait support
+thiserror = "1.0"           # Error derive macros
+

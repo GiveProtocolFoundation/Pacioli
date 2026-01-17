@@ -1,4 +1,5 @@
 mod api;
+mod chains;
 mod core;
 mod db;
 mod evm_indexer;

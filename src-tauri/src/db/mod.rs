@@ -1,3 +1,5 @@
+pub mod transactions;
+
 use anyhow::Result;
 use sqlx::{Pool, Sqlite, SqlitePool};
 
