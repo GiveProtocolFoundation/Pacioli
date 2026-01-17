@@ -14,7 +14,7 @@ use crate::chains::{
 };
 use alchemy::AlchemyClient;
 use async_trait::async_trait;
-use config::{get_chain_config, ChainConfig};
+use config::{get_chain_by_name, EvmChainConfig};
 use etherscan::EtherscanClient;
 use std::sync::Arc;
 use tokio::sync::RwLock;
@@ -24,7 +24,7 @@ use tokio::sync::RwLock;
 /// Combines RPC (Alchemy) and Explorer API (Etherscan) for comprehensive chain access.
 pub struct EvmAdapter {
     chain_id: ChainId,
-    config: ChainConfig,
+    config: EvmChainConfig,
     rpc_client: Arc<RwLock<Option<AlchemyClient>>>,
     explorer_client: Arc<RwLock<Option<EtherscanClient>>>,
     explorer_api_key: Option<String>,
@@ -34,11 +34,10 @@ pub struct EvmAdapter {
 impl EvmAdapter {
     /// Create a new EVM adapter for a chain
     pub fn new(chain_name: &str) -> ChainResult<Self> {
-        let config = get_chain_config(chain_name)
-            .ok_or_else(|| ChainError::UnsupportedChain(chain_name.to_string()))?
-            .clone();
+        let config = get_chain_by_name(chain_name)
+            .ok_or_else(|| ChainError::UnsupportedChain(chain_name.to_string()))?;
 
-        let chain_id = ChainId::evm(chain_name, config.chain_id);
+        let chain_id = ChainId::evm(&config.name, config.chain_id);
 
         Ok(Self {
             chain_id,

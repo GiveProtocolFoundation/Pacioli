@@ -1,303 +1,271 @@
 //! EVM Chain Configurations
 //!
 //! Defines supported EVM chains and their configuration parameters.
+//! Supports Ethereum mainnet and major Layer 2 networks.
 
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::env;
 use std::sync::OnceLock;
+use thiserror::Error;
 
-/// EVM chain configuration parameters.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ChainConfig {
-    /// Numeric EVM chain ID.
-    pub chain_id: u64,
-    /// Internal chain name identifier.
-    pub name: String,
-    /// Human-readable display name.
-    pub display_name: String,
-    /// Native currency symbol (e.g., ETH).
-    pub native_symbol: String,
-    /// Native currency decimals (typically 18).
-    pub native_decimals: u8,
-    /// List of RPC endpoint URLs.
-    pub rpc_urls: Vec<String>,
-    /// Block explorer URL for viewing transactions.
-    pub explorer_url: Option<String>,
-    /// Block explorer API URL for fetching data.
-    pub explorer_api_url: Option<String>,
-    /// Whether this is a test network.
-    pub is_testnet: bool,
+/// Errors that can occur when working with chain configuration.
+#[derive(Debug, Error)]
+pub enum ConfigError {
+    #[error("Chain not found: {0}")]
+    ChainNotFound(u64),
+
+    #[error("Missing environment variable: {0}")]
+    MissingEnvVar(String),
+
+    #[error("Invalid configuration: {0}")]
+    InvalidConfig(String),
 }
 
-impl ChainConfig {
-    /// Creates a new chain configuration with required fields.
+/// Result type for configuration operations.
+pub type ConfigResult<T> = Result<T, ConfigError>;
+
+/// EVM chain configuration.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct EvmChainConfig {
+    /// Numeric EVM chain ID.
+    pub chain_id: u64,
+    /// Chain name identifier (e.g., "ethereum", "arbitrum").
+    pub name: String,
+    /// Native token symbol (e.g., "ETH", "MATIC").
+    pub symbol: String,
+    /// Alchemy RPC URL pattern (without API key).
+    pub rpc_url: String,
+    /// Block explorer API base URL.
+    pub explorer_api_url: String,
+    /// Environment variable name for the explorer API key.
+    pub explorer_api_key_env: String,
+    /// Native token decimals (always 18 for EVM chains).
+    pub decimals: u8,
+    /// Whether this is a Layer 2 network.
+    pub is_l2: bool,
+    /// Average block time in seconds (for rate limiting).
+    pub block_time_seconds: u64,
+}
+
+impl EvmChainConfig {
+    /// Creates a new chain configuration.
     pub fn new(
         chain_id: u64,
         name: impl Into<String>,
-        display_name: impl Into<String>,
-        native_symbol: impl Into<String>,
+        symbol: impl Into<String>,
+        rpc_url: impl Into<String>,
+        explorer_api_url: impl Into<String>,
+        is_l2: bool,
+        block_time_seconds: u64,
     ) -> Self {
         Self {
             chain_id,
             name: name.into(),
-            display_name: display_name.into(),
-            native_symbol: native_symbol.into(),
-            native_decimals: 18,
-            rpc_urls: Vec::new(),
-            explorer_url: None,
-            explorer_api_url: None,
-            is_testnet: false,
+            symbol: symbol.into(),
+            rpc_url: rpc_url.into(),
+            explorer_api_url: explorer_api_url.into(),
+            explorer_api_key_env: "ETHERSCAN_API_KEY".to_string(),
+            decimals: 18,
+            is_l2,
+            block_time_seconds,
         }
     }
 
-    /// Adds an RPC endpoint URL.
-    pub fn with_rpc(mut self, url: impl Into<String>) -> Self {
-        self.rpc_urls.push(url.into());
-        self
+    /// Gets the full RPC URL with the Alchemy API key from environment.
+    pub fn get_rpc_url(&self) -> ConfigResult<String> {
+        let api_key = env::var("ALCHEMY_API_KEY")
+            .map_err(|_| ConfigError::MissingEnvVar("ALCHEMY_API_KEY".to_string()))?;
+
+        Ok(format!("{}/{}", self.rpc_url, api_key))
     }
 
-    /// Sets the block explorer URLs.
-    pub fn with_explorer(mut self, url: impl Into<String>, api_url: impl Into<String>) -> Self {
-        self.explorer_url = Some(url.into());
-        self.explorer_api_url = Some(api_url.into());
-        self
+    /// Gets the explorer API key from environment.
+    pub fn get_explorer_api_key(&self) -> ConfigResult<String> {
+        env::var(&self.explorer_api_key_env)
+            .map_err(|_| ConfigError::MissingEnvVar(self.explorer_api_key_env.clone()))
     }
 
-    /// Marks this chain as a testnet.
-    pub fn testnet(mut self) -> Self {
-        self.is_testnet = true;
-        self
+    /// Builds a full explorer API URL with the given endpoint and parameters.
+    pub fn build_explorer_url(&self, params: &[(&str, &str)]) -> ConfigResult<String> {
+        let api_key = self.get_explorer_api_key()?;
+
+        let mut url = self.explorer_api_url.clone();
+        url.push_str("?apikey=");
+        url.push_str(&api_key);
+
+        for (key, value) in params {
+            url.push('&');
+            url.push_str(key);
+            url.push('=');
+            url.push_str(value);
+        }
+
+        Ok(url)
     }
 }
 
-/// Static chain configurations
-static CHAIN_CONFIGS: OnceLock<HashMap<String, ChainConfig>> = OnceLock::new();
+/// Static chain configurations indexed by chain_id.
+static CHAIN_CONFIGS: OnceLock<Vec<EvmChainConfig>> = OnceLock::new();
 
-/// Get all chain configurations
-pub fn get_chain_configs() -> &'static HashMap<String, ChainConfig> {
+/// Initialize environment variables from .env file.
+fn init_env() {
+    static ENV_INIT: OnceLock<()> = OnceLock::new();
+    ENV_INIT.get_or_init(|| {
+        let _ = dotenvy::dotenv(); // Ignore error if .env doesn't exist
+    });
+}
+
+/// Get all chain configurations.
+fn get_configs() -> &'static Vec<EvmChainConfig> {
+    init_env();
+
     CHAIN_CONFIGS.get_or_init(|| {
-        let mut configs = HashMap::new();
-
-        // Ethereum Mainnet
-        configs.insert(
-            "ethereum".to_string(),
-            ChainConfig::new(1, "ethereum", "Ethereum", "ETH")
-                .with_rpc("https://eth.llamarpc.com")
-                .with_rpc("https://rpc.ankr.com/eth")
-                .with_explorer("https://etherscan.io", "https://api.etherscan.io/api"),
-        );
-
-        // Polygon
-        configs.insert(
-            "polygon".to_string(),
-            ChainConfig::new(137, "polygon", "Polygon", "MATIC")
-                .with_rpc("https://polygon-rpc.com")
-                .with_rpc("https://rpc.ankr.com/polygon")
-                .with_explorer("https://polygonscan.com", "https://api.polygonscan.com/api"),
-        );
-
-        // Arbitrum One
-        configs.insert(
-            "arbitrum".to_string(),
-            ChainConfig::new(42161, "arbitrum", "Arbitrum One", "ETH")
-                .with_rpc("https://arb1.arbitrum.io/rpc")
-                .with_rpc("https://rpc.ankr.com/arbitrum")
-                .with_explorer("https://arbiscan.io", "https://api.arbiscan.io/api"),
-        );
-
-        // Optimism
-        configs.insert(
-            "optimism".to_string(),
-            ChainConfig::new(10, "optimism", "Optimism", "ETH")
-                .with_rpc("https://mainnet.optimism.io")
-                .with_rpc("https://rpc.ankr.com/optimism")
-                .with_explorer(
-                    "https://optimistic.etherscan.io",
-                    "https://api-optimistic.etherscan.io/api",
-                ),
-        );
-
-        // Base
-        configs.insert(
-            "base".to_string(),
-            ChainConfig::new(8453, "base", "Base", "ETH")
-                .with_rpc("https://mainnet.base.org")
-                .with_rpc("https://rpc.ankr.com/base")
-                .with_explorer("https://basescan.org", "https://api.basescan.org/api"),
-        );
-
-        // Avalanche C-Chain
-        configs.insert(
-            "avalanche".to_string(),
-            ChainConfig::new(43114, "avalanche", "Avalanche C-Chain", "AVAX")
-                .with_rpc("https://api.avax.network/ext/bc/C/rpc")
-                .with_rpc("https://rpc.ankr.com/avalanche")
-                .with_explorer("https://snowtrace.io", "https://api.snowtrace.io/api"),
-        );
-
-        // BNB Smart Chain
-        configs.insert(
-            "bsc".to_string(),
-            ChainConfig::new(56, "bsc", "BNB Smart Chain", "BNB")
-                .with_rpc("https://bsc-dataseed.binance.org")
-                .with_rpc("https://rpc.ankr.com/bsc")
-                .with_explorer("https://bscscan.com", "https://api.bscscan.com/api"),
-        );
-
-        // Moonbeam (Polkadot EVM)
-        configs.insert(
-            "moonbeam".to_string(),
-            ChainConfig::new(1284, "moonbeam", "Moonbeam", "GLMR")
-                .with_rpc("https://rpc.api.moonbeam.network")
-                .with_rpc("https://moonbeam.public.blastapi.io")
-                .with_explorer(
-                    "https://moonscan.io",
-                    "https://api-moonbeam.moonscan.io/api",
-                ),
-        );
-
-        // Moonriver (Kusama EVM)
-        configs.insert(
-            "moonriver".to_string(),
-            ChainConfig::new(1285, "moonriver", "Moonriver", "MOVR")
-                .with_rpc("https://rpc.api.moonriver.moonbeam.network")
-                .with_rpc("https://moonriver.public.blastapi.io")
-                .with_explorer(
-                    "https://moonriver.moonscan.io",
-                    "https://api-moonriver.moonscan.io/api",
-                ),
-        );
-
-        // Astar (Polkadot EVM)
-        configs.insert(
-            "astar".to_string(),
-            ChainConfig::new(592, "astar", "Astar", "ASTR")
-                .with_rpc("https://evm.astar.network")
-                .with_rpc("https://astar.public.blastapi.io")
-                .with_explorer("https://astar.subscan.io", "https://astar.api.subscan.io"),
-        );
-
-        // Gnosis Chain (formerly xDai)
-        configs.insert(
-            "gnosis".to_string(),
-            ChainConfig::new(100, "gnosis", "Gnosis Chain", "xDAI")
-                .with_rpc("https://rpc.gnosischain.com")
-                .with_rpc("https://rpc.ankr.com/gnosis")
-                .with_explorer("https://gnosisscan.io", "https://api.gnosisscan.io/api"),
-        );
-
-        // Fantom
-        configs.insert(
-            "fantom".to_string(),
-            ChainConfig::new(250, "fantom", "Fantom", "FTM")
-                .with_rpc("https://rpc.ftm.tools")
-                .with_rpc("https://rpc.ankr.com/fantom")
-                .with_explorer("https://ftmscan.com", "https://api.ftmscan.com/api"),
-        );
-
-        // zkSync Era
-        configs.insert(
-            "zksync".to_string(),
-            ChainConfig::new(324, "zksync", "zkSync Era", "ETH")
-                .with_rpc("https://mainnet.era.zksync.io")
-                .with_explorer(
-                    "https://explorer.zksync.io",
-                    "https://block-explorer-api.mainnet.zksync.io/api",
-                ),
-        );
-
-        // Linea
-        configs.insert(
-            "linea".to_string(),
-            ChainConfig::new(59144, "linea", "Linea", "ETH")
-                .with_rpc("https://rpc.linea.build")
-                .with_explorer("https://lineascan.build", "https://api.lineascan.build/api"),
-        );
-
-        // Scroll
-        configs.insert(
-            "scroll".to_string(),
-            ChainConfig::new(534352, "scroll", "Scroll", "ETH")
-                .with_rpc("https://rpc.scroll.io")
-                .with_explorer("https://scrollscan.com", "https://api.scrollscan.com/api"),
-        );
-
-        // ============ TESTNETS ============
-
-        // Sepolia (Ethereum testnet)
-        configs.insert(
-            "sepolia".to_string(),
-            ChainConfig::new(11155111, "sepolia", "Sepolia", "ETH")
-                .with_rpc("https://rpc.sepolia.org")
-                .with_rpc("https://rpc.ankr.com/eth_sepolia")
-                .with_explorer(
-                    "https://sepolia.etherscan.io",
-                    "https://api-sepolia.etherscan.io/api",
-                )
-                .testnet(),
-        );
-
-        // Mumbai (Polygon testnet)
-        configs.insert(
-            "mumbai".to_string(),
-            ChainConfig::new(80001, "mumbai", "Polygon Mumbai", "MATIC")
-                .with_rpc("https://rpc-mumbai.maticvigil.com")
-                .with_explorer(
-                    "https://mumbai.polygonscan.com",
-                    "https://api-testnet.polygonscan.com/api",
-                )
-                .testnet(),
-        );
-
-        // Moonbase Alpha (Moonbeam testnet)
-        configs.insert(
-            "moonbase".to_string(),
-            ChainConfig::new(1287, "moonbase", "Moonbase Alpha", "DEV")
-                .with_rpc("https://rpc.api.moonbase.moonbeam.network")
-                .with_explorer(
-                    "https://moonbase.moonscan.io",
-                    "https://api-moonbase.moonscan.io/api",
-                )
-                .testnet(),
-        );
-
-        configs
+        vec![
+            // Ethereum Mainnet
+            EvmChainConfig::new(
+                1,
+                "ethereum",
+                "ETH",
+                "https://eth-mainnet.g.alchemy.com/v2",
+                "https://api.etherscan.io/api",
+                false, // not L2
+                12,    // ~12 second block time
+            ),
+            // Arbitrum One
+            EvmChainConfig::new(
+                42161,
+                "arbitrum",
+                "ETH",
+                "https://arb-mainnet.g.alchemy.com/v2",
+                "https://api.arbiscan.io/api",
+                true, // L2
+                1,    // ~0.25s but use 1 for rate limiting
+            ),
+            // Base
+            EvmChainConfig::new(
+                8453,
+                "base",
+                "ETH",
+                "https://base-mainnet.g.alchemy.com/v2",
+                "https://api.basescan.org/api",
+                true, // L2
+                2,    // ~2 second block time
+            ),
+            // Optimism
+            EvmChainConfig::new(
+                10,
+                "optimism",
+                "ETH",
+                "https://opt-mainnet.g.alchemy.com/v2",
+                "https://api-optimistic.etherscan.io/api",
+                true, // L2
+                2,    // ~2 second block time
+            ),
+            // Polygon
+            EvmChainConfig::new(
+                137,
+                "polygon",
+                "POL", // Rebranded from MATIC
+                "https://polygon-mainnet.g.alchemy.com/v2",
+                "https://api.polygonscan.com/api",
+                false, // Sidechain, not technically L2
+                2,     // ~2 second block time
+            ),
+        ]
     })
 }
 
-/// Get configuration for a specific chain
-pub fn get_chain_config(name: &str) -> Option<&'static ChainConfig> {
-    get_chain_configs().get(name)
-}
-
-/// Get chain config by chain ID
-pub fn get_chain_by_id(chain_id: u64) -> Option<&'static ChainConfig> {
-    get_chain_configs()
-        .values()
+/// Get chain configuration by chain ID.
+///
+/// # Arguments
+/// * `chain_id` - The numeric EVM chain ID
+///
+/// # Returns
+/// * `Some(EvmChainConfig)` if the chain is supported
+/// * `None` if the chain is not found
+///
+/// # Example
+/// ```
+/// use pacioli_lib::chains::evm::config::get_chain_config;
+///
+/// if let Some(config) = get_chain_config(1) {
+///     println!("Found chain: {}", config.name);
+/// }
+/// ```
+pub fn get_chain_config(chain_id: u64) -> Option<EvmChainConfig> {
+    get_configs()
+        .iter()
         .find(|c| c.chain_id == chain_id)
+        .cloned()
 }
 
-/// List all supported chain names
-pub fn list_chains() -> Vec<&'static str> {
-    get_chain_configs().keys().map(|s| s.as_str()).collect()
+/// Get all supported chain configurations.
+///
+/// # Returns
+/// A vector of all supported chain configurations.
+///
+/// # Example
+/// ```
+/// use pacioli_lib::chains::evm::config::get_all_chains;
+///
+/// for chain in get_all_chains() {
+///     println!("{}: chain_id={}", chain.name, chain.chain_id);
+/// }
+/// ```
+pub fn get_all_chains() -> Vec<EvmChainConfig> {
+    get_configs().clone()
 }
 
-/// List mainnet chains only
-pub fn list_mainnet_chains() -> Vec<&'static str> {
-    get_chain_configs()
+/// Get chain configuration by name.
+///
+/// # Arguments
+/// * `name` - The chain name (e.g., "ethereum", "arbitrum")
+///
+/// # Returns
+/// * `Some(EvmChainConfig)` if the chain is found
+/// * `None` if the chain is not found
+pub fn get_chain_by_name(name: &str) -> Option<EvmChainConfig> {
+    get_configs()
         .iter()
-        .filter(|(_, c)| !c.is_testnet)
-        .map(|(k, _)| k.as_str())
+        .find(|c| c.name.eq_ignore_ascii_case(name))
+        .cloned()
+}
+
+/// Get all Layer 2 chains.
+pub fn get_l2_chains() -> Vec<EvmChainConfig> {
+    get_configs()
+        .iter()
+        .filter(|c| c.is_l2)
+        .cloned()
         .collect()
 }
 
-/// List testnet chains only
-pub fn list_testnet_chains() -> Vec<&'static str> {
-    get_chain_configs()
+/// Get all Layer 1 chains (including sidechains like Polygon).
+pub fn get_l1_chains() -> Vec<EvmChainConfig> {
+    get_configs()
         .iter()
-        .filter(|(_, c)| c.is_testnet)
-        .map(|(k, _)| k.as_str())
+        .filter(|c| !c.is_l2)
+        .cloned()
         .collect()
+}
+
+/// Check if a chain ID is supported.
+pub fn is_chain_supported(chain_id: u64) -> bool {
+    get_configs().iter().any(|c| c.chain_id == chain_id)
+}
+
+/// Get the RPC URL for a chain with the API key.
+///
+/// # Arguments
+/// * `chain_id` - The numeric EVM chain ID
+///
+/// # Returns
+/// * `Ok(String)` - The full RPC URL with API key
+/// * `Err(ConfigError)` - If chain not found or API key missing
+pub fn get_rpc_url(chain_id: u64) -> ConfigResult<String> {
+    let config = get_chain_config(chain_id).ok_or(ConfigError::ChainNotFound(chain_id))?;
+
+    config.get_rpc_url()
 }
 
 #[cfg(test)]
@@ -305,29 +273,78 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_chain_configs_exist() {
-        let configs = get_chain_configs();
-        assert!(configs.contains_key("ethereum"));
-        assert!(configs.contains_key("moonbeam"));
-        assert!(configs.contains_key("polygon"));
-    }
-
-    #[test]
-    fn test_get_chain_by_id() {
-        let eth = get_chain_by_id(1);
+    fn test_get_chain_config() {
+        let eth = get_chain_config(1);
         assert!(eth.is_some());
-        assert_eq!(eth.unwrap().name, "ethereum");
+        let eth = eth.unwrap();
+        assert_eq!(eth.name, "ethereum");
+        assert_eq!(eth.symbol, "ETH");
+        assert_eq!(eth.decimals, 18);
+        assert!(!eth.is_l2);
     }
 
     #[test]
-    fn test_mainnet_testnet_separation() {
-        let mainnets = list_mainnet_chains();
-        let testnets = list_testnet_chains();
+    fn test_get_chain_config_l2() {
+        let arb = get_chain_config(42161);
+        assert!(arb.is_some());
+        let arb = arb.unwrap();
+        assert_eq!(arb.name, "arbitrum");
+        assert!(arb.is_l2);
+    }
 
-        assert!(mainnets.contains(&"ethereum"));
-        assert!(!mainnets.contains(&"sepolia"));
+    #[test]
+    fn test_get_all_chains() {
+        let chains = get_all_chains();
+        assert_eq!(chains.len(), 5);
 
-        assert!(testnets.contains(&"sepolia"));
-        assert!(!testnets.contains(&"ethereum"));
+        let chain_ids: Vec<u64> = chains.iter().map(|c| c.chain_id).collect();
+        assert!(chain_ids.contains(&1));      // Ethereum
+        assert!(chain_ids.contains(&42161));  // Arbitrum
+        assert!(chain_ids.contains(&8453));   // Base
+        assert!(chain_ids.contains(&10));     // Optimism
+        assert!(chain_ids.contains(&137));    // Polygon
+    }
+
+    #[test]
+    fn test_get_chain_by_name() {
+        let eth = get_chain_by_name("ethereum");
+        assert!(eth.is_some());
+        assert_eq!(eth.unwrap().chain_id, 1);
+
+        let arb = get_chain_by_name("ARBITRUM"); // Case insensitive
+        assert!(arb.is_some());
+        assert_eq!(arb.unwrap().chain_id, 42161);
+    }
+
+    #[test]
+    fn test_l2_separation() {
+        let l2s = get_l2_chains();
+        assert_eq!(l2s.len(), 3); // Arbitrum, Base, Optimism
+
+        let l1s = get_l1_chains();
+        assert_eq!(l1s.len(), 2); // Ethereum, Polygon
+    }
+
+    #[test]
+    fn test_is_chain_supported() {
+        assert!(is_chain_supported(1));
+        assert!(is_chain_supported(42161));
+        assert!(!is_chain_supported(999999));
+    }
+
+    #[test]
+    fn test_chain_config_rpc_pattern() {
+        let eth = get_chain_config(1).unwrap();
+        assert!(eth.rpc_url.contains("alchemy.com"));
+        assert!(eth.rpc_url.ends_with("/v2"));
+    }
+
+    #[test]
+    fn test_explorer_api_url() {
+        let eth = get_chain_config(1).unwrap();
+        assert_eq!(eth.explorer_api_url, "https://api.etherscan.io/api");
+
+        let arb = get_chain_config(42161).unwrap();
+        assert_eq!(arb.explorer_api_url, "https://api.arbiscan.io/api");
     }
 }

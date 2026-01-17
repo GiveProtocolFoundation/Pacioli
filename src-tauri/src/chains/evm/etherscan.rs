@@ -2,7 +2,7 @@
 //!
 //! Supports Etherscan and compatible block explorer APIs (Polygonscan, Arbiscan, etc.)
 
-use super::config::ChainConfig;
+use super::config::EvmChainConfig;
 use super::types::{Erc20Transfer, Erc721Transfer, EvmTransaction, InternalTransaction};
 use crate::chains::{ChainError, ChainResult};
 use reqwest::Client;
@@ -28,12 +28,7 @@ pub struct EtherscanClient {
 
 impl EtherscanClient {
     /// Create a new Etherscan client from chain config
-    pub fn new(config: &ChainConfig, api_key: Option<String>) -> ChainResult<Self> {
-        let api_url = config
-            .explorer_api_url
-            .clone()
-            .ok_or_else(|| ChainError::ConfigError("No explorer API URL configured".to_string()))?;
-
+    pub fn new(config: &EvmChainConfig, api_key: Option<String>) -> ChainResult<Self> {
         let client = Client::builder()
             .timeout(Duration::from_secs(30))
             .build()
@@ -41,7 +36,7 @@ impl EtherscanClient {
 
         Ok(Self {
             client,
-            api_url,
+            api_url: config.explorer_api_url.clone(),
             api_key,
             chain_name: config.name.clone(),
         })
@@ -315,8 +310,15 @@ mod tests {
 
     #[test]
     fn test_build_url() {
-        let config = ChainConfig::new(1, "ethereum", "Ethereum", "ETH")
-            .with_explorer("https://etherscan.io", "https://api.etherscan.io/api");
+        let config = EvmChainConfig::new(
+            1,
+            "ethereum",
+            "ETH",
+            "https://eth-mainnet.g.alchemy.com/v2",
+            "https://api.etherscan.io/api",
+            false,
+            12,
+        );
 
         let client = EtherscanClient::new(&config, Some("TEST_KEY".to_string())).unwrap();
 

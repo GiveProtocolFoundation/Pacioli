@@ -2,7 +2,7 @@
 //!
 //! Provides RPC access to EVM chains via Alchemy or any standard JSON-RPC endpoint.
 
-use super::config::ChainConfig;
+use super::config::EvmChainConfig;
 use crate::chains::{ChainError, ChainResult, NativeBalance, TokenBalance};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
@@ -40,17 +40,21 @@ struct RpcError {
 pub struct AlchemyClient {
     client: Client,
     rpc_url: String,
-    chain_config: ChainConfig,
+    chain_config: EvmChainConfig,
     request_id: std::sync::atomic::AtomicU64,
 }
 
 impl AlchemyClient {
     /// Create a new RPC client
-    pub fn new(config: &ChainConfig, rpc_url: Option<&str>) -> ChainResult<Self> {
-        let url = rpc_url
-            .map(|s| s.to_string())
-            .or_else(|| config.rpc_urls.first().cloned())
-            .ok_or_else(|| ChainError::ConfigError("No RPC URL configured".to_string()))?;
+    pub fn new(config: &EvmChainConfig, rpc_url: Option<&str>) -> ChainResult<Self> {
+        // Use override URL if provided, otherwise construct from config
+        let url = if let Some(override_url) = rpc_url {
+            override_url.to_string()
+        } else {
+            config
+                .get_rpc_url()
+                .map_err(|e| ChainError::ConfigError(e.to_string()))?
+        };
 
         let client = Client::builder()
             .timeout(Duration::from_secs(30))
@@ -144,7 +148,7 @@ impl AlchemyClient {
 
         let balance_wei = u128::from_str_radix(hex_str.trim_start_matches("0x"), 16).unwrap_or(0);
 
-        let decimals = self.chain_config.native_decimals;
+        let decimals = self.chain_config.decimals;
         let divisor = 10u128.pow(decimals as u32);
         let balance_formatted = format!(
             "{}.{}",
@@ -159,7 +163,7 @@ impl AlchemyClient {
         );
 
         Ok(NativeBalance {
-            symbol: self.chain_config.native_symbol.clone(),
+            symbol: self.chain_config.symbol.clone(),
             decimals,
             balance: balance_wei.to_string(),
             balance_formatted,
