@@ -1,14 +1,19 @@
+//! Database module for persistence operations.
+
 pub mod transactions;
 
 use anyhow::Result;
 use sqlx::{Pool, Sqlite, SqlitePool};
 
+/// Database connection wrapper for SQLite operations.
 pub struct Database {
+    /// The SQLite connection pool.
     pub pool: Pool<Sqlite>,
 }
 
 #[allow(dead_code)]
 impl Database {
+    /// Creates a new database connection and runs migrations.
     pub async fn new(database_url: &str) -> Result<Self> {
         let pool = SqlitePool::connect(database_url).await?;
 
@@ -18,6 +23,7 @@ impl Database {
         Ok(Self { pool })
     }
 
+    /// Retrieves transactions for a profile with optional date filtering.
     pub async fn get_transactions(
         &self,
         profile_id: &str,
@@ -44,6 +50,7 @@ impl Database {
         Ok(transactions)
     }
 
+    /// Initializes database tables if they don't exist.
     pub async fn init_tables(&self) -> Result<()> {
         // Create tables if they don't exist
         sqlx::query(

@@ -159,6 +159,7 @@ async fn sync_evm_transactions(
     Ok(format!("Synced {} transactions", transactions.len()))
 }
 
+/// Runs the Tauri application with all configured plugins and commands.
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()

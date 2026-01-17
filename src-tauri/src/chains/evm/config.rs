@@ -6,21 +6,31 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::OnceLock;
 
-/// Chain configuration
+/// EVM chain configuration parameters.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ChainConfig {
+    /// Numeric EVM chain ID.
     pub chain_id: u64,
+    /// Internal chain name identifier.
     pub name: String,
+    /// Human-readable display name.
     pub display_name: String,
+    /// Native currency symbol (e.g., ETH).
     pub native_symbol: String,
+    /// Native currency decimals (typically 18).
     pub native_decimals: u8,
+    /// List of RPC endpoint URLs.
     pub rpc_urls: Vec<String>,
+    /// Block explorer URL for viewing transactions.
     pub explorer_url: Option<String>,
+    /// Block explorer API URL for fetching data.
     pub explorer_api_url: Option<String>,
+    /// Whether this is a test network.
     pub is_testnet: bool,
 }
 
 impl ChainConfig {
+    /// Creates a new chain configuration with required fields.
     pub fn new(
         chain_id: u64,
         name: impl Into<String>,
@@ -40,17 +50,20 @@ impl ChainConfig {
         }
     }
 
+    /// Adds an RPC endpoint URL.
     pub fn with_rpc(mut self, url: impl Into<String>) -> Self {
         self.rpc_urls.push(url.into());
         self
     }
 
+    /// Sets the block explorer URLs.
     pub fn with_explorer(mut self, url: impl Into<String>, api_url: impl Into<String>) -> Self {
         self.explorer_url = Some(url.into());
         self.explorer_api_url = Some(api_url.into());
         self
     }
 
+    /// Marks this chain as a testnet.
     pub fn testnet(mut self) -> Self {
         self.is_testnet = true;
         self

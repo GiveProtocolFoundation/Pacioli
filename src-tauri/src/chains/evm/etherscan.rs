@@ -115,9 +115,7 @@ impl EtherscanClient {
         offset: u32,
     ) -> ChainResult<Vec<EvmTransaction>> {
         let start = start_block.unwrap_or(0).to_string();
-        let end = end_block
-            .map(|b| b.to_string())
-            .unwrap_or_else(|| "99999999".to_string());
+        let end = end_block.map_or_else(|| "99999999".to_string(), |b| b.to_string());
 
         let url = self.build_url(
             "account",
@@ -149,9 +147,7 @@ impl EtherscanClient {
         offset: u32,
     ) -> ChainResult<Vec<InternalTransaction>> {
         let start = start_block.unwrap_or(0).to_string();
-        let end = end_block
-            .map(|b| b.to_string())
-            .unwrap_or_else(|| "99999999".to_string());
+        let end = end_block.map_or_else(|| "99999999".to_string(), |b| b.to_string());
 
         let url = self.build_url(
             "account",
@@ -184,9 +180,7 @@ impl EtherscanClient {
         offset: u32,
     ) -> ChainResult<Vec<Erc20Transfer>> {
         let start = start_block.unwrap_or(0).to_string();
-        let end = end_block
-            .map(|b| b.to_string())
-            .unwrap_or_else(|| "99999999".to_string());
+        let end = end_block.map_or_else(|| "99999999".to_string(), |b| b.to_string());
         let page_str = page.to_string();
         let offset_str = offset.to_string();
 
@@ -225,9 +219,7 @@ impl EtherscanClient {
         offset: u32,
     ) -> ChainResult<Vec<Erc721Transfer>> {
         let start = start_block.unwrap_or(0).to_string();
-        let end = end_block
-            .map(|b| b.to_string())
-            .unwrap_or_else(|| "99999999".to_string());
+        let end = end_block.map_or_else(|| "99999999".to_string(), |b| b.to_string());
         let page_str = page.to_string();
         let offset_str = offset.to_string();
 

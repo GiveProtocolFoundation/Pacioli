@@ -9,18 +9,25 @@ use crate::chains::{
 };
 use async_trait::async_trait;
 
-/// Substrate chain configuration
+/// Substrate chain configuration parameters.
 #[derive(Debug, Clone)]
 pub struct SubstrateConfig {
+    /// Internal chain name identifier.
     pub name: String,
+    /// Human-readable display name.
     pub display_name: String,
+    /// Native currency symbol (e.g., DOT).
     pub native_symbol: String,
+    /// Native currency decimals.
     pub native_decimals: u8,
+    /// WebSocket RPC endpoint URL.
     pub rpc_url: String,
+    /// Subscan API URL for transaction indexing.
     pub subscan_url: Option<String>,
 }
 
 impl SubstrateConfig {
+    /// Creates configuration for Polkadot mainnet.
     pub fn polkadot() -> Self {
         Self {
             name: "polkadot".to_string(),
@@ -32,6 +39,7 @@ impl SubstrateConfig {
         }
     }
 
+    /// Creates configuration for Kusama mainnet.
     pub fn kusama() -> Self {
         Self {
             name: "kusama".to_string(),
@@ -43,6 +51,7 @@ impl SubstrateConfig {
         }
     }
 
+    /// Creates configuration for Westend testnet.
     pub fn westend() -> Self {
         Self {
             name: "westend".to_string(),
@@ -54,6 +63,7 @@ impl SubstrateConfig {
         }
     }
 
+    /// Creates configuration for Acala mainnet.
     pub fn acala() -> Self {
         Self {
             name: "acala".to_string(),
@@ -65,6 +75,7 @@ impl SubstrateConfig {
         }
     }
 
+    /// Creates configuration for Astar Substrate layer.
     pub fn astar_substrate() -> Self {
         Self {
             name: "astar-substrate".to_string(),
@@ -120,8 +131,7 @@ impl ChainAdapter for SubstrateAdapter {
     }
 
     async fn connect(&mut self) -> ChainResult<()> {
-        // TODO: Implement actual connection using subxt
-        // For now, just mark as connected
+        // Placeholder: actual subxt connection not yet implemented
         self.connected = true;
         Ok(())
     }
@@ -132,21 +142,21 @@ impl ChainAdapter for SubstrateAdapter {
     }
 
     async fn get_block_number(&self) -> ChainResult<u64> {
-        // TODO: Implement using subxt
+        // Placeholder: subxt integration pending
         Err(ChainError::Internal(
             "Substrate adapter not fully implemented".to_string(),
         ))
     }
 
     async fn get_native_balance(&self, _address: &str) -> ChainResult<NativeBalance> {
-        // TODO: Implement using subxt
+        // Placeholder: subxt integration pending
         Err(ChainError::Internal(
             "Substrate adapter not fully implemented".to_string(),
         ))
     }
 
     async fn get_token_balances(&self, _address: &str) -> ChainResult<Vec<TokenBalance>> {
-        // TODO: Implement using subxt for assets pallet
+        // Placeholder: assets pallet integration pending
         Ok(Vec::new())
     }
 
@@ -156,12 +166,12 @@ impl ChainAdapter for SubstrateAdapter {
         _from_block: Option<u64>,
         _to_block: Option<u64>,
     ) -> ChainResult<Vec<ChainTransaction>> {
-        // TODO: Implement using Subscan API
+        // Placeholder: Subscan API integration pending
         Ok(Vec::new())
     }
 
     async fn get_transaction(&self, _hash: &str) -> ChainResult<ChainTransaction> {
-        // TODO: Implement using subxt
+        // Placeholder: subxt integration pending
         Err(ChainError::Internal(
             "Substrate adapter not fully implemented".to_string(),
         ))

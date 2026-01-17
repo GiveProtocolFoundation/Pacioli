@@ -6,36 +6,56 @@ use crate::chains::{ChainId, ChainTransaction, ChainType, TransactionStatus, Tra
 use serde::{Deserialize, Serialize};
 use sqlx::{FromRow, Row, SqlitePool};
 
-/// Stored transaction record
+/// Stored transaction record from the database.
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
 pub struct StoredTransaction {
+    /// Unique database identifier.
     pub id: i64,
+    /// Transaction hash.
     pub hash: String,
+    /// Chain type (evm or substrate).
     pub chain_type: String,
+    /// Chain name identifier.
     pub chain_name: String,
+    /// Numeric chain ID for EVM chains.
     pub chain_id: Option<i64>,
+    /// Block number containing this transaction.
     pub block_number: i64,
+    /// Unix timestamp of the transaction.
     pub timestamp: i64,
+    /// Sender address.
     pub from_address: String,
+    /// Recipient address.
     pub to_address: Option<String>,
+    /// Transaction value in native units.
     pub value: String,
+    /// Transaction fee in native units.
     pub fee: String,
+    /// Transaction status (success, failed, pending).
     pub status: String,
+    /// Transaction type classification.
     pub tx_type: String,
+    /// JSON-encoded token transfers.
     pub token_transfers_json: Option<String>,
+    /// JSON-encoded raw transaction data.
     pub raw_data_json: Option<String>,
+    /// Associated wallet ID.
     pub wallet_id: Option<i64>,
+    /// Associated profile ID.
     pub profile_id: Option<i64>,
+    /// Record creation timestamp.
     pub created_at: String,
+    /// Record update timestamp.
     pub updated_at: String,
 }
 
-/// Transaction repository
+/// Transaction repository for database operations.
 pub struct TransactionRepository {
     pool: SqlitePool,
 }
 
 impl TransactionRepository {
+    /// Creates a new transaction repository with the given connection pool.
     pub fn new(pool: SqlitePool) -> Self {
         Self { pool }
     }
@@ -423,10 +443,12 @@ impl TransactionRepository {
     }
 }
 
-/// Transaction statistics
+/// Transaction statistics summary.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TransactionStats {
+    /// Total number of transactions.
     pub total_transactions: i64,
+    /// List of chains with stored transactions.
     pub chains: Vec<String>,
 }
 

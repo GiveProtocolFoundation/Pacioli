@@ -24,15 +24,19 @@ pub enum ChainType {
     Substrate,
 }
 
-/// Chain identifier
+/// Chain identifier combining type, name, and numeric ID.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct ChainId {
+    /// The blockchain type (EVM or Substrate).
     pub chain_type: ChainType,
+    /// Human-readable chain name.
     pub name: String,
+    /// Numeric chain ID (for EVM chains).
     pub chain_id: Option<u64>,
 }
 
 impl ChainId {
+    /// Creates an EVM chain identifier.
     pub fn evm(name: impl Into<String>, chain_id: u64) -> Self {
         Self {
             chain_type: ChainType::Evm,
@@ -41,6 +45,7 @@ impl ChainId {
         }
     }
 
+    /// Creates a Substrate chain identifier.
     pub fn substrate(name: impl Into<String>) -> Self {
         Self {
             chain_type: ChainType::Substrate,
@@ -106,23 +111,33 @@ pub struct TokenTransfer {
     pub value: String,
 }
 
-/// Token balance
+/// Token balance for an ERC20 or similar token.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TokenBalance {
+    /// Token contract address.
     pub token_address: String,
+    /// Token symbol (e.g., USDC).
     pub token_symbol: Option<String>,
+    /// Token name (e.g., USD Coin).
     pub token_name: Option<String>,
+    /// Token decimals for formatting.
     pub token_decimals: u8,
+    /// Raw balance in smallest units.
     pub balance: String,
+    /// Human-readable formatted balance.
     pub balance_formatted: String,
 }
 
-/// Native currency balance
+/// Native currency balance (e.g., ETH, DOT).
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct NativeBalance {
+    /// Currency symbol (e.g., ETH).
     pub symbol: String,
+    /// Currency decimals for formatting.
     pub decimals: u8,
+    /// Raw balance in smallest units (wei, planck).
     pub balance: String,
+    /// Human-readable formatted balance.
     pub balance_formatted: String,
 }
 
@@ -130,43 +145,55 @@ pub struct NativeBalance {
 // CHAIN ADAPTER TRAIT
 // =============================================================================
 
-/// Errors that can occur during chain operations
+/// Errors that can occur during chain operations.
 #[derive(Debug, thiserror::Error)]
 pub enum ChainError {
+    /// The requested chain is not supported.
     #[error("Chain not supported: {0}")]
     UnsupportedChain(String),
 
+    /// Failed to connect to the chain.
     #[error("Connection failed: {0}")]
     ConnectionFailed(String),
 
+    /// RPC call failed.
     #[error("RPC error: {0}")]
     RpcError(String),
 
+    /// API request failed.
     #[error("API error: {0}")]
     ApiError(String),
 
+    /// Rate limit exceeded.
     #[error("Rate limited")]
     RateLimited,
 
+    /// Invalid address format.
     #[error("Invalid address: {0}")]
     InvalidAddress(String),
 
+    /// Transaction not found.
     #[error("Transaction not found: {0}")]
     TransactionNotFound(String),
 
+    /// Block not found.
     #[error("Block not found: {0}")]
     BlockNotFound(u64),
 
+    /// Failed to parse response.
     #[error("Parse error: {0}")]
     ParseError(String),
 
+    /// Configuration error.
     #[error("Configuration error: {0}")]
     ConfigError(String),
 
+    /// Internal error.
     #[error("Internal error: {0}")]
     Internal(String),
 }
 
+/// Result type for chain operations.
 pub type ChainResult<T> = Result<T, ChainError>;
 
 /// Chain adapter trait - implement this for each blockchain type
@@ -221,6 +248,7 @@ pub struct ChainManager {
 }
 
 impl ChainManager {
+    /// Creates a new empty chain manager.
     pub fn new() -> Self {
         Self {
             adapters: RwLock::new(HashMap::new()),
