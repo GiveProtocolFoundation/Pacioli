@@ -4,8 +4,7 @@
 //! This module serves as a wrapper around the existing indexer functionality.
 
 use crate::chains::{
-    ChainAdapter, ChainError, ChainId, ChainResult, ChainTransaction, ChainType, NativeBalance,
-    TokenBalance, TransactionStatus, TransactionType,
+    ChainAdapter, ChainError, ChainId, ChainResult, ChainTransaction, NativeBalance, TokenBalance,
 };
 use async_trait::async_trait;
 

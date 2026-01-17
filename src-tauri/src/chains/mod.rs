@@ -3,6 +3,8 @@
 //! Provides a unified interface for interacting with multiple blockchain networks.
 //! Supports EVM-compatible chains and Substrate-based chains (Polkadot ecosystem).
 
+#![allow(dead_code)]
+
 pub mod evm;
 pub mod substrate;
 

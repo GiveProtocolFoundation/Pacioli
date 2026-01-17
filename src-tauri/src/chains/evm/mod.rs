@@ -9,8 +9,8 @@ pub mod etherscan;
 pub mod types;
 
 use crate::chains::{
-    ChainAdapter, ChainError, ChainId, ChainResult, ChainTransaction, ChainType, NativeBalance,
-    TokenBalance, TokenTransfer, TransactionStatus, TransactionType,
+    ChainAdapter, ChainError, ChainId, ChainResult, ChainTransaction, NativeBalance, TokenBalance,
+    TokenTransfer, TransactionStatus, TransactionType,
 };
 use alchemy::AlchemyClient;
 use async_trait::async_trait;
@@ -65,11 +65,8 @@ impl EvmAdapter {
     /// Get RPC client
     async fn get_rpc(&self) -> ChainResult<AlchemyClient> {
         let guard = self.rpc_client.read().await;
-        if let Some(client) = guard.as_ref() {
-            return Ok(AlchemyClient::new(
-                &self.config,
-                self.rpc_url_override.as_deref(),
-            )?);
+        if guard.is_some() {
+            return AlchemyClient::new(&self.config, self.rpc_url_override.as_deref());
         }
         drop(guard);
 

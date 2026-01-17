@@ -2,6 +2,8 @@
 //!
 //! Provides database storage for blockchain transactions fetched from various chains.
 
+#![allow(dead_code)]
+
 use crate::chains::{ChainId, ChainTransaction, ChainType, TransactionStatus, TransactionType};
 use serde::{Deserialize, Serialize};
 use sqlx::{FromRow, Row, SqlitePool};
