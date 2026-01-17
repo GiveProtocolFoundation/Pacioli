@@ -1,5 +1,12 @@
 /* eslint-disable react-refresh/only-export-components */
-import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react'
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  ReactNode,
+} from 'react'
 import { indexedDBService } from '../services/database/indexedDBService'
 
 interface WalletAliasContextType {
@@ -11,9 +18,13 @@ interface WalletAliasContextType {
   formatWalletDisplay: (address: string, fallbackName?: string) => string
 }
 
-const WalletAliasContext = createContext<WalletAliasContextType | undefined>(undefined)
+const WalletAliasContext = createContext<WalletAliasContextType | undefined>(
+  undefined
+)
 
-export const WalletAliasProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const WalletAliasProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
   const [aliases, setAliases] = useState<Record<string, string>>({})
   const [isLoading, setIsLoading] = useState(true)
 
@@ -63,20 +74,26 @@ export const WalletAliasProvider: React.FC<{ children: ReactNode }> = ({ childre
   }, [])
 
   // Get alias for an address (returns null if no alias set)
-  const getAlias = useCallback((address: string): string | null => {
-    return aliases[address.toLowerCase()] || null
-  }, [aliases])
+  const getAlias = useCallback(
+    (address: string): string | null => {
+      return aliases[address.toLowerCase()] || null
+    },
+    [aliases]
+  )
 
   // Format wallet display: "Alias (0x1234...5678)" or "Name (0x1234...5678)"
-  const formatWalletDisplay = useCallback((address: string, fallbackName?: string): string => {
-    const alias = aliases[address.toLowerCase()]
-    const displayName = alias || fallbackName || 'Unnamed'
+  const formatWalletDisplay = useCallback(
+    (address: string, fallbackName?: string): string => {
+      const alias = aliases[address.toLowerCase()]
+      const displayName = alias || fallbackName || 'Unnamed'
 
-    // Format address: first 6 chars + ... + last 4 chars
-    const shortAddress = `${address.slice(0, 6)}...${address.slice(-4)}`
+      // Format address: first 6 chars + ... + last 4 chars
+      const shortAddress = `${address.slice(0, 6)}...${address.slice(-4)}`
 
-    return `${displayName} (${shortAddress})`
-  }, [aliases])
+      return `${displayName} (${shortAddress})`
+    },
+    [aliases]
+  )
 
   return (
     <WalletAliasContext.Provider
@@ -97,7 +114,9 @@ export const WalletAliasProvider: React.FC<{ children: ReactNode }> = ({ childre
 export const useWalletAliases = () => {
   const context = useContext(WalletAliasContext)
   if (context === undefined) {
-    throw new Error('useWalletAliases must be used within a WalletAliasProvider')
+    throw new Error(
+      'useWalletAliases must be used within a WalletAliasProvider'
+    )
   }
   return context
 }

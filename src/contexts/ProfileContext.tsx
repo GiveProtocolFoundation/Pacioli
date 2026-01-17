@@ -4,8 +4,19 @@
  * Manages user profiles and provides profile state across the application
  */
 
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react'
-import { persistence, type Profile, type Wallet, type WalletInput } from '../services/persistence'
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+} from 'react'
+import {
+  persistence,
+  type Profile,
+  type Wallet,
+  type WalletInput,
+} from '../services/persistence'
 
 interface ProfileContextType {
   // Profile state
@@ -35,9 +46,13 @@ const ProfileContext = createContext<ProfileContextType | undefined>(undefined)
 
 const CURRENT_PROFILE_KEY = 'currentProfileId'
 
-export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [profiles, setProfiles] = useState<Profile[]>([])
-  const [currentProfile, setCurrentProfileState] = useState<Profile | null>(null)
+  const [currentProfile, setCurrentProfileState] = useState<Profile | null>(
+    null
+  )
   const [wallets, setWallets] = useState<Wallet[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [walletsLoading, setWalletsLoading] = useState(false)
@@ -53,10 +68,14 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       // Auto-create default profile if none exists
       if (loadedProfiles.length === 0) {
         try {
-          const defaultProfile = await persistence.createProfile('Default Profile')
+          const defaultProfile =
+            await persistence.createProfile('Default Profile')
           loadedProfiles = [defaultProfile]
         } catch (createErr) {
-          console.error('[ProfileContext] Failed to create default profile:', createErr)
+          console.error(
+            '[ProfileContext] Failed to create default profile:',
+            createErr
+          )
         }
       }
 
@@ -65,7 +84,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       // Restore current profile from settings
       const savedProfileId = await persistence.getSetting(CURRENT_PROFILE_KEY)
       if (savedProfileId) {
-        const savedProfile = loadedProfiles.find((p) => p.id === savedProfileId)
+        const savedProfile = loadedProfiles.find(p => p.id === savedProfileId)
         if (savedProfile) {
           setCurrentProfileState(savedProfile)
         } else if (loadedProfiles.length > 0) {
@@ -113,36 +132,41 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
   // Save current profile to settings when it changes
   useEffect(() => {
     if (currentProfile) {
-      persistence.setSetting(CURRENT_PROFILE_KEY, currentProfile.id).catch((err) => {
-        console.error('[ProfileContext] Failed to save current profile:', err)
-      })
+      persistence
+        .setSetting(CURRENT_PROFILE_KEY, currentProfile.id)
+        .catch(err => {
+          console.error('[ProfileContext] Failed to save current profile:', err)
+        })
     }
   }, [currentProfile])
 
   const createProfile = useCallback(async (name: string): Promise<Profile> => {
     const newProfile = await persistence.createProfile(name)
-    setProfiles((prev) => [newProfile, ...prev])
+    setProfiles(prev => [newProfile, ...prev])
     return newProfile
   }, [])
 
-  const updateProfile = useCallback(async (id: string, name: string): Promise<Profile> => {
-    const updatedProfile = await persistence.updateProfile(id, name)
-    setProfiles((prev) => prev.map((p) => (p.id === id ? updatedProfile : p)))
+  const updateProfile = useCallback(
+    async (id: string, name: string): Promise<Profile> => {
+      const updatedProfile = await persistence.updateProfile(id, name)
+      setProfiles(prev => prev.map(p => (p.id === id ? updatedProfile : p)))
 
-    // Update current profile if it was the one updated
-    setCurrentProfileState((prev) => (prev?.id === id ? updatedProfile : prev))
+      // Update current profile if it was the one updated
+      setCurrentProfileState(prev => (prev?.id === id ? updatedProfile : prev))
 
-    return updatedProfile
-  }, [])
+      return updatedProfile
+    },
+    []
+  )
 
   const deleteProfile = useCallback(
     async (id: string): Promise<void> => {
       await persistence.deleteProfile(id)
-      setProfiles((prev) => prev.filter((p) => p.id !== id))
+      setProfiles(prev => prev.filter(p => p.id !== id))
 
       // If deleted profile was current, switch to another
       if (currentProfile?.id === id) {
-        const remaining = profiles.filter((p) => p.id !== id)
+        const remaining = profiles.filter(p => p.id !== id)
         setCurrentProfileState(remaining.length > 0 ? remaining[0] : null)
       }
     },
@@ -168,7 +192,10 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         profile_id: currentProfile.id,
       })
 
-      setWallets((prev) => [newWallet, ...prev.filter((w) => w.id !== newWallet.id)])
+      setWallets(prev => [
+        newWallet,
+        ...prev.filter(w => w.id !== newWallet.id),
+      ])
       return newWallet
     },
     [currentProfile]
@@ -176,7 +203,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const removeWallet = useCallback(async (id: string): Promise<void> => {
     await persistence.deleteWallet(id)
-    setWallets((prev) => prev.filter((w) => w.id !== id))
+    setWallets(prev => prev.filter(w => w.id !== id))
   }, [])
 
   const refreshWallets = useCallback(async () => {
