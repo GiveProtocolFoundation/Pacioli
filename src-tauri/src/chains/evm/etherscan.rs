@@ -88,12 +88,6 @@ impl RateLimiter {
     }
 }
 
-impl Default for RateLimiter {
-    fn default() -> Self {
-        Self::new(RATE_LIMIT_PERMITS)
-    }
-}
-
 // =============================================================================
 // ETHERSCAN CLIENT
 // =============================================================================
@@ -132,7 +126,7 @@ impl EtherscanClient {
             api_key,
             chain_id: config.chain_id,
             chain_name: config.name.clone(),
-            rate_limiter: RateLimiter::default(),
+            rate_limiter: RateLimiter::new(RATE_LIMIT_PERMITS),
         })
     }
 
