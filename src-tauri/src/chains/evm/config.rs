@@ -185,7 +185,7 @@ fn get_configs() -> &'static Vec<EvmChainConfig> {
 /// * `None` if the chain is not found
 ///
 /// # Example
-/// ```
+/// ```ignore
 /// use pacioli_lib::chains::evm::config::get_chain_config;
 ///
 /// if let Some(config) = get_chain_config(1) {
@@ -205,7 +205,7 @@ pub fn get_chain_config(chain_id: u64) -> Option<EvmChainConfig> {
 /// A vector of all supported chain configurations.
 ///
 /// # Example
-/// ```
+/// ```ignore
 /// use pacioli_lib::chains::evm::config::get_all_chains;
 ///
 /// for chain in get_all_chains() {

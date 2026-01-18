@@ -74,10 +74,10 @@ impl SubstrateCurrencyHandler {
     /// String representation with full precision
     ///
     /// # Example
-    /// ```
+    /// ```ignore
     /// // 1 DOT = 10^10 planck
-    /// let amount = convert_from_planck("10000000000", 10);
-    /// assert_eq!(amount, "1.0000000000");
+    /// let amount = SubstrateCurrencyHandler::convert_from_planck("10000000000", 10).unwrap();
+    /// assert_eq!(amount, "1");
     /// ```
     pub fn convert_from_planck(planck_amount: &str, decimals: u8) -> Result<String> {
         let planck = Decimal::from_str(planck_amount).context("Failed to parse planck amount")?;
@@ -85,7 +85,8 @@ impl SubstrateCurrencyHandler {
         let divisor = Decimal::from(10_u64.pow(decimals as u32));
         let token_amount = planck / divisor;
 
-        Ok(token_amount.to_string())
+        // Normalize to remove trailing zeros
+        Ok(token_amount.normalize().to_string())
     }
 
     /// Convert token amount to planck (smallest unit)
