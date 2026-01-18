@@ -233,20 +233,12 @@ pub fn get_chain_by_name(name: &str) -> Option<EvmChainConfig> {
 
 /// Get all Layer 2 chains.
 pub fn get_l2_chains() -> Vec<EvmChainConfig> {
-    get_configs()
-        .iter()
-        .filter(|c| c.is_l2)
-        .cloned()
-        .collect()
+    get_configs().iter().filter(|c| c.is_l2).cloned().collect()
 }
 
 /// Get all Layer 1 chains (including sidechains like Polygon).
 pub fn get_l1_chains() -> Vec<EvmChainConfig> {
-    get_configs()
-        .iter()
-        .filter(|c| !c.is_l2)
-        .cloned()
-        .collect()
+    get_configs().iter().filter(|c| !c.is_l2).cloned().collect()
 }
 
 /// Check if a chain ID is supported.
@@ -298,11 +290,11 @@ mod tests {
         assert_eq!(chains.len(), 5);
 
         let chain_ids: Vec<u64> = chains.iter().map(|c| c.chain_id).collect();
-        assert!(chain_ids.contains(&1));      // Ethereum
-        assert!(chain_ids.contains(&42161));  // Arbitrum
-        assert!(chain_ids.contains(&8453));   // Base
-        assert!(chain_ids.contains(&10));     // Optimism
-        assert!(chain_ids.contains(&137));    // Polygon
+        assert!(chain_ids.contains(&1)); // Ethereum
+        assert!(chain_ids.contains(&42161)); // Arbitrum
+        assert!(chain_ids.contains(&8453)); // Base
+        assert!(chain_ids.contains(&10)); // Optimism
+        assert!(chain_ids.contains(&137)); // Polygon
     }
 
     #[test]
