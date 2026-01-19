@@ -16,16 +16,27 @@ use sqlx::{FromRow, Row, SqlitePool};
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub enum TxType {
+    /// Simple token or native currency transfer.
     Transfer,
+    /// Token swap on a DEX.
     Swap,
+    /// Cross-chain bridge transaction.
     Bridge,
+    /// Staking tokens in a protocol.
     Stake,
+    /// Unstaking tokens from a protocol.
     Unstake,
+    /// Claiming rewards or airdrops.
     Claim,
+    /// Minting new tokens (e.g., NFTs).
     Mint,
+    /// Burning tokens.
     Burn,
+    /// ERC20 token approval.
     Approve,
+    /// Generic smart contract interaction.
     ContractCall,
+    /// Unclassified transaction type.
     Unknown,
 }
 
@@ -69,8 +80,11 @@ impl TxType {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub enum TxStatus {
+    /// Transaction completed successfully.
     Success,
+    /// Transaction failed or reverted.
     Failed,
+    /// Transaction is pending confirmation.
     Pending,
 }
 
@@ -99,12 +113,19 @@ impl TxStatus {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub enum TokenType {
+    /// ERC-20 fungible token standard.
     Erc20,
+    /// ERC-721 non-fungible token standard.
     Erc721,
+    /// ERC-1155 multi-token standard.
     Erc1155,
+    /// PSP-22 Substrate fungible token standard.
     Psp22,
+    /// PSP-34 Substrate non-fungible token standard.
     Psp34,
+    /// Native chain token (ETH, DOT, etc.).
     Native,
+    /// Unknown or unrecognized token standard.
     Unknown,
 }
 
@@ -140,9 +161,13 @@ impl TokenType {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub enum WalletType {
+    /// Ethereum Virtual Machine compatible wallet (secp256k1).
     Evm,
+    /// Substrate/Polkadot ecosystem wallet (sr25519/ed25519).
     Substrate,
+    /// Solana wallet (ed25519).
     Solana,
+    /// Bitcoin wallet (secp256k1).
     Bitcoin,
 }
 

@@ -1,6 +1,8 @@
 //! Database module for persistence operations.
 
+/// Multi-chain transaction storage for EVM, Substrate, Solana, and Bitcoin chains.
 pub mod multi_chain;
+/// Chain transaction repository for the legacy transaction storage system.
 pub mod transactions;
 
 use anyhow::Result;
