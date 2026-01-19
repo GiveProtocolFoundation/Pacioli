@@ -82,7 +82,9 @@ function triggerFetch(fetchFn: () => Promise<void>): void {
  * )
  * ```
  */
-export function useChains(): AsyncState<ChainInfo[]> & { chains: ChainInfo[] | null } {
+export function useChains(): AsyncState<ChainInfo[]> & {
+  chains: ChainInfo[] | null
+} {
   const [state, setState] = useState<AsyncState<ChainInfo[]>>({
     data: null,
     isLoading: true,
@@ -152,7 +154,9 @@ export function useTransactions(
   chainId: string,
   address: string,
   fromBlock?: number
-): AsyncResult<ChainTransaction[]> & { transactions: ChainTransaction[] | null } {
+): AsyncResult<ChainTransaction[]> & {
+  transactions: ChainTransaction[] | null
+} {
   const [state, setState] = useState<AsyncState<ChainTransaction[]>>({
     data: null,
     isLoading: false,
@@ -165,10 +169,14 @@ export function useTransactions(
       return
     }
 
-    setState((prev) => ({ ...prev, isLoading: true, error: null }))
+    setState(prev => ({ ...prev, isLoading: true, error: null }))
 
     try {
-      const transactions = await apiFetchTransactions(chainId, address, fromBlock)
+      const transactions = await apiFetchTransactions(
+        chainId,
+        address,
+        fromBlock
+      )
       setState({ data: transactions, isLoading: false, error: null })
     } catch (err) {
       setState({
@@ -232,7 +240,7 @@ export function useBalances(
       return
     }
 
-    setState((prev) => ({ ...prev, isLoading: true, error: null }))
+    setState(prev => ({ ...prev, isLoading: true, error: null }))
 
     try {
       const balances = await apiFetchBalances(chainId, address)
@@ -302,7 +310,7 @@ export function useMultiChainBalances(
       return
     }
 
-    setState((prev) => ({ ...prev, isLoading: true, error: null }))
+    setState(prev => ({ ...prev, isLoading: true, error: null }))
 
     try {
       const balances = await apiFetchAllBalances(wallets)
@@ -370,7 +378,7 @@ export function useAddressValidation(
       return
     }
 
-    setState((prev) => ({ ...prev, isLoading: true, error: null }))
+    setState(prev => ({ ...prev, isLoading: true, error: null }))
 
     try {
       const isValid = await apiValidateAddress(chainId, address)
@@ -412,7 +420,9 @@ export function useMultiChainTransactions(
   address: string,
   chainIds: string[],
   fromBlock?: number
-): AsyncResult<ChainTransaction[]> & { transactions: ChainTransaction[] | null } {
+): AsyncResult<ChainTransaction[]> & {
+  transactions: ChainTransaction[] | null
+} {
   const [state, setState] = useState<AsyncState<ChainTransaction[]>>({
     data: null,
     isLoading: false,
@@ -428,11 +438,15 @@ export function useMultiChainTransactions(
       return
     }
 
-    setState((prev) => ({ ...prev, isLoading: true, error: null }))
+    setState(prev => ({ ...prev, isLoading: true, error: null }))
 
     try {
       const { fetchAllTransactions } = await import('../api/chains')
-      const transactions = await fetchAllTransactions(address, chainIds, fromBlock)
+      const transactions = await fetchAllTransactions(
+        address,
+        chainIds,
+        fromBlock
+      )
       setState({ data: transactions, isLoading: false, error: null })
     } catch (err) {
       setState({
