@@ -152,7 +152,11 @@ impl EtherscanClient {
 
     /// Build API URL with parameters
     fn build_url(&self, module: &str, action: &str, params: &[(&str, &str)]) -> String {
-        let mut url = format!("{}?module={}&action={}", self.base_url, module, action);
+        // V2 API requires chainid parameter
+        let mut url = format!(
+            "{}?chainid={}&module={}&action={}",
+            self.base_url, self.chain_id, module, action
+        );
 
         for (key, value) in params {
             url.push_str(&format!("&{}={}", key, value));

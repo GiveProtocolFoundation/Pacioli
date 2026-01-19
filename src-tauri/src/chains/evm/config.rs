@@ -127,7 +127,7 @@ fn get_configs() -> &'static Vec<EvmChainConfig> {
                 "ethereum",
                 "ETH",
                 "https://eth-mainnet.g.alchemy.com/v2",
-                "https://api.etherscan.io/api",
+                "https://api.etherscan.io/v2/api",
                 false, // not L2
                 12,    // ~12 second block time
             ),
@@ -137,7 +137,7 @@ fn get_configs() -> &'static Vec<EvmChainConfig> {
                 "arbitrum",
                 "ETH",
                 "https://arb-mainnet.g.alchemy.com/v2",
-                "https://api.arbiscan.io/api",
+                "https://api.etherscan.io/v2/api",
                 true, // L2
                 1,    // ~0.25s but use 1 for rate limiting
             ),
@@ -147,7 +147,7 @@ fn get_configs() -> &'static Vec<EvmChainConfig> {
                 "base",
                 "ETH",
                 "https://base-mainnet.g.alchemy.com/v2",
-                "https://api.basescan.org/api",
+                "https://api.etherscan.io/v2/api",
                 true, // L2
                 2,    // ~2 second block time
             ),
@@ -157,7 +157,7 @@ fn get_configs() -> &'static Vec<EvmChainConfig> {
                 "optimism",
                 "ETH",
                 "https://opt-mainnet.g.alchemy.com/v2",
-                "https://api-optimistic.etherscan.io/api",
+                "https://api.etherscan.io/v2/api",
                 true, // L2
                 2,    // ~2 second block time
             ),
@@ -167,7 +167,7 @@ fn get_configs() -> &'static Vec<EvmChainConfig> {
                 "polygon",
                 "POL", // Rebranded from MATIC
                 "https://polygon-mainnet.g.alchemy.com/v2",
-                "https://api.polygonscan.com/api",
+                "https://api.etherscan.io/v2/api",
                 false, // Sidechain, not technically L2
                 2,     // ~2 second block time
             ),
@@ -334,9 +334,9 @@ mod tests {
     #[test]
     fn test_explorer_api_url() {
         let eth = get_chain_config(1).unwrap();
-        assert_eq!(eth.explorer_api_url, "https://api.etherscan.io/api");
+        assert_eq!(eth.explorer_api_url, "https://api.etherscan.io/v2/api");
 
         let arb = get_chain_config(42161).unwrap();
-        assert_eq!(arb.explorer_api_url, "https://api.arbiscan.io/api");
+        assert_eq!(arb.explorer_api_url, "https://api.etherscan.io/v2/api");
     }
 }
