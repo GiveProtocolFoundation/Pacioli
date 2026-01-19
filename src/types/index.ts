@@ -165,6 +165,27 @@ export * from './errors'
 // Note: This also exports UserRole (re-exported from ./user)
 export * from './auth'
 
+// =============================================================================
+// CHAIN ADAPTER TYPES
+// =============================================================================
+export {
+  ChainType,
+  TransactionStatus as ChainTransactionStatus,
+  TransactionType as ChainTransactionType,
+} from './chains'
+
+export type {
+  ChainInfo,
+  ChainId,
+  ChainTransaction,
+  TokenTransfer,
+  NativeBalance,
+  TokenBalance as ChainTokenBalance,
+  WalletBalances,
+  WalletAddress,
+  ChainError,
+} from './chains'
+
 // Export crypto accounting types explicitly to avoid CostBasisMethod conflict
 export type {
   CostBasisMethod as CryptoCostBasisMethod,
