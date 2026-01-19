@@ -898,4 +898,38 @@ mod tests {
             "0x1234567890123456789012345678901234567890"
         ));
     }
+
+    // =========================================================================
+    // Integration tests - require network access and API keys
+    // Run with: cargo test --test '*' -- --ignored
+    // =========================================================================
+
+    /// Test fetching transactions for a known address (Vitalik's public address)
+    #[tokio::test]
+    #[ignore = "Integration test requiring network access and API key"]
+    async fn test_fetch_vitalik_transactions() {
+        let address = "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045";
+
+        let adapter = EvmAdapter::from_chain_id(1).unwrap();
+
+        let txs = adapter.get_transactions(address, None, None).await.unwrap();
+
+        assert!(!txs.is_empty());
+        println!("Found {} transactions", txs.len());
+    }
+
+    /// Test fetching balances for a known address
+    #[tokio::test]
+    #[ignore = "Integration test requiring network access and API key"]
+    async fn test_fetch_balances() {
+        let address = "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045";
+
+        let adapter = EvmAdapter::from_chain_id(1).unwrap();
+
+        let native = adapter.get_native_balance(address).await.unwrap();
+        let tokens = adapter.get_token_balances(address).await.unwrap();
+
+        println!("ETH Balance: {} wei", native.balance);
+        println!("Token count: {}", tokens.len());
+    }
 }
