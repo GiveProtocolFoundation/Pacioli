@@ -40,7 +40,7 @@ export type {
   DoubleEntryTemplate,
   AuditTrail,
   ComplianceCheck,
-  DataIntegrityReport
+  DataIntegrityReport,
 } from './accounting'
 
 export { TRANSACTION_TEMPLATES } from './accounting'
@@ -101,7 +101,7 @@ export type {
   ComparativeReport,
   ComparisonPeriod,
   ComparisonMetric,
-  VarianceAnalysis
+  VarianceAnalysis,
 } from './reporting'
 
 // =============================================================================
@@ -126,14 +126,14 @@ export type {
   TokenBalance,
   TokenPrice,
   TokenMetadata,
-  ChainMetadata
+  ChainMetadata,
 } from './digitalAssets'
 
 export {
   DIGITAL_ASSET_TYPES,
   getDigitalAssetTypeInfo,
   getAccountNumberForAssetType,
-  getAllDigitalAssetTypes
+  getAllDigitalAssetTypes,
 } from './digitalAssets'
 
 // Export transaction types with explicit names to avoid conflicts
@@ -143,7 +143,7 @@ export type {
   ApprovalStatus,
   TransactionFormData,
   Transaction as LegacyTransaction,
-  TransactionApprovalQueueItem
+  TransactionApprovalQueueItem,
 } from './transaction'
 
 export * from './currency'
@@ -154,7 +154,7 @@ export type {
   AccountType as UserAccountType,
   Jurisdiction,
   User,
-  Organization
+  Organization,
 } from './user'
 
 export * from './errors'
@@ -201,7 +201,7 @@ export type {
   DisclosureReport,
   GAAPIFRSReconciliation,
   TaxLot,
-  EnhancedTransaction
+  EnhancedTransaction,
 } from './cryptoAccounting'
 
 // =============================================================================
@@ -223,7 +223,8 @@ export type WithRequired<T, K extends keyof T> = T & { [P in K]-?: T[P] }
 /**
  * Make specific properties K of T optional
  */
-export type WithOptional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>
+export type WithOptional<T, K extends keyof T> = Omit<T, K> &
+  Partial<Pick<T, K>>
 
 /**
  * Extract promise type
@@ -233,4 +234,5 @@ export type UnwrapPromise<T> = T extends Promise<infer U> ? U : T
 /**
  * Extract Tauri response data type
  */
-export type UnwrapTauriResponse<T> = T extends Promise<{ data?: infer U }> ? U : never
+export type UnwrapTauriResponse<T> =
+  T extends Promise<{ data?: infer U }> ? U : never

@@ -103,7 +103,7 @@ export async function fetchTransaction(
 export async function fetchAllBalances(
   addresses: WalletAddress[]
 ): Promise<WalletBalances[]> {
-  const pairs: [string, string][] = addresses.map((w) => [w.chainId, w.address])
+  const pairs: [string, string][] = addresses.map(w => [w.chainId, w.address])
   return invoke<WalletBalances[]>('chain_fetch_all_balances', {
     addresses: pairs,
   })
