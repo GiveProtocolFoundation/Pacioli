@@ -229,6 +229,7 @@ pub struct Transaction {
 
 impl Transaction {
     /// Creates a new transaction with composite ID.
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         chain_id: String,
         hash: String,
