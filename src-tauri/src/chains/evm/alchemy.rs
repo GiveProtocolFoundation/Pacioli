@@ -99,7 +99,9 @@ pub struct RpcTransaction {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AccessListItem {
+    /// Contract address to access
     pub address: String,
+    /// Storage slot keys to access
     pub storage_keys: Vec<String>,
 }
 

@@ -3,9 +3,13 @@
 //! Provides unified access to EVM-compatible blockchains including
 //! Ethereum, Polygon, Arbitrum, Moonbeam, and more.
 
+/// Alchemy/JSON-RPC client for RPC access to EVM chains.
 pub mod alchemy;
+/// Chain configuration for supported EVM networks.
 pub mod config;
+/// Etherscan-family API client for transaction history and token data.
 pub mod etherscan;
+/// EVM-specific types for transactions, tokens, and balances.
 pub mod types;
 
 use crate::chains::{
