@@ -306,50 +306,42 @@ impl ChainAdapter for EvmAdapter {
 
     async fn get_transaction(&self, hash: &str) -> ChainResult<ChainTransaction> {
         let rpc = self.get_rpc().await?;
-        let tx_data = rpc.get_transaction(hash).await?;
+        let tx_data = rpc
+            .get_transaction(hash)
+            .await?
+            .ok_or_else(|| ChainError::RpcError(format!("Transaction {} not found", hash)))?;
         let receipt = rpc.get_transaction_receipt(hash).await?;
 
-        // Parse transaction data
-        let from = tx_data["from"]
-            .as_str()
-            .ok_or_else(|| ChainError::ParseError("Missing from".to_string()))?
+        // Parse value from hex
+        let value = u128::from_str_radix(tx_data.value.trim_start_matches("0x"), 16)
+            .unwrap_or(0)
             .to_string();
 
-        let to = tx_data["to"].as_str().map(|s| s.to_string());
-
-        let value = tx_data["value"]
-            .as_str()
-            .map(|s| {
-                u128::from_str_radix(s.trim_start_matches("0x"), 16)
-                    .unwrap_or(0)
-                    .to_string()
-            })
-            .unwrap_or_else(|| "0".to_string());
-
-        let block_number = tx_data["blockNumber"]
-            .as_str()
-            .and_then(|s| u64::from_str_radix(s.trim_start_matches("0x"), 16).ok())
+        // Parse block number from hex
+        let block_number = tx_data
+            .block_number
+            .as_ref()
+            .and_then(|s: &String| u64::from_str_radix(s.trim_start_matches("0x"), 16).ok())
             .unwrap_or(0);
 
-        let status = receipt["status"]
-            .as_str()
-            .map(|s| {
-                if s == "0x1" {
-                    TransactionStatus::Success
-                } else {
-                    TransactionStatus::Failed
-                }
-            })
-            .unwrap_or(TransactionStatus::Success);
+        // Get status and gas from receipt if available
+        let (status, gas_used) = if let Some(ref rcpt) = receipt {
+            let status = if rcpt.is_success() {
+                TransactionStatus::Success
+            } else {
+                TransactionStatus::Failed
+            };
+            let gas = rcpt.gas_used_u64() as u128;
+            (status, gas)
+        } else {
+            (TransactionStatus::Success, 0u128)
+        };
 
-        let gas_used = receipt["gasUsed"]
-            .as_str()
-            .and_then(|s| u128::from_str_radix(s.trim_start_matches("0x"), 16).ok())
-            .unwrap_or(0);
-
-        let gas_price = tx_data["gasPrice"]
-            .as_str()
-            .and_then(|s| u128::from_str_radix(s.trim_start_matches("0x"), 16).ok())
+        // Parse gas price from hex
+        let gas_price = tx_data
+            .gas_price
+            .as_ref()
+            .and_then(|s: &String| u128::from_str_radix(s.trim_start_matches("0x"), 16).ok())
             .unwrap_or(0);
 
         let fee = (gas_used * gas_price).to_string();
@@ -359,14 +351,14 @@ impl ChainAdapter for EvmAdapter {
             chain_id: self.chain_id.clone(),
             block_number,
             timestamp: 0, // Would need to get block to get timestamp
-            from,
-            to,
+            from: tx_data.from.clone(),
+            to: tx_data.to.clone(),
             value,
             fee,
             status,
             tx_type: TransactionType::Unknown,
             token_transfers: Vec::new(),
-            raw_data: Some(tx_data),
+            raw_data: Some(serde_json::to_value(&tx_data).unwrap_or_default()),
         })
     }
 
