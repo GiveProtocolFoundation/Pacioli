@@ -1,5 +1,6 @@
 //! Database module for persistence operations.
 
+pub mod multi_chain;
 pub mod transactions;
 
 use anyhow::Result;
