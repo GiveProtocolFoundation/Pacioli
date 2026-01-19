@@ -7,6 +7,7 @@ mod indexer;
 mod sync;
 
 use api::persistence::DatabaseState;
+use chains::commands::create_chain_manager_state;
 use core::auth_state::AuthState;
 use core::email;
 use evm_indexer::EVMIndexer;
@@ -199,6 +200,41 @@ pub fn run() {
                 eprintln!("Warning: RESEND_API_KEY not set, email sending disabled");
             }
 
+            // Initialize chain manager
+            let chain_manager = create_chain_manager_state();
+
+            // Set up API keys from environment if available
+            if let Ok(etherscan_key) = std::env::var("ETHERSCAN_API_KEY") {
+                let manager = chain_manager.blocking_read();
+                tauri::async_runtime::block_on(async {
+                    manager
+                        .set_explorer_api_key("ethereum", etherscan_key.clone())
+                        .await;
+                    manager.set_explorer_api_key("1", etherscan_key).await;
+                });
+            }
+            if let Ok(polygonscan_key) = std::env::var("POLYGONSCAN_API_KEY") {
+                let manager = chain_manager.blocking_read();
+                tauri::async_runtime::block_on(async {
+                    manager
+                        .set_explorer_api_key("polygon", polygonscan_key.clone())
+                        .await;
+                    manager.set_explorer_api_key("137", polygonscan_key).await;
+                });
+            }
+            if let Ok(arbiscan_key) = std::env::var("ARBISCAN_API_KEY") {
+                let manager = chain_manager.blocking_read();
+                tauri::async_runtime::block_on(async {
+                    manager
+                        .set_explorer_api_key("arbitrum", arbiscan_key.clone())
+                        .await;
+                    manager.set_explorer_api_key("42161", arbiscan_key).await;
+                });
+            }
+
+            app.manage(chain_manager);
+            println!("Chain manager initialized");
+
             Ok(())
         })
         .manage(EVMIndexerState::new(EVMIndexer::new()))
@@ -276,7 +312,20 @@ pub fn run() {
             api::wallet_auth::link_wallet_to_account,
             api::wallet_auth::get_user_wallets,
             api::wallet_auth::unlink_wallet,
-            api::wallet_auth::cleanup_expired_challenges
+            api::wallet_auth::cleanup_expired_challenges,
+            // Chain management commands
+            chains::chain_get_supported_chains,
+            chains::chain_is_supported,
+            chains::chain_validate_address,
+            chains::chain_fetch_transactions,
+            chains::chain_fetch_balances,
+            chains::chain_fetch_transaction,
+            chains::chain_fetch_all_balances,
+            chains::chain_fetch_all_transactions,
+            chains::chain_connect,
+            chains::chain_set_explorer_api_key,
+            chains::chain_set_rpc_url,
+            chains::chain_get_block_number
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

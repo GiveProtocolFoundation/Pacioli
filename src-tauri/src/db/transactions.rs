@@ -134,6 +134,8 @@ impl TransactionRepository {
         let chain_type = match tx.chain_id.chain_type {
             ChainType::Evm => "evm",
             ChainType::Substrate => "substrate",
+            ChainType::Solana => "solana",
+            ChainType::Bitcoin => "bitcoin",
         };
 
         let status = match tx.status {
