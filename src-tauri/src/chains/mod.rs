@@ -586,18 +586,12 @@ fn format_chain_name(name: &str) -> String {
         .map(|word| {
             let mut chars = word.chars();
             match chars.next() {
-                None => String::new(),
+                None => String::default(),
                 Some(first) => first.to_uppercase().collect::<String>() + chars.as_str(),
             }
         })
         .collect::<Vec<_>>()
         .join(" ")
-}
-
-impl Default for ChainManager {
-    fn default() -> Self {
-        Self::new()
-    }
 }
 
 // =============================================================================

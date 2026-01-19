@@ -14,6 +14,12 @@ use evm_indexer::EVMIndexer;
 use tauri::{Manager, State};
 use tokio::sync::Mutex;
 
+// Environment variable names
+const ENV_RESEND_API_KEY: &str = "RESEND_API_KEY";
+const ENV_ETHERSCAN_API_KEY: &str = "ETHERSCAN_API_KEY";
+const ENV_POLYGONSCAN_API_KEY: &str = "POLYGONSCAN_API_KEY";
+const ENV_ARBISCAN_API_KEY: &str = "ARBISCAN_API_KEY";
+
 // Global EVM indexer state
 type EVMIndexerState = Mutex<EVMIndexer>;
 
@@ -193,18 +199,21 @@ pub fn run() {
             // Initialize email service
             // Load from environment variable or .env file
             let _ = dotenvy::dotenv(); // Ignore error if .env doesn't exist
-            if let Ok(api_key) = std::env::var("RESEND_API_KEY") {
+            if let Ok(api_key) = std::env::var(ENV_RESEND_API_KEY) {
                 email::init(api_key);
                 println!("Email service initialized");
             } else {
-                eprintln!("Warning: RESEND_API_KEY not set, email sending disabled");
+                eprintln!(
+                    "Warning: {} not set, email sending disabled",
+                    ENV_RESEND_API_KEY
+                );
             }
 
             // Initialize chain manager
             let chain_manager = create_chain_manager_state();
 
             // Set up API keys from environment if available
-            if let Ok(etherscan_key) = std::env::var("ETHERSCAN_API_KEY") {
+            if let Ok(etherscan_key) = std::env::var(ENV_ETHERSCAN_API_KEY) {
                 let manager = chain_manager.blocking_read();
                 tauri::async_runtime::block_on(async {
                     manager
@@ -213,7 +222,7 @@ pub fn run() {
                     manager.set_explorer_api_key("1", etherscan_key).await;
                 });
             }
-            if let Ok(polygonscan_key) = std::env::var("POLYGONSCAN_API_KEY") {
+            if let Ok(polygonscan_key) = std::env::var(ENV_POLYGONSCAN_API_KEY) {
                 let manager = chain_manager.blocking_read();
                 tauri::async_runtime::block_on(async {
                     manager
@@ -222,7 +231,7 @@ pub fn run() {
                     manager.set_explorer_api_key("137", polygonscan_key).await;
                 });
             }
-            if let Ok(arbiscan_key) = std::env::var("ARBISCAN_API_KEY") {
+            if let Ok(arbiscan_key) = std::env::var(ENV_ARBISCAN_API_KEY) {
                 let manager = chain_manager.blocking_read();
                 tauri::async_runtime::block_on(async {
                     manager
