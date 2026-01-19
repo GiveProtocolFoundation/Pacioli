@@ -6,10 +6,10 @@
  */
 
 /**
- * Chain family/type classification.
+ * Chain family classification.
  * Determines which adapter and parsing logic to use.
  */
-export enum ChainType {
+export enum ChainFamily {
   Evm = 'evm',
   Substrate = 'substrate',
   Solana = 'solana',
@@ -54,7 +54,7 @@ export interface ChainInfo {
   /** Native token symbol (e.g., "ETH", "MATIC") */
   symbol: string
   /** Chain family classification */
-  chain_type: ChainType
+  chain_type: ChainFamily
   /** Numeric chain ID for EVM chains */
   numeric_chain_id: number | null
   /** Native token decimals */
@@ -72,7 +72,7 @@ export interface ChainInfo {
  */
 export interface ChainId {
   /** Chain family classification */
-  chain_type: ChainType
+  chain_type: ChainFamily
   /** Chain name identifier */
   name: string
   /** Numeric chain ID for EVM chains */

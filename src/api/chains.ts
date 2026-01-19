@@ -149,7 +149,7 @@ export async function setExplorerApiKey(
   chainId: string,
   apiKey: string
 ): Promise<void> {
-  return invoke<void>('chain_set_explorer_api_key', { chainId, apiKey })
+  await invoke('chain_set_explorer_api_key', { chainId, apiKey })
 }
 
 /**
@@ -162,7 +162,7 @@ export async function setRpcUrl(
   chainId: string,
   rpcUrl: string
 ): Promise<void> {
-  return invoke<void>('chain_set_rpc_url', { chainId, rpcUrl })
+  await invoke('chain_set_rpc_url', { chainId, rpcUrl })
 }
 
 /**

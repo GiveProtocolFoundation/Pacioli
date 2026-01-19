@@ -51,10 +51,13 @@ function getErrorMessage(error: unknown): string {
 
 /**
  * Helper to trigger async data fetching within useEffect.
- * Uses void to explicitly ignore the Promise and satisfy linter rules.
+ * Explicitly ignores the Promise to satisfy linter rules.
  */
-function triggerFetch(fetchFn: () => Promise<void>): void {
-  void fetchFn()
+function triggerFetch(fetchFn: () => Promise<unknown>): undefined {
+  fetchFn().catch(() => {
+    // Error handling is done within fetchFn
+  })
+  return undefined
 }
 
 /**
@@ -92,6 +95,7 @@ export function useChains(): AsyncState<ChainInfo[]> & { chains: ChainInfo[] | n
   useEffect(() => {
     let cancelled = false
 
+    /** Fetches supported chains from the backend. */
     const fetchChains = async () => {
       try {
         const chains = await getSupportedChains()

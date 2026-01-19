@@ -169,7 +169,7 @@ export * from './auth'
 // CHAIN ADAPTER TYPES
 // =============================================================================
 export {
-  ChainType,
+  ChainFamily,
   TransactionStatus as ChainTransactionStatus,
   TransactionType as ChainTransactionType,
 } from './chains'
