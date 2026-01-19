@@ -782,11 +782,7 @@ impl MultiChainRepository {
     }
 
     /// Sets sync status to syncing state.
-    pub async fn set_sync_started(
-        &self,
-        chain_id: &str,
-        address: &str,
-    ) -> Result<(), sqlx::Error> {
+    pub async fn set_sync_started(&self, chain_id: &str, address: &str) -> Result<(), sqlx::Error> {
         sqlx::query(
             r#"
             INSERT INTO address_sync_status (chain_id, address, sync_state)
@@ -867,11 +863,10 @@ impl MultiChainRepository {
 
     /// Retrieves all wallets.
     pub async fn get_wallets(&self) -> Result<Vec<Wallet>, sqlx::Error> {
-        let rows = sqlx::query_as::<_, WalletRow>(
-            "SELECT * FROM user_wallets ORDER BY created_at DESC",
-        )
-        .fetch_all(&self.pool)
-        .await?;
+        let rows =
+            sqlx::query_as::<_, WalletRow>("SELECT * FROM user_wallets ORDER BY created_at DESC")
+                .fetch_all(&self.pool)
+                .await?;
 
         Ok(rows.into_iter().map(Wallet::from).collect())
     }
