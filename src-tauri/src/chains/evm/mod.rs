@@ -910,7 +910,12 @@ mod tests {
     async fn test_fetch_vitalik_transactions() {
         let address = "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045";
 
-        let adapter = EvmAdapter::from_chain_id(1).unwrap();
+        let api_key = std::env::var("ETHERSCAN_API_KEY")
+            .expect("ETHERSCAN_API_KEY environment variable required");
+
+        let adapter = EvmAdapter::from_chain_id(1)
+            .unwrap()
+            .with_explorer_api_key(api_key);
 
         let txs = adapter.get_transactions(address, None, None).await.unwrap();
 
@@ -924,7 +929,12 @@ mod tests {
     async fn test_fetch_balances() {
         let address = "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045";
 
-        let adapter = EvmAdapter::from_chain_id(1).unwrap();
+        let api_key = std::env::var("ETHERSCAN_API_KEY")
+            .expect("ETHERSCAN_API_KEY environment variable required");
+
+        let adapter = EvmAdapter::from_chain_id(1)
+            .unwrap()
+            .with_explorer_api_key(api_key);
 
         let native = adapter.get_native_balance(address).await.unwrap();
         let tokens = adapter.get_token_balances(address).await.unwrap();
