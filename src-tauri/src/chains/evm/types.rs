@@ -194,15 +194,12 @@ impl EvmTransaction {
         !self.max_fee_per_gas.is_empty() && self.max_fee_per_gas != "0"
     }
 
-    /// Get effective gas price (actual price paid)
+    /// Get effective gas price (actual price paid).
+    ///
+    /// For both legacy and EIP-1559 transactions, the gas_price field
+    /// from block explorer APIs already contains the effective price paid.
     pub fn effective_gas_price(&self) -> String {
-        if self.is_eip1559() {
-            // For EIP-1559, effective price is base fee + priority fee
-            // But we typically just have gas_price which is already effective
-            self.gas_price.clone()
-        } else {
-            self.gas_price.clone()
-        }
+        self.gas_price.clone()
     }
 }
 
