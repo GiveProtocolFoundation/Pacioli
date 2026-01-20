@@ -559,7 +559,91 @@ impl ChainAdapter for EvmAdapter {
     }
 }
 
-/// Classify transaction type based on input data and method signature
+/// Method selector to transaction type mapping.
+/// Each entry is (method_id, transaction_type).
+const METHOD_SELECTORS: &[(&str, TransactionType)] = &[
+    // ERC20 Token Operations
+    ("0xa9059cbb", TransactionType::Transfer), // transfer(address,uint256)
+    ("0x23b872dd", TransactionType::Transfer), // transferFrom(address,address,uint256)
+    ("0x095ea7b3", TransactionType::Approval), // approve(address,uint256)
+    ("0x39509351", TransactionType::Approval), // increaseAllowance(address,uint256)
+    ("0xa457c2d7", TransactionType::Approval), // decreaseAllowance(address,uint256)
+    // ERC721 NFT Operations
+    ("0x42842e0e", TransactionType::Transfer), // safeTransferFrom(address,address,uint256)
+    ("0xb88d4fde", TransactionType::Transfer), // safeTransferFrom(address,address,uint256,bytes)
+    ("0xa22cb465", TransactionType::Approval), // setApprovalForAll(address,bool)
+    // ERC1155 Multi-Token Operations
+    ("0xf242432a", TransactionType::Transfer), // safeTransferFrom(address,address,uint256,uint256,bytes)
+    ("0x2eb2c2d6", TransactionType::Transfer), // safeBatchTransferFrom(...)
+    // Uniswap V2 Router
+    ("0x38ed1739", TransactionType::Swap), // swapExactTokensForTokens
+    ("0x8803dbee", TransactionType::Swap), // swapTokensForExactTokens
+    ("0x7ff36ab5", TransactionType::Swap), // swapExactETHForTokens
+    ("0x18cbafe5", TransactionType::Swap), // swapExactTokensForETH
+    ("0xfb3bdb41", TransactionType::Swap), // swapETHForExactTokens
+    ("0x5c11d795", TransactionType::Swap), // swapExactTokensForTokensSupportingFeeOnTransferTokens
+    ("0x791ac947", TransactionType::Swap), // swapExactTokensForETHSupportingFeeOnTransferTokens
+    ("0xb6f9de95", TransactionType::Swap), // swapExactETHForTokensSupportingFeeOnTransferTokens
+    // Uniswap V3 Router
+    ("0xc04b8d59", TransactionType::Swap), // exactInput(ExactInputParams)
+    ("0xdb3e2198", TransactionType::Swap), // exactInputSingle(ExactInputSingleParams)
+    ("0x09b81346", TransactionType::Swap), // exactOutput(ExactOutputParams)
+    ("0x5023b4df", TransactionType::Swap), // exactOutputSingle(ExactOutputSingleParams)
+    ("0xac9650d8", TransactionType::Swap), // multicall(bytes[]) - often used for swaps
+    // Liquidity Operations (Uniswap V2)
+    ("0xe8e33700", TransactionType::AddLiquidity), // addLiquidity
+    ("0xf305d719", TransactionType::AddLiquidity), // addLiquidityETH
+    ("0xbaa2abde", TransactionType::RemoveLiquidity), // removeLiquidity
+    ("0x02751cec", TransactionType::RemoveLiquidity), // removeLiquidityETH
+    ("0xaf2979eb", TransactionType::RemoveLiquidity), // removeLiquidityETHSupportingFeeOnTransferTokens
+    ("0xded9382a", TransactionType::RemoveLiquidity), // removeLiquidityETHWithPermit
+    ("0x5b0d5984", TransactionType::RemoveLiquidity), // removeLiquidityETHWithPermitSupportingFeeOnTransferTokens
+    // Liquidity Operations (Uniswap V3)
+    ("0x88316456", TransactionType::AddLiquidity), // mint (NonfungiblePositionManager)
+    ("0x219f5d17", TransactionType::AddLiquidity), // increaseLiquidity
+    ("0x0c49ccbe", TransactionType::RemoveLiquidity), // decreaseLiquidity
+    ("0xfc6f7865", TransactionType::RemoveLiquidity), // collect
+    // Staking Operations
+    ("0xa694fc3a", TransactionType::Stake), // stake(uint256)
+    ("0x7acb7757", TransactionType::Stake), // deposit(uint256,address)
+    ("0xb6b55f25", TransactionType::Stake), // deposit(uint256)
+    ("0xd0e30db0", TransactionType::Stake), // deposit() - WETH wrap
+    ("0x2e1a7d4d", TransactionType::Unstake), // withdraw(uint256) - WETH unwrap
+    ("0x853828b6", TransactionType::Unstake), // withdrawAll()
+    ("0xe9fad8ee", TransactionType::Unstake), // exit()
+    ("0x3d18b912", TransactionType::Unstake), // getReward()
+    // Compound/Aave Lending
+    ("0x1249c58b", TransactionType::Stake), // mint() - cToken
+    ("0xa0712d68", TransactionType::Stake), // mint(uint256) - cToken
+    ("0x852a12e3", TransactionType::Unstake), // redeemUnderlying(uint256)
+    ("0xdb006a75", TransactionType::Unstake), // redeem(uint256)
+    ("0xe9c714f2", TransactionType::Unstake), // _acceptAdmin()
+    ("0x0e752702", TransactionType::Stake), // supply(address,uint256) - Aave V3
+    ("0x69328dec", TransactionType::Unstake), // withdraw(address,uint256,address) - Aave
+    // Bridge Operations
+    ("0x3805550f", TransactionType::Bridge), // bridgeToken
+    ("0x0f5287b0", TransactionType::Bridge), // depositERC20
+    ("0x9a2ac6d5", TransactionType::Bridge), // outboundTransfer (Arbitrum)
+    ("0xa44c80e3", TransactionType::Bridge), // sendToL2 (Optimism)
+    ("0xbede39b5", TransactionType::Bridge), // withdraw (Optimism)
+    // Minting Operations (non-staking mints)
+    ("0x40c10f19", TransactionType::Mint), // mint(address,uint256) - ERC20 mint to address
+    ("0x6a627842", TransactionType::Mint), // mint(address) - NFT mint
+    // Burning Operations
+    ("0x42966c68", TransactionType::Burn), // burn(uint256)
+    ("0x79cc6790", TransactionType::Burn), // burnFrom(address,uint256)
+    ("0x9dc29fac", TransactionType::Burn), // burn(address,uint256)
+];
+
+/// Look up transaction type from method selector.
+fn lookup_method_selector(method_id: &str) -> Option<TransactionType> {
+    METHOD_SELECTORS
+        .iter()
+        .find(|(id, _)| *id == method_id)
+        .map(|(_, tx_type)| tx_type.clone())
+}
+
+/// Classify transaction type based on input data and method signature.
 ///
 /// Uses known method selectors (first 4 bytes of keccak256 hash of function signature)
 /// to categorize transactions into appropriate types.
@@ -569,10 +653,6 @@ fn classify_transaction(tx: &types::EvmTransaction) -> TransactionType {
         return TransactionType::ContractDeploy;
     }
 
-    // Check if target is a known DEX router
-    let to_lower = tx.to.to_lowercase();
-    let is_dex_router = is_known_dex_router(&to_lower);
-
     // Extract method selector (first 4 bytes = 10 chars including 0x)
     let method_id = if tx.input.len() >= 10 {
         &tx.input[..10]
@@ -580,139 +660,28 @@ fn classify_transaction(tx: &types::EvmTransaction) -> TransactionType {
         ""
     };
 
-    match method_id {
-        // =================================================================
-        // ERC20 Token Operations
-        // =================================================================
-        "0xa9059cbb" => TransactionType::Transfer, // transfer(address,uint256)
-        "0x23b872dd" => TransactionType::Transfer, // transferFrom(address,address,uint256)
-        "0x095ea7b3" => TransactionType::Approval, // approve(address,uint256)
-        "0x39509351" => TransactionType::Approval, // increaseAllowance(address,uint256)
-        "0xa457c2d7" => TransactionType::Approval, // decreaseAllowance(address,uint256)
-
-        // =================================================================
-        // ERC721 NFT Operations
-        // =================================================================
-        "0x42842e0e" => TransactionType::Transfer, // safeTransferFrom(address,address,uint256)
-        "0xb88d4fde" => TransactionType::Transfer, // safeTransferFrom(address,address,uint256,bytes)
-        "0xa22cb465" => TransactionType::Approval, // setApprovalForAll(address,bool)
-
-        // =================================================================
-        // ERC1155 Multi-Token Operations
-        // =================================================================
-        "0xf242432a" => TransactionType::Transfer, // safeTransferFrom(address,address,uint256,uint256,bytes)
-        "0x2eb2c2d6" => TransactionType::Transfer, // safeBatchTransferFrom(...)
-
-        // =================================================================
-        // Uniswap V2 Router
-        // =================================================================
-        "0x38ed1739" => TransactionType::Swap, // swapExactTokensForTokens
-        "0x8803dbee" => TransactionType::Swap, // swapTokensForExactTokens
-        "0x7ff36ab5" => TransactionType::Swap, // swapExactETHForTokens
-        "0x18cbafe5" => TransactionType::Swap, // swapExactTokensForETH
-        "0xfb3bdb41" => TransactionType::Swap, // swapETHForExactTokens
-        "0x5c11d795" => TransactionType::Swap, // swapExactTokensForTokensSupportingFeeOnTransferTokens
-        "0x791ac947" => TransactionType::Swap, // swapExactTokensForETHSupportingFeeOnTransferTokens
-        "0xb6f9de95" => TransactionType::Swap, // swapExactETHForTokensSupportingFeeOnTransferTokens
-
-        // =================================================================
-        // Uniswap V3 Router
-        // =================================================================
-        "0xc04b8d59" => TransactionType::Swap, // exactInput(ExactInputParams)
-        "0xdb3e2198" => TransactionType::Swap, // exactInputSingle(ExactInputSingleParams)
-        "0x09b81346" => TransactionType::Swap, // exactOutput(ExactOutputParams)
-        "0x5023b4df" => TransactionType::Swap, // exactOutputSingle(ExactOutputSingleParams)
-        "0xac9650d8" => TransactionType::Swap, // multicall(bytes[]) - often used for swaps
-
-        // =================================================================
-        // Liquidity Operations (Uniswap V2)
-        // =================================================================
-        "0xe8e33700" => TransactionType::AddLiquidity, // addLiquidity
-        "0xf305d719" => TransactionType::AddLiquidity, // addLiquidityETH
-        "0xbaa2abde" => TransactionType::RemoveLiquidity, // removeLiquidity
-        "0x02751cec" => TransactionType::RemoveLiquidity, // removeLiquidityETH
-        "0xaf2979eb" => TransactionType::RemoveLiquidity, // removeLiquidityETHSupportingFeeOnTransferTokens
-        "0xded9382a" => TransactionType::RemoveLiquidity, // removeLiquidityETHWithPermit
-        "0x5b0d5984" => TransactionType::RemoveLiquidity, // removeLiquidityETHWithPermitSupportingFeeOnTransferTokens
-
-        // =================================================================
-        // Liquidity Operations (Uniswap V3)
-        // =================================================================
-        "0x88316456" => TransactionType::AddLiquidity, // mint (NonfungiblePositionManager)
-        "0x219f5d17" => TransactionType::AddLiquidity, // increaseLiquidity
-        "0x0c49ccbe" => TransactionType::RemoveLiquidity, // decreaseLiquidity
-        "0xfc6f7865" => TransactionType::RemoveLiquidity, // collect
-
-        // =================================================================
-        // Staking Operations
-        // =================================================================
-        "0xa694fc3a" => TransactionType::Stake, // stake(uint256)
-        "0x7acb7757" => TransactionType::Stake, // deposit(uint256,address)
-        "0xb6b55f25" => TransactionType::Stake, // deposit(uint256)
-        "0xd0e30db0" => TransactionType::Stake, // deposit() - WETH wrap
-        "0x2e1a7d4d" => TransactionType::Unstake, // withdraw(uint256) - WETH unwrap
-        "0x853828b6" => TransactionType::Unstake, // withdrawAll()
-        "0xe9fad8ee" => TransactionType::Unstake, // exit()
-        "0x3d18b912" => TransactionType::Unstake, // getReward()
-
-        // =================================================================
-        // Compound/Aave Lending
-        // =================================================================
-        "0x1249c58b" => TransactionType::Stake, // mint() - cToken
-        "0xa0712d68" => TransactionType::Stake, // mint(uint256) - cToken
-        "0x852a12e3" => TransactionType::Unstake, // redeemUnderlying(uint256)
-        "0xdb006a75" => TransactionType::Unstake, // redeem(uint256)
-        "0xe9c714f2" => TransactionType::Unstake, // _acceptAdmin()
-        "0x0e752702" => TransactionType::Stake, // supply(address,uint256) - Aave V3
-        "0x69328dec" => TransactionType::Unstake, // withdraw(address,uint256,address) - Aave
-
-        // =================================================================
-        // Bridge Operations
-        // =================================================================
-        "0x3805550f" => TransactionType::Bridge, // bridgeToken
-        "0x0f5287b0" => TransactionType::Bridge, // depositERC20
-        "0x9a2ac6d5" => TransactionType::Bridge, // outboundTransfer (Arbitrum)
-        "0xa44c80e3" => TransactionType::Bridge, // sendToL2 (Optimism)
-        "0xbede39b5" => TransactionType::Bridge, // withdraw (Optimism)
-
-        // =================================================================
-        // Minting Operations (non-staking mints)
-        // =================================================================
-        "0x40c10f19" => TransactionType::Mint, // mint(address,uint256) - ERC20 mint to address
-        "0x6a627842" => TransactionType::Mint, // mint(address) - NFT mint
-
-        // =================================================================
-        // Burning Operations
-        // =================================================================
-        "0x42966c68" => TransactionType::Burn, // burn(uint256)
-        "0x79cc6790" => TransactionType::Burn, // burnFrom(address,uint256)
-        "0x9dc29fac" => TransactionType::Burn, // burn(address,uint256)
-
-        // =================================================================
-        // Plain transfer or contract call
-        // =================================================================
-        "" | "0x" => {
-            if tx.value != "0" {
-                TransactionType::Transfer
-            } else {
-                TransactionType::ContractCall
-            }
-        }
-
-        _ => {
-            // If sending to a known DEX router, likely a swap
-            if is_dex_router {
-                return TransactionType::Swap;
-            }
-
-            // Check for ETH transfer with data (could be swap or other)
-            if tx.value != "0" && tx.input == "0x" {
-                TransactionType::Transfer
-            } else {
-                TransactionType::ContractCall
-            }
-        }
+    // Check for empty input (plain ETH transfer)
+    if method_id.is_empty() || method_id == "0x" {
+        return if tx.value != "0" {
+            TransactionType::Transfer
+        } else {
+            TransactionType::ContractCall
+        };
     }
+
+    // Look up known method selectors
+    if let Some(tx_type) = lookup_method_selector(method_id) {
+        return tx_type;
+    }
+
+    // Check if target is a known DEX router
+    let to_lower = tx.to.to_lowercase();
+    if is_known_dex_router(&to_lower) {
+        return TransactionType::Swap;
+    }
+
+    // Default to contract call for unknown methods
+    TransactionType::ContractCall
 }
 
 /// Check if address is a known DEX router
@@ -904,18 +873,24 @@ mod tests {
     // Run with: cargo test --test '*' -- --ignored
     // =========================================================================
 
+    /// Environment variable name for Etherscan API key.
+    const ENV_ETHERSCAN_API_KEY: &str = "ETHERSCAN_API_KEY";
+
+    /// Helper to get API key from environment.
+    fn get_etherscan_api_key() -> String {
+        std::env::var(ENV_ETHERSCAN_API_KEY)
+            .unwrap_or_else(|_| panic!("{} environment variable required", ENV_ETHERSCAN_API_KEY))
+    }
+
     /// Test fetching transactions for a known address (Vitalik's public address)
     #[tokio::test]
     #[ignore = "Integration test requiring network access and API key"]
     async fn test_fetch_vitalik_transactions() {
         let address = "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045";
 
-        let api_key = std::env::var("ETHERSCAN_API_KEY")
-            .expect("ETHERSCAN_API_KEY environment variable required");
-
         let adapter = EvmAdapter::from_chain_id(1)
             .unwrap()
-            .with_explorer_api_key(api_key);
+            .with_explorer_api_key(get_etherscan_api_key());
 
         let txs = adapter.get_transactions(address, None, None).await.unwrap();
 
@@ -929,12 +904,9 @@ mod tests {
     async fn test_fetch_balances() {
         let address = "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045";
 
-        let api_key = std::env::var("ETHERSCAN_API_KEY")
-            .expect("ETHERSCAN_API_KEY environment variable required");
-
         let adapter = EvmAdapter::from_chain_id(1)
             .unwrap()
-            .with_explorer_api_key(api_key);
+            .with_explorer_api_key(get_etherscan_api_key());
 
         let native = adapter.get_native_balance(address).await.unwrap();
         let tokens = adapter.get_token_balances(address).await.unwrap();
