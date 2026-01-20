@@ -604,10 +604,10 @@ const METHOD_SELECTORS: &[(&str, TransactionType)] = &[
     ("0x0c49ccbe", TransactionType::RemoveLiquidity), // decreaseLiquidity
     ("0xfc6f7865", TransactionType::RemoveLiquidity), // collect
     // Staking Operations
-    ("0xa694fc3a", TransactionType::Stake), // stake(uint256)
-    ("0x7acb7757", TransactionType::Stake), // deposit(uint256,address)
-    ("0xb6b55f25", TransactionType::Stake), // deposit(uint256)
-    ("0xd0e30db0", TransactionType::Stake), // deposit() - WETH wrap
+    ("0xa694fc3a", TransactionType::Stake),   // stake(uint256)
+    ("0x7acb7757", TransactionType::Stake),   // deposit(uint256,address)
+    ("0xb6b55f25", TransactionType::Stake),   // deposit(uint256)
+    ("0xd0e30db0", TransactionType::Stake),   // deposit() - WETH wrap
     ("0x2e1a7d4d", TransactionType::Unstake), // withdraw(uint256) - WETH unwrap
     ("0x853828b6", TransactionType::Unstake), // withdrawAll()
     ("0xe9fad8ee", TransactionType::Unstake), // exit()
