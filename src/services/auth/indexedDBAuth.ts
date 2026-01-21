@@ -165,7 +165,9 @@ class IndexedDBAuthService implements AuthService {
 
         // Users store
         if (!db.objectStoreNames.contains(STORES.USERS)) {
-          const userStore = db.createObjectStore(STORES.USERS, { keyPath: 'id' })
+          const userStore = db.createObjectStore(STORES.USERS, {
+            keyPath: 'id',
+          })
           userStore.createIndex('email', 'email', { unique: true })
         }
 
@@ -303,9 +305,9 @@ class IndexedDBAuthService implements AuthService {
     // Find user by email
     const store = await this.getStore(STORES.USERS, 'readonly')
     const index = store.index('email')
-    const user = await IndexedDBAuthService.promisifyRequest<StoredUser | undefined>(
-      index.get(credentials.email.toLowerCase())
-    )
+    const user = await IndexedDBAuthService.promisifyRequest<
+      StoredUser | undefined
+    >(index.get(credentials.email.toLowerCase()))
 
     if (!user) {
       throw new Error('Invalid email or password')
@@ -377,7 +379,9 @@ class IndexedDBAuthService implements AuthService {
     }
 
     const tokenStore = await this.getStore(STORES.REFRESH_TOKENS, 'readwrite')
-    await IndexedDBAuthService.promisifyRequest(tokenStore.add(storedRefreshToken))
+    await IndexedDBAuthService.promisifyRequest(
+      tokenStore.add(storedRefreshToken)
+    )
 
     // Store tokens
     storeTokens(accessToken, refreshTokenValue, expiresAt)
@@ -394,12 +398,16 @@ class IndexedDBAuthService implements AuthService {
     try {
       // Delete session
       const sessionStore = await this.getStore(STORES.SESSIONS, 'readwrite')
-      await IndexedDBAuthService.promisifyRequest(sessionStore.delete(sessionId))
+      await IndexedDBAuthService.promisifyRequest(
+        sessionStore.delete(sessionId)
+      )
 
       // Delete associated refresh tokens
       const tokenStore = await this.getStore(STORES.REFRESH_TOKENS, 'readwrite')
       const index = tokenStore.index('session_id')
-      const tokens = await IndexedDBAuthService.promisifyRequest(index.getAll(sessionId))
+      const tokens = await IndexedDBAuthService.promisifyRequest(
+        index.getAll(sessionId)
+      )
       for (const token of tokens) {
         await IndexedDBAuthService.promisifyRequest(tokenStore.delete(token.id))
       }
@@ -418,9 +426,9 @@ class IndexedDBAuthService implements AuthService {
     const tokenHash = await hashPassword(refreshTokenValue)
     const tokenStore = await this.getStore(STORES.REFRESH_TOKENS, 'readonly')
     const index = tokenStore.index('token_hash')
-    const storedToken = await IndexedDBAuthService.promisifyRequest<StoredRefreshToken | undefined>(
-      index.get(tokenHash)
-    )
+    const storedToken = await IndexedDBAuthService.promisifyRequest<
+      StoredRefreshToken | undefined
+    >(index.get(tokenHash))
 
     if (!storedToken) {
       throw new Error('Invalid refresh token')
@@ -438,9 +446,9 @@ class IndexedDBAuthService implements AuthService {
 
     // Update session with new access token
     const sessionStore = await this.getStore(STORES.SESSIONS, 'readwrite')
-    const session = await IndexedDBAuthService.promisifyRequest<StoredSession | undefined>(
-      sessionStore.get(storedToken.session_id)
-    )
+    const session = await IndexedDBAuthService.promisifyRequest<
+      StoredSession | undefined
+    >(sessionStore.get(storedToken.session_id))
 
     if (session) {
       session.access_token_hash = newAccessTokenHash
@@ -463,9 +471,9 @@ class IndexedDBAuthService implements AuthService {
     const tokenHash = await hashPassword(token)
     const sessionStore = await this.getStore(STORES.SESSIONS, 'readonly')
     const index = sessionStore.index('access_token_hash')
-    const session = await IndexedDBAuthService.promisifyRequest<StoredSession | undefined>(
-      index.get(tokenHash)
-    )
+    const session = await IndexedDBAuthService.promisifyRequest<
+      StoredSession | undefined
+    >(index.get(tokenHash))
 
     if (!session) {
       return { valid: false }
@@ -491,9 +499,9 @@ class IndexedDBAuthService implements AuthService {
     }
 
     const store = await this.getStore(STORES.USERS, 'readonly')
-    const user = await IndexedDBAuthService.promisifyRequest<StoredUser | undefined>(
-      store.get(verified.user_id)
-    )
+    const user = await IndexedDBAuthService.promisifyRequest<
+      StoredUser | undefined
+    >(store.get(verified.user_id))
 
     if (!user) {
       throw new Error('User not found')
@@ -509,9 +517,9 @@ class IndexedDBAuthService implements AuthService {
     }
 
     const store = await this.getStore(STORES.USERS, 'readwrite')
-    const user = await IndexedDBAuthService.promisifyRequest<StoredUser | undefined>(
-      store.get(verified.user_id)
-    )
+    const user = await IndexedDBAuthService.promisifyRequest<
+      StoredUser | undefined
+    >(store.get(verified.user_id))
 
     if (!user) {
       throw new Error('User not found')
@@ -527,16 +535,19 @@ class IndexedDBAuthService implements AuthService {
     return IndexedDBAuthService.sanitizeUser(updatedUser)
   }
 
-  async changePassword(token: string, input: ChangePasswordInput): Promise<void> {
+  async changePassword(
+    token: string,
+    input: ChangePasswordInput
+  ): Promise<void> {
     const verified = await this.verifyToken(token)
     if (!verified.valid || !verified.user_id) {
       throw new Error('Invalid token')
     }
 
     const store = await this.getStore(STORES.USERS, 'readwrite')
-    const user = await IndexedDBAuthService.promisifyRequest<StoredUser | undefined>(
-      store.get(verified.user_id)
-    )
+    const user = await IndexedDBAuthService.promisifyRequest<
+      StoredUser | undefined
+    >(store.get(verified.user_id))
 
     if (!user) {
       throw new Error('User not found')
@@ -568,9 +579,9 @@ class IndexedDBAuthService implements AuthService {
 
     const store = await this.getStore(STORES.SESSIONS, 'readonly')
     const index = store.index('user_id')
-    const sessions = await IndexedDBAuthService.promisifyRequest<StoredSession[]>(
-      index.getAll(verified.user_id)
-    )
+    const sessions = await IndexedDBAuthService.promisifyRequest<
+      StoredSession[]
+    >(index.getAll(verified.user_id))
 
     return sessions.map(s => ({
       id: s.id,
@@ -597,9 +608,9 @@ class IndexedDBAuthService implements AuthService {
     // Delete associated refresh tokens
     const tokenStore = await this.getStore(STORES.REFRESH_TOKENS, 'readwrite')
     const index = tokenStore.index('session_id')
-    const tokens = await IndexedDBAuthService.promisifyRequest<StoredRefreshToken[]>(
-      index.getAll(sessionId)
-    )
+    const tokens = await IndexedDBAuthService.promisifyRequest<
+      StoredRefreshToken[]
+    >(index.getAll(sessionId))
     for (const t of tokens) {
       await IndexedDBAuthService.promisifyRequest(tokenStore.delete(t.id))
     }
@@ -613,15 +624,17 @@ class IndexedDBAuthService implements AuthService {
 
     const sessionStore = await this.getStore(STORES.SESSIONS, 'readwrite')
     const index = sessionStore.index('user_id')
-    const sessions = await IndexedDBAuthService.promisifyRequest<StoredSession[]>(
-      index.getAll(verified.user_id)
-    )
+    const sessions = await IndexedDBAuthService.promisifyRequest<
+      StoredSession[]
+    >(index.getAll(verified.user_id))
 
     let count = 0
     for (const session of sessions) {
       // Don't revoke current session
       if (session.id !== verified.session_id) {
-        await IndexedDBAuthService.promisifyRequest(sessionStore.delete(session.id))
+        await IndexedDBAuthService.promisifyRequest(
+          sessionStore.delete(session.id)
+        )
         count++
       }
     }
@@ -635,7 +648,10 @@ class IndexedDBAuthService implements AuthService {
     return []
   }
 
-  async getProfileUsers(_token: string, _profileId: string): Promise<ProfileUser[]> {
+  async getProfileUsers(
+    _token: string,
+    _profileId: string
+  ): Promise<ProfileUser[]> {
     return []
   }
 
@@ -694,9 +710,9 @@ class IndexedDBAuthService implements AuthService {
     }
 
     const store = await this.getStore(STORES.USERS, 'readwrite')
-    const user = await IndexedDBAuthService.promisifyRequest<StoredUser | undefined>(
-      store.get(verified.user_id)
-    )
+    const user = await IndexedDBAuthService.promisifyRequest<
+      StoredUser | undefined
+    >(store.get(verified.user_id))
 
     if (!user) {
       throw new Error('User not found')
@@ -715,9 +731,9 @@ class IndexedDBAuthService implements AuthService {
 
     // Check if new email is already in use
     const emailIndex = store.index('email')
-    const existingUser = await IndexedDBAuthService.promisifyRequest<StoredUser | undefined>(
-      emailIndex.get(newEmail.toLowerCase())
-    )
+    const existingUser = await IndexedDBAuthService.promisifyRequest<
+      StoredUser | undefined
+    >(emailIndex.get(newEmail.toLowerCase()))
     if (existingUser && existingUser.id !== user.id) {
       throw new Error('Email is already in use')
     }
@@ -731,7 +747,8 @@ class IndexedDBAuthService implements AuthService {
     await IndexedDBAuthService.promisifyRequest(store.put(updatedUser))
 
     return {
-      message: 'Email updated successfully! (Browser mode: no verification required)',
+      message:
+        'Email updated successfully! (Browser mode: no verification required)',
       expires_at: getNow(),
     }
   }
