@@ -232,7 +232,7 @@ class IndexedDBAuthService implements AuthService {
   }
 
   private static sanitizeUser(user: StoredUser): AuthUser {
-    const { password_hash: _, ...authUser } = user
+    const { password_hash: _password_hash, ...authUser } = user
     return authUser
   }
 
