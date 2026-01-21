@@ -271,9 +271,10 @@ impl MempoolTransaction {
 impl MempoolAddressInfo {
     /// Convert to BitcoinBalance
     pub fn to_bitcoin_balance(&self, utxo_count: usize) -> BitcoinBalance {
-        let confirmed_balance =
-            self.chain_stats.funded_txo_sum - self.chain_stats.spent_txo_sum;
-        let unconfirmed_balance = self.mempool_stats.funded_txo_sum
+        let confirmed_balance = self.chain_stats.funded_txo_sum - self.chain_stats.spent_txo_sum;
+        let unconfirmed_balance = self
+            .mempool_stats
+            .funded_txo_sum
             .saturating_sub(self.mempool_stats.spent_txo_sum);
 
         BitcoinBalance {

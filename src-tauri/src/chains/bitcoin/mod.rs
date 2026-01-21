@@ -265,7 +265,11 @@ impl ChainAdapter for BitcoinAdapter {
 
 impl BitcoinAdapter {
     /// Convert Bitcoin transaction to normalized ChainTransaction
-    fn normalize_transaction(&self, tx: &BitcoinTransaction, for_address: &str) -> ChainTransaction {
+    fn normalize_transaction(
+        &self,
+        tx: &BitcoinTransaction,
+        for_address: &str,
+    ) -> ChainTransaction {
         // Determine if this is an incoming or outgoing transaction
         let is_incoming = tx
             .outputs
