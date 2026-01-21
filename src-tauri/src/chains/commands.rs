@@ -240,6 +240,80 @@ pub async fn chain_get_block_number(
 }
 
 // =============================================================================
+// BITCOIN-SPECIFIC COMMANDS
+// =============================================================================
+
+use super::bitcoin::{BitcoinAdapter, BitcoinBalance, BitcoinTransaction, BitcoinUtxo};
+
+/// Get Bitcoin transactions for an address
+///
+/// # Arguments
+/// * `address` - Bitcoin address (legacy, SegWit, or Taproot)
+/// * `network` - Network name ("bitcoin", "testnet", "signet")
+/// * `max_pages` - Maximum pages to fetch (25 txs per page)
+#[tauri::command]
+pub async fn get_bitcoin_transactions(
+    address: String,
+    network: Option<String>,
+    max_pages: Option<usize>,
+) -> Result<Vec<BitcoinTransaction>, String> {
+    let network_name = network.as_deref().unwrap_or("bitcoin");
+    let adapter = BitcoinAdapter::from_network(network_name).map_err(|e| e.to_string())?;
+
+    adapter
+        .fetch_transactions(&address, max_pages)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+/// Get Bitcoin balance for an address
+///
+/// # Arguments
+/// * `address` - Bitcoin address
+/// * `network` - Network name ("bitcoin", "testnet", "signet")
+#[tauri::command]
+pub async fn get_bitcoin_balance(
+    address: String,
+    network: Option<String>,
+) -> Result<BitcoinBalance, String> {
+    let network_name = network.as_deref().unwrap_or("bitcoin");
+    let adapter = BitcoinAdapter::from_network(network_name).map_err(|e| e.to_string())?;
+
+    adapter
+        .fetch_balance(&address)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+/// Get Bitcoin UTXOs for an address
+///
+/// # Arguments
+/// * `address` - Bitcoin address
+/// * `network` - Network name ("bitcoin", "testnet", "signet")
+#[tauri::command]
+pub async fn get_bitcoin_utxos(
+    address: String,
+    network: Option<String>,
+) -> Result<Vec<BitcoinUtxo>, String> {
+    let network_name = network.as_deref().unwrap_or("bitcoin");
+    let adapter = BitcoinAdapter::from_network(network_name).map_err(|e| e.to_string())?;
+
+    adapter
+        .fetch_utxos(&address)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+/// Validate a Bitcoin address
+///
+/// # Arguments
+/// * `address` - Bitcoin address to validate
+#[tauri::command]
+pub async fn validate_bitcoin_address(address: String) -> Result<bool, String> {
+    Ok(super::bitcoin::validate_bitcoin_address(&address).is_ok())
+}
+
+// =============================================================================
 // COMMAND HANDLER MACRO
 // =============================================================================
 
@@ -261,6 +335,11 @@ pub async fn chain_get_block_number(
 ///     chains::chain_set_explorer_api_key,
 ///     chains::chain_set_rpc_url,
 ///     chains::chain_get_block_number,
+///     // Bitcoin commands
+///     chains::get_bitcoin_transactions,
+///     chains::get_bitcoin_balance,
+///     chains::get_bitcoin_utxos,
+///     chains::validate_bitcoin_address,
 /// ])
 /// ```
 #[cfg(test)]

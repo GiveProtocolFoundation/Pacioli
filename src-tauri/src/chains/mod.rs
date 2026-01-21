@@ -11,6 +11,7 @@
 
 #![allow(dead_code)]
 
+pub mod bitcoin;
 pub mod commands;
 pub mod evm;
 pub mod substrate;
@@ -407,6 +408,12 @@ impl ChainManager {
             }
         }
 
+        // Try Bitcoin adapter
+        if bitcoin::get_config_by_name(chain_id).is_some() {
+            let adapter = bitcoin::BitcoinAdapter::from_network(chain_id)?;
+            return Ok(Box::new(adapter));
+        }
+
         // TODO: Add Substrate adapter initialization here
         // if substrate::is_supported(chain_id) { ... }
 
@@ -439,6 +446,21 @@ impl ChainManager {
             });
         }
 
+        // Add Bitcoin chains
+        for config in bitcoin::get_all_configs() {
+            chains.push(ChainInfo {
+                chain_id: config.name.clone(),
+                name: format_chain_name(&config.name),
+                symbol: config.symbol.clone(),
+                chain_type: ChainType::Bitcoin,
+                numeric_chain_id: None,
+                decimals: config.decimals,
+                logo_url: None,
+                is_testnet: config.is_testnet,
+                explorer_url: Some(config.api_url.replace("/api", "")),
+            });
+        }
+
         // TODO: Add Substrate chains
         // for config in substrate::get_all_chains() { ... }
 
@@ -447,6 +469,11 @@ impl ChainManager {
 
     /// Check if a chain is supported
     pub fn is_chain_supported(chain_id: &str) -> bool {
+        // Check Bitcoin
+        if bitcoin::get_config_by_name(chain_id).is_some() {
+            return true;
+        }
+
         // Check EVM by name
         if evm::config::get_chain_by_name(chain_id).is_some() {
             return true;

@@ -334,7 +334,12 @@ pub fn run() {
             chains::chain_connect,
             chains::chain_set_explorer_api_key,
             chains::chain_set_rpc_url,
-            chains::chain_get_block_number
+            chains::chain_get_block_number,
+            // Bitcoin commands
+            chains::get_bitcoin_transactions,
+            chains::get_bitcoin_balance,
+            chains::get_bitcoin_utxos,
+            chains::validate_bitcoin_address
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
