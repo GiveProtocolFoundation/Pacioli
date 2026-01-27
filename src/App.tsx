@@ -6,7 +6,10 @@ import { TokenProvider } from './contexts/TokenContext'
 import { WalletAliasProvider } from './contexts/WalletAliasContext'
 import { ProfileProvider } from './contexts/ProfileContext'
 import { EntityProvider } from './contexts/EntityContext'
-import { ProtectedRoute } from './components/auth'
+import { AppProvider, useApp } from './contexts/AppContext'
+import { LanguageProvider } from './contexts/LanguageContext'
+import { UnlockScreen } from './components/security'
+import { FirstLaunch } from './components/onboarding'
 
 // Lazy load route components for code splitting
 const Dashboard = React.lazy(() => import('./app/dashboard/Dashboard'))
@@ -26,16 +29,12 @@ const WalletManager = React.lazy(() => import('./app/wallets/WalletManager'))
 const Entities = React.lazy(() => import('./app/entities/Entities'))
 const Team = React.lazy(() => import('./app/team/Team'))
 
-// Auth pages
-const Login = React.lazy(() => import('./app/auth/Login'))
-const Register = React.lazy(() => import('./app/auth/Register'))
-
 // Loading fallback component
 const LoadingFallback: React.FC = () => (
-  <div className="min-h-screen bg-gray-50 dark:bg-black flex items-center justify-center">
+  <div className="min-h-screen bg-[#fafaf8] dark:bg-[#0f0e0c] flex items-center justify-center">
     <div className="text-center">
-      <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#2563EB] dark:border-[#0EA5E9]" />
-      <p className="mt-4 text-gray-600 dark:text-[#94a3b8]">Loading...</p>
+      <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#8b4e52] dark:border-[#a86e72]" />
+      <p className="mt-4 text-[#696557] dark:text-[#b8b3ac]">Loading...</p>
     </div>
   </div>
 )
@@ -62,6 +61,50 @@ const AppProviders: React.FC<{ children: React.ReactNode }> = ({
     </EntityProvider>
   </ProfileProvider>
 )
+
+// App wrapper that handles initialization, first launch, and unlock states
+const AppWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { appState, isLoading, error, isFirstLaunch, completeFirstLaunch } = useApp()
+
+  // Show loading state during initialization
+  if (isLoading) {
+    return <LoadingFallback />
+  }
+
+  // Show error if initialization failed
+  if (error && appState === 'Uninitialized') {
+    return (
+      <div className="min-h-screen bg-[#fafaf8] dark:bg-[#0f0e0c] flex items-center justify-center">
+        <div className="text-center max-w-md px-4">
+          <div className="text-red-500 text-4xl mb-4">⚠️</div>
+          <h1 className="text-xl font-semibold text-[#1a1815] dark:text-[#f5f3f0] mb-2">
+            Initialization Failed
+          </h1>
+          <p className="text-[#696557] dark:text-[#b8b3ac] mb-4">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-[#8b4e52] text-white rounded-md hover:bg-[#7a4248]"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // Show first launch wizard for new users
+  if (isFirstLaunch) {
+    return <FirstLaunch onComplete={completeFirstLaunch} />
+  }
+
+  // Show unlock screen if app is locked
+  if (appState === 'Locked') {
+    return <UnlockScreen />
+  }
+
+  // App is ready
+  return <>{children}</>
+}
 
 // Main routes wrapped with navigation
 const MainRoutes: React.FC = () => (
@@ -96,26 +139,27 @@ const MainRoutes: React.FC = () => (
 
 const App: React.FC = () => (
   <BrowserRouter>
-    <AppProviders>
-      <Suspense fallback={<LoadingFallback />}>
-        <Routes>
-          {/* Public auth routes */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/onboarding" element={<Onboarding />} />
+    <LanguageProvider>
+      <AppProvider>
+        <AppWrapper>
+          <AppProviders>
+            <Suspense fallback={<LoadingFallback />}>
+              <Routes>
+                {/* Onboarding for first-time setup */}
+                <Route path="/onboarding" element={<Onboarding />} />
 
-          {/* Protected routes - require authentication */}
-          <Route
-            path="/*"
-            element={
-              <ProtectedRoute>
-                <MainRoutes />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
-      </Suspense>
-    </AppProviders>
+                {/* Redirect old auth routes to dashboard for local-only MVP */}
+                <Route path="/login" element={<Navigate to="/dashboard" replace />} />
+                <Route path="/register" element={<Navigate to="/dashboard" replace />} />
+
+                {/* Main routes - no auth required for local-only version */}
+                <Route path="/*" element={<MainRoutes />} />
+              </Routes>
+            </Suspense>
+          </AppProviders>
+        </AppWrapper>
+      </AppProvider>
+    </LanguageProvider>
   </BrowserRouter>
 )
 

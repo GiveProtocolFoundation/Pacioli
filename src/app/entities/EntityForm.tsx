@@ -85,7 +85,7 @@ const taxDocStatuses: { value: TaxDocumentationStatus; label: string }[] = [
 ]
 
 const inputClassName =
-  'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500'
+  'w-full px-3 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:ring-2 focus:ring-[#c9a961]'
 
 // =============================================================================
 // REUSABLE FORM COMPONENTS (defined before use)
@@ -102,7 +102,7 @@ const FormField: React.FC<FormFieldProps> = ({
   <div className={className}>
     <label
       htmlFor={id}
-      className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+      className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-1"
     >
       {label}
       {required && ' *'}
@@ -120,23 +120,23 @@ const AddressList: React.FC<AddressListProps> = ({
     {addresses.map(addr => (
       <div
         key={addr.id}
-        className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-700 rounded-lg"
+        className="flex items-center gap-2 p-2 bg-[#f3f1ed] dark:bg-[#2a2620] rounded-lg"
       >
         <span className="flex-1 font-mono text-sm truncate">
           {addr.address}
         </span>
-        <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-200 dark:bg-gray-600 px-2 py-0.5 rounded">
+        <span className="text-xs text-[#696557] dark:text-[#b8b3ac] bg-[#ede8e0] dark:bg-[#2a2620] px-2 py-0.5 rounded">
           {addr.chain}
         </span>
         {addr.is_verified && (
-          <span className="text-xs text-green-600 dark:text-green-400">
+          <span className="text-xs text-[#7a9b6f] dark:text-[#8faf84]">
             Verified
           </span>
         )}
         <button
           type="button"
           onClick={removeHandlers[addr.id]}
-          className="p-1 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/20 rounded"
+          className="p-1 text-[#9d6b6b] hover:bg-[#9d6b6b]/10 dark:hover:bg-[#9d6b6b]/20 rounded"
         >
           <Trash2 className="w-4 h-4" />
         </button>
@@ -156,7 +156,7 @@ const WalletAddressesSection: React.FC<WalletAddressesSectionProps> = ({
   removeAddressHandlers,
 }) => (
   <div className="space-y-4">
-    <h3 className="text-sm font-medium text-gray-900 dark:text-white">
+    <h3 className="text-sm font-medium text-[#1a1815] dark:text-[#f5f3f0]">
       Wallet Addresses
     </h3>
     <div className="flex gap-2">
@@ -166,13 +166,13 @@ const WalletAddressesSection: React.FC<WalletAddressesSectionProps> = ({
         value={newAddress.address}
         onChange={onAddressChange}
         placeholder="Wallet address"
-        className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 text-sm font-mono"
+        className="flex-1 px-3 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:ring-2 focus:ring-[#c9a961] text-sm font-mono"
       />
       <select
         id="wallet_chain"
         value={newAddress.chain}
         onChange={onChainChange}
-        className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 text-sm"
+        className="px-3 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:ring-2 focus:ring-[#c9a961] text-sm"
       >
         <option value="ethereum">Ethereum</option>
         <option value="polkadot">Polkadot</option>
@@ -184,18 +184,18 @@ const WalletAddressesSection: React.FC<WalletAddressesSectionProps> = ({
         type="button"
         onClick={onAddAddress}
         disabled={!newAddress.address}
-        className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="px-3 py-2 bg-[#8b4e52] text-white rounded-lg hover:bg-[#7a4248] disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <Plus className="w-4 h-4" />
       </button>
     </div>
     {loadingAddresses ? (
-      <div className="flex items-center gap-2 text-sm text-gray-500">
+      <div className="flex items-center gap-2 text-sm text-[#696557]">
         <Loader className="w-4 h-4 animate-spin" />
         Loading addresses...
       </div>
     ) : addresses.length === 0 ? (
-      <p className="text-sm text-gray-500 dark:text-gray-400">
+      <p className="text-sm text-[#696557] dark:text-[#b8b3ac]">
         No wallet addresses added yet.
       </p>
     ) : (
@@ -210,7 +210,7 @@ const WalletAddressesSection: React.FC<WalletAddressesSectionProps> = ({
 /** Section for payment default settings (currency, terms) */
 const PaymentSection: React.FC<SectionProps> = ({ formData, onChange }) => (
   <div className="space-y-4">
-    <h3 className="text-sm font-medium text-gray-900 dark:text-white">
+    <h3 className="text-sm font-medium text-[#1a1815] dark:text-[#f5f3f0]">
       Payment Defaults
     </h3>
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -301,9 +301,9 @@ const TaxFieldsGrid: React.FC<SectionProps> = ({ formData, onChange }) => (
           name="reportable_payee"
           checked={formData.reportable_payee}
           onChange={onChange}
-          className="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500"
+          className="rounded border-[rgba(201,169,97,0.15)] text-[#8b4e52] focus:ring-[#c9a961]"
         />
-        <span className="text-sm text-gray-700 dark:text-gray-300">
+        <span className="text-sm text-[#1a1815] dark:text-[#b8b3ac]">
           Reportable payee (requires tax reporting when paid)
         </span>
       </label>
@@ -314,7 +314,7 @@ const TaxFieldsGrid: React.FC<SectionProps> = ({ formData, onChange }) => (
 /** Section for tax and compliance information */
 const TaxSection: React.FC<SectionProps> = ({ formData, onChange }) => (
   <div className="space-y-4">
-    <h3 className="text-sm font-medium text-gray-900 dark:text-white">
+    <h3 className="text-sm font-medium text-[#1a1815] dark:text-[#f5f3f0]">
       Tax & Compliance
     </h3>
     <TaxFieldsGrid formData={formData} onChange={onChange} />
@@ -324,7 +324,7 @@ const TaxSection: React.FC<SectionProps> = ({ formData, onChange }) => (
 /** Section for contact information (email, phone, website) */
 const ContactSection: React.FC<SectionProps> = ({ formData, onChange }) => (
   <div className="space-y-4">
-    <h3 className="text-sm font-medium text-gray-900 dark:text-white">
+    <h3 className="text-sm font-medium text-[#1a1815] dark:text-[#f5f3f0]">
       Contact
     </h3>
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -366,7 +366,7 @@ const ContactSection: React.FC<SectionProps> = ({ formData, onChange }) => (
 /** Section for basic entity information (type, name, category) */
 const BasicInfoSection: React.FC<SectionProps> = ({ formData, onChange }) => (
   <div className="space-y-4">
-    <h3 className="text-sm font-medium text-gray-900 dark:text-white">
+    <h3 className="text-sm font-medium text-[#1a1815] dark:text-[#f5f3f0]">
       Basic Information
     </h3>
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -429,15 +429,15 @@ const FormHeader: React.FC<{ isEditing: boolean; onClose: () => void }> = ({
   isEditing,
   onClose,
 }) => (
-  <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-    <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+  <div className="flex items-center justify-between px-6 py-4 border-b border-[rgba(201,169,97,0.15)]">
+    <h2 className="text-lg font-semibold text-[#1a1815] dark:text-[#f5f3f0]">
       {isEditing ? 'Edit Entity' : 'New Entity'}
     </h2>
     <button
       onClick={onClose}
-      className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+      className="p-1 rounded-lg hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620]"
     >
-      <X className="w-5 h-5 text-gray-500" />
+      <X className="w-5 h-5 text-[#696557]" />
     </button>
   </div>
 )
@@ -448,18 +448,18 @@ const FormFooter: React.FC<{
   isEditing: boolean
   onClose: () => void
 }> = ({ isSubmitting, isEditing, onClose }) => (
-  <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+  <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-[rgba(201,169,97,0.15)] bg-[#f3f1ed] dark:bg-[#0f0e0c]">
     <button
       type="button"
       onClick={onClose}
-      className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+      className="px-4 py-2 text-[#1a1815] dark:text-[#b8b3ac] hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620] rounded-lg transition-colors"
     >
       Cancel
     </button>
     <button
       type="submit"
       disabled={isSubmitting}
-      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors inline-flex items-center gap-2"
+      className="px-4 py-2 bg-[#8b4e52] text-white rounded-lg hover:bg-[#7a4248] disabled:opacity-50 disabled:cursor-not-allowed transition-colors inline-flex items-center gap-2"
     >
       {isSubmitting && <Loader className="w-4 h-4 animate-spin" />}
       {isEditing ? 'Save Changes' : 'Create Entity'}
@@ -670,8 +670,8 @@ const EntityForm: React.FC<EntityFormProps> = ({
   const BodySection = () => (
     <div className="p-6 space-y-6">
       {error && (
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-          <p className="text-red-800 dark:text-red-200 text-sm">{error}</p>
+        <div className="bg-[#9d6b6b]/10 dark:bg-[#9d6b6b]/20 border border-[#9d6b6b]/30 dark:border-[#9d6b6b]/40 rounded-lg p-4">
+          <p className="text-[#9d6b6b] dark:text-[#b88585] text-sm">{error}</p>
         </div>
       )}
       <BasicInfoSection formData={formData} onChange={handleInputChange} />
@@ -707,9 +707,9 @@ const EntityForm: React.FC<EntityFormProps> = ({
             name="is_active"
             checked={formData.is_active}
             onChange={handleInputChange}
-            className="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500"
+            className="rounded border-[rgba(201,169,97,0.15)] text-[#8b4e52] focus:ring-[#c9a961]"
           />
-          <span className="text-sm text-gray-700 dark:text-gray-300">
+          <span className="text-sm text-[#1a1815] dark:text-[#b8b3ac]">
             Active
           </span>
         </label>
@@ -719,7 +719,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+      <div className="bg-[#fafaf8] dark:bg-[#1a1815] rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         <FormHeader isEditing={Boolean(entity)} onClose={onClose} />
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto">
           <BodySection />

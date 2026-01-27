@@ -90,11 +90,11 @@ interface SettingsProps {
 }
 
 const SettingsHeader: React.FC = () => (
-  <header className="bg-white dark:bg-black border-b border-gray-200 dark:border-gray-700">
+  <header className="bg-[#fafaf8] dark:bg-[#0f0e0c] border-b border-[rgba(201,169,97,0.15)]">
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
       <div>
         <h1>Settings</h1>
-        <p className="text-sm text-gray-500 dark:text-[#94a3b8] mt-1">
+        <p className="text-sm text-[#696557] dark:text-[#b8b3ac] mt-1">
           Manage your organization settings and preferences
         </p>
       </div>
@@ -130,48 +130,48 @@ const SidebarNavigation: React.FC<{
               disabled={item.comingSoon}
               className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
                 isActive
-                  ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-700'
+                  ? 'bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 text-[#8b4e52] dark:text-[#a86e72] border border-[#8b4e52]/30 dark:border-[#8b4e52]/40'
                   : item.comingSoon
-                    ? 'text-gray-400 dark:text-gray-600 cursor-not-allowed'
-                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 border border-transparent'
+                    ? 'text-[#a39d94] dark:text-[#696557] cursor-not-allowed'
+                    : 'text-[#1a1815] dark:text-[#f5f3f0] hover:bg-[#f3f1ed] dark:hover:bg-[#1a1815] border border-transparent'
               }`}
             >
               <div className="flex items-center flex-1 text-left">
                 <Icon
                   className={`w-5 h-5 mr-3 flex-shrink-0 ${
                     isActive
-                      ? 'text-blue-600 dark:text-blue-400'
+                      ? 'text-[#8b4e52] dark:text-[#a86e72]'
                       : item.comingSoon
-                        ? 'text-gray-400 dark:text-gray-600'
-                        : 'text-gray-500 dark:text-[#94a3b8]'
+                        ? 'text-[#a39d94] dark:text-[#696557]'
+                        : 'text-[#696557] dark:text-[#b8b3ac]'
                   }`}
                 />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="truncate">{item.label}</span>
                     {item.comingSoon && (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-[#94a3b8]">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-[#f3f1ed] dark:bg-[#2a2620] text-[#696557] dark:text-[#b8b3ac]">
                         Soon
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-gray-500 dark:text-[#94a3b8] mt-0.5 truncate">
+                  <p className="text-xs text-[#a39d94] dark:text-[#8b8580] mt-0.5 truncate">
                     {item.description}
                   </p>
                 </div>
               </div>
               {isActive && !item.comingSoon && (
-                <ChevronRight className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0 ml-2" />
+                <ChevronRight className="w-4 h-4 text-[#8b4e52] dark:text-[#a86e72] flex-shrink-0 ml-2" />
               )}
             </button>
           )
         })}
       </nav>
 
-      <div className="lg:hidden mt-4 p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-700">
+      <div className="lg:hidden mt-4 p-3 bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 rounded-lg border border-[#8b4e52]/30 dark:border-[#8b4e52]/40">
         <div className="flex items-center text-sm">
-          <SettingsIcon className="w-4 h-4 text-blue-600 dark:text-blue-400 mr-2" />
-          <span className="text-blue-700 dark:text-blue-400 font-medium">
+          <SettingsIcon className="w-4 h-4 text-[#8b4e52] dark:text-[#a86e72] mr-2" />
+          <span className="text-[#8b4e52] dark:text-[#a86e72] font-medium">
             {items.find(item => item.id === activeSection)?.label}
           </span>
         </div>
@@ -232,7 +232,7 @@ const Settings: React.FC<SettingsProps> = ({ userType = 'organization' }) => {
 
           {/* Content Area */}
           <main className="flex-1 min-w-0">
-            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg shadow-sm border border-[rgba(201,169,97,0.15)] overflow-hidden">
               {ActiveComponent ? (
                 activeSection === 'general' ? (
                   <GeneralSettings userType={userType} />
@@ -241,11 +241,11 @@ const Settings: React.FC<SettingsProps> = ({ userType = 'organization' }) => {
                 )
               ) : (
                 <div className="p-12 text-center">
-                  <SettingsIcon className="mx-auto h-12 w-12 text-gray-400" />
-                  <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">
+                  <SettingsIcon className="mx-auto h-12 w-12 text-[#a39d94]" />
+                  <h3 className="mt-2 text-sm font-medium text-[#1a1815] dark:text-[#f5f3f0]">
                     Coming Soon
                   </h3>
-                  <p className="mt-1 text-sm text-gray-500 dark:text-[#94a3b8]">
+                  <p className="mt-1 text-sm text-[#696557] dark:text-[#b8b3ac]">
                     This feature is under development.
                   </p>
                 </div>

@@ -261,13 +261,13 @@ const SearchInput: React.FC<{
   onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void
 }> = ({ searchQuery, onSearchChange }) => (
   <div className="relative flex-1">
-    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#a39d94]" />
     <input
       type="text"
       placeholder="Search reports..."
       value={searchQuery}
       onChange={onSearchChange}
-      className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+      className="w-full pl-10 pr-4 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
     />
   </div>
 )
@@ -286,8 +286,8 @@ const FavoritesToggle: React.FC<{
     onClick={onToggle}
     className={`px-4 py-2 rounded-lg border flex items-center justify-center transition-colors ${
       showFavoritesOnly
-        ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
-        : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
+        ? 'border-[#c9a961] bg-[#c9a961]/10 dark:bg-[#c9a961]/20 text-[#b89968] dark:text-[#c9a961]'
+        : 'border-[rgba(201,169,97,0.15)] text-[#696557] dark:text-[#b8b3ac] hover:bg-[#f3f1ed] dark:hover:bg-[#1a1815]'
     }`}
   >
     <Star className="w-4 h-4 mr-2" />
@@ -313,18 +313,18 @@ const ReportInfo = ({
     </div>
     <div className="ml-4 flex-1">
       <div className="flex items-center">
-        <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+        <h3 className="text-sm font-semibold text-[#1a1815] dark:text-[#f5f3f0]">
           {report.name}
         </h3>
         {report.favorite && (
           <Star className="w-4 h-4 ml-2 favorite-star active" />
         )}
       </div>
-      <p className="text-xs text-gray-500 dark:text-[#94a3b8] mt-1">
+      <p className="text-xs text-[#696557] dark:text-[#b8b3ac] mt-1">
         {report.description}
       </p>
       {report.lastRun && (
-        <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
+        <p className="text-xs text-[#a39d94] dark:text-[#696557] mt-2">
           Last run: {formatDate(report.lastRun)}
         </p>
       )}
@@ -366,10 +366,10 @@ const Reports: React.FC = () => {
   const getStatusBadge = (status: RecentRun['status']) => {
     const styles = {
       completed:
-        'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400',
+        'bg-[#7a9b6f]/10 dark:bg-[#7a9b6f]/20 text-[#7a9b6f] dark:text-[#8faf84]',
       processing:
-        'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400',
-      failed: 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400',
+        'bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 text-[#8b4e52] dark:text-[#a86e72]',
+      failed: 'bg-[#9d6b6b]/10 dark:bg-[#9d6b6b]/20 text-[#9d6b6b] dark:text-[#b88585]',
     }
 
     return (
@@ -403,16 +403,16 @@ const Reports: React.FC = () => {
   return (
     <div className="min-h-screen ledger-background">
       {/* Header */}
-      <header className="bg-white dark:bg-black border-b border-gray-200 dark:border-gray-700">
+      <header className="bg-[#fafaf8] dark:bg-[#0f0e0c] border-b border-[rgba(201,169,97,0.15)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h1>Reports</h1>
-              <p className="text-sm text-gray-500 dark:text-[#94a3b8] mt-1">
+              <p className="text-sm text-[#696557] dark:text-[#b8b3ac] mt-1">
                 Financial and cryptocurrency reporting
               </p>
             </div>
-            <button className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 flex items-center justify-center">
+            <button className="px-4 py-2 text-sm font-medium text-white bg-[#8b4e52] rounded-lg hover:bg-[#7a4248] flex items-center justify-center">
               <Plus className="w-4 h-4 mr-2" />
               Custom Report
             </button>
@@ -426,13 +426,13 @@ const Reports: React.FC = () => {
           <div className="lg:col-span-2 space-y-6">
             {/* Quick Stats */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+              <div className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg border border-[rgba(201,169,97,0.15)] p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-500 dark:text-[#94a3b8]">
+                    <p className="text-sm text-[#696557] dark:text-[#b8b3ac]">
                       Total Reports
                     </p>
-                    <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1 stat-value">
+                    <p className="text-2xl font-semibold text-[#1a1815] dark:text-[#f5f3f0] mt-1 stat-value">
                       {reports.length}
                     </p>
                   </div>
@@ -442,13 +442,13 @@ const Reports: React.FC = () => {
                 </div>
               </div>
 
-              <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+              <div className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg border border-[rgba(201,169,97,0.15)] p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-500 dark:text-[#94a3b8]">
+                    <p className="text-sm text-[#696557] dark:text-[#b8b3ac]">
                       Favorites
                     </p>
-                    <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1 stat-value">
+                    <p className="text-2xl font-semibold text-[#1a1815] dark:text-[#f5f3f0] mt-1 stat-value">
                       {favoriteReports.length}
                     </p>
                   </div>
@@ -458,13 +458,13 @@ const Reports: React.FC = () => {
                 </div>
               </div>
 
-              <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+              <div className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg border border-[rgba(201,169,97,0.15)] p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-500 dark:text-[#94a3b8]">
+                    <p className="text-sm text-[#696557] dark:text-[#b8b3ac]">
                       Run Today
                     </p>
-                    <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1 stat-value">
+                    <p className="text-2xl font-semibold text-[#1a1815] dark:text-[#f5f3f0] mt-1 stat-value">
                       {
                         recentRuns.filter(r => r.ranAt.startsWith('2025-10-17'))
                           .length
@@ -479,7 +479,7 @@ const Reports: React.FC = () => {
             </div>
 
             {/* Search and Filters */}
-            <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+            <div className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg border border-[rgba(201,169,97,0.15)] p-4">
               <div className="flex flex-col sm:flex-row gap-4">
                 <SearchInput
                   searchQuery={searchQuery}
@@ -498,8 +498,8 @@ const Reports: React.FC = () => {
                 onClick={handleCategoryAll}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   selectedCategory === 'all'
-                    ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-700'
-                    : 'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'
+                    ? 'bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 text-[#8b4e52] dark:text-[#a86e72] border border-[#8b4e52]/30 dark:border-[#8b4e52]/40'
+                    : 'bg-[#fafaf8] dark:bg-[#0f0e0c] text-[#696557] dark:text-[#b8b3ac] border border-[rgba(201,169,97,0.15)] hover:bg-[#f3f1ed] dark:hover:bg-[#1a1815]'
                 }`}
               >
                 All Reports
@@ -513,8 +513,8 @@ const Reports: React.FC = () => {
                     onClick={handleClick}
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center ${
                       selectedCategory === category.id
-                        ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-700'
-                        : 'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'
+                        ? 'bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 text-[#8b4e52] dark:text-[#a86e72] border border-[#8b4e52]/30 dark:border-[#8b4e52]/40'
+                        : 'bg-[#fafaf8] dark:bg-[#0f0e0c] text-[#696557] dark:text-[#b8b3ac] border border-[rgba(201,169,97,0.15)] hover:bg-[#f3f1ed] dark:hover:bg-[#1a1815]'
                     }`}
                   >
                     <Icon className="w-4 h-4 mr-2" />
@@ -531,25 +531,25 @@ const Reports: React.FC = () => {
                 return (
                   <div
                     key={report.id}
-                    className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:border-gray-300 dark:hover:border-gray-600 transition-colors"
+                    className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg border border-[rgba(201,169,97,0.15)] p-4 hover:border-[rgba(201,169,97,0.3)] transition-colors"
                   >
                     <div className="flex items-start justify-between">
                       <ReportInfo report={report} Icon={Icon} />
                       <div className="flex items-center space-x-2 ml-4">
                         <button
-                          className="p-2 action-icon hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                          className="p-2 action-icon hover:bg-[#f3f1ed] dark:hover:bg-[#1a1815] rounded-lg transition-colors"
                           title="Run Report"
                         >
                           <Play className="w-4 h-4" />
                         </button>
                         <button
-                          className="p-2 action-icon hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                          className="p-2 action-icon hover:bg-[#f3f1ed] dark:hover:bg-[#1a1815] rounded-lg transition-colors"
                           title="Download"
                         >
                           <Download className="w-4 h-4" />
                         </button>
                         <button
-                          className="p-2 action-icon hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                          className="p-2 action-icon hover:bg-[#f3f1ed] dark:hover:bg-[#1a1815] rounded-lg transition-colors"
                           title="Schedule"
                         >
                           <Clock className="w-4 h-4" />
@@ -561,12 +561,12 @@ const Reports: React.FC = () => {
               })}
 
               {filteredReports.length === 0 && (
-                <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-12 text-center">
-                  <FileText className="mx-auto h-12 w-12 text-gray-400" />
-                  <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">
+                <div className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg border border-[rgba(201,169,97,0.15)] p-12 text-center">
+                  <FileText className="mx-auto h-12 w-12 text-[#a39d94]" />
+                  <h3 className="mt-2 text-sm font-medium text-[#1a1815] dark:text-[#f5f3f0]">
                     No reports found
                   </h3>
-                  <p className="mt-1 text-sm text-gray-500 dark:text-[#94a3b8]">
+                  <p className="mt-1 text-sm text-[#696557] dark:text-[#b8b3ac]">
                     Try adjusting your search or filters.
                   </p>
                 </div>
@@ -577,26 +577,26 @@ const Reports: React.FC = () => {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Recent Runs */}
-            <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">
+            <div className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg border border-[rgba(201,169,97,0.15)] p-6">
+              <h3 className="text-sm font-semibold text-[#1a1815] dark:text-[#f5f3f0] mb-4">
                 Recent Runs
               </h3>
               <div className="space-y-3">
                 {recentRuns.map(run => (
                   <div
                     key={run.id}
-                    className="pb-3 border-b border-gray-200 dark:border-gray-700 last:border-0 last:pb-0"
+                    className="pb-3 border-b border-[rgba(201,169,97,0.15)] last:border-0 last:pb-0"
                   >
                     <div className="flex items-start justify-between mb-1">
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">
+                      <p className="text-sm font-medium text-[#1a1815] dark:text-[#f5f3f0]">
                         {run.reportName}
                       </p>
                       {getStatusBadge(run.status)}
                     </div>
-                    <p className="text-xs text-gray-500 dark:text-[#94a3b8]">
+                    <p className="text-xs text-[#696557] dark:text-[#b8b3ac]">
                       By {run.ranBy}
                     </p>
-                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                    <p className="text-xs text-[#a39d94] dark:text-[#696557] mt-1">
                       {formatDate(run.ranAt)}
                     </p>
                     {run.status === 'completed' && (
@@ -611,26 +611,26 @@ const Reports: React.FC = () => {
             </div>
 
             {/* Quick Actions */}
-            <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">
+            <div className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg border border-[rgba(201,169,97,0.15)] p-6">
+              <h3 className="text-sm font-semibold text-[#1a1815] dark:text-[#f5f3f0] mb-4">
                 Quick Actions
               </h3>
               <div className="space-y-2">
-                <button className="w-full px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center justify-between">
+                <button className="w-full px-4 py-2 text-sm font-medium text-[#696557] dark:text-[#b8b3ac] bg-[#fafaf8] dark:bg-[#1a1815] border border-[rgba(201,169,97,0.15)] rounded-lg hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620] flex items-center justify-between">
                   <span className="flex items-center">
                     <Calendar className="w-4 h-4 mr-2" />
                     Schedule Reports
                   </span>
                   <ChevronRight className="w-4 h-4" />
                 </button>
-                <button className="w-full px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center justify-between">
+                <button className="w-full px-4 py-2 text-sm font-medium text-[#696557] dark:text-[#b8b3ac] bg-[#fafaf8] dark:bg-[#1a1815] border border-[rgba(201,169,97,0.15)] rounded-lg hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620] flex items-center justify-between">
                   <span className="flex items-center">
                     <Settings className="w-4 h-4 mr-2" />
                     Report Templates
                   </span>
                   <ChevronRight className="w-4 h-4" />
                 </button>
-                <button className="w-full px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center justify-between">
+                <button className="w-full px-4 py-2 text-sm font-medium text-[#696557] dark:text-[#b8b3ac] bg-[#fafaf8] dark:bg-[#1a1815] border border-[rgba(201,169,97,0.15)] rounded-lg hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620] flex items-center justify-between">
                   <span className="flex items-center">
                     <Download className="w-4 h-4 mr-2" />
                     Export Settings
@@ -641,14 +641,14 @@ const Reports: React.FC = () => {
             </div>
 
             {/* Report Builder CTA */}
-            <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg p-6 text-white">
+            <div className="bg-gradient-to-br from-[#8b4e52] to-[#7a4248] rounded-lg p-6 text-white">
               <h3 className="text-sm font-semibold mb-2">
                 Custom Report Builder
               </h3>
               <p className="text-xs opacity-90 mb-4">
                 Create custom reports with advanced filters and calculations
               </p>
-              <button className="w-full px-4 py-2 text-sm font-medium bg-white text-blue-600 rounded-lg hover:bg-blue-50 flex items-center justify-center">
+              <button className="w-full px-4 py-2 text-sm font-medium bg-white text-[#8b4e52] rounded-lg hover:bg-[#f3f1ed] flex items-center justify-center">
                 <Plus className="w-4 h-4 mr-2" />
                 Build Custom Report
               </button>

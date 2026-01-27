@@ -26,7 +26,7 @@ const FilterTabs = ({
   filter: string
   transactions: { type: TransactionType }[]
 }) => (
-  <div className="mb-6 border-b border-gray-200 dark:border-gray-700">
+  <div className="mb-6 border-b border-[rgba(201,169,97,0.15)]">
     <nav className="flex space-x-8">
       {[
         {
@@ -55,16 +55,16 @@ const FilterTabs = ({
           to={`/transactions?filter=${tab.key}`}
           className={`pb-4 px-1 border-b-2 font-medium text-sm transition-colors ${
             filter === tab.key
-              ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-              : 'border-transparent text-gray-500 dark:text-[#94a3b8] hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
+              ? 'border-[#8b4e52] text-[#8b4e52] dark:text-[#a86e72]'
+              : 'border-transparent text-[#696557] dark:text-[#b8b3ac] hover:text-[#1a1815] dark:hover:text-[#f5f3f0] hover:border-[rgba(201,169,97,0.3)]'
           }`}
         >
           {tab.label}
           <span
             className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
               filter === tab.key
-                ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
-                : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-[#94a3b8]'
+                ? 'bg-[#8b4e52]/10 text-[#8b4e52] dark:bg-[#8b4e52]/20 dark:text-[#a86e72]'
+                : 'bg-[#f3f1ed] text-[#696557] dark:bg-[#2a2620] dark:text-[#b8b3ac]'
             }`}
           >
             {tab.count}
@@ -110,11 +110,11 @@ const Transactions: React.FC = () => {
   const getTypeIcon = (type: TransactionType) => {
     switch (type) {
       case 'revenue':
-        return <ArrowDownRight className="w-5 h-5 text-green-600" />
+        return <ArrowDownRight className="w-5 h-5 text-[#7a9b6f]" />
       case 'expense':
-        return <ArrowUpRight className="w-5 h-5 text-red-600" />
+        return <ArrowUpRight className="w-5 h-5 text-[#9d6b6b]" />
       case 'transfer':
-        return <ArrowLeftRight className="w-5 h-5 text-blue-600" />
+        return <ArrowLeftRight className="w-5 h-5 text-[#c9a961]" />
       default:
         return null
     }
@@ -123,13 +123,13 @@ const Transactions: React.FC = () => {
   const getTypeColor = (type: TransactionType) => {
     switch (type) {
       case 'revenue':
-        return 'text-green-600 bg-green-50 dark:bg-green-900/20'
+        return 'text-[#7a9b6f] bg-[#7a9b6f]/10 dark:bg-[#7a9b6f]/20'
       case 'expense':
-        return 'text-red-600 bg-red-50 dark:bg-red-900/20'
+        return 'text-[#9d6b6b] bg-[#9d6b6b]/10 dark:bg-[#9d6b6b]/20'
       case 'transfer':
-        return 'text-blue-600 bg-blue-50 dark:bg-blue-900/20'
+        return 'text-[#c9a961] bg-[#c9a961]/10 dark:bg-[#c9a961]/20'
       default:
-        return 'text-gray-600 bg-gray-50 dark:bg-gray-900/20'
+        return 'text-[#696557] bg-[#f3f1ed] dark:bg-[#2a2620]'
     }
   }
 
@@ -137,16 +137,16 @@ const Transactions: React.FC = () => {
     switch (status) {
       case 'completed':
       case 'approved':
-        return 'text-green-700 bg-green-100 dark:bg-green-900/30 dark:text-green-400'
+        return 'text-[#7a9b6f] bg-[#7a9b6f]/10 dark:bg-[#7a9b6f]/20 dark:text-[#8faf84]'
       case 'pending_approval':
-        return 'text-yellow-700 bg-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-400'
+        return 'text-[#b89968] bg-[#b89968]/10 dark:bg-[#b89968]/20 dark:text-[#c9a961]'
       case 'draft':
-        return 'text-gray-700 bg-gray-100 dark:bg-gray-900/30 dark:text-[#94a3b8]'
+        return 'text-[#696557] bg-[#f3f1ed] dark:bg-[#2a2620] dark:text-[#b8b3ac]'
       case 'rejected':
       case 'failed':
-        return 'text-red-700 bg-red-100 dark:bg-red-900/30 dark:text-red-400'
+        return 'text-[#9d6b6b] bg-[#9d6b6b]/10 dark:bg-[#9d6b6b]/20 dark:text-[#b88585]'
       default:
-        return 'text-gray-700 bg-gray-100 dark:bg-gray-900/30 dark:text-[#94a3b8]'
+        return 'text-[#696557] bg-[#f3f1ed] dark:bg-[#2a2620] dark:text-[#b8b3ac]'
     }
   }
 
@@ -214,13 +214,13 @@ const Transactions: React.FC = () => {
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1>Transactions</h1>
-          <p className="text-gray-600 dark:text-[#94a3b8] mt-1">
+          <p className="text-[#696557] dark:text-[#b8b3ac] mt-1">
             View and manage all your crypto transactions
           </p>
         </div>
         <button
           onClick={handleNewTransaction}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          className="flex items-center gap-2 px-4 py-2 bg-[#8b4e52] text-white rounded-lg hover:bg-[#7a4248]"
         >
           <Plus className="w-5 h-5" />
           New Transaction
@@ -233,26 +233,26 @@ const Transactions: React.FC = () => {
       {/* Search and Actions Bar */}
       <div className="mb-6 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#a39d94]" />
           <input
             type="text"
             placeholder="Search transactions..."
             value={searchQuery}
             onChange={handleSearchChange}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full pl-10 pr-4 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] placeholder-[#a39d94] dark:placeholder-[#696557] focus:outline-none focus:ring-2 focus:ring-[#c9a961] focus:border-[#c9a961]"
           />
         </div>
 
         <div className="flex gap-3">
-          <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300">
+          <button className="flex items-center gap-2 px-4 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620] text-[#696557] dark:text-[#b8b3ac]">
             <Calendar className="w-5 h-5" />
             <span className="hidden sm:inline">Date Range</span>
           </button>
-          <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300">
+          <button className="flex items-center gap-2 px-4 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620] text-[#696557] dark:text-[#b8b3ac]">
             <Filter className="w-5 h-5" />
             <span className="hidden sm:inline">Filters</span>
           </button>
-          <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+          <button className="flex items-center gap-2 px-4 py-2 bg-[#8b4e52] text-white rounded-lg hover:bg-[#7a4248]">
             <Download className="w-5 h-5" />
             <span className="hidden sm:inline">Export</span>
           </button>
@@ -260,43 +260,43 @@ const Transactions: React.FC = () => {
       </div>
 
       {/* Transactions Table */}
-      <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+      <div className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg border border-[rgba(201,169,97,0.15)] overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+            <thead className="bg-[#f3f1ed] dark:bg-[#1a1815] border-b border-[rgba(201,169,97,0.15)]">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#696557] dark:text-[#b8b3ac] uppercase tracking-wider">
                   Type
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#696557] dark:text-[#b8b3ac] uppercase tracking-wider">
                   Date & Time
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#696557] dark:text-[#b8b3ac] uppercase tracking-wider">
                   Description
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#696557] dark:text-[#b8b3ac] uppercase tracking-wider">
                   Category
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#696557] dark:text-[#b8b3ac] uppercase tracking-wider">
                   Wallet
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#696557] dark:text-[#b8b3ac] uppercase tracking-wider">
                   Amount
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#696557] dark:text-[#b8b3ac] uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#696557] dark:text-[#b8b3ac] uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+            <tbody className="bg-[#fafaf8] dark:bg-[#0f0e0c] divide-y divide-[rgba(201,169,97,0.1)]">
               {filteredTransactions.map(transaction => (
                 <tr
                   key={transaction.id}
                   data-id={transaction.id}
-                  className="hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
+                  className="hover:bg-[#f3f1ed] dark:hover:bg-[#1a1815] cursor-pointer"
                   onClick={handleRowClick}
                 >
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -307,32 +307,32 @@ const Transactions: React.FC = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900 dark:text-white">
+                    <div className="text-sm text-[#1a1815] dark:text-[#f5f3f0]">
                       {new Date(transaction.date).toLocaleString()}
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="text-sm font-medium text-gray-900 dark:text-white">
+                    <div className="text-sm font-medium text-[#1a1815] dark:text-[#f5f3f0]">
                       {transaction.description}
                     </div>
                     {transaction.hash && (
-                      <div className="text-xs text-gray-500 dark:text-[#94a3b8]">
+                      <div className="text-xs text-[#a39d94] dark:text-[#8b8580]">
                         {transaction.hash}
                       </div>
                     )}
                     {transaction.memo && (
-                      <div className="text-xs text-gray-500 dark:text-[#94a3b8] mt-1">
+                      <div className="text-xs text-[#a39d94] dark:text-[#8b8580] mt-1">
                         {transaction.memo}
                       </div>
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm text-gray-900 dark:text-white">
+                    <span className="text-sm text-[#1a1815] dark:text-[#f5f3f0]">
                       {transaction.category}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm text-gray-600 dark:text-[#94a3b8]">
+                    <span className="text-sm text-[#696557] dark:text-[#b8b3ac]">
                       {transaction.wallet}
                     </span>
                   </td>
@@ -354,10 +354,10 @@ const Transactions: React.FC = () => {
                             <div
                               className={`text-sm font-semibold ${
                                 transaction.type === 'revenue'
-                                  ? 'text-green-600'
+                                  ? 'text-[#7a9b6f]'
                                   : transaction.type === 'expense'
-                                    ? 'text-red-600'
-                                    : 'text-blue-600'
+                                    ? 'text-[#9d6b6b]'
+                                    : 'text-[#c9a961]'
                               }`}
                             >
                               {transaction.type === 'revenue'
@@ -369,13 +369,13 @@ const Transactions: React.FC = () => {
                               {token?.symbol || transaction.crypto}
                             </div>
                           </div>
-                          <div className="text-xs text-gray-500 dark:text-[#94a3b8]">
+                          <div className="text-xs text-[#a39d94] dark:text-[#8b8580]">
                             {transaction.fiatCurrency ||
                               currencySettings.primaryCurrency}{' '}
                             {transaction.fiatValue.toLocaleString()}
                           </div>
                           {chain && (
-                            <div className="text-xs text-gray-500 dark:text-[#94a3b8]">
+                            <div className="text-xs text-[#a39d94] dark:text-[#8b8580]">
                               on {chain.chainName}
                             </div>
                           )}
@@ -391,7 +391,7 @@ const Transactions: React.FC = () => {
                     </span>
                     {transaction.approvalStatus === 'rejected' &&
                       transaction.rejectionReason && (
-                        <div className="text-xs text-red-600 dark:text-red-400 mt-1">
+                        <div className="text-xs text-[#9d6b6b] dark:text-[#b88585] mt-1">
                           {transaction.rejectionReason}
                         </div>
                       )}
@@ -400,7 +400,7 @@ const Transactions: React.FC = () => {
                     <button
                       data-id={transaction.id}
                       onClick={handleEditButtonClick}
-                      className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+                      className="text-[#8b4e52] hover:text-[#7a4248] dark:text-[#a86e72] dark:hover:text-[#b88585]"
                     >
                       <Edit2 className="w-5 h-5" />
                     </button>
@@ -414,11 +414,11 @@ const Transactions: React.FC = () => {
         {/* Empty State */}
         {filteredTransactions.length === 0 && (
           <div className="text-center py-12">
-            <Receipt className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">
+            <Receipt className="mx-auto h-12 w-12 text-[#a39d94]" />
+            <h3 className="mt-2 text-sm font-medium text-[#1a1815] dark:text-[#f5f3f0]">
               No transactions found
             </h3>
-            <p className="mt-1 text-sm text-gray-500 dark:text-[#94a3b8]">
+            <p className="mt-1 text-sm text-[#696557] dark:text-[#b8b3ac]">
               {searchQuery
                 ? 'Try adjusting your search'
                 : 'Get started by creating a new transaction'}
@@ -426,7 +426,7 @@ const Transactions: React.FC = () => {
             <div className="mt-6">
               <button
                 onClick={handleNewTransaction}
-                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-[#8b4e52] hover:bg-[#7a4248]"
               >
                 <Plus className="w-5 h-5 mr-2" />
                 New Transaction
@@ -439,7 +439,7 @@ const Transactions: React.FC = () => {
       {/* Pagination */}
       {filteredTransactions.length > 0 && (
         <div className="mt-6 flex items-center justify-between">
-          <div className="text-sm text-gray-700 dark:text-gray-300">
+          <div className="text-sm text-[#696557] dark:text-[#b8b3ac]">
             Showing <span className="font-medium">1</span> to{' '}
             <span className="font-medium">{filteredTransactions.length}</span>{' '}
             of{' '}
@@ -447,13 +447,13 @@ const Transactions: React.FC = () => {
             results
           </div>
           <div className="flex gap-2">
-            <button className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm text-gray-700 dark:text-gray-300">
+            <button className="px-3 py-1 border border-[rgba(201,169,97,0.15)] rounded bg-[#fafaf8] dark:bg-[#1a1815] hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620] text-sm text-[#696557] dark:text-[#b8b3ac]">
               Previous
             </button>
-            <button className="px-3 py-1 border rounded text-sm bg-blue-50 text-blue-600 border-blue-600 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-400">
+            <button className="px-3 py-1 border rounded text-sm bg-[#8b4e52]/10 text-[#8b4e52] border-[#8b4e52] dark:bg-[#8b4e52]/20 dark:text-[#a86e72] dark:border-[#a86e72]">
               1
             </button>
-            <button className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm text-gray-700 dark:text-gray-300">
+            <button className="px-3 py-1 border border-[rgba(201,169,97,0.15)] rounded bg-[#fafaf8] dark:bg-[#1a1815] hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620] text-sm text-[#696557] dark:text-[#b8b3ac]">
               Next
             </button>
           </div>

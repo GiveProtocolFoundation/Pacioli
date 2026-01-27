@@ -147,7 +147,7 @@ const Support: React.FC = () => {
                 placeholder="Search documentation..."
                 value={searchQuery}
                 onChange={handleSearchChange}
-                className="w-full pl-12 pr-4 py-4 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full pl-12 pr-4 py-4 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-lg focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
               />
             </div>
             <div className="flex items-center justify-center gap-2 mt-4">
@@ -155,7 +155,7 @@ const Support: React.FC = () => {
                 onClick={handleCategoryAll}
                 className={`px-3 py-1 rounded-full text-sm ${
                   selectedCategory === 'all'
-                    ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+                    ? 'bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 text-[#8b4e52] dark:text-[#a86e72]'
                     : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-[#94a3b8]'
                 }`}
               >
@@ -165,7 +165,7 @@ const Support: React.FC = () => {
                 onClick={handleCategoryGuide}
                 className={`px-3 py-1 rounded-full text-sm ${
                   selectedCategory === 'guide'
-                    ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+                    ? 'bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 text-[#8b4e52] dark:text-[#a86e72]'
                     : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-[#94a3b8]'
                 }`}
               >
@@ -175,7 +175,7 @@ const Support: React.FC = () => {
                 onClick={handleCategoryCrypto}
                 className={`px-3 py-1 rounded-full text-sm ${
                   selectedCategory === 'crypto'
-                    ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+                    ? 'bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 text-[#8b4e52] dark:text-[#a86e72]'
                     : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-[#94a3b8]'
                 }`}
               >
@@ -185,7 +185,7 @@ const Support: React.FC = () => {
                 onClick={handleCategoryApi}
                 className={`px-3 py-1 rounded-full text-sm ${
                   selectedCategory === 'api'
-                    ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+                    ? 'bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 text-[#8b4e52] dark:text-[#a86e72]'
                     : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-[#94a3b8]'
                 }`}
               >
@@ -206,10 +206,10 @@ const Support: React.FC = () => {
                   <a
                     key={link.title}
                     href={link.url}
-                    className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:border-blue-400 dark:hover:border-blue-600 transition-colors flex flex-col items-center text-center"
+                    className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:border-[#8b4e52] dark:hover:border-[#a86e72] transition-colors flex flex-col items-center text-center"
                   >
-                    <div className="w-12 h-12 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mb-3">
-                      <Icon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                    <div className="w-12 h-12 rounded-lg bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 flex items-center justify-center mb-3">
+                      <Icon className="w-6 h-6 text-[#8b4e52] dark:text-[#a86e72]" />
                     </div>
                     <span className="text-sm font-medium text-gray-900 dark:text-white">
                       {link.title}
@@ -230,11 +230,11 @@ const Support: React.FC = () => {
                     <a
                       key={topic.id}
                       href={topic.url}
-                      className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:border-blue-400 dark:hover:border-blue-600 transition-colors flex items-start justify-between group"
+                      className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:border-[#8b4e52] dark:hover:border-[#a86e72] transition-colors flex items-start justify-between group"
                     >
                       <div className="flex items-start flex-1">
-                        <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
-                          <Icon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                        <div className="w-10 h-10 rounded-lg bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 flex items-center justify-center flex-shrink-0">
+                          <Icon className="w-5 h-5 text-[#8b4e52] dark:text-[#a86e72]" />
                         </div>
                         <div className="ml-4 flex-1">
                           <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
@@ -245,7 +245,7 @@ const Support: React.FC = () => {
                           </p>
                         </div>
                       </div>
-                      <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 flex-shrink-0 ml-4" />
+                      <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-[#8b4e52] dark:group-hover:text-[#a86e72] flex-shrink-0 ml-4" />
                     </a>
                   )
                 })}
@@ -285,21 +285,21 @@ const Support: React.FC = () => {
               <div className="space-y-3">
                 <a
                   href="mailto:support@pacioli.io"
-                  className="flex items-center text-sm text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
+                  className="flex items-center text-sm text-gray-700 dark:text-gray-300 hover:text-[#8b4e52] dark:hover:text-[#a86e72]"
                 >
                   <Mail className="w-4 h-4 mr-3" />
                   Email Support
                 </a>
                 <a
                   href="https://community.pacioli.io"
-                  className="flex items-center text-sm text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
+                  className="flex items-center text-sm text-gray-700 dark:text-gray-300 hover:text-[#8b4e52] dark:hover:text-[#a86e72]"
                 >
                   <MessageCircle className="w-4 h-4 mr-3" />
                   Community Forum
                 </a>
                 <a
                   href="https://github.com/civicmastery/Pacioli/issues"
-                  className="flex items-center text-sm text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
+                  className="flex items-center text-sm text-gray-700 dark:text-gray-300 hover:text-[#8b4e52] dark:hover:text-[#a86e72]"
                 >
                   <Github className="w-4 h-4 mr-3" />
                   Report Issue
@@ -341,7 +341,7 @@ const Support: React.FC = () => {
               </div>
               <a
                 href="https://status.pacioli.io"
-                className="text-xs text-blue-600 dark:text-blue-400 hover:underline mt-3 inline-flex items-center"
+                className="text-xs text-[#8b4e52] dark:text-[#a86e72] hover:underline mt-3 inline-flex items-center"
               >
                 View Status Page
                 <ExternalLink className="w-3 h-3 ml-1" />
@@ -391,7 +391,7 @@ const Support: React.FC = () => {
             </div>
 
             {/* Documentation Links */}
-            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800 p-6">
+            <div className="bg-[#c9a961]/10 dark:bg-[#c9a961]/20 rounded-lg border border-[#c9a961]/30 dark:border-[#c9a961]/40 p-6">
               <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
                 Full Documentation
               </h3>
@@ -401,7 +401,7 @@ const Support: React.FC = () => {
               </p>
               <a
                 href="/docs/"
-                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium w-full justify-center"
+                className="inline-flex items-center px-4 py-2 bg-[#8b4e52] text-white rounded-lg hover:bg-[#7a4248] text-sm font-medium w-full justify-center"
               >
                 <BookOpen className="w-4 h-4 mr-2" />
                 Open Documentation

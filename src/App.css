@@ -1,5 +1,5 @@
 .logo.vite:hover {
-  filter: drop-shadow(0 0 2em #2563eb);
+  filter: drop-shadow(0 0 2em #8b4e52);
 }
 
 .logo.react:hover {
@@ -54,7 +54,7 @@
 
 a {
   font-weight: 500;
-  color: #2563eb;
+  color: #8b4e52;
   text-decoration: inherit;
 }
 
@@ -83,10 +83,10 @@ button {
 }
 
 button:hover {
-  border-color: #2563eb;
+  border-color: #8b4e52;
 }
 button:active {
-  border-color: #2563eb;
+  border-color: #8b4e52;
   background-color: #e8e8e8;
 }
 

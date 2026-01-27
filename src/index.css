@@ -1,178 +1,225 @@
-/* Import Google Fonts - must come first */
-/* IBM Plex Sans for UI - premium feel with excellent readability */
-/* Libre Baskerville reserved exclusively for brand wordmark */
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Libre+Baskerville:wght@400;700&display=swap');
+/* =============================================================================
+   HERITAGE ELEGANCE DESIGN SYSTEM
+   A sophisticated color palette with burgundy, gold, and warm tones
+   honoring accounting tradition while maintaining modern usability
+   ============================================================================= */
+
+/* Import Google Fonts - Heritage Elegance Typography */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@300;400;500;600;700&family=Lora:wght@400;500;600;700&display=swap');
 
 @import 'tailwindcss';
 
 @variant dark (.dark &);
 
 @theme {
-  /* Libre Baskerville - ONLY for Pacioli wordmark and tagline */
-  --font-family-serif: 'Libre Baskerville', Georgia, serif;
+  /* =============================================================================
+     TYPOGRAPHY - Heritage Elegance Fonts
+     ============================================================================= */
 
-  /* IBM Plex Sans for ALL UI text - premium, highly legible */
-  --font-family-sans:
-    'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
-    sans-serif;
+  /* Display font - Cormorant Garamond for headlines and titles */
+  --font-family-display: 'Cormorant Garamond', Georgia, serif;
+
+  /* Serif font - Lora for numbers and metrics */
+  --font-family-serif: 'Lora', Georgia, serif;
+
+  /* Sans-serif font - Inter for body and UI */
+  --font-family-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
   /* Font weight scale */
+  --font-weight-light: 300;
   --font-weight-normal: 400;
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
 
-  /* Typography scale - clear hierarchy */
-  /* Page titles: 32px semibold */
+  /* Typography scale */
   --font-size-page-title: 32px;
   --line-height-page-title: 1.2;
-
-  /* Section headers: 18px medium */
   --font-size-section-header: 18px;
   --line-height-section-header: 1.4;
-
-  /* Body/labels: 14px regular */
   --font-size-body: 14px;
-  --line-height-body: 1.5;
-
-  /* Small text/metadata: 12px regular */
+  --line-height-body: 1.6;
   --font-size-small: 12px;
   --line-height-small: 1.4;
 
-  /* Blue + Gold color palette - Light mode */
-  --color-primary: #2563eb; /* Primary Brand Blue - Tailwind blue-600 */
-  --color-primary-hover: #1d4ed8; /* Tailwind blue-700 */
-  --color-primary-light: #dbeafe; /* Tailwind blue-100 for backgrounds */
-  --color-accent: #c9a227; /* Antique gold */
-  --color-accent-hover: #b8922a;
+  /* =============================================================================
+     HERITAGE ELEGANCE COLORS
+     ============================================================================= */
 
-  /* Dark mode primary colors */
-  --color-primary-dark: #0ea5e9; /* Vivid Sky - Tailwind sky-500 */
-  --color-primary-dark-hover: #0284c7; /* Tailwind sky-600 */
-  --color-primary-dark-light: #0c4a6e; /* Tailwind sky-900 for dark mode contrast */
-  --color-accent-dark: #d4af37; /* Brighter gold for dark mode */
-  --color-accent-dark-hover: #e4bf47;
+  /* Dark Mode Background Palette */
+  --color-bg-primary-dark: #0f0e0c;
+  --color-bg-secondary-dark: #1a1815;
+  --color-bg-tertiary-dark: #2a2620;
 
-  /* Semantic colors */
-  --color-success: #059669;
-  --color-success-dark: #10b981;
-  --color-success-light: #d1fae5;
-  --color-success-dark-light: #064e3b;
-  --color-warning: #d97706;
-  --color-warning-dark: #f59e0b;
-  --color-warning-light: #fef3c7;
-  --color-warning-dark-light: #78350f;
-  --color-error: #dc2626;
-  --color-error-dark: #ef4444;
-  --color-error-light: #fee2e2;
-  --color-error-dark-light: #7f1d1d;
+  /* Light Mode Background Palette */
+  --color-bg-primary-light: #fafaf8;
+  --color-bg-secondary-light: #f3f1ed;
+  --color-bg-tertiary-light: #ede8e0;
 
-  /* Utility colors */
-  --color-slate-blue: #1d4ed8;
-  --color-slate-blue-dark: #0ea5e9;
-  --color-parchment: #8b7355;
-  --color-parchment-dark: #a38a6f;
+  /* Dark Mode Text Colors */
+  --color-text-primary-dark: #f5f3f0;
+  --color-text-secondary-dark: #b8b3ac;
+  --color-text-muted-dark: #8b8580;
 
-  /* Text colors - Light mode */
-  --color-text-primary: #1e293b;
-  --color-text-secondary: #64748b;
-  --color-text-muted: #94a3b8;
+  /* Light Mode Text Colors */
+  --color-text-primary-light: #1a1815;
+  --color-text-secondary-light: #696557;
+  --color-text-muted-light: #a39d94;
 
-  /* Text colors - Dark mode (improved contrast) */
-  --color-text-primary-dark: #f1f5f9;
-  --color-text-secondary-dark: #cbd5e1; /* slate-300 - readable secondary */
-  --color-text-muted-dark: #94a3b8; /* slate-400 - readable tertiary */
+  /* Accent Colors - Burgundy */
+  --color-burgundy: #8b4e52;
+  --color-burgundy-hover: #9d5a5e;
+  --color-burgundy-light: #7a4d50;
 
-  /* Surface colors */
+  /* Accent Colors - Gold */
+  --color-gold: #c9a961;
+  --color-gold-hover: #d4b56e;
+  --color-gold-light: #a8935f;
+
+  /* Accent Colors - Warm */
+  --color-warm: #d4a574;
+  --color-warm-hover: #ddb285;
+  --color-warm-light: #c49a6a;
+
+  /* Semantic Colors - Dark Mode */
+  --color-success: #7a9b6f;
+  --color-success-hover: #8aab7f;
+  --color-success-light: rgba(122, 155, 111, 0.15);
+  --color-warning: #b89968;
+  --color-warning-hover: #c8a978;
+  --color-warning-light: rgba(184, 153, 104, 0.15);
+  --color-error: #9d6b6b;
+  --color-error-hover: #ad7b7b;
+  --color-error-light: rgba(157, 107, 107, 0.15);
+
+  /* Semantic Colors - Light Mode (slightly darker for contrast) */
+  --color-success-light-mode: #6a8b5f;
+  --color-warning-light-mode: #a88958;
+  --color-error-light-mode: #8d5b5b;
+
+  /* Border Colors (gold-tinted) */
+  --color-border-subtle: rgba(201, 169, 97, 0.1);
+  --color-border-default: rgba(201, 169, 97, 0.15);
+  --color-border-strong: rgba(201, 169, 97, 0.3);
+
+  /* Surface colors for cards */
+  --color-surface-dark: #1a1815;
+  --color-surface-secondary-dark: #2a2620;
+  --color-surface-light: #ffffff;
+  --color-surface-secondary-light: #f3f1ed;
+
+  /* Legacy mappings for compatibility */
+  --color-primary: #8b4e52;
+  --color-primary-hover: #9d5a5e;
+  --color-primary-dark: #8b4e52;
+  --color-primary-dark-hover: #9d5a5e;
+  --color-primary-light: rgba(139, 78, 82, 0.1);
+  --color-primary-dark-light: rgba(139, 78, 82, 0.15);
+  --color-accent: #c9a961;
+  --color-accent-hover: #d4b56e;
+  --color-accent-dark: #c9a961;
+  --color-accent-dark-hover: #d4b56e;
+
+  /* Legacy text colors */
+  --color-text-primary: #1a1815;
+  --color-text-secondary: #696557;
+  --color-text-muted: #a39d94;
+
+  /* Legacy surface colors */
   --color-surface: #ffffff;
-  --color-surface-secondary: #f1f5f9;
-  --color-border: #e2e8f0;
-  --color-surface-dark: #1e293b;
-  --color-surface-secondary-dark: #334155;
-  --color-border-dark: #334155;
+  --color-surface-secondary: #f3f1ed;
+  --color-border: rgba(201, 169, 97, 0.15);
+  --color-border-dark: rgba(201, 169, 97, 0.15);
 
-  /* Background colors */
-  --color-bg-main: #f8f9fa; /* Warm white */
+  /* Legacy background colors */
+  --color-bg-main: #fafaf8;
   --color-bg-card: #ffffff;
-  --color-bg-main-dark: #0f172a; /* Rich dark blue */
-  --color-bg-card-dark: #1e293b;
+  --color-bg-main-dark: #0f0e0c;
+  --color-bg-card-dark: #1a1815;
 }
 
 /* =============================================================================
    TYPOGRAPHY SYSTEM
-   - Serif (Libre Baskerville): ONLY for Pacioli brand wordmark
-   - Sans-serif (IBM Plex Sans): ALL other UI elements
+   - Display (Cormorant Garamond): Headlines and page titles
+   - Serif (Lora): Numbers, metrics, and financial data
+   - Sans-serif (Inter): All UI elements and body text
    ============================================================================= */
 
-/* Base typography - sans-serif for entire UI */
+/* Base typography - Inter for entire UI */
 body {
   font-family: var(--font-family-sans);
   font-size: var(--font-size-body);
   line-height: var(--line-height-body);
+  color: var(--color-text-primary-light);
+  background-color: var(--color-bg-primary-light);
 }
 
-/* Page titles: Sans-serif semibold, 32px - authoritative, not decorative */
+.dark body {
+  color: var(--color-text-primary-dark);
+  background-color: var(--color-bg-primary-dark);
+}
+
+/* Page titles: Cormorant Garamond for elegant display */
 h1 {
-  font-family: var(--font-family-sans);
+  font-family: var(--font-family-display);
   font-size: var(--font-size-page-title);
   font-weight: var(--font-weight-semibold);
   line-height: var(--line-height-page-title);
-  color: var(--color-text-primary);
+  color: var(--color-text-primary-light);
   letter-spacing: -0.01em;
 }
 
-/* Section headers: Sans-serif semibold, 18px */
+/* Section headers: Inter semibold for clarity */
 h2 {
   font-family: var(--font-family-sans);
   font-size: var(--font-size-section-header);
   font-weight: var(--font-weight-semibold);
   line-height: var(--line-height-section-header);
-  color: var(--color-text-primary);
+  color: var(--color-text-primary-light);
 }
 
-/* Sub-section headers: Sans-serif medium, 16px */
+/* Sub-section headers: Inter medium */
 h3 {
   font-family: var(--font-family-sans);
   font-size: 16px;
   font-weight: var(--font-weight-medium);
   line-height: 1.4;
-  color: var(--color-text-secondary);
+  color: var(--color-text-secondary-light);
 }
 
 /* Dark mode overrides for headings */
 .dark h1 {
-  color: #ffffff;
+  color: var(--color-text-primary-dark);
 }
 
 .dark h2 {
-  color: #e2e8f0;
+  color: var(--color-text-primary-dark);
 }
 
 .dark h3 {
-  color: #cbd5e1;
+  color: var(--color-text-secondary-dark);
 }
 
 /* =============================================================================
-   BRAND TYPOGRAPHY - Serif only for wordmark
+   BRAND TYPOGRAPHY - Display font for wordmark
    ============================================================================= */
 
-/* Pacioli brand wordmark - the ONLY place serif should be used */
+/* Pacioli brand wordmark */
 .brand-wordmark {
-  font-family: var(--font-family-serif);
-  font-weight: 700;
+  font-family: var(--font-family-display);
+  font-weight: 600;
   letter-spacing: 0.5px;
 }
 
 /* Brand tagline */
 .brand-tagline {
-  font-family: var(--font-family-serif);
+  font-family: var(--font-family-display);
   font-weight: 400;
   font-style: italic;
 }
 
 /* =============================================================================
-   TABULAR FIGURES - For proper numerical alignment
-   Using font-feature-settings: "tnum" for column alignment
+   NUMERIC TYPOGRAPHY - Lora for financial data
    ============================================================================= */
 
 /* Utility class for tabular figures */
@@ -194,60 +241,106 @@ th,
   font-variant-numeric: tabular-nums;
 }
 
-/* Large numeric displays (portfolio values, totals) */
+/* Large numeric displays - Lora serif for financial feel */
+.stat-value,
+.metric-value,
+.balance-value {
+  font-family: var(--font-family-serif);
+  font-feature-settings: 'tnum' 1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+/* Large numeric displays */
 .text-3xl,
 .text-2xl {
   font-feature-settings: 'tnum' 1;
   font-variant-numeric: tabular-nums;
 }
 
-/* Ledger-inspired dashboard card styles - Professional with subtle depth */
+/* =============================================================================
+   HERITAGE ELEGANCE CARDS
+   Refined cards with gradient backgrounds and hover bloom effects
+   ============================================================================= */
+
 .ledger-card {
-  border-radius: 4px;
-  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  border: 1px solid var(--color-border-default);
+  background: linear-gradient(
+    135deg,
+    var(--color-surface-light) 0%,
+    var(--color-bg-secondary-light) 100%
+  );
   box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.04),
-    0 1px 2px rgba(0, 0, 0, 0.06);
-  background: var(--color-bg-card);
+    0 4px 6px rgba(0, 0, 0, 0.03),
+    0 1px 3px rgba(0, 0, 0, 0.05);
   position: relative;
   overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.ledger-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--color-border-strong);
+  box-shadow:
+    0 12px 24px rgba(139, 78, 82, 0.08),
+    0 4px 8px rgba(201, 169, 97, 0.06);
 }
 
 .dark .ledger-card {
-  background: #1a1a1a;
-  border-color: var(--color-border-dark);
+  background: linear-gradient(
+    135deg,
+    var(--color-bg-secondary-dark) 0%,
+    var(--color-bg-tertiary-dark) 100%
+  );
+  border-color: var(--color-border-default);
   box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.2),
-    0 1px 2px rgba(0, 0, 0, 0.12);
+    0 4px 6px rgba(0, 0, 0, 0.2),
+    0 1px 3px rgba(0, 0, 0, 0.15);
 }
 
-/* Grid background pattern for ledger aesthetic */
+.dark .ledger-card:hover {
+  border-color: var(--color-border-strong);
+  box-shadow:
+    0 12px 24px rgba(139, 78, 82, 0.15),
+    0 4px 8px rgba(201, 169, 97, 0.1);
+}
+
+/* Subtle radial bloom effect on hover */
 .ledger-card::before {
   content: '';
   position: absolute;
   inset: 0;
-  background-image:
-    linear-gradient(rgba(0, 0, 0, 0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 0, 0, 0.02) 1px, transparent 1px);
-  background-size: 40px 40px;
-  opacity: 0.3;
+  background: radial-gradient(
+    circle at 100% 0%,
+    rgba(201, 169, 97, 0.05) 0%,
+    transparent 50%
+  );
+  opacity: 0;
+  transition: opacity 0.4s ease;
   pointer-events: none;
   z-index: 0;
 }
 
-.dark .ledger-card::before {
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+.ledger-card:hover::before {
+  opacity: 1;
 }
 
-/* Ensure card content is above the grid pattern */
+.dark .ledger-card::before {
+  background: radial-gradient(
+    circle at 100% 0%,
+    rgba(201, 169, 97, 0.08) 0%,
+    transparent 50%
+  );
+}
+
+/* Ensure card content is above the bloom effect */
 .ledger-card > * {
   position: relative;
   z-index: 1;
 }
 
-/* Card type classes - NO colored left borders, all use subtle shadow only */
+/* Card type classes - all use same styling now */
 .ledger-card-financial,
 .ledger-card-donation,
 .ledger-card-expense,
@@ -256,110 +349,115 @@ th,
   border-left: none;
 }
 
-.dark .ledger-card-financial,
-.dark .ledger-card-donation,
-.dark .ledger-card-expense,
-.dark .ledger-card-wallet,
-.dark .ledger-card-gold {
-  border-left: none;
-}
-
 /* Ledger card labels - uppercase, proper letter-spacing */
 .ledger-card-label {
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
   font-size: 12px;
-  color: var(--color-text-muted);
+  font-weight: 700;
+  color: var(--color-text-muted-light);
 }
 
 .dark .ledger-card-label {
-  color: var(
-    --color-text-secondary-dark
-  ); /* Important labels need better contrast */
+  color: var(--color-text-secondary-dark);
 }
 
-/* Stat icon container - monochromatic styling */
+/* Stat icon container - warm monochromatic styling */
 .stat-icon-container {
   padding: 12px;
-  border-radius: 8px;
-  background: var(--color-surface-secondary);
+  border-radius: 12px;
+  background: var(--color-bg-tertiary-light);
 }
 
 .stat-icon-container svg {
   width: 24px;
   height: 24px;
-  color: var(--color-text-secondary);
+  color: var(--color-text-secondary-light);
 }
 
 .dark .stat-icon-container {
-  background: var(--color-surface-secondary-dark);
+  background: var(--color-bg-tertiary-dark);
 }
 
 .dark .stat-icon-container svg {
   color: var(--color-text-muted-dark);
 }
 
-/* Large numeric displays - tighter tracking for financial feel */
-.stat-value {
-  font-feature-settings: 'tnum' 1;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
-}
+/* =============================================================================
+   STATUS BADGES - Heritage Elegance semantic colors
+   ============================================================================= */
 
-/* Status badges - semantic styling */
 .badge-completed {
-  background: rgba(5, 150, 105, 0.1);
-  color: #059669;
+  background: rgba(122, 155, 111, 0.15);
+  color: var(--color-success);
+  border-radius: 8px;
 }
 
 .dark .badge-completed {
-  background: rgba(16, 185, 129, 0.15);
-  color: #10b981;
+  background: rgba(122, 155, 111, 0.2);
+  color: var(--color-success);
 }
 
 .badge-on-track {
-  background: rgba(5, 150, 105, 0.1);
-  color: #059669;
+  background: rgba(122, 155, 111, 0.15);
+  color: var(--color-success);
+  border-radius: 8px;
 }
 
 .dark .badge-on-track {
-  background: rgba(16, 185, 129, 0.15);
-  color: #10b981;
+  background: rgba(122, 155, 111, 0.2);
+  color: var(--color-success);
 }
 
 .badge-due-soon {
-  background: rgba(180, 140, 80, 0.15);
-  color: #9a7b4f;
+  background: rgba(184, 153, 104, 0.15);
+  color: var(--color-warning);
+  border-radius: 8px;
 }
 
 .dark .badge-due-soon {
-  background: rgba(180, 140, 80, 0.2);
-  color: #b49860;
+  background: rgba(184, 153, 104, 0.2);
+  color: var(--color-warning);
 }
 
 .badge-pending {
-  background: rgba(180, 140, 80, 0.15);
-  color: #9a7b4f;
+  background: rgba(184, 153, 104, 0.15);
+  color: var(--color-warning);
+  border-radius: 8px;
 }
 
 .dark .badge-pending {
-  background: rgba(180, 140, 80, 0.2);
-  color: #b49860;
+  background: rgba(184, 153, 104, 0.2);
+  color: var(--color-warning);
 }
 
-/* Account balance list item styling */
+.badge-error {
+  background: rgba(157, 107, 107, 0.15);
+  color: var(--color-error);
+  border-radius: 8px;
+}
+
+.dark .badge-error {
+  background: rgba(157, 107, 107, 0.2);
+  color: var(--color-error);
+}
+
+/* =============================================================================
+   ACCOUNT BALANCE LIST
+   ============================================================================= */
+
 .balance-list-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 16px 0;
-  border-bottom: 1px solid #e9ecef;
+  border-bottom: 1px solid var(--color-border-subtle);
   transition: all 0.2s ease;
   cursor: pointer;
 }
 
 .dark .balance-list-item {
-  border-bottom: 1px solid #374151;
+  border-bottom: 1px solid var(--color-border-subtle);
 }
 
 .balance-list-item:last-child {
@@ -367,7 +465,7 @@ th,
 }
 
 .balance-list-item:hover {
-  background: rgba(0, 0, 0, 0.02);
+  background: rgba(201, 169, 97, 0.05);
   margin-left: -16px;
   margin-right: -16px;
   padding-left: 16px;
@@ -375,29 +473,29 @@ th,
 }
 
 .dark .balance-list-item:hover {
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(201, 169, 97, 0.08);
 }
 
 /* Square token icon container */
 .token-icon-square {
   width: 36px;
   height: 36px;
-  border-radius: 2px;
-  background: #f8f9fa;
-  border: 1.5px solid #dee2e6;
+  border-radius: 8px;
+  background: var(--color-bg-tertiary-light);
+  border: 1px solid var(--color-border-default);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 12px;
   font-weight: 600;
-  color: #495057;
+  color: var(--color-text-secondary-light);
   flex-shrink: 0;
 }
 
 .dark .token-icon-square {
-  background: #1f2937;
-  border-color: #374151;
-  color: #9ca3af;
+  background: var(--color-bg-tertiary-dark);
+  border-color: var(--color-border-default);
+  color: var(--color-text-muted-dark);
 }
 
 /* Token info section (left side) */
@@ -424,124 +522,144 @@ th,
   margin-top: 4px;
 }
 
-/* Main content area background with ledger grid pattern */
+/* =============================================================================
+   MAIN CONTENT AREA BACKGROUND
+   ============================================================================= */
+
 .ledger-background {
-  background-color: var(--color-bg-main);
-  background-image:
-    linear-gradient(rgba(0, 0, 0, 0.015) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 0, 0, 0.015) 1px, transparent 1px);
-  background-size: 40px 40px;
-  background-position: 0 0;
+  background-color: var(--color-bg-primary-light);
+  background-image: radial-gradient(
+    circle at 100% 0%,
+    rgba(201, 169, 97, 0.02) 0%,
+    transparent 40%
+  );
 }
 
 .dark .ledger-background {
-  background-color: #0a0a0a;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+  background-color: var(--color-bg-primary-dark);
+  background-image: radial-gradient(
+    circle at 100% 0%,
+    rgba(201, 169, 97, 0.03) 0%,
+    transparent 40%
+  );
 }
 
-/* Sidebar styling enhancements */
+/* =============================================================================
+   SIDEBAR NAVIGATION - Heritage Elegance styling
+   ============================================================================= */
+
 .ledger-sidebar {
-  background: #ffffff;
-  border-left: 2px solid var(--color-primary);
-  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.04);
+  background: linear-gradient(
+    180deg,
+    var(--color-surface-light) 0%,
+    var(--color-bg-secondary-light) 100%
+  );
+  border-right: 1px solid var(--color-border-subtle);
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.03);
 }
 
 .dark .ledger-sidebar {
-  background: #000000;
-  border-left: 2px solid var(--color-primary-dark);
-  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.2);
+  background: linear-gradient(
+    180deg,
+    var(--color-bg-primary-dark) 0%,
+    var(--color-bg-secondary-dark) 100%
+  );
+  border-right: 1px solid var(--color-border-subtle);
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
 }
 
 /* Top navigation bar styling */
 .ledger-topbar {
-  background: #ffffff;
-  border-bottom: 1px solid #e9ecef;
+  background: var(--color-surface-light);
+  border-bottom: 1px solid var(--color-border-subtle);
 }
 
 .dark .ledger-topbar {
-  background: #000000;
-  border-bottom: 1px solid #1f2937;
+  background: var(--color-bg-primary-dark);
+  border-bottom: 1px solid var(--color-border-subtle);
 }
 
 /* Search bar refinements */
 .ledger-search {
-  border-radius: 4px;
-  border: 1px solid var(--color-primary-light);
-  background-color: var(--color-primary-light);
+  border-radius: 14px;
+  border: 1px solid var(--color-border-default);
+  background-color: var(--color-bg-secondary-light);
   transition: all 0.2s ease;
 }
 
 .ledger-search:focus {
   outline: none;
-  border: 2px solid var(--color-primary);
-  background-color: #ffffff;
-  box-shadow: none;
+  border-color: var(--color-gold);
+  background-color: var(--color-surface-light);
+  box-shadow: 0 0 0 3px rgba(201, 169, 97, 0.15);
 }
 
 .dark .ledger-search {
-  border-color: var(--color-primary-dark-light);
-  background-color: var(--color-primary-dark-light);
+  border-color: var(--color-border-default);
+  background-color: var(--color-bg-tertiary-dark);
 }
 
 .dark .ledger-search:focus {
-  border-color: var(--color-primary-dark);
-  background-color: var(--color-surface-dark);
+  border-color: var(--color-gold);
+  background-color: var(--color-bg-secondary-dark);
+  box-shadow: 0 0 0 3px rgba(201, 169, 97, 0.2);
 }
 
-/* Table styling for ledger aesthetic */
+/* =============================================================================
+   TABLE STYLING - Heritage Elegance
+   ============================================================================= */
+
 .ledger-table {
   width: 100%;
   border-collapse: collapse;
 }
 
 .ledger-table-header {
-  background: #f8f9fa;
-  border-bottom: 2px solid #dee2e6;
+  background: var(--color-bg-secondary-light);
+  border-bottom: 2px solid var(--color-border-default);
 }
 
 .dark .ledger-table-header {
-  background: #1a1a1a;
-  border-bottom: 2px solid #374151;
+  background: var(--color-bg-tertiary-dark);
+  border-bottom: 2px solid var(--color-border-default);
 }
 
 .ledger-table-header th {
-  font-size: 13px;
-  font-weight: 600;
-  color: #495057;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-muted-light);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.08em;
   padding: 12px 16px;
   text-align: left;
 }
 
 .dark .ledger-table-header th {
-  color: #9ca3af;
+  color: var(--color-text-secondary-dark);
 }
 
 .ledger-table-row {
-  border-bottom: 1px solid #e9ecef;
+  border-bottom: 1px solid var(--color-border-subtle);
   transition: background 0.2s ease;
 }
 
 .dark .ledger-table-row {
-  border-bottom: 1px solid #374151;
+  border-bottom: 1px solid var(--color-border-subtle);
 }
 
 .ledger-table-row:hover {
-  background: rgba(0, 0, 0, 0.02);
+  background: rgba(201, 169, 97, 0.05);
 }
 
 .dark .ledger-table-row:hover {
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(201, 169, 97, 0.08);
 }
 
 .ledger-table-row td {
   padding: 14px 16px;
 }
 
-/* Cell alignment utilities - higher specificity for headers and cells */
+/* Cell alignment utilities */
 .ledger-table-cell-number,
 .ledger-table-header th.ledger-table-cell-number,
 .ledger-table-row td.ledger-table-cell-number {
@@ -567,13 +685,13 @@ th,
   text-align: right;
 }
 
-/* Alternating row colors (optional, can be applied selectively) */
+/* Alternating row colors */
 .ledger-table-striped .ledger-table-row:nth-child(even) {
-  background: #fafbfc;
+  background: var(--color-bg-secondary-light);
 }
 
 .dark .ledger-table-striped .ledger-table-row:nth-child(even) {
-  background: #0f0f0f;
+  background: var(--color-bg-tertiary-dark);
 }
 
 /* Mobile responsive table wrapper */
@@ -590,59 +708,62 @@ th,
   }
 }
 
-/* Button styles for professional appearance - Primary blue */
+/* =============================================================================
+   PRIMARY BUTTON - Burgundy gradient
+   ============================================================================= */
+
 .btn-primary {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: var(--color-primary);
+  background: linear-gradient(135deg, var(--color-burgundy) 0%, #7a4248 100%);
   color: #ffffff;
-  border-radius: 4px;
+  border-radius: 10px;
   padding: 11px 24px;
   font-weight: 600;
   font-size: 14px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  box-shadow:
+    0 2px 4px rgba(139, 78, 82, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
   border: none;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .btn-primary:hover {
-  background: var(--color-primary-hover);
+  background: linear-gradient(135deg, var(--color-burgundy-hover) 0%, #8b5258 100%);
   transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  box-shadow:
+    0 4px 8px rgba(139, 78, 82, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .btn-primary:active {
   transform: translateY(0);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  box-shadow:
+    0 1px 2px rgba(139, 78, 82, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .dark .btn-primary {
-  background: var(--color-primary);
-  color: #ffffff;
+  background: linear-gradient(135deg, var(--color-burgundy) 0%, #7a4248 100%);
 }
 
 .dark .btn-primary:hover {
-  background: var(--color-primary-hover);
+  background: linear-gradient(135deg, var(--color-burgundy-hover) 0%, #8b5258 100%);
 }
 
 .btn-primary:disabled {
   opacity: 0.5;
   cursor: not-allowed;
   transform: none;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .btn-primary:disabled:hover {
   opacity: 0.5;
   transform: none;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-  background: var(--color-primary);
-}
-
-.dark .btn-primary:disabled:hover {
-  background: var(--color-primary);
+  box-shadow: 0 2px 4px rgba(139, 78, 82, 0.2);
+  background: linear-gradient(135deg, var(--color-burgundy) 0%, #7a4248 100%);
 }
 
 .btn-primary svg,
@@ -652,16 +773,19 @@ th,
   flex-shrink: 0;
 }
 
-/* Secondary button styles - professional, muted */
+/* =============================================================================
+   SECONDARY BUTTON - Gold outline
+   ============================================================================= */
+
 .btn-secondary {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   background: transparent;
-  color: var(--color-text-secondary);
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
-  padding: 11px 24px;
+  color: var(--color-gold-light);
+  border: 1.5px solid var(--color-gold-light);
+  border-radius: 10px;
+  padding: 10px 23px;
   font-weight: 600;
   font-size: 14px;
   cursor: pointer;
@@ -669,9 +793,9 @@ th,
 }
 
 .btn-secondary:hover {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
-  background: transparent;
+  background: rgba(201, 169, 97, 0.1);
+  border-color: var(--color-gold);
+  color: var(--color-gold);
 }
 
 .btn-secondary:active {
@@ -686,27 +810,30 @@ th,
 }
 
 .dark .btn-secondary {
-  color: var(--color-text-secondary-dark);
-  border-color: var(--color-border-dark);
+  color: var(--color-gold);
+  border-color: var(--color-gold);
 }
 
 .dark .btn-secondary:hover {
-  border-color: var(--color-primary-dark);
-  color: var(--color-primary-dark);
-  background: transparent;
+  background: rgba(201, 169, 97, 0.15);
+  border-color: var(--color-gold-hover);
+  color: var(--color-gold-hover);
 }
 
-/* Quick action button styles */
+/* =============================================================================
+   QUICK ACTION BUTTON
+   ============================================================================= */
+
 .btn-quick-action {
   width: 100%;
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 12px 16px;
-  border-radius: 4px;
+  border-radius: 10px;
   background: transparent;
-  border: 1px solid #e9ecef;
-  color: #495057;
+  border: 1px solid var(--color-border-default);
+  color: var(--color-text-secondary-light);
   font-size: 14px;
   font-weight: 500;
   text-align: left;
@@ -715,9 +842,9 @@ th,
 }
 
 .btn-quick-action:hover {
-  background: var(--color-primary-light);
-  color: var(--color-primary);
-  border-color: #dee2e6;
+  background: rgba(201, 169, 97, 0.08);
+  border-color: var(--color-gold-light);
+  color: var(--color-text-primary-light);
 }
 
 .btn-quick-action svg,
@@ -728,48 +855,48 @@ th,
 }
 
 .dark .btn-quick-action {
-  border-color: #374151;
-  color: #9ca3af;
+  border-color: var(--color-border-default);
+  color: var(--color-text-secondary-dark);
 }
 
 .dark .btn-quick-action:hover {
-  background: rgba(61, 90, 128, 0.2);
-  color: var(--color-primary-dark);
-  border-color: #4b5563;
+  background: rgba(201, 169, 97, 0.1);
+  border-color: var(--color-gold);
+  color: var(--color-text-primary-dark);
 }
 
 /* =============================================================================
-   SIDEBAR NAVIGATION - Refined active states
+   SIDEBAR NAVIGATION - Active states
    ============================================================================= */
 
 .nav-item-active {
-  background: #e5f2ff;
-  color: var(--color-primary);
+  background: rgba(139, 78, 82, 0.1);
+  color: var(--color-burgundy-light);
   font-weight: 600;
-  border-left: 2px solid var(--color-primary);
-  margin-left: -2px;
+  border-left: 3px solid var(--color-burgundy-light);
+  margin-left: -1px;
 }
 
 .dark .nav-item-active {
-  background: rgba(102, 179, 255, 0.15);
-  color: var(--color-text-primary-dark);
-  border-left: 2px solid var(--color-primary-dark);
-  margin-left: -2px;
+  background: rgba(139, 78, 82, 0.15);
+  color: var(--color-burgundy);
+  border-left: 3px solid var(--color-burgundy);
+  margin-left: -1px;
 }
 
 /* =============================================================================
-   DOWNLOAD LINKS - Professional, muted styling
+   DOWNLOAD LINKS
    ============================================================================= */
 
 .download-link {
-  color: var(--color-text-secondary);
+  color: var(--color-text-secondary-light);
   text-decoration: none;
   font-size: 12px;
   transition: all 0.2s ease;
 }
 
 .download-link:hover {
-  color: var(--color-primary);
+  color: var(--color-burgundy-light);
   text-decoration: underline;
 }
 
@@ -778,18 +905,18 @@ th,
 }
 
 .dark .download-link:hover {
-  color: var(--color-primary-dark);
+  color: var(--color-burgundy);
 }
 
 /* =============================================================================
-   REPORT LIST - Monochromatic icons
+   REPORT LIST
    ============================================================================= */
 
 .report-icon-container {
   width: 40px;
   height: 40px;
-  border-radius: 8px;
-  background: var(--color-surface-secondary);
+  border-radius: 12px;
+  background: var(--color-bg-tertiary-light);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -798,11 +925,11 @@ th,
 .report-icon-container svg {
   width: 20px;
   height: 20px;
-  color: var(--color-text-secondary);
+  color: var(--color-text-secondary-light);
 }
 
 .dark .report-icon-container {
-  background: var(--color-surface-secondary-dark);
+  background: var(--color-bg-tertiary-dark);
 }
 
 .dark .report-icon-container svg {
@@ -811,12 +938,12 @@ th,
 
 /* Action icons in report rows */
 .action-icon {
-  color: var(--color-text-muted);
+  color: var(--color-text-muted-light);
   transition: color 0.2s ease;
 }
 
 .action-icon:hover {
-  color: var(--color-text-primary);
+  color: var(--color-burgundy-light);
 }
 
 .dark .action-icon {
@@ -824,19 +951,19 @@ th,
 }
 
 .dark .action-icon:hover {
-  color: var(--color-text-primary-dark);
+  color: var(--color-burgundy);
 }
 
 /* =============================================================================
-   FAVORITES STAR - Gray instead of gold (gold reserved for logo only)
+   FAVORITES STAR
    ============================================================================= */
 
 .favorite-star {
-  color: var(--color-text-muted);
+  color: var(--color-text-muted-light);
 }
 
 .favorite-star.active {
-  color: var(--color-text-secondary);
+  color: var(--color-gold-light);
   fill: currentColor;
 }
 
@@ -845,36 +972,95 @@ th,
 }
 
 .dark .favorite-star.active {
-  color: var(--color-text-secondary-dark);
+  color: var(--color-gold);
 }
 
 /* =============================================================================
    SELECT INPUT STYLING
-   Custom select styling that works in both light and dark modes.
    ============================================================================= */
 
 .select-input {
   -webkit-appearance: none;
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23696557' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 12px center;
-  background-color: #ffffff;
-  color: #111827;
+  background-color: var(--color-surface-light);
+  color: var(--color-text-primary-light);
+  border-radius: 14px;
+  border: 1px solid var(--color-border-default);
 }
 
 .dark .select-input {
-  background-color: #1f2937;
-  color: #f1f5f9;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239ca3af' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-color: var(--color-bg-tertiary-dark);
+  color: var(--color-text-primary-dark);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238b8580' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
 }
 
 .select-input option {
-  background-color: #ffffff;
-  color: #111827;
+  background-color: var(--color-surface-light);
+  color: var(--color-text-primary-light);
 }
 
 .dark .select-input option {
-  background-color: #1f2937;
-  color: #f1f5f9;
+  background-color: var(--color-bg-secondary-dark);
+  color: var(--color-text-primary-dark);
+}
+
+/* =============================================================================
+   INPUT FIELD STYLING
+   ============================================================================= */
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="date"],
+input[type="datetime-local"],
+textarea {
+  border-radius: 14px;
+  border: 1px solid var(--color-border-default);
+  padding: 12px 16px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  background: var(--color-surface-light);
+  color: var(--color-text-primary-light);
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--color-gold);
+  box-shadow: 0 0 0 3px rgba(201, 169, 97, 0.15);
+}
+
+.dark input[type="text"],
+.dark input[type="email"],
+.dark input[type="password"],
+.dark input[type="number"],
+.dark input[type="date"],
+.dark input[type="datetime-local"],
+.dark textarea {
+  background: var(--color-bg-tertiary-dark);
+  border-color: var(--color-border-default);
+  color: var(--color-text-primary-dark);
+}
+
+.dark input:focus,
+.dark textarea:focus,
+.dark select:focus {
+  border-color: var(--color-gold);
+  box-shadow: 0 0 0 3px rgba(201, 169, 97, 0.2);
+}
+
+/* Placeholder text */
+input::placeholder,
+textarea::placeholder {
+  color: var(--color-text-muted-light);
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: var(--color-text-muted-dark);
 }

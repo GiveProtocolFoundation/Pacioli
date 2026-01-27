@@ -78,14 +78,14 @@ const AccountsTable: React.FC<AccountsTableProps> = ({
         </thead>
         <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
           {editingAccount && (
-            <tr className="bg-blue-50">
+            <tr className="bg-[#c9a961]/10">
               <td className="px-6 py-4">
                 <input
                   type="text"
                   value={editingAccount.code}
                   onChange={handleEditingCodeChange}
                   placeholder="Code"
-                  className="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
                   disabled={!isAddingNew}
                 />
               </td>
@@ -95,14 +95,14 @@ const AccountsTable: React.FC<AccountsTableProps> = ({
                   value={editingAccount.name}
                   onChange={handleEditingNameChange}
                   placeholder="Name"
-                  className="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
                 />
               </td>
               <td className="px-6 py-4">
                 <select
                   value={editingAccount.type}
                   onChange={handleEditingTypeChange}
-                  className="select-input w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="select-input w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
                 >
                   {accountTypes.map(type => (
                     <option key={type} value={type}>
@@ -117,13 +117,13 @@ const AccountsTable: React.FC<AccountsTableProps> = ({
                   value={editingAccount.description}
                   onChange={handleEditingDescriptionChange}
                   placeholder="Description"
-                  className="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
                 />
               </td>
               <td className="px-6 py-4 text-right">
                 <button
                   onClick={handleSave}
-                  className="text-blue-600 hover:text-blue-900 mr-2"
+                  className="text-[#8b4e52] hover:text-[#7a4248] mr-2"
                 >
                   Save
                 </button>
@@ -152,7 +152,7 @@ const AccountsTable: React.FC<AccountsTableProps> = ({
                   <td className="px-6 py-4 text-right">
                     <button
                       onClick={createEditHandler(account)}
-                      className="text-blue-600 hover:text-blue-900 mr-2"
+                      className="text-[#8b4e52] hover:text-[#7a4248] mr-2"
                     >
                       Edit
                     </button>
@@ -364,11 +364,11 @@ const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
 
       {/* Permission Warning */}
       {!canEdit && (
-        <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start">
-          <AlertCircle className="w-5 h-5 text-blue-600 mr-3 mt-0.5" />
+        <div className="mb-6 bg-[#c9a961]/10 border border-[#c9a961]/30 rounded-lg p-4 flex items-start">
+          <AlertCircle className="w-5 h-5 text-[#8b4e52] mr-3 mt-0.5" />
           <div>
-            <h3 className="text-sm font-medium text-blue-800">View Only</h3>
-            <p className="text-sm text-blue-700 mt-1">
+            <h3 className="text-sm font-medium text-[#8b4e52]">View Only</h3>
+            <p className="text-sm text-[#8b4e52] mt-1">
               Only administrators can edit the chart of accounts for{' '}
               {accountType} accounts.
             </p>
@@ -386,7 +386,7 @@ const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
             placeholder="Search accounts..."
             value={searchQuery}
             onChange={handleSearchChange}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
           />
         </div>
 
@@ -394,7 +394,7 @@ const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
         <select
           value={selectedType}
           onChange={handleTypeChange}
-          className="select-input px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="select-input px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
         >
           {accountTypes.map(type => (
             <option key={type} value={type}>
@@ -407,7 +407,7 @@ const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
         {canEdit && (
           <button
             onClick={handleAddNew}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="flex items-center gap-2 px-4 py-2 bg-[#8b4e52] text-white rounded-lg hover:bg-[#7a4248]"
           >
             <Plus className="w-5 h-5" />
             <span className="hidden sm:inline">Add Account</span>

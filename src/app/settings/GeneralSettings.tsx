@@ -55,7 +55,7 @@ const LogoUpload: React.FC<{
   onLogoUpload: (e: React.ChangeEvent<HTMLInputElement>) => void
 }> = ({ logo, onLogoUpload }) => (
   <div>
-    <div className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+    <div className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2">
       Organization Logo
     </div>
     <div className="flex items-center space-x-4">
@@ -63,15 +63,15 @@ const LogoUpload: React.FC<{
         <img
           src={logo}
           alt="Organization logo"
-          className="w-16 h-16 rounded-lg border border-gray-200 dark:border-gray-700 object-cover"
+          className="w-16 h-16 rounded-lg border border-[rgba(201,169,97,0.15)] object-cover"
         />
       ) : (
-        <div className="w-16 h-16 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center">
-          <Building2 className="w-6 h-6 text-gray-400" />
+        <div className="w-16 h-16 rounded-lg border-2 border-dashed border-[rgba(201,169,97,0.15)] flex items-center justify-center">
+          <Building2 className="w-6 h-6 text-[#a39d94]" />
         </div>
       )}
       <label className="cursor-pointer">
-        <span className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 inline-flex items-center">
+        <span className="px-4 py-2 text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] bg-[#fafaf8] dark:bg-[#1a1815] border border-[rgba(201,169,97,0.15)] rounded-lg hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620] inline-flex items-center">
           <Upload className="w-4 h-4 mr-2" />
           Upload Logo
         </span>
@@ -83,7 +83,7 @@ const LogoUpload: React.FC<{
         />
       </label>
     </div>
-    <p className="text-xs text-gray-500 dark:text-[#94a3b8] mt-1">
+    <p className="text-xs text-[#696557] dark:text-[#b8b3ac] mt-1">
       Recommended: Square image, at least 200x200px
     </p>
   </div>
@@ -112,10 +112,10 @@ const OrganizationInformationSection: React.FC<
   )
 
   return (
-    <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+    <div className="border border-[rgba(201,169,97,0.15)] rounded-lg p-6">
       <div className="flex items-center mb-4">
-        <Building2 className="w-5 h-5 text-blue-600 mr-2" />
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+        <Building2 className="w-5 h-5 text-[#8b4e52] mr-2" />
+        <h3 className="text-lg font-semibold text-[#1a1815] dark:text-[#f5f3f0]">
           Organization Information
         </h3>
       </div>
@@ -131,7 +131,7 @@ const OrganizationInformationSection: React.FC<
         <div>
           <label
             htmlFor="organizationType"
-            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
           >
             Organization Type
           </label>
@@ -139,7 +139,7 @@ const OrganizationInformationSection: React.FC<
             id="organizationType"
             value={organizationSettings.organizationType}
             onChange={handleOrgTypeChange}
-            className="select-input w-full px-3 pr-8 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="select-input w-full px-3 pr-8 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
           >
             <option value="not-for-profit">Not-for-Profit Organization</option>
             <option value="for-profit-enterprise">For-Profit Enterprise</option>
@@ -151,7 +151,7 @@ const OrganizationInformationSection: React.FC<
           <div>
             <label
               htmlFor="orgName"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
             >
               Organization Name
             </label>
@@ -160,14 +160,14 @@ const OrganizationInformationSection: React.FC<
               type="text"
               value={organizationSettings.name}
               onChange={createTextHandler('name')}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
             />
           </div>
 
           <div>
             <label
               htmlFor="legalName"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
             >
               Legal Name
             </label>
@@ -176,14 +176,14 @@ const OrganizationInformationSection: React.FC<
               type="text"
               value={organizationSettings.legalName}
               onChange={createTextHandler('legalName')}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
             />
           </div>
 
           <div>
             <label
               htmlFor="taxId"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
             >
               Tax Id
             </label>
@@ -192,14 +192,14 @@ const OrganizationInformationSection: React.FC<
               type="text"
               value={organizationSettings.taxId}
               onChange={createTextHandler('taxId')}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
             />
           </div>
 
           <div>
             <label
               htmlFor="website"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
             >
               Website
             </label>
@@ -208,14 +208,14 @@ const OrganizationInformationSection: React.FC<
               type="url"
               value={organizationSettings.website}
               onChange={createTextHandler('website')}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
             />
           </div>
 
           <div>
             <label
               htmlFor="email"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
             >
               Email
             </label>
@@ -224,14 +224,14 @@ const OrganizationInformationSection: React.FC<
               type="email"
               value={organizationSettings.email}
               onChange={createTextHandler('email')}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
             />
           </div>
 
           <div>
             <label
               htmlFor="phone"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
             >
               Phone
             </label>
@@ -240,7 +240,7 @@ const OrganizationInformationSection: React.FC<
               type="tel"
               value={organizationSettings.phone}
               onChange={createTextHandler('phone')}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
             />
           </div>
         </div>
@@ -248,7 +248,7 @@ const OrganizationInformationSection: React.FC<
         <div>
           <label
             htmlFor="address"
-            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
           >
             Address
           </label>
@@ -257,7 +257,7 @@ const OrganizationInformationSection: React.FC<
             type="text"
             value={organizationSettings.address}
             onChange={createTextHandler('address')}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
           />
         </div>
 
@@ -265,7 +265,7 @@ const OrganizationInformationSection: React.FC<
           <div className="md:col-span-2">
             <label
               htmlFor="city"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
             >
               City
             </label>
@@ -274,14 +274,14 @@ const OrganizationInformationSection: React.FC<
               type="text"
               value={organizationSettings.city}
               onChange={createTextHandler('city')}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
             />
           </div>
 
           <div>
             <label
               htmlFor="state"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
             >
               State/Province
             </label>
@@ -290,14 +290,14 @@ const OrganizationInformationSection: React.FC<
               type="text"
               value={organizationSettings.state}
               onChange={createTextHandler('state')}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
             />
           </div>
 
           <div>
             <label
               htmlFor="zipCode"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
             >
               ZIP/Postal Code
             </label>
@@ -306,7 +306,7 @@ const OrganizationInformationSection: React.FC<
               type="text"
               value={organizationSettings.zipCode}
               onChange={createTextHandler('zipCode')}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
             />
           </div>
         </div>
@@ -314,7 +314,7 @@ const OrganizationInformationSection: React.FC<
         <div>
           <label
             htmlFor="country"
-            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
           >
             Country
           </label>
@@ -323,7 +323,7 @@ const OrganizationInformationSection: React.FC<
             type="text"
             value={organizationSettings.country}
             onChange={createTextHandler('country')}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
           />
         </div>
       </div>
@@ -341,9 +341,9 @@ interface FiscalYearSectionProps {
 
 const FiscalYearWarning: React.FC = () => (
   <div className="flex">
-    <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+    <AlertCircle className="w-5 h-5 text-[#8b4e52] dark:text-[#a86e72] flex-shrink-0" />
     <div className="ml-3">
-      <p className="text-sm text-blue-800 dark:text-blue-400">
+      <p className="text-sm text-[#8b4e52] dark:text-[#a86e72]">
         Changing the fiscal year will affect all date-based reports and
         analytics. Consult with your accountant before making changes.
       </p>
@@ -386,22 +386,22 @@ const FiscalYearSection: React.FC<FiscalYearSectionProps> = ({
   )
 
   return (
-    <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+    <div className="border border-[rgba(201,169,97,0.15)] rounded-lg p-6">
       <div className="flex items-center mb-4">
-        <Calendar className="w-5 h-5 text-blue-600 mr-2" />
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+        <Calendar className="w-5 h-5 text-[#8b4e52] mr-2" />
+        <h3 className="text-lg font-semibold text-[#1a1815] dark:text-[#f5f3f0]">
           Fiscal Year
         </h3>
       </div>
 
-      <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
+      <div className="bg-[#c9a961]/10 dark:bg-[#c9a961]/20 border border-[#c9a961]/30 dark:border-[#c9a961]/40 rounded-lg p-4 mb-4">
         <FiscalYearWarning />
       </div>
 
       <div>
         <label
           htmlFor="fiscalYearEnd"
-          className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+          className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
         >
           Fiscal Year End
         </label>
@@ -409,11 +409,11 @@ const FiscalYearSection: React.FC<FiscalYearSectionProps> = ({
           id="fiscalYearEnd"
           value={systemSettings.fiscalYearEnd}
           onChange={createHandler('fiscalYearEnd')}
-          className="select-input w-full px-3 pr-8 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="select-input w-full px-3 pr-8 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
         >
           <FiscalYearOptions />
         </select>
-        <p className="text-xs text-gray-500 dark:text-[#94a3b8] mt-1">
+        <p className="text-xs text-[#696557] dark:text-[#b8b3ac] mt-1">
           Fiscal year start will be the day after the selected year end
         </p>
       </div>
@@ -430,7 +430,7 @@ const TimezoneSelect: React.FC<TimezoneSelectProps> = ({ value, onChange }) => (
   <div>
     <label
       htmlFor="timezone"
-      className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+      className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
     >
       Timezone
     </label>
@@ -438,7 +438,7 @@ const TimezoneSelect: React.FC<TimezoneSelectProps> = ({ value, onChange }) => (
       id="timezone"
       value={value}
       onChange={onChange}
-      className="select-input w-full px-3 pr-8 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+      className="select-input w-full px-3 pr-8 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
     >
       <option value="Etc/GMT+12">
         UTC-12:00 - International Date Line West (AoE) - Baker Island, Howland
@@ -567,10 +567,10 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+          <h2 className="text-xl font-semibold text-[#1a1815] dark:text-[#f5f3f0]">
             General Settings
           </h2>
-          <p className="text-sm text-gray-500 dark:text-[#94a3b8] mt-1">
+          <p className="text-sm text-[#696557] dark:text-[#b8b3ac] mt-1">
             Manage your organization and system preferences
           </p>
         </div>
@@ -579,14 +579,14 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({
             <>
               <button
                 onClick={handleReset}
-                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center"
+                className="px-4 py-2 text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] bg-[#fafaf8] dark:bg-[#1a1815] border border-[rgba(201,169,97,0.15)] rounded-lg hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620] flex items-center"
               >
                 <X className="w-4 h-4 mr-2" />
                 Cancel
               </button>
               <button
                 onClick={handleSave}
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 flex items-center"
+                className="px-4 py-2 text-sm font-medium text-white bg-[#8b4e52] rounded-lg hover:bg-[#7a4248] flex items-center"
               >
                 <Save className="w-4 h-4 mr-2" />
                 Save Changes
@@ -615,10 +615,10 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({
         )}
 
         {/* Regional Settings */}
-        <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+        <div className="border border-[rgba(201,169,97,0.15)] rounded-lg p-6">
           <div className="flex items-center mb-4">
-            <Globe2 className="w-5 h-5 text-blue-600 mr-2" />
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            <Globe2 className="w-5 h-5 text-[#8b4e52] mr-2" />
+            <h3 className="text-lg font-semibold text-[#1a1815] dark:text-[#f5f3f0]">
               Regional Settings
             </h3>
           </div>
@@ -631,15 +631,15 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+        <div className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg shadow-sm border border-[rgba(201,169,97,0.15)] p-6">
+          <h3 className="text-lg font-semibold text-[#1a1815] dark:text-[#f5f3f0] mb-4">
             Language Settings
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label
                 htmlFor="language"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
               >
                 Language
               </label>
@@ -647,7 +647,7 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({
                 id="language"
                 value={systemSettings.language}
                 onChange={createSystemSelectHandler('language')}
-                className="select-input w-full px-3 pr-8 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="select-input w-full px-3 pr-8 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
               >
                 <option value="en">English</option>
                 <option value="es">Español</option>
@@ -659,7 +659,7 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({
             <div>
               <label
                 htmlFor="dateFormat"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
               >
                 Date Format
               </label>
@@ -667,7 +667,7 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({
                 id="dateFormat"
                 value={systemSettings.dateFormat}
                 onChange={createSystemSelectHandler('dateFormat')}
-                className="select-input w-full px-3 pr-8 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="select-input w-full px-3 pr-8 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
               >
                 <option value="MM/DD/YYYY">MM/DD/YYYY (US)</option>
                 <option value="DD/MM/YYYY">DD/MM/YYYY (EU)</option>
@@ -678,7 +678,7 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({
             <div>
               <label
                 htmlFor="timeFormat"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
               >
                 Time Format
               </label>
@@ -686,7 +686,7 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({
                 id="timeFormat"
                 value={systemSettings.timeFormat}
                 onChange={createSystemSelectHandler('timeFormat')}
-                className="select-input w-full px-3 pr-8 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="select-input w-full px-3 pr-8 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
               >
                 <option value="12h">12-hour (AM/PM)</option>
                 <option value="24h">24-hour</option>

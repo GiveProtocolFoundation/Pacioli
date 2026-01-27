@@ -437,7 +437,7 @@ const WalletManager: React.FC = () => {
       {/* Header */}
       <div className="max-w-7xl mx-auto mb-8">
         <div className="flex items-center mb-3">
-          <Wallet className="w-8 h-8 text-[#2563EB] dark:text-[#0EA5E9] mr-3" />
+          <Wallet className="w-8 h-8 text-[#8b4e52] dark:text-[#a86e72] mr-3" />
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
             Wallet Manager
           </h1>
@@ -449,9 +449,9 @@ const WalletManager: React.FC = () => {
 
         {/* Migration Status Indicator */}
         {migrationStatus && (
-          <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 rounded flex items-center">
-            <Database className="w-5 h-5 text-blue-600 dark:text-blue-400 mr-3 flex-shrink-0" />
-            <p className="text-sm text-blue-800 dark:text-blue-300">
+          <div className="mt-4 p-3 bg-[#c9a961]/10 dark:bg-[#c9a961]/20 border-l-4 border-[#c9a961] rounded flex items-center">
+            <Database className="w-5 h-5 text-[#8b4e52] dark:text-[#a86e72] mr-3 flex-shrink-0" />
+            <p className="text-sm text-[#8b4e52] dark:text-[#d4b87a]">
               {migrationStatus}
             </p>
           </div>
@@ -486,7 +486,7 @@ const WalletManager: React.FC = () => {
                     id="network-select"
                     value={selectedNetwork}
                     onChange={handleNetworkChange}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#2563EB] dark:focus:ring-[#0EA5E9] focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#c9a961] dark:focus:ring-[#c9a961] focus:border-transparent"
                   >
                     <option value={NetworkType.POLKADOT}>Polkadot</option>
                     <option value={NetworkType.KUSAMA}>Kusama</option>
@@ -509,7 +509,7 @@ const WalletManager: React.FC = () => {
                     id="address-select"
                     value={selectedAddress}
                     onChange={handleAddressChange}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#2563EB] dark:focus:ring-[#0EA5E9] focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#c9a961] dark:focus:ring-[#c9a961] focus:border-transparent"
                   >
                     <option value="">Select an address...</option>
                     {allAddresses.map(addr => (
@@ -559,15 +559,15 @@ const WalletManager: React.FC = () => {
 
                 {/* Sync Progress Display */}
                 {syncProgress && (
-                  <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 rounded">
+                  <div className="mt-4 p-4 bg-[#c9a961]/10 dark:bg-[#c9a961]/20 border-l-4 border-[#c9a961] rounded">
                     <div className="flex items-start mb-3">
                       {syncProgress.stage === 'complete' ? (
                         <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400 mr-3 flex-shrink-0" />
                       ) : (
-                        <Loader className="w-5 h-5 text-blue-600 dark:text-blue-400 mr-3 flex-shrink-0 animate-spin" />
+                        <Loader className="w-5 h-5 text-[#8b4e52] dark:text-[#a86e72] mr-3 flex-shrink-0 animate-spin" />
                       )}
                       <div className="flex-1">
-                        <p className="text-sm font-semibold text-blue-900 dark:text-blue-200 mb-1">
+                        <p className="text-sm font-semibold text-[#8b4e52] dark:text-[#d4b87a] mb-1">
                           {syncProgress.stage === 'connecting' &&
                             'Connecting to Network'}
                           {syncProgress.stage === 'fetching' &&
@@ -578,7 +578,7 @@ const WalletManager: React.FC = () => {
                             'Saving to Database'}
                           {syncProgress.stage === 'complete' && 'Sync Complete'}
                         </p>
-                        <p className="text-sm text-blue-800 dark:text-blue-300">
+                        <p className="text-sm text-[#8b4e52] dark:text-[#d4b87a]">
                           {syncProgress.message}
                         </p>
                       </div>
@@ -589,9 +589,9 @@ const WalletManager: React.FC = () => {
                       syncProgress.stage === 'processing') && (
                       <div className="space-y-2">
                         {/* Progress Bar */}
-                        <div className="w-full bg-blue-200 dark:bg-blue-800 rounded-full h-2 overflow-hidden">
+                        <div className="w-full bg-[#c9a961]/30 dark:bg-[#c9a961]/50 rounded-full h-2 overflow-hidden">
                           <div
-                            className="bg-blue-600 dark:bg-blue-400 h-2 rounded-full transition-all duration-300"
+                            className="bg-[#8b4e52] dark:bg-[#a86e72] h-2 rounded-full transition-all duration-300"
                             style={{
                               width: `${Math.min(
                                 100,
@@ -604,7 +604,7 @@ const WalletManager: React.FC = () => {
                         </div>
 
                         {/* Stats */}
-                        <div className="flex justify-between text-xs text-blue-700 dark:text-blue-300">
+                        <div className="flex justify-between text-xs text-[#8b4e52] dark:text-[#d4b87a]">
                           <span>
                             Blocks:{' '}
                             {syncProgress.blocksScanned.toLocaleString()} /{' '}
@@ -622,7 +622,7 @@ const WalletManager: React.FC = () => {
 
                         {/* Transaction Count */}
                         {syncProgress.transactionsFound > 0 && (
-                          <p className="text-xs text-blue-700 dark:text-blue-300">
+                          <p className="text-xs text-[#8b4e52] dark:text-[#d4b87a]">
                             Found{' '}
                             {syncProgress.transactionsFound.toLocaleString()}{' '}
                             transaction
@@ -657,26 +657,26 @@ const WalletManager: React.FC = () => {
                 </h3>
                 <ol className="space-y-2 text-sm text-gray-600 dark:text-[#94a3b8]">
                   <li className="flex items-start">
-                    <span className="font-semibold text-[#2563EB] dark:text-[#0EA5E9] mr-2">
+                    <span className="font-semibold text-[#8b4e52] dark:text-[#a86e72] mr-2">
                       1.
                     </span>
                     Install a Polkadot wallet extension (Polkadot.js, Talisman,
                     or SubWallet)
                   </li>
                   <li className="flex items-start">
-                    <span className="font-semibold text-[#2563EB] dark:text-[#0EA5E9] mr-2">
+                    <span className="font-semibold text-[#8b4e52] dark:text-[#a86e72] mr-2">
                       2.
                     </span>
                     Click the &quot;Connect&quot; button for your wallet
                   </li>
                   <li className="flex items-start">
-                    <span className="font-semibold text-[#2563EB] dark:text-[#0EA5E9] mr-2">
+                    <span className="font-semibold text-[#8b4e52] dark:text-[#a86e72] mr-2">
                       3.
                     </span>
                     Select an address and network
                   </li>
                   <li className="flex items-start">
-                    <span className="font-semibold text-[#2563EB] dark:text-[#0EA5E9] mr-2">
+                    <span className="font-semibold text-[#8b4e52] dark:text-[#a86e72] mr-2">
                       4.
                     </span>
                     Click &quot;Sync Transactions&quot; to import your history

@@ -41,13 +41,13 @@ interface NotificationItemProps {
 
 const NotificationActions: React.FC = () => (
   <div className="flex items-center space-x-2">
-    <button className="p-1.5 text-green-600 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/30 rounded">
+    <button className="p-1.5 text-[#7a9b6f] dark:text-[#8faf84] hover:bg-[#7a9b6f]/10 dark:hover:bg-[#7a9b6f]/20 rounded">
       <Check className="w-4 h-4" />
     </button>
-    <button className="p-1.5 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 rounded">
+    <button className="p-1.5 text-[#9d6b6b] dark:text-[#b88585] hover:bg-[#9d6b6b]/10 dark:hover:bg-[#9d6b6b]/20 rounded">
       <X className="w-4 h-4" />
     </button>
-    <button className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center">
+    <button className="text-xs text-[#8b4e52] dark:text-[#a86e72] hover:underline flex items-center">
       View
       <ArrowRight className="w-3 h-3 ml-1" />
     </button>
@@ -61,19 +61,19 @@ const NotificationBody: React.FC<{
   <div className="flex-1 min-w-0">
     <div className="flex items-start justify-between">
       <div className="flex-1">
-        <p className="text-sm font-medium text-gray-900 dark:text-white">
+        <p className="text-sm font-medium text-[#1a1815] dark:text-[#f5f3f0]">
           {notification.title}
           {!notification.read && (
-            <span className="inline-block w-2 h-2 bg-blue-600 rounded-full ml-2" />
+            <span className="inline-block w-2 h-2 bg-[#8b4e52] rounded-full ml-2" />
           )}
         </p>
-        <p className="text-xs text-gray-600 dark:text-[#94a3b8] mt-1">
+        <p className="text-xs text-[#696557] dark:text-[#b8b3ac] mt-1">
           {notification.message}
         </p>
       </div>
     </div>
     <div className="flex items-center justify-between mt-2">
-      <span className="text-xs text-gray-400 dark:text-gray-500">
+      <span className="text-xs text-[#a39d94] dark:text-[#696557]">
         {formatTimestamp(notification.timestamp)}
       </span>
       {notification.actionRequired && <NotificationActions />}
@@ -106,7 +106,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
     <div
       key={notification.id}
       className={`p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer ${
-        !notification.read ? 'bg-blue-50/50 dark:bg-blue-900/10' : ''
+        !notification.read ? 'bg-[#8b4e52]/5 dark:bg-[#8b4e52]/10' : ''
       }`}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
@@ -262,13 +262,13 @@ const FilterTabs: React.FC<{
   onWorkflow,
   onApproval,
 }) => (
-  <div className="flex items-center space-x-2 p-4 border-b border-gray-200 dark:border-gray-700 overflow-x-auto">
+  <div className="flex items-center space-x-2 p-4 border-b border-[rgba(201,169,97,0.15)] overflow-x-auto">
     <button
       onClick={onAll}
       className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
         filter === 'all'
-          ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
-          : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-[#94a3b8] hover:bg-gray-200 dark:hover:bg-gray-700'
+          ? 'bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 text-[#8b4e52] dark:text-[#a86e72]'
+          : 'bg-gray-100 dark:bg-gray-800 text-[#696557] dark:text-[#b8b3ac] hover:bg-gray-200 dark:hover:bg-gray-700'
       }`}
     >
       All
@@ -277,8 +277,8 @@ const FilterTabs: React.FC<{
       onClick={onFinancial}
       className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
         filter === 'financial'
-          ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
-          : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-[#94a3b8] hover:bg-gray-200 dark:hover:bg-gray-700'
+          ? 'bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 text-[#8b4e52] dark:text-[#a86e72]'
+          : 'bg-gray-100 dark:bg-gray-800 text-[#696557] dark:text-[#b8b3ac] hover:bg-gray-200 dark:hover:bg-gray-700'
       }`}
     >
       Financial
@@ -287,8 +287,8 @@ const FilterTabs: React.FC<{
       onClick={onTransactional}
       className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
         filter === 'transactional'
-          ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
-          : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-[#94a3b8] hover:bg-gray-200 dark:hover:bg-gray-700'
+          ? 'bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 text-[#8b4e52] dark:text-[#a86e72]'
+          : 'bg-gray-100 dark:bg-gray-800 text-[#696557] dark:text-[#b8b3ac] hover:bg-gray-200 dark:hover:bg-gray-700'
       }`}
     >
       Transactions
@@ -299,8 +299,8 @@ const FilterTabs: React.FC<{
           onClick={onWorkflow}
           className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
             filter === 'workflow'
-              ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
-              : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-[#94a3b8] hover:bg-gray-200 dark:hover:bg-gray-700'
+              ? 'bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 text-[#8b4e52] dark:text-[#a86e72]'
+              : 'bg-gray-100 dark:bg-gray-800 text-[#696557] dark:text-[#b8b3ac] hover:bg-gray-200 dark:hover:bg-gray-700'
           }`}
         >
           Workflow
@@ -309,8 +309,8 @@ const FilterTabs: React.FC<{
           onClick={onApproval}
           className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
             filter === 'approval'
-              ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
-              : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-[#94a3b8] hover:bg-gray-200 dark:hover:bg-gray-700'
+              ? 'bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 text-[#8b4e52] dark:text-[#a86e72]'
+              : 'bg-gray-100 dark:bg-gray-800 text-[#696557] dark:text-[#b8b3ac] hover:bg-gray-200 dark:hover:bg-gray-700'
           }`}
         >
           Approvals
@@ -366,12 +366,12 @@ const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
   const getSeverityStyles = useCallback(
     (severity: Notification['severity']) => {
       const styles = {
-        info: 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400',
+        info: 'bg-[#c9a961]/20 dark:bg-[#c9a961]/30 text-[#8b4e52] dark:text-[#a86e72]',
         warning:
           'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400',
         success:
-          'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400',
-        error: 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400',
+          'bg-green-100 dark:bg-green-900/30 text-[#7a9b6f] dark:text-[#8faf84]',
+        error: 'bg-red-100 dark:bg-red-900/30 text-[#9d6b6b] dark:text-[#b88585]',
       }
       return styles[severity]
     },
@@ -424,9 +424,9 @@ const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
       {/* Sliding Panel */}
       <div className="fixed right-0 top-0 h-full w-full sm:w-[480px] bg-white dark:bg-gray-900 shadow-xl z-50 overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between p-4 border-b border-[rgba(201,169,97,0.15)]">
           <div>
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+            <h2 className="text-lg font-semibold text-[#1a1815] dark:text-[#f5f3f0]">
               Notifications
             </h2>
             <p className="text-xs text-gray-500 dark:text-[#94a3b8] mt-0.5">
@@ -439,7 +439,7 @@ const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
             {unreadCount > 0 && (
               <button
                 onClick={markAllAsRead}
-                className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                className="text-xs text-[#8b4e52] dark:text-[#a86e72] hover:underline"
               >
                 Mark all read
               </button>
@@ -469,7 +469,7 @@ const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
           {filteredNotifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full p-8 text-center">
               <CheckCircle className="w-12 h-12 text-gray-400 mb-3" />
-              <p className="text-sm font-medium text-gray-900 dark:text-white">
+              <p className="text-sm font-medium text-[#1a1815] dark:text-[#f5f3f0]">
                 All caught up!
               </p>
               <p className="text-xs text-gray-500 dark:text-[#94a3b8] mt-1">
@@ -492,8 +492,8 @@ const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="border-t border-gray-200 dark:border-gray-700 p-4">
-          <button className="w-full text-sm text-blue-600 dark:text-blue-400 hover:underline">
+        <div className="border-t border-[rgba(201,169,97,0.15)] p-4">
+          <button className="w-full text-sm text-[#8b4e52] dark:text-[#a86e72] hover:underline">
             View all notifications
           </button>
         </div>

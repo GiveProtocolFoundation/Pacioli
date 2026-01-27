@@ -60,14 +60,14 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({
   showPhone = true,
 }) => (
   <>
-    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+    <h3 className="text-lg font-semibold text-[#1a1815] dark:text-[#f5f3f0] mb-4">
       Personal Information
     </h3>
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div>
         <label
           htmlFor="firstName"
-          className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+          className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
         >
           First Name
         </label>
@@ -76,13 +76,13 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({
           type="text"
           value={profile.firstName}
           onChange={createProfileInputHandler('firstName')}
-          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
         />
       </div>
       <div>
         <label
           htmlFor="lastName"
-          className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+          className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
         >
           Last Name
         </label>
@@ -91,31 +91,31 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({
           type="text"
           value={profile.lastName}
           onChange={createProfileInputHandler('lastName')}
-          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
         />
       </div>
       <div>
         <label
           htmlFor="email"
-          className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+          className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
         >
           Email Address
         </label>
         <div className="flex gap-2">
           <div className="relative flex-1">
-            <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#a39d94]" />
             <input
               id="email"
               type="email"
               value={profile.email}
               readOnly
-              className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white cursor-not-allowed"
+              className="w-full pl-10 pr-3 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#f3f1ed] dark:bg-[#2a2620] text-[#1a1815] dark:text-[#f5f3f0] cursor-not-allowed"
             />
           </div>
           <button
             type="button"
             onClick={onChangeEmail}
-            className="px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
+            className="px-4 py-2 text-sm font-medium text-[#8b4e52] dark:text-[#a86e72] bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 border border-[#8b4e52]/30 dark:border-[#8b4e52]/50 rounded-lg hover:bg-[#8b4e52]/20 dark:hover:bg-[#8b4e52]/30 transition-colors"
           >
             Change
           </button>
@@ -125,18 +125,18 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({
         <div>
           <label
             htmlFor="phone"
-            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
           >
             Phone Number
           </label>
           <div className="relative">
-            <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#a39d94]" />
             <input
               id="phone"
               type="tel"
               value={profile.phone}
               onChange={createProfileInputHandler('phone')}
-              className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full pl-10 pr-3 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
             />
           </div>
         </div>
@@ -157,80 +157,80 @@ const WorkInfo: React.FC<WorkInfoProps> = ({
   createProfileInputHandler,
 }) => (
   <>
-    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+    <h3 className="text-lg font-semibold text-[#1a1815] dark:text-[#f5f3f0] mb-4">
       Work Information
     </h3>
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div className="md:col-span-2">
         <label
           htmlFor="company"
-          className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+          className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
         >
           Company
         </label>
         <div className="relative">
-          <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#a39d94]" />
           <input
             id="company"
             type="text"
             value={profile.company}
             onChange={createProfileInputHandler('company')}
             placeholder="Your company or organization"
-            className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full pl-10 pr-3 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
           />
         </div>
       </div>
       <div>
         <label
           htmlFor="jobTitle"
-          className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+          className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
         >
           Job Title
         </label>
         <div className="relative">
-          <Briefcase className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <Briefcase className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#a39d94]" />
           <input
             id="jobTitle"
             type="text"
             value={profile.jobTitle}
             onChange={createProfileInputHandler('jobTitle')}
-            className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full pl-10 pr-3 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
           />
         </div>
       </div>
       <div>
         <label
           htmlFor="department"
-          className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+          className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
         >
           Department
         </label>
         <div className="relative">
-          <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#a39d94]" />
           <input
             id="department"
             type="text"
             value={profile.department}
             onChange={createProfileInputHandler('department')}
-            className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full pl-10 pr-3 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
           />
         </div>
       </div>
       <div className="md:col-span-2">
         <label
           htmlFor="location"
-          className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+          className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
         >
           Location
         </label>
         <div className="relative">
-          <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#a39d94]" />
           <input
             id="location"
             type="text"
             value={profile.location}
             onChange={createProfileInputHandler('location')}
-            className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full pl-10 pr-3 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
           />
         </div>
       </div>
@@ -539,8 +539,8 @@ const Profile: React.FC = () => {
   // Show loading state while auth is initializing
   if (authLoading && !user) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-black flex items-center justify-center">
-        <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
+      <div className="min-h-screen bg-[#fafaf8] dark:bg-[#0f0e0c] flex items-center justify-center">
+        <div className="flex items-center gap-3 text-gray-500 dark:text-[#a39d94]">
           <Loader2 className="w-6 h-6 animate-spin" />
           <span>Loading profile...</span>
         </div>
@@ -549,27 +549,27 @@ const Profile: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-black">
+    <div className="min-h-screen bg-[#fafaf8] dark:bg-[#0f0e0c]">
       {/* Header */}
-      <header className="bg-white dark:bg-black border-b border-gray-200 dark:border-gray-700">
+      <header className="bg-[#fafaf8] dark:bg-[#0f0e0c] border-b border-[rgba(201,169,97,0.15)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div>
               <h1>Your Profile</h1>
-              <p className="text-sm text-gray-500 dark:text-[#94a3b8] mt-1">
+              <p className="text-sm text-[#696557] dark:text-[#b8b3ac] mt-1">
                 Manage your personal information and preferences
               </p>
             </div>
             <div className="flex items-center space-x-3">
               {/* Success message */}
               {saveSuccess && (
-                <span className="text-sm text-green-600 dark:text-green-400">
+                <span className="text-sm text-[#7a9b6f] dark:text-[#8faf84]">
                   Profile saved successfully!
                 </span>
               )}
               {/* Error message */}
               {(saveError || authError) && (
-                <span className="text-sm text-red-600 dark:text-red-400">
+                <span className="text-sm text-[#9d6b6b] dark:text-[#b88585]">
                   {saveError || authError}
                 </span>
               )}
@@ -578,7 +578,7 @@ const Profile: React.FC = () => {
                   <button
                     onClick={handleCancel}
                     disabled={isSaving}
-                    className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center disabled:opacity-50"
+                    className="px-4 py-2 text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] bg-[#fafaf8] dark:bg-[#1a1815] border border-[rgba(201,169,97,0.15)] rounded-lg hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620] flex items-center disabled:opacity-50"
                   >
                     <X className="w-4 h-4 mr-2" />
                     Cancel
@@ -586,7 +586,7 @@ const Profile: React.FC = () => {
                   <button
                     onClick={handleSave}
                     disabled={isSaving}
-                    className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 flex items-center disabled:opacity-50"
+                    className="px-4 py-2 text-sm font-medium text-white bg-[#8b4e52] rounded-lg hover:bg-[#7a4248] flex items-center disabled:opacity-50"
                   >
                     {isSaving ? (
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -606,7 +606,7 @@ const Profile: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Sidebar */}
           <div className="lg:col-span-1">
-            <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+            <div className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg border border-[rgba(201,169,97,0.15)] p-6">
               {/* Avatar */}
               <div className="flex flex-col items-center mb-6">
                 <div className="relative">
@@ -614,14 +614,14 @@ const Profile: React.FC = () => {
                     <img
                       src={profile.avatar}
                       alt="Profile"
-                      className="w-24 h-24 rounded-full object-cover border-4 border-gray-200 dark:border-gray-700"
+                      className="w-24 h-24 rounded-full object-cover border-4 border-[rgba(201,169,97,0.15)]"
                     />
                   ) : (
-                    <div className="w-24 h-24 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center border-4 border-gray-200 dark:border-gray-700">
-                      <User className="w-12 h-12 text-blue-600 dark:text-blue-400" />
+                    <div className="w-24 h-24 rounded-full bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 flex items-center justify-center border-4 border-[rgba(201,169,97,0.15)]">
+                      <User className="w-12 h-12 text-[#8b4e52] dark:text-[#a86e72]" />
                     </div>
                   )}
-                  <label className="absolute bottom-0 right-0 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center cursor-pointer hover:bg-blue-700 transition-colors">
+                  <label className="absolute bottom-0 right-0 w-8 h-8 bg-[#8b4e52] rounded-full flex items-center justify-center cursor-pointer hover:bg-[#7a4248] transition-colors">
                     <Camera className="w-4 h-4 text-white" />
                     <input
                       type="file"
@@ -631,12 +631,12 @@ const Profile: React.FC = () => {
                     />
                   </label>
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mt-4">
+                <h3 className="text-lg font-semibold text-[#1a1815] dark:text-[#f5f3f0] mt-4">
                   {profile.firstName || profile.lastName
                     ? `${profile.firstName} ${profile.lastName}`.trim()
                     : user?.display_name || 'User'}
                 </h3>
-                <p className="text-sm text-gray-500 dark:text-[#94a3b8]">
+                <p className="text-sm text-[#696557] dark:text-[#b8b3ac]">
                   {profile.jobTitle || profile.email}
                 </p>
               </div>
@@ -647,8 +647,8 @@ const Profile: React.FC = () => {
                   onClick={handleTabProfile}
                   className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
                     activeTab === 'profile'
-                      ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
-                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
+                      ? 'bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 text-[#8b4e52] dark:text-[#a86e72]'
+                      : 'text-[#1a1815] dark:text-[#b8b3ac] hover:bg-[#f3f1ed] dark:hover:bg-[#1a1815]'
                   }`}
                 >
                   <User className="w-4 h-4 mr-3" />
@@ -658,8 +658,8 @@ const Profile: React.FC = () => {
                   onClick={handleTabSecurity}
                   className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
                     activeTab === 'security'
-                      ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
-                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
+                      ? 'bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 text-[#8b4e52] dark:text-[#a86e72]'
+                      : 'text-[#1a1815] dark:text-[#b8b3ac] hover:bg-[#f3f1ed] dark:hover:bg-[#1a1815]'
                   }`}
                 >
                   <Shield className="w-4 h-4 mr-3" />
@@ -669,8 +669,8 @@ const Profile: React.FC = () => {
                   onClick={handleTabPreferences}
                   className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
                     activeTab === 'preferences'
-                      ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
-                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
+                      ? 'bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 text-[#8b4e52] dark:text-[#a86e72]'
+                      : 'text-[#1a1815] dark:text-[#b8b3ac] hover:bg-[#f3f1ed] dark:hover:bg-[#1a1815]'
                   }`}
                 >
                   <Bell className="w-4 h-4 mr-3" />
@@ -682,7 +682,7 @@ const Profile: React.FC = () => {
 
           {/* Main Content */}
           <div className="lg:col-span-3">
-            <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+            <div className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg border border-[rgba(201,169,97,0.15)] p-6">
               {activeTab === 'profile' && (
                 <div className="space-y-6">
                   <div>
@@ -694,7 +694,7 @@ const Profile: React.FC = () => {
                     />
                   </div>
                   {isBusinessAccount && (
-                    <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+                    <div className="border-t border-[rgba(201,169,97,0.15)] pt-6">
                       <WorkInfo
                         profile={profile}
                         createProfileInputHandler={createProfileInputHandler}
@@ -707,19 +707,19 @@ const Profile: React.FC = () => {
               {activeTab === 'security' && (
                 <div className="space-y-6">
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                    <h3 className="text-lg font-semibold text-[#1a1815] dark:text-[#f5f3f0] mb-4">
                       Security Settings
                     </h3>
 
                     {/* Two-Factor Authentication */}
-                    <div className="flex items-center justify-between py-4 border-b border-gray-200 dark:border-gray-700">
+                    <div className="flex items-center justify-between py-4 border-b border-[rgba(201,169,97,0.15)]">
                       <div className="flex items-start">
-                        <Shield className="w-5 h-5 text-blue-600 dark:text-blue-400 mr-3 mt-0.5" />
+                        <Shield className="w-5 h-5 text-[#8b4e52] dark:text-[#a86e72] mr-3 mt-0.5" />
                         <div>
-                          <p className="text-sm font-medium text-gray-900 dark:text-white">
+                          <p className="text-sm font-medium text-[#1a1815] dark:text-[#f5f3f0]">
                             Two-Factor Authentication
                           </p>
-                          <p className="text-xs text-gray-500 dark:text-[#94a3b8] mt-1">
+                          <p className="text-xs text-[#696557] dark:text-[#b8b3ac] mt-1">
                             Add an extra layer of security to your account
                           </p>
                         </div>
@@ -736,19 +736,19 @@ const Profile: React.FC = () => {
                           )}
                           className="sr-only peer"
                         />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600" />
+                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#c9a961]/50 dark:peer-focus:ring-[#c9a961]/30 rounded-full peer dark:bg-[#2a2620] peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-[#8b4e52]" />
                       </label>
                     </div>
 
                     {/* Login Alerts */}
-                    <div className="flex items-center justify-between py-4 border-b border-gray-200 dark:border-gray-700">
+                    <div className="flex items-center justify-between py-4 border-b border-[rgba(201,169,97,0.15)]">
                       <div className="flex items-start">
-                        <Bell className="w-5 h-5 text-blue-600 dark:text-blue-400 mr-3 mt-0.5" />
+                        <Bell className="w-5 h-5 text-[#8b4e52] dark:text-[#a86e72] mr-3 mt-0.5" />
                         <div>
-                          <p className="text-sm font-medium text-gray-900 dark:text-white">
+                          <p className="text-sm font-medium text-[#1a1815] dark:text-[#f5f3f0]">
                             Login Alerts
                           </p>
-                          <p className="text-xs text-gray-500 dark:text-[#94a3b8] mt-1">
+                          <p className="text-xs text-[#696557] dark:text-[#b8b3ac] mt-1">
                             Get notified of new sign-ins to your account
                           </p>
                         </div>
@@ -763,25 +763,25 @@ const Profile: React.FC = () => {
                           onChange={createSecurityToggleHandler('loginAlerts')}
                           className="sr-only peer"
                         />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600" />
+                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#c9a961]/50 dark:peer-focus:ring-[#c9a961]/30 rounded-full peer dark:bg-[#2a2620] peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-[#8b4e52]" />
                       </label>
                     </div>
 
                     {/* Change Password */}
                     <div className="pt-4">
-                      <button className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                      <button className="w-full flex items-center justify-between px-4 py-3 bg-[#f3f1ed] dark:bg-[#1a1815] rounded-lg hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620] transition-colors">
                         <div className="flex items-center">
-                          <Lock className="w-5 h-5 text-gray-600 dark:text-[#94a3b8] mr-3" />
+                          <Lock className="w-5 h-5 text-[#696557] dark:text-[#b8b3ac] mr-3" />
                           <div className="text-left">
-                            <p className="text-sm font-medium text-gray-900 dark:text-white">
+                            <p className="text-sm font-medium text-[#1a1815] dark:text-[#f5f3f0]">
                               Change Password
                             </p>
-                            <p className="text-xs text-gray-500 dark:text-[#94a3b8]">
+                            <p className="text-xs text-[#696557] dark:text-[#b8b3ac]">
                               Last changed 30 days ago
                             </p>
                           </div>
                         </div>
-                        <Key className="w-5 h-5 text-gray-400" />
+                        <Key className="w-5 h-5 text-[#a39d94]" />
                       </button>
                     </div>
                   </div>
@@ -791,24 +791,24 @@ const Profile: React.FC = () => {
               {activeTab === 'preferences' && (
                 <div className="space-y-6">
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                    <h3 className="text-lg font-semibold text-[#1a1815] dark:text-[#f5f3f0] mb-4">
                       Regional Preferences
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label
                           htmlFor="timezone"
-                          className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                          className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
                         >
                           Timezone
                         </label>
                         <div className="relative">
-                          <Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                          <Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#a39d94]" />
                           <select
                             id="timezone"
                             value={profile.timezone}
                             onChange={createProfileInputHandler('timezone')}
-                            className="select-input w-full pl-10 pr-8 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="select-input w-full pl-10 pr-8 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
                           >
                             <option value="America/Los_Angeles">
                               Pacific Time (US & Canada)
@@ -829,7 +829,7 @@ const Profile: React.FC = () => {
                       <div>
                         <label
                           htmlFor="language"
-                          className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                          className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
                         >
                           Language
                         </label>
@@ -837,7 +837,7 @@ const Profile: React.FC = () => {
                           id="language"
                           value={profile.language}
                           onChange={createProfileInputHandler('language')}
-                          className="select-input w-full px-3 pr-8 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="select-input w-full px-3 pr-8 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
                         >
                           <option value="en">English</option>
                           <option value="es">Español</option>
@@ -848,17 +848,17 @@ const Profile: React.FC = () => {
                       <div>
                         <label
                           htmlFor="dateFormat"
-                          className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                          className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
                         >
                           Date Format
                         </label>
                         <div className="relative">
-                          <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                          <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#a39d94]" />
                           <select
                             id="dateFormat"
                             value={profile.dateFormat}
                             onChange={createProfileInputHandler('dateFormat')}
-                            className="select-input w-full pl-10 pr-8 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="select-input w-full pl-10 pr-8 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
                           >
                             <option value="MM/DD/YYYY">MM/DD/YYYY (US)</option>
                             <option value="DD/MM/YYYY">DD/MM/YYYY (EU)</option>
@@ -869,17 +869,17 @@ const Profile: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                  <div className="border-t border-[rgba(201,169,97,0.15)] pt-6">
+                    <h3 className="text-lg font-semibold text-[#1a1815] dark:text-[#f5f3f0] mb-4">
                       Notification Preferences
                     </h3>
 
-                    <div className="flex items-center justify-between py-4 border-b border-gray-200 dark:border-gray-700">
+                    <div className="flex items-center justify-between py-4 border-b border-[rgba(201,169,97,0.15)]">
                       <div>
-                        <p className="text-sm font-medium text-gray-900 dark:text-white">
+                        <p className="text-sm font-medium text-[#1a1815] dark:text-[#f5f3f0]">
                           Email Notifications
                         </p>
-                        <p className="text-xs text-gray-500 dark:text-[#94a3b8] mt-1">
+                        <p className="text-xs text-[#696557] dark:text-[#b8b3ac] mt-1">
                           Receive notifications via email
                         </p>
                       </div>
@@ -895,16 +895,16 @@ const Profile: React.FC = () => {
                           )}
                           className="sr-only peer"
                         />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600" />
+                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#c9a961]/50 dark:peer-focus:ring-[#c9a961]/30 rounded-full peer dark:bg-[#2a2620] peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-[#8b4e52]" />
                       </label>
                     </div>
 
                     <div className="flex items-center justify-between py-4">
                       <div>
-                        <p className="text-sm font-medium text-gray-900 dark:text-white">
+                        <p className="text-sm font-medium text-[#1a1815] dark:text-[#f5f3f0]">
                           SMS Notifications
                         </p>
-                        <p className="text-xs text-gray-500 dark:text-[#94a3b8] mt-1">
+                        <p className="text-xs text-[#696557] dark:text-[#b8b3ac] mt-1">
                           Receive notifications via SMS
                         </p>
                       </div>
@@ -920,7 +920,7 @@ const Profile: React.FC = () => {
                           )}
                           className="sr-only peer"
                         />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600" />
+                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#c9a961]/50 dark:peer-focus:ring-[#c9a961]/30 rounded-full peer dark:bg-[#2a2620] peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-[#8b4e52]" />
                       </label>
                     </div>
                   </div>
@@ -934,14 +934,14 @@ const Profile: React.FC = () => {
       {/* Email Change Modal */}
       {showEmailChangeModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl max-w-md w-full p-6 border border-gray-200 dark:border-gray-700">
+          <div className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg shadow-xl max-w-md w-full p-6 border border-[rgba(201,169,97,0.15)]">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              <h3 className="text-lg font-semibold text-[#1a1815] dark:text-[#f5f3f0]">
                 Change Email Address
               </h3>
               <button
                 onClick={handleCloseEmailChange}
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                className="text-[#a39d94] hover:text-gray-600 dark:hover:text-gray-300"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -954,7 +954,7 @@ const Profile: React.FC = () => {
                     {emailChangeSuccess}
                   </p>
                 </div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <p className="text-sm text-gray-600 dark:text-[#a39d94]">
                   Check your new email for the verification code, then click below to enter it.
                 </p>
                 <button
@@ -962,14 +962,14 @@ const Profile: React.FC = () => {
                     setShowEmailChangeModal(false)
                     handleOpenVerifyEmail()
                   }}
-                  className="w-full px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"
+                  className="w-full px-4 py-2 text-sm font-medium text-white bg-[#8b4e52] rounded-lg hover:bg-[#7a4248]"
                 >
                   Enter Verification Code
                 </button>
               </div>
             ) : (
               <div className="space-y-4">
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <p className="text-sm text-gray-600 dark:text-[#a39d94]">
                   To change your email address, please enter your current
                   password and new email below. We&apos;ll send a verification
                   link to your new email address.
@@ -986,19 +986,19 @@ const Profile: React.FC = () => {
                 <div>
                   <label
                     htmlFor="emailChangePassword"
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                    className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
                   >
                     Current Password
                   </label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#a39d94]" />
                     <input
                       id="emailChangePassword"
                       type="password"
                       value={emailChangePassword}
                       onChange={handleEmailChangePasswordChange}
                       placeholder="Enter your current password"
-                      className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full pl-10 pr-3 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
                     />
                   </div>
                 </div>
@@ -1006,19 +1006,19 @@ const Profile: React.FC = () => {
                 <div>
                   <label
                     htmlFor="emailChangeNewEmail"
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                    className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
                   >
                     New Email Address
                   </label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#a39d94]" />
                     <input
                       id="emailChangeNewEmail"
                       type="email"
                       value={emailChangeNewEmail}
                       onChange={handleEmailChangeNewEmailChange}
                       placeholder="Enter your new email address"
-                      className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full pl-10 pr-3 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
                     />
                   </div>
                 </div>
@@ -1026,14 +1026,14 @@ const Profile: React.FC = () => {
                 <div className="flex items-center space-x-3 pt-4">
                   <button
                     onClick={handleCloseEmailChange}
-                    className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+                    className="flex-1 px-4 py-2 text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] bg-[#fafaf8] dark:bg-[#1a1815] border border-[rgba(201,169,97,0.15)] rounded-lg hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620]"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={handleSubmitEmailChange}
                     disabled={emailChangeLoading}
-                    className="flex-1 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                    className="flex-1 px-4 py-2 text-sm font-medium text-white bg-[#8b4e52] rounded-lg hover:bg-[#7a4248] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                   >
                     {emailChangeLoading ? (
                       <>
@@ -1054,21 +1054,21 @@ const Profile: React.FC = () => {
       {/* Email Verification Modal */}
       {showVerifyEmailModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl max-w-md w-full p-6 border border-gray-200 dark:border-gray-700">
+          <div className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg shadow-xl max-w-md w-full p-6 border border-[rgba(201,169,97,0.15)]">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              <h3 className="text-lg font-semibold text-[#1a1815] dark:text-[#f5f3f0]">
                 Verify Email Change
               </h3>
               <button
                 onClick={handleCloseVerifyEmail}
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                className="text-[#a39d94] hover:text-gray-600 dark:hover:text-gray-300"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <div className="space-y-4">
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-sm text-gray-600 dark:text-[#a39d94]">
                 Enter the verification code sent to your new email address.
               </p>
 
@@ -1083,7 +1083,7 @@ const Profile: React.FC = () => {
               <div>
                 <label
                   htmlFor="verificationCode"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
                 >
                   Verification Code
                 </label>
@@ -1093,7 +1093,7 @@ const Profile: React.FC = () => {
                   value={verificationCode}
                   onChange={e => setVerificationCode(e.target.value)}
                   placeholder="Enter the code from your email"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
+                  className="w-full px-3 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961] font-mono"
                   autoComplete="off"
                 />
               </div>
@@ -1101,14 +1101,14 @@ const Profile: React.FC = () => {
               <div className="flex items-center space-x-3 pt-4">
                 <button
                   onClick={handleCloseVerifyEmail}
-                  className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+                  className="flex-1 px-4 py-2 text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] bg-[#fafaf8] dark:bg-[#1a1815] border border-[rgba(201,169,97,0.15)] rounded-lg hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620]"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSubmitVerification}
                   disabled={verifyEmailLoading}
-                  className="flex-1 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                  className="flex-1 px-4 py-2 text-sm font-medium text-white bg-[#8b4e52] rounded-lg hover:bg-[#7a4248] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                 >
                   {verifyEmailLoading ? (
                     <>

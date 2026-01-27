@@ -78,9 +78,9 @@ const WalletLogo: React.FC<WalletLogoProps> = ({ provider }) => {
     'polkadot-js': 'bg-pink-500',
     subwallet: 'bg-green-500',
     talisman: 'bg-red-500',
-    nova: 'bg-blue-500',
+    nova: 'bg-[#8b4e52]',
     metamask: 'bg-orange-500',
-    walletconnect: 'bg-blue-600',
+    walletconnect: 'bg-[#8b4e52]',
   }
 
   return (
@@ -324,7 +324,7 @@ const Login: React.FC = () => {
         <div className="flex items-center gap-4 text-slate-400">
           <div className="flex -space-x-2">
             <div className="h-10 w-10 rounded-full bg-primary/20 ring-2 ring-slate-800" />
-            <div className="h-10 w-10 rounded-full bg-blue-500/20 ring-2 ring-slate-800" />
+            <div className="h-10 w-10 rounded-full bg-[#8b4e52]/20 ring-2 ring-slate-800" />
             <div className="h-10 w-10 rounded-full bg-green-500/20 ring-2 ring-slate-800" />
           </div>
           <span className="text-sm">
@@ -349,7 +349,7 @@ const Login: React.FC = () => {
       <BrandingPanel />
 
       {/* Right Panel - Auth Form */}
-      <div className="flex w-full items-center justify-center bg-white px-6 py-12 lg:w-1/2">
+      <div className="flex w-full items-center justify-center bg-[#fafaf8] px-6 py-12 lg:w-1/2">
         <div className="w-full max-w-md space-y-8">
           {/* Header */}
           <div className="text-center">
@@ -593,7 +593,7 @@ const Login: React.FC = () => {
             Don&apos;t have an account?{' '}
             <Link
               to="/register"
-              className="font-medium text-blue-600 hover:underline"
+              className="font-medium text-[#8b4e52] hover:underline"
             >
               Create one
             </Link>

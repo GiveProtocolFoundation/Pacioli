@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Globe, Building2, User, Check } from 'lucide-react'
-import PacioliBlackLogo from '../../assets/Pacioli_logo_black.svg'
+import PacioliBlackLogo from '../../assets/pacioli_logo_black.svg'
 import { GridSelectionButton } from '../../components/GridSelectionButton'
 import { persistence } from '../../services/persistence'
 
@@ -23,8 +23,8 @@ const ProgressStep: React.FC<ProgressStepProps> = ({
   stepNumber,
 }) => {
   const getStepClassName = () => {
-    if (isActive) return 'bg-blue-600 text-white'
-    if (isCompleted) return 'bg-green-600 text-white'
+    if (isActive) return 'bg-[#8b4e52] text-white'
+    if (isCompleted) return 'bg-[#7a9b6f] text-white'
     return 'bg-gray-200 text-gray-600'
   }
 
@@ -49,7 +49,7 @@ const ProgressConnector: React.FC<ProgressConnectorProps> = ({
 }) => (
   <div className="w-16 h-1 bg-gray-300">
     <div
-      className={`h-full transition-all ${isCompleted ? 'bg-blue-600 w-full' : 'bg-transparent w-0'}`}
+      className={`h-full transition-all ${isCompleted ? 'bg-[#8b4e52] w-full' : 'bg-transparent w-0'}`}
     />
   </div>
 )
@@ -127,7 +127,7 @@ const Onboarding: React.FC = () => {
 
   const getContinueButtonClassName = () => {
     return canContinue
-      ? 'bg-blue-600 text-white hover:bg-blue-700'
+      ? 'bg-[#8b4e52] text-white hover:bg-[#7a4248]'
       : 'bg-gray-200 text-gray-400 cursor-not-allowed'
   }
 
@@ -136,7 +136,7 @@ const Onboarding: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-[#fafaf8] to-[#ede8e0] flex items-center justify-center p-4">
       <div className="w-full max-w-4xl">
         {/* Logo and Header */}
         <div className="text-center mb-8">
@@ -276,7 +276,7 @@ const Onboarding: React.FC = () => {
             Already have an account?{' '}
             <a
               href="/login"
-              className="text-blue-600 hover:text-blue-700 font-medium"
+              className="text-[#8b4e52] hover:text-[#7a4248] font-medium"
             >
               Sign in
             </a>

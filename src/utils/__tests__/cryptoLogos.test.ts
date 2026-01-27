@@ -83,8 +83,8 @@ describe('cryptoLogos', () => {
       expect(getCryptoBrandColor('Dot')).toBe('#E6007A')
     })
 
-    it('should return default blue for unknown cryptocurrency', () => {
-      expect(getCryptoBrandColor('UNKNOWN')).toBe('#2563EB')
+    it('should return default burgundy for unknown cryptocurrency', () => {
+      expect(getCryptoBrandColor('UNKNOWN')).toBe('#8b4e52')
     })
   })
 
@@ -124,7 +124,7 @@ describe('cryptoLogos', () => {
       const config = getCryptoConfig('UNKNOWN')
       expect(config.symbol).toBe('UNKNOWN')
       expect(config.logoPath).toBeNull()
-      expect(config.color).toBe('#2563EB')
+      expect(config.color).toBe('#8b4e52')
     })
 
     it('should be case-insensitive for symbol lookup', () => {

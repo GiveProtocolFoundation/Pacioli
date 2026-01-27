@@ -94,8 +94,8 @@ const KPICard: React.FC<{ kpi: KPI }> = ({ kpi }) => {
   return (
     <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
       <div className="flex items-center justify-between mb-4">
-        <div className="w-12 h-12 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-          <Icon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+        <div className="w-12 h-12 rounded-lg bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 flex items-center justify-center">
+          <Icon className="w-6 h-6 text-[#8b4e52] dark:text-[#a86e72]" />
         </div>
         <div
           className={`flex items-center px-2 py-1 rounded-full text-xs font-medium ${
@@ -153,7 +153,7 @@ const TimePeriodDropdown: React.FC<{
               onClick={handleSelect}
               className={`w-full px-4 py-2 text-sm text-left hover:bg-gray-50 dark:hover:bg-gray-800 first:rounded-t-lg last:rounded-b-lg ${
                 current === period.value
-                  ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30'
+                  ? 'text-[#8b4e52] dark:text-[#a86e72] bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20'
                   : 'text-gray-700 dark:text-gray-300'
               }`}
             >
@@ -235,7 +235,7 @@ const Analytics: React.FC = () => {
           <div className="lg:col-span-2 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center">
-                <Activity className="w-5 h-5 text-blue-600 mr-2" />
+                <Activity className="w-5 h-5 text-[#8b4e52] mr-2" />
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                     Portfolio Performance
@@ -275,8 +275,8 @@ const Analytics: React.FC = () => {
                     y1="0"
                     y2="1"
                   >
-                    <stop offset="0%" stopColor="#2563EB" stopOpacity="0.3" />
-                    <stop offset="100%" stopColor="#2563EB" stopOpacity="0" />
+                    <stop offset="0%" stopColor="#8b4e52" stopOpacity="0.3" />
+                    <stop offset="100%" stopColor="#8b4e52" stopOpacity="0" />
                   </linearGradient>
                 </defs>
 
@@ -284,7 +284,7 @@ const Analytics: React.FC = () => {
                 <path
                   d="M 50,120 L 150,100 L 250,135 L 350,80 L 450,55 L 550,65 L 650,40 L 750,20"
                   fill="none"
-                  stroke="#2563EB"
+                  stroke="#8b4e52"
                   strokeWidth="3"
                   strokeLinecap="round"
                 />
@@ -303,7 +303,7 @@ const Analytics: React.FC = () => {
                       cx={x}
                       cy={y}
                       r="4"
-                      fill="#2563EB"
+                      fill="#8b4e52"
                       className="hover:r-6 cursor-pointer"
                     />
                   )
@@ -328,7 +328,7 @@ const Analytics: React.FC = () => {
           {/* Asset Allocation - Pie Chart */}
           <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
             <div className="flex items-center mb-6">
-              <PieChart className="w-5 h-5 text-blue-600 mr-2" />
+              <PieChart className="w-5 h-5 text-[#8b4e52] mr-2" />
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                   Asset Allocation
@@ -430,7 +430,7 @@ const Analytics: React.FC = () => {
           {/* Transaction Volume - Bar Chart */}
           <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
             <div className="flex items-center mb-6">
-              <BarChart3 className="w-5 h-5 text-blue-600 mr-2" />
+              <BarChart3 className="w-5 h-5 text-[#8b4e52] mr-2" />
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                   Transaction Volume
@@ -459,7 +459,7 @@ const Analytics: React.FC = () => {
                     className="flex-1 flex flex-col items-center"
                   >
                     <div
-                      className="w-full bg-blue-500 dark:bg-blue-600 rounded-t hover:bg-blue-600 dark:hover:bg-blue-500 transition-colors cursor-pointer"
+                      className="w-full bg-[#8b4e52] dark:bg-[#8b4e52] rounded-t hover:bg-[#8b4e52] dark:hover:bg-[#8b4e52] transition-colors cursor-pointer"
                       style={{ height: `${height}%` }}
                     />
                     <span className="text-xs text-gray-500 dark:text-[#94a3b8] mt-2">
@@ -486,7 +486,7 @@ const Analytics: React.FC = () => {
           <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center">
-                <Target className="w-5 h-5 text-blue-600 mr-2" />
+                <Target className="w-5 h-5 text-[#8b4e52] mr-2" />
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                     Staking Rewards
@@ -518,7 +518,7 @@ const Analytics: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+              <div className="flex items-center justify-between p-4 bg-[#c9a961]/10 dark:bg-[#c9a961]/20 rounded-lg border border-[#c9a961]/30 dark:border-[#c9a961]/40">
                 <div>
                   <p className="text-sm font-medium text-gray-900 dark:text-white">
                     GLMR Staking
@@ -528,7 +528,7 @@ const Analytics: React.FC = () => {
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-semibold text-blue-600 dark:text-blue-400">
+                  <p className="text-sm font-semibold text-[#8b4e52] dark:text-[#a86e72]">
                     +$1,820.18
                   </p>
                   <p className="text-xs text-gray-500 dark:text-[#94a3b8]">
@@ -572,7 +572,7 @@ const Analytics: React.FC = () => {
           {/* Revenue vs Expenses */}
           <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
             <div className="flex items-center mb-6">
-              <DollarSign className="w-5 h-5 text-blue-600 mr-2" />
+              <DollarSign className="w-5 h-5 text-[#8b4e52] mr-2" />
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                   Revenue vs Expenses

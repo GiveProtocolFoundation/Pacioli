@@ -96,7 +96,7 @@ const CryptoIcon: React.FC<CryptoIconProps> = ({
   if (imageError || !iconSrc) {
     return (
       <div
-        className={`rounded-full flex items-center justify-center bg-gradient-to-br from-blue-400 to-blue-600 ${className}`}
+        className={`rounded-full flex items-center justify-center bg-gradient-to-br from-[#8b4e52] to-[#7a4248] ${className}`}
         style={{ width: size, height: size }}
       >
         <span className="text-white font-semibold text-xs">

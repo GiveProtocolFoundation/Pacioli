@@ -21,8 +21,8 @@ import {
   Sun,
   Building2,
 } from 'lucide-react'
-import PacioliWhiteLogo from '../../assets/pacioli_logo_white.svg'
-import PacioliBlackLogo from '../../assets/Pacioli_logo_black.svg'
+import PacioliWhiteLogo from '../../assets/Pacioli_logo_white.svg'
+import PacioliBlackLogo from '../../assets/pacioli_logo_black.svg'
 import { useTheme } from '../../contexts/ThemeContext'
 import { useOrganization } from '../../contexts/OrganizationContext'
 import { useTransactions } from '../../contexts/TransactionContext'
@@ -210,8 +210,8 @@ const Navigation: React.FC<NavigationProps> = ({
               onClick={onLinkClick}
               className={`block w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${
                 isSubActive
-                  ? 'text-[#2563EB] dark:text-[#f1f5f9] bg-[#DBEAFE] dark:bg-[#0EA5E9]/15 font-medium'
-                  : 'text-gray-600 dark:text-[#94a3b8] hover:bg-gray-50 dark:hover:bg-gray-800 dark:hover:text-[#cbd5e1] font-normal'
+                  ? 'text-[#7a4d50] dark:text-[#f5f3f0] bg-[rgba(139,78,82,0.1)] dark:bg-[rgba(139,78,82,0.15)] font-medium'
+                  : 'text-[#696557] dark:text-[#8b8580] hover:bg-[rgba(201,169,97,0.05)] dark:hover:bg-[rgba(201,169,97,0.08)] dark:hover:text-[#b8b3ac] font-normal'
               }`}
             >
               {subItem.name}
@@ -223,11 +223,11 @@ const Navigation: React.FC<NavigationProps> = ({
   )
 
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-black">
+    <div className="flex h-screen bg-[#fafaf8] dark:bg-[#0f0e0c]">
       {/* Sidebar for desktop */}
-      <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 ledger-sidebar border-r border-gray-200 dark:border-gray-700">
+      <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 ledger-sidebar border-r border-[rgba(201,169,97,0.1)] dark:border-[rgba(201,169,97,0.1)]">
         {/* Logo */}
-        <div className="flex items-center h-16 px-3 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center h-16 px-3 border-b border-[rgba(201,169,97,0.1)] dark:border-[rgba(201,169,97,0.1)]">
           <div className="flex items-center px-3">
             <img
               src={theme === 'dark' ? PacioliBlackLogo : PacioliWhiteLogo}
@@ -236,12 +236,12 @@ const Navigation: React.FC<NavigationProps> = ({
             />
             <div className="ml-3 flex flex-col">
               <span
-                className="brand-wordmark text-black dark:text-white"
+                className="brand-wordmark text-[#1a1815] dark:text-[#f5f3f0]"
                 style={{ fontSize: '24px' }}
               >
                 Pacioli
               </span>
-              <span className="brand-tagline text-xs text-gray-500 dark:text-[#94a3b8]">
+              <span className="brand-tagline text-xs text-[#a39d94] dark:text-[#8b8580]">
                 Books & Ledgers
               </span>
             </div>
@@ -265,8 +265,8 @@ const Navigation: React.FC<NavigationProps> = ({
                       onClick={createToggleExpandedHandler(item.name)}
                       className={`w-full flex items-center justify-between px-3 py-2.5 text-sm rounded-lg transition-colors ${
                         isActive
-                          ? 'bg-[#DBEAFE] dark:bg-[#0EA5E9]/15 text-[#2563EB] dark:text-white font-semibold border-l-2 border-[#2563EB] dark:border-[#0EA5E9] -ml-0.5'
-                          : 'text-gray-700 dark:text-[#94a3b8] hover:bg-gray-50 dark:hover:bg-gray-800 dark:hover:text-[#cbd5e1] font-medium'
+                          ? 'bg-[rgba(139,78,82,0.1)] dark:bg-[rgba(139,78,82,0.15)] text-[#7a4d50] dark:text-[#f5f3f0] font-semibold border-l-[3px] border-[#7a4d50] dark:border-[#8b4e52] -ml-0.5'
+                          : 'text-[#696557] dark:text-[#8b8580] hover:bg-[rgba(201,169,97,0.05)] dark:hover:bg-[rgba(201,169,97,0.08)] dark:hover:text-[#b8b3ac] font-medium'
                       }`}
                     >
                       <div className="flex items-center">
@@ -275,7 +275,7 @@ const Navigation: React.FC<NavigationProps> = ({
                       </div>
                       <div className="flex items-center space-x-2">
                         {item.badge && (
-                          <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-medium text-white bg-[#dc2626] dark:bg-[#ef4444] rounded-full">
+                          <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-medium text-white bg-[#9d6b6b] dark:bg-[#9d6b6b] rounded-full">
                             {item.badge}
                           </span>
                         )}
@@ -293,8 +293,8 @@ const Navigation: React.FC<NavigationProps> = ({
                       to={item.href}
                       className={`w-full flex items-center justify-between px-3 py-2.5 text-sm rounded-lg transition-colors ${
                         isActive
-                          ? 'bg-[#DBEAFE] dark:bg-[#0EA5E9]/15 text-[#2563EB] dark:text-white font-semibold border-l-2 border-[#2563EB] dark:border-[#0EA5E9] -ml-0.5'
-                          : 'text-gray-700 dark:text-[#94a3b8] hover:bg-gray-50 dark:hover:bg-gray-800 dark:hover:text-[#cbd5e1] font-medium'
+                          ? 'bg-[rgba(139,78,82,0.1)] dark:bg-[rgba(139,78,82,0.15)] text-[#7a4d50] dark:text-[#f5f3f0] font-semibold border-l-[3px] border-[#7a4d50] dark:border-[#8b4e52] -ml-0.5'
+                          : 'text-[#696557] dark:text-[#8b8580] hover:bg-[rgba(201,169,97,0.05)] dark:hover:bg-[rgba(201,169,97,0.08)] dark:hover:text-[#b8b3ac] font-medium'
                       }`}
                     >
                       <div className="flex items-center">
@@ -302,7 +302,7 @@ const Navigation: React.FC<NavigationProps> = ({
                         <span>{item.name}</span>
                       </div>
                       {item.badge && (
-                        <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-medium text-white bg-[#dc2626] dark:bg-[#ef4444] rounded-full">
+                        <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-medium text-white bg-[#9d6b6b] dark:bg-[#9d6b6b] rounded-full">
                           {item.badge}
                         </span>
                       )}
@@ -324,24 +324,24 @@ const Navigation: React.FC<NavigationProps> = ({
         </nav>
 
         {/* User section at bottom */}
-        <div className="border-t border-gray-200 dark:border-gray-700 p-4">
+        <div className="border-t border-[rgba(201,169,97,0.1)] dark:border-[rgba(201,169,97,0.1)] p-4">
           <div className="flex items-center">
             {userAvatar || (userType === 'organization' && organizationLogo) ? (
               <img
                 src={userAvatar || organizationLogo || ''}
                 alt="User"
-                className="w-10 h-10 rounded-full object-cover border-2 border-gray-200 dark:border-gray-700"
+                className="w-10 h-10 rounded-full object-cover border-2 border-[rgba(201,169,97,0.15)] dark:border-[rgba(201,169,97,0.15)]"
               />
             ) : (
-              <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
-                <User className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+              <div className="w-10 h-10 bg-[#ede8e0] dark:bg-[#2a2620] rounded-full flex items-center justify-center">
+                <User className="w-5 h-5 text-[#696557] dark:text-[#b8b3ac]" />
               </div>
             )}
             <div className="ml-3 flex-1">
-              <p className="text-sm font-medium text-gray-900 dark:text-white">
+              <p className="text-sm font-medium text-[#1a1815] dark:text-[#f5f3f0]">
                 {displayName}
               </p>
-              <p className="text-xs text-gray-500 dark:text-[#94a3b8]">
+              <p className="text-xs text-[#a39d94] dark:text-[#8b8580]">
                 {userEmail ||
                   (userType === 'organization' ? 'Admin' : 'Personal Account')}
               </p>
@@ -355,7 +355,7 @@ const Navigation: React.FC<NavigationProps> = ({
         <div className="fixed inset-0 z-50 lg:hidden">
           {/* Backdrop */}
           <div
-            className="fixed inset-0 bg-gray-600 bg-opacity-75"
+            className="fixed inset-0 bg-[#1a1815] bg-opacity-75"
             onClick={handleCloseSidebar}
             onKeyDown={handleBackdropKeyDown}
             role="button"
@@ -366,7 +366,7 @@ const Navigation: React.FC<NavigationProps> = ({
           {/* Sidebar panel */}
           <aside className="fixed inset-y-0 left-0 w-64 ledger-sidebar flex flex-col">
             {/* Logo and close button */}
-            <div className="flex items-center justify-between h-16 px-3 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between h-16 px-3 border-b border-[rgba(201,169,97,0.1)] dark:border-[rgba(201,169,97,0.1)]">
               <div className="flex items-center px-3">
                 <img
                   src={theme === 'dark' ? PacioliBlackLogo : PacioliWhiteLogo}
@@ -375,19 +375,19 @@ const Navigation: React.FC<NavigationProps> = ({
                 />
                 <div className="ml-3 flex flex-col">
                   <span
-                    className="brand-wordmark text-black dark:text-white"
+                    className="brand-wordmark text-[#1a1815] dark:text-[#f5f3f0]"
                     style={{ fontSize: '24px' }}
                   >
                     Pacioli
                   </span>
-                  <span className="brand-tagline text-xs text-gray-500 dark:text-[#94a3b8]">
+                  <span className="brand-tagline text-xs text-[#a39d94] dark:text-[#8b8580]">
                     Books & Ledgers
                   </span>
                 </div>
               </div>
               <button
                 onClick={handleCloseSidebar}
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                className="text-[#a39d94] hover:text-[#696557] dark:hover:text-[#b8b3ac]"
               >
                 <X className="w-6 h-6" />
               </button>
@@ -410,8 +410,8 @@ const Navigation: React.FC<NavigationProps> = ({
                           onClick={createToggleExpandedHandler(item.name)}
                           className={`w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
                             isActive
-                              ? 'bg-[#2563EB]/10 text-[#2563EB]'
-                              : 'text-gray-700 hover:bg-gray-50'
+                              ? 'bg-[rgba(139,78,82,0.1)] text-[#7a4d50] dark:text-[#8b4e52]'
+                              : 'text-[#696557] dark:text-[#8b8580] hover:bg-[rgba(201,169,97,0.05)]'
                           }`}
                         >
                           <div className="flex items-center">
@@ -420,7 +420,7 @@ const Navigation: React.FC<NavigationProps> = ({
                           </div>
                           <div className="flex items-center space-x-2">
                             {item.badge && (
-                              <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-medium text-white bg-[#dc2626] dark:bg-[#ef4444] rounded-full">
+                              <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-medium text-white bg-[#9d6b6b] rounded-full">
                                 {item.badge}
                               </span>
                             )}
@@ -439,8 +439,8 @@ const Navigation: React.FC<NavigationProps> = ({
                           onClick={handleCloseSidebar}
                           className={`w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
                             isActive
-                              ? 'bg-[#2563EB]/10 text-[#2563EB]'
-                              : 'text-gray-700 hover:bg-gray-50'
+                              ? 'bg-[rgba(139,78,82,0.1)] text-[#7a4d50] dark:text-[#8b4e52]'
+                              : 'text-[#696557] dark:text-[#8b8580] hover:bg-[rgba(201,169,97,0.05)]'
                           }`}
                         >
                           <div className="flex items-center">
@@ -448,7 +448,7 @@ const Navigation: React.FC<NavigationProps> = ({
                             <span>{item.name}</span>
                           </div>
                           {item.badge && (
-                            <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-medium text-white bg-[#dc2626] dark:bg-[#ef4444] rounded-full">
+                            <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-medium text-white bg-[#9d6b6b] rounded-full">
                               {item.badge}
                             </span>
                           )}
@@ -471,25 +471,25 @@ const Navigation: React.FC<NavigationProps> = ({
             </nav>
 
             {/* User section */}
-            <div className="border-t border-gray-200 dark:border-gray-700 p-4">
+            <div className="border-t border-[rgba(201,169,97,0.1)] dark:border-[rgba(201,169,97,0.1)] p-4">
               <div className="flex items-center">
                 {userAvatar ||
                 (userType === 'organization' && organizationLogo) ? (
                   <img
                     src={userAvatar || organizationLogo || ''}
                     alt="User"
-                    className="w-10 h-10 rounded-full object-cover border-2 border-gray-200 dark:border-gray-700"
+                    className="w-10 h-10 rounded-full object-cover border-2 border-[rgba(201,169,97,0.15)] dark:border-[rgba(201,169,97,0.15)]"
                   />
                 ) : (
-                  <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
-                    <User className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+                  <div className="w-10 h-10 bg-[#ede8e0] dark:bg-[#2a2620] rounded-full flex items-center justify-center">
+                    <User className="w-5 h-5 text-[#696557] dark:text-[#b8b3ac]" />
                   </div>
                 )}
                 <div className="ml-3 flex-1">
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">
+                  <p className="text-sm font-medium text-[#1a1815] dark:text-[#f5f3f0]">
                     {displayName}
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-[#94a3b8]">
+                  <p className="text-xs text-[#a39d94] dark:text-[#8b8580]">
                     {userEmail ||
                       (userType === 'organization'
                         ? 'Admin'
@@ -510,7 +510,7 @@ const Navigation: React.FC<NavigationProps> = ({
             {/* Mobile menu button */}
             <button
               onClick={handleOpenSidebar}
-              className="lg:hidden p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              className="lg:hidden p-2 text-[#a39d94] hover:text-[#696557] dark:hover:text-[#b8b3ac]"
             >
               <Menu className="w-6 h-6" />
             </button>
@@ -518,11 +518,11 @@ const Navigation: React.FC<NavigationProps> = ({
             {/* Search bar */}
             <div className="flex-1 max-w-2xl mx-4">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#a39d94] dark:text-[#8b8580]" />
                 <input
                   type="text"
                   placeholder="Search transactions, wallets, or reports..."
-                  className="ledger-search w-full pl-10 pr-4 py-2 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                  className="ledger-search w-full pl-10 pr-4 py-2 text-[#1a1815] dark:text-[#f5f3f0] placeholder-[#a39d94] dark:placeholder-[#8b8580]"
                 />
               </div>
             </div>
@@ -532,14 +532,14 @@ const Navigation: React.FC<NavigationProps> = ({
               {/* Notifications */}
               <button
                 onClick={handleOpenNotifications}
-                className="relative p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                className="relative p-2 text-[#a39d94] hover:text-[#696557] dark:hover:text-[#b8b3ac]"
               >
                 <Bell className="w-6 h-6" />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-[#dc2626] dark:bg-[#ef4444] rounded-full" />
+                <span className="absolute top-1 right-1 w-2 h-2 bg-[#8b4e52] dark:bg-[#8b4e52] rounded-full" />
               </button>
 
               {/* Help */}
-              <button className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+              <button className="p-2 text-[#a39d94] hover:text-[#696557] dark:hover:text-[#b8b3ac]">
                 <HelpCircle className="w-6 h-6" />
               </button>
 
@@ -547,7 +547,7 @@ const Navigation: React.FC<NavigationProps> = ({
               <button
                 type="button"
                 onClick={toggleTheme}
-                className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                className="p-2 text-[#a39d94] hover:text-[#696557] dark:hover:text-[#b8b3ac] transition-colors"
                 aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
               >
                 {theme === 'light' ? (
@@ -561,58 +561,58 @@ const Navigation: React.FC<NavigationProps> = ({
               <div className="relative">
                 <button
                   onClick={handleToggleUserMenu}
-                  className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+                  className="flex items-center space-x-2 p-2 rounded-lg hover:bg-[rgba(201,169,97,0.05)] dark:hover:bg-[rgba(201,169,97,0.08)]"
                 >
                   {userAvatar ? (
                     <img
                       src={userAvatar}
                       alt="User"
-                      className="w-8 h-8 rounded-full object-cover border-2 border-gray-200 dark:border-gray-700"
+                      className="w-8 h-8 rounded-full object-cover border-2 border-[rgba(201,169,97,0.15)] dark:border-[rgba(201,169,97,0.15)]"
                     />
                   ) : (
-                    <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
-                      <User className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+                    <div className="w-8 h-8 bg-[#ede8e0] dark:bg-[#2a2620] rounded-full flex items-center justify-center">
+                      <User className="w-5 h-5 text-[#696557] dark:text-[#b8b3ac]" />
                     </div>
                   )}
-                  <ChevronDown className="w-4 h-4 text-gray-600 dark:text-gray-300 hidden sm:block" />
+                  <ChevronDown className="w-4 h-4 text-[#696557] dark:text-[#b8b3ac] hidden sm:block" />
                 </button>
 
                 {/* User dropdown menu */}
                 {userMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-black rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1">
-                    <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">
+                  <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-[#1a1815] rounded-lg shadow-lg border border-[rgba(201,169,97,0.15)] dark:border-[rgba(201,169,97,0.15)] py-1">
+                    <div className="px-4 py-3 border-b border-[rgba(201,169,97,0.1)] dark:border-[rgba(201,169,97,0.1)]">
+                      <p className="text-sm font-medium text-[#1a1815] dark:text-[#f5f3f0]">
                         {displayName}
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-[#94a3b8] mt-1">
+                      <p className="text-xs text-[#a39d94] dark:text-[#8b8580] mt-1">
                         {userEmail}
                       </p>
                     </div>
                     <Link
                       to="/profile"
-                      className="w-full px-4 py-2 text-sm text-left text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center"
+                      className="w-full px-4 py-2 text-sm text-left text-[#696557] dark:text-[#b8b3ac] hover:bg-[rgba(201,169,97,0.05)] dark:hover:bg-[rgba(201,169,97,0.08)] flex items-center"
                     >
                       <User className="w-4 h-4 mr-3" />
                       Your Profile
                     </Link>
                     <Link
                       to="/settings"
-                      className="w-full px-4 py-2 text-sm text-left text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center"
+                      className="w-full px-4 py-2 text-sm text-left text-[#696557] dark:text-[#b8b3ac] hover:bg-[rgba(201,169,97,0.05)] dark:hover:bg-[rgba(201,169,97,0.08)] flex items-center"
                     >
                       <Settings className="w-4 h-4 mr-3" />
                       Settings
                     </Link>
                     <Link
                       to="/support"
-                      className="w-full px-4 py-2 text-sm text-left text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center"
+                      className="w-full px-4 py-2 text-sm text-left text-[#696557] dark:text-[#b8b3ac] hover:bg-[rgba(201,169,97,0.05)] dark:hover:bg-[rgba(201,169,97,0.08)] flex items-center"
                     >
                       <HelpCircle className="w-4 h-4 mr-3" />
                       Help & Support
                     </Link>
-                    <div className="border-t border-gray-200 dark:border-gray-700 mt-1" />
+                    <div className="border-t border-[rgba(201,169,97,0.1)] dark:border-[rgba(201,169,97,0.1)] mt-1" />
                     <button
                       onClick={handleLogout}
-                      className="w-full px-4 py-2 text-sm text-left text-[#dc2626] dark:text-[#ef4444] hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center"
+                      className="w-full px-4 py-2 text-sm text-left text-[#9d6b6b] dark:text-[#9d6b6b] hover:bg-[rgba(201,169,97,0.05)] dark:hover:bg-[rgba(201,169,97,0.08)] flex items-center"
                     >
                       <LogOut className="w-4 h-4 mr-3" />
                       Sign Out

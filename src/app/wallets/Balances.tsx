@@ -359,22 +359,22 @@ const Balances: React.FC = () => {
   return (
     <div className="min-h-screen ledger-background">
       {/* Header */}
-      <header className="bg-white dark:bg-black border-b border-gray-200 dark:border-gray-700">
+      <header className="bg-[#fafaf8] dark:bg-[#0f0e0c] border-b border-[rgba(201,169,97,0.15)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div>
               <h1>Wallet Balances</h1>
-              <p className="text-sm text-gray-500 dark:text-[#94a3b8] mt-1">
+              <p className="text-sm text-[#696557] dark:text-[#b8b3ac] mt-1">
                 Track your cryptocurrency holdings across all wallets
               </p>
             </div>
             <div className="flex items-center space-x-3">
-              <button className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
+              <button className="px-4 py-2 text-sm font-medium text-[#696557] dark:text-[#b8b3ac] bg-[#fafaf8] dark:bg-[#1a1815] border border-[rgba(201,169,97,0.15)] rounded-lg hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620]">
                 Export Data
               </button>
               <button
                 onClick={handleConnectWallet}
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 flex items-center"
+                className="px-4 py-2 text-sm font-medium text-white bg-[#8b4e52] rounded-lg hover:bg-[#7a4248] flex items-center"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Connect Wallet
@@ -387,21 +387,21 @@ const Balances: React.FC = () => {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Portfolio Summary */}
-        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-8">
+        <div className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg shadow-sm border border-[rgba(201,169,97,0.15)] p-6 mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-500">
+              <p className="text-sm font-medium text-[#696557] dark:text-[#b8b3ac]">
                 Total Portfolio Value
               </p>
-              <p className="text-3xl font-semibold text-gray-900 dark:text-white mt-2">
+              <p className="text-3xl font-semibold text-[#1a1815] dark:text-[#f5f3f0] mt-2">
                 {formatCurrency(totalPortfolioValue)}
               </p>
             </div>
             <div className="text-right">
-              <p className="text-sm font-medium text-gray-500">
+              <p className="text-sm font-medium text-[#696557] dark:text-[#b8b3ac]">
                 Active Wallets
               </p>
-              <p className="text-2xl font-semibold text-gray-900 mt-2">
+              <p className="text-2xl font-semibold text-[#1a1815] dark:text-[#f5f3f0] mt-2">
                 {wallets.length}
               </p>
             </div>
@@ -409,10 +409,10 @@ const Balances: React.FC = () => {
         </div>
 
         {/* Stacked Area Chart */}
-        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 mb-8">
-          <div className="px-6 py-4 border-b border-gray-200">
+        <div className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg shadow-sm border border-[rgba(201,169,97,0.15)] mb-8">
+          <div className="px-6 py-4 border-b border-[rgba(201,169,97,0.15)]">
             <div className="flex items-center justify-between flex-wrap gap-4">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+              <h2 className="text-lg font-semibold text-[#1a1815] dark:text-[#f5f3f0]">
                 Balance History
               </h2>
               <div className="flex flex-wrap gap-2">
@@ -423,8 +423,8 @@ const Balances: React.FC = () => {
                     onClick={handlePeriodChange}
                     className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${
                       selectedPeriod === option.value
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                        ? 'bg-[#8b4e52] text-white'
+                        : 'bg-[#f3f1ed] dark:bg-[#1a1815] text-[#696557] dark:text-[#b8b3ac] hover:bg-[#ede8e0] dark:hover:bg-[#2a2620]'
                     }`}
                   >
                     {option.label}

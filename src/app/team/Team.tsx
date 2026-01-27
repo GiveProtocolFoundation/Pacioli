@@ -12,7 +12,7 @@ const getRoleBadgeColor = (role: string): string => {
     case 'system-admin':
       return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400'
     case 'approver':
-      return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'
+      return 'bg-[#c9a961]/20 text-[#c9a961] dark:bg-[#c9a961]/30 dark:text-[#d4b87a]'
     case 'preparer':
       return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
     default:
@@ -48,8 +48,8 @@ const TeamMemberCard: React.FC<TeamMemberCardProps> = ({ member }) => {
       <div className="flex items-start gap-4">
         {/* Avatar */}
         <div className="flex-shrink-0">
-          <div className="w-14 h-14 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-            <span className="text-lg font-semibold text-blue-600 dark:text-blue-400">
+          <div className="w-14 h-14 rounded-full bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 flex items-center justify-center">
+            <span className="text-lg font-semibold text-[#8b4e52] dark:text-[#a86e72]">
               {getInitials(member.display_name || member.email)}
             </span>
           </div>
@@ -197,7 +197,7 @@ const Team: React.FC = () => {
             </p>
             <Link
               to="/settings/users"
-              className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+              className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-[#8b4e52] rounded-lg hover:bg-[#7a4248] transition-colors"
             >
               <Users className="w-4 h-4 mr-2" />
               Invite Team Members

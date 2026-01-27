@@ -64,7 +64,7 @@ const AccountRow = memo(function AccountRow({
   }, [onStartEdit, account.address])
 
   return (
-    <div className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
+    <div className="flex items-center gap-2 p-2 bg-[#f3f1ed] dark:bg-[#1a1815] rounded-lg">
       {isEditing ? (
         // Editing mode
         <div className="flex-1 flex items-center gap-2">
@@ -74,18 +74,18 @@ const AccountRow = memo(function AccountRow({
             onChange={onAliasInputChange}
             onKeyDown={handleKeyDown}
             placeholder="Enter alias..."
-            className="flex-1 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+            className="flex-1 px-2 py-1 text-sm border border-[rgba(201,169,97,0.15)] rounded bg-[#fafaf8] dark:bg-[#2a2620] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
           />
           <button
             onClick={handleSave}
-            className="p-1 text-[#059669] hover:bg-[#059669]/10 rounded"
+            className="p-1 text-[#7a9b6f] hover:bg-[#7a9b6f]/10 rounded"
             title="Save alias"
           >
             <Save className="w-4 h-4" />
           </button>
           <button
             onClick={onCancel}
-            className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded"
+            className="p-1 text-[#a39d94] hover:text-[#696557] dark:hover:text-[#b8b3ac] hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620] rounded"
             title="Cancel"
           >
             <X className="w-4 h-4" />
@@ -96,20 +96,20 @@ const AccountRow = memo(function AccountRow({
         <>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <span className="font-medium text-sm text-gray-900 dark:text-white">
+              <span className="font-medium text-sm text-[#1a1815] dark:text-[#f5f3f0]">
                 {displayName}
               </span>
               {currentAlias && account.name && (
-                <span className="text-xs text-gray-400">({account.name})</span>
+                <span className="text-xs text-[#a39d94]">({account.name})</span>
               )}
             </div>
-            <div className="text-xs text-gray-500 dark:text-[#94a3b8] font-mono truncate">
+            <div className="text-xs text-[#696557] dark:text-[#b8b3ac] font-mono truncate">
               {account.address.slice(0, 10)}...{account.address.slice(-8)}
             </div>
           </div>
           <button
             onClick={handleStartEdit}
-            className="p-1.5 text-gray-400 hover:text-[#2563EB] dark:hover:text-[#0EA5E9] hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
+            className="p-1.5 text-[#a39d94] hover:text-[#8b4e52] dark:hover:text-[#a86e72] hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620] rounded transition-colors"
             title="Edit alias"
           >
             <Pencil className="w-3.5 h-3.5" />
@@ -436,10 +436,10 @@ export const WalletConnector: React.FC<WalletConnectorProps> = ({
 
   if (!walletStatus) {
     return (
-      <div className="ledger-card ledger-card-financial border border-gray-200 dark:border-gray-700 p-6">
+      <div className="ledger-card ledger-card-financial border border-[rgba(201,169,97,0.15)] p-6">
         <div className="flex items-center justify-center py-8">
-          <Loader className="w-6 h-6 animate-spin text-[#2563EB] dark:text-[#0EA5E9]" />
-          <span className="ml-3 text-gray-600 dark:text-[#94a3b8]">
+          <Loader className="w-6 h-6 animate-spin text-[#8b4e52] dark:text-[#a86e72]" />
+          <span className="ml-3 text-[#696557] dark:text-[#b8b3ac]">
             Detecting wallets...
           </span>
         </div>
@@ -450,14 +450,14 @@ export const WalletConnector: React.FC<WalletConnectorProps> = ({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="ledger-card ledger-card-financial border border-gray-200 dark:border-gray-700 p-6">
+      <div className="ledger-card ledger-card-financial border border-[rgba(201,169,97,0.15)] p-6">
         <div className="flex items-center mb-4">
-          <Wallet className="w-6 h-6 text-[#2563EB] dark:text-[#0EA5E9] mr-3" />
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+          <Wallet className="w-6 h-6 text-[#8b4e52] dark:text-[#a86e72] mr-3" />
+          <h2 className="text-xl font-semibold text-[#1a1815] dark:text-[#f5f3f0]">
             Connect Wallet
           </h2>
         </div>
-        <p className="text-sm text-gray-500 dark:text-[#94a3b8]">
+        <p className="text-sm text-[#696557] dark:text-[#b8b3ac]">
           Connect your Polkadot or Ethereum wallet to import transaction
           history. Pacioli only requests read-only access.
         </p>
@@ -486,22 +486,22 @@ export const WalletConnector: React.FC<WalletConnectorProps> = ({
           return (
             <div
               key={walletType}
-              className="ledger-card border border-gray-200 dark:border-gray-700 p-4 hover:border-[#2563EB] dark:hover:border-[#0EA5E9] transition-colors"
+              className="ledger-card border border-[rgba(201,169,97,0.15)] p-4 hover:border-[#8b4e52] dark:hover:border-[#a86e72] transition-colors"
             >
               <div className="flex items-center justify-between">
                 <div className="flex-1">
                   <div className="flex items-center">
-                    <h3 className="font-semibold text-gray-900 dark:text-white">
+                    <h3 className="font-semibold text-[#1a1815] dark:text-[#f5f3f0]">
                       {info.name}
                     </h3>
                     {connected && (
-                      <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-[#059669]/10 dark:bg-[#10b981]/20 text-[#059669] dark:text-[#10b981]">
+                      <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-[#7a9b6f]/10 dark:bg-[#8faf84]/20 text-[#7a9b6f] dark:text-[#8faf84]">
                         <Check className="w-3 h-3 mr-1" />
                         Connected
                       </span>
                     )}
                   </div>
-                  <p className="text-sm text-gray-500 dark:text-[#94a3b8] mt-1">
+                  <p className="text-sm text-[#696557] dark:text-[#b8b3ac] mt-1">
                     {info.description}
                   </p>
 
@@ -542,24 +542,24 @@ export const WalletConnector: React.FC<WalletConnectorProps> = ({
 
       {/* Connected Wallets Summary */}
       {connectedWallets.length > 0 && (
-        <div className="ledger-card ledger-card-donation border border-gray-200 dark:border-gray-700 p-6">
-          <h3 className="font-semibold text-gray-900 dark:text-white mb-3">
+        <div className="ledger-card ledger-card-donation border border-[rgba(201,169,97,0.15)] p-6">
+          <h3 className="font-semibold text-[#1a1815] dark:text-[#f5f3f0] mb-3">
             Connected Accounts Summary
           </h3>
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
-              <span className="text-gray-600 dark:text-[#94a3b8]">
+              <span className="text-[#696557] dark:text-[#b8b3ac]">
                 Total Wallets:
               </span>
-              <span className="font-semibold text-gray-900 dark:text-white">
+              <span className="font-semibold text-[#1a1815] dark:text-[#f5f3f0]">
                 {connectedWallets.length}
               </span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-gray-600 dark:text-[#94a3b8]">
+              <span className="text-[#696557] dark:text-[#b8b3ac]">
                 Total Accounts:
               </span>
-              <span className="font-semibold text-gray-900 dark:text-white">
+              <span className="font-semibold text-[#1a1815] dark:text-[#f5f3f0]">
                 {connectedWallets.reduce(
                   (sum, w) => sum + w.accounts.length,
                   0

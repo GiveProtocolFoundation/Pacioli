@@ -383,7 +383,7 @@ const InviteUserModal: React.FC<{
             id="inviteEmail"
             type="email"
             placeholder="user@example.org"
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
           />
         </div>
 
@@ -396,7 +396,7 @@ const InviteUserModal: React.FC<{
           </label>
           <select
             id="inviteRole"
-            className="select-input w-full px-3 pr-8 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="select-input w-full px-3 pr-8 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
           >
             {roles.map(role => (
               <option key={role.id} value={role.id}>
@@ -406,10 +406,10 @@ const InviteUserModal: React.FC<{
           </select>
         </div>
 
-        <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+        <div className="bg-[#c9a961]/10 dark:bg-[#c9a961]/20 border border-[#c9a961]/30 dark:border-[#c9a961]/40 rounded-lg p-3">
           <div className="flex">
-            <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
-            <p className="ml-3 text-xs text-blue-800 dark:text-blue-400">
+            <AlertCircle className="w-5 h-5 text-[#8b4e52] dark:text-[#a86e72] flex-shrink-0" />
+            <p className="ml-3 text-xs text-[#8b4e52] dark:text-[#a86e72]">
               An invitation email will be sent to the user with instructions to
               set up their account.
             </p>
@@ -425,7 +425,7 @@ const InviteUserModal: React.FC<{
           </button>
           <button
             onClick={handleSend}
-            className="flex-1 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 flex items-center justify-center"
+            className="flex-1 px-4 py-2 text-sm font-medium text-white bg-[#8b4e52] rounded-lg hover:bg-[#7a4248] flex items-center justify-center"
           >
             <Mail className="w-4 h-4 mr-2" />
             Send Invite
@@ -456,13 +456,13 @@ const UsersTable: React.FC<UsersTableProps> = ({
           placeholder="Search users..."
           value={searchQuery}
           onChange={handleSearchChange}
-          className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
         />
       </div>
       <select
         value={statusFilter}
         onChange={handleStatusFilterChange}
-        className="select-input px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="select-input px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
       >
         <option value="all">All Status</option>
         <option value="active">Active</option>
@@ -505,8 +505,8 @@ const UsersTable: React.FC<UsersTableProps> = ({
               >
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
-                    <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                      <span className="text-sm font-medium text-blue-700 dark:text-blue-400">
+                    <div className="w-10 h-10 rounded-full bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 flex items-center justify-center">
+                      <span className="text-sm font-medium text-[#8b4e52] dark:text-[#a86e72]">
                         {user.name
                           .split(' ')
                           .map(n => n[0])
@@ -586,8 +586,8 @@ const RolesView: React.FC<RolesViewProps> = ({ roles, users }) => (
         >
           <div className="flex items-start justify-between mb-4">
             <div className="flex items-center">
-              <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                <Shield className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+              <div className="w-10 h-10 rounded-lg bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 flex items-center justify-center">
+                <Shield className="w-5 h-5 text-[#8b4e52] dark:text-[#a86e72]" />
               </div>
               <div className="ml-3">
                 <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
@@ -675,7 +675,7 @@ const RolesView: React.FC<RolesViewProps> = ({ roles, users }) => (
                 {users.filter(u => u.role.id === role.id).length} users assigned
               </span>
               {!role.isCustom && (
-                <span className="text-blue-600 dark:text-blue-400 hover:underline cursor-pointer">
+                <span className="text-[#8b4e52] dark:text-[#a86e72] hover:underline cursor-pointer">
                   View details
                 </span>
               )}
@@ -685,7 +685,7 @@ const RolesView: React.FC<RolesViewProps> = ({ roles, users }) => (
       ))}
 
       {/* Create Custom Role Card */}
-      <button className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 hover:border-blue-400 dark:hover:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors flex flex-col items-center justify-center text-center min-h-[300px]">
+      <button className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 hover:border-[#8b4e52] dark:hover:border-[#a86e72] hover:bg-[#8b4e52]/5 dark:hover:bg-[#8b4e52]/10 transition-colors flex flex-col items-center justify-center text-center min-h-[300px]">
         <div className="w-12 h-12 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-3">
           <Shield className="w-6 h-6 text-gray-400" />
         </div>
@@ -700,7 +700,7 @@ const RolesView: React.FC<RolesViewProps> = ({ roles, users }) => (
     {/* Security Settings */}
     <div className="mt-8 border border-gray-200 dark:border-gray-700 rounded-lg p-6 bg-white dark:bg-gray-900">
       <div className="flex items-center mb-4">
-        <Lock className="w-5 h-5 text-blue-600 mr-2" />
+        <Lock className="w-5 h-5 text-[#8b4e52] mr-2" />
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
           Security Settings
         </h3>
@@ -721,7 +721,7 @@ const RolesView: React.FC<RolesViewProps> = ({ roles, users }) => (
             className="relative inline-flex items-center cursor-pointer"
           >
             <input type="checkbox" className="sr-only peer" />
-            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600" />
+            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#c9a961]/30 dark:peer-focus:ring-[#c9a961]/50 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-[#8b4e52]" />
           </label>
         </div>
 
@@ -734,7 +734,7 @@ const RolesView: React.FC<RolesViewProps> = ({ roles, users }) => (
               Automatically log out inactive users
             </div>
           </div>
-          <select className="select-input px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <select className="select-input px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#c9a961]">
             <option>15 minutes</option>
             <option>30 minutes</option>
             <option>1 hour</option>
@@ -752,7 +752,7 @@ const RolesView: React.FC<RolesViewProps> = ({ roles, users }) => (
               Restrict access to specific IP addresses
             </div>
           </div>
-          <button className="px-3 py-1.5 text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors">
+          <button className="px-3 py-1.5 text-sm font-medium text-[#8b4e52] dark:text-[#a86e72] hover:bg-[#8b4e52]/5 dark:hover:bg-[#8b4e52]/10 rounded-lg transition-colors">
             Configure
           </button>
         </div>
@@ -860,7 +860,7 @@ const UsersPermissions: React.FC = () => {
         </div>
         <button
           onClick={handleOpenInviteModal}
-          className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 flex items-center justify-center"
+          className="px-4 py-2 text-sm font-medium text-white bg-[#8b4e52] rounded-lg hover:bg-[#7a4248] flex items-center justify-center"
         >
           <UserPlus className="w-4 h-4 mr-2" />
           Invite User
@@ -874,7 +874,7 @@ const UsersPermissions: React.FC = () => {
             onClick={handleViewModeUsers}
             className={`px-4 py-2 text-sm font-medium rounded-md transition-colors flex items-center ${
               viewMode === 'users'
-                ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+                ? 'bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 text-[#8b4e52] dark:text-[#a86e72]'
                 : 'text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
             }`}
           >
@@ -885,7 +885,7 @@ const UsersPermissions: React.FC = () => {
             onClick={handleViewModeRoles}
             className={`px-4 py-2 text-sm font-medium rounded-md transition-colors flex items-center ${
               viewMode === 'roles'
-                ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+                ? 'bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 text-[#8b4e52] dark:text-[#a86e72]'
                 : 'text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
             }`}
           >

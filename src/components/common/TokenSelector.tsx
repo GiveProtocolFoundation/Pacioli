@@ -30,7 +30,7 @@ const TokenButton = memo(function TokenButton({
     <button
       onClick={handleClick}
       className={`w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center ${
-        isSelected ? 'bg-blue-50 dark:bg-blue-900/20' : ''
+        isSelected ? 'bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20' : ''
       }`}
     >
       {token.iconUrl && (
@@ -157,7 +157,7 @@ const TokenSelector: React.FC<TokenSelectorProps> = ({
         onClick={handleToggle}
         className={`w-full px-4 py-2 text-left border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white ${
           error ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-        } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+        } focus:outline-none focus:ring-2 focus:ring-[#c9a961]`}
       >
         {selectedToken && selectedChain ? (
           <div className="flex items-center">
@@ -196,7 +196,7 @@ const TokenSelector: React.FC<TokenSelectorProps> = ({
                 value={searchQuery}
                 onChange={handleSearchChange}
                 placeholder="Search tokens..."
-                className="w-full pl-9 pr-9 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full pl-9 pr-9 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
               />
               {searchQuery && (
                 <button

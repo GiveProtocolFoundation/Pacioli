@@ -91,7 +91,7 @@ export const getCryptoLogoPath = (
  */
 export const getCryptoBrandColor = (symbol: string): string => {
   const crypto = CRYPTO_LOGOS[symbol.toUpperCase()]
-  return crypto?.color || '#2563EB' // Default to blue if unknown
+  return crypto?.color || '#8b4e52' // Default to blue if unknown
 }
 
 /**
@@ -115,7 +115,7 @@ export const getCryptoConfig = (symbol: string): CryptoLogoConfig => {
     crypto || {
       symbol: symbol.toUpperCase(),
       logoPath: null,
-      color: '#2563EB',
+      color: '#8b4e52',
     }
   )
 }
