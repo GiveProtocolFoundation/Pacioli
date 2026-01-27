@@ -5,9 +5,16 @@
  */
 
 import type { Transaction, ConnectedWallet } from '../wallet/types'
+import type {
+  Notification,
+  NotificationPreferences,
+  NotificationQuery,
+  NotificationPage,
+} from '../../types/notification'
+import { DEFAULT_NOTIFICATION_PREFERENCES } from '../../types/notification'
 
 const DB_NAME = 'PacioliDB'
-const DB_VERSION = 2 // Bumped for wallet_aliases store
+const DB_VERSION = 3 // Bumped for notifications stores
 
 // Store names
 const STORES = {
@@ -16,6 +23,8 @@ const STORES = {
   SYNC_STATUS: 'sync_status',
   METADATA: 'metadata',
   WALLET_ALIASES: 'wallet_aliases',
+  NOTIFICATIONS: 'notifications',
+  NOTIFICATION_PREFERENCES: 'notification_preferences',
 } as const
 
 export interface SyncStatus {
@@ -136,6 +145,42 @@ class IndexedDBService {
         // Create wallet aliases store (added in v2)
         if (!db.objectStoreNames.contains(STORES.WALLET_ALIASES)) {
           db.createObjectStore(STORES.WALLET_ALIASES, { keyPath: 'address' })
+        }
+
+        // Create notifications store (added in v3)
+        if (!db.objectStoreNames.contains(STORES.NOTIFICATIONS)) {
+          const notifStore = db.createObjectStore(STORES.NOTIFICATIONS, {
+            keyPath: 'id',
+          })
+
+          // Single field indexes
+          notifStore.createIndex('class', 'class', { unique: false })
+          notifStore.createIndex('type', 'type', { unique: false })
+          notifStore.createIndex('severity', 'severity', { unique: false })
+          notifStore.createIndex('priority', 'priority', { unique: false })
+          notifStore.createIndex('read', 'read', { unique: false })
+          notifStore.createIndex('dismissed', 'dismissed', { unique: false })
+          notifStore.createIndex('resolved', 'resolved', { unique: false })
+          notifStore.createIndex('actionRequired', 'actionRequired', {
+            unique: false,
+          })
+          notifStore.createIndex('createdAt', 'createdAt', { unique: false })
+          notifStore.createIndex('groupKey', 'groupKey', { unique: false })
+
+          // Compound indexes for common queries
+          notifStore.createIndex('class_read', ['class', 'read'], {
+            unique: false,
+          })
+          notifStore.createIndex('dismissed_createdAt', ['dismissed', 'createdAt'], {
+            unique: false,
+          })
+        }
+
+        // Create notification preferences store (added in v3)
+        if (!db.objectStoreNames.contains(STORES.NOTIFICATION_PREFERENCES)) {
+          db.createObjectStore(STORES.NOTIFICATION_PREFERENCES, {
+            keyPath: 'id',
+          })
         }
         return null
       }
@@ -610,6 +655,299 @@ class IndexedDBService {
     const tx = db.transaction(STORES.WALLET_ALIASES, 'readwrite')
     const store = tx.objectStore(STORES.WALLET_ALIASES)
     await IndexedDBService.promisifyRequest(store.clear())
+  }
+
+  // ==================== NOTIFICATION OPERATIONS ====================
+
+  /**
+   * Save a notification
+   */
+  async saveNotification(notification: Notification): Promise<void> {
+    const db = await this.ensureDB()
+    const tx = db.transaction(STORES.NOTIFICATIONS, 'readwrite')
+    const store = tx.objectStore(STORES.NOTIFICATIONS)
+    await IndexedDBService.promisifyRequest(store.put(notification))
+  }
+
+  /**
+   * Save multiple notifications (batch)
+   */
+  async saveNotifications(notifications: Notification[]): Promise<void> {
+    const db = await this.ensureDB()
+    const tx = db.transaction(STORES.NOTIFICATIONS, 'readwrite')
+    const store = tx.objectStore(STORES.NOTIFICATIONS)
+
+    const promises = notifications.map(notification => {
+      return new Promise<void>((resolve, reject) => {
+        const request = store.put(notification)
+        request.onsuccess = () => resolve()
+        request.onerror = () => reject(request.error)
+      })
+    })
+
+    await Promise.all(promises)
+  }
+
+  /**
+   * Get a notification by ID
+   */
+  async getNotification(id: string): Promise<Notification | null> {
+    const db = await this.ensureDB()
+    const tx = db.transaction(STORES.NOTIFICATIONS, 'readonly')
+    const store = tx.objectStore(STORES.NOTIFICATIONS)
+    const result = await IndexedDBService.promisifyRequest<Notification>(
+      store.get(id)
+    )
+    return result || null
+  }
+
+  /**
+   * Get notifications with filtering and pagination
+   */
+  async getNotifications(
+    query: NotificationQuery = {}
+  ): Promise<NotificationPage> {
+    const db = await this.ensureDB()
+    const tx = db.transaction(STORES.NOTIFICATIONS, 'readonly')
+    const store = tx.objectStore(STORES.NOTIFICATIONS)
+
+    const {
+      class: notifClass,
+      type,
+      severity,
+      read,
+      dismissed,
+      resolved,
+      actionRequired,
+      startDate,
+      endDate,
+      limit = 100,
+      offset = 0,
+    } = query
+
+    let results: Notification[] = []
+
+    // Use appropriate index for common queries
+    if (notifClass !== undefined && read !== undefined) {
+      // Use compound index for class + read
+      const index = store.index('class_read')
+      const range = IDBKeyRange.only([notifClass, read])
+      results = await IndexedDBService.getFromIndex(index, range)
+    } else if (dismissed !== undefined) {
+      // Use dismissed index
+      const index = store.index('dismissed')
+      const range = IDBKeyRange.only(dismissed)
+      results = await IndexedDBService.getFromIndex(index, range)
+    } else if (notifClass !== undefined) {
+      // Use class index
+      const index = store.index('class')
+      const range = IDBKeyRange.only(notifClass)
+      results = await IndexedDBService.getFromIndex(index, range)
+    } else if (read !== undefined) {
+      // Use read index
+      const index = store.index('read')
+      const range = IDBKeyRange.only(read)
+      results = await IndexedDBService.getFromIndex(index, range)
+    } else {
+      // Full scan
+      results = await IndexedDBService.getAllFromStore(store)
+    }
+
+    // Apply additional filters
+    results = results.filter(notif => {
+      return (
+        (type === undefined || notif.type === type) &&
+        (severity === undefined || notif.severity === severity) &&
+        (read === undefined || notif.read === read) &&
+        (dismissed === undefined || notif.dismissed === dismissed) &&
+        (resolved === undefined || notif.resolved === resolved) &&
+        (actionRequired === undefined ||
+          notif.actionRequired === actionRequired) &&
+        (!startDate || new Date(notif.createdAt) >= startDate) &&
+        (!endDate || new Date(notif.createdAt) <= endDate)
+      )
+    })
+
+    // Sort by createdAt descending (newest first)
+    results.sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    )
+
+    const total = results.length
+    const paginated = results.slice(offset, offset + limit)
+
+    return {
+      notifications: paginated,
+      total,
+      hasMore: offset + limit < total,
+    }
+  }
+
+  /**
+   * Update a notification
+   */
+  async updateNotification(
+    id: string,
+    updates: Partial<Notification>
+  ): Promise<Notification | null> {
+    const db = await this.ensureDB()
+    const tx = db.transaction(STORES.NOTIFICATIONS, 'readwrite')
+    const store = tx.objectStore(STORES.NOTIFICATIONS)
+
+    const existing = await IndexedDBService.promisifyRequest<Notification>(
+      store.get(id)
+    )
+    if (!existing) {
+      return null
+    }
+
+    const updated: Notification = {
+      ...existing,
+      ...updates,
+      updatedAt: new Date().toISOString(),
+    }
+
+    await IndexedDBService.promisifyRequest(store.put(updated))
+    return updated
+  }
+
+  /**
+   * Delete a notification
+   */
+  async deleteNotification(id: string): Promise<void> {
+    const db = await this.ensureDB()
+    const tx = db.transaction(STORES.NOTIFICATIONS, 'readwrite')
+    const store = tx.objectStore(STORES.NOTIFICATIONS)
+    await IndexedDBService.promisifyRequest(store.delete(id))
+  }
+
+  /**
+   * Mark all notifications as read
+   */
+  async markAllNotificationsAsRead(): Promise<void> {
+    const db = await this.ensureDB()
+    const tx = db.transaction(STORES.NOTIFICATIONS, 'readwrite')
+    const store = tx.objectStore(STORES.NOTIFICATIONS)
+
+    const allNotifications =
+      await IndexedDBService.getAllFromStore<Notification>(store)
+    const unread = allNotifications.filter(n => !n.read)
+
+    const promises = unread.map(notification => {
+      return new Promise<void>((resolve, reject) => {
+        const updated = {
+          ...notification,
+          read: true,
+          updatedAt: new Date().toISOString(),
+        }
+        const request = store.put(updated)
+        request.onsuccess = () => resolve()
+        request.onerror = () => reject(request.error)
+      })
+    })
+
+    await Promise.all(promises)
+  }
+
+  /**
+   * Dismiss all notifications
+   */
+  async dismissAllNotifications(): Promise<void> {
+    const db = await this.ensureDB()
+    const tx = db.transaction(STORES.NOTIFICATIONS, 'readwrite')
+    const store = tx.objectStore(STORES.NOTIFICATIONS)
+
+    const allNotifications =
+      await IndexedDBService.getAllFromStore<Notification>(store)
+    const undismissed = allNotifications.filter(n => !n.dismissed)
+
+    const promises = undismissed.map(notification => {
+      return new Promise<void>((resolve, reject) => {
+        const updated = {
+          ...notification,
+          dismissed: true,
+          updatedAt: new Date().toISOString(),
+        }
+        const request = store.put(updated)
+        request.onsuccess = () => resolve()
+        request.onerror = () => reject(request.error)
+      })
+    })
+
+    await Promise.all(promises)
+  }
+
+  /**
+   * Clear all notifications
+   */
+  async clearNotifications(): Promise<void> {
+    const db = await this.ensureDB()
+    const tx = db.transaction(STORES.NOTIFICATIONS, 'readwrite')
+    const store = tx.objectStore(STORES.NOTIFICATIONS)
+    await IndexedDBService.promisifyRequest(store.clear())
+  }
+
+  /**
+   * Get notification count by criteria
+   */
+  async getNotificationCount(
+    query: Pick<NotificationQuery, 'read' | 'dismissed' | 'actionRequired'>
+  ): Promise<number> {
+    const result = await this.getNotifications({
+      ...query,
+      limit: 10000,
+    })
+    return result.total
+  }
+
+  // ==================== NOTIFICATION PREFERENCES OPERATIONS ====================
+
+  /**
+   * Get notification preferences
+   */
+  async getNotificationPreferences(): Promise<NotificationPreferences> {
+    const db = await this.ensureDB()
+    const tx = db.transaction(STORES.NOTIFICATION_PREFERENCES, 'readonly')
+    const store = tx.objectStore(STORES.NOTIFICATION_PREFERENCES)
+    const result =
+      await IndexedDBService.promisifyRequest<NotificationPreferences>(
+        store.get('user_preferences')
+      )
+    return result || DEFAULT_NOTIFICATION_PREFERENCES
+  }
+
+  /**
+   * Save notification preferences
+   */
+  async saveNotificationPreferences(
+    preferences: NotificationPreferences
+  ): Promise<void> {
+    const db = await this.ensureDB()
+    const tx = db.transaction(STORES.NOTIFICATION_PREFERENCES, 'readwrite')
+    const store = tx.objectStore(STORES.NOTIFICATION_PREFERENCES)
+    await IndexedDBService.promisifyRequest(
+      store.put({
+        ...preferences,
+        id: 'user_preferences',
+        updatedAt: new Date().toISOString(),
+      })
+    )
+  }
+
+  /**
+   * Reset notification preferences to defaults
+   */
+  async resetNotificationPreferences(): Promise<void> {
+    const db = await this.ensureDB()
+    const tx = db.transaction(STORES.NOTIFICATION_PREFERENCES, 'readwrite')
+    const store = tx.objectStore(STORES.NOTIFICATION_PREFERENCES)
+    await IndexedDBService.promisifyRequest(
+      store.put({
+        ...DEFAULT_NOTIFICATION_PREFERENCES,
+        updatedAt: new Date().toISOString(),
+      })
+    )
   }
 }
 

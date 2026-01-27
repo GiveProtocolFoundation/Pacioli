@@ -4,6 +4,7 @@ import Navigation from './components/layout/Navigation'
 import { TransactionProvider } from './contexts/TransactionContext'
 import { TokenProvider } from './contexts/TokenContext'
 import { WalletAliasProvider } from './contexts/WalletAliasContext'
+import { NotificationProvider } from './contexts/NotificationContext'
 import { ProfileProvider } from './contexts/ProfileContext'
 import { EntityProvider } from './contexts/EntityContext'
 import { AppProvider, useApp } from './contexts/AppContext'
@@ -45,9 +46,11 @@ const DataProviders: React.FC<{ children: React.ReactNode }> = ({
 }) => (
   <TokenProvider>
     <WalletAliasProvider>
-      <TransactionProvider userAccountType="organization">
-        {children}
-      </TransactionProvider>
+      <NotificationProvider>
+        <TransactionProvider userAccountType="organization">
+          {children}
+        </TransactionProvider>
+      </NotificationProvider>
     </WalletAliasProvider>
   </TokenProvider>
 )

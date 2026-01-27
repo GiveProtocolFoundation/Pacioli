@@ -166,6 +166,57 @@ export * from './errors'
 export * from './auth'
 
 // =============================================================================
+// STORAGE TYPES (Offline-first)
+// =============================================================================
+export type {
+  AppState,
+  StorageProfile,
+  StorageProfileInput,
+  StorageWallet,
+  StorageWalletInput,
+  StorageSetting,
+  ImportResult,
+  ImportPreview,
+  ExportStats,
+  StorageService,
+} from './storage'
+
+// =============================================================================
+// NOTIFICATION TYPES
+// =============================================================================
+export type {
+  NotificationClass,
+  DataIntegrityType,
+  ActionableEventType,
+  FinancialHealthType,
+  NotificationType,
+  NotificationSeverity,
+  NotificationPriority,
+  NotificationEntityRef,
+  NotificationAction,
+  Notification,
+  CreateNotificationInput,
+  UpdateNotificationInput,
+  NotificationClassSettings,
+  NotificationThresholds,
+  NotificationPreferences,
+  NotificationStats,
+  NotificationQuery,
+  NotificationPage,
+  NotificationEventType,
+  NotificationEvent,
+  NotificationSubscriber,
+} from './notification'
+
+export {
+  DEFAULT_NOTIFICATION_PREFERENCES,
+  getNotificationClass,
+  getNotificationClassLabel,
+  getNotificationTypeLabel,
+  getDefaultPriority,
+} from './notification'
+
+// =============================================================================
 // CHAIN ADAPTER TYPES
 // =============================================================================
 export {

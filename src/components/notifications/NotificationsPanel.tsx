@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useMemo } from 'react'
 import {
   X,
   DollarSign,
@@ -8,23 +8,23 @@ import {
   Receipt,
   Wallet,
   Users,
-  FileText,
   ArrowRight,
   Check,
   XCircle,
+  RefreshCw,
+  WifiOff,
+  HelpCircle,
+  Database,
+  Loader2,
 } from 'lucide-react'
-
-interface Notification {
-  id: string
-  type: 'financial' | 'transactional' | 'workflow' | 'approval'
-  title: string
-  message: string
-  timestamp: string
-  read: boolean
-  severity: 'info' | 'warning' | 'success' | 'error'
-  icon: React.ElementType
-  actionRequired?: boolean
-}
+import { useNotifications } from '../../contexts/NotificationContext'
+import type {
+  Notification as NotificationData,
+  NotificationClass,
+  NotificationType,
+  NotificationSeverity,
+} from '../../types/notification'
+import { getNotificationClassLabel } from '../../types/notification'
 
 interface NotificationsPanelProps {
   isOpen: boolean
@@ -33,31 +33,111 @@ interface NotificationsPanelProps {
 }
 
 interface NotificationItemProps {
-  notification: Notification
+  notification: NotificationData
   onMarkAsRead: (id: string) => void
+  onDismiss: (id: string) => void
+  onResolve: (id: string) => void
   formatTimestamp: (timestamp: string) => string
-  getSeverityStyles: (severity: Notification['severity']) => string
+  getSeverityStyles: (severity: NotificationSeverity) => string
+  getIcon: (notification: NotificationData) => React.ElementType
 }
 
-const NotificationActions: React.FC = () => (
-  <div className="flex items-center space-x-2">
-    <button className="p-1.5 text-[#7a9b6f] dark:text-[#8faf84] hover:bg-[#7a9b6f]/10 dark:hover:bg-[#7a9b6f]/20 rounded">
-      <Check className="w-4 h-4" />
-    </button>
-    <button className="p-1.5 text-[#9d6b6b] dark:text-[#b88585] hover:bg-[#9d6b6b]/10 dark:hover:bg-[#9d6b6b]/20 rounded">
-      <X className="w-4 h-4" />
-    </button>
-    <button className="text-xs text-[#8b4e52] dark:text-[#a86e72] hover:underline flex items-center">
-      View
-      <ArrowRight className="w-3 h-3 ml-1" />
-    </button>
-  </div>
-)
+// Map notification class to UI filter tabs
+type FilterType = 'all' | 'financial' | 'transactional' | 'workflow' | 'approval'
+
+function mapClassToFilter(notifClass: NotificationClass): FilterType {
+  switch (notifClass) {
+    case 'financial_health':
+      return 'financial'
+    case 'actionable_events':
+      return 'transactional'
+    case 'data_integrity':
+      return 'workflow'
+    default:
+      return 'transactional'
+  }
+}
+
+// Get icon based on notification type
+function getNotificationIcon(
+  notification: NotificationData
+): React.ElementType {
+  const typeIcons: Partial<Record<NotificationType, React.ElementType>> = {
+    // Data Integrity
+    sync_status: RefreshCw,
+    api_error: WifiOff,
+    partial_import: Database,
+    missing_price: HelpCircle,
+    unknown_token: HelpCircle,
+    // Actionable Events
+    uncategorized_tx: Receipt,
+    low_confidence: AlertTriangle,
+    unmatched_transfer: ArrowRight,
+    orphaned_deposit: Wallet,
+    // Financial Health
+    negative_balance: AlertTriangle,
+    duplicate_tx: XCircle,
+    low_liquidity: DollarSign,
+    large_value_tx: TrendingUp,
+    pending_approval: Users,
+  }
+
+  return typeIcons[notification.type] || AlertTriangle
+}
+
+const NotificationActions: React.FC<{
+  notification: NotificationData
+  onDismiss: (id: string) => void
+  onResolve: (id: string) => void
+}> = ({ notification, onDismiss, onResolve }) => {
+  const handleResolve = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation()
+      onResolve(notification.id)
+    },
+    [notification.id, onResolve]
+  )
+
+  const handleDismiss = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation()
+      onDismiss(notification.id)
+    },
+    [notification.id, onDismiss]
+  )
+
+  return (
+    <div className="flex items-center space-x-2">
+      <button
+        onClick={handleResolve}
+        className="p-1.5 text-[#7a9b6f] dark:text-[#8faf84] hover:bg-[#7a9b6f]/10 dark:hover:bg-[#7a9b6f]/20 rounded"
+        title="Resolve"
+      >
+        <Check className="w-4 h-4" />
+      </button>
+      <button
+        onClick={handleDismiss}
+        className="p-1.5 text-[#9d6b6b] dark:text-[#b88585] hover:bg-[#9d6b6b]/10 dark:hover:bg-[#9d6b6b]/20 rounded"
+        title="Dismiss"
+      >
+        <X className="w-4 h-4" />
+      </button>
+      {notification.entityRef && (
+        <button className="text-xs text-[#8b4e52] dark:text-[#a86e72] hover:underline flex items-center">
+          View
+          <ArrowRight className="w-3 h-3 ml-1" />
+        </button>
+      )}
+    </div>
+  )
+}
 
 const NotificationBody: React.FC<{
-  notification: NotificationItemProps['notification']
-  formatTimestamp: NotificationItemProps['formatTimestamp']
-}> = ({ notification, formatTimestamp }) => (
+  notification: NotificationData
+  formatTimestamp: (timestamp: string) => string
+  onDismiss: (id: string) => void
+  onResolve: (id: string) => void
+}> = ({ notification, formatTimestamp, onDismiss, onResolve }) => (
   <div className="flex-1 min-w-0">
     <div className="flex items-start justify-between">
       <div className="flex-1">
@@ -73,10 +153,21 @@ const NotificationBody: React.FC<{
       </div>
     </div>
     <div className="flex items-center justify-between mt-2">
-      <span className="text-xs text-[#a39d94] dark:text-[#696557]">
-        {formatTimestamp(notification.timestamp)}
-      </span>
-      {notification.actionRequired && <NotificationActions />}
+      <div className="flex items-center space-x-2">
+        <span className="text-xs text-[#a39d94] dark:text-[#696557]">
+          {formatTimestamp(notification.createdAt)}
+        </span>
+        <span className="text-xs px-1.5 py-0.5 rounded bg-[#ede8e0] dark:bg-[#1a1815] text-[#696557] dark:text-[#b8b3ac]">
+          {getNotificationClassLabel(notification.class)}
+        </span>
+      </div>
+      {notification.actionRequired && !notification.resolved && (
+        <NotificationActions
+          notification={notification}
+          onDismiss={onDismiss}
+          onResolve={onResolve}
+        />
+      )}
     </div>
   </div>
 )
@@ -84,22 +175,29 @@ const NotificationBody: React.FC<{
 const NotificationItem: React.FC<NotificationItemProps> = ({
   notification,
   onMarkAsRead,
+  onDismiss,
+  onResolve,
   formatTimestamp,
   getSeverityStyles,
+  getIcon,
 }) => {
-  const Icon = notification.icon
+  const Icon = getIcon(notification)
   const handleClick = useCallback(() => {
-    onMarkAsRead(notification.id)
-  }, [onMarkAsRead, notification.id])
+    if (!notification.read) {
+      onMarkAsRead(notification.id)
+    }
+  }, [onMarkAsRead, notification.id, notification.read])
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault()
-        onMarkAsRead(notification.id)
+        if (!notification.read) {
+          onMarkAsRead(notification.id)
+        }
       }
     },
-    [onMarkAsRead, notification.id]
+    [onMarkAsRead, notification.id, notification.read]
   )
 
   return (
@@ -125,128 +223,16 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
         <NotificationBody
           notification={notification}
           formatTimestamp={formatTimestamp}
+          onDismiss={onDismiss}
+          onResolve={onResolve}
         />
       </div>
     </div>
   )
 }
 
-const mockNotifications: Notification[] = [
-  // Financial Alerts
-  {
-    id: '1',
-    type: 'financial',
-    title: 'Large Transaction Detected',
-    message:
-      'A transaction of $25,000 was recorded in account "Treasury Wallet"',
-    timestamp: '2025-10-18T02:30:00Z',
-    read: false,
-    severity: 'warning',
-    icon: AlertTriangle,
-  },
-  {
-    id: '2',
-    type: 'financial',
-    title: 'Monthly Revenue Target Met',
-    message: 'Your organization has reached 100% of the monthly revenue goal',
-    timestamp: '2025-10-18T01:15:00Z',
-    read: false,
-    severity: 'success',
-    icon: TrendingUp,
-  },
-  {
-    id: '3',
-    type: 'financial',
-    title: 'Low Balance Warning',
-    message: 'Operating account balance is below $5,000 threshold',
-    timestamp: '2025-10-17T18:45:00Z',
-    read: true,
-    severity: 'warning',
-    icon: DollarSign,
-  },
-
-  // Transactional Alerts
-  {
-    id: '4',
-    type: 'transactional',
-    title: 'Staking Rewards Received',
-    message: '12.5 DOT staking rewards received in Polkadot Staking Wallet',
-    timestamp: '2025-10-18T00:00:00Z',
-    read: false,
-    severity: 'success',
-    icon: Wallet,
-  },
-  {
-    id: '5',
-    type: 'transactional',
-    title: 'Transaction Failed',
-    message: 'Transaction #TX-2847 failed due to insufficient gas fees',
-    timestamp: '2025-10-17T22:10:00Z',
-    read: true,
-    severity: 'error',
-    icon: XCircle,
-  },
-  {
-    id: '6',
-    type: 'transactional',
-    title: 'New Donation Received',
-    message: '$500 donation received from John Doe',
-    timestamp: '2025-10-17T16:20:00Z',
-    read: true,
-    severity: 'success',
-    icon: Receipt,
-  },
-
-  // Workflow Requests (Organization only)
-  {
-    id: '7',
-    type: 'workflow',
-    title: 'Invoice Awaiting Review',
-    message: 'Invoice #INV-2847 from Acme Corp needs review before payment',
-    timestamp: '2025-10-18T03:00:00Z',
-    read: false,
-    severity: 'info',
-    icon: FileText,
-    actionRequired: true,
-  },
-  {
-    id: '8',
-    type: 'workflow',
-    title: 'Report Generation Complete',
-    message: 'Q3 Financial Report is ready for download',
-    timestamp: '2025-10-17T20:30:00Z',
-    read: false,
-    severity: 'info',
-    icon: FileText,
-  },
-
-  // Approval Requests (Organization only)
-  {
-    id: '9',
-    type: 'approval',
-    title: 'Expense Approval Required',
-    message: 'Sarah Johnson submitted expense report for $2,450.50',
-    timestamp: '2025-10-18T02:00:00Z',
-    read: false,
-    severity: 'info',
-    icon: Users,
-    actionRequired: true,
-  },
-  {
-    id: '10',
-    type: 'approval',
-    title: 'Budget Approval Needed',
-    message: 'Q4 Marketing budget proposal requires your approval',
-    timestamp: '2025-10-17T14:00:00Z',
-    read: false,
-    severity: 'info',
-    icon: DollarSign,
-    actionRequired: true,
-  },
-]
-
 const FilterTabs: React.FC<{
-  filter: 'all' | 'financial' | 'transactional' | 'workflow' | 'approval'
+  filter: FilterType
   userType: 'individual' | 'organization'
   onAll: () => void
   onFinancial: () => void
@@ -303,7 +289,7 @@ const FilterTabs: React.FC<{
               : 'bg-[#ede8e0] dark:bg-[#1a1815] text-[#696557] dark:text-[#b8b3ac] hover:bg-[#e5dfd4] dark:hover:bg-[#2a2620]'
           }`}
         >
-          Workflow
+          Data & Sync
         </button>
         <button
           onClick={onApproval}
@@ -325,30 +311,50 @@ const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
   onClose,
   userType,
 }) => {
-  const [filter, setFilter] = useState<
-    'all' | 'financial' | 'transactional' | 'workflow' | 'approval'
-  >('all')
-  const [notifications, setNotifications] =
-    useState<Notification[]>(mockNotifications)
+  const [filter, setFilter] = useState<FilterType>('all')
+
+  const {
+    notifications,
+    stats,
+    isLoading,
+    markAsRead,
+    markAllAsRead,
+    dismiss,
+    resolve,
+    refresh,
+  } = useNotifications()
 
   // Filter notifications based on user type and selected filter
-  const filteredNotifications = notifications.filter(notif => {
-    // For individuals, don't show workflow or approval notifications
-    if (
-      userType === 'individual' &&
-      (notif.type === 'workflow' || notif.type === 'approval')
-    ) {
-      return false
-    }
-    // Apply selected filter
-    if (filter === 'all') return true
-    return notif.type === filter
-  })
+  const filteredNotifications = useMemo(() => {
+    return notifications.filter(notif => {
+      // For individuals, don't show workflow or approval-type notifications
+      if (userType === 'individual') {
+        const notifFilter = mapClassToFilter(notif.class)
+        if (notifFilter === 'workflow' || notifFilter === 'approval') {
+          // Allow data_integrity but not pending_approval type
+          if (notif.type === 'pending_approval') {
+            return false
+          }
+        }
+      }
 
-  const unreadCount = filteredNotifications.filter(n => !n.read).length
-  const actionRequiredCount = filteredNotifications.filter(
-    n => n.actionRequired
-  ).length
+      // Apply selected filter
+      if (filter === 'all') return true
+
+      // Map notification class to filter
+      const notifFilter = mapClassToFilter(notif.class)
+
+      // Special case: pending_approval type goes to approval filter
+      if (notif.type === 'pending_approval') {
+        return filter === 'approval'
+      }
+
+      return notifFilter === filter
+    })
+  }, [notifications, userType, filter])
+
+  const unreadCount = stats.unread
+  const actionRequiredCount = stats.actionRequired
 
   const formatTimestamp = useCallback((timestamp: string) => {
     const date = new Date(timestamp)
@@ -363,30 +369,46 @@ const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
     return date.toLocaleDateString()
   }, [])
 
-  const getSeverityStyles = useCallback(
-    (severity: Notification['severity']) => {
-      const styles = {
-        info: 'bg-[#c9a961]/20 dark:bg-[#c9a961]/30 text-[#8b4e52] dark:text-[#a86e72]',
-        warning:
-          'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400',
-        success:
-          'bg-green-100 dark:bg-green-900/30 text-[#7a9b6f] dark:text-[#8faf84]',
-        error: 'bg-red-100 dark:bg-red-900/30 text-[#9d6b6b] dark:text-[#b88585]',
-      }
-      return styles[severity]
+  const getSeverityStyles = useCallback((severity: NotificationSeverity) => {
+    const styles = {
+      info: 'bg-[#c9a961]/20 dark:bg-[#c9a961]/30 text-[#8b4e52] dark:text-[#a86e72]',
+      warning:
+        'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400',
+      success:
+        'bg-green-100 dark:bg-green-900/30 text-[#7a9b6f] dark:text-[#8faf84]',
+      error: 'bg-red-100 dark:bg-red-900/30 text-[#9d6b6b] dark:text-[#b88585]',
+    }
+    return styles[severity]
+  }, [])
+
+  const handleMarkAsRead = useCallback(
+    (id: string) => {
+      markAsRead(id)
     },
-    []
+    [markAsRead]
   )
 
-  const markAsRead = useCallback((id: string) => {
-    setNotifications(prev =>
-      prev.map(n => (n.id === id ? { ...n, read: true } : n))
-    )
-  }, [])
+  const handleDismiss = useCallback(
+    (id: string) => {
+      dismiss(id)
+    },
+    [dismiss]
+  )
 
-  const markAllAsRead = useCallback(() => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })))
-  }, [])
+  const handleResolve = useCallback(
+    (id: string) => {
+      resolve(id)
+    },
+    [resolve]
+  )
+
+  const handleMarkAllAsRead = useCallback(() => {
+    markAllAsRead()
+  }, [markAllAsRead])
+
+  const handleRefresh = useCallback(() => {
+    refresh()
+  }, [refresh])
 
   const handleFilterAll = useCallback(() => setFilter('all'), [])
   const handleFilterFinancial = useCallback(() => setFilter('financial'), [])
@@ -436,9 +458,16 @@ const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
             </p>
           </div>
           <div className="flex items-center space-x-2">
+            <button
+              onClick={handleRefresh}
+              className="p-2 text-[#a39d94] hover:text-[#696557] dark:hover:text-[#b8b3ac] rounded-lg hover:bg-[#ede8e0] dark:hover:bg-[#1a1815]"
+              title="Refresh"
+            >
+              <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+            </button>
             {unreadCount > 0 && (
               <button
-                onClick={markAllAsRead}
+                onClick={handleMarkAllAsRead}
                 className="text-xs text-[#8b4e52] dark:text-[#a86e72] hover:underline"
               >
                 Mark all read
@@ -466,7 +495,14 @@ const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
 
         {/* Notifications List */}
         <div className="flex-1 overflow-y-auto">
-          {filteredNotifications.length === 0 ? (
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center h-full p-8 text-center">
+              <Loader2 className="w-12 h-12 text-[#a39d94] mb-3 animate-spin" />
+              <p className="text-sm font-medium text-[#1a1815] dark:text-[#f5f3f0]">
+                Loading notifications...
+              </p>
+            </div>
+          ) : filteredNotifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full p-8 text-center">
               <CheckCircle className="w-12 h-12 text-[#a39d94] mb-3" />
               <p className="text-sm font-medium text-[#1a1815] dark:text-[#f5f3f0]">
@@ -482,9 +518,12 @@ const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
                 <NotificationItem
                   key={notification.id}
                   notification={notification}
-                  onMarkAsRead={markAsRead}
+                  onMarkAsRead={handleMarkAsRead}
+                  onDismiss={handleDismiss}
+                  onResolve={handleResolve}
                   formatTimestamp={formatTimestamp}
                   getSeverityStyles={getSeverityStyles}
+                  getIcon={getNotificationIcon}
                 />
               ))}
             </div>

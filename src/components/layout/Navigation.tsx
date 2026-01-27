@@ -28,6 +28,7 @@ import { useOrganization } from '../../contexts/OrganizationContext'
 import { useTransactions } from '../../contexts/TransactionContext'
 import { useAuth } from '../../contexts/AuthContext'
 import NotificationsPanel from '../notifications/NotificationsPanel'
+import { useUnreadCount } from '../../contexts/NotificationContext'
 
 interface NavigationProps {
   children: React.ReactNode
@@ -55,6 +56,7 @@ const Navigation: React.FC<NavigationProps> = ({
   const { organizationLogo, userAvatar } = useOrganization()
   const { pendingApprovals } = useTransactions()
   const { user, logout, isBusinessAccount } = useAuth()
+  const unreadNotificationCount = useUnreadCount()
 
   // Determine user type from auth context, fall back to prop for backwards compatibility
   const userType =
@@ -535,7 +537,11 @@ const Navigation: React.FC<NavigationProps> = ({
                 className="relative p-2 text-[#a39d94] hover:text-[#696557] dark:hover:text-[#b8b3ac]"
               >
                 <Bell className="w-6 h-6" />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-[#8b4e52] dark:bg-[#8b4e52] rounded-full" />
+                {unreadNotificationCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center bg-[#8b4e52] dark:bg-[#8b4e52] rounded-full text-white text-xs font-medium px-1">
+                    {unreadNotificationCount > 99 ? '99+' : unreadNotificationCount}
+                  </span>
+                )}
               </button>
 
               {/* Help */}

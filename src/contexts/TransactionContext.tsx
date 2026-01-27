@@ -11,6 +11,7 @@ import {
   TransactionFormData,
   TransactionStatus,
 } from '../types/transaction'
+import { detectPendingApproval } from '../services/notification/eventDetectors'
 
 interface TransactionContextType {
   transactions: Transaction[]
@@ -62,6 +63,19 @@ export const TransactionProvider: React.FC<{
       }
 
       setTransactions(prev => [newTransaction, ...prev])
+
+      // Trigger notification for pending approval if applicable
+      if (isTeamAccount && newTransaction.status === 'pending_approval') {
+        detectPendingApproval(
+          {
+            id: newTransaction.id,
+            hash: newTransaction.hash,
+            network: newTransaction.chainId || 'unknown',
+          },
+          newTransaction.createdByName
+        ).catch(console.error)
+      }
+
       return newTransaction
     },
     [isTeamAccount]
