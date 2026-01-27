@@ -187,7 +187,6 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
   getSeverityStyles,
   getIcon,
 }) => {
-  const Icon = getIcon(notification)
   const handleClick = useCallback(() => {
     if (!notification.read) {
       onMarkAsRead(notification.id)
@@ -224,7 +223,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
             notification.severity
           )}`}
         >
-          <Icon className="w-5 h-5" />
+          {React.createElement(getIcon(notification), { className: 'w-5 h-5' })}
         </div>
         <NotificationBody
           notification={notification}

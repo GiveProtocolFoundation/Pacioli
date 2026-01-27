@@ -4,6 +4,7 @@ mod core;
 mod db;
 mod evm_indexer;
 mod indexer;
+mod storage;
 mod sync;
 
 use api::persistence::DatabaseState;
@@ -11,6 +12,7 @@ use chains::commands::create_chain_manager_state;
 use core::auth_state::AuthState;
 use core::email;
 use evm_indexer::EVMIndexer;
+use storage::commands::StorageState;
 use tauri::{Manager, State};
 use tokio::sync::Mutex;
 
@@ -171,6 +173,7 @@ async fn sync_evm_transactions(
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_dialog::init())
         .setup(|app| {
             // Initialize database
             let app_data_dir = app
@@ -192,6 +195,14 @@ pub fn run() {
             });
 
             app.manage(db_state);
+
+            // Initialize storage state (uses the same pool, cloned)
+            let storage_pool = tauri::async_runtime::block_on(async {
+                sqlx::SqlitePool::connect(&db_url)
+                    .await
+                    .expect("Failed to initialize storage pool")
+            });
+            app.manage(StorageState::new(storage_pool));
 
             // Initialize authentication state
             app.manage(AuthState::new());
@@ -339,7 +350,41 @@ pub fn run() {
             chains::get_bitcoin_transactions,
             chains::get_bitcoin_balance,
             chains::get_bitcoin_utxos,
-            chains::validate_bitcoin_address
+            chains::validate_bitcoin_address,
+            // Storage commands (offline-first)
+            storage::commands::storage_ensure_initialized,
+            storage::commands::storage_get_app_state,
+            storage::commands::storage_reset_app,
+            storage::commands::storage_create_profile,
+            storage::commands::storage_get_profile,
+            storage::commands::storage_get_all_profiles,
+            storage::commands::storage_update_profile,
+            storage::commands::storage_delete_profile,
+            storage::commands::storage_get_default_profile,
+            storage::commands::storage_set_default_profile,
+            storage::commands::storage_create_wallet,
+            storage::commands::storage_get_wallet,
+            storage::commands::storage_get_wallets_by_profile,
+            storage::commands::storage_update_wallet,
+            storage::commands::storage_delete_wallet,
+            storage::commands::storage_get_setting,
+            storage::commands::storage_set_setting,
+            storage::commands::storage_delete_setting,
+            storage::commands::storage_get_all_settings,
+            storage::commands::storage_set_password,
+            storage::commands::storage_change_password,
+            storage::commands::storage_remove_password,
+            storage::commands::storage_has_password,
+            storage::commands::storage_unlock,
+            storage::commands::storage_lock,
+            storage::commands::storage_validate_password_strength,
+            storage::commands::storage_has_recovery_phrase,
+            storage::commands::storage_verify_recovery_phrase,
+            storage::commands::storage_reset_password_with_recovery,
+            storage::commands::storage_export_data,
+            storage::commands::storage_get_export_stats,
+            storage::commands::storage_preview_import,
+            storage::commands::storage_import_data
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
