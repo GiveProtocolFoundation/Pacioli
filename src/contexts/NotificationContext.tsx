@@ -87,6 +87,10 @@ const defaultPreferences: NotificationPreferences = {
   updatedAt: new Date().toISOString(),
 }
 
+/**
+ * Provider component that manages notification state and exposes
+ * notification operations to child components.
+ */
 export const NotificationProvider: React.FC<{
   children: ReactNode
 }> = ({ children }) => {
@@ -273,6 +277,10 @@ export const NotificationProvider: React.FC<{
   )
 }
 
+/**
+ * Hook to access notification context for managing notifications.
+ * Must be used within a NotificationProvider.
+ */
 export const useNotifications = () => {
   const context = useContext(NotificationContext)
   if (context === undefined) {

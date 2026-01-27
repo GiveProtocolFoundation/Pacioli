@@ -40,6 +40,10 @@ const TransactionContext = createContext<TransactionContextType | undefined>(
   undefined
 )
 
+/**
+ * Provider component that manages transaction state and operations
+ * including CRUD and approval workflow.
+ */
 export const TransactionProvider: React.FC<{
   children: ReactNode
   userAccountType?: string
@@ -175,6 +179,10 @@ export const TransactionProvider: React.FC<{
   )
 }
 
+/**
+ * Hook to access transaction context for managing transactions.
+ * Must be used within a TransactionProvider.
+ */
 export const useTransactions = () => {
   const context = useContext(TransactionContext)
   if (context === undefined) {

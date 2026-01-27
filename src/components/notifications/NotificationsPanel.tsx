@@ -45,6 +45,9 @@ interface NotificationItemProps {
 // Map notification class to UI filter tabs
 type FilterType = 'all' | 'financial' | 'transactional' | 'workflow' | 'approval'
 
+/**
+ * Maps a notification class to the corresponding UI filter tab.
+ */
 function mapClassToFilter(notifClass: NotificationClass): FilterType {
   switch (notifClass) {
     case 'financial_health':
@@ -85,6 +88,9 @@ function getNotificationIcon(
   return typeIcons[notification.type] || AlertTriangle
 }
 
+/**
+ * Action buttons for notifications that require user response.
+ */
 const NotificationActions: React.FC<{
   notification: NotificationData
   onDismiss: (id: string) => void
@@ -231,6 +237,9 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
   )
 }
 
+/**
+ * Filter tabs for categorizing notifications by type.
+ */
 const FilterTabs: React.FC<{
   filter: FilterType
   userType: 'individual' | 'organization'
@@ -306,6 +315,10 @@ const FilterTabs: React.FC<{
   </div>
 )
 
+/**
+ * Sliding panel component that displays user notifications with filtering,
+ * mark as read, dismiss, and resolve functionality.
+ */
 const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
   isOpen,
   onClose,

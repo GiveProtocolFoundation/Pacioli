@@ -55,6 +55,9 @@ const DataProviders: React.FC<{ children: React.ReactNode }> = ({
   </TokenProvider>
 )
 
+/**
+ * Composed provider component that wraps app with profile, entity, and data contexts.
+ */
 const AppProviders: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => (
@@ -65,7 +68,16 @@ const AppProviders: React.FC<{ children: React.ReactNode }> = ({
   </ProfileProvider>
 )
 
-// App wrapper that handles initialization, first launch, and unlock states
+/**
+ * Handles page reload for retry button.
+ */
+const handleRetry = () => {
+  window.location.reload()
+}
+
+/**
+ * Wrapper component that handles app initialization, first launch, and unlock states.
+ */
 const AppWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { appState, isLoading, error, isFirstLaunch, completeFirstLaunch } = useApp()
 
@@ -85,7 +97,7 @@ const AppWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           </h1>
           <p className="text-[#696557] dark:text-[#b8b3ac] mb-4">{error}</p>
           <button
-            onClick={() => window.location.reload()}
+            onClick={handleRetry}
             className="px-4 py-2 bg-[#8b4e52] text-white rounded-md hover:bg-[#7a4248]"
           >
             Retry
@@ -106,7 +118,7 @@ const AppWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   }
 
   // App is ready
-  return <>{children}</>
+  return children as React.ReactElement
 }
 
 // Main routes wrapped with navigation
@@ -140,6 +152,9 @@ const MainRoutes: React.FC = () => (
   </Navigation>
 )
 
+/**
+ * Root application component with routing and provider hierarchy.
+ */
 const App: React.FC = () => (
   <BrowserRouter>
     <LanguageProvider>

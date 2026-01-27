@@ -43,6 +43,10 @@ interface NavItem {
   subItems?: { name: string; href: string }[]
 }
 
+/**
+ * Main navigation component with sidebar, top bar, and notification panel.
+ * Handles responsive layout for desktop and mobile views.
+ */
 const Navigation: React.FC<NavigationProps> = ({
   children,
   userType: userTypeProp,
