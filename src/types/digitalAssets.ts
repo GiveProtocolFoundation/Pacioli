@@ -16,9 +16,21 @@ export type DigitalAssetType =
   | 'synthetic-assets'
   | 'other-digital-assets'
 
-export type ChainType = 'relay' | 'parachain' | 'standalone' | 'layer2' | 'sidechain'
+export type ChainType =
+  | 'relay'
+  | 'parachain'
+  | 'standalone'
+  | 'layer2'
+  | 'sidechain'
 
-export type TokenStandard = 'native' | 'PSP-22' | 'ERC-20' | 'ERC-721' | 'ERC-1155' | 'SPL' | 'other'
+export type TokenStandard =
+  | 'native'
+  | 'PSP-22'
+  | 'ERC-20'
+  | 'ERC-721'
+  | 'ERC-1155'
+  | 'SPL'
+  | 'other'
 
 export interface DigitalAssetTypeInfo {
   type: DigitalAssetType
@@ -29,7 +41,10 @@ export interface DigitalAssetTypeInfo {
   examples: string[]
 }
 
-export const DIGITAL_ASSET_TYPES: Record<DigitalAssetType, DigitalAssetTypeInfo> = {
+export const DIGITAL_ASSET_TYPES: Record<
+  DigitalAssetType,
+  DigitalAssetTypeInfo
+> = {
   'native-protocol-tokens': {
     type: 'native-protocol-tokens',
     accountNumber: '1510',
@@ -38,7 +53,7 @@ export const DIGITAL_ASSET_TYPES: Record<DigitalAssetType, DigitalAssetTypeInfo>
     accountingTreatment: 'Capital assets with cost basis tracking',
     examples: ['DOT', 'KSM', 'ETH', 'BTC', 'GLMR', 'ASTR', 'ACA'],
   },
-  'stablecoins': {
+  stablecoins: {
     type: 'stablecoins',
     accountNumber: '1520',
     name: 'Stablecoins',
@@ -184,11 +199,15 @@ export interface ChainMetadata {
   lastUpdated: string
 }
 
-export const getDigitalAssetTypeInfo = (type: DigitalAssetType): DigitalAssetTypeInfo => {
+export const getDigitalAssetTypeInfo = (
+  type: DigitalAssetType
+): DigitalAssetTypeInfo => {
   return DIGITAL_ASSET_TYPES[type]
 }
 
-export const getAccountNumberForAssetType = (type: DigitalAssetType): string => {
+export const getAccountNumberForAssetType = (
+  type: DigitalAssetType
+): string => {
   return DIGITAL_ASSET_TYPES[type].accountNumber
 }
 

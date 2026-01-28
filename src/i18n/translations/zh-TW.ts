@@ -39,7 +39,8 @@ export const zhTW: Translations = {
     title: '恢復短語',
     subtitle: '儲存此短語，以便在忘記密碼時恢復您的帳戶。',
     warning: '重要提示',
-    warningDesc: '請記下這12個單詞並妥善保管。如果您忘記密碼，這是恢復帳戶的唯一方法。',
+    warningDesc:
+      '請記下這12個單詞並妥善保管。如果您忘記密碼，這是恢復帳戶的唯一方法。',
     copyButton: '複製到剪貼簿',
     copied: '已複製！',
     confirmCheckbox: '我已安全儲存此短語',
@@ -64,7 +65,8 @@ export const zhTW: Translations = {
     unlock: '解鎖',
     incorrectPassword: '密碼錯誤，請重試。',
     sessionExpired: '工作階段已過期',
-    sessionExpiredDesc: '由於長時間未操作，您的工作階段已過期。請輸入密碼繼續。',
+    sessionExpiredDesc:
+      '由於長時間未操作，您的工作階段已過期。請輸入密碼繼續。',
     forgotPassword: '忘記密碼？',
   },
 

@@ -21,7 +21,7 @@ export enum BasicTransactionType {
   GiftReceived = 'gift_received',
   GiftSent = 'gift_sent',
   Donation = 'donation',
-  Other = 'other'
+  Other = 'other',
 }
 
 export enum TransactionCategory {
@@ -37,7 +37,7 @@ export enum TransactionCategory {
   Losses = 'Losses and Write-offs',
   Governance = 'Governance and Protocol Participation',
   WrappedAssets = 'Wrapped and Bridged Assets',
-  DeferredTax = 'Deferred Tax Implications'
+  DeferredTax = 'Deferred Tax Implications',
 }
 
 export interface TransactionTypeDefinition {
@@ -58,16 +58,18 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Cryptocurrency Holdings',
     creditAccounts: 'Bank - Current Account',
     code: 'ACQ_FIAT_CRYPTO',
-    basicTransactionType: BasicTransactionType.Purchase
+    basicTransactionType: BasicTransactionType.Purchase,
   },
   {
     category: TransactionCategory.Acquisition,
     subcategory: 'Purchase of Cryptocurrency',
     transactionType: 'Crypto to Crypto Trade',
-    debitAccounts: 'Cryptocurrency Holdings (acquired), Realised Losses - Crypto (if loss)',
-    creditAccounts: 'Cryptocurrency Holdings (disposed), Realised Gains - Crypto (if gain)',
+    debitAccounts:
+      'Cryptocurrency Holdings (acquired), Realised Losses - Crypto (if loss)',
+    creditAccounts:
+      'Cryptocurrency Holdings (disposed), Realised Gains - Crypto (if gain)',
     code: 'ACQ_CRYPTO_TRADE',
-    basicTransactionType: BasicTransactionType.SwapIn
+    basicTransactionType: BasicTransactionType.SwapIn,
   },
   {
     category: TransactionCategory.Acquisition,
@@ -76,7 +78,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Cryptocurrency Holdings',
     creditAccounts: 'Bank / Cash',
     code: 'ACQ_P2P_OTC',
-    basicTransactionType: BasicTransactionType.Purchase
+    basicTransactionType: BasicTransactionType.Purchase,
   },
   {
     category: TransactionCategory.Acquisition,
@@ -85,7 +87,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Native Protocol Tokens',
     creditAccounts: 'Staking Rewards',
     code: 'ACQ_STAKE_DIRECT',
-    basicTransactionType: BasicTransactionType.Reward
+    basicTransactionType: BasicTransactionType.Reward,
   },
   {
     category: TransactionCategory.Acquisition,
@@ -94,7 +96,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Native Protocol Tokens',
     creditAccounts: 'Staking Rewards',
     code: 'ACQ_STAKE_POOL',
-    basicTransactionType: BasicTransactionType.Reward
+    basicTransactionType: BasicTransactionType.Reward,
   },
   {
     category: TransactionCategory.Acquisition,
@@ -103,7 +105,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Native Protocol Tokens',
     creditAccounts: 'Protocol Revenue - Validation',
     code: 'ACQ_VALIDATOR_REWARDS',
-    basicTransactionType: BasicTransactionType.Reward
+    basicTransactionType: BasicTransactionType.Reward,
   },
   {
     category: TransactionCategory.Acquisition,
@@ -112,7 +114,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Liquid Staking Derivatives',
     creditAccounts: 'Staking Rewards',
     code: 'ACQ_LIQUID_STAKE_AUTO',
-    basicTransactionType: BasicTransactionType.Reward
+    basicTransactionType: BasicTransactionType.Reward,
   },
   {
     category: TransactionCategory.Acquisition,
@@ -121,7 +123,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Native Protocol Tokens, Unclaimed DeFi Rewards (if not)',
     creditAccounts: 'Staking Rewards',
     code: 'ACQ_LIQUID_STAKE_CLAIM',
-    basicTransactionType: BasicTransactionType.Reward
+    basicTransactionType: BasicTransactionType.Reward,
   },
   {
     category: TransactionCategory.Acquisition,
@@ -130,7 +132,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Native Protocol Tokens',
     creditAccounts: 'Protocol Revenue - Collator Rewards',
     code: 'ACQ_COLLATOR_REWARDS',
-    basicTransactionType: BasicTransactionType.Reward
+    basicTransactionType: BasicTransactionType.Reward,
   },
   {
     category: TransactionCategory.Acquisition,
@@ -139,7 +141,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Native Protocol Tokens, Governance Tokens',
     creditAccounts: 'Liquidity Mining Rewards',
     code: 'ACQ_OMNIPOOL_MINING',
-    basicTransactionType: BasicTransactionType.Reward
+    basicTransactionType: BasicTransactionType.Reward,
   },
   {
     category: TransactionCategory.Acquisition,
@@ -148,7 +150,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Native Protocol Tokens, Governance Tokens',
     creditAccounts: 'Yield Farming Income',
     code: 'ACQ_FARM_REWARDS',
-    basicTransactionType: BasicTransactionType.Reward
+    basicTransactionType: BasicTransactionType.Reward,
   },
   {
     category: TransactionCategory.Acquisition,
@@ -157,7 +159,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Governance Tokens',
     creditAccounts: 'Protocol Revenue Sharing',
     code: 'ACQ_SINGLE_STAKE',
-    basicTransactionType: BasicTransactionType.Reward
+    basicTransactionType: BasicTransactionType.Reward,
   },
   {
     category: TransactionCategory.Acquisition,
@@ -166,7 +168,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Governance Tokens (multiple tokens)',
     creditAccounts: 'Liquidity Mining Rewards',
     code: 'ACQ_DUAL_REWARDS',
-    basicTransactionType: BasicTransactionType.Reward
+    basicTransactionType: BasicTransactionType.Reward,
   },
   {
     category: TransactionCategory.Acquisition,
@@ -175,7 +177,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Governance Tokens',
     creditAccounts: 'Yield Farming Income',
     code: 'ACQ_LSD_FARMING',
-    basicTransactionType: BasicTransactionType.Reward
+    basicTransactionType: BasicTransactionType.Reward,
   },
   {
     category: TransactionCategory.Acquisition,
@@ -184,7 +186,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Governance Tokens',
     creditAccounts: 'Governance Participation Rewards',
     code: 'ACQ_GOV_STAKE',
-    basicTransactionType: BasicTransactionType.Reward
+    basicTransactionType: BasicTransactionType.Reward,
   },
   {
     category: TransactionCategory.Acquisition,
@@ -193,7 +195,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Cryptocurrency Holdings',
     creditAccounts: 'Business/Self-Employment Income',
     code: 'ACQ_MINING_INDIVIDUAL',
-    basicTransactionType: BasicTransactionType.Reward
+    basicTransactionType: BasicTransactionType.Reward,
   },
   {
     category: TransactionCategory.Acquisition,
@@ -202,7 +204,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Cryptocurrency - Long-term Holdings',
     creditAccounts: 'Protocol Revenue - Transaction Fees',
     code: 'ACQ_MINING_BUSINESS',
-    basicTransactionType: BasicTransactionType.Reward
+    basicTransactionType: BasicTransactionType.Reward,
   },
   {
     category: TransactionCategory.Acquisition,
@@ -211,7 +213,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Cryptocurrency Holdings',
     creditAccounts: 'Airdrops and Token Distributions',
     code: 'ACQ_AIRDROP',
-    basicTransactionType: BasicTransactionType.Airdrop
+    basicTransactionType: BasicTransactionType.Airdrop,
   },
   {
     category: TransactionCategory.Acquisition,
@@ -220,25 +222,28 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Cryptocurrency Holdings',
     creditAccounts: 'Airdrops and Token Distributions',
     code: 'ACQ_HARD_FORK',
-    basicTransactionType: BasicTransactionType.Airdrop
+    basicTransactionType: BasicTransactionType.Airdrop,
   },
   {
     category: TransactionCategory.Disposal,
     subcategory: 'Sale of Cryptocurrency',
     transactionType: 'Crypto to Fiat Sale',
     debitAccounts: 'Bank - Current Account, Realised Losses - Crypto (if loss)',
-    creditAccounts: 'Cryptocurrency Holdings, Realised Gains - Crypto (if gain)',
+    creditAccounts:
+      'Cryptocurrency Holdings, Realised Gains - Crypto (if gain)',
     code: 'DSP_CRYPTO_FIAT',
-    basicTransactionType: BasicTransactionType.Sale
+    basicTransactionType: BasicTransactionType.Sale,
   },
   {
     category: TransactionCategory.Disposal,
     subcategory: 'Sale of Cryptocurrency',
     transactionType: 'Crypto Used for Goods/Services',
-    debitAccounts: 'Groceries (or relevant expense), Realised Losses - Crypto (if loss)',
-    creditAccounts: 'Cryptocurrency Holdings, Realised Gains - Crypto (if gain)',
+    debitAccounts:
+      'Groceries (or relevant expense), Realised Losses - Crypto (if loss)',
+    creditAccounts:
+      'Cryptocurrency Holdings, Realised Gains - Crypto (if gain)',
     code: 'DSP_CRYPTO_GOODS',
-    basicTransactionType: BasicTransactionType.Sale
+    basicTransactionType: BasicTransactionType.Sale,
   },
   {
     category: TransactionCategory.Disposal,
@@ -247,7 +252,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Charitable Donations',
     creditAccounts: 'Cryptocurrency Holdings',
     code: 'DSP_DONATION',
-    basicTransactionType: BasicTransactionType.Donation
+    basicTransactionType: BasicTransactionType.Donation,
   },
   {
     category: TransactionCategory.Disposal,
@@ -256,7 +261,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'No entry (or Retained Earnings if significant)',
     creditAccounts: 'Cryptocurrency Holdings',
     code: 'DSP_GIFT',
-    basicTransactionType: BasicTransactionType.GiftSent
+    basicTransactionType: BasicTransactionType.GiftSent,
   },
   {
     category: TransactionCategory.Disposal,
@@ -265,7 +270,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Gas Fees - (if applicable)',
     creditAccounts: 'Bank / Stablecoins',
     code: 'DSP_TRANSFER_OWN',
-    basicTransactionType: BasicTransactionType.TransferOut
+    basicTransactionType: BasicTransactionType.TransferOut,
   },
   {
     category: TransactionCategory.DeFiProtocol,
@@ -274,25 +279,27 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Lending Protocol Deposits',
     creditAccounts: 'Cryptocurrency Holdings',
     code: 'DEFI_LEND_DEPOSIT',
-    basicTransactionType: BasicTransactionType.TransferOut
+    basicTransactionType: BasicTransactionType.TransferOut,
   },
   {
     category: TransactionCategory.DeFiProtocol,
     subcategory: 'Lending and Borrowing',
     transactionType: 'Interest Earned on Lending',
-    debitAccounts: 'Lending Protocol Deposits (if auto-compound), Unclaimed DeFi Rewards (if not)',
+    debitAccounts:
+      'Lending Protocol Deposits (if auto-compound), Unclaimed DeFi Rewards (if not)',
     creditAccounts: 'DeFi Yield and Interest',
     code: 'DEFI_LEND_INTEREST',
-    basicTransactionType: BasicTransactionType.Reward
+    basicTransactionType: BasicTransactionType.Reward,
   },
   {
     category: TransactionCategory.DeFiProtocol,
     subcategory: 'Lending and Borrowing',
     transactionType: 'Borrow Against Collateral',
-    debitAccounts: 'Stablecoins (borrowed), Cryptocurrency (locked collateral - memo)',
+    debitAccounts:
+      'Stablecoins (borrowed), Cryptocurrency (locked collateral - memo)',
     creditAccounts: 'Collateralized Debt - Protocol',
     code: 'DEFI_BORROW',
-    basicTransactionType: BasicTransactionType.TransferIn
+    basicTransactionType: BasicTransactionType.TransferIn,
   },
   {
     category: TransactionCategory.DeFiProtocol,
@@ -301,7 +308,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'DeFi Interest Expense',
     creditAccounts: 'Collateralized Debt (if accruing), Stablecoins (if paid)',
     code: 'DEFI_BORROW_INTEREST',
-    basicTransactionType: BasicTransactionType.Fee
+    basicTransactionType: BasicTransactionType.Fee,
   },
   {
     category: TransactionCategory.DeFiProtocol,
@@ -310,7 +317,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Collateralized Debt - Protocol',
     creditAccounts: 'Stablecoins',
     code: 'DEFI_LOAN_REPAY',
-    basicTransactionType: BasicTransactionType.TransferOut
+    basicTransactionType: BasicTransactionType.TransferOut,
   },
   {
     category: TransactionCategory.DeFiProtocol,
@@ -319,7 +326,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Collateralized Debt, Liquidation Losses, Gas Fees',
     creditAccounts: 'Cryptocurrency Holdings (collateral)',
     code: 'DEFI_LIQUIDATION',
-    basicTransactionType: BasicTransactionType.Other
+    basicTransactionType: BasicTransactionType.Other,
   },
   {
     category: TransactionCategory.DeFiProtocol,
@@ -328,16 +335,17 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Liquidity Pool Tokens - LP Tokens',
     creditAccounts: 'Cryptocurrency Holdings (both assets)',
     code: 'DEFI_LP_ADD',
-    basicTransactionType: BasicTransactionType.LPDeposit
+    basicTransactionType: BasicTransactionType.LPDeposit,
   },
   {
     category: TransactionCategory.DeFiProtocol,
     subcategory: 'Liquidity Provision (AMM Pools)',
     transactionType: 'Earn Trading Fees (LP)',
-    debitAccounts: 'Liquidity Pool Tokens (value increase), Unclaimed DeFi Rewards (if claimable)',
+    debitAccounts:
+      'Liquidity Pool Tokens (value increase), Unclaimed DeFi Rewards (if claimable)',
     creditAccounts: 'Trading Fees Earned',
     code: 'DEFI_LP_FEES',
-    basicTransactionType: BasicTransactionType.Reward
+    basicTransactionType: BasicTransactionType.Reward,
   },
   {
     category: TransactionCategory.DeFiProtocol,
@@ -346,16 +354,17 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Governance Tokens, Unclaimed DeFi Rewards',
     creditAccounts: 'Liquidity Mining Rewards',
     code: 'DEFI_LP_MINING',
-    basicTransactionType: BasicTransactionType.Reward
+    basicTransactionType: BasicTransactionType.Reward,
   },
   {
     category: TransactionCategory.DeFiProtocol,
     subcategory: 'Liquidity Provision (AMM Pools)',
     transactionType: 'Remove Liquidity from Pool',
-    debitAccounts: 'Cryptocurrency Holdings (received back), Impermanent Loss Realised (if loss), Realised Losses',
+    debitAccounts:
+      'Cryptocurrency Holdings (received back), Impermanent Loss Realised (if loss), Realised Losses',
     creditAccounts: 'Liquidity Pool Tokens, Realised Gains - Crypto (if gain)',
     code: 'DEFI_LP_REMOVE',
-    basicTransactionType: BasicTransactionType.LPWithdraw
+    basicTransactionType: BasicTransactionType.LPWithdraw,
   },
   {
     category: TransactionCategory.DeFiProtocol,
@@ -364,7 +373,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Impermanent Loss Liability (if material and estimable)',
     creditAccounts: 'Liquidity Pool Tokens (or recognize in OCI)',
     code: 'DEFI_IL_MTM',
-    basicTransactionType: BasicTransactionType.Other
+    basicTransactionType: BasicTransactionType.Other,
   },
   {
     category: TransactionCategory.DeFiProtocol,
@@ -373,7 +382,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Staked Assets - Native Staking',
     creditAccounts: 'Cryptocurrency Holdings',
     code: 'DEFI_STAKE_NATIVE',
-    basicTransactionType: BasicTransactionType.Stake
+    basicTransactionType: BasicTransactionType.Stake,
   },
   {
     category: TransactionCategory.DeFiProtocol,
@@ -382,7 +391,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Staked Assets - Liquid Staking',
     creditAccounts: 'Cryptocurrency',
     code: 'DEFI_STAKE_LIQUID',
-    basicTransactionType: BasicTransactionType.Stake
+    basicTransactionType: BasicTransactionType.Stake,
   },
   {
     category: TransactionCategory.DeFiProtocol,
@@ -391,7 +400,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Staked Assets (if auto-compound), Crypto (if distributed)',
     creditAccounts: 'Staking Rewards',
     code: 'DEFI_STAKE_REWARDS',
-    basicTransactionType: BasicTransactionType.Reward
+    basicTransactionType: BasicTransactionType.Reward,
   },
   {
     category: TransactionCategory.DeFiProtocol,
@@ -400,7 +409,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Cryptocurrency Holdings',
     creditAccounts: 'Staked Assets',
     code: 'DEFI_UNSTAKE',
-    basicTransactionType: BasicTransactionType.Unstake
+    basicTransactionType: BasicTransactionType.Unstake,
   },
   {
     category: TransactionCategory.DeFiProtocol,
@@ -409,7 +418,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Smart Contract Failures, Crypto Impairment Losses',
     creditAccounts: 'Staked Assets',
     code: 'DEFI_SLASHING',
-    basicTransactionType: BasicTransactionType.Other
+    basicTransactionType: BasicTransactionType.Other,
   },
   {
     category: TransactionCategory.DeFiProtocol,
@@ -418,7 +427,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Yield Farming Positions',
     creditAccounts: 'Cryptocurrency Holdings',
     code: 'DEFI_YIELD_DEPLOY',
-    basicTransactionType: BasicTransactionType.TransferOut
+    basicTransactionType: BasicTransactionType.TransferOut,
   },
   {
     category: TransactionCategory.DeFiProtocol,
@@ -427,7 +436,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Governance Tokens',
     creditAccounts: 'Yield Farming Income',
     code: 'DEFI_YIELD_HARVEST',
-    basicTransactionType: BasicTransactionType.Reward
+    basicTransactionType: BasicTransactionType.Reward,
   },
   {
     category: TransactionCategory.DeFiProtocol,
@@ -436,7 +445,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Yield Farming Positions',
     creditAccounts: 'Yield Farming Income',
     code: 'DEFI_YIELD_AUTO',
-    basicTransactionType: BasicTransactionType.Reward
+    basicTransactionType: BasicTransactionType.Reward,
   },
   {
     category: TransactionCategory.NFT,
@@ -445,16 +454,17 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'NFTs, Gas Fees',
     creditAccounts: 'Cryptocurrency Holdings',
     code: 'NFT_PURCHASE',
-    basicTransactionType: BasicTransactionType.Purchase
+    basicTransactionType: BasicTransactionType.Purchase,
   },
   {
     category: TransactionCategory.NFT,
     subcategory: 'NFT Acquisition and Disposal',
     transactionType: 'Mint NFT (Create)',
     debitAccounts: 'NFTs',
-    creditAccounts: 'Stablecoins (if paid mint fee), Gas Fees (if using own crypto)',
+    creditAccounts:
+      'Stablecoins (if paid mint fee), Gas Fees (if using own crypto)',
     code: 'NFT_MINT',
-    basicTransactionType: BasicTransactionType.Purchase
+    basicTransactionType: BasicTransactionType.Purchase,
   },
   {
     category: TransactionCategory.NFT,
@@ -463,7 +473,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Cryptocurrency (proceeds), Realised Losses (if loss)',
     creditAccounts: 'NFTs, Realised Gains - NFT Sales (if gain)',
     code: 'NFT_SELL',
-    basicTransactionType: BasicTransactionType.Sale
+    basicTransactionType: BasicTransactionType.Sale,
   },
   {
     category: TransactionCategory.NFT,
@@ -472,7 +482,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'NFTs',
     creditAccounts: 'Airdrops and Token Distributions',
     code: 'NFT_AIRDROP',
-    basicTransactionType: BasicTransactionType.Airdrop
+    basicTransactionType: BasicTransactionType.Airdrop,
   },
   {
     category: TransactionCategory.NFT,
@@ -481,7 +491,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Cryptocurrency',
     creditAccounts: 'NFT Royalty Income',
     code: 'NFT_ROYALTY',
-    basicTransactionType: BasicTransactionType.Reward
+    basicTransactionType: BasicTransactionType.Reward,
   },
   {
     category: TransactionCategory.NFT,
@@ -490,7 +500,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'NFT Impairment Losses',
     creditAccounts: 'NFTs',
     code: 'NFT_IMPAIRMENT',
-    basicTransactionType: BasicTransactionType.Other
+    basicTransactionType: BasicTransactionType.Other,
   },
   {
     category: TransactionCategory.Derivatives,
@@ -499,7 +509,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Options - DeFi Protocols',
     creditAccounts: 'Cryptocurrency (premium paid)',
     code: 'DERIV_OPT_PURCHASE',
-    basicTransactionType: BasicTransactionType.Purchase
+    basicTransactionType: BasicTransactionType.Purchase,
   },
   {
     category: TransactionCategory.Derivatives,
@@ -508,7 +518,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Cryptocurrency (underlying), Realised Losses',
     creditAccounts: 'Cryptocurrency (strike price), Options, Realised Gains',
     code: 'DERIV_OPT_EXERCISE',
-    basicTransactionType: BasicTransactionType.SwapIn
+    basicTransactionType: BasicTransactionType.SwapIn,
   },
   {
     category: TransactionCategory.Derivatives,
@@ -517,7 +527,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Realised Losses - Cryptocurrency',
     creditAccounts: 'Options - DeFi Protocols',
     code: 'DERIV_OPT_EXPIRE',
-    basicTransactionType: BasicTransactionType.Other
+    basicTransactionType: BasicTransactionType.Other,
   },
   {
     category: TransactionCategory.Derivatives,
@@ -526,7 +536,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Perpetual Futures (if long)',
     creditAccounts: 'Stablecoins (margin)',
     code: 'DERIV_PERP_OPEN',
-    basicTransactionType: BasicTransactionType.Other
+    basicTransactionType: BasicTransactionType.Other,
   },
   {
     category: TransactionCategory.Derivatives,
@@ -535,7 +545,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'DeFi Interest Expense (if negative), Stablecoins',
     creditAccounts: 'DeFi Yield and Interest (if positive)',
     code: 'DERIV_PERP_FUNDING',
-    basicTransactionType: BasicTransactionType.Fee
+    basicTransactionType: BasicTransactionType.Fee,
   },
   {
     category: TransactionCategory.Derivatives,
@@ -544,7 +554,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Stablecoins (if profit), Realised Losses (if loss)',
     creditAccounts: 'Perpetual Futures, Realised Gains - Crypto (if profit)',
     code: 'DERIV_PERP_CLOSE',
-    basicTransactionType: BasicTransactionType.Other
+    basicTransactionType: BasicTransactionType.Other,
   },
   {
     category: TransactionCategory.Derivatives,
@@ -553,16 +563,18 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Synthetic Assets',
     creditAccounts: 'Governance Tokens (SNX collateral locked)',
     code: 'DERIV_SYNTH_MINT',
-    basicTransactionType: BasicTransactionType.Other
+    basicTransactionType: BasicTransactionType.Other,
   },
   {
     category: TransactionCategory.Derivatives,
     subcategory: 'Synthetic Assets',
     transactionType: 'Synthetic Asset Price Movement',
-    debitAccounts: 'Synthetic Assets (if gain), Unrealised Losses - Crypto (if loss)',
-    creditAccounts: 'Unrealised Gains - Crypto (if gain), Synthetic Assets (if loss)',
+    debitAccounts:
+      'Synthetic Assets (if gain), Unrealised Losses - Crypto (if loss)',
+    creditAccounts:
+      'Unrealised Gains - Crypto (if gain), Synthetic Assets (if loss)',
     code: 'DERIV_SYNTH_REVALUE',
-    basicTransactionType: BasicTransactionType.Other
+    basicTransactionType: BasicTransactionType.Other,
   },
   {
     category: TransactionCategory.Derivatives,
@@ -571,7 +583,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Governance Tokens (collateral), Realised Losses (if loss)',
     creditAccounts: 'Synthetic Assets, Realised Gains (if gain)',
     code: 'DERIV_SYNTH_BURN',
-    basicTransactionType: BasicTransactionType.Other
+    basicTransactionType: BasicTransactionType.Other,
   },
   {
     category: TransactionCategory.BusinessOps,
@@ -580,7 +592,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Crypto Receivables, Cryptocurrency',
     creditAccounts: 'Cryptocurrency Payment Revenue',
     code: 'BIZ_SALE_GOODS',
-    basicTransactionType: BasicTransactionType.Sale
+    basicTransactionType: BasicTransactionType.Sale,
   },
   {
     category: TransactionCategory.BusinessOps,
@@ -589,7 +601,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Cryptocurrency',
     creditAccounts: 'Cryptocurrency Payment Revenue',
     code: 'BIZ_SALE_SERVICE',
-    basicTransactionType: BasicTransactionType.Sale
+    basicTransactionType: BasicTransactionType.Sale,
   },
   {
     category: TransactionCategory.BusinessOps,
@@ -598,7 +610,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Trade Payables, Realised Losses (if applicable)',
     creditAccounts: 'Cryptocurrency, Realised Gains (if applicable)',
     code: 'BIZ_PAY_SUPPLIER',
-    basicTransactionType: BasicTransactionType.TransferOut
+    basicTransactionType: BasicTransactionType.TransferOut,
   },
   {
     category: TransactionCategory.BusinessOps,
@@ -607,7 +619,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Salaries and Wages, Social Security Costs',
     creditAccounts: 'Cryptocurrency, Payroll Tax Payable',
     code: 'BIZ_SALARY_CRYPTO',
-    basicTransactionType: BasicTransactionType.TransferOut
+    basicTransactionType: BasicTransactionType.TransferOut,
   },
   {
     category: TransactionCategory.BusinessOps,
@@ -616,7 +628,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Token-based Compensation',
     creditAccounts: 'Share Premium (or Token Reserve)',
     code: 'BIZ_TOKEN_COMP',
-    basicTransactionType: BasicTransactionType.Other
+    basicTransactionType: BasicTransactionType.Other,
   },
   {
     category: TransactionCategory.BusinessOps,
@@ -625,7 +637,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'No entry (already expensed during vesting)',
     creditAccounts: 'Digital Tokens (issue new tokens)',
     code: 'BIZ_TOKEN_VEST',
-    basicTransactionType: BasicTransactionType.Other
+    basicTransactionType: BasicTransactionType.Other,
   },
   {
     category: TransactionCategory.BusinessOps,
@@ -634,7 +646,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Digital Asset Inventory',
     creditAccounts: 'Stablecoins (mint & gas costs)',
     code: 'BIZ_NFT_CREATE',
-    basicTransactionType: BasicTransactionType.Purchase
+    basicTransactionType: BasicTransactionType.Purchase,
   },
   {
     category: TransactionCategory.BusinessOps,
@@ -643,7 +655,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Cryptocurrency',
     creditAccounts: 'NFT Sales Revenue',
     code: 'BIZ_NFT_SELL',
-    basicTransactionType: BasicTransactionType.Sale
+    basicTransactionType: BasicTransactionType.Sale,
   },
   {
     category: TransactionCategory.BusinessOps,
@@ -652,7 +664,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Cost of Digital Assets Sold',
     creditAccounts: 'Digital Asset Inventory',
     code: 'BIZ_NFT_COGS',
-    basicTransactionType: BasicTransactionType.Other
+    basicTransactionType: BasicTransactionType.Other,
   },
   {
     category: TransactionCategory.BusinessOps,
@@ -661,7 +673,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Corporate Stablecoin Holdings',
     creditAccounts: 'Bank - Current Account',
     code: 'BIZ_TREASURY_STABLE',
-    basicTransactionType: BasicTransactionType.Purchase
+    basicTransactionType: BasicTransactionType.Purchase,
   },
   {
     category: TransactionCategory.BusinessOps,
@@ -670,7 +682,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'DeFi Treasury Yield Positions',
     creditAccounts: 'Corporate Stablecoin Holdings',
     code: 'BIZ_TREASURY_DEPLOY',
-    basicTransactionType: BasicTransactionType.TransferOut
+    basicTransactionType: BasicTransactionType.TransferOut,
   },
   {
     category: TransactionCategory.BusinessOps,
@@ -679,7 +691,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'DeFi Treasury Yield Positions',
     creditAccounts: 'DeFi Yield Income',
     code: 'BIZ_TREASURY_YIELD',
-    basicTransactionType: BasicTransactionType.Reward
+    basicTransactionType: BasicTransactionType.Reward,
   },
   {
     category: TransactionCategory.NFPSpecific,
@@ -688,7 +700,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Donated Cryptocurrency - Unrestricted',
     creditAccounts: 'Crypto Donations - Unrestricted',
     code: 'NFP_DONATE_UNRESTRICTED',
-    basicTransactionType: BasicTransactionType.Donation
+    basicTransactionType: BasicTransactionType.Donation,
   },
   {
     category: TransactionCategory.NFPSpecific,
@@ -697,7 +709,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Donated Cryptocurrency - Restricted',
     creditAccounts: 'Crypto Donations - Restricted',
     code: 'NFP_DONATE_RESTRICTED',
-    basicTransactionType: BasicTransactionType.Donation
+    basicTransactionType: BasicTransactionType.Donation,
   },
   {
     category: TransactionCategory.NFPSpecific,
@@ -706,7 +718,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Donated NFTs',
     creditAccounts: 'NFT Donations',
     code: 'NFP_DONATE_NFT',
-    basicTransactionType: BasicTransactionType.Donation
+    basicTransactionType: BasicTransactionType.Donation,
   },
   {
     category: TransactionCategory.NFPSpecific,
@@ -715,7 +727,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Bank - Unrestricted Funds, Realised Losses (if loss)',
     creditAccounts: 'Donated Cryptocurrency, Realised Gains (if gain)',
     code: 'NFP_CONVERT_DONATION',
-    basicTransactionType: BasicTransactionType.Sale
+    basicTransactionType: BasicTransactionType.Sale,
   },
   {
     category: TransactionCategory.NFPSpecific,
@@ -724,7 +736,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Restricted - Programme A (net assets)',
     creditAccounts: 'General Fund',
     code: 'NFP_USE_RESTRICTED',
-    basicTransactionType: BasicTransactionType.Other
+    basicTransactionType: BasicTransactionType.Other,
   },
   {
     category: TransactionCategory.NFPSpecific,
@@ -733,7 +745,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Cryptocurrency Endowment Holdings',
     creditAccounts: 'Bank - Endowment Funds',
     code: 'NFP_ENDOW_INVEST',
-    basicTransactionType: BasicTransactionType.Purchase
+    basicTransactionType: BasicTransactionType.Purchase,
   },
   {
     category: TransactionCategory.NFPSpecific,
@@ -742,7 +754,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Staked Assets - Endowment',
     creditAccounts: 'Cryptocurrency Endowment Holdings',
     code: 'NFP_ENDOW_STAKE',
-    basicTransactionType: BasicTransactionType.Stake
+    basicTransactionType: BasicTransactionType.Stake,
   },
   {
     category: TransactionCategory.NFPSpecific,
@@ -751,16 +763,18 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Staked Assets - Endowment',
     creditAccounts: 'Staking Rewards - Endowment',
     code: 'NFP_ENDOW_INCOME',
-    basicTransactionType: BasicTransactionType.Reward
+    basicTransactionType: BasicTransactionType.Reward,
   },
   {
     category: TransactionCategory.NFPSpecific,
     subcategory: 'Endowment Management',
     transactionType: 'Endowment Revaluation (Crypto)',
-    debitAccounts: 'Cryptocurrency Endowment Holdings (if gain), Unrealised Crypto Losses (if loss)',
-    creditAccounts: 'Unrealised Crypto Gains (if gain), Crypto Asset Reserve - Endowment (may use OCI)',
+    debitAccounts:
+      'Cryptocurrency Endowment Holdings (if gain), Unrealised Crypto Losses (if loss)',
+    creditAccounts:
+      'Unrealised Crypto Gains (if gain), Crypto Asset Reserve - Endowment (may use OCI)',
     code: 'NFP_ENDOW_REVALUE',
-    basicTransactionType: BasicTransactionType.Other
+    basicTransactionType: BasicTransactionType.Other,
   },
   {
     category: TransactionCategory.ForeignExchange,
@@ -769,7 +783,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Cryptocurrency Holdings',
     creditAccounts: 'Unrealised Gains - Cryptocurrency',
     code: 'FX_REVALUE_GAIN',
-    basicTransactionType: BasicTransactionType.Other
+    basicTransactionType: BasicTransactionType.Other,
   },
   {
     category: TransactionCategory.ForeignExchange,
@@ -778,7 +792,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Unrealised Losses - Cryptocurrency',
     creditAccounts: 'Cryptocurrency Holdings',
     code: 'FX_REVALUE_LOSS',
-    basicTransactionType: BasicTransactionType.Other
+    basicTransactionType: BasicTransactionType.Other,
   },
   {
     category: TransactionCategory.ForeignExchange,
@@ -787,7 +801,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Crypto Impairment Losses',
     creditAccounts: 'Cryptocurrency Holdings',
     code: 'FX_IMPAIRMENT',
-    basicTransactionType: BasicTransactionType.Other
+    basicTransactionType: BasicTransactionType.Other,
   },
   {
     category: TransactionCategory.ForeignExchange,
@@ -796,7 +810,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Cryptocurrency',
     creditAccounts: 'Bank (purchase)',
     code: 'FX_NONFUNC_HOLD',
-    basicTransactionType: BasicTransactionType.Purchase
+    basicTransactionType: BasicTransactionType.Purchase,
   },
   {
     category: TransactionCategory.ForeignExchange,
@@ -805,7 +819,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Cryptocurrency (functional currency increase)',
     creditAccounts: 'Foreign Exchange Gains',
     code: 'FX_GAIN_CRYPTO',
-    basicTransactionType: BasicTransactionType.Other
+    basicTransactionType: BasicTransactionType.Other,
   },
   {
     category: TransactionCategory.Fees,
@@ -814,7 +828,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Cryptocurrency (capitalize to cost basis)',
     creditAccounts: 'Stablecoins / Crypto',
     code: 'FEE_GAS_PURCHASE',
-    basicTransactionType: BasicTransactionType.Fee
+    basicTransactionType: BasicTransactionType.Fee,
   },
   {
     category: TransactionCategory.Fees,
@@ -823,7 +837,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Gas Fees - Ethereum (or reduce proceeds)',
     creditAccounts: 'Stablecoins / Crypto',
     code: 'FEE_GAS_SALE',
-    basicTransactionType: BasicTransactionType.Fee
+    basicTransactionType: BasicTransactionType.Fee,
   },
   {
     category: TransactionCategory.Fees,
@@ -832,7 +846,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Gas Fees - Ethereum',
     creditAccounts: 'Ethereum',
     code: 'FEE_GAS_OTHER',
-    basicTransactionType: BasicTransactionType.Fee
+    basicTransactionType: BasicTransactionType.Fee,
   },
   {
     category: TransactionCategory.Fees,
@@ -841,7 +855,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'DEX Trading Fees (or capitalize)',
     creditAccounts: 'Cryptocurrency (portion of trade)',
     code: 'FEE_DEX',
-    basicTransactionType: BasicTransactionType.Fee
+    basicTransactionType: BasicTransactionType.Fee,
   },
   {
     category: TransactionCategory.Fees,
@@ -850,7 +864,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Protocol Fees',
     creditAccounts: 'Yield Farming Positions (reduction)',
     code: 'FEE_PROTOCOL',
-    basicTransactionType: BasicTransactionType.Fee
+    basicTransactionType: BasicTransactionType.Fee,
   },
   {
     category: TransactionCategory.Fees,
@@ -859,7 +873,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Bridge Fees',
     creditAccounts: 'Cryptocurrency',
     code: 'FEE_BRIDGE',
-    basicTransactionType: BasicTransactionType.Fee
+    basicTransactionType: BasicTransactionType.Fee,
   },
   {
     category: TransactionCategory.Losses,
@@ -868,7 +882,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Smart Contract Failures / Loss Event',
     creditAccounts: 'Cryptocurrency Holdings',
     code: 'LOSS_THEFT',
-    basicTransactionType: BasicTransactionType.Other
+    basicTransactionType: BasicTransactionType.Other,
   },
   {
     category: TransactionCategory.Losses,
@@ -877,7 +891,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Crypto Impairment Losses',
     creditAccounts: 'Cryptocurrency Holdings',
     code: 'LOSS_KEYS',
-    basicTransactionType: BasicTransactionType.Other
+    basicTransactionType: BasicTransactionType.Other,
   },
   {
     category: TransactionCategory.Losses,
@@ -886,7 +900,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Smart Contract Failures',
     creditAccounts: 'Liquidity Pool Tokens / Yield Farming',
     code: 'LOSS_EXPLOIT',
-    basicTransactionType: BasicTransactionType.Other
+    basicTransactionType: BasicTransactionType.Other,
   },
   {
     category: TransactionCategory.Losses,
@@ -895,7 +909,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Realised Losses - Cryptocurrency',
     creditAccounts: 'Cryptocurrency Holdings',
     code: 'LOSS_RUG_PULL',
-    basicTransactionType: BasicTransactionType.Other
+    basicTransactionType: BasicTransactionType.Other,
   },
   {
     category: TransactionCategory.Losses,
@@ -904,7 +918,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Gas Fees',
     creditAccounts: 'Ethereum',
     code: 'LOSS_FAILED_TXN',
-    basicTransactionType: BasicTransactionType.Fee
+    basicTransactionType: BasicTransactionType.Fee,
   },
   {
     category: TransactionCategory.Losses,
@@ -913,7 +927,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Slippage Losses',
     creditAccounts: 'Realised Gains (reduction) or increase',
     code: 'LOSS_SLIPPAGE',
-    basicTransactionType: BasicTransactionType.Other
+    basicTransactionType: BasicTransactionType.Other,
   },
   {
     category: TransactionCategory.Governance,
@@ -922,7 +936,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Governance Tokens',
     creditAccounts: 'Airdrops and Token Distributions',
     code: 'GOV_AIRDROP',
-    basicTransactionType: BasicTransactionType.Airdrop
+    basicTransactionType: BasicTransactionType.Airdrop,
   },
   {
     category: TransactionCategory.Governance,
@@ -931,7 +945,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'No entry (or memo)',
     creditAccounts: 'No entry',
     code: 'GOV_VOTE',
-    basicTransactionType: BasicTransactionType.Other
+    basicTransactionType: BasicTransactionType.Other,
   },
   {
     category: TransactionCategory.Governance,
@@ -940,7 +954,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Governance Tokens',
     creditAccounts: 'DeFi Governance Rewards',
     code: 'GOV_REWARD',
-    basicTransactionType: BasicTransactionType.Reward
+    basicTransactionType: BasicTransactionType.Reward,
   },
   {
     category: TransactionCategory.Governance,
@@ -949,7 +963,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Memo - Tokens Locked',
     creditAccounts: 'Memo',
     code: 'GOV_STAKE',
-    basicTransactionType: BasicTransactionType.Stake
+    basicTransactionType: BasicTransactionType.Stake,
   },
   {
     category: TransactionCategory.WrappedAssets,
@@ -958,7 +972,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Wrapped Tokens',
     creditAccounts: 'Ethereum (Crypto)',
     code: 'WRAP_WRAP',
-    basicTransactionType: BasicTransactionType.SwapIn
+    basicTransactionType: BasicTransactionType.SwapIn,
   },
   {
     category: TransactionCategory.WrappedAssets,
@@ -967,7 +981,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Ethereum',
     creditAccounts: 'Wrapped Tokens',
     code: 'WRAP_UNWRAP',
-    basicTransactionType: BasicTransactionType.SwapOut
+    basicTransactionType: BasicTransactionType.SwapOut,
   },
   {
     category: TransactionCategory.WrappedAssets,
@@ -976,7 +990,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Cryptocurrency (destination chain), Bridge Fees',
     creditAccounts: 'Cryptocurrency (source chain)',
     code: 'WRAP_BRIDGE',
-    basicTransactionType: BasicTransactionType.TransferOut
+    basicTransactionType: BasicTransactionType.TransferOut,
   },
   {
     category: TransactionCategory.DeferredTax,
@@ -985,7 +999,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Deferred Tax Assets',
     creditAccounts: 'Deferred Tax Income',
     code: 'TAX_DTA_LOSS',
-    basicTransactionType: BasicTransactionType.Other
+    basicTransactionType: BasicTransactionType.Other,
   },
   {
     category: TransactionCategory.DeferredTax,
@@ -994,7 +1008,7 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Deferred Tax Expense',
     creditAccounts: 'Deferred Tax Liabilities',
     code: 'TAX_DTL_GAIN',
-    basicTransactionType: BasicTransactionType.Other
+    basicTransactionType: BasicTransactionType.Other,
   },
   {
     category: TransactionCategory.DeferredTax,
@@ -1003,19 +1017,25 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
     debitAccounts: 'Deferred Tax Assets',
     creditAccounts: 'Deferred Tax Income',
     code: 'TAX_LOSS_CARRYFORWARD',
-    basicTransactionType: BasicTransactionType.Other
-  }
+    basicTransactionType: BasicTransactionType.Other,
+  },
 ]
 
-export function getTransactionTypesByCategory(category: TransactionCategory): TransactionTypeDefinition[] {
+export function getTransactionTypesByCategory(
+  category: TransactionCategory
+): TransactionTypeDefinition[] {
   return TRANSACTION_TYPE_DEFINITIONS.filter(t => t.category === category)
 }
 
-export function getTransactionTypeByCode(code: string): TransactionTypeDefinition | undefined {
+export function getTransactionTypeByCode(
+  code: string
+): TransactionTypeDefinition | undefined {
   return TRANSACTION_TYPE_DEFINITIONS.find(t => t.code === code)
 }
 
-export function getTransactionTypesBySubcategory(subcategory: string): TransactionTypeDefinition[] {
+export function getTransactionTypesBySubcategory(
+  subcategory: string
+): TransactionTypeDefinition[] {
   return TRANSACTION_TYPE_DEFINITIONS.filter(t => t.subcategory === subcategory)
 }
 

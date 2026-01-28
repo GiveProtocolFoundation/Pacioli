@@ -81,7 +81,16 @@ pub async fn create_profile(pool: &SqlitePool, input: ProfileInput) -> Result<Pr
 /// # Returns
 /// The profile if found, None otherwise
 pub async fn get_profile(pool: &SqlitePool, id: &str) -> Result<Option<Profile>> {
-    let profile = sqlx::query_as::<_, (String, String, Option<String>, chrono::DateTime<Utc>, chrono::DateTime<Utc>)>(
+    let profile = sqlx::query_as::<
+        _,
+        (
+            String,
+            String,
+            Option<String>,
+            chrono::DateTime<Utc>,
+            chrono::DateTime<Utc>,
+        ),
+    >(
         r#"
         SELECT id, name, avatar_url, created_at, updated_at
         FROM profiles
@@ -116,7 +125,16 @@ pub async fn get_profile(pool: &SqlitePool, id: &str) -> Result<Option<Profile>>
 /// # Returns
 /// Vector of all profiles, ordered by creation date (newest first)
 pub async fn get_all_profiles(pool: &SqlitePool) -> Result<Vec<Profile>> {
-    let rows = sqlx::query_as::<_, (String, String, Option<String>, chrono::DateTime<Utc>, chrono::DateTime<Utc>)>(
+    let rows = sqlx::query_as::<
+        _,
+        (
+            String,
+            String,
+            Option<String>,
+            chrono::DateTime<Utc>,
+            chrono::DateTime<Utc>,
+        ),
+    >(
         r#"
         SELECT id, name, avatar_url, created_at, updated_at
         FROM profiles

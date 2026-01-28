@@ -361,11 +361,15 @@ export const getTokenById = (id: string): Token | undefined => {
 }
 
 export const getTokensByChain = (chainId: string): Token[] => {
-  return SEED_TOKENS.filter(token => token.chainId === chainId && token.isActive)
+  return SEED_TOKENS.filter(
+    token => token.chainId === chainId && token.isActive
+  )
 }
 
 export const getTokensByAssetType = (assetType: string): Token[] => {
-  return SEED_TOKENS.filter(token => token.digitalAssetType === assetType && token.isActive)
+  return SEED_TOKENS.filter(
+    token => token.digitalAssetType === assetType && token.isActive
+  )
 }
 
 export const getChainById = (id: string): Chain | undefined => {

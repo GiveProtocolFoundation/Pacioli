@@ -8,8 +8,7 @@ use sqlx::SqlitePool;
 use std::path::Path;
 
 use super::{
-    encryption::encrypt,
-    profile_store, settings_store, wallet_store, ExportFile, ExportPayload,
+    encryption::encrypt, profile_store, settings_store, wallet_store, ExportFile, ExportPayload,
 };
 
 /// Current export format version.
@@ -24,11 +23,7 @@ const EXPORT_VERSION: &str = "1.0";
 ///
 /// # Returns
 /// Ok if the export was successful
-pub async fn export_data(
-    pool: &SqlitePool,
-    path: &Path,
-    password: Option<&str>,
-) -> Result<()> {
+pub async fn export_data(pool: &SqlitePool, path: &Path, password: Option<&str>) -> Result<()> {
     // Gather all data
     let profiles = profile_store::get_all_profiles(pool).await?;
     let wallets = wallet_store::get_all_wallets(pool).await?;
@@ -239,7 +234,9 @@ mod tests {
         .await
         .unwrap();
 
-        settings_store::set_setting(&pool, "theme", "dark").await.unwrap();
+        settings_store::set_setting(&pool, "theme", "dark")
+            .await
+            .unwrap();
 
         // Export to string
         let export = export_to_string(&pool, None).await.unwrap();
@@ -272,7 +269,9 @@ mod tests {
         .await
         .unwrap();
 
-        let export = export_to_string(&pool, Some("TestPassword123")).await.unwrap();
+        let export = export_to_string(&pool, Some("TestPassword123"))
+            .await
+            .unwrap();
         let export_file: ExportFile = serde_json::from_str(&export).unwrap();
 
         assert!(export_file.encrypted);

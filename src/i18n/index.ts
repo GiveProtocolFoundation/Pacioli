@@ -48,7 +48,11 @@ export function detectBrowserLanguage(): SupportedLanguage {
 
   // Special handling for Chinese variants
   if (browserLang.startsWith('zh')) {
-    if (browserLang.includes('TW') || browserLang.includes('HK') || browserLang.includes('Hant')) {
+    if (
+      browserLang.includes('TW') ||
+      browserLang.includes('HK') ||
+      browserLang.includes('Hant')
+    ) {
       return 'zh-TW'
     }
     return 'zh-CN'

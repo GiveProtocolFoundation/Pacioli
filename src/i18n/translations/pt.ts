@@ -18,11 +18,14 @@ export const pt: Translations = {
     securitySetup: 'Configuração de Segurança',
     securitySetupDesc: 'Escolha como você quer proteger seus dados.',
     easyAccess: 'Acesso Fácil',
-    easyAccessDesc: 'Abrir diretamente no painel sem senha. Ideal para dispositivos pessoais.',
+    easyAccessDesc:
+      'Abrir diretamente no painel sem senha. Ideal para dispositivos pessoais.',
     secureUse: 'Seguro',
-    secureUseDesc: 'Exigir senha a cada inicialização. Recomendado para dispositivos compartilhados.',
+    secureUseDesc:
+      'Exigir senha a cada inicialização. Recomendado para dispositivos compartilhados.',
     securePlus: 'Seguro+',
-    securePlusDesc: 'Senha na inicialização mais bloqueio automático por inatividade. Segurança máxima.',
+    securePlusDesc:
+      'Senha na inicialização mais bloqueio automático por inatividade. Segurança máxima.',
     setPassword: 'Definir Senha',
     setPasswordDesc: 'Crie uma senha forte para proteger seus dados.',
     confirmPassword: 'Confirmar Senha',
@@ -31,25 +34,31 @@ export const pt: Translations = {
     sessionTimeout: 'Tempo Limite da Sessão',
     sessionTimeoutDesc: 'Bloquear após este período de inatividade',
     setupComplete: 'Configuração Concluída',
-    setupCompleteDesc: 'Suas preferências foram salvas. Você pode alterá-las a qualquer momento nas Configurações.',
+    setupCompleteDesc:
+      'Suas preferências foram salvas. Você pode alterá-las a qualquer momento nas Configurações.',
     getStarted: 'Começar',
   },
 
   recovery: {
     title: 'Frase de Recuperação',
-    subtitle: 'Salve esta frase para recuperar sua conta caso esqueça sua senha.',
+    subtitle:
+      'Salve esta frase para recuperar sua conta caso esqueça sua senha.',
     warning: 'Importante',
-    warningDesc: 'Anote estas 12 palavras e guarde-as em segurança. Esta é a única maneira de recuperar sua conta se você esquecer sua senha.',
+    warningDesc:
+      'Anote estas 12 palavras e guarde-as em segurança. Esta é a única maneira de recuperar sua conta se você esquecer sua senha.',
     copyButton: 'Copiar para área de transferência',
     copied: 'Copiado!',
     confirmCheckbox: 'Salvei esta frase em segurança',
     word: 'Palavra',
     forgotPassword: 'Esqueceu a senha?',
     resetTitle: 'Redefinir Senha',
-    resetSubtitle: 'Digite sua frase de recuperação de 12 palavras para redefinir sua senha.',
+    resetSubtitle:
+      'Digite sua frase de recuperação de 12 palavras para redefinir sua senha.',
     enterPhrase: 'Frase de Recuperação',
-    phrasePlaceholder: 'Digite suas 12 palavras de recuperação separadas por espaços',
-    invalidPhrase: 'Frase de recuperação inválida. Verifique e tente novamente.',
+    phrasePlaceholder:
+      'Digite suas 12 palavras de recuperação separadas por espaços',
+    invalidPhrase:
+      'Frase de recuperação inválida. Verifique e tente novamente.',
     newPassword: 'Nova Senha',
     confirmNewPassword: 'Confirmar Nova Senha',
     resetSuccess: 'Senha redefinida com sucesso!',
@@ -64,7 +73,8 @@ export const pt: Translations = {
     unlock: 'Desbloquear',
     incorrectPassword: 'Senha incorreta. Por favor, tente novamente.',
     sessionExpired: 'Sessão Expirada',
-    sessionExpiredDesc: 'Sua sessão expirou por inatividade. Digite sua senha para continuar.',
+    sessionExpiredDesc:
+      'Sua sessão expirou por inatividade. Digite sua senha para continuar.',
     forgotPassword: 'Esqueceu a senha?',
   },
 

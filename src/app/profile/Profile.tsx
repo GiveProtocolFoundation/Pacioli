@@ -473,7 +473,9 @@ const Profile: React.FC = () => {
     try {
       const { authService } = await import('../../services/auth')
 
-      const message = await authService.verifyEmailChange(verificationCode.trim())
+      const message = await authService.verifyEmailChange(
+        verificationCode.trim()
+      )
 
       // Show success and close modal
       alert(message || 'Email address updated successfully!')
@@ -955,7 +957,8 @@ const Profile: React.FC = () => {
                   </p>
                 </div>
                 <p className="text-sm text-gray-600 dark:text-[#a39d94]">
-                  Check your new email for the verification code, then click below to enter it.
+                  Check your new email for the verification code, then click
+                  below to enter it.
                 </p>
                 <button
                   onClick={() => {

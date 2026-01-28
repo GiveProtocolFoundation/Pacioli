@@ -79,7 +79,8 @@ const handleRetry = () => {
  * Wrapper component that handles app initialization, first launch, and unlock states.
  */
 const AppWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { appState, isLoading, error, isFirstLaunch, completeFirstLaunch } = useApp()
+  const { appState, isLoading, error, isFirstLaunch, completeFirstLaunch } =
+    useApp()
 
   // Show loading state during initialization
   if (isLoading) {
@@ -167,8 +168,14 @@ const App: React.FC = () => (
                 <Route path="/onboarding" element={<Onboarding />} />
 
                 {/* Redirect old auth routes to dashboard for local-only MVP */}
-                <Route path="/login" element={<Navigate to="/dashboard" replace />} />
-                <Route path="/register" element={<Navigate to="/dashboard" replace />} />
+                <Route
+                  path="/login"
+                  element={<Navigate to="/dashboard" replace />}
+                />
+                <Route
+                  path="/register"
+                  element={<Navigate to="/dashboard" replace />}
+                />
 
                 {/* Main routes - no auth required for local-only version */}
                 <Route path="/*" element={<MainRoutes />} />

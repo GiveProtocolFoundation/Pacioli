@@ -1,5 +1,8 @@
 import { ChartOfAccountsEntry } from '../types/chartOfAccounts'
-import { getDigitalAssetTypeInfo, DigitalAssetType } from '../types/digitalAssets'
+import {
+  getDigitalAssetTypeInfo,
+  DigitalAssetType,
+} from '../types/digitalAssets'
 
 /**
  * Digital Asset Accounts for Chart of Accounts
@@ -19,7 +22,8 @@ export const DIGITAL_ASSET_ACCOUNTS: ChartOfAccountsEntry[] = [
     code: '1510',
     name: 'Digital Assets - Native Protocol Tokens',
     type: 'Asset',
-    description: 'Native tokens of blockchain protocols (ETH, DOT, KSM, GLMR, MOVR, ASTR, ACA, etc.)',
+    description:
+      'Native tokens of blockchain protocols (ETH, DOT, KSM, GLMR, MOVR, ASTR, ACA, etc.)',
     subcategory: 'Digital Assets',
     isActive: true,
     editable: false,
@@ -55,7 +59,8 @@ export const DIGITAL_ASSET_ACCOUNTS: ChartOfAccountsEntry[] = [
     code: '1550',
     name: 'Digital Assets - Liquidity Pool Tokens',
     type: 'Asset',
-    description: 'LP tokens from AMMs (Uniswap, Curve, Balancer, HydraDX, etc.)',
+    description:
+      'LP tokens from AMMs (Uniswap, Curve, Balancer, HydraDX, etc.)',
     subcategory: 'Digital Assets',
     isActive: true,
     editable: false,
@@ -91,7 +96,8 @@ export const DIGITAL_ASSET_ACCOUNTS: ChartOfAccountsEntry[] = [
     code: '1585',
     name: 'Digital Assets - NFTs (Utility/Functional)',
     type: 'Asset',
-    description: 'Functional NFTs (gaming items, access passes, memberships, etc.)',
+    description:
+      'Functional NFTs (gaming items, access passes, memberships, etc.)',
     subcategory: 'Digital Assets',
     isActive: true,
     editable: false,
@@ -100,7 +106,8 @@ export const DIGITAL_ASSET_ACCOUNTS: ChartOfAccountsEntry[] = [
     code: '1590',
     name: 'Digital Assets - Synthetic Assets',
     type: 'Asset',
-    description: 'Synthetic derivatives and tokenized assets (synths, tokenized stocks, etc.)',
+    description:
+      'Synthetic derivatives and tokenized assets (synths, tokenized stocks, etc.)',
     subcategory: 'Digital Assets',
     isActive: true,
     editable: false,
@@ -119,16 +126,22 @@ export const DIGITAL_ASSET_ACCOUNTS: ChartOfAccountsEntry[] = [
 /**
  * Get digital asset account by account code
  */
-export function getDigitalAssetAccountByCode(code: string): ChartOfAccountsEntry | undefined {
+export function getDigitalAssetAccountByCode(
+  code: string
+): ChartOfAccountsEntry | undefined {
   return DIGITAL_ASSET_ACCOUNTS.find(account => account.code === code)
 }
 
 /**
  * Get digital asset account by digital asset type
  */
-export function getDigitalAssetAccountByType(type: DigitalAssetType): ChartOfAccountsEntry | undefined {
+export function getDigitalAssetAccountByType(
+  type: DigitalAssetType
+): ChartOfAccountsEntry | undefined {
   const info = getDigitalAssetTypeInfo(type)
-  return DIGITAL_ASSET_ACCOUNTS.find(account => account.code === info.accountNumber)
+  return DIGITAL_ASSET_ACCOUNTS.find(
+    account => account.code === info.accountNumber
+  )
 }
 
 /**

@@ -36,12 +36,21 @@ interface StepHeaderProps {
 /**
  * Header component for wizard steps with icon, title, and description.
  */
-const StepHeader: React.FC<StepHeaderProps> = ({ icon, iconBgClass, title, description }) => (
+const StepHeader: React.FC<StepHeaderProps> = ({
+  icon,
+  iconBgClass,
+  title,
+  description,
+}) => (
   <div className="text-center mb-8">
-    <div className={`w-16 h-16 ${iconBgClass} rounded-full flex items-center justify-center mx-auto mb-4`}>
+    <div
+      className={`w-16 h-16 ${iconBgClass} rounded-full flex items-center justify-center mx-auto mb-4`}
+    >
       {icon}
     </div>
-    <h1 className="text-2xl font-bold text-[#1a1815] dark:text-[#f5f3f0] mb-2">{title}</h1>
+    <h1 className="text-2xl font-bold text-[#1a1815] dark:text-[#f5f3f0] mb-2">
+      {title}
+    </h1>
     <p className="text-[#696557] dark:text-[#b8b3ac]">{description}</p>
   </div>
 )
@@ -115,7 +124,11 @@ interface LanguageButtonProps {
 /**
  * Button component for language selection in the first launch wizard.
  */
-const LanguageButton: React.FC<LanguageButtonProps> = ({ lang, isSelected, onSelect }) => {
+const LanguageButton: React.FC<LanguageButtonProps> = ({
+  lang,
+  isSelected,
+  onSelect,
+}) => {
   const handleClick = useCallback(() => {
     onSelect(lang.code)
   }, [lang.code, onSelect])
@@ -130,13 +143,21 @@ const LanguageButton: React.FC<LanguageButtonProps> = ({ lang, isSelected, onSel
       }`}
     >
       <div>
-        <span className="font-medium text-[#1a1815] dark:text-[#f5f3f0]">{lang.nativeName}</span>
+        <span className="font-medium text-[#1a1815] dark:text-[#f5f3f0]">
+          {lang.nativeName}
+        </span>
         {lang.code !== 'en' && lang.nativeName !== lang.name && (
-          <span className="ml-2 text-sm text-[#a39d94] dark:text-[#8b8580]">({lang.name})</span>
+          <span className="ml-2 text-sm text-[#a39d94] dark:text-[#8b8580]">
+            ({lang.name})
+          </span>
         )}
       </div>
       {isSelected && (
-        <svg className="w-5 h-5 text-[#8b4e52]" fill="currentColor" viewBox="0 0 20 20">
+        <svg
+          className="w-5 h-5 text-[#8b4e52]"
+          fill="currentColor"
+          viewBox="0 0 20 20"
+        >
           <path
             fillRule="evenodd"
             d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
@@ -189,7 +210,11 @@ const SecurityModeButton: React.FC<SecurityModeButtonProps> = ({
             }`}
           >
             {isSelected && (
-              <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+              <svg
+                className="w-3 h-3 text-white"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
                 <path
                   fillRule="evenodd"
                   d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
@@ -200,8 +225,12 @@ const SecurityModeButton: React.FC<SecurityModeButtonProps> = ({
           </div>
         </div>
         <div className="ml-3">
-          <h3 className="font-medium text-[#1a1815] dark:text-[#f5f3f0]">{title}</h3>
-          <p className="text-sm text-[#a39d94] dark:text-[#8b8580] mt-1">{description}</p>
+          <h3 className="font-medium text-[#1a1815] dark:text-[#f5f3f0]">
+            {title}
+          </h3>
+          <p className="text-sm text-[#a39d94] dark:text-[#8b8580] mt-1">
+            {description}
+          </p>
         </div>
       </div>
     </button>
@@ -218,7 +247,12 @@ interface TimeoutButtonProps {
 /**
  * Button component for session timeout selection.
  */
-const TimeoutButton: React.FC<TimeoutButtonProps> = ({ value, label, isSelected, onSelect }) => {
+const TimeoutButton: React.FC<TimeoutButtonProps> = ({
+  value,
+  label,
+  isSelected,
+  onSelect,
+}) => {
   const handleClick = useCallback(() => {
     onSelect(value)
   }, [value, onSelect])
@@ -242,11 +276,18 @@ const TimeoutButton: React.FC<TimeoutButtonProps> = ({ value, label, isSelected,
 // ============================================================================
 
 interface LanguageStepProps {
-  languages: Array<{ code: SupportedLanguage; name: string; nativeName: string }>
+  languages: Array<{
+    code: SupportedLanguage
+    name: string
+    nativeName: string
+  }>
   selectedLanguage: SupportedLanguage
   onSelect: (code: SupportedLanguage) => void
   onContinue: () => void
-  t: { firstLaunch: { welcome: string; selectLanguageDesc: string }; common: { continue: string } }
+  t: {
+    firstLaunch: { welcome: string; selectLanguageDesc: string }
+    common: { continue: string }
+  }
 }
 
 /**
@@ -281,7 +322,7 @@ const LanguageStep: React.FC<LanguageStepProps> = ({
       description={t.firstLaunch.selectLanguageDesc}
     />
     <div className="space-y-2 mb-8 max-h-80 overflow-y-auto">
-      {languages.map((lang) => (
+      {languages.map(lang => (
         <LanguageButton
           key={lang.code}
           lang={lang}
@@ -473,7 +514,7 @@ const PasswordStep: React.FC<PasswordStepProps> = ({
             {t.firstLaunch.sessionTimeoutDesc}
           </p>
           <div className="flex gap-2">
-            {SESSION_TIMEOUT_OPTIONS.map((option) => (
+            {SESSION_TIMEOUT_OPTIONS.map(option => (
               <TimeoutButton
                 key={option.value}
                 value={option.value}
@@ -548,7 +589,12 @@ const CompleteStep: React.FC<CompleteStepProps> = ({
             viewBox="0 0 24 24"
             stroke="currentColor"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M5 13l4 4L19 7"
+            />
           </svg>
         }
         iconBgClass="bg-[#7a9b6f]/20 dark:bg-[#7a9b6f]/30"
@@ -557,7 +603,12 @@ const CompleteStep: React.FC<CompleteStepProps> = ({
       />
       <div className="bg-[#f3f1ed] dark:bg-[#2a2620]/50 rounded-lg p-4 mb-8">
         <div className="flex items-center gap-3 mb-3">
-          <svg className="w-5 h-5 text-[#a39d94]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg
+            className="w-5 h-5 text-[#a39d94]"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -566,11 +617,16 @@ const CompleteStep: React.FC<CompleteStepProps> = ({
             />
           </svg>
           <span className="text-[#1a1815] dark:text-[#b8b3ac]">
-            {languages.find((l) => l.code === selectedLanguage)?.nativeName}
+            {languages.find(l => l.code === selectedLanguage)?.nativeName}
           </span>
         </div>
         <div className="flex items-center gap-3">
-          <svg className="w-5 h-5 text-[#a39d94]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg
+            className="w-5 h-5 text-[#a39d94]"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -578,13 +634,17 @@ const CompleteStep: React.FC<CompleteStepProps> = ({
               d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
             />
           </svg>
-          <span className="text-[#1a1815] dark:text-[#b8b3ac]">{getSecurityModeLabel()}</span>
+          <span className="text-[#1a1815] dark:text-[#b8b3ac]">
+            {getSecurityModeLabel()}
+          </span>
         </div>
       </div>
       <ErrorMessage error={error} />
       <StepNavigation
         onContinue={onComplete}
-        continueLabel={isSubmitting ? t.common.loading : t.firstLaunch.getStarted}
+        continueLabel={
+          isSubmitting ? t.common.loading : t.firstLaunch.getStarted
+        }
         isSubmitting={isSubmitting}
       />
     </>
@@ -603,7 +663,8 @@ export const FirstLaunch: React.FC<FirstLaunchProps> = ({ onComplete }) => {
   const { language, setLanguage, t, languages } = useLanguage()
 
   const [step, setStep] = useState<Step>('language')
-  const [selectedLanguage, setSelectedLanguage] = useState<SupportedLanguage>(language)
+  const [selectedLanguage, setSelectedLanguage] =
+    useState<SupportedLanguage>(language)
   const [securityMode, setSecurityMode] = useState<SecurityMode>('easy')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -636,13 +697,19 @@ export const FirstLaunch: React.FC<FirstLaunchProps> = ({ onComplete }) => {
   }, [securityMode])
 
   // Password step handlers
-  const handlePasswordChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setPassword(e.target.value)
-  }, [])
+  const handlePasswordChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setPassword(e.target.value)
+    },
+    []
+  )
 
-  const handleConfirmPasswordChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setConfirmPassword(e.target.value)
-  }, [])
+  const handleConfirmPasswordChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setConfirmPassword(e.target.value)
+    },
+    []
+  )
 
   const handlePasswordBack = useCallback(() => setStep('security'), [])
 
@@ -683,7 +750,10 @@ export const FirstLaunch: React.FC<FirstLaunchProps> = ({ onComplete }) => {
       await storage.setSetting('security_mode', securityMode)
 
       if (securityMode === 'secure_plus') {
-        await storage.setSetting('session_timeout_minutes', sessionTimeout.toString())
+        await storage.setSetting(
+          'session_timeout_minutes',
+          sessionTimeout.toString()
+        )
       }
 
       await storage.setSetting('setup_complete', 'true')

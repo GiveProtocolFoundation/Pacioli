@@ -92,7 +92,9 @@ export const UnlockScreen: React.FC<UnlockScreenProps> = ({ onUnlock }) => {
 
       try {
         // Verify recovery phrase first
-        const isValid = await storage.verifyRecoveryPhrase(recoveryPhrase.trim())
+        const isValid = await storage.verifyRecoveryPhrase(
+          recoveryPhrase.trim()
+        )
         if (!isValid) {
           setLocalError(t.recovery.invalidPhrase)
           setIsResetting(false)
@@ -100,7 +102,10 @@ export const UnlockScreen: React.FC<UnlockScreenProps> = ({ onUnlock }) => {
         }
 
         // Reset password
-        await storage.resetPasswordWithRecovery(recoveryPhrase.trim(), newPassword)
+        await storage.resetPasswordWithRecovery(
+          recoveryPhrase.trim(),
+          newPassword
+        )
         setResetSuccess(true)
 
         // Auto-unlock after successful reset

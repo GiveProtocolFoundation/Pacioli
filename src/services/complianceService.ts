@@ -108,12 +108,11 @@ export class ComplianceService {
 
     // Get cost basis (using selected method)
     // Note: SpecificID requires lot-level tracking, falls back to FIFO for holding-level
-    const costBasisMethod = this.settings.defaultCostBasisMethod === 'SpecificID'
-      ? 'FIFO'
-      : this.settings.defaultCostBasisMethod
-    const costBasis = new Decimal(
-      holding.costBasis[costBasisMethod]
-    )
+    const costBasisMethod =
+      this.settings.defaultCostBasisMethod === 'SpecificID'
+        ? 'FIFO'
+        : this.settings.defaultCostBasisMethod
+    const costBasis = new Decimal(holding.costBasis[costBasisMethod])
 
     let carryingAmount: Decimal
     let unrealizedGainLoss: Decimal
@@ -189,9 +188,10 @@ export class ComplianceService {
       case 'acquisition': {
         // Dr: Crypto Asset
         // Cr: Cash/Bank
-        const costBasisMethod = this.settings.defaultCostBasisMethod === 'SpecificID'
-          ? 'FIFO'
-          : this.settings.defaultCostBasisMethod
+        const costBasisMethod =
+          this.settings.defaultCostBasisMethod === 'SpecificID'
+            ? 'FIFO'
+            : this.settings.defaultCostBasisMethod
         entries.push({
           date: today,
           debitAccount: `Crypto Assets - ${holding.assetSymbol}`,
@@ -460,12 +460,11 @@ export class ComplianceService {
       totalFairValue = totalFairValue.plus(fairValue)
 
       // Calculate unrealized gains/losses
-      const costBasisMethod = this.settings.defaultCostBasisMethod === 'SpecificID'
-        ? 'FIFO'
-        : this.settings.defaultCostBasisMethod
-      const costBasis = new Decimal(
-        holding.costBasis[costBasisMethod]
-      )
+      const costBasisMethod =
+        this.settings.defaultCostBasisMethod === 'SpecificID'
+          ? 'FIFO'
+          : this.settings.defaultCostBasisMethod
+      const costBasis = new Decimal(holding.costBasis[costBasisMethod])
       const unrealized = fairValue.minus(costBasis)
 
       if (unrealized.gt(0)) {

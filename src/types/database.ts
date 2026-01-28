@@ -13,7 +13,7 @@ export enum AccountType {
   Liability = 'Liability',
   Equity = 'Equity',
   Income = 'Income',
-  Expense = 'Expense'
+  Expense = 'Expense',
 }
 
 export enum DigitalAssetType {
@@ -27,7 +27,7 @@ export enum DigitalAssetType {
   NFTCollectible = 'NFT - Collectible',
   NFTUtility = 'NFT - Utility',
   SyntheticAsset = 'Synthetic Asset',
-  OtherDigitalAsset = 'Other Digital Asset'
+  OtherDigitalAsset = 'Other Digital Asset',
 }
 
 export enum ChainType {
@@ -35,7 +35,7 @@ export enum ChainType {
   Parachain = 'parachain',
   Standalone = 'standalone',
   EVM = 'evm',
-  Other = 'other'
+  Other = 'other',
 }
 
 export enum TokenStandard {
@@ -46,7 +46,7 @@ export enum TokenStandard {
   ERC20 = 'ERC-20',
   ERC721 = 'ERC-721',
   ERC1155 = 'ERC-1155',
-  Other = 'other'
+  Other = 'other',
 }
 
 export enum TransactionType {
@@ -70,7 +70,7 @@ export enum TransactionType {
   LoanRepaid = 'loan_repaid',
   InterestEarned = 'interest_earned',
   InterestPaid = 'interest_paid',
-  Other = 'other'
+  Other = 'other',
 }
 
 export enum CostBasisMethod {
@@ -78,12 +78,12 @@ export enum CostBasisMethod {
   LIFO = 'LIFO',
   HIFO = 'HIFO',
   SpecificID = 'SpecificID',
-  AvgCost = 'AvgCost'
+  AvgCost = 'AvgCost',
 }
 
 export enum NormalBalance {
   Debit = 'debit',
-  Credit = 'credit'
+  Credit = 'credit',
 }
 
 // =============================================================================

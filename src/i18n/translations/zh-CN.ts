@@ -39,7 +39,8 @@ export const zhCN: Translations = {
     title: '恢复短语',
     subtitle: '保存此短语，以便在忘记密码时恢复您的账户。',
     warning: '重要提示',
-    warningDesc: '请记下这12个单词并妥善保管。如果您忘记密码，这是恢复账户的唯一方法。',
+    warningDesc:
+      '请记下这12个单词并妥善保管。如果您忘记密码，这是恢复账户的唯一方法。',
     copyButton: '复制到剪贴板',
     copied: '已复制！',
     confirmCheckbox: '我已安全保存此短语',

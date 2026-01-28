@@ -76,7 +76,12 @@ export interface PaginationOptions {
 
 export type EntityType = 'vendor' | 'customer' | 'both' | 'other'
 
-export type TaxDocumentationStatus = 'none' | 'requested' | 'received' | 'verified' | 'expired'
+export type TaxDocumentationStatus =
+  | 'none'
+  | 'requested'
+  | 'received'
+  | 'verified'
+  | 'expired'
 
 export interface PostalAddress {
   street?: string
@@ -232,9 +237,18 @@ export interface PersistenceService {
   deleteWallet(id: string): Promise<void>
 
   // Transaction operations
-  saveTransactions(walletId: string, transactions: TransactionInput[]): Promise<number>
-  getTransactions(walletId: string, options?: PaginationOptions): Promise<StoredTransaction[]>
-  getAllTransactions(profileId: string, options?: PaginationOptions): Promise<StoredTransaction[]>
+  saveTransactions(
+    walletId: string,
+    transactions: TransactionInput[]
+  ): Promise<number>
+  getTransactions(
+    walletId: string,
+    options?: PaginationOptions
+  ): Promise<StoredTransaction[]>
+  getAllTransactions(
+    profileId: string,
+    options?: PaginationOptions
+  ): Promise<StoredTransaction[]>
   deleteTransactions(walletId: string): Promise<number>
 
   // Settings operations
@@ -249,8 +263,16 @@ export interface PersistenceService {
   getEntityById(id: string): Promise<Entity | null>
   updateEntity(id: string, update: EntityUpdate): Promise<Entity>
   deleteEntity(id: string): Promise<void>
-  searchEntities(profileId: string, query: string, limit?: number): Promise<Entity[]>
-  findEntityByAddress(profileId: string, address: string, chain?: string): Promise<Entity | null>
+  searchEntities(
+    profileId: string,
+    query: string,
+    limit?: number
+  ): Promise<Entity[]>
+  findEntityByAddress(
+    profileId: string,
+    address: string,
+    chain?: string
+  ): Promise<Entity | null>
 
   // Entity address operations
   addEntityAddress(address: EntityAddressInput): Promise<EntityAddress>
@@ -258,11 +280,22 @@ export interface PersistenceService {
   deleteEntityAddress(id: string): Promise<void>
 
   // Address detection operations
-  lookupAddress(profileId: string, address: string, chain: string): Promise<AddressMatch | null>
+  lookupAddress(
+    profileId: string,
+    address: string,
+    chain: string
+  ): Promise<AddressMatch | null>
   batchLookupAddresses(
     profileId: string,
     addresses: Array<[string, string]>
   ): Promise<AddressMatch[]>
-  getKnownAddresses(chain?: string, entityType?: string): Promise<KnownAddress[]>
-  createEntityFromKnown(profileId: string, address: string, chain: string): Promise<Entity>
+  getKnownAddresses(
+    chain?: string,
+    entityType?: string
+  ): Promise<KnownAddress[]>
+  createEntityFromKnown(
+    profileId: string,
+    address: string,
+    chain: string
+  ): Promise<Entity>
 }

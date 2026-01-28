@@ -397,9 +397,12 @@ mod tests {
             .unwrap();
 
         // Wrong phrase should fail
-        assert!(!verify_recovery_phrase(&pool, "wrong phrase here with twelve words total now yes")
-            .await
-            .unwrap());
+        assert!(!verify_recovery_phrase(
+            &pool,
+            "wrong phrase here with twelve words total now yes"
+        )
+        .await
+        .unwrap());
 
         // Reset with wrong phrase should fail
         assert!(reset_password_with_recovery(

@@ -362,13 +362,8 @@ mod tests {
 
     #[test]
     fn test_validate_bitcoin_address_segwit() {
-        assert!(
-            validate_bitcoin_address("bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq").is_ok()
-        );
-        assert!(validate_bitcoin_address(
-            "bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4"
-        )
-        .is_ok());
+        assert!(validate_bitcoin_address("bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq").is_ok());
+        assert!(validate_bitcoin_address("bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4").is_ok());
     }
 
     #[test]
@@ -396,8 +391,6 @@ mod tests {
         // Testnet P2PKH
         assert!(validate_bitcoin_address("mipcBbFg9gMiCh81Kj8tqqdgoZub1ZJRfn").is_ok());
         // Testnet SegWit
-        assert!(
-            validate_bitcoin_address("tb1qw508d6qejxtdg4y5r3zarvary0c5xw7kxpjzsx").is_ok()
-        );
+        assert!(validate_bitcoin_address("tb1qw508d6qejxtdg4y5r3zarvary0c5xw7kxpjzsx").is_ok());
     }
 }

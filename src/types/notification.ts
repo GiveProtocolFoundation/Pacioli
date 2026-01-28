@@ -288,7 +288,9 @@ export type NotificationSubscriber = (event: NotificationEvent) => void
 /**
  * Maps notification type to its class
  */
-export function getNotificationClass(type: NotificationType): NotificationClass {
+export function getNotificationClass(
+  type: NotificationType
+): NotificationClass {
   const dataIntegrityTypes: DataIntegrityType[] = [
     'sync_status',
     'api_error',

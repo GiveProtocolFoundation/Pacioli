@@ -70,20 +70,15 @@ export const useEVMService = () => {
     [currentAccount]
   )
 
-  const connectToChain = useCallback(
-    async (chain: string) => {
-      try {
-        await EVMService.connectToChain(chain)
-        toast.success(
-          `Backend connected to ${EVM_CHAINS[chain]?.name || chain}`
-        )
-      } catch (error: unknown) {
-        toast.error(getErrorMessage(error) || `Failed to connect to ${chain}`)
-        throw error
-      }
-    },
-    []
-  )
+  const connectToChain = useCallback(async (chain: string) => {
+    try {
+      await EVMService.connectToChain(chain)
+      toast.success(`Backend connected to ${EVM_CHAINS[chain]?.name || chain}`)
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error) || `Failed to connect to ${chain}`)
+      throw error
+    }
+  }, [])
 
   const loadBalances = useCallback(
     async (chain?: string, address?: string) => {

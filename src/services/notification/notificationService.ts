@@ -95,7 +95,8 @@ class NotificationService {
         dismissed: true,
         resolved: false,
         actionRequired: input.actionRequired ?? false,
-        priority: input.priority ?? getDefaultPriority(input.type, input.severity),
+        priority:
+          input.priority ?? getDefaultPriority(input.type, input.severity),
         createdAt: new Date().toISOString(),
       }
       return silentNotification
@@ -108,7 +109,8 @@ class NotificationService {
       dismissed: false,
       resolved: false,
       actionRequired: input.actionRequired ?? false,
-      priority: input.priority ?? getDefaultPriority(input.type, input.severity),
+      priority:
+        input.priority ?? getDefaultPriority(input.type, input.severity),
       createdAt: new Date().toISOString(),
     }
 
@@ -324,9 +326,8 @@ class NotificationService {
     const stats: NotificationStats = {
       total: notifications.length,
       unread: notifications.filter(n => !n.read).length,
-      actionRequired: notifications.filter(
-        n => n.actionRequired && !n.resolved
-      ).length,
+      actionRequired: notifications.filter(n => n.actionRequired && !n.resolved)
+        .length,
       byClass: {
         data_integrity: 0,
         actionable_events: 0,
@@ -416,10 +417,7 @@ class NotificationService {
     )
 
     // Only filter out info if minimum is higher
-    if (
-      input.severity === 'info' &&
-      classSettings.minimumSeverity !== 'info'
-    ) {
+    if (input.severity === 'info' && classSettings.minimumSeverity !== 'info') {
       return false
     }
 

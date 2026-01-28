@@ -3,7 +3,14 @@
  * Provides internationalization support throughout the app
  */
 
-import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react'
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+} from 'react'
 import {
   getTranslations,
   detectBrowserLanguage,
@@ -26,7 +33,9 @@ const LanguageContext = createContext<LanguageContextValue | null>(null)
 
 const LANGUAGE_SETTING_KEY = 'app_language'
 
-export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [language, setLanguageState] = useState<SupportedLanguage>('en')
   const [isLoading, setIsLoading] = useState(true)
 

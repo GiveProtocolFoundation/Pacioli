@@ -9,8 +9,16 @@
 
 /// BIP39 wordlist for recovery phrase generation.
 pub mod bip39;
+/// Tauri commands for the storage layer.
+pub mod commands;
+/// Database security and password protection.
+pub mod db_security;
 /// AES-256-GCM encryption utilities for data at rest.
 pub mod encryption;
+/// Data export functionality.
+pub mod export;
+/// Data import functionality.
+pub mod import;
 /// First-run initialization and app state management.
 pub mod initialization;
 /// Profile storage operations.
@@ -19,14 +27,6 @@ pub mod profile_store;
 pub mod settings_store;
 /// Wallet storage operations.
 pub mod wallet_store;
-/// Database security and password protection.
-pub mod db_security;
-/// Data export functionality.
-pub mod export;
-/// Data import functionality.
-pub mod import;
-/// Tauri commands for the storage layer.
-pub mod commands;
 
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};

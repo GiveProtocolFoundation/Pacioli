@@ -117,7 +117,10 @@ export const tauriPersistence: PersistenceService = {
     return invoke<Entity>('create_entity', { entity })
   },
 
-  getEntities: (profileId: string, filter?: EntityFilter): Promise<Entity[]> => {
+  getEntities: (
+    profileId: string,
+    filter?: EntityFilter
+  ): Promise<Entity[]> => {
     return invoke<Entity[]>('get_entities', {
       profileId,
       entityType: filter?.entity_type ?? null,
@@ -137,8 +140,16 @@ export const tauriPersistence: PersistenceService = {
     return invoke('delete_entity', { id })
   },
 
-  searchEntities: (profileId: string, query: string, limit?: number): Promise<Entity[]> => {
-    return invoke<Entity[]>('search_entities', { profileId, query, limit: limit ?? null })
+  searchEntities: (
+    profileId: string,
+    query: string,
+    limit?: number
+  ): Promise<Entity[]> => {
+    return invoke<Entity[]>('search_entities', {
+      profileId,
+      query,
+      limit: limit ?? null,
+    })
   },
 
   findEntityByAddress: (
@@ -154,7 +165,9 @@ export const tauriPersistence: PersistenceService = {
   },
 
   // Entity address operations
-  addEntityAddress: (addressInput: EntityAddressInput): Promise<EntityAddress> => {
+  addEntityAddress: (
+    addressInput: EntityAddressInput
+  ): Promise<EntityAddress> => {
     return invoke<EntityAddress>('add_entity_address', { addressInput })
   },
 
@@ -172,24 +185,42 @@ export const tauriPersistence: PersistenceService = {
     address: string,
     chain: string
   ): Promise<AddressMatch | null> => {
-    return invoke<AddressMatch | null>('lookup_address', { profileId, address, chain })
+    return invoke<AddressMatch | null>('lookup_address', {
+      profileId,
+      address,
+      chain,
+    })
   },
 
   batchLookupAddresses: (
     profileId: string,
     addresses: Array<[string, string]>
   ): Promise<AddressMatch[]> => {
-    return invoke<AddressMatch[]>('batch_lookup_addresses', { profileId, addresses })
+    return invoke<AddressMatch[]>('batch_lookup_addresses', {
+      profileId,
+      addresses,
+    })
   },
 
-  getKnownAddresses: (chain?: string, entityType?: string): Promise<KnownAddress[]> => {
+  getKnownAddresses: (
+    chain?: string,
+    entityType?: string
+  ): Promise<KnownAddress[]> => {
     return invoke<KnownAddress[]>('get_known_addresses', {
       chain: chain ?? null,
       entityType: entityType ?? null,
     })
   },
 
-  createEntityFromKnown: (profileId: string, address: string, chain: string): Promise<Entity> => {
-    return invoke<Entity>('create_entity_from_known', { profileId, address, chain })
+  createEntityFromKnown: (
+    profileId: string,
+    address: string,
+    chain: string
+  ): Promise<Entity> => {
+    return invoke<Entity>('create_entity_from_known', {
+      profileId,
+      address,
+      chain,
+    })
   },
 }

@@ -152,7 +152,11 @@ const Register: React.FC = () => {
       }
 
       try {
-        await register({ email: email.trim(), password, display_name: name.trim() })
+        await register({
+          email: email.trim(),
+          password,
+          display_name: name.trim(),
+        })
         navigate('/', { replace: true })
       } catch {
         // Error is handled by AuthContext

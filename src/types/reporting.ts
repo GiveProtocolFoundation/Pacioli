@@ -8,14 +8,10 @@ import {
   DigitalAssetType,
   TransactionType,
   Decimal,
-  DateRange
+  DateRange,
 } from './database'
 
-import {
-  TokenHolding,
-  CapitalGain,
-  TaxYearSummary
-} from './accounting'
+import { TokenHolding, CapitalGain, TaxYearSummary } from './accounting'
 
 // =============================================================================
 // FINANCIAL STATEMENT TYPES
@@ -410,7 +406,11 @@ export interface CustomReportDefinition {
   id: number
   name: string
   description?: string
-  reportType: 'transaction_detail' | 'account_activity' | 'token_movement' | 'custom_query'
+  reportType:
+    | 'transaction_detail'
+    | 'account_activity'
+    | 'token_movement'
+    | 'custom_query'
   filters: CustomReportFilters
   columns: CustomReportColumn[]
   groupBy?: string[]
@@ -453,7 +453,12 @@ export interface CustomReportResult {
 // =============================================================================
 
 export interface ExportRequest {
-  reportType: 'balance_sheet' | 'income_statement' | 'portfolio' | 'tax' | 'custom'
+  reportType:
+    | 'balance_sheet'
+    | 'income_statement'
+    | 'portfolio'
+    | 'tax'
+    | 'custom'
   reportData: unknown
   format: 'pdf' | 'excel' | 'csv' | 'json'
   options?: ExportOptions

@@ -543,7 +543,9 @@ const Navigation: React.FC<NavigationProps> = ({
                 <Bell className="w-6 h-6" />
                 {unreadNotificationCount > 0 && (
                   <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center bg-[#8b4e52] dark:bg-[#8b4e52] rounded-full text-white text-xs font-medium px-1">
-                    {unreadNotificationCount > 99 ? '99+' : unreadNotificationCount}
+                    {unreadNotificationCount > 99
+                      ? '99+'
+                      : unreadNotificationCount}
                   </span>
                 )}
               </button>

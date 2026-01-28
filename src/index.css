@@ -23,7 +23,8 @@
   --font-family-serif: 'Lora', Georgia, serif;
 
   /* Sans-serif font - Inter for body and UI */
-  --font-family-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-family-sans:
+    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
   /* Font weight scale */
   --font-weight-light: 300;
@@ -276,7 +277,10 @@ th,
     0 1px 3px rgba(0, 0, 0, 0.05);
   position: relative;
   overflow: hidden;
-  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease,
+    border-color 0.3s ease;
 }
 
 .ledger-card:hover {
@@ -731,7 +735,11 @@ th,
 }
 
 .btn-primary:hover {
-  background: linear-gradient(135deg, var(--color-burgundy-hover) 0%, #8b5258 100%);
+  background: linear-gradient(
+    135deg,
+    var(--color-burgundy-hover) 0%,
+    #8b5258 100%
+  );
   transform: translateY(-1px);
   box-shadow:
     0 4px 8px rgba(139, 78, 82, 0.25),
@@ -750,7 +758,11 @@ th,
 }
 
 .dark .btn-primary:hover {
-  background: linear-gradient(135deg, var(--color-burgundy-hover) 0%, #8b5258 100%);
+  background: linear-gradient(
+    135deg,
+    var(--color-burgundy-hover) 0%,
+    #8b5258 100%
+  );
 }
 
 .btn-primary:disabled {
@@ -1011,12 +1023,12 @@ th,
    INPUT FIELD STYLING
    ============================================================================= */
 
-input[type="text"],
-input[type="email"],
-input[type="password"],
-input[type="number"],
-input[type="date"],
-input[type="datetime-local"],
+input[type='text'],
+input[type='email'],
+input[type='password'],
+input[type='number'],
+input[type='date'],
+input[type='datetime-local'],
 textarea {
   border-radius: 14px;
   border: 1px solid var(--color-border-default);
@@ -1035,12 +1047,12 @@ select:focus {
   box-shadow: 0 0 0 3px rgba(201, 169, 97, 0.15);
 }
 
-.dark input[type="text"],
-.dark input[type="email"],
-.dark input[type="password"],
-.dark input[type="number"],
-.dark input[type="date"],
-.dark input[type="datetime-local"],
+.dark input[type='text'],
+.dark input[type='email'],
+.dark input[type='password'],
+.dark input[type='number'],
+.dark input[type='date'],
+.dark input[type='datetime-local'],
 .dark textarea {
   background: var(--color-bg-tertiary-dark);
   border-color: var(--color-border-default);

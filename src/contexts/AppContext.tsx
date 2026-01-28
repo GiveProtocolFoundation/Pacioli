@@ -65,7 +65,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
   const [error, setError] = useState<string | null>(null)
   const [isFirstLaunch, setIsFirstLaunch] = useState(false)
   const [securityMode, setSecurityMode] = useState<SecurityMode>('easy')
-  const [sessionTimeoutMinutes, setSessionTimeoutMinutes] = useState(DEFAULT_SESSION_TIMEOUT)
+  const [sessionTimeoutMinutes, setSessionTimeoutMinutes] = useState(
+    DEFAULT_SESSION_TIMEOUT
+  )
   const [sessionExpired, setSessionExpired] = useState(false)
 
   // Activity tracking for session timeout
@@ -159,7 +161,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
 
       // Load security mode
       const savedMode = await storage.getSetting('security_mode')
-      if (savedMode === 'easy' || savedMode === 'secure' || savedMode === 'secure_plus') {
+      if (
+        savedMode === 'easy' ||
+        savedMode === 'secure' ||
+        savedMode === 'secure_plus'
+      ) {
         setSecurityMode(savedMode)
       }
 
@@ -317,7 +323,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
 
       // Reload security mode
       const savedMode = await storage.getSetting('security_mode')
-      if (savedMode === 'easy' || savedMode === 'secure' || savedMode === 'secure_plus') {
+      if (
+        savedMode === 'easy' ||
+        savedMode === 'secure' ||
+        savedMode === 'secure_plus'
+      ) {
         setSecurityMode(savedMode)
       }
     } catch (err) {

@@ -61,13 +61,8 @@ export function useSyncNotifications() {
    * Report a sync error
    */
   const reportSyncError = useCallback(
-    async (
-      network: string,
-      address: string,
-      error: Error | string
-    ) => {
-      const errorMessage =
-        typeof error === 'string' ? error : error.message
+    async (network: string, address: string, error: Error | string) => {
+      const errorMessage = typeof error === 'string' ? error : error.message
       await detectSyncStatus(network, address, 'error', errorMessage)
     },
     []
@@ -144,7 +139,11 @@ export function useTransactionNotifications() {
    * Report unknown token encountered
    */
   const reportUnknownToken = useCallback(
-    async (contractAddress: string, network: string, transactionId?: string) => {
+    async (
+      contractAddress: string,
+      network: string,
+      transactionId?: string
+    ) => {
       await detectUnknownToken(contractAddress, network, transactionId)
     },
     []
@@ -198,7 +197,12 @@ export function useBalanceNotifications() {
       balance: number,
       transactionId: string
     ) => {
-      await detectNegativeBalance(tokenSymbol, walletAddress, balance, transactionId)
+      await detectNegativeBalance(
+        tokenSymbol,
+        walletAddress,
+        balance,
+        transactionId
+      )
     },
     []
   )

@@ -1,5 +1,11 @@
 export type TransactionType = 'revenue' | 'expense' | 'transfer'
-export type TransactionStatus = 'draft' | 'pending_approval' | 'approved' | 'rejected' | 'completed' | 'failed'
+export type TransactionStatus =
+  | 'draft'
+  | 'pending_approval'
+  | 'approved'
+  | 'rejected'
+  | 'completed'
+  | 'failed'
 export type ApprovalStatus = 'pending' | 'approved' | 'rejected'
 
 export interface TransactionFormData {

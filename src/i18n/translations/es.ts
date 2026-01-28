@@ -18,11 +18,14 @@ export const es: Translations = {
     securitySetup: 'Configuración de Seguridad',
     securitySetupDesc: 'Elige cómo quieres proteger tus datos.',
     easyAccess: 'Acceso Fácil',
-    easyAccessDesc: 'Abrir directamente al panel sin contraseña. Ideal para dispositivos personales.',
+    easyAccessDesc:
+      'Abrir directamente al panel sin contraseña. Ideal para dispositivos personales.',
     secureUse: 'Seguro',
-    secureUseDesc: 'Requerir contraseña en cada inicio. Recomendado para dispositivos compartidos.',
+    secureUseDesc:
+      'Requerir contraseña en cada inicio. Recomendado para dispositivos compartidos.',
     securePlus: 'Seguro+',
-    securePlusDesc: 'Contraseña al iniciar más bloqueo automático por inactividad. Máxima seguridad.',
+    securePlusDesc:
+      'Contraseña al iniciar más bloqueo automático por inactividad. Máxima seguridad.',
     setPassword: 'Establecer Contraseña',
     setPasswordDesc: 'Crea una contraseña fuerte para proteger tus datos.',
     confirmPassword: 'Confirmar Contraseña',
@@ -31,25 +34,31 @@ export const es: Translations = {
     sessionTimeout: 'Tiempo de Sesión',
     sessionTimeoutDesc: 'Bloquear después de este período de inactividad',
     setupComplete: 'Configuración Completa',
-    setupCompleteDesc: 'Tus preferencias han sido guardadas. Puedes cambiarlas en cualquier momento en Configuración.',
+    setupCompleteDesc:
+      'Tus preferencias han sido guardadas. Puedes cambiarlas en cualquier momento en Configuración.',
     getStarted: 'Comenzar',
   },
 
   recovery: {
     title: 'Frase de Recuperación',
-    subtitle: 'Guarda esta frase para recuperar tu cuenta si olvidas tu contraseña.',
+    subtitle:
+      'Guarda esta frase para recuperar tu cuenta si olvidas tu contraseña.',
     warning: 'Importante',
-    warningDesc: 'Escribe estas 12 palabras y guárdalas de forma segura. Esta es la única manera de recuperar tu cuenta si olvidas tu contraseña.',
+    warningDesc:
+      'Escribe estas 12 palabras y guárdalas de forma segura. Esta es la única manera de recuperar tu cuenta si olvidas tu contraseña.',
     copyButton: 'Copiar al portapapeles',
     copied: '¡Copiado!',
     confirmCheckbox: 'He guardado esta frase de forma segura',
     word: 'Palabra',
     forgotPassword: '¿Olvidaste tu contraseña?',
     resetTitle: 'Restablecer Contraseña',
-    resetSubtitle: 'Ingresa tu frase de recuperación de 12 palabras para restablecer tu contraseña.',
+    resetSubtitle:
+      'Ingresa tu frase de recuperación de 12 palabras para restablecer tu contraseña.',
     enterPhrase: 'Frase de Recuperación',
-    phrasePlaceholder: 'Ingresa tus 12 palabras de recuperación separadas por espacios',
-    invalidPhrase: 'Frase de recuperación inválida. Verifica e intenta de nuevo.',
+    phrasePlaceholder:
+      'Ingresa tus 12 palabras de recuperación separadas por espacios',
+    invalidPhrase:
+      'Frase de recuperación inválida. Verifica e intenta de nuevo.',
     newPassword: 'Nueva Contraseña',
     confirmNewPassword: 'Confirmar Nueva Contraseña',
     resetSuccess: '¡Contraseña restablecida exitosamente!',
@@ -64,7 +73,8 @@ export const es: Translations = {
     unlock: 'Desbloquear',
     incorrectPassword: 'Contraseña incorrecta. Intenta de nuevo.',
     sessionExpired: 'Sesión Expirada',
-    sessionExpiredDesc: 'Tu sesión ha expirado por inactividad. Ingresa tu contraseña para continuar.',
+    sessionExpiredDesc:
+      'Tu sesión ha expirado por inactividad. Ingresa tu contraseña para continuar.',
     forgotPassword: '¿Olvidaste tu contraseña?',
   },
 

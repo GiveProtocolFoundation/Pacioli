@@ -28,12 +28,17 @@ interface AddressDetectionResult {
   /**
    * Detect entities for a list of addresses
    */
-  detectAddresses: (addresses: Array<{ address: string; chain: string }>) => Promise<void>
+  detectAddresses: (
+    addresses: Array<{ address: string; chain: string }>
+  ) => Promise<void>
 
   /**
    * Detect entity for a single address
    */
-  detectAddress: (address: string, chain: string) => Promise<AddressMatch | null>
+  detectAddress: (
+    address: string,
+    chain: string
+  ) => Promise<AddressMatch | null>
 
   /**
    * Get match for a specific address
@@ -55,7 +60,8 @@ export function useAddressDetection(
   options: UseAddressDetectionOptions = {}
 ): AddressDetectionResult {
   const { autoDetect = true } = options
-  const { lookupAddress, batchLookupAddresses, createEntityFromKnown } = useEntity()
+  const { lookupAddress, batchLookupAddresses, createEntityFromKnown } =
+    useEntity()
 
   const [matches, setMatches] = useState<Map<string, AddressMatch>>(new Map())
   const [isDetecting, setIsDetecting] = useState(false)
@@ -64,7 +70,8 @@ export function useAddressDetection(
   >([])
 
   // Create a key for the address-chain combination
-  const makeKey = (address: string, chain: string) => `${chain}:${address.toLowerCase()}`
+  const makeKey = (address: string, chain: string) =>
+    `${chain}:${address.toLowerCase()}`
 
   // Detect a single address
   const detectAddress = useCallback(
@@ -79,7 +86,7 @@ export function useAddressDetection(
       try {
         const match = await lookupAddress(address, chain)
         if (match) {
-          setMatches((prev) => new Map(prev).set(key, match))
+          setMatches(prev => new Map(prev).set(key, match))
         }
         return match
       } catch {
@@ -101,13 +108,12 @@ export function useAddressDetection(
 
       setIsDetecting(true)
       try {
-        const addressPairs: Array<[string, string]> = newAddresses.map(({ address, chain }) => [
-          address,
-          chain,
-        ])
+        const addressPairs: Array<[string, string]> = newAddresses.map(
+          ({ address, chain }) => [address, chain]
+        )
         const results = await batchLookupAddresses(addressPairs)
 
-        setMatches((prev) => {
+        setMatches(prev => {
           const newMap = new Map(prev)
           for (const match of results) {
             const key = makeKey(match.address, match.chain)
@@ -137,7 +143,7 @@ export function useAddressDetection(
 
       // Update the match to reflect the new entity
       const key = makeKey(address, chain)
-      setMatches((prev) => {
+      setMatches(prev => {
         const newMap = new Map(prev)
         const existingMatch = newMap.get(key)
         if (existingMatch) {
@@ -183,7 +189,11 @@ export function useAddressDetection(
  * Hook for detecting addresses in a list of transactions
  */
 export function useTransactionAddressDetection(
-  transactions: Array<{ from_address?: string | null; to_address?: string | null; chain: string }>
+  transactions: Array<{
+    from_address?: string | null
+    to_address?: string | null
+    chain: string
+  }>
 ) {
   const detection = useAddressDetection()
   const { detectAddresses } = detection

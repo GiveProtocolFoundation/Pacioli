@@ -106,15 +106,27 @@ export class EVMService {
     }
   }
 
-  static async syncEVMTransactions(chain: string, address: string): Promise<string> {
+  static async syncEVMTransactions(
+    chain: string,
+    address: string
+  ): Promise<string> {
     return invoke<string>('sync_evm_transactions', { chain, address })
   }
 
-  static async getTokenBalances(chain: string, address: string): Promise<[string, string][]> {
-    return invoke<[string, string][]>('get_evm_token_balances', { chain, address })
+  static async getTokenBalances(
+    chain: string,
+    address: string
+  ): Promise<[string, string][]> {
+    return invoke<[string, string][]>('get_evm_token_balances', {
+      chain,
+      address,
+    })
   }
 
-  static async scanDeFiPositions(chain: string, address: string): Promise<string[]> {
+  static async scanDeFiPositions(
+    chain: string,
+    address: string
+  ): Promise<string[]> {
     return invoke<string[]>('scan_defi_positions', { chain, address })
   }
 

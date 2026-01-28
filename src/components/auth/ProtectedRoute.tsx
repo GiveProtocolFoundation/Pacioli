@@ -56,7 +56,8 @@ const AccessDenied: React.FC<{ permission: Permission }> = ({ permission }) => {
           You don&apos;t have permission to access this page.
           {currentProfileRole && (
             <span className="block mt-1">
-              Your current role ({currentProfileRole}) doesn&apos;t include the &quot;{permission}&quot; permission.
+              Your current role ({currentProfileRole}) doesn&apos;t include the
+              &quot;{permission}&quot; permission.
             </span>
           )}
         </p>

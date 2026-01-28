@@ -122,7 +122,9 @@ export const NotificationProvider: React.FC<{
       setPreferences(prefsResult)
     } catch (err) {
       console.error('Failed to load notifications:', err)
-      setError(err instanceof Error ? err.message : 'Failed to load notifications')
+      setError(
+        err instanceof Error ? err.message : 'Failed to load notifications'
+      )
     } finally {
       setIsLoading(false)
     }

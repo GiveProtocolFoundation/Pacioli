@@ -5,7 +5,11 @@
 
 import React, { useState, useCallback } from 'react'
 import { open } from '@tauri-apps/plugin-dialog'
-import { storage, type ImportPreview, type ImportResult } from '../../services/storage'
+import {
+  storage,
+  type ImportPreview,
+  type ImportResult,
+} from '../../services/storage'
 
 interface ImportDialogProps {
   isOpen: boolean
@@ -50,7 +54,9 @@ const SelectStepContent: React.FC<SelectStepProps> = ({ onSelectFile }) => (
             d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
           />
         </svg>
-        <p className="mt-2 text-sm text-[#696557] dark:text-[#b8b3ac]">Click to select a file</p>
+        <p className="mt-2 text-sm text-[#696557] dark:text-[#b8b3ac]">
+          Click to select a file
+        </p>
       </div>
     </button>
   </>
@@ -76,7 +82,8 @@ const PasswordStepContent: React.FC<PasswordStepProps> = ({
     </p>
     <div className="mb-4 p-3 bg-[#f3f1ed] dark:bg-[#2a2620] rounded-md">
       <p className="text-sm text-[#1a1815] dark:text-[#b8b3ac]">
-        <strong>Export date:</strong> {new Date(preview.exported_at).toLocaleDateString()}
+        <strong>Export date:</strong>{' '}
+        {new Date(preview.exported_at).toLocaleDateString()}
       </p>
     </div>
     <div className="mb-4">
@@ -115,7 +122,8 @@ const PreviewStepContent: React.FC<PreviewStepProps> = ({ preview }) => (
         <strong>Export version:</strong> {preview.version}
       </p>
       <p className="text-sm text-[#1a1815] dark:text-[#b8b3ac]">
-        <strong>Export date:</strong> {new Date(preview.exported_at).toLocaleDateString()}
+        <strong>Export date:</strong>{' '}
+        {new Date(preview.exported_at).toLocaleDateString()}
       </p>
       <p className="text-sm text-[#1a1815] dark:text-[#b8b3ac] mt-2">
         <strong>Data to import:</strong>
@@ -128,8 +136,8 @@ const PreviewStepContent: React.FC<PreviewStepProps> = ({ preview }) => (
     </div>
     <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md">
       <p className="text-sm text-yellow-800 dark:text-yellow-200">
-        <strong>Note:</strong> Importing will add new data to your existing data. Duplicate entries
-        will be skipped.
+        <strong>Note:</strong> Importing will add new data to your existing
+        data. Duplicate entries will be skipped.
       </p>
     </div>
   </>
@@ -141,7 +149,9 @@ const PreviewStepContent: React.FC<PreviewStepProps> = ({ preview }) => (
 const ImportingStepContent: React.FC = () => (
   <div className="py-8 text-center">
     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#8b4e52] mx-auto" />
-    <p className="mt-4 text-sm text-[#696557] dark:text-[#b8b3ac]">Importing data...</p>
+    <p className="mt-4 text-sm text-[#696557] dark:text-[#b8b3ac]">
+      Importing data...
+    </p>
   </div>
 )
 
@@ -161,9 +171,16 @@ const CompleteStepContent: React.FC<CompleteStepProps> = ({ result }) => (
         viewBox="0 0 24 24"
         stroke="currentColor"
       >
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M5 13l4 4L19 7"
+        />
       </svg>
-      <p className="mt-2 text-lg font-medium text-[#1a1815] dark:text-[#f5f3f0]">Import Complete</p>
+      <p className="mt-2 text-lg font-medium text-[#1a1815] dark:text-[#f5f3f0]">
+        Import Complete
+      </p>
     </div>
     <div className="mb-4 p-3 bg-[#f3f1ed] dark:bg-[#2a2620] rounded-md">
       <ul className="text-sm text-[#696557] dark:text-[#b8b3ac]">
@@ -174,9 +191,11 @@ const CompleteStepContent: React.FC<CompleteStepProps> = ({ result }) => (
     </div>
     {result.warnings.length > 0 && (
       <div className="mb-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md">
-        <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200">Warnings:</p>
+        <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
+          Warnings:
+        </p>
         <ul className="mt-1 text-sm text-yellow-700 dark:text-yellow-300">
-          {result.warnings.map((warning) => (
+          {result.warnings.map(warning => (
             <li key={warning}>• {warning}</li>
           ))}
         </ul>
@@ -197,7 +216,10 @@ interface DialogBackdropProps {
 /**
  * Modal backdrop that closes dialog on click.
  */
-const DialogBackdrop: React.FC<DialogBackdropProps> = ({ onClose, onKeyDown }) => (
+const DialogBackdrop: React.FC<DialogBackdropProps> = ({
+  onClose,
+  onKeyDown,
+}) => (
   <div
     className="fixed inset-0 bg-black bg-opacity-25"
     onClick={onClose}
@@ -218,7 +240,12 @@ interface DialogActionsProps {
 /**
  * Dialog action buttons.
  */
-const DialogActions: React.FC<DialogActionsProps> = ({ step, password, onClose, onImport }) => (
+const DialogActions: React.FC<DialogActionsProps> = ({
+  step,
+  password,
+  onClose,
+  onImport,
+}) => (
   <div className="flex justify-end space-x-3 pt-4">
     <button
       type="button"
@@ -284,9 +311,12 @@ export const ImportDialog: React.FC<ImportDialogProps> = ({
     [handleClose]
   )
 
-  const handlePasswordChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setPassword(e.target.value)
-  }, [])
+  const handlePasswordChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setPassword(e.target.value)
+    },
+    []
+  )
 
   const handleSelectFile = useCallback(async () => {
     try {
@@ -362,14 +392,19 @@ export const ImportDialog: React.FC<ImportDialogProps> = ({
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="flex min-h-screen items-center justify-center p-4">
-        <DialogBackdrop onClose={handleClose} onKeyDown={handleBackdropKeyDown} />
+        <DialogBackdrop
+          onClose={handleClose}
+          onKeyDown={handleBackdropKeyDown}
+        />
         <div className="relative bg-[#fafaf8] dark:bg-[#1a1815] rounded-lg shadow-xl max-w-md w-full p-6">
           <h2 className="text-lg font-semibold text-[#1a1815] dark:text-[#f5f3f0] mb-2">
             Import Data
           </h2>
           {renderStepContent()}
           {error && (
-            <div className="mt-4 text-sm text-[#9d6b6b] dark:text-[#b88585]">{error}</div>
+            <div className="mt-4 text-sm text-[#9d6b6b] dark:text-[#b88585]">
+              {error}
+            </div>
           )}
           <DialogActions
             step={step}

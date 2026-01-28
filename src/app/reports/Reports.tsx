@@ -369,7 +369,8 @@ const Reports: React.FC = () => {
         'bg-[#7a9b6f]/10 dark:bg-[#7a9b6f]/20 text-[#7a9b6f] dark:text-[#8faf84]',
       processing:
         'bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 text-[#8b4e52] dark:text-[#a86e72]',
-      failed: 'bg-[#9d6b6b]/10 dark:bg-[#9d6b6b]/20 text-[#9d6b6b] dark:text-[#b88585]',
+      failed:
+        'bg-[#9d6b6b]/10 dark:bg-[#9d6b6b]/20 text-[#9d6b6b] dark:text-[#b88585]',
     }
 
     return (

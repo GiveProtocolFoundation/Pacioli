@@ -171,9 +171,13 @@ class IndexedDBService {
           notifStore.createIndex('class_read', ['class', 'read'], {
             unique: false,
           })
-          notifStore.createIndex('dismissed_createdAt', ['dismissed', 'createdAt'], {
-            unique: false,
-          })
+          notifStore.createIndex(
+            'dismissed_createdAt',
+            ['dismissed', 'createdAt'],
+            {
+              unique: false,
+            }
+          )
         }
 
         // Create notification preferences store (added in v3)

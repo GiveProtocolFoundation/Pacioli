@@ -11,7 +11,8 @@ import ifrsNotForProfit from '../data/chart-of-accounts/ifrs-not-for-profit.json
 
 const templates: Record<string, ChartOfAccountsTemplate> = {
   'us-gaap-individual': usGaapIndividual as ChartOfAccountsTemplate,
-  'us-gaap-for-profit-enterprise': usGaapForProfitEnterprise as ChartOfAccountsTemplate,
+  'us-gaap-for-profit-enterprise':
+    usGaapForProfitEnterprise as ChartOfAccountsTemplate,
   'us-gaap-sme': usGaapForProfitEnterprise as ChartOfAccountsTemplate, // Deprecated: use for-profit-enterprise
   'us-gaap-not-for-profit': usGaapNotForProfit as ChartOfAccountsTemplate,
   'ifrs-individual': ifrsIndividual as ChartOfAccountsTemplate,

@@ -18,11 +18,14 @@ export const eo: Translations = {
     securitySetup: 'Sekureca Agordo',
     securitySetupDesc: 'Elektu kiel vi volas protekti viajn datumojn.',
     easyAccess: 'Facila Aliro',
-    easyAccessDesc: 'Malfermi rekte al panelo sen pasvorto. Ideala por personaj aparatoj.',
+    easyAccessDesc:
+      'Malfermi rekte al panelo sen pasvorto. Ideala por personaj aparatoj.',
     secureUse: 'Sekura',
-    secureUseDesc: 'Postuli pasvorton ĉe ĉiu lanĉo. Rekomendita por komunaj aparatoj.',
+    secureUseDesc:
+      'Postuli pasvorton ĉe ĉiu lanĉo. Rekomendita por komunaj aparatoj.',
     securePlus: 'Sekura+',
-    securePlusDesc: 'Pasvorto ĉe lanĉo plus aŭtomata ŝloso post neaktiveco. Maksimuma sekureco.',
+    securePlusDesc:
+      'Pasvorto ĉe lanĉo plus aŭtomata ŝloso post neaktiveco. Maksimuma sekureco.',
     setPassword: 'Agordi Pasvorton',
     setPasswordDesc: 'Kreu fortan pasvorton por protekti viajn datumojn.',
     confirmPassword: 'Konfirmi Pasvorton',
@@ -31,24 +34,29 @@ export const eo: Translations = {
     sessionTimeout: 'Seanca Tempolimo',
     sessionTimeoutDesc: 'Ŝlosi post ĉi tiu periodo de neaktiveco',
     setupComplete: 'Agordo Kompleta',
-    setupCompleteDesc: 'Viaj preferoj estis konservitaj. Vi povas ŝanĝi ilin iam ajn en Agordoj.',
+    setupCompleteDesc:
+      'Viaj preferoj estis konservitaj. Vi povas ŝanĝi ilin iam ajn en Agordoj.',
     getStarted: 'Komenci',
   },
 
   recovery: {
     title: 'Reakira Frazo',
-    subtitle: 'Konservu ĉi tiun frazon por reakiri vian konton se vi forgesas vian pasvorton.',
+    subtitle:
+      'Konservu ĉi tiun frazon por reakiri vian konton se vi forgesas vian pasvorton.',
     warning: 'Grava',
-    warningDesc: 'Notu ĉi tiujn 12 vortojn kaj konservu ilin sekure. Ĉi tio estas la sola maniero reakiri vian konton se vi forgesas vian pasvorton.',
+    warningDesc:
+      'Notu ĉi tiujn 12 vortojn kaj konservu ilin sekure. Ĉi tio estas la sola maniero reakiri vian konton se vi forgesas vian pasvorton.',
     copyButton: 'Kopii al tondujo',
     copied: 'Kopiita!',
     confirmCheckbox: 'Mi sekure konservis ĉi tiun frazon',
     word: 'Vorto',
     forgotPassword: 'Ĉu vi forgesis pasvorton?',
     resetTitle: 'Restarigi Pasvorton',
-    resetSubtitle: 'Enigu vian 12-vortan reakiran frazon por restarigi vian pasvorton.',
+    resetSubtitle:
+      'Enigu vian 12-vortan reakiran frazon por restarigi vian pasvorton.',
     enterPhrase: 'Reakira Frazo',
-    phrasePlaceholder: 'Enigu viajn 12 reakirajn vortojn apartigitajn per spacoj',
+    phrasePlaceholder:
+      'Enigu viajn 12 reakirajn vortojn apartigitajn per spacoj',
     invalidPhrase: 'Nevalida reakira frazo. Bonvolu kontroli kaj reprovi.',
     newPassword: 'Nova Pasvorto',
     confirmNewPassword: 'Konfirmi Novan Pasvorton',
@@ -64,7 +72,8 @@ export const eo: Translations = {
     unlock: 'Malŝlosi',
     incorrectPassword: 'Malĝusta pasvorto. Bonvolu reprovi.',
     sessionExpired: 'Seanco Eksvalidiĝis',
-    sessionExpiredDesc: 'Via seanco eksvalidiĝis pro neaktiveco. Bonvolu enigi vian pasvorton por daŭrigi.',
+    sessionExpiredDesc:
+      'Via seanco eksvalidiĝis pro neaktiveco. Bonvolu enigi vian pasvorton por daŭrigi.',
     forgotPassword: 'Ĉu vi forgesis pasvorton?',
   },
 

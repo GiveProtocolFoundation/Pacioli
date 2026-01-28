@@ -169,8 +169,18 @@ const createMemoryStorage = (): StorageService => {
       hasPasswordSet = true
       // Generate mock recovery phrase for browser mode
       const words = [
-        'abandon', 'ability', 'able', 'about', 'above', 'absent',
-        'absorb', 'abstract', 'absurd', 'abuse', 'access', 'accident',
+        'abandon',
+        'ability',
+        'able',
+        'about',
+        'above',
+        'absent',
+        'absorb',
+        'abstract',
+        'absurd',
+        'abuse',
+        'access',
+        'accident',
       ]
       mockRecoveryPhrase = words.join(' ')
       return mockRecoveryPhrase
@@ -206,7 +216,7 @@ const createMemoryStorage = (): StorageService => {
 
     verifyRecoveryPhrase: async phrase => phrase === mockRecoveryPhrase,
 
-    resetPasswordWithRecovery: async (phrase) => {
+    resetPasswordWithRecovery: async phrase => {
       if (phrase !== mockRecoveryPhrase) {
         throw new Error('Invalid recovery phrase')
       }

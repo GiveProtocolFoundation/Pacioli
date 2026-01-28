@@ -46,9 +46,7 @@ impl StorageState {
 
 /// Ensures the app is initialized on first run.
 #[tauri::command]
-pub async fn storage_ensure_initialized(
-    state: State<'_, StorageState>,
-) -> Result<String, String> {
+pub async fn storage_ensure_initialized(state: State<'_, StorageState>) -> Result<String, String> {
     let result = initialization::ensure_initialized(&state.pool)
         .await
         .map_err(|e| e.to_string())?;

@@ -43,7 +43,12 @@ interface NotificationItemProps {
 }
 
 // Map notification class to UI filter tabs
-type FilterType = 'all' | 'financial' | 'transactional' | 'workflow' | 'approval'
+type FilterType =
+  | 'all'
+  | 'financial'
+  | 'transactional'
+  | 'workflow'
+  | 'approval'
 
 /**
  * Maps a notification class to the corresponding UI filter tab.
@@ -64,7 +69,9 @@ function mapClassToFilter(notifClass: NotificationClass): FilterType {
 /**
  * Get icon based on notification type.
  */
-function getNotificationIcon(notification: NotificationData): React.ElementType {
+function getNotificationIcon(
+  notification: NotificationData
+): React.ElementType {
   const typeIcons: Partial<Record<NotificationType, React.ElementType>> = {
     // Data Integrity
     sync_status: RefreshCw,
@@ -160,7 +167,9 @@ const NotificationBody: React.FC<{
             <span className="inline-block w-2 h-2 bg-[#8b4e52] rounded-full ml-2" />
           )}
         </p>
-        <p className="text-xs text-[#696557] dark:text-[#b8b3ac] mt-1">{notification.message}</p>
+        <p className="text-xs text-[#696557] dark:text-[#b8b3ac] mt-1">
+          {notification.message}
+        </p>
       </div>
     </div>
     <div className="flex items-center justify-between mt-2">
@@ -258,7 +267,15 @@ const FilterTabs: React.FC<{
   onTransactional: () => void
   onWorkflow: () => void
   onApproval: () => void
-}> = ({ filter, userType, onAll, onFinancial, onTransactional, onWorkflow, onApproval }) => {
+}> = ({
+  filter,
+  userType,
+  onAll,
+  onFinancial,
+  onTransactional,
+  onWorkflow,
+  onApproval,
+}) => {
   const getButtonClass = (isActive: boolean) =>
     `px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
       isActive
@@ -271,18 +288,30 @@ const FilterTabs: React.FC<{
       <button onClick={onAll} className={getButtonClass(filter === 'all')}>
         All
       </button>
-      <button onClick={onFinancial} className={getButtonClass(filter === 'financial')}>
+      <button
+        onClick={onFinancial}
+        className={getButtonClass(filter === 'financial')}
+      >
         Financial
       </button>
-      <button onClick={onTransactional} className={getButtonClass(filter === 'transactional')}>
+      <button
+        onClick={onTransactional}
+        className={getButtonClass(filter === 'transactional')}
+      >
         Transactions
       </button>
       {userType === 'organization' && (
         <>
-          <button onClick={onWorkflow} className={getButtonClass(filter === 'workflow')}>
+          <button
+            onClick={onWorkflow}
+            className={getButtonClass(filter === 'workflow')}
+          >
             Data & Sync
           </button>
-          <button onClick={onApproval} className={getButtonClass(filter === 'approval')}>
+          <button
+            onClick={onApproval}
+            className={getButtonClass(filter === 'approval')}
+          >
             Approvals
           </button>
         </>
@@ -313,9 +342,12 @@ const PanelHeader: React.FC<PanelHeaderProps> = ({
 }) => (
   <div className="flex items-center justify-between p-4 border-b border-[rgba(201,169,97,0.15)]">
     <div>
-      <h2 className="text-lg font-semibold text-[#1a1815] dark:text-[#f5f3f0]">Notifications</h2>
+      <h2 className="text-lg font-semibold text-[#1a1815] dark:text-[#f5f3f0]">
+        Notifications
+      </h2>
       <p className="text-xs text-[#696557] dark:text-[#94a3b8] mt-0.5">
-        {unreadCount} unread {actionRequiredCount > 0 && `• ${actionRequiredCount} require action`}
+        {unreadCount} unread{' '}
+        {actionRequiredCount > 0 && `• ${actionRequiredCount} require action`}
       </p>
     </div>
     <div className="flex items-center space-x-2">
@@ -362,8 +394,12 @@ const LoadingState: React.FC = () => (
 const EmptyState: React.FC = () => (
   <div className="flex flex-col items-center justify-center h-full p-8 text-center">
     <CheckCircle className="w-12 h-12 text-[#a39d94] mb-3" />
-    <p className="text-sm font-medium text-[#1a1815] dark:text-[#f5f3f0]">All caught up!</p>
-    <p className="text-xs text-[#696557] dark:text-[#94a3b8] mt-1">No notifications to show</p>
+    <p className="text-sm font-medium text-[#1a1815] dark:text-[#f5f3f0]">
+      All caught up!
+    </p>
+    <p className="text-xs text-[#696557] dark:text-[#94a3b8] mt-1">
+      No notifications to show
+    </p>
   </div>
 )
 
@@ -388,7 +424,7 @@ const NotificationList: React.FC<NotificationListProps> = ({
   getSeverityStyles,
 }) => (
   <div className="divide-y divide-[rgba(201,169,97,0.15)]">
-    {notifications.map((notification) => (
+    {notifications.map(notification => (
       <NotificationItem
         key={notification.id}
         notification={notification}
@@ -422,7 +458,10 @@ interface PanelBackdropProps {
 /**
  * Backdrop overlay for the sliding panel.
  */
-const PanelBackdrop: React.FC<PanelBackdropProps> = ({ onClose, onKeyDown }) => (
+const PanelBackdrop: React.FC<PanelBackdropProps> = ({
+  onClose,
+  onKeyDown,
+}) => (
   <div
     className="fixed inset-0 bg-black/50 z-40"
     onClick={onClose}
@@ -441,15 +480,27 @@ const PanelBackdrop: React.FC<PanelBackdropProps> = ({ onClose, onKeyDown }) => 
  * Sliding panel component that displays user notifications with filtering,
  * mark as read, dismiss, and resolve functionality.
  */
-const NotificationsPanel: React.FC<NotificationsPanelProps> = ({ isOpen, onClose, userType }) => {
+const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
+  isOpen,
+  onClose,
+  userType,
+}) => {
   const [filter, setFilter] = useState<FilterType>('all')
 
-  const { notifications, stats, isLoading, markAsRead, markAllAsRead, dismiss, resolve, refresh } =
-    useNotifications()
+  const {
+    notifications,
+    stats,
+    isLoading,
+    markAsRead,
+    markAllAsRead,
+    dismiss,
+    resolve,
+    refresh,
+  } = useNotifications()
 
   // Filter notifications based on user type and selected filter
   const filteredNotifications = useMemo(() => {
-    return notifications.filter((notif) => {
+    return notifications.filter(notif => {
       // For individuals, don't show workflow or approval-type notifications
       if (userType === 'individual') {
         const notifFilter = mapClassToFilter(notif.class)
@@ -475,7 +526,9 @@ const NotificationsPanel: React.FC<NotificationsPanelProps> = ({ isOpen, onClose
   const formatTimestamp = useCallback((timestamp: string) => {
     const date = new Date(timestamp)
     const now = new Date()
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60))
+    const diffInHours = Math.floor(
+      (now.getTime() - date.getTime()) / (1000 * 60 * 60)
+    )
 
     if (diffInHours < 1) return 'Just now'
     if (diffInHours < 24) return `${diffInHours}h ago`
@@ -486,22 +539,33 @@ const NotificationsPanel: React.FC<NotificationsPanelProps> = ({ isOpen, onClose
   const getSeverityStyles = useCallback((severity: NotificationSeverity) => {
     const styles = {
       info: 'bg-[#c9a961]/20 dark:bg-[#c9a961]/30 text-[#8b4e52] dark:text-[#a86e72]',
-      warning: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400',
-      success: 'bg-green-100 dark:bg-green-900/30 text-[#7a9b6f] dark:text-[#8faf84]',
+      warning:
+        'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400',
+      success:
+        'bg-green-100 dark:bg-green-900/30 text-[#7a9b6f] dark:text-[#8faf84]',
       error: 'bg-red-100 dark:bg-red-900/30 text-[#9d6b6b] dark:text-[#b88585]',
     }
     return styles[severity]
   }, [])
 
-  const handleMarkAsRead = useCallback((id: string) => markAsRead(id), [markAsRead])
+  const handleMarkAsRead = useCallback(
+    (id: string) => markAsRead(id),
+    [markAsRead]
+  )
   const handleDismiss = useCallback((id: string) => dismiss(id), [dismiss])
   const handleResolve = useCallback((id: string) => resolve(id), [resolve])
-  const handleMarkAllAsRead = useCallback(() => markAllAsRead(), [markAllAsRead])
+  const handleMarkAllAsRead = useCallback(
+    () => markAllAsRead(),
+    [markAllAsRead]
+  )
   const handleRefresh = useCallback(() => refresh(), [refresh])
 
   const handleFilterAll = useCallback(() => setFilter('all'), [])
   const handleFilterFinancial = useCallback(() => setFilter('financial'), [])
-  const handleFilterTransactional = useCallback(() => setFilter('transactional'), [])
+  const handleFilterTransactional = useCallback(
+    () => setFilter('transactional'),
+    []
+  )
   const handleFilterWorkflow = useCallback(() => setFilter('workflow'), [])
   const handleFilterApproval = useCallback(() => setFilter('approval'), [])
 

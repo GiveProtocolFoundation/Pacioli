@@ -18,11 +18,14 @@ export const en: Translations = {
     securitySetup: 'Security Setup',
     securitySetupDesc: 'Choose how you want to protect your data.',
     easyAccess: 'Easy Access',
-    easyAccessDesc: 'Open directly to dashboard without a password. Best for personal devices.',
+    easyAccessDesc:
+      'Open directly to dashboard without a password. Best for personal devices.',
     secureUse: 'Secure',
-    secureUseDesc: 'Require password on every launch. Recommended for shared devices.',
+    secureUseDesc:
+      'Require password on every launch. Recommended for shared devices.',
     securePlus: 'Secure+',
-    securePlusDesc: 'Password on launch plus automatic lock after inactivity. Maximum security.',
+    securePlusDesc:
+      'Password on launch plus automatic lock after inactivity. Maximum security.',
     setPassword: 'Set Password',
     setPasswordDesc: 'Create a strong password to protect your data.',
     confirmPassword: 'Confirm Password',
@@ -31,15 +34,18 @@ export const en: Translations = {
     sessionTimeout: 'Session Timeout',
     sessionTimeoutDesc: 'Lock after this period of inactivity',
     setupComplete: 'Setup Complete',
-    setupCompleteDesc: 'Your preferences have been saved. You can change these anytime in Settings.',
+    setupCompleteDesc:
+      'Your preferences have been saved. You can change these anytime in Settings.',
     getStarted: 'Get Started',
   },
 
   recovery: {
     title: 'Recovery Phrase',
-    subtitle: 'Save this phrase to recover your account if you forget your password.',
+    subtitle:
+      'Save this phrase to recover your account if you forget your password.',
     warning: 'Important',
-    warningDesc: 'Write down these 12 words and store them safely. This is the only way to recover your account if you forget your password.',
+    warningDesc:
+      'Write down these 12 words and store them safely. This is the only way to recover your account if you forget your password.',
     copyButton: 'Copy to clipboard',
     copied: 'Copied!',
     confirmCheckbox: 'I have saved this phrase safely',
@@ -64,7 +70,8 @@ export const en: Translations = {
     unlock: 'Unlock',
     incorrectPassword: 'Incorrect password. Please try again.',
     sessionExpired: 'Session Expired',
-    sessionExpiredDesc: 'Your session has timed out due to inactivity. Please enter your password to continue.',
+    sessionExpiredDesc:
+      'Your session has timed out due to inactivity. Please enter your password to continue.',
     forgotPassword: 'Forgot password?',
   },
 

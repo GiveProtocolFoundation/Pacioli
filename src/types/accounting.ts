@@ -16,7 +16,7 @@ import {
   JournalEntryLine,
   TransactionLot,
   LotDisposal,
-  Decimal
+  Decimal,
 } from './database'
 
 // =============================================================================
@@ -309,133 +309,136 @@ export interface DoubleEntryTemplate {
   description: string
 }
 
-export const TRANSACTION_TEMPLATES: Record<TransactionType, DoubleEntryTemplate> = {
+export const TRANSACTION_TEMPLATES: Record<
+  TransactionType,
+  DoubleEntryTemplate
+> = {
   [TransactionType.Purchase]: {
     transactionType: TransactionType.Purchase,
     debitAccount: '1510', // Digital Assets
     creditAccount: '1010', // Cash
-    description: 'Purchase of digital asset'
+    description: 'Purchase of digital asset',
   },
   [TransactionType.Sale]: {
     transactionType: TransactionType.Sale,
     debitAccount: '1010', // Cash
     creditAccount: '1510', // Digital Assets
-    description: 'Sale of digital asset'
+    description: 'Sale of digital asset',
   },
   [TransactionType.Stake]: {
     transactionType: TransactionType.Stake,
     debitAccount: '1540', // Staked Assets
     creditAccount: '1510', // Digital Assets
-    description: 'Staking of digital asset'
+    description: 'Staking of digital asset',
   },
   [TransactionType.Unstake]: {
     transactionType: TransactionType.Unstake,
     debitAccount: '1510', // Digital Assets
     creditAccount: '1540', // Staked Assets
-    description: 'Unstaking of digital asset'
+    description: 'Unstaking of digital asset',
   },
   [TransactionType.Reward]: {
     transactionType: TransactionType.Reward,
     debitAccount: '1510', // Digital Assets
     creditAccount: '4100', // Staking Rewards Income
-    description: 'Staking reward received'
+    description: 'Staking reward received',
   },
   [TransactionType.Fee]: {
     transactionType: TransactionType.Fee,
     debitAccount: '5200', // Transaction Fees Expense
     creditAccount: '1510', // Digital Assets
-    description: 'Transaction fee paid'
+    description: 'Transaction fee paid',
   },
   [TransactionType.SwapIn]: {
     transactionType: TransactionType.SwapIn,
     debitAccount: '1510', // Digital Assets (new token)
     creditAccount: '1510', // Digital Assets (old token)
-    description: 'Token swap - asset received'
+    description: 'Token swap - asset received',
   },
   [TransactionType.SwapOut]: {
     transactionType: TransactionType.SwapOut,
     debitAccount: '1510', // Digital Assets (old token)
     creditAccount: '1510', // Digital Assets (new token)
-    description: 'Token swap - asset disposed'
+    description: 'Token swap - asset disposed',
   },
   [TransactionType.LPDeposit]: {
     transactionType: TransactionType.LPDeposit,
     debitAccount: '1550', // LP Tokens
     creditAccount: '1510', // Digital Assets
-    description: 'Liquidity pool deposit'
+    description: 'Liquidity pool deposit',
   },
   [TransactionType.LPWithdraw]: {
     transactionType: TransactionType.LPWithdraw,
     debitAccount: '1510', // Digital Assets
     creditAccount: '1550', // LP Tokens
-    description: 'Liquidity pool withdrawal'
+    description: 'Liquidity pool withdrawal',
   },
   [TransactionType.Airdrop]: {
     transactionType: TransactionType.Airdrop,
     debitAccount: '1510', // Digital Assets
     creditAccount: '4200', // Airdrop Income
-    description: 'Airdrop received'
+    description: 'Airdrop received',
   },
   [TransactionType.GiftReceived]: {
     transactionType: TransactionType.GiftReceived,
     debitAccount: '1510', // Digital Assets
     creditAccount: '4300', // Gift Income
-    description: 'Gift received'
+    description: 'Gift received',
   },
   [TransactionType.GiftSent]: {
     transactionType: TransactionType.GiftSent,
     debitAccount: '5300', // Gift Expense
     creditAccount: '1510', // Digital Assets
-    description: 'Gift sent'
+    description: 'Gift sent',
   },
   [TransactionType.Donation]: {
     transactionType: TransactionType.Donation,
     debitAccount: '5400', // Donation Expense
     creditAccount: '1510', // Digital Assets
-    description: 'Charitable donation'
+    description: 'Charitable donation',
   },
   [TransactionType.TransferIn]: {
     transactionType: TransactionType.TransferIn,
     debitAccount: '1510', // Digital Assets
     creditAccount: '1510', // Digital Assets (different wallet)
-    description: 'Transfer in between wallets'
+    description: 'Transfer in between wallets',
   },
   [TransactionType.TransferOut]: {
     transactionType: TransactionType.TransferOut,
     debitAccount: '1510', // Digital Assets (different wallet)
     creditAccount: '1510', // Digital Assets
-    description: 'Transfer out between wallets'
+    description: 'Transfer out between wallets',
   },
   [TransactionType.LoanBorrowed]: {
     transactionType: TransactionType.LoanBorrowed,
     debitAccount: '1510', // Digital Assets
     creditAccount: '2100', // Loans Payable
-    description: 'Loan borrowed'
+    description: 'Loan borrowed',
   },
   [TransactionType.LoanRepaid]: {
     transactionType: TransactionType.LoanRepaid,
     debitAccount: '2100', // Loans Payable
     creditAccount: '1510', // Digital Assets
-    description: 'Loan repayment'
+    description: 'Loan repayment',
   },
   [TransactionType.InterestEarned]: {
     transactionType: TransactionType.InterestEarned,
     debitAccount: '1510', // Digital Assets
     creditAccount: '4400', // Interest Income
-    description: 'Interest earned'
+    description: 'Interest earned',
   },
   [TransactionType.InterestPaid]: {
     transactionType: TransactionType.InterestPaid,
     debitAccount: '5500', // Interest Expense
     creditAccount: '1510', // Digital Assets
-    description: 'Interest paid'
+    description: 'Interest paid',
   },
   [TransactionType.Other]: {
     transactionType: TransactionType.Other,
     debitAccount: '1510', // Digital Assets
     creditAccount: '3000', // Equity
-    description: 'Other transaction'
-  }
+    description: 'Other transaction',
+  },
 }
 
 // =============================================================================
@@ -455,7 +458,11 @@ export interface AuditTrail {
 }
 
 export interface ComplianceCheck {
-  checkType: 'journal_balance' | 'lot_quantity' | 'account_balance' | 'data_integrity'
+  checkType:
+    | 'journal_balance'
+    | 'lot_quantity'
+    | 'account_balance'
+    | 'data_integrity'
   status: 'passed' | 'failed' | 'warning'
   message: string
   details?: Record<string, unknown>
