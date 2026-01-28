@@ -1,7 +1,6 @@
 import React, { useState, useCallback, useEffect, useMemo } from 'react'
 import {
   User,
-  Mail,
   Phone,
   MapPin,
   Building2,
@@ -19,6 +18,7 @@ import {
 } from 'lucide-react'
 import { useOrganization } from '../../contexts/OrganizationContext'
 import { useAuth } from '../../contexts/AuthContext'
+import { useApp } from '../../contexts/AppContext'
 
 // Check if account is a business type (not individual)
 
@@ -49,14 +49,12 @@ interface PersonalInfoProps {
   createProfileInputHandler: (
     key: keyof UserProfile
   ) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void
-  onChangeEmail: () => void
   showPhone?: boolean
 }
 
 const PersonalInfo: React.FC<PersonalInfoProps> = ({
   profile,
   createProfileInputHandler,
-  onChangeEmail,
   showPhone = true,
 }) => (
   <>
@@ -93,33 +91,6 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({
           onChange={createProfileInputHandler('lastName')}
           className="w-full px-3 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
         />
-      </div>
-      <div>
-        <label
-          htmlFor="email"
-          className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
-        >
-          Email Address
-        </label>
-        <div className="flex gap-2">
-          <div className="relative flex-1">
-            <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#a39d94]" />
-            <input
-              id="email"
-              type="email"
-              value={profile.email}
-              readOnly
-              className="w-full pl-10 pr-3 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#f3f1ed] dark:bg-[#2a2620] text-[#1a1815] dark:text-[#f5f3f0] cursor-not-allowed"
-            />
-          </div>
-          <button
-            type="button"
-            onClick={onChangeEmail}
-            className="px-4 py-2 text-sm font-medium text-[#8b4e52] dark:text-[#a86e72] bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 border border-[#8b4e52]/30 dark:border-[#8b4e52]/50 rounded-lg hover:bg-[#8b4e52]/20 dark:hover:bg-[#8b4e52]/30 transition-colors"
-          >
-            Change
-          </button>
-        </div>
       </div>
       {showPhone && (
         <div>
@@ -247,6 +218,7 @@ const Profile: React.FC = () => {
     error: authError,
     isBusinessAccount,
   } = useAuth()
+  const { securityMode } = useApp()
 
   // Initialize profile from authenticated user
   const initialProfile = useMemo<UserProfile>(
@@ -286,22 +258,6 @@ const Profile: React.FC = () => {
   const [activeTab, setActiveTab] = useState<
     'profile' | 'security' | 'preferences'
   >('profile')
-
-  // Email change state
-  const [showEmailChangeModal, setShowEmailChangeModal] = useState(false)
-  const [emailChangePassword, setEmailChangePassword] = useState('')
-  const [emailChangeNewEmail, setEmailChangeNewEmail] = useState('')
-  const [emailChangeLoading, setEmailChangeLoading] = useState(false)
-  const [emailChangeError, setEmailChangeError] = useState<string | null>(null)
-  const [emailChangeSuccess, setEmailChangeSuccess] = useState<string | null>(
-    null
-  )
-
-  // Email verification state
-  const [showVerifyEmailModal, setShowVerifyEmailModal] = useState(false)
-  const [verificationCode, setVerificationCode] = useState('')
-  const [verifyEmailLoading, setVerifyEmailLoading] = useState(false)
-  const [verifyEmailError, setVerifyEmailError] = useState<string | null>(null)
 
   // Update profile when user data changes
   useEffect(() => {
@@ -375,123 +331,6 @@ const Profile: React.FC = () => {
     setHasChanges(false)
     setSaveError(null)
   }, [initialProfile, initialSecurity])
-
-  // Email change handlers
-  const handleOpenEmailChange = useCallback(() => {
-    setShowEmailChangeModal(true)
-    setEmailChangePassword('')
-    setEmailChangeNewEmail('')
-    setEmailChangeError(null)
-    setEmailChangeSuccess(null)
-  }, [])
-
-  const handleCloseEmailChange = useCallback(() => {
-    setShowEmailChangeModal(false)
-    setEmailChangePassword('')
-    setEmailChangeNewEmail('')
-    setEmailChangeError(null)
-  }, [])
-
-  const handleSubmitEmailChange = useCallback(async () => {
-    if (!emailChangePassword || !emailChangeNewEmail) {
-      setEmailChangeError('Please fill in all fields')
-      return
-    }
-
-    setEmailChangeLoading(true)
-    setEmailChangeError(null)
-
-    try {
-      const { authService } = await import('../../services/auth')
-      const token = authService.getAccessToken()
-      if (!token) {
-        throw new Error('Not authenticated')
-      }
-
-      const response = await authService.requestEmailChange(
-        token,
-        emailChangePassword,
-        emailChangeNewEmail
-      )
-
-      setEmailChangeSuccess(response.message)
-      setEmailChangePassword('')
-      setEmailChangeNewEmail('')
-      // Don't auto-close - let user click "Enter Verification Code" button
-    } catch (err) {
-      // Handle both Error objects and string errors from Tauri
-      let errorMessage = 'Failed to request email change'
-      if (err instanceof Error) {
-        errorMessage = err.message
-      } else if (typeof err === 'string') {
-        errorMessage = err
-      } else if (err && typeof err === 'object' && 'message' in err) {
-        errorMessage = String((err as { message: unknown }).message)
-      }
-      setEmailChangeError(errorMessage)
-    } finally {
-      setEmailChangeLoading(false)
-    }
-  }, [emailChangePassword, emailChangeNewEmail])
-
-  const handleEmailChangePasswordChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      setEmailChangePassword(e.target.value)
-    },
-    []
-  )
-
-  const handleEmailChangeNewEmailChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      setEmailChangeNewEmail(e.target.value)
-    },
-    []
-  )
-
-  // Email verification handlers
-  const handleOpenVerifyEmail = useCallback(() => {
-    setShowVerifyEmailModal(true)
-    setVerificationCode('')
-    setVerifyEmailError(null)
-  }, [])
-
-  const handleCloseVerifyEmail = useCallback(() => {
-    setShowVerifyEmailModal(false)
-    setVerificationCode('')
-    setVerifyEmailError(null)
-  }, [])
-
-  const handleSubmitVerification = useCallback(async () => {
-    if (!verificationCode.trim()) {
-      setVerifyEmailError('Please enter the verification code')
-      return
-    }
-
-    setVerifyEmailLoading(true)
-    setVerifyEmailError(null)
-
-    try {
-      const { authService } = await import('../../services/auth')
-
-      const message = await authService.verifyEmailChange(
-        verificationCode.trim()
-      )
-
-      // Show success and close modal
-      alert(message || 'Email address updated successfully!')
-      setShowVerifyEmailModal(false)
-      setVerificationCode('')
-
-      // Refresh user data
-      window.location.reload()
-    } catch (err) {
-      setVerifyEmailError(
-        err instanceof Error ? err.message : 'Failed to verify email change'
-      )
-    } finally {
-      setVerifyEmailLoading(false)
-    }
-  }, [verificationCode])
 
   const handleAvatarUpload = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -656,17 +495,19 @@ const Profile: React.FC = () => {
                   <User className="w-4 h-4 mr-3" />
                   Profile Information
                 </button>
-                <button
-                  onClick={handleTabSecurity}
-                  className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
-                    activeTab === 'security'
-                      ? 'bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 text-[#8b4e52] dark:text-[#a86e72]'
-                      : 'text-[#1a1815] dark:text-[#b8b3ac] hover:bg-[#f3f1ed] dark:hover:bg-[#1a1815]'
-                  }`}
-                >
-                  <Shield className="w-4 h-4 mr-3" />
-                  Security
-                </button>
+                {securityMode !== 'easy' && (
+                  <button
+                    onClick={handleTabSecurity}
+                    className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                      activeTab === 'security'
+                        ? 'bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 text-[#8b4e52] dark:text-[#a86e72]'
+                        : 'text-[#1a1815] dark:text-[#b8b3ac] hover:bg-[#f3f1ed] dark:hover:bg-[#1a1815]'
+                    }`}
+                  >
+                    <Shield className="w-4 h-4 mr-3" />
+                    Security
+                  </button>
+                )}
                 <button
                   onClick={handleTabPreferences}
                   className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
@@ -691,7 +532,6 @@ const Profile: React.FC = () => {
                     <PersonalInfo
                       profile={profile}
                       createProfileInputHandler={createProfileInputHandler}
-                      onChangeEmail={handleOpenEmailChange}
                       showPhone={isBusinessAccount}
                     />
                   </div>
@@ -706,7 +546,7 @@ const Profile: React.FC = () => {
                 </div>
               )}
 
-              {activeTab === 'security' && (
+              {activeTab === 'security' && securityMode !== 'easy' && (
                 <div className="space-y-6">
                   <div>
                     <h3 className="text-lg font-semibold text-[#1a1815] dark:text-[#f5f3f0] mb-4">
@@ -932,201 +772,6 @@ const Profile: React.FC = () => {
           </div>
         </div>
       </div>
-
-      {/* Email Change Modal */}
-      {showEmailChangeModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg shadow-xl max-w-md w-full p-6 border border-[rgba(201,169,97,0.15)]">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-[#1a1815] dark:text-[#f5f3f0]">
-                Change Email Address
-              </h3>
-              <button
-                onClick={handleCloseEmailChange}
-                className="text-[#a39d94] hover:text-gray-600 dark:hover:text-gray-300"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {emailChangeSuccess ? (
-              <div className="space-y-4">
-                <div className="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg p-4">
-                  <p className="text-sm text-green-800 dark:text-green-400">
-                    {emailChangeSuccess}
-                  </p>
-                </div>
-                <p className="text-sm text-gray-600 dark:text-[#a39d94]">
-                  Check your new email for the verification code, then click
-                  below to enter it.
-                </p>
-                <button
-                  onClick={() => {
-                    setShowEmailChangeModal(false)
-                    handleOpenVerifyEmail()
-                  }}
-                  className="w-full px-4 py-2 text-sm font-medium text-white bg-[#8b4e52] rounded-lg hover:bg-[#7a4248]"
-                >
-                  Enter Verification Code
-                </button>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <p className="text-sm text-gray-600 dark:text-[#a39d94]">
-                  To change your email address, please enter your current
-                  password and new email below. We&apos;ll send a verification
-                  link to your new email address.
-                </p>
-
-                {emailChangeError && (
-                  <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg p-3">
-                    <p className="text-sm text-red-800 dark:text-red-400">
-                      {emailChangeError}
-                    </p>
-                  </div>
-                )}
-
-                <div>
-                  <label
-                    htmlFor="emailChangePassword"
-                    className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
-                  >
-                    Current Password
-                  </label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#a39d94]" />
-                    <input
-                      id="emailChangePassword"
-                      type="password"
-                      value={emailChangePassword}
-                      onChange={handleEmailChangePasswordChange}
-                      placeholder="Enter your current password"
-                      className="w-full pl-10 pr-3 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="emailChangeNewEmail"
-                    className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
-                  >
-                    New Email Address
-                  </label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#a39d94]" />
-                    <input
-                      id="emailChangeNewEmail"
-                      type="email"
-                      value={emailChangeNewEmail}
-                      onChange={handleEmailChangeNewEmailChange}
-                      placeholder="Enter your new email address"
-                      className="w-full pl-10 pr-3 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-3 pt-4">
-                  <button
-                    onClick={handleCloseEmailChange}
-                    className="flex-1 px-4 py-2 text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] bg-[#fafaf8] dark:bg-[#1a1815] border border-[rgba(201,169,97,0.15)] rounded-lg hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620]"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleSubmitEmailChange}
-                    disabled={emailChangeLoading}
-                    className="flex-1 px-4 py-2 text-sm font-medium text-white bg-[#8b4e52] rounded-lg hover:bg-[#7a4248] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                  >
-                    {emailChangeLoading ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Sending...
-                      </>
-                    ) : (
-                      'Request Change'
-                    )}
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Email Verification Modal */}
-      {showVerifyEmailModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg shadow-xl max-w-md w-full p-6 border border-[rgba(201,169,97,0.15)]">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-[#1a1815] dark:text-[#f5f3f0]">
-                Verify Email Change
-              </h3>
-              <button
-                onClick={handleCloseVerifyEmail}
-                className="text-[#a39d94] hover:text-gray-600 dark:hover:text-gray-300"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              <p className="text-sm text-gray-600 dark:text-[#a39d94]">
-                Enter the verification code sent to your new email address.
-              </p>
-
-              {verifyEmailError && (
-                <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg p-3">
-                  <p className="text-sm text-red-800 dark:text-red-400">
-                    {verifyEmailError}
-                  </p>
-                </div>
-              )}
-
-              <div>
-                <label
-                  htmlFor="verificationCode"
-                  className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
-                >
-                  Verification Code
-                </label>
-                <input
-                  id="verificationCode"
-                  type="text"
-                  value={verificationCode}
-                  onChange={e => setVerificationCode(e.target.value)}
-                  placeholder="Enter the code from your email"
-                  className="w-full px-3 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961] font-mono"
-                  autoComplete="off"
-                />
-              </div>
-
-              <div className="flex items-center space-x-3 pt-4">
-                <button
-                  onClick={handleCloseVerifyEmail}
-                  className="flex-1 px-4 py-2 text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] bg-[#fafaf8] dark:bg-[#1a1815] border border-[rgba(201,169,97,0.15)] rounded-lg hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620]"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSubmitVerification}
-                  disabled={verifyEmailLoading}
-                  className="flex-1 px-4 py-2 text-sm font-medium text-white bg-[#8b4e52] rounded-lg hover:bg-[#7a4248] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                >
-                  {verifyEmailLoading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Verifying...
-                    </>
-                  ) : (
-                    'Verify Email'
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
