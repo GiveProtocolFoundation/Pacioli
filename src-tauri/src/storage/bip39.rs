@@ -54,7 +54,7 @@ pub fn generate_recovery_phrase() -> String {
 
 /// Validates that a recovery phrase contains valid words from the wordlist.
 pub fn validate_recovery_phrase(phrase: &str) -> bool {
-    let words: Vec<&str> = phrase.trim().split_whitespace().collect();
+    let words: Vec<&str> = phrase.split_whitespace().collect();
 
     // Must have exactly 12 words
     if words.len() != 12 {
@@ -70,7 +70,6 @@ pub fn validate_recovery_phrase(phrase: &str) -> bool {
 /// Normalizes a recovery phrase (lowercase, single spaces).
 pub fn normalize_recovery_phrase(phrase: &str) -> String {
     phrase
-        .trim()
         .split_whitespace()
         .map(|w| w.to_lowercase())
         .collect::<Vec<_>>()

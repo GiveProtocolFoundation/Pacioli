@@ -88,6 +88,7 @@ pub async fn export_data(
 ///
 /// # Returns
 /// The export as a JSON string
+#[allow(dead_code)]
 pub async fn export_to_string(pool: &SqlitePool, password: Option<&str>) -> Result<String> {
     // Gather all data
     let profiles = profile_store::get_all_profiles(pool).await?;

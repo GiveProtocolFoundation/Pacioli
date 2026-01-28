@@ -138,11 +138,13 @@ pub fn decrypt(encrypted: &EncryptedData, password: &str) -> Result<Vec<u8>> {
 }
 
 /// Encrypts a string and returns base64-encoded result.
+#[allow(dead_code)]
 pub fn encrypt_string(plaintext: &str, password: &str) -> Result<EncryptedData> {
     encrypt(plaintext.as_bytes(), password)
 }
 
 /// Decrypts to a string.
+#[allow(dead_code)]
 pub fn decrypt_string(encrypted: &EncryptedData, password: &str) -> Result<String> {
     let bytes = decrypt(encrypted, password)?;
     String::from_utf8(bytes).map_err(|e| anyhow!("Invalid UTF-8 in decrypted data: {}", e))

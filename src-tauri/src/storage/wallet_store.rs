@@ -204,6 +204,7 @@ pub async fn delete_wallet(pool: &SqlitePool, id: &str) -> Result<()> {
 ///
 /// # Returns
 /// Number of wallets deleted
+#[allow(dead_code)]
 pub async fn delete_wallets_by_profile(pool: &SqlitePool, profile_id: &str) -> Result<u64> {
     let result = sqlx::query("DELETE FROM wallets WHERE profile_id = ?")
         .bind(profile_id)
@@ -249,6 +250,7 @@ pub async fn wallet_exists(
 ///
 /// # Returns
 /// The number of wallets
+#[allow(dead_code)]
 pub async fn get_wallet_count(pool: &SqlitePool, profile_id: &str) -> Result<i64> {
     let count = sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM wallets WHERE profile_id = ?")
         .bind(profile_id)

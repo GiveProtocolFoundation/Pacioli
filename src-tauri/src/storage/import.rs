@@ -232,6 +232,7 @@ fn decrypt_payload(export_file: &ExportFile, password: &str) -> Result<ExportPay
 ///
 /// # Returns
 /// Ok if the format is valid
+#[allow(dead_code)]
 pub fn validate_import_format(content: &str) -> Result<()> {
     let export_file: ExportFile = serde_json::from_str(content)
         .map_err(|e| anyhow!("Invalid export file format: {}", e))?;

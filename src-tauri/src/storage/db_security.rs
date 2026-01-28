@@ -70,6 +70,7 @@ pub async fn set_password_with_recovery(pool: &SqlitePool, password: &str) -> Re
 ///
 /// # Returns
 /// Ok if the password was set successfully
+#[allow(dead_code)]
 pub async fn set_password(pool: &SqlitePool, password: &str) -> Result<()> {
     if password.is_empty() {
         return Err(anyhow!("Password cannot be empty"));

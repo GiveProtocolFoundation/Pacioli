@@ -34,6 +34,7 @@ pub async fn get_setting(pool: &SqlitePool, key: &str) -> Result<Option<String>>
 ///
 /// # Returns
 /// The deserialized value if found and valid, None otherwise
+#[allow(dead_code)]
 pub async fn get_setting_json<T: DeserializeOwned>(pool: &SqlitePool, key: &str) -> Result<Option<T>> {
     let value = get_setting(pool, key).await?;
 
@@ -79,6 +80,7 @@ pub async fn set_setting(pool: &SqlitePool, key: &str, value: &str) -> Result<()
 /// * `pool` - Database connection pool
 /// * `key` - Setting key
 /// * `value` - Value to serialize and store
+#[allow(dead_code)]
 pub async fn set_setting_json<T: Serialize>(pool: &SqlitePool, key: &str, value: &T) -> Result<()> {
     let json_str = serde_json::to_string(value)?;
     set_setting(pool, key, &json_str).await
@@ -130,6 +132,7 @@ pub async fn get_all_settings(pool: &SqlitePool) -> Result<Vec<Setting>> {
 ///
 /// # Returns
 /// True if the setting exists, false otherwise
+#[allow(dead_code)]
 pub async fn setting_exists(pool: &SqlitePool, key: &str) -> Result<bool> {
     let count = sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM settings WHERE key = ?")
         .bind(key)
@@ -147,6 +150,7 @@ pub async fn setting_exists(pool: &SqlitePool, key: &str) -> Result<bool> {
 ///
 /// # Returns
 /// Vector of (key, value) tuples for found settings
+#[allow(dead_code)]
 pub async fn get_settings(pool: &SqlitePool, keys: &[&str]) -> Result<Vec<(String, String)>> {
     if keys.is_empty() {
         return Ok(Vec::new());
@@ -176,6 +180,7 @@ pub async fn get_settings(pool: &SqlitePool, keys: &[&str]) -> Result<Vec<(Strin
 ///
 /// # Returns
 /// Number of settings deleted
+#[allow(dead_code)]
 pub async fn delete_settings(pool: &SqlitePool, keys: &[&str]) -> Result<u64> {
     if keys.is_empty() {
         return Ok(0);
