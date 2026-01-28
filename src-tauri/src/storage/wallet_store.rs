@@ -58,7 +58,18 @@ pub async fn create_wallet(pool: &SqlitePool, input: WalletInput) -> Result<Wall
 /// # Returns
 /// The wallet if found, None otherwise
 pub async fn get_wallet(pool: &SqlitePool, id: &str) -> Result<Option<Wallet>> {
-    let wallet = sqlx::query_as::<_, (String, String, String, String, Option<String>, chrono::DateTime<Utc>, Option<chrono::DateTime<Utc>>)>(
+    let wallet = sqlx::query_as::<
+        _,
+        (
+            String,
+            String,
+            String,
+            String,
+            Option<String>,
+            chrono::DateTime<Utc>,
+            Option<chrono::DateTime<Utc>>,
+        ),
+    >(
         r#"
         SELECT id, profile_id, address, chain, name, created_at, updated_at
         FROM wallets
@@ -69,16 +80,18 @@ pub async fn get_wallet(pool: &SqlitePool, id: &str) -> Result<Option<Wallet>> {
     .fetch_optional(pool)
     .await?;
 
-    Ok(wallet.map(|(id, profile_id, address, chain, nickname, created_at, updated_at)| Wallet {
-        id,
-        profile_id,
-        address,
-        chain,
-        nickname,
-        is_active: true,
-        created_at,
-        updated_at: updated_at.unwrap_or(created_at),
-    }))
+    Ok(wallet.map(
+        |(id, profile_id, address, chain, nickname, created_at, updated_at)| Wallet {
+            id,
+            profile_id,
+            address,
+            chain,
+            nickname,
+            is_active: true,
+            created_at,
+            updated_at: updated_at.unwrap_or(created_at),
+        },
+    ))
 }
 
 /// Retrieves all wallets for a specific profile.
@@ -90,7 +103,18 @@ pub async fn get_wallet(pool: &SqlitePool, id: &str) -> Result<Option<Wallet>> {
 /// # Returns
 /// Vector of wallets belonging to the profile
 pub async fn get_wallets_by_profile(pool: &SqlitePool, profile_id: &str) -> Result<Vec<Wallet>> {
-    let rows = sqlx::query_as::<_, (String, String, String, String, Option<String>, chrono::DateTime<Utc>, Option<chrono::DateTime<Utc>>)>(
+    let rows = sqlx::query_as::<
+        _,
+        (
+            String,
+            String,
+            String,
+            String,
+            Option<String>,
+            chrono::DateTime<Utc>,
+            Option<chrono::DateTime<Utc>>,
+        ),
+    >(
         r#"
         SELECT id, profile_id, address, chain, name, created_at, updated_at
         FROM wallets
@@ -104,16 +128,18 @@ pub async fn get_wallets_by_profile(pool: &SqlitePool, profile_id: &str) -> Resu
 
     Ok(rows
         .into_iter()
-        .map(|(id, profile_id, address, chain, nickname, created_at, updated_at)| Wallet {
-            id,
-            profile_id,
-            address,
-            chain,
-            nickname,
-            is_active: true,
-            created_at,
-            updated_at: updated_at.unwrap_or(created_at),
-        })
+        .map(
+            |(id, profile_id, address, chain, nickname, created_at, updated_at)| Wallet {
+                id,
+                profile_id,
+                address,
+                chain,
+                nickname,
+                is_active: true,
+                created_at,
+                updated_at: updated_at.unwrap_or(created_at),
+            },
+        )
         .collect())
 }
 
@@ -125,7 +151,18 @@ pub async fn get_wallets_by_profile(pool: &SqlitePool, profile_id: &str) -> Resu
 /// # Returns
 /// Vector of all wallets
 pub async fn get_all_wallets(pool: &SqlitePool) -> Result<Vec<Wallet>> {
-    let rows = sqlx::query_as::<_, (String, String, String, String, Option<String>, chrono::DateTime<Utc>, Option<chrono::DateTime<Utc>>)>(
+    let rows = sqlx::query_as::<
+        _,
+        (
+            String,
+            String,
+            String,
+            String,
+            Option<String>,
+            chrono::DateTime<Utc>,
+            Option<chrono::DateTime<Utc>>,
+        ),
+    >(
         r#"
         SELECT id, profile_id, address, chain, name, created_at, updated_at
         FROM wallets
@@ -137,16 +174,18 @@ pub async fn get_all_wallets(pool: &SqlitePool) -> Result<Vec<Wallet>> {
 
     Ok(rows
         .into_iter()
-        .map(|(id, profile_id, address, chain, nickname, created_at, updated_at)| Wallet {
-            id,
-            profile_id,
-            address,
-            chain,
-            nickname,
-            is_active: true,
-            created_at,
-            updated_at: updated_at.unwrap_or(created_at),
-        })
+        .map(
+            |(id, profile_id, address, chain, nickname, created_at, updated_at)| Wallet {
+                id,
+                profile_id,
+                address,
+                chain,
+                nickname,
+                is_active: true,
+                created_at,
+                updated_at: updated_at.unwrap_or(created_at),
+            },
+        )
         .collect())
 }
 

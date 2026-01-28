@@ -140,7 +140,10 @@ async fn import_payload(pool: &SqlitePool, payload: &ExportPayload) -> Result<Im
 
         match profile_store::create_profile(pool, input).await {
             Ok(_) => profiles_imported += 1,
-            Err(e) => warnings.push(format!("Failed to import profile '{}': {}", profile.name, e)),
+            Err(e) => warnings.push(format!(
+                "Failed to import profile '{}': {}",
+                profile.name, e
+            )),
         }
     }
 
@@ -186,10 +189,7 @@ async fn import_payload(pool: &SqlitePool, payload: &ExportPayload) -> Result<Im
     // Import settings
     for setting in &payload.settings {
         if let Err(e) = settings_store::set_setting(pool, &setting.key, &setting.value).await {
-            warnings.push(format!(
-                "Failed to import setting '{}': {}",
-                setting.key, e
-            ));
+            warnings.push(format!("Failed to import setting '{}': {}", setting.key, e));
         }
     }
 
@@ -234,8 +234,8 @@ fn decrypt_payload(export_file: &ExportFile, password: &str) -> Result<ExportPay
 /// Ok if the format is valid
 #[allow(dead_code)]
 pub fn validate_import_format(content: &str) -> Result<()> {
-    let export_file: ExportFile = serde_json::from_str(content)
-        .map_err(|e| anyhow!("Invalid export file format: {}", e))?;
+    let export_file: ExportFile =
+        serde_json::from_str(content).map_err(|e| anyhow!("Invalid export file format: {}", e))?;
 
     // Check version compatibility
     if export_file.version != "1.0" {

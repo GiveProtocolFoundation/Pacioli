@@ -57,8 +57,8 @@ pub fn generate_nonce() -> Vec<u8> {
 /// # Returns
 /// A 32-byte key suitable for AES-256
 pub fn derive_key(password: &str, salt: &[u8]) -> Result<[u8; KEY_LENGTH]> {
-    let salt_string = SaltString::encode_b64(salt)
-        .map_err(|e| anyhow!("Failed to encode salt: {}", e))?;
+    let salt_string =
+        SaltString::encode_b64(salt).map_err(|e| anyhow!("Failed to encode salt: {}", e))?;
 
     let argon2 = Argon2::default();
     let hash = argon2
@@ -90,8 +90,8 @@ pub fn encrypt(plaintext: &[u8], password: &str) -> Result<EncryptedData> {
     let nonce_bytes = generate_nonce();
     let key = derive_key(password, &salt)?;
 
-    let cipher = Aes256Gcm::new_from_slice(&key)
-        .map_err(|e| anyhow!("Failed to create cipher: {}", e))?;
+    let cipher =
+        Aes256Gcm::new_from_slice(&key).map_err(|e| anyhow!("Failed to create cipher: {}", e))?;
 
     let nonce = Nonce::from_slice(&nonce_bytes);
     let ciphertext = cipher
@@ -126,8 +126,8 @@ pub fn decrypt(encrypted: &EncryptedData, password: &str) -> Result<Vec<u8>> {
 
     let key = derive_key(password, &salt)?;
 
-    let cipher = Aes256Gcm::new_from_slice(&key)
-        .map_err(|e| anyhow!("Failed to create cipher: {}", e))?;
+    let cipher =
+        Aes256Gcm::new_from_slice(&key).map_err(|e| anyhow!("Failed to create cipher: {}", e))?;
 
     let nonce = Nonce::from_slice(&nonce_bytes);
     let plaintext = cipher
