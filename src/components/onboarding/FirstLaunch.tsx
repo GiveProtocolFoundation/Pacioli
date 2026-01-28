@@ -22,6 +22,82 @@ const SESSION_TIMEOUT_OPTIONS = [
   { value: 60, label: '1 hour' },
 ]
 
+interface LanguageButtonProps {
+  lang: { code: SupportedLanguage; name: string; nativeName: string }
+  isSelected: boolean
+  onSelect: (code: SupportedLanguage) => void
+}
+
+interface TimeoutButtonProps {
+  value: number
+  label: string
+  isSelected: boolean
+  onSelect: (value: number) => void
+}
+
+/**
+ * Button component for session timeout selection.
+ */
+const TimeoutButton: React.FC<TimeoutButtonProps> = ({ value, label, isSelected, onSelect }) => {
+  const handleClick = useCallback(() => {
+    onSelect(value)
+  }, [value, onSelect])
+
+  return (
+    <button
+      onClick={handleClick}
+      className={`flex-1 py-2 px-3 rounded-lg border transition-colors text-sm ${
+        isSelected
+          ? 'border-[#8b4e52] bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 text-[#8b4e52] dark:text-[#a86e72]'
+          : 'border-[rgba(201,169,97,0.15)] text-[#1a1815] dark:text-[#b8b3ac] hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620]'
+      }`}
+    >
+      {label}
+    </button>
+  )
+}
+
+/**
+ * Button component for language selection in the first launch wizard.
+ */
+const LanguageButton: React.FC<LanguageButtonProps> = ({ lang, isSelected, onSelect }) => {
+  const handleClick = useCallback(() => {
+    onSelect(lang.code)
+  }, [lang.code, onSelect])
+
+  return (
+    <button
+      key={lang.code}
+      onClick={handleClick}
+      className={`w-full px-4 py-3 rounded-lg border-2 transition-all text-left flex items-center justify-between ${
+        isSelected
+          ? 'border-[#8b4e52] bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20'
+          : 'border-[rgba(201,169,97,0.15)] hover:border-[rgba(201,169,97,0.3)]'
+      }`}
+    >
+      <div>
+        <span className="font-medium text-[#1a1815] dark:text-[#f5f3f0]">
+          {lang.nativeName}
+        </span>
+        {lang.code !== 'en' && lang.nativeName !== lang.name && (
+          <span className="ml-2 text-sm text-[#a39d94] dark:text-[#8b8580]">
+            ({lang.name})
+          </span>
+        )}
+      </div>
+      {isSelected && (
+        <svg className="w-5 h-5 text-[#8b4e52]" fill="currentColor" viewBox="0 0 20 20">
+          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+        </svg>
+      )}
+    </button>
+  )
+}
+
+/**
+ * First launch wizard component that guides users through initial setup
+ * including language selection, security mode configuration, and password setup.
+ */
 export const FirstLaunch: React.FC<FirstLaunchProps> = ({ onComplete }) => {
   const { language, setLanguage, t, languages } = useLanguage()
 
@@ -91,6 +167,32 @@ export const FirstLaunch: React.FC<FirstLaunchProps> = ({ onComplete }) => {
     setStep('complete')
   }, [])
 
+  const handlePasswordInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setPassword(e.target.value)
+    },
+    []
+  )
+
+  const handleConfirmPasswordInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setConfirmPassword(e.target.value)
+    },
+    []
+  )
+
+  const handleGoToLanguage = useCallback(() => {
+    setStep('language')
+  }, [])
+
+  const handleGoToSecurity = useCallback(() => {
+    setStep('security')
+  }, [])
+
+  const handleGoToPassword = useCallback(() => {
+    setStep('password')
+  }, [])
+
   const handleComplete = useCallback(async () => {
     setIsSubmitting(true)
     try {
@@ -136,31 +238,12 @@ export const FirstLaunch: React.FC<FirstLaunchProps> = ({ onComplete }) => {
 
             <div className="space-y-2 mb-8 max-h-80 overflow-y-auto">
               {languages.map((lang) => (
-                <button
+                <LanguageButton
                   key={lang.code}
-                  onClick={() => handleLanguageSelect(lang.code)}
-                  className={`w-full px-4 py-3 rounded-lg border-2 transition-all text-left flex items-center justify-between ${
-                    selectedLanguage === lang.code
-                      ? 'border-[#8b4e52] bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20'
-                      : 'border-[rgba(201,169,97,0.15)] hover:border-[rgba(201,169,97,0.3)]'
-                  }`}
-                >
-                  <div>
-                    <span className="font-medium text-[#1a1815] dark:text-[#f5f3f0]">
-                      {lang.nativeName}
-                    </span>
-                    {lang.code !== 'en' && lang.nativeName !== lang.name && (
-                      <span className="ml-2 text-sm text-[#a39d94] dark:text-[#8b8580]">
-                        ({lang.name})
-                      </span>
-                    )}
-                  </div>
-                  {selectedLanguage === lang.code && (
-                    <svg className="w-5 h-5 text-[#8b4e52]" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                  )}
-                </button>
+                  lang={lang}
+                  isSelected={selectedLanguage === lang.code}
+                  onSelect={handleLanguageSelect}
+                />
               ))}
             </div>
 
@@ -290,7 +373,7 @@ export const FirstLaunch: React.FC<FirstLaunchProps> = ({ onComplete }) => {
 
             <div className="flex gap-3">
               <button
-                onClick={() => setStep('language')}
+                onClick={handleGoToLanguage}
                 className="flex-1 py-3 px-4 border border-[rgba(201,169,97,0.15)] text-[#1a1815] dark:text-[#b8b3ac] font-medium rounded-lg hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620] transition-colors"
               >
                 {t.common.back}
@@ -330,10 +413,9 @@ export const FirstLaunch: React.FC<FirstLaunchProps> = ({ onComplete }) => {
                 <input
                   type="password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={handlePasswordInputChange}
                   className="w-full px-4 py-3 border border-[rgba(201,169,97,0.15)] rounded-lg focus:ring-2 focus:ring-[#c9a961] focus:border-[#c9a961] dark:bg-[#2a2620] dark:text-[#f5f3f0]"
                   placeholder="••••••••"
-                  autoFocus
                 />
               </div>
 
@@ -344,7 +426,7 @@ export const FirstLaunch: React.FC<FirstLaunchProps> = ({ onComplete }) => {
                 <input
                   type="password"
                   value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  onChange={handleConfirmPasswordInputChange}
                   className="w-full px-4 py-3 border border-[rgba(201,169,97,0.15)] rounded-lg focus:ring-2 focus:ring-[#c9a961] focus:border-[#c9a961] dark:bg-[#2a2620] dark:text-[#f5f3f0]"
                   placeholder="••••••••"
                 />
@@ -360,17 +442,13 @@ export const FirstLaunch: React.FC<FirstLaunchProps> = ({ onComplete }) => {
                   </p>
                   <div className="flex gap-2">
                     {SESSION_TIMEOUT_OPTIONS.map((option) => (
-                      <button
+                      <TimeoutButton
                         key={option.value}
-                        onClick={() => setSessionTimeout(option.value)}
-                        className={`flex-1 py-2 px-3 rounded-lg border transition-colors text-sm ${
-                          sessionTimeout === option.value
-                            ? 'border-[#8b4e52] bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 text-[#8b4e52] dark:text-[#a86e72]'
-                            : 'border-[rgba(201,169,97,0.15)] text-[#1a1815] dark:text-[#b8b3ac] hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620]'
-                        }`}
-                      >
-                        {option.label}
-                      </button>
+                        value={option.value}
+                        label={option.label}
+                        isSelected={sessionTimeout === option.value}
+                        onSelect={setSessionTimeout}
+                      />
                     ))}
                   </div>
                 </div>
@@ -385,7 +463,7 @@ export const FirstLaunch: React.FC<FirstLaunchProps> = ({ onComplete }) => {
 
             <div className="flex gap-3">
               <button
-                onClick={() => setStep('security')}
+                onClick={handleGoToSecurity}
                 disabled={isSubmitting}
                 className="flex-1 py-3 px-4 border border-[rgba(201,169,97,0.15)] text-[#1a1815] dark:text-[#b8b3ac] font-medium rounded-lg hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620] transition-colors disabled:opacity-50"
               >
@@ -407,7 +485,7 @@ export const FirstLaunch: React.FC<FirstLaunchProps> = ({ onComplete }) => {
           <RecoveryPhraseDisplay
             phrase={recoveryPhrase}
             onConfirm={handleRecoveryConfirm}
-            onBack={() => setStep('password')}
+            onBack={handleGoToPassword}
           />
         )}
 

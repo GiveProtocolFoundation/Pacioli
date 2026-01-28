@@ -12,6 +12,9 @@ interface ExportDialogProps {
   onClose: () => void
 }
 
+/**
+ * Dialog component for exporting all data to an optionally encrypted JSON file.
+ */
 export const ExportDialog: React.FC<ExportDialogProps> = ({
   isOpen,
   onClose,
@@ -82,6 +85,37 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({
     }
   }, [password, confirmPassword, usePassword, onClose])
 
+  const handleBackdropKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault()
+        onClose()
+      }
+    },
+    [onClose]
+  )
+
+  const handleUsePasswordChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setUsePassword(e.target.checked)
+    },
+    []
+  )
+
+  const handlePasswordChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setPassword(e.target.value)
+    },
+    []
+  )
+
+  const handleConfirmPasswordChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setConfirmPassword(e.target.value)
+    },
+    []
+  )
+
   if (!isOpen) return null
 
   return (
@@ -90,6 +124,10 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({
         <div
           className="fixed inset-0 bg-black bg-opacity-25"
           onClick={onClose}
+          onKeyDown={handleBackdropKeyDown}
+          role="button"
+          tabIndex={0}
+          aria-label="Close dialog"
         />
 
         <div className="relative bg-[#fafaf8] dark:bg-[#1a1815] rounded-lg shadow-xl max-w-md w-full p-6">
@@ -119,7 +157,7 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({
               <input
                 type="checkbox"
                 checked={usePassword}
-                onChange={e => setUsePassword(e.target.checked)}
+                onChange={handleUsePasswordChange}
                 className="rounded border-[rgba(201,169,97,0.3)] text-[#8b4e52] focus:ring-[#c9a961]"
               />
               <span className="text-sm text-[#1a1815] dark:text-[#b8b3ac]">
@@ -140,7 +178,7 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({
                     id="export-password"
                     type="password"
                     value={password}
-                    onChange={e => setPassword(e.target.value)}
+                    onChange={handlePasswordChange}
                     disabled={isExporting}
                     className="mt-1 block w-full px-3 py-2 border border-[rgba(201,169,97,0.15)] rounded-md shadow-sm focus:outline-none focus:ring-[#c9a961] focus:border-[#c9a961] dark:bg-[#2a2620] dark:text-[#f5f3f0] sm:text-sm"
                     placeholder="Enter password for encryption"
@@ -158,7 +196,7 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({
                     id="export-confirm-password"
                     type="password"
                     value={confirmPassword}
-                    onChange={e => setConfirmPassword(e.target.value)}
+                    onChange={handleConfirmPasswordChange}
                     disabled={isExporting}
                     className="mt-1 block w-full px-3 py-2 border border-[rgba(201,169,97,0.15)] rounded-md shadow-sm focus:outline-none focus:ring-[#c9a961] focus:border-[#c9a961] dark:bg-[#2a2620] dark:text-[#f5f3f0] sm:text-sm"
                     placeholder="Confirm password"

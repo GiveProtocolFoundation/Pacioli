@@ -138,6 +138,9 @@ const NotificationActions: React.FC<{
   )
 }
 
+/**
+ * Renders the body content of a notification including title, message, timestamp, and actions.
+ */
 const NotificationBody: React.FC<{
   notification: NotificationData
   formatTimestamp: (timestamp: string) => string
@@ -178,6 +181,9 @@ const NotificationBody: React.FC<{
   </div>
 )
 
+/**
+ * Renders a single notification item with icon, body, and click handling.
+ */
 const NotificationItem: React.FC<NotificationItemProps> = ({
   notification,
   onMarkAsRead,

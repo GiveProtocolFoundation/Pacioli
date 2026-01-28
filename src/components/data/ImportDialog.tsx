@@ -15,6 +15,10 @@ interface ImportDialogProps {
 
 type Step = 'select' | 'preview' | 'password' | 'importing' | 'complete'
 
+/**
+ * Dialog component for importing data from an exported JSON file.
+ * Supports encrypted exports and provides preview before import.
+ */
 export const ImportDialog: React.FC<ImportDialogProps> = ({
   isOpen,
   onClose,
@@ -40,6 +44,23 @@ export const ImportDialog: React.FC<ImportDialogProps> = ({
     reset()
     onClose()
   }, [reset, onClose])
+
+  const handleBackdropKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault()
+        handleClose()
+      }
+    },
+    [handleClose]
+  )
+
+  const handlePasswordChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setPassword(e.target.value)
+    },
+    []
+  )
 
   const handleSelectFile = useCallback(async () => {
     try {
@@ -102,6 +123,10 @@ export const ImportDialog: React.FC<ImportDialogProps> = ({
         <div
           className="fixed inset-0 bg-black bg-opacity-25"
           onClick={handleClose}
+          onKeyDown={handleBackdropKeyDown}
+          role="button"
+          tabIndex={0}
+          aria-label="Close dialog"
         />
 
         <div className="relative bg-[#fafaf8] dark:bg-[#1a1815] rounded-lg shadow-xl max-w-md w-full p-6">
@@ -165,8 +190,7 @@ export const ImportDialog: React.FC<ImportDialogProps> = ({
                   id="import-password"
                   type="password"
                   value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  autoFocus
+                  onChange={handlePasswordChange}
                   className="mt-1 block w-full px-3 py-2 border border-[rgba(201,169,97,0.15)] rounded-md shadow-sm focus:outline-none focus:ring-[#c9a961] focus:border-[#c9a961] dark:bg-[#2a2620] dark:text-[#f5f3f0] sm:text-sm"
                   placeholder="Enter export password"
                 />
@@ -209,7 +233,7 @@ export const ImportDialog: React.FC<ImportDialogProps> = ({
 
           {step === 'importing' && (
             <div className="py-8 text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#8b4e52] mx-auto"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#8b4e52] mx-auto" />
               <p className="mt-4 text-sm text-[#696557] dark:text-[#b8b3ac]">
                 Importing data...
               </p>
@@ -253,8 +277,8 @@ export const ImportDialog: React.FC<ImportDialogProps> = ({
                     Warnings:
                   </p>
                   <ul className="mt-1 text-sm text-yellow-700 dark:text-yellow-300">
-                    {result.warnings.map((warning, i) => (
-                      <li key={i}>• {warning}</li>
+                    {result.warnings.map((warning) => (
+                      <li key={warning}>• {warning}</li>
                     ))}
                   </ul>
                 </div>
