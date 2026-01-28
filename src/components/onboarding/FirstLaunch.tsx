@@ -35,6 +35,66 @@ interface TimeoutButtonProps {
   onSelect: (value: number) => void
 }
 
+interface SecurityModeButtonProps {
+  mode: SecurityMode
+  isSelected: boolean
+  onSelect: (mode: SecurityMode) => void
+  title: string
+  description: string
+}
+
+/**
+ * Button component for security mode selection in the first launch wizard.
+ */
+const SecurityModeButton: React.FC<SecurityModeButtonProps> = ({
+  mode,
+  isSelected,
+  onSelect,
+  title,
+  description,
+}) => {
+  const handleClick = useCallback(() => {
+    onSelect(mode)
+  }, [mode, onSelect])
+
+  return (
+    <button
+      onClick={handleClick}
+      className={`w-full p-4 rounded-lg border-2 transition-all text-left ${
+        isSelected
+          ? 'border-[#8b4e52] bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20'
+          : 'border-[rgba(201,169,97,0.15)] hover:border-[rgba(201,169,97,0.3)]'
+      }`}
+    >
+      <div className="flex items-start">
+        <div className="flex-shrink-0 mt-0.5">
+          <div
+            className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+              isSelected
+                ? 'border-[#8b4e52] bg-[#8b4e52]'
+                : 'border-[rgba(201,169,97,0.3)] dark:border-[rgba(201,169,97,0.4)]'
+            }`}
+          >
+            {isSelected && (
+              <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fillRule="evenodd"
+                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            )}
+          </div>
+        </div>
+        <div className="ml-3">
+          <h3 className="font-medium text-[#1a1815] dark:text-[#f5f3f0]">{title}</h3>
+          <p className="text-sm text-[#a39d94] dark:text-[#8b8580] mt-1">{description}</p>
+        </div>
+      </div>
+    </button>
+  )
+}
+
 /**
  * Button component for session timeout selection.
  */
@@ -274,101 +334,27 @@ export const FirstLaunch: React.FC<FirstLaunchProps> = ({ onComplete }) => {
             </div>
 
             <div className="space-y-3 mb-8">
-              {/* Easy Access */}
-              <button
-                onClick={() => handleSecuritySelect('easy')}
-                className={`w-full p-4 rounded-lg border-2 transition-all text-left ${
-                  securityMode === 'easy'
-                    ? 'border-[#8b4e52] bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20'
-                    : 'border-[rgba(201,169,97,0.15)] hover:border-[rgba(201,169,97,0.3)]'
-                }`}
-              >
-                <div className="flex items-start">
-                  <div className="flex-shrink-0 mt-0.5">
-                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                      securityMode === 'easy' ? 'border-[#8b4e52] bg-[#8b4e52]' : 'border-[rgba(201,169,97,0.3)] dark:border-[rgba(201,169,97,0.4)]'
-                    }`}>
-                      {securityMode === 'easy' && (
-                        <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                        </svg>
-                      )}
-                    </div>
-                  </div>
-                  <div className="ml-3">
-                    <h3 className="font-medium text-[#1a1815] dark:text-[#f5f3f0]">
-                      {t.firstLaunch.easyAccess}
-                    </h3>
-                    <p className="text-sm text-[#a39d94] dark:text-[#8b8580] mt-1">
-                      {t.firstLaunch.easyAccessDesc}
-                    </p>
-                  </div>
-                </div>
-              </button>
-
-              {/* Secure */}
-              <button
-                onClick={() => handleSecuritySelect('secure')}
-                className={`w-full p-4 rounded-lg border-2 transition-all text-left ${
-                  securityMode === 'secure'
-                    ? 'border-[#8b4e52] bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20'
-                    : 'border-[rgba(201,169,97,0.15)] hover:border-[rgba(201,169,97,0.3)]'
-                }`}
-              >
-                <div className="flex items-start">
-                  <div className="flex-shrink-0 mt-0.5">
-                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                      securityMode === 'secure' ? 'border-[#8b4e52] bg-[#8b4e52]' : 'border-[rgba(201,169,97,0.3)] dark:border-[rgba(201,169,97,0.4)]'
-                    }`}>
-                      {securityMode === 'secure' && (
-                        <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                        </svg>
-                      )}
-                    </div>
-                  </div>
-                  <div className="ml-3">
-                    <h3 className="font-medium text-[#1a1815] dark:text-[#f5f3f0]">
-                      {t.firstLaunch.secureUse}
-                    </h3>
-                    <p className="text-sm text-[#a39d94] dark:text-[#8b8580] mt-1">
-                      {t.firstLaunch.secureUseDesc}
-                    </p>
-                  </div>
-                </div>
-              </button>
-
-              {/* Secure+ */}
-              <button
-                onClick={() => handleSecuritySelect('secure_plus')}
-                className={`w-full p-4 rounded-lg border-2 transition-all text-left ${
-                  securityMode === 'secure_plus'
-                    ? 'border-[#8b4e52] bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20'
-                    : 'border-[rgba(201,169,97,0.15)] hover:border-[rgba(201,169,97,0.3)]'
-                }`}
-              >
-                <div className="flex items-start">
-                  <div className="flex-shrink-0 mt-0.5">
-                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                      securityMode === 'secure_plus' ? 'border-[#8b4e52] bg-[#8b4e52]' : 'border-[rgba(201,169,97,0.3)] dark:border-[rgba(201,169,97,0.4)]'
-                    }`}>
-                      {securityMode === 'secure_plus' && (
-                        <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                        </svg>
-                      )}
-                    </div>
-                  </div>
-                  <div className="ml-3">
-                    <h3 className="font-medium text-[#1a1815] dark:text-[#f5f3f0]">
-                      {t.firstLaunch.securePlus}
-                    </h3>
-                    <p className="text-sm text-[#a39d94] dark:text-[#8b8580] mt-1">
-                      {t.firstLaunch.securePlusDesc}
-                    </p>
-                  </div>
-                </div>
-              </button>
+              <SecurityModeButton
+                mode="easy"
+                isSelected={securityMode === 'easy'}
+                onSelect={handleSecuritySelect}
+                title={t.firstLaunch.easyAccess}
+                description={t.firstLaunch.easyAccessDesc}
+              />
+              <SecurityModeButton
+                mode="secure"
+                isSelected={securityMode === 'secure'}
+                onSelect={handleSecuritySelect}
+                title={t.firstLaunch.secureUse}
+                description={t.firstLaunch.secureUseDesc}
+              />
+              <SecurityModeButton
+                mode="secure_plus"
+                isSelected={securityMode === 'secure_plus'}
+                onSelect={handleSecuritySelect}
+                title={t.firstLaunch.securePlus}
+                description={t.firstLaunch.securePlusDesc}
+              />
             </div>
 
             <div className="flex gap-3">
