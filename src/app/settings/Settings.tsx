@@ -116,7 +116,7 @@ const SidebarNavigation: React.FC<{
   }, [items, onSectionChange])
 
   return (
-    <aside className="lg:w-72 flex-shrink-0">
+    <aside className="lg:w-80 flex-shrink-0">
       <div className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg border border-[rgba(201,169,97,0.15)] p-3">
         <nav className="space-y-1">
           {items.map(item => {
