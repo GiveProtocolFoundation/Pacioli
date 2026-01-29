@@ -116,7 +116,7 @@ const SidebarNavigation: React.FC<{
   }, [items, onSectionChange])
 
   return (
-    <aside className="lg:w-64 flex-shrink-0">
+    <aside className="lg:w-72 flex-shrink-0">
       <div className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg border border-[rgba(201,169,97,0.15)] p-3">
         <nav className="space-y-1">
           {items.map(item => {
@@ -147,9 +147,9 @@ const SidebarNavigation: React.FC<{
                         : 'text-[#696557] dark:text-[#b8b3ac]'
                   }`}
                 />
-                <div className="flex-1 min-w-0">
+                <div className="flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="truncate">{item.label}</span>
+                    <span>{item.label}</span>
                     {item.comingSoon && (
                       <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-[#f3f1ed] dark:bg-[#2a2620] text-[#696557] dark:text-[#b8b3ac]">
                         Soon
