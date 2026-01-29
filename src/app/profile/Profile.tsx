@@ -690,7 +690,9 @@ const Profile: React.FC = () => {
                               <option value="America/Lima">Lima</option>
                               <option value="America/Caracas">Caracas</option>
                               <option value="America/Santiago">Santiago</option>
-                              <option value="America/Sao_Paulo">Sao Paulo</option>
+                              <option value="America/Sao_Paulo">
+                                Sao Paulo
+                              </option>
                               <option value="America/Buenos_Aires">
                                 Buenos Aires
                               </option>
@@ -708,7 +710,9 @@ const Profile: React.FC = () => {
                               <option value="Europe/Lisbon">Lisbon</option>
                               <option value="Europe/Paris">Paris</option>
                               <option value="Europe/Brussels">Brussels</option>
-                              <option value="Europe/Amsterdam">Amsterdam</option>
+                              <option value="Europe/Amsterdam">
+                                Amsterdam
+                              </option>
                               <option value="Europe/Berlin">Berlin</option>
                               <option value="Europe/Zurich">Zurich</option>
                               <option value="Europe/Rome">Rome</option>
@@ -716,17 +720,23 @@ const Profile: React.FC = () => {
                               <option value="Europe/Vienna">Vienna</option>
                               <option value="Europe/Warsaw">Warsaw</option>
                               <option value="Europe/Prague">Prague</option>
-                              <option value="Europe/Stockholm">Stockholm</option>
+                              <option value="Europe/Stockholm">
+                                Stockholm
+                              </option>
                               <option value="Europe/Oslo">Oslo</option>
                               <option value="Europe/Helsinki">Helsinki</option>
                               <option value="Europe/Athens">Athens</option>
-                              <option value="Europe/Bucharest">Bucharest</option>
+                              <option value="Europe/Bucharest">
+                                Bucharest
+                              </option>
                               <option value="Europe/Kiev">Kyiv</option>
                               <option value="Europe/Moscow">Moscow</option>
                               <option value="Europe/Istanbul">Istanbul</option>
                             </optgroup>
                             <optgroup label="Africa">
-                              <option value="Africa/Casablanca">Casablanca</option>
+                              <option value="Africa/Casablanca">
+                                Casablanca
+                              </option>
                               <option value="Africa/Lagos">Lagos</option>
                               <option value="Africa/Cairo">Cairo</option>
                               <option value="Africa/Nairobi">Nairobi</option>
@@ -765,8 +775,12 @@ const Profile: React.FC = () => {
                             <optgroup label="Australia & Pacific">
                               <option value="Australia/Perth">Perth</option>
                               <option value="Australia/Darwin">Darwin</option>
-                              <option value="Australia/Adelaide">Adelaide</option>
-                              <option value="Australia/Brisbane">Brisbane</option>
+                              <option value="Australia/Adelaide">
+                                Adelaide
+                              </option>
+                              <option value="Australia/Brisbane">
+                                Brisbane
+                              </option>
                               <option value="Australia/Sydney">
                                 Sydney / Melbourne
                               </option>
