@@ -14,7 +14,6 @@ import {
   ChevronDown,
   LogOut,
   User,
-  Users,
   HelpCircle,
   MessageCircle,
   Moon,
@@ -114,7 +113,6 @@ const Navigation: React.FC<NavigationProps> = ({
       ],
     },
     { name: 'Analytics', href: '/analytics', icon: BarChart3 },
-    { name: 'Team', href: '/team', icon: Users },
     { name: 'Support', href: '/support', icon: MessageCircle },
     {
       name: 'Settings',
