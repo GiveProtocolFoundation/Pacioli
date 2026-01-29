@@ -137,35 +137,35 @@ const SidebarNavigation: React.FC<{
                       : 'text-[#1a1815] dark:text-[#f5f3f0] hover:bg-[#f3f1ed] dark:hover:bg-[#1a1815]'
                 }`}
               >
-              <div className="flex items-center flex-1 text-left">
-                <Icon
-                  className={`w-5 h-5 mr-3 flex-shrink-0 ${
-                    isActive
-                      ? 'text-[#8b4e52] dark:text-[#a86e72]'
-                      : item.comingSoon
-                        ? 'text-[#a39d94] dark:text-[#696557]'
-                        : 'text-[#696557] dark:text-[#b8b3ac]'
-                  }`}
-                />
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <span>{item.label}</span>
-                    {item.comingSoon && (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-[#f3f1ed] dark:bg-[#2a2620] text-[#696557] dark:text-[#b8b3ac]">
-                        Soon
-                      </span>
-                    )}
+                <div className="flex items-center flex-1 text-left">
+                  <Icon
+                    className={`w-5 h-5 mr-3 flex-shrink-0 ${
+                      isActive
+                        ? 'text-[#8b4e52] dark:text-[#a86e72]'
+                        : item.comingSoon
+                          ? 'text-[#a39d94] dark:text-[#696557]'
+                          : 'text-[#696557] dark:text-[#b8b3ac]'
+                    }`}
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <span>{item.label}</span>
+                      {item.comingSoon && (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-[#f3f1ed] dark:bg-[#2a2620] text-[#696557] dark:text-[#b8b3ac]">
+                          Soon
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-[#a39d94] dark:text-[#8b8580] mt-0.5 truncate">
+                      {item.description}
+                    </p>
                   </div>
-                  <p className="text-xs text-[#a39d94] dark:text-[#8b8580] mt-0.5 truncate">
-                    {item.description}
-                  </p>
                 </div>
-              </div>
-              {isActive && !item.comingSoon && (
-                <ChevronRight className="w-4 h-4 text-[#8b4e52] dark:text-[#a86e72] flex-shrink-0 ml-2" />
-              )}
-            </button>
-          )
+                {isActive && !item.comingSoon && (
+                  <ChevronRight className="w-4 h-4 text-[#8b4e52] dark:text-[#a86e72] flex-shrink-0 ml-2" />
+                )}
+              </button>
+            )
           })}
         </nav>
       </div>
