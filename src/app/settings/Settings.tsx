@@ -117,25 +117,26 @@ const SidebarNavigation: React.FC<{
 
   return (
     <aside className="lg:w-64 flex-shrink-0">
-      <nav className="space-y-1">
-        {items.map(item => {
-          const Icon = item.icon
-          const isActive = activeSection === item.id
-          const handleClick = handleClicksMap[item.id]
+      <div className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg border border-[rgba(201,169,97,0.15)] p-3">
+        <nav className="space-y-1">
+          {items.map(item => {
+            const Icon = item.icon
+            const isActive = activeSection === item.id
+            const handleClick = handleClicksMap[item.id]
 
-          return (
-            <button
-              key={item.id}
-              onClick={handleClick}
-              disabled={item.comingSoon}
-              className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
-                isActive
-                  ? 'bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 text-[#8b4e52] dark:text-[#a86e72] border border-[#8b4e52]/30 dark:border-[#8b4e52]/40'
-                  : item.comingSoon
-                    ? 'text-[#a39d94] dark:text-[#696557] cursor-not-allowed'
-                    : 'text-[#1a1815] dark:text-[#f5f3f0] hover:bg-[#f3f1ed] dark:hover:bg-[#1a1815] border border-transparent'
-              }`}
-            >
+            return (
+              <button
+                key={item.id}
+                onClick={handleClick}
+                disabled={item.comingSoon}
+                className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
+                  isActive
+                    ? 'bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 text-[#8b4e52] dark:text-[#a86e72]'
+                    : item.comingSoon
+                      ? 'text-[#a39d94] dark:text-[#696557] cursor-not-allowed'
+                      : 'text-[#1a1815] dark:text-[#f5f3f0] hover:bg-[#f3f1ed] dark:hover:bg-[#1a1815]'
+                }`}
+              >
               <div className="flex items-center flex-1 text-left">
                 <Icon
                   className={`w-5 h-5 mr-3 flex-shrink-0 ${
@@ -165,8 +166,9 @@ const SidebarNavigation: React.FC<{
               )}
             </button>
           )
-        })}
-      </nav>
+          })}
+        </nav>
+      </div>
 
       <div className="lg:hidden mt-4 p-3 bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 rounded-lg border border-[#8b4e52]/30 dark:border-[#8b4e52]/40">
         <div className="flex items-center text-sm">
