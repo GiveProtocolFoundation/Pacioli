@@ -234,7 +234,10 @@ mod tests {
 
     #[test]
     fn test_provider_from_str() {
-        assert_eq!(ApiProvider::from_str("etherscan"), Some(ApiProvider::Etherscan));
+        assert_eq!(
+            ApiProvider::from_str("etherscan"),
+            Some(ApiProvider::Etherscan)
+        );
         assert_eq!(ApiProvider::from_str("SUBSCAN"), Some(ApiProvider::Subscan));
         assert_eq!(ApiProvider::from_str("invalid"), None);
     }

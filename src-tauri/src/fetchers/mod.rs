@@ -297,8 +297,8 @@ impl ResilientFetcher {
         // Wrap with retry middleware (exponential backoff)
         let retry_policy = ExponentialBackoff::builder()
             .retry_bounds(
-                Duration::from_millis(100),  // Min retry delay
-                Duration::from_secs(10),     // Max retry delay
+                Duration::from_millis(100), // Min retry delay
+                Duration::from_secs(10),    // Max retry delay
             )
             .build_with_max_retries(config.max_retries);
 
@@ -358,18 +358,13 @@ impl ResilientFetcher {
         self.wait_for_permit().await;
 
         // Execute request with retry middleware
-        let response = self
-            .client
-            .get(url)
-            .send()
-            .await
-            .map_err(|e| {
-                if e.is_timeout() {
-                    FetchError::Timeout
-                } else {
-                    FetchError::HttpError(e.to_string())
-                }
-            })?;
+        let response = self.client.get(url).send().await.map_err(|e| {
+            if e.is_timeout() {
+                FetchError::Timeout
+            } else {
+                FetchError::HttpError(e.to_string())
+            }
+        })?;
 
         // Check for rate limit response (in case we still get one)
         if response.status() == reqwest::StatusCode::TOO_MANY_REQUESTS {
@@ -566,7 +561,8 @@ mod tests {
     #[test]
     fn test_fetcher_config_for_provider() {
         // Without API key (default mode)
-        let config = FetcherConfig::for_provider(ApiProvider::Etherscan, "https://api.etherscan.io");
+        let config =
+            FetcherConfig::for_provider(ApiProvider::Etherscan, "https://api.etherscan.io");
         assert_eq!(config.requests_per_second, 1); // Default rate limit
         assert!(config.api_key.is_none());
     }
