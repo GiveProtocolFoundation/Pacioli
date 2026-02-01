@@ -55,18 +55,19 @@ const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
   const [addressError, setAddressError] = useState<string | null>(null)
   const [showHelp, setShowHelp] = useState(false)
 
-  // WalletConnect state
-  const [wcState, setWcState] = useState<'disconnected' | 'connecting' | 'connected' | 'error'>('disconnected')
-  const [wcSession, setWcSession] = useState<WalletConnectSession | null>(null)
+  // WalletConnect state - initialize with existing session if available
+  const [wcSession, setWcSession] = useState<WalletConnectSession | null>(
+    () => walletConnectService.getSession()
+  )
+  const [wcState, setWcState] = useState<'disconnected' | 'connecting' | 'connected' | 'error'>(
+    () => (walletConnectService.getSession() ? 'connected' : 'disconnected')
+  )
   const [wcError, setWcError] = useState<string | null>(null)
-  const [isWcConfigured, setIsWcConfigured] = useState(false)
+  const [isWcConfigured] = useState(() => walletConnectService.isConfigured())
   const [addedAccounts, setAddedAccounts] = useState<Set<string>>(new Set())
 
-  // Check WalletConnect configuration on mount
+  // Subscribe to WalletConnect state changes on mount
   useEffect(() => {
-    setIsWcConfigured(walletConnectService.isConfigured())
-
-    // Subscribe to WalletConnect state changes
     const unsubState = walletConnectService.onStateChange((state, error) => {
       setWcState(state)
       setWcError(error || null)
@@ -75,13 +76,6 @@ const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
     const unsubSession = walletConnectService.onSessionChange((session) => {
       setWcSession(session)
     })
-
-    // Check for existing session
-    const existingSession = walletConnectService.getSession()
-    if (existingSession) {
-      setWcSession(existingSession)
-      setWcState('connected')
-    }
 
     return () => {
       unsubState()
