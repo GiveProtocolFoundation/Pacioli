@@ -372,7 +372,7 @@ const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
               </div>
 
               <p className="text-xs text-center text-[#a39d94]">
-                Unverified wallets can still import transactions but won't have ownership proof.
+                Unverified wallets can still import transactions but won&apos;t have ownership proof.
               </p>
             </div>
           )}

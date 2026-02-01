@@ -117,9 +117,9 @@ const WalletManager: React.FC = () => {
       })
       setTrackedWallets(prev => [...prev, newWallet])
       console.log('Wallet tracked successfully:', newWallet)
-    } catch (error) {
-      console.error('Failed to track wallet:', error)
-      alert(error instanceof Error ? error.message : 'Failed to track wallet')
+    } catch (err) {
+      console.error('Failed to track wallet:', err)
+      setError(err instanceof Error ? err.message : 'Failed to track wallet')
     }
   }, [])
 
@@ -149,9 +149,9 @@ const WalletManager: React.FC = () => {
         setTrackedWallets(prev => [...prev, newWallet])
       }
       console.log('Portfolio added successfully:', portfolio)
-    } catch (error) {
-      console.error('Failed to add portfolio:', error)
-      alert(error instanceof Error ? error.message : 'Failed to add portfolio')
+    } catch (err) {
+      console.error('Failed to add portfolio:', err)
+      setError(err instanceof Error ? err.message : 'Failed to add portfolio')
     }
   }, [])
 

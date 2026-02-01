@@ -103,6 +103,7 @@ const TurboModeIndicator: React.FC<{ isActive: boolean }> = ({ isActive }) => (
   </div>
 )
 
+/** Displays the current rate limit and potential turbo limit for a provider */
 const RateLimitBadge: React.FC<{ rateLimit: number; turboLimit: number; isTurbo: boolean }> = ({
   rateLimit,
   turboLimit,
@@ -145,6 +146,10 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
   const isTurbo = status?.is_turbo_mode ?? false
   const rateLimit = status?.rate_limit ?? 1
   const turboLimit = status?.turbo_rate_limit ?? 5
+
+  const handleApiKeyChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setApiKey(e.target.value)
+  }, [])
 
   const handleSave = async () => {
     if (!apiKey.trim()) {
@@ -234,7 +239,7 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
             <input
               type={showKey ? 'text' : 'password'}
               value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
+              onChange={handleApiKeyChange}
               placeholder="Enter your API key"
               className="w-full px-3 py-2 pr-10 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961] text-sm font-mono"
               disabled={isSaving}
@@ -458,7 +463,7 @@ const DataProviders: React.FC = () => {
           Security Note
         </h4>
         <p className="text-xs text-[#696557] dark:text-[#b8b3ac]">
-          API keys are stored in your operating system's secure keychain (Keychain on macOS,
+          API keys are stored in your operating system&apos;s secure keychain (Keychain on macOS,
           Credential Manager on Windows, Secret Service on Linux). Keys are never transmitted
           to Pacioli servers.
         </p>
