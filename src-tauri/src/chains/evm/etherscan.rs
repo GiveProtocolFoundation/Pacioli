@@ -62,12 +62,12 @@ struct ApiErrorResponse {
 /// Get the ApiProvider for a chain ID (for keychain lookup)
 fn get_api_provider_for_chain(chain_id: u64) -> ApiProvider {
     match chain_id {
-        1 => ApiProvider::Etherscan,      // Ethereum
-        137 => ApiProvider::Polygonscan,  // Polygon
-        42161 => ApiProvider::Arbiscan,   // Arbitrum
-        8453 => ApiProvider::Basescan,    // Base
-        10 => ApiProvider::Optimism,      // Optimism
-        _ => ApiProvider::Etherscan,      // Default to Etherscan for unknown chains
+        1 => ApiProvider::Etherscan,     // Ethereum
+        137 => ApiProvider::Polygonscan, // Polygon
+        42161 => ApiProvider::Arbiscan,  // Arbitrum
+        8453 => ApiProvider::Basescan,   // Base
+        10 => ApiProvider::Optimism,     // Optimism
+        _ => ApiProvider::Etherscan,     // Default to Etherscan for unknown chains
     }
 }
 
@@ -127,11 +127,8 @@ impl EtherscanClient {
     pub fn new(config: &EvmChainConfig, api_key: Option<String>) -> ChainResult<Self> {
         // Determine the API key (explicit > keychain > none)
         let provider = get_api_provider_for_chain(config.chain_id);
-        let effective_api_key = api_key.or_else(|| {
-            ApiKeyManager::get_api_key(provider)
-                .ok()
-                .flatten()
-        });
+        let effective_api_key =
+            api_key.or_else(|| ApiKeyManager::get_api_key(provider).ok().flatten());
 
         // Calculate rate limit based on API key presence
         let rate_limit = get_rate_limit_for_chain(config.chain_id, effective_api_key.is_some());
@@ -243,15 +240,15 @@ impl EtherscanClient {
 
     /// Execute a single HTTP request
     async fn do_request<T: DeserializeOwned>(&self, url: &str) -> ChainResult<T> {
-        let text = self.fetcher.get(url).await.map_err(|e| {
-            match e {
-                crate::fetchers::FetchError::RateLimited => ChainError::RateLimited,
-                crate::fetchers::FetchError::Timeout => ChainError::ConnectionFailed("Request timeout".to_string()),
-                crate::fetchers::FetchError::HttpError(msg) => ChainError::ApiError(msg),
-                crate::fetchers::FetchError::ParseError(msg) => ChainError::ParseError(msg),
-                crate::fetchers::FetchError::ApiError(msg) => ChainError::ApiError(msg),
-                crate::fetchers::FetchError::ConfigError(msg) => ChainError::ConfigError(msg),
+        let text = self.fetcher.get(url).await.map_err(|e| match e {
+            crate::fetchers::FetchError::RateLimited => ChainError::RateLimited,
+            crate::fetchers::FetchError::Timeout => {
+                ChainError::ConnectionFailed("Request timeout".to_string())
             }
+            crate::fetchers::FetchError::HttpError(msg) => ChainError::ApiError(msg),
+            crate::fetchers::FetchError::ParseError(msg) => ChainError::ParseError(msg),
+            crate::fetchers::FetchError::ApiError(msg) => ChainError::ApiError(msg),
+            crate::fetchers::FetchError::ConfigError(msg) => ChainError::ConfigError(msg),
         })?;
 
         // First try to parse as success response
@@ -953,11 +950,26 @@ mod tests {
 
     #[test]
     fn test_api_provider_mapping() {
-        assert!(matches!(get_api_provider_for_chain(1), ApiProvider::Etherscan));
-        assert!(matches!(get_api_provider_for_chain(137), ApiProvider::Polygonscan));
-        assert!(matches!(get_api_provider_for_chain(42161), ApiProvider::Arbiscan));
-        assert!(matches!(get_api_provider_for_chain(8453), ApiProvider::Basescan));
-        assert!(matches!(get_api_provider_for_chain(10), ApiProvider::Optimism));
+        assert!(matches!(
+            get_api_provider_for_chain(1),
+            ApiProvider::Etherscan
+        ));
+        assert!(matches!(
+            get_api_provider_for_chain(137),
+            ApiProvider::Polygonscan
+        ));
+        assert!(matches!(
+            get_api_provider_for_chain(42161),
+            ApiProvider::Arbiscan
+        ));
+        assert!(matches!(
+            get_api_provider_for_chain(8453),
+            ApiProvider::Basescan
+        ));
+        assert!(matches!(
+            get_api_provider_for_chain(10),
+            ApiProvider::Optimism
+        ));
     }
 
     #[test]

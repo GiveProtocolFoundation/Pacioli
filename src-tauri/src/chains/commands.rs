@@ -356,7 +356,8 @@ pub async fn bitcoin_derive_addresses(
     receiving_count: u32,
     change_count: u32,
 ) -> Result<XpubPortfolio, String> {
-    super::bitcoin::derive_addresses(&xpub, receiving_count, change_count).map_err(|e| e.to_string())
+    super::bitcoin::derive_addresses(&xpub, receiving_count, change_count)
+        .map_err(|e| e.to_string())
 }
 
 /// Fetch balances for all addresses derived from an xPub
@@ -379,8 +380,8 @@ pub async fn bitcoin_fetch_xpub_balances(
     network: Option<String>,
 ) -> Result<Vec<(DerivedAddress, BitcoinBalance)>, String> {
     // Derive addresses
-    let portfolio =
-        super::bitcoin::derive_addresses(&xpub, receiving_count, change_count).map_err(|e| e.to_string())?;
+    let portfolio = super::bitcoin::derive_addresses(&xpub, receiving_count, change_count)
+        .map_err(|e| e.to_string())?;
 
     // Create adapter for fetching balances
     let network_name = network.as_deref().unwrap_or("bitcoin");
@@ -442,8 +443,8 @@ pub async fn bitcoin_fetch_xpub_transactions(
     max_pages_per_address: Option<usize>,
 ) -> Result<Vec<(DerivedAddress, Vec<BitcoinTransaction>)>, String> {
     // Derive addresses
-    let portfolio =
-        super::bitcoin::derive_addresses(&xpub, receiving_count, change_count).map_err(|e| e.to_string())?;
+    let portfolio = super::bitcoin::derive_addresses(&xpub, receiving_count, change_count)
+        .map_err(|e| e.to_string())?;
 
     // Create adapter for fetching transactions
     let network_name = network.as_deref().unwrap_or("bitcoin");

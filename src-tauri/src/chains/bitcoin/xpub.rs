@@ -212,14 +212,16 @@ fn derive_address(
         }
         AddressType::NestedSegwit => {
             // P2SH-P2WPKH: hash160(0x00 0x14 hash160(pubkey)) -> 3... address
-            let compressed = CompressedPublicKey::try_from(public_key)
-                .map_err(|e| ChainError::Internal(format!("Failed to compress public key: {}", e)))?;
+            let compressed = CompressedPublicKey::try_from(public_key).map_err(|e| {
+                ChainError::Internal(format!("Failed to compress public key: {}", e))
+            })?;
             Address::p2shwpkh(&compressed, network)
         }
         AddressType::NativeSegwit => {
             // P2WPKH: bc1q... address
-            let compressed = CompressedPublicKey::try_from(public_key)
-                .map_err(|e| ChainError::Internal(format!("Failed to compress public key: {}", e)))?;
+            let compressed = CompressedPublicKey::try_from(public_key).map_err(|e| {
+                ChainError::Internal(format!("Failed to compress public key: {}", e))
+            })?;
             Address::p2wpkh(&compressed, network)
         }
         AddressType::Taproot => {
@@ -294,7 +296,9 @@ pub fn is_xpub(input: &str) -> bool {
     }
 
     let valid_prefixes = ["xpub", "ypub", "zpub", "tpub", "upub", "vpub"];
-    valid_prefixes.iter().any(|prefix| input.starts_with(prefix))
+    valid_prefixes
+        .iter()
+        .any(|prefix| input.starts_with(prefix))
 }
 
 /// Gets the address type display name for a given xPub.

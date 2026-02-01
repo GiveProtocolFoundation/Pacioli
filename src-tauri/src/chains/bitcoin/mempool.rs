@@ -52,10 +52,7 @@ impl MempoolClient {
         let fetcher = ResilientFetcher::new(config)
             .map_err(|e| ChainError::Internal(format!("Failed to create fetcher: {}", e)))?;
 
-        Ok(Self {
-            fetcher,
-            base_url,
-        })
+        Ok(Self { fetcher, base_url })
     }
 
     /// Get the current rate limit
@@ -65,15 +62,15 @@ impl MempoolClient {
 
     /// Helper to make a GET request with rate limiting
     async fn get(&self, url: &str) -> ChainResult<String> {
-        self.fetcher.get(url).await.map_err(|e| {
-            match e {
-                crate::fetchers::FetchError::RateLimited => ChainError::RateLimited,
-                crate::fetchers::FetchError::Timeout => ChainError::ConnectionFailed("Request timeout".to_string()),
-                crate::fetchers::FetchError::HttpError(msg) => ChainError::ApiError(msg),
-                crate::fetchers::FetchError::ParseError(msg) => ChainError::ParseError(msg),
-                crate::fetchers::FetchError::ApiError(msg) => ChainError::ApiError(msg),
-                crate::fetchers::FetchError::ConfigError(msg) => ChainError::ConfigError(msg),
+        self.fetcher.get(url).await.map_err(|e| match e {
+            crate::fetchers::FetchError::RateLimited => ChainError::RateLimited,
+            crate::fetchers::FetchError::Timeout => {
+                ChainError::ConnectionFailed("Request timeout".to_string())
             }
+            crate::fetchers::FetchError::HttpError(msg) => ChainError::ApiError(msg),
+            crate::fetchers::FetchError::ParseError(msg) => ChainError::ParseError(msg),
+            crate::fetchers::FetchError::ApiError(msg) => ChainError::ApiError(msg),
+            crate::fetchers::FetchError::ConfigError(msg) => ChainError::ConfigError(msg),
         })
     }
 
