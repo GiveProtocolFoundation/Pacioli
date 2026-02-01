@@ -49,19 +49,21 @@ const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
   const [activeTab, setActiveTab] = useState<TabType>('add')
 
   // Form state for manual entry
-  const [selectedBlockchain, setSelectedBlockchain] = useState<BlockchainType | ''>('')
+  const [selectedBlockchain, setSelectedBlockchain] = useState<
+    BlockchainType | ''
+  >('')
   const [address, setAddress] = useState('')
   const [label, setLabel] = useState('')
   const [addressError, setAddressError] = useState<string | null>(null)
   const [showHelp, setShowHelp] = useState(false)
 
   // WalletConnect state - initialize with existing session if available
-  const [wcSession, setWcSession] = useState<WalletConnectSession | null>(
-    () => walletConnectService.getSession()
+  const [wcSession, setWcSession] = useState<WalletConnectSession | null>(() =>
+    walletConnectService.getSession()
   )
-  const [wcState, setWcState] = useState<'disconnected' | 'connecting' | 'connected' | 'error'>(
-    () => (walletConnectService.getSession() ? 'connected' : 'disconnected')
-  )
+  const [wcState, setWcState] = useState<
+    'disconnected' | 'connecting' | 'connected' | 'error'
+  >(() => (walletConnectService.getSession() ? 'connected' : 'disconnected'))
   const [wcError, setWcError] = useState<string | null>(null)
   const [isWcConfigured] = useState(() => walletConnectService.isConfigured())
   const [addedAccounts, setAddedAccounts] = useState<Set<string>>(new Set())
@@ -73,7 +75,7 @@ const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
       setWcError(error || null)
     })
 
-    const unsubSession = walletConnectService.onSessionChange((session) => {
+    const unsubSession = walletConnectService.onSessionChange(session => {
       setWcSession(session)
     })
 
@@ -167,32 +169,35 @@ const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
   }, [])
 
   // WalletConnect: Add account as tracked wallet
-  const handleAddWcAccount = useCallback((account: WalletConnectAccount) => {
-    // Map WalletConnect chain to blockchain type
-    const chainToBlockchain: Record<string, BlockchainType> = {
-      'eip155:1': 'ethereum',
-      'eip155:137': 'polygon',
-      'eip155:42161': 'arbitrum',
-      'eip155:10': 'optimism',
-      'eip155:8453': 'base',
-      'eip155:1284': 'moonbeam',
-      'eip155:1285': 'moonriver',
-      'polkadot:91b171bb158e2d3848fa23a9f1c25182': 'polkadot',
-      'polkadot:b0a8d493285c2df73290dfb7e61f870f': 'kusama',
-    }
+  const handleAddWcAccount = useCallback(
+    (account: WalletConnectAccount) => {
+      // Map WalletConnect chain to blockchain type
+      const chainToBlockchain: Record<string, BlockchainType> = {
+        'eip155:1': 'ethereum',
+        'eip155:137': 'polygon',
+        'eip155:42161': 'arbitrum',
+        'eip155:10': 'optimism',
+        'eip155:8453': 'base',
+        'eip155:1284': 'moonbeam',
+        'eip155:1285': 'moonriver',
+        'polkadot:91b171bb158e2d3848fa23a9f1c25182': 'polkadot',
+        'polkadot:b0a8d493285c2df73290dfb7e61f870f': 'kusama',
+      }
 
-    const blockchain = chainToBlockchain[account.chain] || 'ethereum'
-    const chainName = walletConnectService.getChainName(account.chain)
+      const blockchain = chainToBlockchain[account.chain] || 'ethereum'
+      const chainName = walletConnectService.getChainName(account.chain)
 
-    onWalletAdded?.({
-      address: account.address,
-      blockchain,
-      label: `${chainName} Wallet`,
-      isVerified: true, // WalletConnect connection proves ownership
-    })
+      onWalletAdded?.({
+        address: account.address,
+        blockchain,
+        label: `${chainName} Wallet`,
+        isVerified: true, // WalletConnect connection proves ownership
+      })
 
-    setAddedAccounts(prev => new Set([...prev, account.address]))
-  }, [onWalletAdded])
+      setAddedAccounts(prev => new Set([...prev, account.address]))
+    },
+    [onWalletAdded]
+  )
 
   if (!isOpen) return null
 
@@ -336,7 +341,9 @@ const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
 
                   {showHelp && (
                     <div className="mb-3 p-3 bg-[#c9a961]/10 rounded-lg text-xs text-[#696557] dark:text-[#b8b3ac]">
-                      <p className="mb-2">{getVerificationExplanation().description}</p>
+                      <p className="mb-2">
+                        {getVerificationExplanation().description}
+                      </p>
                       <p className="text-[#7a9b6f]">
                         Signing does NOT grant access to your funds.
                       </p>
@@ -348,7 +355,8 @@ const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
                       Want to verify ownership?
                     </p>
                     <p className="text-xs text-[#c9a961]">
-                      Use the WalletConnect tab to connect your mobile wallet and automatically verify.
+                      Use the WalletConnect tab to connect your mobile wallet
+                      and automatically verify.
                     </p>
                   </div>
                 </div>
@@ -366,7 +374,8 @@ const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
               </div>
 
               <p className="text-xs text-center text-[#a39d94]">
-                Unverified wallets can still import transactions but won&apos;t have ownership proof.
+                Unverified wallets can still import transactions but won&apos;t
+                have ownership proof.
               </p>
             </div>
           )}
@@ -400,7 +409,11 @@ const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
                       2. Create a new project and copy your Project ID
                     </p>
                     <p className="text-xs text-[#696557] dark:text-[#b8b3ac]">
-                      3. Set <code className="px-1 py-0.5 bg-[#1a1815]/10 dark:bg-white/10 rounded">VITE_WALLETCONNECT_PROJECT_ID</code> in your environment
+                      3. Set{' '}
+                      <code className="px-1 py-0.5 bg-[#1a1815]/10 dark:bg-white/10 rounded">
+                        VITE_WALLETCONNECT_PROJECT_ID
+                      </code>{' '}
+                      in your environment
                     </p>
                   </div>
                 </div>
@@ -473,7 +486,8 @@ const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
                     Connect Mobile Wallet
                   </h3>
                   <p className="text-sm text-[#696557] dark:text-[#b8b3ac] mb-6 max-w-md mx-auto">
-                    Scan a QR code with your mobile wallet to connect and verify ownership.
+                    Scan a QR code with your mobile wallet to connect and verify
+                    ownership.
                   </p>
 
                   {wcError && (
@@ -508,7 +522,8 @@ const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
                       Supported Wallets:
                     </p>
                     <p className="text-xs text-[#696557] dark:text-[#b8b3ac]">
-                      MetaMask, Rainbow, Trust Wallet, Coinbase Wallet, Nova Wallet, and many more WalletConnect-compatible wallets.
+                      MetaMask, Rainbow, Trust Wallet, Coinbase Wallet, Nova
+                      Wallet, and many more WalletConnect-compatible wallets.
                     </p>
                   </div>
                 </div>
@@ -524,7 +539,8 @@ const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
                 Manage Your Wallets
               </h3>
               <p className="text-sm text-[#696557] dark:text-[#b8b3ac] mb-4">
-                View and manage your tracked wallets from the Wallet Manager page.
+                View and manage your tracked wallets from the Wallet Manager
+                page.
               </p>
               <p className="text-xs text-[#a39d94]">
                 Close this modal to see your tracked wallets in the main panel.
