@@ -3,6 +3,7 @@ mod chains;
 mod core;
 mod db;
 mod evm_indexer;
+mod fetchers;
 mod indexer;
 mod storage;
 mod sync;
@@ -351,6 +352,12 @@ pub fn run() {
             chains::get_bitcoin_balance,
             chains::get_bitcoin_utxos,
             chains::validate_bitcoin_address,
+            // Bitcoin xPub commands (Phase 5)
+            chains::bitcoin_is_xpub,
+            chains::bitcoin_parse_xpub,
+            chains::bitcoin_derive_addresses,
+            chains::bitcoin_fetch_xpub_balances,
+            chains::bitcoin_fetch_xpub_transactions,
             // Storage commands (offline-first)
             storage::commands::storage_ensure_initialized,
             storage::commands::storage_get_app_state,
@@ -384,7 +391,14 @@ pub fn run() {
             storage::commands::storage_export_data,
             storage::commands::storage_get_export_stats,
             storage::commands::storage_preview_import,
-            storage::commands::storage_import_data
+            storage::commands::storage_import_data,
+            // Fetcher commands (resilient API access)
+            fetchers::commands::save_api_key,
+            fetchers::commands::delete_api_key,
+            fetchers::commands::has_api_key,
+            fetchers::commands::get_provider_status,
+            fetchers::commands::get_all_provider_statuses,
+            fetchers::commands::get_configured_providers
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

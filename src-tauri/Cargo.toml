@@ -73,3 +73,17 @@ thiserror = "1.0"           # Error derive macros
 alloy-primitives = "0.5"    # EVM address validation and primitives
 tauri-plugin-dialog = "2.6.0"
 
+# Resilient fetcher dependencies (Phase 1)
+governor = "0.6"            # GCRA rate limiting (leaky bucket)
+reqwest-middleware = "0.4"  # HTTP client middleware
+reqwest-retry = "0.7"       # Exponential backoff retry middleware
+keyring = "3"               # Secure OS keychain for API keys
+nonzero_ext = "0.3"         # NonZero integer macros
+
+# Bitcoin xPub derivation (Phase 5)
+bitcoin = { version = "0.32", features = ["std", "secp-recovery"] }
+bs58 = { version = "0.5", features = ["check"] }
+
+[dev-dependencies]
+tempfile = "3"              # Temporary files/directories for tests
+

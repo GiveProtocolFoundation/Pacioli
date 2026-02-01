@@ -1,10 +1,12 @@
 //! Bitcoin Chain Adapter
 //!
 //! Provides Bitcoin blockchain integration using the Mempool.space API.
-//! Supports transaction fetching, balance queries, and address validation.
+//! Supports transaction fetching, balance queries, address validation,
+//! and xPub address derivation for HD wallet portfolio tracking.
 
 pub mod mempool;
 pub mod types;
+pub mod xpub;
 
 use async_trait::async_trait;
 use std::sync::Arc;
@@ -17,6 +19,7 @@ use crate::chains::{
 
 pub use mempool::{validate_bitcoin_address, MempoolClient};
 pub use types::{BitcoinBalance, BitcoinTransaction, BitcoinUtxo};
+pub use xpub::{derive_addresses, is_xpub, parse_xpub, DerivedAddress, XpubInfo, XpubPortfolio};
 
 /// Bitcoin network configuration
 #[derive(Debug, Clone)]

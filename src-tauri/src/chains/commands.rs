@@ -243,7 +243,10 @@ pub async fn chain_get_block_number(
 // BITCOIN-SPECIFIC COMMANDS
 // =============================================================================
 
-use super::bitcoin::{BitcoinAdapter, BitcoinBalance, BitcoinTransaction, BitcoinUtxo};
+use super::bitcoin::{
+    BitcoinAdapter, BitcoinBalance, BitcoinTransaction, BitcoinUtxo, DerivedAddress, XpubInfo,
+    XpubPortfolio,
+};
 
 /// Get Bitcoin transactions for an address
 ///
@@ -311,6 +314,167 @@ pub async fn get_bitcoin_utxos(
 #[tauri::command]
 pub async fn validate_bitcoin_address(address: String) -> Result<bool, String> {
     Ok(super::bitcoin::validate_bitcoin_address(&address).is_ok())
+}
+
+// =============================================================================
+// BITCOIN XPUB COMMANDS (Phase 5)
+// =============================================================================
+
+/// Check if a string is a valid xPub format
+///
+/// # Arguments
+/// * `input` - String to check (xpub/ypub/zpub/tpub/upub/vpub)
+#[tauri::command]
+pub async fn bitcoin_is_xpub(input: String) -> Result<bool, String> {
+    Ok(super::bitcoin::is_xpub(&input))
+}
+
+/// Parse and validate an xPub string
+///
+/// # Arguments
+/// * `xpub` - Extended public key string
+///
+/// # Returns
+/// XpubInfo with address type, network, and fingerprint
+#[tauri::command]
+pub async fn bitcoin_parse_xpub(xpub: String) -> Result<XpubInfo, String> {
+    super::bitcoin::parse_xpub(&xpub).map_err(|e| e.to_string())
+}
+
+/// Derive addresses from an xPub
+///
+/// # Arguments
+/// * `xpub` - Extended public key string (xpub/ypub/zpub/tpub/upub/vpub)
+/// * `receiving_count` - Number of receiving addresses to derive (external chain)
+/// * `change_count` - Number of change addresses to derive (internal chain)
+///
+/// # Returns
+/// XpubPortfolio containing xPub info and derived addresses
+#[tauri::command]
+pub async fn bitcoin_derive_addresses(
+    xpub: String,
+    receiving_count: u32,
+    change_count: u32,
+) -> Result<XpubPortfolio, String> {
+    super::bitcoin::derive_addresses(&xpub, receiving_count, change_count).map_err(|e| e.to_string())
+}
+
+/// Fetch balances for all addresses derived from an xPub
+///
+/// Derives addresses from the xPub and fetches balances for each using Mempool.space API.
+///
+/// # Arguments
+/// * `xpub` - Extended public key string
+/// * `receiving_count` - Number of receiving addresses to check
+/// * `change_count` - Number of change addresses to check
+/// * `network` - Network name ("bitcoin", "testnet", "signet")
+///
+/// # Returns
+/// Vector of (address, balance) tuples for addresses with non-zero activity
+#[tauri::command]
+pub async fn bitcoin_fetch_xpub_balances(
+    xpub: String,
+    receiving_count: u32,
+    change_count: u32,
+    network: Option<String>,
+) -> Result<Vec<(DerivedAddress, BitcoinBalance)>, String> {
+    // Derive addresses
+    let portfolio =
+        super::bitcoin::derive_addresses(&xpub, receiving_count, change_count).map_err(|e| e.to_string())?;
+
+    // Create adapter for fetching balances
+    let network_name = network.as_deref().unwrap_or("bitcoin");
+    let adapter = BitcoinAdapter::from_network(network_name).map_err(|e| e.to_string())?;
+
+    let mut results = Vec::new();
+
+    // Fetch balances for receiving addresses
+    for addr in portfolio.receiving_addresses {
+        match adapter.fetch_balance(&addr.address).await {
+            Ok(balance) => {
+                // Only include addresses with activity
+                if balance.tx_count > 0 || balance.balance > 0 {
+                    results.push((addr, balance));
+                }
+            }
+            Err(e) => {
+                eprintln!("Failed to fetch balance for {}: {}", addr.address, e);
+                // Continue with other addresses
+            }
+        }
+    }
+
+    // Fetch balances for change addresses
+    for addr in portfolio.change_addresses {
+        match adapter.fetch_balance(&addr.address).await {
+            Ok(balance) => {
+                // Only include addresses with activity
+                if balance.tx_count > 0 || balance.balance > 0 {
+                    results.push((addr, balance));
+                }
+            }
+            Err(e) => {
+                eprintln!("Failed to fetch balance for {}: {}", addr.address, e);
+            }
+        }
+    }
+
+    Ok(results)
+}
+
+/// Fetch transactions for all addresses derived from an xPub
+///
+/// # Arguments
+/// * `xpub` - Extended public key string
+/// * `receiving_count` - Number of receiving addresses to check
+/// * `change_count` - Number of change addresses to check
+/// * `network` - Network name ("bitcoin", "testnet", "signet")
+/// * `max_pages_per_address` - Maximum pages of transactions per address
+///
+/// # Returns
+/// Vector of transactions with the derived address info attached
+#[tauri::command]
+pub async fn bitcoin_fetch_xpub_transactions(
+    xpub: String,
+    receiving_count: u32,
+    change_count: u32,
+    network: Option<String>,
+    max_pages_per_address: Option<usize>,
+) -> Result<Vec<(DerivedAddress, Vec<BitcoinTransaction>)>, String> {
+    // Derive addresses
+    let portfolio =
+        super::bitcoin::derive_addresses(&xpub, receiving_count, change_count).map_err(|e| e.to_string())?;
+
+    // Create adapter for fetching transactions
+    let network_name = network.as_deref().unwrap_or("bitcoin");
+    let adapter = BitcoinAdapter::from_network(network_name).map_err(|e| e.to_string())?;
+
+    let max_pages = max_pages_per_address.or(Some(2)); // Default to 2 pages (50 txs) per address
+    let mut results = Vec::new();
+
+    // Combine all addresses
+    let all_addresses: Vec<DerivedAddress> = portfolio
+        .receiving_addresses
+        .into_iter()
+        .chain(portfolio.change_addresses)
+        .collect();
+
+    // Fetch transactions for each address
+    for addr in all_addresses {
+        match adapter.fetch_transactions(&addr.address, max_pages).await {
+            Ok(txs) => {
+                if !txs.is_empty() {
+                    results.push((addr, txs));
+                }
+            }
+            Err(e) => {
+                eprintln!("Failed to fetch transactions for {}: {}", addr.address, e);
+                // Continue with other addresses
+            }
+        }
+    }
+
+    Ok(results)
 }
 
 // =============================================================================
