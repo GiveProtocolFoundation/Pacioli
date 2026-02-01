@@ -4,6 +4,9 @@
 //! This enables the "Turbo Mode" feature where users can provide their own API keys
 //! to unlock higher rate limits.
 
+// Allow dead code for error variants and functions not yet used
+#![allow(dead_code)]
+
 use keyring::Entry;
 use thiserror::Error;
 

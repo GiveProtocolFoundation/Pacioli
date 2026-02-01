@@ -13,6 +13,9 @@
 //! - `ApiKeyManager`: Secure API key storage using OS keychain
 //! - `NormalizedTx`: Universal transaction model across all chains
 
+// Allow dead code for infrastructure components not yet integrated
+#![allow(dead_code)]
+
 pub mod api_keys;
 pub mod commands;
 

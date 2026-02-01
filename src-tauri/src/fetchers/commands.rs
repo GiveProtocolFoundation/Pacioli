@@ -97,7 +97,7 @@ pub async fn delete_api_key(provider: String) -> SaveApiKeyResult {
 #[tauri::command]
 pub async fn has_api_key(provider: String) -> bool {
     ApiProvider::from_str(&provider)
-        .map(|p| ApiKeyManager::has_api_key(p))
+        .map(ApiKeyManager::has_api_key)
         .unwrap_or(false)
 }
 
