@@ -185,30 +185,15 @@ export interface ConversionResponse {
 }
 
 /**
- * Supported currencies list - Polkadot Ecosystem Focus
+ * Supported currencies - Re-exported from constants for backwards compatibility
  */
-export const SUPPORTED_CRYPTO_CURRENCIES = [
-  'DOT',
-  'KSM',
-  'GLMR',
-  'ASTR',
-  'BNC',
-  'iBTC',
-  'USDC',
-  'USDT',
-] as const
+import {
+  FIAT_CURRENCY_CODES,
+  CRYPTO_CURRENCY_CODES,
+} from '../constants/currencies'
 
-export const SUPPORTED_FIAT_CURRENCIES = [
-  'USD',
-  'EUR',
-  'GBP',
-  'JPY',
-  'CAD',
-  'AUD',
-  'CHF',
-  'CNY',
-  'INR',
-] as const
+export const SUPPORTED_FIAT_CURRENCIES = FIAT_CURRENCY_CODES
+export const SUPPORTED_CRYPTO_CURRENCIES = CRYPTO_CURRENCY_CODES
 
 export type SupportedCryptoCurrency =
   (typeof SUPPORTED_CRYPTO_CURRENCIES)[number]

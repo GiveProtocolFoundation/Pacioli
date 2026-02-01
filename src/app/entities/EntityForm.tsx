@@ -7,6 +7,7 @@ import type {
   EntityAddress,
   TaxDocumentationStatus,
 } from '../../services/persistence'
+import { COUNTRIES, FIAT_CURRENCIES_DROPDOWN } from '../../constants'
 
 // =============================================================================
 // TYPES AND CONSTANTS
@@ -82,6 +83,38 @@ const taxDocStatuses: { value: TaxDocumentationStatus; label: string }[] = [
   { value: 'received', label: 'Received' },
   { value: 'verified', label: 'Verified' },
   { value: 'expired', label: 'Expired' },
+]
+
+const entityCategories: { value: string; label: string }[] = [
+  { value: '', label: 'Select category...' },
+  { value: 'contractor', label: 'Contractor' },
+  { value: 'supplier', label: 'Supplier' },
+  { value: 'consultant', label: 'Consultant' },
+  { value: 'employee', label: 'Employee' },
+  { value: 'investor', label: 'Investor' },
+  { value: 'partner', label: 'Partner' },
+  { value: 'service_provider', label: 'Service Provider' },
+  { value: 'manufacturer', label: 'Manufacturer' },
+  { value: 'distributor', label: 'Distributor' },
+  { value: 'retailer', label: 'Retailer' },
+  { value: 'other', label: 'Other' },
+]
+
+const taxIdTypes: { value: string; label: string }[] = [
+  { value: '', label: 'Select type...' },
+  { value: 'EIN', label: 'EIN (US Employer ID)' },
+  { value: 'SSN', label: 'SSN (US Social Security)' },
+  { value: 'ITIN', label: 'ITIN (US Individual Tax ID)' },
+  { value: 'VAT', label: 'VAT (EU Value Added Tax)' },
+  { value: 'UTR', label: 'UTR (UK Unique Taxpayer Ref)' },
+  { value: 'NI', label: 'NI (UK National Insurance)' },
+  { value: 'ABN', label: 'ABN (Australian Business No)' },
+  { value: 'GST', label: 'GST (Goods & Services Tax)' },
+  { value: 'TIN', label: 'TIN (Tax ID Number)' },
+  { value: 'PAN', label: 'PAN (India Permanent Account)' },
+  { value: 'BN', label: 'BN (Canada Business Number)' },
+  { value: 'SIREN', label: 'SIREN (France)' },
+  { value: 'other', label: 'Other' },
 ]
 
 const inputClassName =
@@ -215,16 +248,19 @@ const PaymentSection: React.FC<SectionProps> = ({ formData, onChange }) => (
     </h3>
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <FormField id="default_currency" label="Default Currency">
-        <input
+        <select
           id="default_currency"
-          type="text"
           name="default_currency"
           value={formData.default_currency}
           onChange={onChange}
-          placeholder="e.g., USD, EUR"
-          maxLength={3}
-          className={`${inputClassName} uppercase`}
-        />
+          className={inputClassName}
+        >
+          {FIAT_CURRENCIES_DROPDOWN.map(currency => (
+            <option key={currency.value} value={currency.value}>
+              {currency.label}
+            </option>
+          ))}
+        </select>
       </FormField>
       <FormField id="default_payment_terms" label="Payment Terms (days)">
         <input
@@ -246,27 +282,34 @@ const PaymentSection: React.FC<SectionProps> = ({ formData, onChange }) => (
 const TaxFieldsGrid: React.FC<SectionProps> = ({ formData, onChange }) => (
   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
     <FormField id="country_code" label="Country">
-      <input
+      <select
         id="country_code"
-        type="text"
         name="country_code"
         value={formData.country_code}
         onChange={onChange}
-        placeholder="e.g., US, GB, DE"
-        maxLength={2}
-        className={`${inputClassName} uppercase`}
-      />
+        className={inputClassName}
+      >
+        {COUNTRIES.map(country => (
+          <option key={country.value} value={country.value}>
+            {country.label}
+          </option>
+        ))}
+      </select>
     </FormField>
     <FormField id="tax_identifier_type" label="Tax ID Type">
-      <input
+      <select
         id="tax_identifier_type"
-        type="text"
         name="tax_identifier_type"
         value={formData.tax_identifier_type}
         onChange={onChange}
-        placeholder="e.g., EIN, VAT, UTR"
         className={inputClassName}
-      />
+      >
+        {taxIdTypes.map(type => (
+          <option key={type.value} value={type.value}>
+            {type.label}
+          </option>
+        ))}
+      </select>
     </FormField>
     <FormField id="tax_identifier" label="Tax Identifier">
       <input
@@ -387,15 +430,19 @@ const BasicInfoSection: React.FC<SectionProps> = ({ formData, onChange }) => (
         </select>
       </FormField>
       <FormField id="category" label="Category">
-        <input
+        <select
           id="category"
-          type="text"
           name="category"
           value={formData.category}
           onChange={onChange}
-          placeholder="e.g., contractor, supplier"
           className={inputClassName}
-        />
+        >
+          {entityCategories.map(cat => (
+            <option key={cat.value} value={cat.value}>
+              {cat.label}
+            </option>
+          ))}
+        </select>
       </FormField>
       <FormField id="name" label="Name" required>
         <input

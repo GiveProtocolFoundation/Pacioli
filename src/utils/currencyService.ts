@@ -13,30 +13,7 @@ import {
   AccountSettings,
   ExchangeRateSource,
 } from '../types/currency'
-
-/**
- * Currency symbols map
- */
-const CURRENCY_SYMBOLS: Record<string, string> = {
-  USD: '$',
-  EUR: '€',
-  GBP: '£',
-  JPY: '¥',
-  CNY: '¥',
-  INR: '₹',
-  CAD: 'C$',
-  AUD: 'A$',
-  CHF: 'CHF',
-  DOT: 'DOT',
-  KSM: 'KSM',
-  GLMR: 'GLMR',
-  ASTR: 'ASTR',
-  BNC: 'BNC',
-  iBTC: 'iBTC',
-  ETH: 'Ξ',
-  USDC: '$',
-  USDT: '$',
-}
+import { CURRENCY_SYMBOLS } from '../constants/currencies'
 
 /**
  * Currency Service Class

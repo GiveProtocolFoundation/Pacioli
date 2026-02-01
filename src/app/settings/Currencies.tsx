@@ -9,12 +9,11 @@ import {
   Eye,
 } from 'lucide-react'
 import {
-  SUPPORTED_CRYPTO_CURRENCIES,
-  SUPPORTED_FIAT_CURRENCIES,
   ConversionMethod,
   CurrencyDisplayFormat,
   DecimalSeparatorStandard,
 } from '../../types/currency'
+import { FIAT_CURRENCIES, CRYPTO_CURRENCIES } from '../../constants'
 import { useCurrency } from '../../contexts/CurrencyContext'
 
 interface CurrencySettings {
@@ -98,16 +97,16 @@ const PrimaryCurrencySection: React.FC<PrimaryCurrencySectionProps> = ({
           className="select-input w-full px-3 pr-8 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
         >
           <optgroup label="Fiat Currencies">
-            {SUPPORTED_FIAT_CURRENCIES.map(currency => (
-              <option key={currency} value={currency}>
-                {currency}
+            {FIAT_CURRENCIES.map(currency => (
+              <option key={currency.value} value={currency.value}>
+                {currency.label}
               </option>
             ))}
           </optgroup>
           <optgroup label="Cryptocurrencies">
-            {SUPPORTED_CRYPTO_CURRENCIES.map(currency => (
-              <option key={currency} value={currency}>
-                {currency}
+            {CRYPTO_CURRENCIES.map(currency => (
+              <option key={currency.value} value={currency.value}>
+                {currency.label}
               </option>
             ))}
           </optgroup>
@@ -335,20 +334,20 @@ const Currencies: React.FC = () => {
                   Fiat Currencies
                 </h3>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
-                  {SUPPORTED_FIAT_CURRENCIES.filter(
-                    c => c !== localSettings.primaryCurrency
+                  {FIAT_CURRENCIES.filter(
+                    c => c.value !== localSettings.primaryCurrency
                   ).map(currency => (
                     <button
-                      key={currency}
-                      data-currency={currency}
+                      key={currency.value}
+                      data-currency={currency.value}
                       onClick={handleCurrencyToggle}
                       className={`px-3 py-2 text-sm font-medium rounded-lg border transition-colors ${
-                        localSettings.reportingCurrencies.includes(currency)
+                        localSettings.reportingCurrencies.includes(currency.value)
                           ? 'bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 border-[#8b4e52] dark:border-[#a86e72] text-[#8b4e52] dark:text-[#a86e72]'
                           : 'bg-[#fafaf8] dark:bg-[#1a1815] border-[rgba(201,169,97,0.15)] text-[#1a1815] dark:text-[#b8b3ac] hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620]'
                       }`}
                     >
-                      {currency}
+                      {currency.value}
                     </button>
                   ))}
                 </div>
@@ -359,20 +358,20 @@ const Currencies: React.FC = () => {
                   Cryptocurrencies
                 </h3>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
-                  {SUPPORTED_CRYPTO_CURRENCIES.filter(
-                    c => c !== localSettings.primaryCurrency
+                  {CRYPTO_CURRENCIES.filter(
+                    c => c.value !== localSettings.primaryCurrency
                   ).map(currency => (
                     <button
-                      key={currency}
-                      data-currency={currency}
+                      key={currency.value}
+                      data-currency={currency.value}
                       onClick={handleCurrencyToggle}
                       className={`px-3 py-2 text-sm font-medium rounded-lg border transition-colors ${
-                        localSettings.reportingCurrencies.includes(currency)
+                        localSettings.reportingCurrencies.includes(currency.value)
                           ? 'bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 border-[#8b4e52] dark:border-[#a86e72] text-[#8b4e52] dark:text-[#a86e72]'
                           : 'bg-[#fafaf8] dark:bg-[#1a1815] border-[rgba(201,169,97,0.15)] text-[#1a1815] dark:text-[#b8b3ac] hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620]'
                       }`}
                     >
-                      {currency}
+                      {currency.value}
                     </button>
                   ))}
                 </div>
