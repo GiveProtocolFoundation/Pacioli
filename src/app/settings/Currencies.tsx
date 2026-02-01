@@ -342,7 +342,9 @@ const Currencies: React.FC = () => {
                       data-currency={currency.value}
                       onClick={handleCurrencyToggle}
                       className={`px-3 py-2 text-sm font-medium rounded-lg border transition-colors ${
-                        localSettings.reportingCurrencies.includes(currency.value)
+                        localSettings.reportingCurrencies.includes(
+                          currency.value
+                        )
                           ? 'bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 border-[#8b4e52] dark:border-[#a86e72] text-[#8b4e52] dark:text-[#a86e72]'
                           : 'bg-[#fafaf8] dark:bg-[#1a1815] border-[rgba(201,169,97,0.15)] text-[#1a1815] dark:text-[#b8b3ac] hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620]'
                       }`}
@@ -366,7 +368,9 @@ const Currencies: React.FC = () => {
                       data-currency={currency.value}
                       onClick={handleCurrencyToggle}
                       className={`px-3 py-2 text-sm font-medium rounded-lg border transition-colors ${
-                        localSettings.reportingCurrencies.includes(currency.value)
+                        localSettings.reportingCurrencies.includes(
+                          currency.value
+                        )
                           ? 'bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 border-[#8b4e52] dark:border-[#a86e72] text-[#8b4e52] dark:text-[#a86e72]'
                           : 'bg-[#fafaf8] dark:bg-[#1a1815] border-[rgba(201,169,97,0.15)] text-[#1a1815] dark:text-[#b8b3ac] hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620]'
                       }`}
