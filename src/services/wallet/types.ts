@@ -104,3 +104,51 @@ export interface WalletProviderInterface {
   disconnect(): Promise<void>
   subscribeAccounts(callback: (accounts: WalletAccount[]) => void): () => void
 }
+
+// Extended blockchain types for multi-chain support
+export type BlockchainType =
+  // Substrate chains
+  | 'polkadot'
+  | 'kusama'
+  | 'moonbeam'
+  | 'moonriver'
+  | 'astar'
+  | 'asset-hub'
+  // Ethereum and EVM L2s
+  | 'ethereum'
+  | 'arbitrum'
+  | 'optimism'
+  | 'base'
+  | 'polygon'
+  // Other chains
+  | 'bitcoin'
+  | 'solana'
+
+export type ConnectionMethod = 'manual' | 'walletconnect' | 'extension'
+
+export interface StoredWallet {
+  id: string
+  address: string
+  blockchainType: BlockchainType
+  label?: string
+  connectionMethod: ConnectionMethod
+  isVerified: boolean
+  verificationSignature?: string
+  verificationMessage?: string
+  verificationTimestamp?: number
+  createdAt: number
+  updatedAt: number
+}
+
+export interface WalletVerificationRequest {
+  address: string
+  message: string
+  signature: string
+  blockchainType: BlockchainType
+}
+
+export interface WalletVerificationResult {
+  isValid: boolean
+  error?: string
+  verifiedAt?: number
+}

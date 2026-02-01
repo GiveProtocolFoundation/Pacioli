@@ -9,17 +9,20 @@ import {
   FileText,
   Plug,
   ChevronRight,
+  Key,
 } from 'lucide-react'
 import Currencies from './Currencies'
 import ChartOfAccounts from './ChartOfAccounts'
 import GeneralSettings from './GeneralSettings'
 import UsersPermissions from './UsersPermissions'
+import DataProviders from './DataProviders'
 
 type SettingsSection =
   | 'general'
   | 'currencies'
   | 'chart-of-accounts'
   | 'users-permissions'
+  | 'data-providers'
   | 'integrations'
   | 'notifications'
   | 'audit-logs'
@@ -61,6 +64,13 @@ const navigationItems: NavigationItem[] = [
     icon: Users,
     description: 'User management and access control',
     component: UsersPermissions,
+  },
+  {
+    id: 'data-providers',
+    label: 'Data Providers',
+    icon: Key,
+    description: 'API keys for faster blockchain sync',
+    component: DataProviders,
   },
   {
     id: 'integrations',
@@ -192,6 +202,7 @@ const Settings: React.FC<SettingsProps> = ({ userType = 'organization' }) => {
     if (path === '/settings/general') return 'general'
     if (path === '/settings/currencies') return 'currencies'
     if (path === '/settings/users') return 'users-permissions'
+    if (path === '/settings/data-providers') return 'data-providers'
     if (path === '/chart-of-accounts') return 'chart-of-accounts'
     return 'general'
   }, [location.pathname])
@@ -207,6 +218,8 @@ const Settings: React.FC<SettingsProps> = ({ userType = 'organization' }) => {
           navigate('/settings/currencies')
         } else if (section === 'users-permissions') {
           navigate('/settings/users')
+        } else if (section === 'data-providers') {
+          navigate('/settings/data-providers')
         } else if (section === 'chart-of-accounts') {
           navigate('/chart-of-accounts')
         }

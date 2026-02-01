@@ -1,19 +1,22 @@
 //! Etherscan-compatible API Client
 //!
 //! Supports Etherscan and compatible block explorer APIs (Polygonscan, Arbiscan, etc.)
-//! Includes rate limiting, automatic retry, and pagination handling.
+//! Now uses the ResilientFetcher for Governor-based rate limiting and automatic retries.
+//!
+//! # "Batteries Included, Turbo Optional"
+//!
+//! - **Default Mode**: Works out of the box with 1 req/sec (no API key required)
+//! - **Turbo Mode**: Add your API key in Settings to unlock 5 req/sec
 
 use super::config::{get_chain_config, EvmChainConfig};
 use super::types::{
     Erc1155Transfer, Erc20Transfer, Erc721Transfer, EvmTransaction, InternalTransaction,
 };
 use crate::chains::{ChainError, ChainResult};
-use reqwest::Client;
+use crate::fetchers::{ApiKeyManager, ApiProvider, FetcherConfig, ResilientFetcher};
 use serde::de::DeserializeOwned;
 use serde::Deserialize;
-use std::sync::Arc;
 use std::time::Duration;
-use tokio::sync::Semaphore;
 use tokio::time::sleep;
 
 // =============================================================================
@@ -26,14 +29,11 @@ const MAX_RESULTS_PER_PAGE: u32 = 10000;
 /// Default page size for pagination
 const DEFAULT_PAGE_SIZE: u32 = 1000;
 
-/// Maximum retry attempts for rate-limited requests
+/// Maximum retry attempts for rate-limited requests (handled by ResilientFetcher)
 const MAX_RETRIES: u32 = 5;
 
 /// Base delay for exponential backoff (milliseconds)
 const BASE_RETRY_DELAY_MS: u64 = 200;
-
-/// Rate limit: 5 requests per second
-const RATE_LIMIT_PERMITS: usize = 5;
 
 // =============================================================================
 // API RESPONSE TYPES
@@ -56,35 +56,28 @@ struct ApiErrorResponse {
 }
 
 // =============================================================================
-// RATE LIMITER
+// HELPER FUNCTIONS
 // =============================================================================
 
-/// Simple rate limiter using a semaphore with time-based permit release
-#[derive(Clone)]
-pub struct RateLimiter {
-    semaphore: Arc<Semaphore>,
-    delay_ms: u64,
+/// Get the ApiProvider for a chain ID (for keychain lookup)
+fn get_api_provider_for_chain(chain_id: u64) -> ApiProvider {
+    match chain_id {
+        1 => ApiProvider::Etherscan,      // Ethereum
+        137 => ApiProvider::Polygonscan,  // Polygon
+        42161 => ApiProvider::Arbiscan,   // Arbitrum
+        8453 => ApiProvider::Basescan,    // Base
+        10 => ApiProvider::Optimism,      // Optimism
+        _ => ApiProvider::Etherscan,      // Default to Etherscan for unknown chains
+    }
 }
 
-impl RateLimiter {
-    /// Create a new rate limiter
-    pub fn new(permits_per_second: usize) -> Self {
-        Self {
-            semaphore: Arc::new(Semaphore::new(permits_per_second)),
-            delay_ms: 1000 / permits_per_second as u64,
-        }
-    }
-
-    /// Acquire a permit, waiting if necessary
-    pub async fn acquire(&self) {
-        let permit = self.semaphore.clone().acquire_owned().await.unwrap();
-
-        // Spawn a task to release the permit after the rate limit window
-        let delay = self.delay_ms;
-        tokio::spawn(async move {
-            sleep(Duration::from_millis(delay)).await;
-            drop(permit);
-        });
+/// Get the rate limit for a chain based on API key availability
+fn get_rate_limit_for_chain(chain_id: u64, has_api_key: bool) -> u32 {
+    let provider = get_api_provider_for_chain(chain_id);
+    if has_api_key {
+        provider.turbo_rate_limit()
+    } else {
+        provider.default_rate_limit()
     }
 }
 
@@ -92,20 +85,32 @@ impl RateLimiter {
 // ETHERSCAN CLIENT
 // =============================================================================
 
-/// Etherscan-compatible API client with rate limiting and retry logic
+/// Etherscan-compatible API client with Governor rate limiting and automatic retries.
+///
+/// # "Batteries Included, Turbo Optional"
+///
+/// This client automatically checks the OS keychain for API keys:
+/// - If found: Uses "Turbo Mode" (5 req/sec)
+/// - If not found: Uses "Default Mode" (1 req/sec)
+///
+/// Users can add their API keys in Settings to unlock faster sync speeds.
 pub struct EtherscanClient {
-    client: Client,
+    /// Resilient fetcher with Governor rate limiter
+    fetcher: ResilientFetcher,
+    /// Base URL for the API
     base_url: String,
+    /// Optional API key (from keychain or explicitly provided)
     api_key: Option<String>,
+    /// Chain ID
     chain_id: u64,
+    /// Chain name
     chain_name: String,
-    rate_limiter: RateLimiter,
 }
 
 impl EtherscanClient {
-    /// Create a new Etherscan client from chain ID
+    /// Create a new Etherscan client from chain ID.
     ///
-    /// Looks up the chain configuration and constructs the client.
+    /// Automatically checks the OS keychain for an API key to enable Turbo Mode.
     pub fn from_chain_id(chain_id: u64, api_key: Option<String>) -> ChainResult<Self> {
         let config = get_chain_config(chain_id)
             .ok_or_else(|| ChainError::UnsupportedChain(format!("chain_id: {}", chain_id)))?;
@@ -113,27 +118,54 @@ impl EtherscanClient {
         Self::new(&config, api_key)
     }
 
-    /// Create a new Etherscan client from chain config
+    /// Create a new Etherscan client from chain config.
+    ///
+    /// # API Key Priority
+    /// 1. Explicitly provided `api_key` parameter
+    /// 2. Key from OS keychain (via ApiKeyManager)
+    /// 3. No key (Default Mode)
     pub fn new(config: &EvmChainConfig, api_key: Option<String>) -> ChainResult<Self> {
-        let client = Client::builder()
-            .timeout(Duration::from_secs(30))
-            .build()
-            .map_err(|e| ChainError::Internal(e.to_string()))?;
+        // Determine the API key (explicit > keychain > none)
+        let provider = get_api_provider_for_chain(config.chain_id);
+        let effective_api_key = api_key.or_else(|| {
+            ApiKeyManager::get_api_key(provider)
+                .ok()
+                .flatten()
+        });
+
+        // Calculate rate limit based on API key presence
+        let rate_limit = get_rate_limit_for_chain(config.chain_id, effective_api_key.is_some());
+
+        // Create fetcher config
+        let fetcher_config = FetcherConfig {
+            base_url: config.explorer_api_url.clone(),
+            api_key: effective_api_key.clone(),
+            requests_per_second: rate_limit,
+            timeout_secs: 30,
+            max_retries: MAX_RETRIES,
+        };
+
+        // Create the resilient fetcher
+        let fetcher = ResilientFetcher::new(fetcher_config)
+            .map_err(|e| ChainError::Internal(format!("Failed to create fetcher: {}", e)))?;
 
         Ok(Self {
-            client,
+            fetcher,
             base_url: config.explorer_api_url.clone(),
-            api_key,
+            api_key: effective_api_key,
             chain_id: config.chain_id,
             chain_name: config.name.clone(),
-            rate_limiter: RateLimiter::new(RATE_LIMIT_PERMITS),
         })
     }
 
-    /// Create with custom rate limiter
-    pub fn with_rate_limiter(mut self, rate_limiter: RateLimiter) -> Self {
-        self.rate_limiter = rate_limiter;
-        self
+    /// Check if running in Turbo Mode (has API key)
+    pub fn is_turbo_mode(&self) -> bool {
+        self.fetcher.is_turbo_mode()
+    }
+
+    /// Get the current rate limit (requests per second)
+    pub fn rate_limit(&self) -> u32 {
+        self.fetcher.rate_limit()
     }
 
     /// Get chain ID
@@ -173,18 +205,28 @@ impl EtherscanClient {
     // REQUEST HANDLING
     // =========================================================================
 
-    /// Make API request with rate limiting and retry logic
+    /// Make API request with Governor rate limiting and automatic retries.
+    ///
+    /// The ResilientFetcher handles:
+    /// - Proactive rate limiting (waits before request to prevent 429s)
+    /// - Exponential backoff retries for transient failures
     async fn request<T: DeserializeOwned>(&self, url: &str) -> ChainResult<T> {
+        // Wait for rate limiter (Governor GCRA algorithm)
+        self.fetcher.wait_for_permit().await;
+
+        // Execute request
+        self.execute_request::<T>(url).await
+    }
+
+    /// Execute a single request with retry handling for rate limits
+    async fn execute_request<T: DeserializeOwned>(&self, url: &str) -> ChainResult<T> {
         let mut last_error = ChainError::Internal("No attempts made".to_string());
 
         for attempt in 0..MAX_RETRIES {
-            // Apply rate limiting
-            self.rate_limiter.acquire().await;
-
-            match self.execute_request::<T>(url).await {
+            match self.do_request::<T>(url).await {
                 Ok(result) => return Ok(result),
                 Err(ChainError::RateLimited) => {
-                    // Exponential backoff for rate limits
+                    // Exponential backoff for rate limits (in case we still get 429)
                     let delay = BASE_RETRY_DELAY_MS * 2u64.pow(attempt);
                     sleep(Duration::from_millis(delay)).await;
                     last_error = ChainError::RateLimited;
@@ -199,34 +241,18 @@ impl EtherscanClient {
         Err(last_error)
     }
 
-    /// Execute a single request without retry
-    async fn execute_request<T: DeserializeOwned>(&self, url: &str) -> ChainResult<T> {
-        let response = self
-            .client
-            .get(url)
-            .send()
-            .await
-            .map_err(|e| ChainError::ApiError(format!("Network error: {}", e)))?;
-
-        // Check HTTP status
-        if response.status() == 429 {
-            return Err(ChainError::RateLimited);
-        }
-
-        if !response.status().is_success() {
-            let status = response.status();
-            let body = response
-                .text()
-                .await
-                .unwrap_or_else(|_| "Unknown error".to_string());
-            return Err(ChainError::ApiError(format!("HTTP {}: {}", status, body)));
-        }
-
-        // Get response text for parsing
-        let text = response
-            .text()
-            .await
-            .map_err(|e| ChainError::ParseError(format!("Failed to read response: {}", e)))?;
+    /// Execute a single HTTP request
+    async fn do_request<T: DeserializeOwned>(&self, url: &str) -> ChainResult<T> {
+        let text = self.fetcher.get(url).await.map_err(|e| {
+            match e {
+                crate::fetchers::FetchError::RateLimited => ChainError::RateLimited,
+                crate::fetchers::FetchError::Timeout => ChainError::ConnectionFailed("Request timeout".to_string()),
+                crate::fetchers::FetchError::HttpError(msg) => ChainError::ApiError(msg),
+                crate::fetchers::FetchError::ParseError(msg) => ChainError::ParseError(msg),
+                crate::fetchers::FetchError::ApiError(msg) => ChainError::ApiError(msg),
+                crate::fetchers::FetchError::ConfigError(msg) => ChainError::ConfigError(msg),
+            }
+        })?;
 
         // First try to parse as success response
         if let Ok(api_response) = serde_json::from_str::<ApiResponse<T>>(&text) {
@@ -901,9 +927,37 @@ mod tests {
     }
 
     #[test]
-    fn test_rate_limiter_creation() {
-        let limiter = RateLimiter::new(5);
-        assert_eq!(limiter.delay_ms, 200); // 1000ms / 5 permits = 200ms
+    fn test_turbo_mode_with_api_key() {
+        let client = EtherscanClient::from_chain_id(1, Some("TEST_KEY".to_string())).unwrap();
+        assert!(client.is_turbo_mode());
+        assert_eq!(client.rate_limit(), 5); // Turbo Mode: 5 req/sec
+    }
+
+    #[test]
+    fn test_default_mode_without_api_key() {
+        // Without explicit key and no keychain key, should use default rate
+        let config = EvmChainConfig::new(
+            1,
+            "ethereum",
+            "ETH",
+            "https://eth-mainnet.g.alchemy.com/v2",
+            "https://api.etherscan.io/api",
+            false,
+            12,
+        );
+        let client = EtherscanClient::new(&config, None).unwrap();
+        // Rate limit depends on whether there's a keychain key
+        // In tests, there typically isn't, so it should be 1
+        assert!(client.rate_limit() >= 1);
+    }
+
+    #[test]
+    fn test_api_provider_mapping() {
+        assert!(matches!(get_api_provider_for_chain(1), ApiProvider::Etherscan));
+        assert!(matches!(get_api_provider_for_chain(137), ApiProvider::Polygonscan));
+        assert!(matches!(get_api_provider_for_chain(42161), ApiProvider::Arbiscan));
+        assert!(matches!(get_api_provider_for_chain(8453), ApiProvider::Basescan));
+        assert!(matches!(get_api_provider_for_chain(10), ApiProvider::Optimism));
     }
 
     #[test]

@@ -1,11 +1,12 @@
 //! Mempool.space API Client
 //!
 //! Client for interacting with the Mempool.space REST API for Bitcoin data.
+//! Now uses the ResilientFetcher for Governor-based rate limiting.
+//!
 //! API documentation: https://mempool.space/docs/api/rest
 
 use crate::chains::{ChainError, ChainResult};
-use reqwest::Client;
-use std::time::Duration;
+use crate::fetchers::{FetcherConfig, ResilientFetcher};
 
 use super::types::{
     BitcoinBalance, BitcoinTransaction, BitcoinUtxo, MempoolAddressInfo, MempoolTransaction,
@@ -17,13 +18,14 @@ const DEFAULT_BASE_URL: &str = "https://mempool.space/api";
 /// Transactions per page from Mempool API
 const TXS_PER_PAGE: usize = 25;
 
-/// Rate limiting: requests per second
-const RATE_LIMIT_DELAY_MS: u64 = 100;
+/// Rate limit for Mempool.space (requests per second)
+/// Mempool.space is generally permissive, but we'll be conservative
+const RATE_LIMIT_RPS: u32 = 10;
 
-/// Mempool.space API client
+/// Mempool.space API client with resilient fetching
 pub struct MempoolClient {
-    /// HTTP client
-    client: Client,
+    /// Resilient fetcher with Governor rate limiting
+    fetcher: ResilientFetcher,
     /// Base URL for API requests
     base_url: String,
 }
@@ -36,44 +38,59 @@ impl MempoolClient {
 
     /// Create a new Mempool client with custom base URL
     pub fn with_base_url(base_url: &str) -> ChainResult<Self> {
-        let client = Client::builder()
-            .timeout(Duration::from_secs(30))
-            .build()
-            .map_err(|e| ChainError::Internal(format!("Failed to create HTTP client: {}", e)))?;
+        let base_url = base_url.trim_end_matches('/').to_string();
+
+        // Create fetcher config with rate limiting
+        let config = FetcherConfig {
+            base_url: base_url.clone(),
+            api_key: None, // Mempool.space doesn't require API keys
+            requests_per_second: RATE_LIMIT_RPS,
+            timeout_secs: 30,
+            max_retries: 3,
+        };
+
+        let fetcher = ResilientFetcher::new(config)
+            .map_err(|e| ChainError::Internal(format!("Failed to create fetcher: {}", e)))?;
 
         Ok(Self {
-            client,
-            base_url: base_url.trim_end_matches('/').to_string(),
+            fetcher,
+            base_url,
         })
+    }
+
+    /// Get the current rate limit
+    pub fn rate_limit(&self) -> u32 {
+        self.fetcher.rate_limit()
+    }
+
+    /// Helper to make a GET request with rate limiting
+    async fn get(&self, url: &str) -> ChainResult<String> {
+        self.fetcher.get(url).await.map_err(|e| {
+            match e {
+                crate::fetchers::FetchError::RateLimited => ChainError::RateLimited,
+                crate::fetchers::FetchError::Timeout => ChainError::ConnectionFailed("Request timeout".to_string()),
+                crate::fetchers::FetchError::HttpError(msg) => ChainError::ApiError(msg),
+                crate::fetchers::FetchError::ParseError(msg) => ChainError::ParseError(msg),
+                crate::fetchers::FetchError::ApiError(msg) => ChainError::ApiError(msg),
+                crate::fetchers::FetchError::ConfigError(msg) => ChainError::ConfigError(msg),
+            }
+        })
+    }
+
+    /// Helper to make a GET request and parse JSON
+    async fn get_json<T: serde::de::DeserializeOwned>(&self, url: &str) -> ChainResult<T> {
+        let text = self.get(url).await?;
+        serde_json::from_str(&text).map_err(|e| ChainError::ParseError(e.to_string()))
     }
 
     /// Get current block height
     pub async fn get_block_height(&self) -> ChainResult<u64> {
         let url = format!("{}/blocks/tip/height", self.base_url);
+        let text = self.get(&url).await?;
 
-        let response = self
-            .client
-            .get(&url)
-            .send()
-            .await
-            .map_err(|e| ChainError::ConnectionFailed(e.to_string()))?;
-
-        if !response.status().is_success() {
-            return Err(ChainError::ApiError(format!(
-                "API returned status {}",
-                response.status()
-            )));
-        }
-
-        let height: u64 = response
-            .text()
-            .await
-            .map_err(|e| ChainError::ParseError(e.to_string()))?
-            .trim()
+        text.trim()
             .parse()
-            .map_err(|e| ChainError::ParseError(format!("Invalid block height: {}", e)))?;
-
-        Ok(height)
+            .map_err(|e| ChainError::ParseError(format!("Invalid block height: {}", e)))
     }
 
     /// Get address information (balance stats)
@@ -81,32 +98,7 @@ impl MempoolClient {
         validate_bitcoin_address(address)?;
 
         let url = format!("{}/address/{}", self.base_url, address);
-
-        let response = self
-            .client
-            .get(&url)
-            .send()
-            .await
-            .map_err(|e| ChainError::ConnectionFailed(e.to_string()))?;
-
-        if response.status() == reqwest::StatusCode::NOT_FOUND {
-            return Err(ChainError::InvalidAddress(format!(
-                "Address not found: {}",
-                address
-            )));
-        }
-
-        if !response.status().is_success() {
-            return Err(ChainError::ApiError(format!(
-                "API returned status {}",
-                response.status()
-            )));
-        }
-
-        response
-            .json()
-            .await
-            .map_err(|e| ChainError::ParseError(e.to_string()))
+        self.get_json(&url).await
     }
 
     /// Get UTXOs for an address
@@ -114,25 +106,7 @@ impl MempoolClient {
         validate_bitcoin_address(address)?;
 
         let url = format!("{}/address/{}/utxo", self.base_url, address);
-
-        let response = self
-            .client
-            .get(&url)
-            .send()
-            .await
-            .map_err(|e| ChainError::ConnectionFailed(e.to_string()))?;
-
-        if !response.status().is_success() {
-            return Err(ChainError::ApiError(format!(
-                "API returned status {}",
-                response.status()
-            )));
-        }
-
-        response
-            .json()
-            .await
-            .map_err(|e| ChainError::ParseError(e.to_string()))
+        self.get_json(&url).await
     }
 
     /// Get transactions for an address (single page)
@@ -146,24 +120,7 @@ impl MempoolClient {
             None => format!("{}/address/{}/txs", self.base_url, address),
         };
 
-        let response = self
-            .client
-            .get(&url)
-            .send()
-            .await
-            .map_err(|e| ChainError::ConnectionFailed(e.to_string()))?;
-
-        if !response.status().is_success() {
-            return Err(ChainError::ApiError(format!(
-                "API returned status {}",
-                response.status()
-            )));
-        }
-
-        response
-            .json()
-            .await
-            .map_err(|e| ChainError::ParseError(e.to_string()))
+        self.get_json(&url).await
     }
 
     /// Get all transactions for an address with pagination
@@ -184,11 +141,7 @@ impl MempoolClient {
         let mut page = 0;
 
         loop {
-            // Rate limiting
-            if page > 0 {
-                tokio::time::sleep(Duration::from_millis(RATE_LIMIT_DELAY_MS)).await;
-            }
-
+            // Rate limiting is handled by the fetcher automatically
             let txs = self
                 .get_address_txs_page(address, after_txid.as_deref())
                 .await?;
@@ -225,29 +178,7 @@ impl MempoolClient {
     /// Get a specific transaction by txid
     pub async fn get_transaction(&self, txid: &str) -> ChainResult<MempoolTransaction> {
         let url = format!("{}/tx/{}", self.base_url, txid);
-
-        let response = self
-            .client
-            .get(&url)
-            .send()
-            .await
-            .map_err(|e| ChainError::ConnectionFailed(e.to_string()))?;
-
-        if response.status() == reqwest::StatusCode::NOT_FOUND {
-            return Err(ChainError::TransactionNotFound(txid.to_string()));
-        }
-
-        if !response.status().is_success() {
-            return Err(ChainError::ApiError(format!(
-                "API returned status {}",
-                response.status()
-            )));
-        }
-
-        response
-            .json()
-            .await
-            .map_err(|e| ChainError::ParseError(e.to_string()))
+        self.get_json(&url).await
     }
 
     /// Fetch address balance

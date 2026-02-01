@@ -6,8 +6,13 @@ import {
   AlertCircle,
   CheckCircle,
   Loader,
+  Plus,
+  Eye,
+  ChevronDown,
 } from 'lucide-react'
 import { WalletConnector } from '../../components/wallet/WalletConnector'
+import WalletConnectionModal from '../../components/wallet/WalletConnectionModal'
+import AddPortfolioModal from '../../components/wallet/AddPortfolioModal'
 import { TransactionList } from '../../components/wallet/TransactionList'
 import {
   polkadotService,
@@ -15,6 +20,7 @@ import {
 } from '../../services/blockchain/polkadotService'
 import { indexedDBService } from '../../services/database/indexedDBService'
 import { MigrationService } from '../../services/database/migrationService'
+import { StorageService, type TrackedWallet } from '../../services/database/storageService'
 import {
   NetworkType,
   type ConnectedWallet,
@@ -83,6 +89,71 @@ const WalletManager: React.FC = () => {
     lastSyncedBlock: number
   } | null>(null)
   const [syncProgress, setSyncProgress] = useState<SyncProgress | null>(null)
+  const [isConnectionModalOpen, setIsConnectionModalOpen] = useState(false)
+  const [isPortfolioModalOpen, setIsPortfolioModalOpen] = useState(false)
+  const [showAddMenu, setShowAddMenu] = useState(false)
+  const [trackedWallets, setTrackedWallets] = useState<TrackedWallet[]>([])
+
+  // Load tracked wallets on mount
+  useEffect(() => {
+    setTrackedWallets(StorageService.loadTrackedWallets())
+  }, [])
+
+  // Handle adding a tracked wallet
+  const handleAddTrackedWallet = useCallback((wallet: {
+    address: string
+    blockchain: string
+    label?: string
+    isVerified: boolean
+    signature?: string
+  }) => {
+    try {
+      const newWallet = StorageService.addTrackedWallet({
+        address: wallet.address,
+        blockchain: wallet.blockchain,
+        label: wallet.label,
+        isVerified: wallet.isVerified,
+        signature: wallet.signature,
+      })
+      setTrackedWallets(prev => [...prev, newWallet])
+      console.log('Wallet tracked successfully:', newWallet)
+    } catch (error) {
+      console.error('Failed to track wallet:', error)
+      alert(error instanceof Error ? error.message : 'Failed to track wallet')
+    }
+  }, [])
+
+  // Handle removing a tracked wallet
+  const handleRemoveTrackedWallet = useCallback((id: string) => {
+    if (StorageService.removeTrackedWallet(id)) {
+      setTrackedWallets(prev => prev.filter(w => w.id !== id))
+    }
+  }, [])
+
+  // Handle adding a portfolio from the AddPortfolioModal
+  const handleAddPortfolio = useCallback((portfolio: {
+    address: string
+    chains: string[]
+    label?: string
+    isXpub?: boolean
+  }) => {
+    try {
+      // Add wallet for each selected chain
+      for (const chain of portfolio.chains) {
+        const newWallet = StorageService.addTrackedWallet({
+          address: portfolio.address,
+          blockchain: chain,
+          label: portfolio.label || (portfolio.isXpub ? 'xPub Portfolio' : undefined),
+          isVerified: false, // Read-only mode, no verification
+        })
+        setTrackedWallets(prev => [...prev, newWallet])
+      }
+      console.log('Portfolio added successfully:', portfolio)
+    } catch (error) {
+      console.error('Failed to add portfolio:', error)
+      alert(error instanceof Error ? error.message : 'Failed to add portfolio')
+    }
+  }, [])
 
   // Wallet aliases
   const { formatWalletDisplay } = useWalletAliases()
@@ -436,15 +507,79 @@ const WalletManager: React.FC = () => {
     <div className="min-h-screen ledger-background p-6 md:p-10">
       {/* Header */}
       <div className="max-w-7xl mx-auto mb-8">
-        <div className="flex items-center mb-3">
-          <Wallet className="w-8 h-8 text-[#8b4e52] dark:text-[#a86e72] mr-3" />
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            Wallet Manager
-          </h1>
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center">
+            <Wallet className="w-8 h-8 text-[#8b4e52] dark:text-[#a86e72] mr-3" />
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+              Wallet Manager
+            </h1>
+          </div>
+          {/* Add Button with Dropdown Menu */}
+          <div className="relative">
+            <button
+              onClick={() => setShowAddMenu(!showAddMenu)}
+              className="flex items-center gap-2 px-4 py-2 bg-[#8b4e52] text-white rounded-lg font-medium hover:bg-[#7a4248] transition-colors"
+            >
+              <Plus className="w-5 h-5" />
+              Add
+              <ChevronDown className={`w-4 h-4 transition-transform ${showAddMenu ? 'rotate-180' : ''}`} />
+            </button>
+
+            {showAddMenu && (
+              <>
+                {/* Backdrop to close menu */}
+                <div
+                  className="fixed inset-0 z-10"
+                  onClick={() => setShowAddMenu(false)}
+                />
+                {/* Dropdown Menu */}
+                <div className="absolute right-0 mt-2 w-64 bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg shadow-lg border border-[rgba(201,169,97,0.15)] z-20 overflow-hidden">
+                  <button
+                    onClick={() => {
+                      setShowAddMenu(false)
+                      setIsPortfolioModalOpen(true)
+                    }}
+                    className="w-full px-4 py-3 text-left hover:bg-[#f3f1ed] dark:hover:bg-[#1a1815] transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Eye className="w-5 h-5 text-[#8b4e52]" />
+                      <div>
+                        <p className="font-medium text-[#1a1815] dark:text-[#f5f3f0]">
+                          Add Portfolio
+                        </p>
+                        <p className="text-xs text-[#696557] dark:text-[#b8b3ac]">
+                          Track any public address (read-only)
+                        </p>
+                      </div>
+                    </div>
+                  </button>
+                  <div className="border-t border-[rgba(201,169,97,0.15)]" />
+                  <button
+                    onClick={() => {
+                      setShowAddMenu(false)
+                      setIsConnectionModalOpen(true)
+                    }}
+                    className="w-full px-4 py-3 text-left hover:bg-[#f3f1ed] dark:hover:bg-[#1a1815] transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Wallet className="w-5 h-5 text-[#8b4e52]" />
+                      <div>
+                        <p className="font-medium text-[#1a1815] dark:text-[#f5f3f0]">
+                          Connect Wallet
+                        </p>
+                        <p className="text-xs text-[#696557] dark:text-[#b8b3ac]">
+                          Browser extension or WalletConnect
+                        </p>
+                      </div>
+                    </div>
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
         <p className="text-gray-600 dark:text-[#94a3b8]">
-          Connect your Polkadot wallets and import transaction history for
-          accounting
+          Connect your wallets and import transaction history for accounting
         </p>
 
         {/* Migration Status Indicator */}
@@ -461,8 +596,55 @@ const WalletManager: React.FC = () => {
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Left Column: Wallet Connection */}
-          <div>
+          <div className="space-y-6">
             <WalletConnector onWalletsChange={handleWalletsChange} />
+
+            {/* Tracked Wallets Section */}
+            {trackedWallets.length > 0 && (
+              <div className="ledger-card border border-gray-200 dark:border-gray-700 p-6">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                  Tracked Wallets
+                </h3>
+                <div className="space-y-3">
+                  {trackedWallets.map(wallet => (
+                    <div
+                      key={wallet.id}
+                      className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                            {wallet.label || 'Unnamed Wallet'}
+                          </span>
+                          {wallet.isVerified ? (
+                            <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
+                          ) : (
+                            <span title="Not verified">
+                              <AlertCircle className="w-4 h-4 text-yellow-500 flex-shrink-0" />
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                          {wallet.address}
+                        </p>
+                        <p className="text-xs text-[#8b4e52] dark:text-[#a86e72]">
+                          {wallet.blockchain}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => handleRemoveTrackedWallet(wallet.id)}
+                        className="ml-2 p-1 text-gray-400 hover:text-red-500 transition-colors"
+                        title="Remove wallet"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Right Column: Transaction Sync & Display */}
@@ -699,6 +881,20 @@ const WalletManager: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Wallet Connection Modal */}
+      <WalletConnectionModal
+        isOpen={isConnectionModalOpen}
+        onClose={() => setIsConnectionModalOpen(false)}
+        onWalletAdded={handleAddTrackedWallet}
+      />
+
+      {/* Add Portfolio Modal (Read-Only Observer Mode) */}
+      <AddPortfolioModal
+        isOpen={isPortfolioModalOpen}
+        onClose={() => setIsPortfolioModalOpen(false)}
+        onPortfolioAdded={handleAddPortfolio}
+      />
     </div>
   )
 }

@@ -8,9 +8,24 @@ import type { ConnectedWallet, Transaction } from '../wallet/types'
 
 const STORAGE_KEYS = {
   WALLETS: 'pacioli_connected_wallets',
+  TRACKED_WALLETS: 'pacioli_tracked_wallets',
   TRANSACTIONS: 'pacioli_transactions',
   SYNC_STATUS: 'pacioli_sync_status',
 } as const
+
+/**
+ * A manually tracked wallet address (not connected via extension)
+ */
+export interface TrackedWallet {
+  id: string
+  address: string
+  blockchain: string
+  label?: string
+  isVerified: boolean
+  signature?: string
+  createdAt: number
+  updatedAt: number
+}
 
 export interface SyncStatus {
   network: string
@@ -165,7 +180,92 @@ export const StorageService = {
    */
   clearAll(): void {
     StorageService.clearWallets()
+    StorageService.clearTrackedWallets()
     StorageService.clearTransactions()
     localStorage.removeItem(STORAGE_KEYS.SYNC_STATUS)
+  },
+
+  // =========================================================================
+  // TRACKED WALLETS (manually added addresses)
+  // =========================================================================
+
+  /**
+   * Add a tracked wallet
+   */
+  addTrackedWallet(wallet: Omit<TrackedWallet, 'id' | 'createdAt' | 'updatedAt'>): TrackedWallet {
+    const wallets = StorageService.loadTrackedWallets()
+
+    // Check for duplicates
+    const existing = wallets.find(
+      w => w.address.toLowerCase() === wallet.address.toLowerCase() &&
+           w.blockchain === wallet.blockchain
+    )
+    if (existing) {
+      throw new Error('This wallet address is already tracked')
+    }
+
+    const newWallet: TrackedWallet = {
+      ...wallet,
+      id: crypto.randomUUID(),
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    }
+
+    wallets.push(newWallet)
+    localStorage.setItem(STORAGE_KEYS.TRACKED_WALLETS, JSON.stringify(wallets))
+
+    return newWallet
+  },
+
+  /**
+   * Load all tracked wallets
+   */
+  loadTrackedWallets(): TrackedWallet[] {
+    try {
+      const data = localStorage.getItem(STORAGE_KEYS.TRACKED_WALLETS)
+      return data ? JSON.parse(data) : []
+    } catch (error) {
+      console.error('Error loading tracked wallets:', error)
+      return []
+    }
+  },
+
+  /**
+   * Update a tracked wallet
+   */
+  updateTrackedWallet(id: string, updates: Partial<TrackedWallet>): TrackedWallet | null {
+    const wallets = StorageService.loadTrackedWallets()
+    const index = wallets.findIndex(w => w.id === id)
+
+    if (index === -1) return null
+
+    wallets[index] = {
+      ...wallets[index],
+      ...updates,
+      updatedAt: Date.now(),
+    }
+
+    localStorage.setItem(STORAGE_KEYS.TRACKED_WALLETS, JSON.stringify(wallets))
+    return wallets[index]
+  },
+
+  /**
+   * Remove a tracked wallet
+   */
+  removeTrackedWallet(id: string): boolean {
+    const wallets = StorageService.loadTrackedWallets()
+    const filtered = wallets.filter(w => w.id !== id)
+
+    if (filtered.length === wallets.length) return false
+
+    localStorage.setItem(STORAGE_KEYS.TRACKED_WALLETS, JSON.stringify(filtered))
+    return true
+  },
+
+  /**
+   * Clear all tracked wallets
+   */
+  clearTrackedWallets(): void {
+    localStorage.removeItem(STORAGE_KEYS.TRACKED_WALLETS)
   },
 }

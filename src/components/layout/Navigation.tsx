@@ -8,7 +8,6 @@ import {
   Wallet,
   BarChart3,
   Bell,
-  Search,
   Menu,
   X,
   ChevronDown,
@@ -520,13 +519,12 @@ const Navigation: React.FC<NavigationProps> = ({
             </button>
 
             {/* Search bar */}
-            <div className="flex-1 max-w-2xl mx-4">
+            <div className="flex-1 max-w-2xl ml-1 mr-4">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#a39d94] dark:text-[#8b8580]" />
                 <input
                   type="text"
                   placeholder="Search transactions, wallets, or reports..."
-                  className="ledger-search w-full pl-10 pr-4 py-2 text-[#1a1815] dark:text-[#f5f3f0] placeholder-[#a39d94] dark:placeholder-[#8b8580]"
+                  className="ledger-search w-full pl-4 pr-4 py-2 text-[#1a1815] dark:text-[#f5f3f0] placeholder-[#a39d94] dark:placeholder-[#8b8580]"
                 />
               </div>
             </div>

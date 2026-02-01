@@ -12,6 +12,8 @@ import {
   Search,
   Plus,
 } from 'lucide-react'
+import { DatePicker } from 'antd'
+import dayjs, { Dayjs } from 'dayjs'
 import { useTransactions } from '../../contexts/TransactionContext'
 import { useCurrency } from '../../contexts/CurrencyContext'
 import { useTokens } from '../../contexts/TokenContext'
@@ -46,29 +48,22 @@ const TransactionForm: React.FC = () => {
   const isEditMode = Boolean(id)
   const existingTransaction = id ? getTransaction(id) : undefined
 
-  // Helper to convert any date format to datetime-local format (YYYY-MM-DDTHH:MM)
-  const formatDateForInput = (dateStr: string | undefined): string => {
-    if (!dateStr) return new Date().toISOString().slice(0, 16)
+  // Helper to parse date string to dayjs object
+  const parseDateToDayjs = (dateStr: string | undefined): Dayjs => {
+    if (!dateStr) return dayjs()
 
-    // Try to parse the date string
-    const date = new Date(dateStr)
-    if (isNaN(date.getTime())) {
-      // If invalid date, return current date/time
-      return new Date().toISOString().slice(0, 16)
-    }
+    const parsed = dayjs(dateStr)
+    return parsed.isValid() ? parsed : dayjs()
+  }
 
-    // Format as YYYY-MM-DDTHH:MM (local time, not UTC)
-    const year = date.getFullYear()
-    const month = String(date.getMonth() + 1).padStart(2, '0')
-    const day = String(date.getDate()).padStart(2, '0')
-    const hours = String(date.getHours()).padStart(2, '0')
-    const minutes = String(date.getMinutes()).padStart(2, '0')
-
-    return `${year}-${month}-${day}T${hours}:${minutes}`
+  // Helper to format dayjs to ISO string for storage
+  const formatDayjsForStorage = (date: Dayjs | null): string => {
+    if (!date) return dayjs().toISOString()
+    return date.toISOString()
   }
 
   const [formData, setFormData] = useState<TransactionFormData>({
-    date: formatDateForInput(existingTransaction?.date),
+    date: existingTransaction?.date || dayjs().toISOString(),
     description: existingTransaction?.description || '',
     type: existingTransaction?.type || 'revenue',
     category: existingTransaction?.category || '',
@@ -248,8 +243,8 @@ const TransactionForm: React.FC = () => {
   )
 
   const handleDateChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      handleInputChange('date', e.target.value)
+    (date: Dayjs | null) => {
+      handleInputChange('date', formatDayjsForStorage(date))
     },
     [handleInputChange]
   )
@@ -497,16 +492,16 @@ const TransactionForm: React.FC = () => {
                     Date & Time
                   </div>
                 </label>
-                <input
+                <DatePicker
                   id="txn-date"
-                  type="datetime-local"
-                  value={formData.date}
+                  showTime={{ format: 'HH:mm' }}
+                  format="YYYY-MM-DD HH:mm"
+                  value={parseDateToDayjs(formData.date)}
                   onChange={handleDateChange}
-                  className={`w-full px-4 py-2 border rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] ${
-                    errors.date
-                      ? 'border-[#9d6b6b]'
-                      : 'border-[rgba(201,169,97,0.15)]'
-                  } focus:outline-none focus:ring-2 focus:ring-[#c9a961]`}
+                  className="w-full"
+                  status={errors.date ? 'error' : undefined}
+                  allowClear={false}
+                  placeholder="Select date and time"
                 />
                 {errors.date && (
                   <p className="mt-1 text-sm text-[#9d6b6b]">{errors.date}</p>
@@ -631,7 +626,7 @@ const TransactionForm: React.FC = () => {
                       onFocus={handleEntityInputFocus}
                       onBlur={handleEntityInputBlur}
                       placeholder="Search entities by name..."
-                      className="w-full pl-10 pr-4 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
+                      className="w-full pl-16 pr-4 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
                     />
                   </div>
 

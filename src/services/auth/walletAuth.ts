@@ -206,6 +206,61 @@ export function getWalletExtensionsByType(
   return getWalletExtensions().filter(w => w.type === type)
 }
 
+/**
+ * Detect installed wallet extensions
+ * Returns list of detected extensions with id and name
+ */
+export async function detectWalletExtensions(): Promise<
+  Array<{ id: string; name: string }>
+> {
+  const detected: Array<{ id: string; name: string }> = []
+
+  // Check Substrate wallets
+  const walletWindow = getWalletWindow()
+  const injectedWeb3 = walletWindow?.injectedWeb3
+
+  if (injectedWeb3) {
+    if (injectedWeb3['polkadot-js']) {
+      detected.push({ id: 'polkadot-js', name: 'Polkadot.js' })
+    }
+    if (injectedWeb3['subwallet-js']) {
+      detected.push({ id: 'subwallet', name: 'SubWallet' })
+    }
+    if (injectedWeb3['talisman']) {
+      detected.push({ id: 'talisman', name: 'Talisman' })
+    }
+    if (injectedWeb3['nova-wallet']) {
+      detected.push({ id: 'nova', name: 'Nova Wallet' })
+    }
+  }
+
+  // Check MetaMask
+  if (walletWindow?.ethereum) {
+    detected.push({ id: 'metamask', name: 'MetaMask' })
+  }
+
+  return detected
+}
+
+/**
+ * Get accounts from a specific wallet extension
+ */
+export async function getAccountsFromExtension(
+  provider: WalletProvider
+): Promise<WalletAccount[]> {
+  switch (provider) {
+    case 'polkadot-js':
+    case 'subwallet':
+    case 'talisman':
+    case 'nova':
+      return getSubstrateAccounts(provider)
+    case 'metamask':
+      return getMetaMaskAccounts()
+    default:
+      return []
+  }
+}
+
 // =============================================================================
 // SUBSTRATE WALLET INTERACTION
 // =============================================================================
