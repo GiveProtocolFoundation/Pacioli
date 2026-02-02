@@ -494,14 +494,25 @@ const WalletManager: React.FC = () => {
     }
   }, [selectedAddress, dbInitialized])
 
-  // Get all available addresses from connected wallets
-  const allAddresses = connectedWallets.flatMap(wallet =>
-    wallet.accounts.map(acc => ({
-      address: acc.address,
-      name: acc.name || 'Unnamed',
-      walletType: wallet.type,
-    }))
-  )
+  // Get all available addresses from connected wallets AND tracked wallets
+  const allAddresses = [
+    // Addresses from browser extension wallets
+    ...connectedWallets.flatMap(wallet =>
+      wallet.accounts.map(acc => ({
+        address: acc.address,
+        name: acc.name || 'Unnamed',
+        walletType: wallet.type,
+        source: 'extension' as const,
+      }))
+    ),
+    // Addresses from tracked wallets (added via modal)
+    ...trackedWallets.map(wallet => ({
+      address: wallet.address,
+      name: wallet.label || 'Tracked Wallet',
+      walletType: wallet.blockchain,
+      source: 'tracked' as const,
+    })),
+  ]
 
   return (
     <div className="min-h-screen ledger-background p-6 md:p-10">
@@ -650,7 +661,7 @@ const WalletManager: React.FC = () => {
           {/* Right Column: Transaction Sync & Display */}
           <div className="space-y-6">
             {/* Sync Controls */}
-            {connectedWallets.length > 0 && (
+            {allAddresses.length > 0 && (
               <div className="ledger-card ledger-card-financial border border-gray-200 dark:border-gray-700 p-6">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                   Sync Transactions
@@ -695,9 +706,8 @@ const WalletManager: React.FC = () => {
                   >
                     <option value="">Select an address...</option>
                     {allAddresses.map(addr => (
-                      <option key={addr.address} value={addr.address}>
-                        {formatWalletDisplay(addr.address, addr.name)} -{' '}
-                        {addr.walletType}
+                      <option key={`${addr.source}-${addr.address}`} value={addr.address}>
+                        {formatWalletDisplay(addr.address, addr.name)} - {addr.walletType}
                       </option>
                     ))}
                   </select>
@@ -831,8 +841,8 @@ const WalletManager: React.FC = () => {
               </div>
             )}
 
-            {/* Instructions (if no wallets connected) */}
-            {connectedWallets.length === 0 && (
+            {/* Instructions (if no wallets available) */}
+            {allAddresses.length === 0 && (
               <div className="ledger-card border border-gray-200 dark:border-gray-700 p-6">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
                   Getting Started
@@ -842,14 +852,13 @@ const WalletManager: React.FC = () => {
                     <span className="font-semibold text-[#8b4e52] dark:text-[#a86e72] mr-2">
                       1.
                     </span>
-                    Install a Polkadot wallet extension (Polkadot.js, Talisman,
-                    or SubWallet)
+                    Click the &quot;Add&quot; button above to add a wallet
                   </li>
                   <li className="flex items-start">
                     <span className="font-semibold text-[#8b4e52] dark:text-[#a86e72] mr-2">
                       2.
                     </span>
-                    Click the &quot;Connect&quot; button for your wallet
+                    Choose &quot;Add Portfolio&quot; to track any public address, or &quot;Connect Wallet&quot; for WalletConnect
                   </li>
                   <li className="flex items-start">
                     <span className="font-semibold text-[#8b4e52] dark:text-[#a86e72] mr-2">

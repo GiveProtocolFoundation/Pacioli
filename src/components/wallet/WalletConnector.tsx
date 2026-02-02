@@ -7,6 +7,7 @@ import {
   Pencil,
   X,
   Save,
+  Info,
 } from 'lucide-react'
 import { walletService } from '../../services/wallet/walletService'
 import { StorageService } from '../../services/database/storageService'
@@ -17,6 +18,7 @@ import {
   type WalletAccount,
 } from '../../services/wallet/types'
 import { useWalletAliases } from '../../contexts/WalletAliasContext'
+import { isTauriAvailable } from '../../utils/tauri'
 
 interface WalletConnectorProps {
   onWalletsChange?: (wallets: ConnectedWallet[]) => void
@@ -276,12 +278,20 @@ export const WalletConnector: React.FC<WalletConnectorProps> = ({
   )
   const [error, setError] = useState<string | null>(null)
 
+  // Check if running in Tauri (browser extensions not available)
+  const [isInTauri] = useState(() => isTauriAvailable())
+
   // Alias editing state
   const [editingAlias, setEditingAlias] = useState<string | null>(null) // address being edited
   const [aliasInput, setAliasInput] = useState('')
   const { aliases, setAlias } = useWalletAliases()
 
   const detectWallets = useCallback(async () => {
+    // Skip wallet detection in Tauri since browser extensions aren't available
+    if (isTauriAvailable()) {
+      setWalletStatus({} as Record<WalletType, WalletConnectionStatus>)
+      return
+    }
     try {
       const status = await walletService.detectWallets()
       setWalletStatus(status)
@@ -443,6 +453,70 @@ export const WalletConnector: React.FC<WalletConnectorProps> = ({
             Detecting wallets...
           </span>
         </div>
+      </div>
+    )
+  }
+
+  // In Tauri desktop app, browser extensions are not available
+  // Show informational message instead
+  if (isInTauri) {
+    return (
+      <div className="ledger-card ledger-card-financial border border-[rgba(201,169,97,0.15)] p-6">
+        <div className="flex items-center mb-4">
+          <Wallet className="w-6 h-6 text-[#8b4e52] dark:text-[#a86e72] mr-3" />
+          <h2 className="text-xl font-semibold text-[#1a1815] dark:text-[#f5f3f0]">
+            Connect Wallet
+          </h2>
+        </div>
+        <div className="flex items-start p-4 bg-[#c9a961]/10 rounded-lg border border-[#c9a961]/20 mb-4">
+          <Info className="w-5 h-5 text-[#c9a961] mr-3 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm text-[#1a1815] dark:text-[#f5f3f0] font-medium mb-1">
+              Desktop App Mode
+            </p>
+            <p className="text-sm text-[#696557] dark:text-[#b8b3ac]">
+              Browser wallet extensions are not available in the desktop app. Use the &quot;Add&quot; button above to:
+            </p>
+            <ul className="mt-2 space-y-1 text-sm text-[#696557] dark:text-[#b8b3ac]">
+              <li className="flex items-center">
+                <span className="w-1.5 h-1.5 bg-[#8b4e52] rounded-full mr-2"></span>
+                <strong>Add Portfolio</strong> - Track any public address (read-only)
+              </li>
+              <li className="flex items-center">
+                <span className="w-1.5 h-1.5 bg-[#8b4e52] rounded-full mr-2"></span>
+                <strong>Connect Wallet</strong> - Use WalletConnect with your mobile wallet
+              </li>
+            </ul>
+          </div>
+        </div>
+        {connectedWallets.length > 0 && (
+          <div className="ledger-card ledger-card-donation border border-[rgba(201,169,97,0.15)] p-4">
+            <h3 className="font-semibold text-[#1a1815] dark:text-[#f5f3f0] mb-3">
+              Connected Accounts Summary
+            </h3>
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-[#696557] dark:text-[#b8b3ac]">
+                  Total Wallets:
+                </span>
+                <span className="font-semibold text-[#1a1815] dark:text-[#f5f3f0]">
+                  {connectedWallets.length}
+                </span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-[#696557] dark:text-[#b8b3ac]">
+                  Total Accounts:
+                </span>
+                <span className="font-semibold text-[#1a1815] dark:text-[#f5f3f0]">
+                  {connectedWallets.reduce(
+                    (sum, w) => sum + w.accounts.length,
+                    0
+                  )}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     )
   }
