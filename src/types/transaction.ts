@@ -42,6 +42,9 @@ export interface TransactionFormData {
   entityId?: string
   entityName?: string
 
+  // Destination wallet for transfers between own wallets
+  destinationWallet?: string
+
   // Additional information
   memo?: string
   attachments?: File[]

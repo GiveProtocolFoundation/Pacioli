@@ -11,6 +11,7 @@ import {
   Users,
   Search,
   Plus,
+  ArrowRightLeft,
 } from 'lucide-react'
 import { DatePicker } from 'antd'
 import dayjs, { Dayjs } from 'dayjs'
@@ -33,8 +34,11 @@ import {
   getTransactionTypesBySubcategory,
   getTransactionTypeByCode,
 } from '../../types/transaction-categories'
-import { StorageService } from '../../services/database/storageService'
+import { StorageService, TrackedWallet } from '../../services/database/storageService'
 import { ConnectedWallet } from '../../services/wallet/types'
+
+/** Transaction type code for transfers between own wallets */
+const TRANSFER_OWN_WALLETS_CODE = 'DSP_TRANSFER_OWN'
 
 const TransactionForm: React.FC = () => {
   const navigate = useNavigate()
@@ -82,6 +86,7 @@ const TransactionForm: React.FC = () => {
     crypto: existingTransaction?.crypto,
     entityId: existingTransaction?.entityId || '',
     entityName: existingTransaction?.entityName || '',
+    destinationWallet: existingTransaction?.destinationWallet || '',
   })
 
   const [errors, setErrors] = useState<
@@ -94,6 +99,7 @@ const TransactionForm: React.FC = () => {
   const [connectedWallets, setConnectedWallets] = useState<ConnectedWallet[]>(
     []
   )
+  const [trackedWallets, setTrackedWallets] = useState<TrackedWallet[]>([])
 
   useEffect(() => {
     if (!isEditMode) {
@@ -104,21 +110,61 @@ const TransactionForm: React.FC = () => {
     }
   }, [currencySettings.primaryCurrency, isEditMode])
 
-  // Load connected wallets on mount
+  // Load connected and tracked wallets on mount
   useEffect(() => {
     const savedWallets = StorageService.loadWallets()
     setConnectedWallets(savedWallets)
+    const savedTrackedWallets = StorageService.loadTrackedWallets()
+    setTrackedWallets(savedTrackedWallets)
   }, [])
 
-  // Build wallet options from connected wallets
-  const walletOptions = connectedWallets.flatMap(wallet =>
-    wallet.accounts.map(acc => ({
-      address: acc.address,
-      name: acc.name || 'Unnamed',
-      displayName: formatWalletDisplay(acc.address, acc.name),
-      walletType: wallet.type,
-    }))
-  )
+  // Build wallet options from BOTH connected wallets AND tracked wallets
+  const walletOptions = useMemo(() => {
+    const options: Array<{
+      address: string
+      name: string
+      displayName: string
+      walletType: string
+      source: 'extension' | 'tracked'
+    }> = []
+
+    // Add wallets from browser extensions
+    connectedWallets.forEach(wallet => {
+      wallet.accounts.forEach(acc => {
+        options.push({
+          address: acc.address,
+          name: acc.name || 'Unnamed',
+          displayName: formatWalletDisplay(acc.address, acc.name),
+          walletType: wallet.type,
+          source: 'extension',
+        })
+      })
+    })
+
+    // Add tracked wallets (manually added or via WalletConnect)
+    trackedWallets.forEach(wallet => {
+      // Avoid duplicates if same address exists in connected wallets
+      if (!options.some(opt => opt.address === wallet.address)) {
+        options.push({
+          address: wallet.address,
+          name: wallet.label || 'Tracked Wallet',
+          displayName: formatWalletDisplay(wallet.address, wallet.label),
+          walletType: wallet.blockchain,
+          source: 'tracked',
+        })
+      }
+    })
+
+    return options
+  }, [connectedWallets, trackedWallets, formatWalletDisplay])
+
+  // Check if "Transfer Between Own Wallets" is selected
+  const isTransferBetweenOwnWallets = formData.transactionTypeCode === TRANSFER_OWN_WALLETS_CODE
+
+  // Destination wallet options (exclude source wallet)
+  const destinationWalletOptions = useMemo(() => {
+    return walletOptions.filter(opt => opt.address !== formData.wallet)
+  }, [walletOptions, formData.wallet])
 
   // Entity selector state
   const [entitySearchQuery, setEntitySearchQuery] = useState('')
@@ -229,7 +275,18 @@ const TransactionForm: React.FC = () => {
 
   const handleTransactionTypeCodeChange = useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
-      handleInputChange('transactionTypeCode', e.target.value)
+      const newCode = e.target.value
+      handleInputChange('transactionTypeCode', newCode)
+
+      // Clear destination wallet when switching away from transfer between own wallets
+      if (newCode !== TRANSFER_OWN_WALLETS_CODE) {
+        handleInputChange('destinationWallet', '')
+      }
+      // Clear entity when switching to transfer between own wallets
+      if (newCode === TRANSFER_OWN_WALLETS_CODE) {
+        handleInputChange('entityId', '')
+        handleInputChange('entityName', '')
+      }
     },
     [handleInputChange]
   )
@@ -289,6 +346,13 @@ const TransactionForm: React.FC = () => {
   const handleMemoChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       handleInputChange('memo', e.target.value)
+    },
+    [handleInputChange]
+  )
+
+  const handleDestinationWalletChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      handleInputChange('destinationWallet', e.target.value)
     },
     [handleInputChange]
   )
@@ -578,97 +642,138 @@ const TransactionForm: React.FC = () => {
               )}
             </div>
 
-            {/* Entity/Counterparty Selector */}
-            <div>
-              <label
-                htmlFor="txn-entity"
-                className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
-              >
-                <div className="flex items-center">
-                  <Users className="w-4 h-4 mr-2" />
-                  Counterparty (Optional)
-                </div>
-              </label>
-              <p className="text-xs text-gray-500 dark:text-[#a39d94] mb-2">
-                Link this transaction to a vendor, customer, or other entity
-              </p>
-
-              {selectedEntity ? (
-                <div className="flex items-center gap-2 p-3 bg-[#7a9b6f]/10 dark:bg-[#7a9b6f]/20 border border-[#7a9b6f]/30 dark:border-[#7a9b6f]/40 rounded-lg">
-                  <div className="flex-1">
-                    <div className="font-medium text-[#1a1815] dark:text-[#f5f3f0]">
-                      {selectedEntity.display_name || selectedEntity.name}
-                    </div>
-                    <div className="text-xs text-gray-500 dark:text-[#a39d94]">
-                      {selectedEntity.entity_type.charAt(0).toUpperCase() +
-                        selectedEntity.entity_type.slice(1)}
-                      {selectedEntity.category &&
-                        ` · ${selectedEntity.category}`}
-                    </div>
+            {/* Destination Wallet Selector (for transfers between own wallets) */}
+            {isTransferBetweenOwnWallets ? (
+              <div className="p-4 bg-[#c9a961]/10 dark:bg-[#c9a961]/20 rounded-lg border border-[#c9a961]/30">
+                <label
+                  htmlFor="txn-destination-wallet"
+                  className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
+                >
+                  <div className="flex items-center">
+                    <ArrowRightLeft className="w-4 h-4 mr-2 text-[#8b4e52]" />
+                    Destination Wallet
                   </div>
-                  <button
-                    type="button"
-                    onClick={handleClearEntity}
-                    className="p-1 text-[#a39d94] hover:text-[#696557] dark:hover:text-[#b8b3ac]"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-              ) : (
-                <div className="relative">
+                </label>
+                <p className="text-xs text-[#696557] dark:text-[#a39d94] mb-2">
+                  Select the receiving wallet for this internal transfer
+                </p>
+                <select
+                  id="txn-destination-wallet"
+                  value={formData.destinationWallet}
+                  onChange={handleDestinationWalletChange}
+                  className="w-full px-4 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
+                >
+                  <option value="">Select destination wallet...</option>
+                  {destinationWalletOptions.map(wallet => (
+                    <option key={wallet.address} value={wallet.address}>
+                      {wallet.displayName} - {wallet.walletType}
+                    </option>
+                  ))}
+                </select>
+                {destinationWalletOptions.length === 0 && formData.wallet && (
+                  <p className="mt-2 text-xs text-[#9d6b6b]">
+                    No other wallets available. Add more wallets in the Wallet Manager.
+                  </p>
+                )}
+                {!formData.wallet && (
+                  <p className="mt-2 text-xs text-[#9d6b6b]">
+                    Please select a source wallet first.
+                  </p>
+                )}
+              </div>
+            ) : (
+              /* Entity/Counterparty Selector (for external transactions) */
+              <div>
+                <label
+                  htmlFor="txn-entity"
+                  className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
+                >
+                  <div className="flex items-center">
+                    <Users className="w-4 h-4 mr-2" />
+                    Counterparty (Optional)
+                  </div>
+                </label>
+                <p className="text-xs text-gray-500 dark:text-[#a39d94] mb-2">
+                  Link this transaction to a vendor, customer, or other entity
+                </p>
+
+                {selectedEntity ? (
+                  <div className="flex items-center gap-2 p-3 bg-[#7a9b6f]/10 dark:bg-[#7a9b6f]/20 border border-[#7a9b6f]/30 dark:border-[#7a9b6f]/40 rounded-lg">
+                    <div className="flex-1">
+                      <div className="font-medium text-[#1a1815] dark:text-[#f5f3f0]">
+                        {selectedEntity.display_name || selectedEntity.name}
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-[#a39d94]">
+                        {selectedEntity.entity_type.charAt(0).toUpperCase() +
+                          selectedEntity.entity_type.slice(1)}
+                        {selectedEntity.category &&
+                          ` · ${selectedEntity.category}`}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleClearEntity}
+                      className="p-1 text-[#a39d94] hover:text-[#696557] dark:hover:text-[#b8b3ac]"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
                   <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#a39d94]" />
-                    <input
-                      id="txn-entity"
-                      type="text"
-                      value={entitySearchQuery}
-                      onChange={handleEntitySearchChange}
-                      onFocus={handleEntityInputFocus}
-                      onBlur={handleEntityInputBlur}
-                      placeholder="Search entities by name..."
-                      className="w-full pl-16 pr-4 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
-                    />
-                  </div>
-
-                  {showEntityDropdown && (
-                    <div className="absolute z-10 w-full mt-1 bg-[#fafaf8] dark:bg-[#1a1815] border border-[rgba(201,169,97,0.15)] rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                      {filteredEntities.length > 0 ? (
-                        filteredEntities.map(entity => (
-                          <button
-                            key={entity.id}
-                            type="button"
-                            onClick={entityClickHandlers[entity.id]}
-                            className="w-full px-4 py-2 text-left hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620] flex items-center justify-between"
-                          >
-                            <div>
-                              <div className="font-medium text-[#1a1815] dark:text-[#f5f3f0]">
-                                {entity.display_name || entity.name}
-                              </div>
-                              <div className="text-xs text-gray-500 dark:text-[#a39d94]">
-                                {entity.entity_type.charAt(0).toUpperCase() +
-                                  entity.entity_type.slice(1)}
-                                {entity.category && ` · ${entity.category}`}
-                              </div>
-                            </div>
-                          </button>
-                        ))
-                      ) : (
-                        <div className="px-4 py-3 text-center text-gray-500 dark:text-[#a39d94]">
-                          <p className="text-sm">No entities found</p>
-                          <a
-                            href="/entities"
-                            className="text-xs text-[#8b4e52] dark:text-[#a86e72] hover:underline inline-flex items-center gap-1 mt-1"
-                          >
-                            <Plus className="w-3 h-3" />
-                            Create new entity
-                          </a>
-                        </div>
-                      )}
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#a39d94]" />
+                      <input
+                        id="txn-entity"
+                        type="text"
+                        value={entitySearchQuery}
+                        onChange={handleEntitySearchChange}
+                        onFocus={handleEntityInputFocus}
+                        onBlur={handleEntityInputBlur}
+                        placeholder="Search entities by name..."
+                        className="w-full pl-16 pr-4 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
+                      />
                     </div>
-                  )}
-                </div>
-              )}
-            </div>
+
+                    {showEntityDropdown && (
+                      <div className="absolute z-10 w-full mt-1 bg-[#fafaf8] dark:bg-[#1a1815] border border-[rgba(201,169,97,0.15)] rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                        {filteredEntities.length > 0 ? (
+                          filteredEntities.map(entity => (
+                            <button
+                              key={entity.id}
+                              type="button"
+                              onClick={entityClickHandlers[entity.id]}
+                              className="w-full px-4 py-2 text-left hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620] flex items-center justify-between"
+                            >
+                              <div>
+                                <div className="font-medium text-[#1a1815] dark:text-[#f5f3f0]">
+                                  {entity.display_name || entity.name}
+                                </div>
+                                <div className="text-xs text-gray-500 dark:text-[#a39d94]">
+                                  {entity.entity_type.charAt(0).toUpperCase() +
+                                    entity.entity_type.slice(1)}
+                                  {entity.category && ` · ${entity.category}`}
+                                </div>
+                              </div>
+                            </button>
+                          ))
+                        ) : (
+                          <div className="px-4 py-3 text-center text-gray-500 dark:text-[#a39d94]">
+                            <p className="text-sm">No entities found</p>
+                            <a
+                              href="/entities"
+                              className="text-xs text-[#8b4e52] dark:text-[#a86e72] hover:underline inline-flex items-center gap-1 mt-1"
+                            >
+                              <Plus className="w-3 h-3" />
+                              Create new entity
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Comprehensive Transaction Type System */}
             <div className="space-y-4 p-4 bg-[#c9a961]/10 dark:bg-[#c9a961]/20 rounded-lg border border-[#c9a961]/30 dark:border-[#c9a961]/40">
