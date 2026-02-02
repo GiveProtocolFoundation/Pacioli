@@ -34,7 +34,10 @@ import {
   getTransactionTypesBySubcategory,
   getTransactionTypeByCode,
 } from '../../types/transaction-categories'
-import { StorageService, TrackedWallet } from '../../services/database/storageService'
+import {
+  StorageService,
+  TrackedWallet,
+} from '../../services/database/storageService'
 import { ConnectedWallet } from '../../services/wallet/types'
 
 /** Transaction type code for transfers between own wallets */
@@ -159,7 +162,8 @@ const TransactionForm: React.FC = () => {
   }, [connectedWallets, trackedWallets, formatWalletDisplay])
 
   // Check if "Transfer Between Own Wallets" is selected
-  const isTransferBetweenOwnWallets = formData.transactionTypeCode === TRANSFER_OWN_WALLETS_CODE
+  const isTransferBetweenOwnWallets =
+    formData.transactionTypeCode === TRANSFER_OWN_WALLETS_CODE
 
   // Destination wallet options (exclude source wallet)
   const destinationWalletOptions = useMemo(() => {
@@ -672,7 +676,8 @@ const TransactionForm: React.FC = () => {
                 </select>
                 {destinationWalletOptions.length === 0 && formData.wallet && (
                   <p className="mt-2 text-xs text-[#9d6b6b]">
-                    No other wallets available. Add more wallets in the Wallet Manager.
+                    No other wallets available. Add more wallets in the Wallet
+                    Manager.
                   </p>
                 )}
                 {!formData.wallet && (
