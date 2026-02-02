@@ -930,9 +930,7 @@ class PolkadotService {
           const wholePart = valueBigInt / divisor
           const fractionalPart = valueBigInt % divisor
           // Combine for final amount
-          amount =
-            Number(wholePart) +
-            Number(fractionalPart) / Number(divisor)
+          amount = Number(wholePart) + Number(fractionalPart) / Number(divisor)
         } catch {
           // Fallback: try parsing as regular number
           amount = parseFloat(valueStr) || 0
@@ -956,12 +954,17 @@ class PolkadotService {
         }
       }
 
-      const enrichedCount = transactions.filter(tx => tx.usdValue !== undefined).length
+      const enrichedCount = transactions.filter(
+        tx => tx.usdValue !== undefined
+      ).length
       console.log(
         `[PriceService] Enriched ${enrichedCount}/${transactions.length} transactions with USD values`
       )
     } catch (error) {
-      console.error('[PriceService] Failed to enrich transactions with USD values:', error)
+      console.error(
+        '[PriceService] Failed to enrich transactions with USD values:',
+        error
+      )
       // Don't throw - USD values are optional enhancement
     }
   }
