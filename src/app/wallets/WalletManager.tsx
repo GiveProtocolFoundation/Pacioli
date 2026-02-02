@@ -30,6 +30,57 @@ import {
 import { encodeAddress, decodeAddress } from '@polkadot/util-crypto'
 import { useWalletAliases } from '../../contexts/WalletAliasContext'
 import { useProfile } from '../../contexts/ProfileContext'
+import { memo } from 'react'
+
+/** Props for the TrackedWalletRow component */
+interface TrackedWalletRowProps {
+  wallet: TrackedWallet
+  onRemove: (id: string) => void
+}
+
+/** Memoized row component for tracked wallets to avoid arrow functions in JSX */
+const TrackedWalletRow = memo(function TrackedWalletRow({
+  wallet,
+  onRemove,
+}: TrackedWalletRowProps) {
+  const handleRemove = useCallback(() => {
+    onRemove(wallet.id)
+  }, [onRemove, wallet.id])
+
+  return (
+    <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-gray-900 dark:text-white truncate">
+            {wallet.label || 'Unnamed Wallet'}
+          </span>
+          {wallet.isVerified ? (
+            <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
+          ) : (
+            <span title="Not verified">
+              <AlertCircle className="w-4 h-4 text-yellow-500 flex-shrink-0" />
+            </span>
+          )}
+        </div>
+        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+          {wallet.address}
+        </p>
+        <p className="text-xs text-[#8b4e52] dark:text-[#a86e72]">
+          {wallet.blockchain}
+        </p>
+      </div>
+      <button
+        onClick={handleRemove}
+        className="ml-2 p-1 text-gray-400 hover:text-red-500 transition-colors"
+        title="Remove wallet"
+      >
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+  )
+})
 
 /**
  * Convert address to the correct SS58 format for the given network
@@ -128,6 +179,29 @@ const WalletManager: React.FC = () => {
     if (StorageService.removeTrackedWallet(id)) {
       setTrackedWallets(prev => prev.filter(w => w.id !== id))
     }
+  }, [])
+
+  // Memoized modal close handlers to avoid arrow functions in JSX
+  const handleCloseConnectionModal = useCallback(() => {
+    setIsConnectionModalOpen(false)
+  }, [])
+
+  const handleClosePortfolioModal = useCallback(() => {
+    setIsPortfolioModalOpen(false)
+  }, [])
+
+  const handleOpenPortfolioModal = useCallback(() => {
+    setShowAddMenu(false)
+    setIsPortfolioModalOpen(true)
+  }, [])
+
+  const handleOpenConnectionModal = useCallback(() => {
+    setShowAddMenu(false)
+    setIsConnectionModalOpen(true)
+  }, [])
+
+  const handleCloseAddMenu = useCallback(() => {
+    setShowAddMenu(false)
   }, [])
 
   // Handle adding a portfolio from the AddPortfolioModal
@@ -541,15 +615,12 @@ const WalletManager: React.FC = () => {
                 {/* Backdrop to close menu */}
                 <div
                   className="fixed inset-0 z-10"
-                  onClick={() => setShowAddMenu(false)}
+                  onClick={handleCloseAddMenu}
                 />
                 {/* Dropdown Menu */}
                 <div className="absolute right-0 mt-2 w-64 bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg shadow-lg border border-[rgba(201,169,97,0.15)] z-20 overflow-hidden">
                   <button
-                    onClick={() => {
-                      setShowAddMenu(false)
-                      setIsPortfolioModalOpen(true)
-                    }}
+                    onClick={handleOpenPortfolioModal}
                     className="w-full px-4 py-3 text-left hover:bg-[#f3f1ed] dark:hover:bg-[#1a1815] transition-colors"
                   >
                     <div className="flex items-center gap-3">
@@ -566,10 +637,7 @@ const WalletManager: React.FC = () => {
                   </button>
                   <div className="border-t border-[rgba(201,169,97,0.15)]" />
                   <button
-                    onClick={() => {
-                      setShowAddMenu(false)
-                      setIsConnectionModalOpen(true)
-                    }}
+                    onClick={handleOpenConnectionModal}
                     className="w-full px-4 py-3 text-left hover:bg-[#f3f1ed] dark:hover:bg-[#1a1815] transition-colors"
                   >
                     <div className="flex items-center gap-3">
@@ -618,40 +686,11 @@ const WalletManager: React.FC = () => {
                 </h3>
                 <div className="space-y-3">
                   {trackedWallets.map(wallet => (
-                    <div
+                    <TrackedWalletRow
                       key={wallet.id}
-                      className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
-                    >
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                            {wallet.label || 'Unnamed Wallet'}
-                          </span>
-                          {wallet.isVerified ? (
-                            <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
-                          ) : (
-                            <span title="Not verified">
-                              <AlertCircle className="w-4 h-4 text-yellow-500 flex-shrink-0" />
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                          {wallet.address}
-                        </p>
-                        <p className="text-xs text-[#8b4e52] dark:text-[#a86e72]">
-                          {wallet.blockchain}
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => handleRemoveTrackedWallet(wallet.id)}
-                        className="ml-2 p-1 text-gray-400 hover:text-red-500 transition-colors"
-                        title="Remove wallet"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
-                    </div>
+                      wallet={wallet}
+                      onRemove={handleRemoveTrackedWallet}
+                    />
                   ))}
                 </div>
               </div>
@@ -894,14 +933,14 @@ const WalletManager: React.FC = () => {
       {/* Wallet Connection Modal */}
       <WalletConnectionModal
         isOpen={isConnectionModalOpen}
-        onClose={() => setIsConnectionModalOpen(false)}
+        onClose={handleCloseConnectionModal}
         onWalletAdded={handleAddTrackedWallet}
       />
 
       {/* Add Portfolio Modal (Read-Only Observer Mode) */}
       <AddPortfolioModal
         isOpen={isPortfolioModalOpen}
-        onClose={() => setIsPortfolioModalOpen(false)}
+        onClose={handleClosePortfolioModal}
         onPortfolioAdded={handleAddPortfolio}
       />
     </div>
