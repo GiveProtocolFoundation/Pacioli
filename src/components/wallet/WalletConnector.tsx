@@ -249,7 +249,8 @@ const DesktopModeInfoPanel: React.FC = () => (
         Desktop App Mode
       </p>
       <p className="text-sm text-[#696557] dark:text-[#b8b3ac]">
-        Browser wallet extensions are not available in the desktop app. Use the &quot;Add&quot; button above to:
+        Browser wallet extensions are not available in the desktop app. Use the
+        &quot;Add&quot; button above to:
       </p>
       <ul className="mt-2 space-y-1 text-sm text-[#696557] dark:text-[#b8b3ac]">
         <li className="flex items-center">
@@ -258,7 +259,8 @@ const DesktopModeInfoPanel: React.FC = () => (
         </li>
         <li className="flex items-center">
           <span className="w-1.5 h-1.5 bg-[#8b4e52] rounded-full mr-2" />
-          <strong>Connect Wallet</strong> - Use WalletConnect with your mobile wallet
+          <strong>Connect Wallet</strong> - Use WalletConnect with your mobile
+          wallet
         </li>
       </ul>
     </div>
