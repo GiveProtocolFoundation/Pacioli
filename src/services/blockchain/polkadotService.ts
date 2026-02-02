@@ -21,6 +21,17 @@ import type {
 import { ChainType } from '../wallet/types'
 import { subscanService } from './subscanService'
 import { moonscanService } from './moonscanService'
+import { batchCalculateUsdValues, getCoinGeckoId } from './priceService'
+
+/** Map of network type to native token symbol */
+const NETWORK_TOKEN_SYMBOLS: Record<NetworkType, string> = {
+  polkadot: 'DOT',
+  kusama: 'KSM',
+  moonbeam: 'GLMR',
+  moonriver: 'MOVR',
+  astar: 'ASTR',
+  acala: 'ACA',
+}
 
 export interface BlockchainConnection {
   api: ApiPromise
@@ -511,6 +522,9 @@ class PolkadotService {
 
         const final = deduplicated.slice(0, limit)
 
+        // Still enrich with USD values
+        await this.enrichTransactionsWithUsdValues(final, network, onProgress)
+
         onProgress?.({
           stage: 'complete',
           currentBlock: 0,
@@ -601,6 +615,9 @@ class PolkadotService {
 
       // Limit results
       const final = deduplicated.slice(0, limit)
+
+      // PHASE 4: Enrich with USD values
+      await this.enrichTransactionsWithUsdValues(final, network, onProgress)
 
       onProgress?.({
         stage: 'complete',
@@ -779,6 +796,7 @@ class PolkadotService {
             fee, // OPTIMIZATION: Real fee extracted from events
             status: isSuccess ? 'success' : 'failed',
             network,
+            tokenSymbol: NETWORK_TOKEN_SYMBOLS[network],
             type: transactionType,
             method,
             section,
@@ -851,6 +869,101 @@ class PolkadotService {
     )) as unknown as () => void
 
     return unsubscribe
+  }
+
+  /**
+   * Enrich transactions with USD values using historical price data
+   * Makes batch API calls to minimize requests
+   */
+  private async enrichTransactionsWithUsdValues(
+    transactions: SubstrateTransaction[],
+    network: NetworkType,
+    onProgress?: (progress: SyncProgress) => void
+  ): Promise<void> {
+    if (transactions.length === 0) return
+
+    // Get token symbol for the network
+    const tokenSymbol = NETWORK_TOKEN_SYMBOLS[network]
+    if (!tokenSymbol) {
+      console.warn(`[PriceService] No token symbol for network ${network}`)
+      return
+    }
+
+    // Check if we have a valid CoinGecko ID for this token
+    const coinGeckoId = getCoinGeckoId(tokenSymbol)
+    if (!coinGeckoId) {
+      console.warn(`[PriceService] No CoinGecko ID for token ${tokenSymbol}`)
+      return
+    }
+
+    onProgress?.({
+      stage: 'processing',
+      currentBlock: 0,
+      totalBlocks: 0,
+      blocksScanned: 0,
+      transactionsFound: transactions.length,
+      message: `Fetching USD values for ${transactions.length} transactions...`,
+    })
+
+    try {
+      // Ensure all transactions have the token symbol
+      for (const tx of transactions) {
+        if (!tx.tokenSymbol) {
+          tx.tokenSymbol = tokenSymbol
+        }
+      }
+
+      // Prepare batch request data
+      // Convert planck values to human-readable amounts for price calculation
+      const decimals = network === 'polkadot' || network === 'acala' ? 10 : 12 // DOT/ACA=10, KSM/GLMR/MOVR/ASTR=12
+      const divisor = BigInt(10 ** decimals)
+
+      const priceRequests = transactions.map(tx => {
+        // Parse the value (may be in planck format)
+        const valueStr = tx.value || '0'
+        let amount: number
+
+        try {
+          // Handle large numbers by using BigInt
+          const valueBigInt = BigInt(valueStr)
+          // Convert to decimal: divide by 10^decimals
+          const wholePart = valueBigInt / divisor
+          const fractionalPart = valueBigInt % divisor
+          // Combine for final amount
+          amount =
+            Number(wholePart) +
+            Number(fractionalPart) / Number(divisor)
+        } catch {
+          // Fallback: try parsing as regular number
+          amount = parseFloat(valueStr) || 0
+        }
+
+        return {
+          amount,
+          tokenSymbol,
+          timestamp: tx.timestamp,
+        }
+      })
+
+      // Batch fetch USD values
+      const usdValues = await batchCalculateUsdValues(priceRequests)
+
+      // Apply USD values to transactions
+      for (let i = 0; i < transactions.length; i++) {
+        const usdValue = usdValues[i]
+        if (usdValue !== null && !isNaN(usdValue)) {
+          transactions[i].usdValue = Math.round(usdValue * 100) / 100 // Round to 2 decimal places
+        }
+      }
+
+      const enrichedCount = transactions.filter(tx => tx.usdValue !== undefined).length
+      console.log(
+        `[PriceService] Enriched ${enrichedCount}/${transactions.length} transactions with USD values`
+      )
+    } catch (error) {
+      console.error('[PriceService] Failed to enrich transactions with USD values:', error)
+      // Don't throw - USD values are optional enhancement
+    }
   }
 
   /**

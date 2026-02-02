@@ -71,6 +71,10 @@ export interface TransactionBase {
   fee: string
   status: 'success' | 'failed' | 'pending'
   network: NetworkType
+  /** Token symbol for the transaction (e.g., "DOT", "KSM") */
+  tokenSymbol?: string
+  /** USD value at the time of the transaction */
+  usdValue?: number
 }
 
 export interface SubstrateTransaction extends TransactionBase {

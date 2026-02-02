@@ -398,7 +398,13 @@ pub fn run() {
             fetchers::commands::has_api_key,
             fetchers::commands::get_provider_status,
             fetchers::commands::get_all_provider_statuses,
-            fetchers::commands::get_configured_providers
+            fetchers::commands::get_configured_providers,
+            // Price feed commands (CoinGecko integration)
+            api::prices::get_crypto_price,
+            api::prices::get_crypto_prices,
+            api::prices::get_historical_crypto_price,
+            api::prices::get_batch_historical_prices,
+            api::prices::timestamp_to_coingecko_date
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

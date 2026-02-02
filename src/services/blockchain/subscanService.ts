@@ -6,6 +6,16 @@
 
 import type { NetworkType, SubstrateTransaction } from '../wallet/types'
 
+/** Map of network type to native token symbol */
+const NETWORK_TOKEN_SYMBOLS: Record<NetworkType, string> = {
+  polkadot: 'DOT',
+  kusama: 'KSM',
+  moonbeam: 'GLMR',
+  moonriver: 'MOVR',
+  astar: 'ASTR',
+  acala: 'ACA',
+}
+
 interface SubscanConfig {
   baseUrl: string
   apiKey?: string
@@ -163,6 +173,7 @@ class SubscanService {
             fee: transfer.fee,
             status: transfer.success ? 'success' : 'failed',
             network,
+            tokenSymbol: transfer.asset_symbol || NETWORK_TOKEN_SYMBOLS[network],
             type: actionInfo.type,
             method: actionInfo.method,
             section: actionInfo.section,
@@ -221,6 +232,7 @@ class SubscanService {
             fee: '0',
             status: 'success',
             network,
+            tokenSymbol: NETWORK_TOKEN_SYMBOLS[network],
             type: 'staking',
             method: 'Rewarded',
             section: 'staking',
@@ -284,6 +296,7 @@ class SubscanService {
             fee: extrinsic.fee,
             status: extrinsic.success ? 'success' : 'failed',
             network,
+            tokenSymbol: NETWORK_TOKEN_SYMBOLS[network],
             type,
             method: extrinsic.call_module_function,
             section: extrinsic.call_module,
