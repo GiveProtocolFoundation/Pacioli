@@ -523,7 +523,7 @@ class PolkadotService {
         const final = deduplicated.slice(0, limit)
 
         // Still enrich with USD values
-        await this.enrichTransactionsWithUsdValues(final, network, onProgress)
+        await PolkadotService.enrichTransactionsWithUsdValues(final, network, onProgress)
 
         onProgress?.({
           stage: 'complete',
@@ -617,7 +617,7 @@ class PolkadotService {
       const final = deduplicated.slice(0, limit)
 
       // PHASE 4: Enrich with USD values
-      await this.enrichTransactionsWithUsdValues(final, network, onProgress)
+      await PolkadotService.enrichTransactionsWithUsdValues(final, network, onProgress)
 
       onProgress?.({
         stage: 'complete',
@@ -875,7 +875,7 @@ class PolkadotService {
    * Enrich transactions with USD values using historical price data
    * Makes batch API calls to minimize requests
    */
-  private async enrichTransactionsWithUsdValues(
+  private static async enrichTransactionsWithUsdValues(
     transactions: SubstrateTransaction[],
     network: NetworkType,
     onProgress?: (progress: SyncProgress) => void

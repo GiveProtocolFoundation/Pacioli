@@ -465,6 +465,128 @@ class SubscanService {
   }
 
   /**
+   * Classify action from account display strings (Subscan v2 API)
+   * Display strings contain semantic data like "Pool#20(Reward)", "Treasury", etc.
+   */
+  private static classifyFromDisplayInfo(
+    fromDisplay: string,
+    toDisplay: string
+  ): { method: string; section: string; type: SubstrateTransaction['type'] } | null {
+    const displayText = `${fromDisplay} ${toDisplay}`.toLowerCase()
+
+    // Staking rewards - from nomination pools or validators
+    if (
+      displayText.includes('reward') ||
+      (displayText.includes('pool#') &&
+        fromDisplay.toLowerCase().includes('reward'))
+    ) {
+      return { method: 'Reward', section: 'staking', type: 'staking' }
+    }
+
+    // Nomination pool operations
+    if (displayText.includes('pool#') || displayText.includes('nomination')) {
+      return SubscanService.classifyPoolOperation(displayText, toDisplay)
+    }
+
+    // Treasury operations
+    if (displayText.includes('treasury')) {
+      return { method: 'treasury_transfer', section: 'treasury', type: 'governance' }
+    }
+
+    // Validator operations
+    if (displayText.includes('validator') || displayText.includes('stash')) {
+      return SubscanService.classifyValidatorOperation(displayText)
+    }
+
+    // Governance/Council operations
+    if (displayText.includes('council') || displayText.includes('governance')) {
+      return { method: 'governance_action', section: 'governance', type: 'governance' }
+    }
+
+    // Crowdloan operations
+    if (displayText.includes('crowdloan')) {
+      return { method: 'contribute', section: 'crowdloan', type: 'other' }
+    }
+
+    return null
+  }
+
+  /**
+   * Classify nomination pool operations
+   */
+  private static classifyPoolOperation(
+    displayText: string,
+    toDisplay: string
+  ): { method: string; section: string; type: SubstrateTransaction['type'] } {
+    if (displayText.includes('join') || toDisplay.toLowerCase().includes('pool#')) {
+      return { method: 'join', section: 'nominationPools', type: 'staking' }
+    }
+    if (displayText.includes('unbond') || displayText.includes('withdraw')) {
+      return { method: 'unbond', section: 'nominationPools', type: 'staking' }
+    }
+    return { method: 'pool_transaction', section: 'nominationPools', type: 'staking' }
+  }
+
+  /**
+   * Classify validator/stash operations
+   */
+  private static classifyValidatorOperation(
+    displayText: string
+  ): { method: string; section: string; type: SubstrateTransaction['type'] } {
+    if (displayText.includes('bond')) {
+      return { method: 'bond', section: 'staking', type: 'staking' }
+    }
+    if (displayText.includes('unbond')) {
+      return { method: 'unbond', section: 'staking', type: 'staking' }
+    }
+    return { method: 'staking_operation', section: 'staking', type: 'staking' }
+  }
+
+  /**
+   * Classify action from explicit module/function fields on the transfer
+   */
+  private static classifyFromExplicitFields(transfer: SubscanTransfer): {
+    method: string; section: string; type: SubstrateTransaction['type']
+  } | null {
+    // Use call_module_function if available
+    if (transfer.call_module_function && transfer.call_module) {
+      return {
+        method: transfer.call_module_function,
+        section: transfer.call_module,
+        type: SubscanService.classifyExtrinsicType(transfer.call_module, transfer.call_module_function),
+      }
+    }
+
+    // Use extrinsic data if available
+    if (transfer.extrinsic?.call_module_function && transfer.extrinsic?.call_module) {
+      return {
+        method: transfer.extrinsic.call_module_function,
+        section: transfer.extrinsic.call_module,
+        type: SubscanService.classifyExtrinsicType(transfer.extrinsic.call_module, transfer.extrinsic.call_module_function),
+      }
+    }
+
+    // Use event data if available
+    if (transfer.event?.event_id && transfer.event?.module_id) {
+      return {
+        method: transfer.event.event_id,
+        section: transfer.event.module_id,
+        type: SubscanService.classifyExtrinsicType(transfer.event.module_id, transfer.event.event_id),
+      }
+    }
+
+    if (transfer.event_id) {
+      return {
+        method: transfer.event_id,
+        section: transfer.module || 'balances',
+        type: SubscanService.classifyExtrinsicType(transfer.module || 'balances', transfer.event_id),
+      }
+    }
+
+    return null
+  }
+
+  /**
    * Extract detailed action from transfer data
    * This provides better classification than just "transfer"
    */
@@ -474,7 +596,6 @@ class SubscanService {
     type: SubstrateTransaction['type']
   } {
     // Priority 0: Use account display information (most reliable for Subscan v2 API)
-    // This contains semantic data like "Pool#20(Reward)", "Treasury", "Staking", etc.
     const fromDisplay =
       transfer.from_account_display?.display ||
       transfer.from_account_display?.people?.display ||
@@ -484,161 +605,18 @@ class SubscanService {
       transfer.to_account_display?.people?.display ||
       ''
 
-    // Parse display strings for action classification
     if (fromDisplay || toDisplay) {
-      const displayText = `${fromDisplay} ${toDisplay}`.toLowerCase()
-
-      // Staking rewards - from nomination pools or validators
-      if (
-        displayText.includes('reward') ||
-        (displayText.includes('pool#') &&
-          fromDisplay.toLowerCase().includes('reward'))
-      ) {
-        return {
-          method: 'Reward',
-          section: 'staking',
-          type: 'staking',
-        }
-      }
-
-      // Nomination pool operations
-      if (displayText.includes('pool#') || displayText.includes('nomination')) {
-        if (
-          displayText.includes('join') ||
-          toDisplay.toLowerCase().includes('pool#')
-        ) {
-          return {
-            method: 'join',
-            section: 'nominationPools',
-            type: 'staking',
-          }
-        }
-        if (
-          displayText.includes('unbond') ||
-          displayText.includes('withdraw')
-        ) {
-          return {
-            method: 'unbond',
-            section: 'nominationPools',
-            type: 'staking',
-          }
-        }
-        return {
-          method: 'pool_transaction',
-          section: 'nominationPools',
-          type: 'staking',
-        }
-      }
-
-      // Treasury operations
-      if (displayText.includes('treasury')) {
-        return {
-          method: 'treasury_transfer',
-          section: 'treasury',
-          type: 'governance',
-        }
-      }
-
-      // Validator operations
-      if (displayText.includes('validator') || displayText.includes('stash')) {
-        if (displayText.includes('bond')) {
-          return {
-            method: 'bond',
-            section: 'staking',
-            type: 'staking',
-          }
-        }
-        if (displayText.includes('unbond')) {
-          return {
-            method: 'unbond',
-            section: 'staking',
-            type: 'staking',
-          }
-        }
-        return {
-          method: 'staking_operation',
-          section: 'staking',
-          type: 'staking',
-        }
-      }
-
-      // Governance/Council operations
-      if (
-        displayText.includes('council') ||
-        displayText.includes('governance')
-      ) {
-        return {
-          method: 'governance_action',
-          section: 'governance',
-          type: 'governance',
-        }
-      }
-
-      // Crowdloan operations
-      if (displayText.includes('crowdloan')) {
-        return {
-          method: 'contribute',
-          section: 'crowdloan',
-          type: 'other',
-        }
-      }
+      const displayResult = SubscanService.classifyFromDisplayInfo(fromDisplay, toDisplay)
+      if (displayResult) return displayResult
     }
 
-    // Priority 1: Use call_module_function if available
-    if (transfer.call_module_function && transfer.call_module) {
-      return {
-        method: transfer.call_module_function,
-        section: transfer.call_module,
-        type: SubscanService.classifyExtrinsicType(
-          transfer.call_module,
-          transfer.call_module_function
-        ),
-      }
-    }
-
-    // Priority 2: Use extrinsic data if available
-    if (
-      transfer.extrinsic?.call_module_function &&
-      transfer.extrinsic?.call_module
-    ) {
-      return {
-        method: transfer.extrinsic.call_module_function,
-        section: transfer.extrinsic.call_module,
-        type: SubscanService.classifyExtrinsicType(
-          transfer.extrinsic.call_module,
-          transfer.extrinsic.call_module_function
-        ),
-      }
-    }
-
-    // Priority 3: Use event data if available
-    if (transfer.event?.event_id && transfer.event?.module_id) {
-      return {
-        method: transfer.event.event_id,
-        section: transfer.event.module_id,
-        type: SubscanService.classifyExtrinsicType(
-          transfer.event.module_id,
-          transfer.event.event_id
-        ),
-      }
-    }
-
-    if (transfer.event_id) {
-      return {
-        method: transfer.event_id,
-        section: transfer.module || 'balances',
-        type: SubscanService.classifyExtrinsicType(
-          transfer.module || 'balances',
-          transfer.event_id
-        ),
-      }
-    }
+    // Priority 1-3: Use explicit module/function/event fields
+    const explicitResult = SubscanService.classifyFromExplicitFields(transfer)
+    if (explicitResult) return explicitResult
 
     // Priority 4: Use heuristics based on transfer characteristics
     const heuristic = SubscanService.detectActionHeuristic(transfer)
-    if (heuristic) {
-      return heuristic
-    }
+    if (heuristic) return heuristic
 
     // Default: basic transfer
     return {

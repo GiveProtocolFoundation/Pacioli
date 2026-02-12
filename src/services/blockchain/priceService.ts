@@ -97,10 +97,10 @@ export function getNetworkCoinGeckoId(network: string): string | null {
  * Convert a Date or timestamp to CoinGecko's date format (DD-MM-YYYY)
  */
 export function toCoinGeckoDate(date: Date | number): string {
-  const d = typeof date === 'number' ? new Date(date) : date
-  const day = String(d.getUTCDate()).padStart(2, '0')
-  const month = String(d.getUTCMonth() + 1).padStart(2, '0')
-  const year = d.getUTCFullYear()
+  const dateObj = typeof date === 'number' ? new Date(date) : date
+  const day = String(dateObj.getUTCDate()).padStart(2, '0')
+  const month = String(dateObj.getUTCMonth() + 1).padStart(2, '0')
+  const year = dateObj.getUTCFullYear()
   return `${day}-${month}-${year}`
 }
 
@@ -271,14 +271,17 @@ export async function batchCalculateUsdValues(
     const coinId = getCoinGeckoId(tx.tokenSymbol)
     if (!coinId) return
 
-    if (!byDateAndToken.has(dateStr)) {
-      byDateAndToken.set(dateStr, new Map())
+    let dateMap = byDateAndToken.get(dateStr)
+    if (!dateMap) {
+      dateMap = new Map()
+      byDateAndToken.set(dateStr, dateMap)
     }
-    const dateMap = byDateAndToken.get(dateStr)!
-    if (!dateMap.has(coinId)) {
-      dateMap.set(coinId, [])
+    let indices = dateMap.get(coinId)
+    if (!indices) {
+      indices = []
+      dateMap.set(coinId, indices)
     }
-    dateMap.get(coinId)!.push(index)
+    indices.push(index)
   })
 
   // Fetch prices for each unique date
