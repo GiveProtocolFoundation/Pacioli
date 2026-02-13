@@ -153,10 +153,7 @@ pub async fn get_batch_historical_prices(
             tokio::time::sleep(tokio::time::Duration::from_millis(250)).await;
         }
 
-        match client
-            .get_historical_price(coin_id, &date, &currency)
-            .await
-        {
+        match client.get_historical_price(coin_id, &date, &currency).await {
             Ok(price) => {
                 prices.insert(coin_id.clone(), Ok(price));
             }

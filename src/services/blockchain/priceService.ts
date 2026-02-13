@@ -165,20 +165,28 @@ export async function getHistoricalPrice(
   vsCurrency = 'usd'
 ): Promise<number | null> {
   if (!isTauriAvailable()) {
-    console.warn('[PriceService] Tauri not available, cannot fetch historical price')
+    console.warn(
+      '[PriceService] Tauri not available, cannot fetch historical price'
+    )
     return null
   }
 
   try {
     const dateStr = toCoinGeckoDate(date)
-    const response = await invoke<HistoricalPriceResponse>('get_historical_crypto_price', {
-      coinId,
-      date: dateStr,
-      vsCurrency,
-    })
+    const response = await invoke<HistoricalPriceResponse>(
+      'get_historical_crypto_price',
+      {
+        coinId,
+        date: dateStr,
+        vsCurrency,
+      }
+    )
     return parseFloat(response.price)
   } catch (error) {
-    console.error(`[PriceService] Failed to get historical price for ${coinId} on ${date}:`, error)
+    console.error(
+      `[PriceService] Failed to get historical price for ${coinId} on ${date}:`,
+      error
+    )
     return null
   }
 }
@@ -193,17 +201,22 @@ export async function getBatchHistoricalPrices(
   vsCurrency = 'usd'
 ): Promise<Record<string, number | null>> {
   if (!isTauriAvailable()) {
-    console.warn('[PriceService] Tauri not available, cannot fetch historical prices')
+    console.warn(
+      '[PriceService] Tauri not available, cannot fetch historical prices'
+    )
     return {}
   }
 
   try {
     const dateStr = toCoinGeckoDate(date)
-    const response = await invoke<BatchHistoricalPriceResponse>('get_batch_historical_prices', {
-      coinIds,
-      date: dateStr,
-      vsCurrency,
-    })
+    const response = await invoke<BatchHistoricalPriceResponse>(
+      'get_batch_historical_prices',
+      {
+        coinIds,
+        date: dateStr,
+        vsCurrency,
+      }
+    )
 
     const result: Record<string, number | null> = {}
     for (const [coinId, priceResult] of Object.entries(response.prices)) {
@@ -215,7 +228,10 @@ export async function getBatchHistoricalPrices(
     }
     return result
   } catch (error) {
-    console.error('[PriceService] Failed to get batch historical prices:', error)
+    console.error(
+      '[PriceService] Failed to get batch historical prices:',
+      error
+    )
     return {}
   }
 }
