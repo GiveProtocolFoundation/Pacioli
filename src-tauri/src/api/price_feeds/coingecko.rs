@@ -209,6 +209,7 @@ impl CoinGeckoClient {
     }
 
     /// Get supported vs currencies
+    #[allow(dead_code)]
     pub async fn get_supported_currencies(&self) -> Result<Vec<String>> {
         let url = format!("{}/simple/supported_vs_currencies", self.base_url);
 
