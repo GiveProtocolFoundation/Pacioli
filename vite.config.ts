@@ -53,7 +53,6 @@ export default defineConfig(async () => ({
           blockchain: [
             'ethers',
             '@metamask/detect-provider',
-            '@walletconnect/web3-provider',
           ],
 
           // Wallet connection libraries
@@ -74,7 +73,7 @@ export default defineConfig(async () => ({
           ],
 
           // Date and utility libraries
-          utils: ['date-fns', 'dayjs', 'decimal.js', 'xlsx'],
+          utils: ['date-fns', 'dayjs', 'decimal.js'],
         },
       },
     },
