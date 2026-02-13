@@ -4,7 +4,7 @@
 
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL%203.0-blue.svg)](LICENSE)
 
-A comprehensive blockchain accounting application built with Tauri, React, TypeScript, and Rust. Designed specifically for the Polkadot ecosystem with support for Moonbeam, Moonriver, Astar, and other parachains.
+A comprehensive multi-chain blockchain & fiat accounting application built with Tauri, React, TypeScript, and Rust.
 
 **Website**: [pacioli.io](https://pacioli.io) (coming soon)
 **Documentation**: [docs.pacioli.io](https://docs.pacioli.io)
@@ -15,7 +15,7 @@ A comprehensive blockchain accounting application built with Tauri, React, TypeS
 ## Features
 
 ### Core Accounting
-- **Multi-Chain Support** - Track transactions across Polkadot parachains
+- **Multi-Chain Support** - Track transactions across multiple ecosystems
 - **Double-Entry Accounting** - Professional-grade chart of accounts
 - **Multi-Currency** - Support for fiat and crypto currencies
 - **Real-Time Indexing** - Rust-based blockchain indexer for fast sync
