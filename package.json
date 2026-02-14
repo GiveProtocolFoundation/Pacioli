@@ -9,7 +9,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "tauri": "tauri",
-    "tauri:dev": "tauri dev",
+    "tauri:dev": "WEBKIT_DISABLE_COMPOSITING_MODE=1 GDK_BACKEND=x11 tauri dev",
     "tauri:build": "tauri build",
     "lint": "eslint .",
     "type-check": "tsc --noEmit",
