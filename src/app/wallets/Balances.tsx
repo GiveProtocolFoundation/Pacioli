@@ -344,7 +344,7 @@ const Balances: React.FC = () => {
           </defs>
           <XAxis dataKey="date" stroke="#888888" />
           <YAxis tickFormatter={formatYAxisTick} />
-          {Object.keys(currencyColors).map(renderArea)}
+          {Object.keys(currencyColors).map(currency => renderArea(currency))}
           <Tooltip
             formatter={tooltipFormatter}
             contentStyle={{ backgroundColor: '#1F2937' }}

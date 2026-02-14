@@ -48,7 +48,7 @@ EOF
 
 WORKSPACE_DIR="${PACIOLI_WORKSPACE:-$HOME/pacioli-workspace}"
 
-if [ ! -d "$WORKSPACE_DIR" ]; then
+if [[ ! -d "$WORKSPACE_DIR" ]]; then
     log_error "Workspace directory not found: $WORKSPACE_DIR"
     log_info "Run setup-repos.sh first or set PACIOLI_WORKSPACE environment variable"
     exit 1
@@ -66,7 +66,7 @@ run_in_repos() {
     for repo in "${REPOS[@]}"; do
         local repo_path="$WORKSPACE_DIR/$repo"
 
-        if [ -d "$repo_path" ]; then
+        if [[ -d "$repo_path" ]]; then
             echo -e "${BLUE}[$repo]${NC}"
             cd "$repo_path"
             eval "$command"

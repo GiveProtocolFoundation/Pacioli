@@ -57,7 +57,7 @@ log_info "GitHub organization: $ORG"
 echo
 
 # Create workspace directory
-if [ ! -d "$WORKSPACE_DIR" ]; then
+if [[ ! -d "$WORKSPACE_DIR" ]]; then
     log_info "Creating workspace directory..."
     mkdir -p "$WORKSPACE_DIR"
     log_success "Workspace directory created"
@@ -68,7 +68,7 @@ fi
 cd "$WORKSPACE_DIR"
 
 # Clone pacioli-core (main application)
-if [ ! -d "pacioli-core" ]; then
+if [[ ! -d "pacioli-core" ]]; then
     log_info "Cloning pacioli-core..."
     git clone git@github.com:$ORG/Pacioli.git pacioli-core
     log_success "pacioli-core cloned"
@@ -77,7 +77,7 @@ else
 fi
 
 # Clone pacioli-docs (documentation)
-if [ ! -d "pacioli-docs" ]; then
+if [[ ! -d "pacioli-docs" ]]; then
     log_info "Cloning pacioli-docs..."
     git clone git@github.com:$ORG/pacioli-docs.git pacioli-docs
     log_success "pacioli-docs cloned"
@@ -86,7 +86,7 @@ else
 fi
 
 # Clone pacioli-plugins (plugin system)
-if [ ! -d "pacioli-plugins" ]; then
+if [[ ! -d "pacioli-plugins" ]]; then
     log_info "Cloning pacioli-plugins..."
     git clone git@github.com:$ORG/pacioli-plugins.git pacioli-plugins
     log_success "pacioli-plugins cloned"
