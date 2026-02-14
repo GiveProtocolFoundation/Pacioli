@@ -9,7 +9,7 @@
 
 @import 'tailwindcss';
 
-@variant dark (.dark &);
+@variant dark (.dark &); /* NOSONAR - valid Tailwind CSS v4 syntax */
 
 @theme {
   /* =============================================================================

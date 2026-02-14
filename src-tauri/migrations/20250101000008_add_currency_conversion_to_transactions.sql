@@ -39,7 +39,7 @@ SELECT
     c.type AS currency_type,
     c.symbol AS currency_symbol,
     CASE
-        WHEN t.exchange_rate IS NOT NULL AND t.exchange_rate != ''
+        WHEN COALESCE(t.exchange_rate, '') <> ''
         THEN CAST(t.value AS REAL) * CAST(t.exchange_rate AS REAL)
         ELSE CAST(t.value AS REAL)
     END AS calculated_primary_amount

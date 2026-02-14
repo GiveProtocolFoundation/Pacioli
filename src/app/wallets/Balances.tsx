@@ -207,7 +207,7 @@ const Balances: React.FC = () => {
         data.push({
           date: format(
             date,
-            period.includes('year') || period === '90_days' ? 'MMM d' : 'MMM d'
+            period.includes('year') || period === '90_days' ? 'MMM yyyy' : 'MMM d'
           ),
           DOT: Math.round(totalValue * dotRatio),
           KSM: Math.round(totalValue * ksmRatio),

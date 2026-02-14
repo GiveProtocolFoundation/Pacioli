@@ -452,12 +452,7 @@ class EVMTransactionService {
       fee,
       status: tx.isError === '0' ? 'success' : 'failed',
       network: EVM_NETWORK_MAP[chain] || ('moonbeam' as NetworkType),
-      type:
-        tx.input === '0x'
-          ? 'transfer'
-          : tx.contractAddress
-            ? 'contract'
-            : 'contract',
+      type: tx.input === '0x' ? 'transfer' : 'contract',
       gasUsed: tx.gasUsed,
       gasPrice: tx.gasPrice,
       input: tx.input,

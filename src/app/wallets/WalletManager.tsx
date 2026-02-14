@@ -638,7 +638,11 @@ const WalletManager: React.FC = () => {
                 {/* Backdrop to close menu */}
                 <div
                   className="fixed inset-0 z-10"
+                  role="presentation"
                   onClick={handleCloseAddMenu}
+                  onKeyDown={e => {
+                    if (e.key === 'Escape') handleCloseAddMenu()
+                  }}
                 />
                 {/* Dropdown Menu */}
                 <div className="absolute right-0 mt-2 w-64 bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg shadow-lg border border-[rgba(201,169,97,0.15)] z-20 overflow-hidden">
