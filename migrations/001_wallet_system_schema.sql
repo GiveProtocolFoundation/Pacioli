@@ -881,6 +881,7 @@ GROUP BY w.id;
 -- ============================================
 
 -- Update timestamps on wallet changes
+DROP TRIGGER IF EXISTS update_wallet_timestamp;
 CREATE TRIGGER update_wallet_timestamp
 AFTER UPDATE ON wallets
 FOR EACH ROW
@@ -889,6 +890,7 @@ BEGIN
 END;
 
 -- Update timestamps on account changes
+DROP TRIGGER IF EXISTS update_account_timestamp;
 CREATE TRIGGER update_account_timestamp
 AFTER UPDATE ON accounts
 FOR EACH ROW
@@ -897,6 +899,7 @@ BEGIN
 END;
 
 -- Validate asset_uid format on insert
+DROP TRIGGER IF EXISTS validate_asset_uid_insert;
 CREATE TRIGGER validate_asset_uid_insert
 BEFORE INSERT ON assets
 FOR EACH ROW
@@ -919,6 +922,7 @@ BEGIN
 END;
 
 -- Expire old wallet sessions automatically
+DROP TRIGGER IF EXISTS expire_wallet_sessions;
 CREATE TRIGGER expire_wallet_sessions
 AFTER INSERT ON wallet_sessions
 BEGIN
