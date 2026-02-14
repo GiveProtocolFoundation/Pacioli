@@ -339,14 +339,13 @@ pub async fn provision_local_session(
     let legacy_email = "local@pacioli.app";
 
     // Check for existing local user (current or legacy email)
-    let existing: Option<(String, String)> = sqlx::query_as(
-        "SELECT id, email FROM users WHERE email = ? OR email = ? LIMIT 1",
-    )
-    .bind(local_email)
-    .bind(legacy_email)
-    .fetch_optional(pool)
-    .await
-    .map_err(|e| format!("Database error: {}", e))?;
+    let existing: Option<(String, String)> =
+        sqlx::query_as("SELECT id, email FROM users WHERE email = ? OR email = ? LIMIT 1")
+            .bind(local_email)
+            .bind(legacy_email)
+            .fetch_optional(pool)
+            .await
+            .map_err(|e| format!("Database error: {}", e))?;
 
     let user_id = if let Some((id, found_email)) = existing {
         // Migrate legacy email and clear password hash
