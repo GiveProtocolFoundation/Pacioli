@@ -60,6 +60,7 @@ interface BackendUser {
   date_format?: string | null
   // Notification preferences
   email_notifications?: boolean | null
+  notification_email?: string | null
   sms_notifications?: boolean | null
   login_alerts?: boolean | null
 }
@@ -132,40 +133,80 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       setIsLoading(true)
       setError(null)
 
-      // Check if we have stored tokens
+      // Check if we have stored tokens — if not, auto-register a local user
+      // so that auth-dependent features (profile save, etc.) work in local-only mode
       if (!checkIsAuthenticated()) {
-        setIsAuthenticated(false)
-        setUser(null)
-        setUserProfiles([])
-        return
-      }
+        try {
+          const response = await authService.register({
+            email: 'local@pacioli.app',
+            password: 'LocalUser1',
+            display_name: 'Local User',
+          })
+          setUser(response.user)
+          setIsAuthenticated(true)
 
-      // Try to get current user with auto-refresh
-      const currentUser = await withAutoRefresh(token =>
-        authService.getCurrentUser(token)
-      )
-      setUser(currentUser)
-      setIsAuthenticated(true)
+          const profiles = await authService.getUserProfiles(
+            response.access_token
+          )
+          setUserProfiles(profiles)
+          if (profiles.length > 0) {
+            setCurrentProfileRole(profiles[0].role)
+          }
+        } catch {
+          // Registration may fail if the local user already exists — try logging in
+          try {
+            const response = await authService.login({
+              email: 'local@pacioli.app',
+              password: 'LocalUser1',
+            })
+            setUser(response.user)
+            setIsAuthenticated(true)
 
-      // Load user's profiles
-      const profiles = await withAutoRefresh(token =>
-        authService.getUserProfiles(token)
-      )
-      setUserProfiles(profiles)
-
-      // Set current profile role if we have a stored profile selection
-      const storedProfileId = localStorage.getItem('currentProfileId')
-      if (storedProfileId) {
-        const currentProfileData = profiles.find(
-          p => p.profile_id === storedProfileId
+            const profiles = await authService.getUserProfiles(
+              response.access_token
+            )
+            setUserProfiles(profiles)
+            if (profiles.length > 0) {
+              setCurrentProfileRole(profiles[0].role)
+            }
+          } catch (loginErr) {
+            console.error(
+              '[AuthContext] Auto-login failed:',
+              loginErr
+            )
+            setIsAuthenticated(false)
+            setUser(null)
+            setUserProfiles([])
+          }
+        }
+      } else {
+        // Try to get current user with auto-refresh
+        const currentUser = await withAutoRefresh(token =>
+          authService.getCurrentUser(token)
         )
-        if (currentProfileData) {
-          setCurrentProfileRole(currentProfileData.role)
+        setUser(currentUser)
+        setIsAuthenticated(true)
+
+        // Load user's profiles
+        const profiles = await withAutoRefresh(token =>
+          authService.getUserProfiles(token)
+        )
+        setUserProfiles(profiles)
+
+        // Set current profile role if we have a stored profile selection
+        const storedProfileId = localStorage.getItem('currentProfileId')
+        if (storedProfileId) {
+          const currentProfileData = profiles.find(
+            p => p.profile_id === storedProfileId
+          )
+          if (currentProfileData) {
+            setCurrentProfileRole(currentProfileData.role)
+          } else if (profiles.length > 0) {
+            setCurrentProfileRole(profiles[0].role)
+          }
         } else if (profiles.length > 0) {
           setCurrentProfileRole(profiles[0].role)
         }
-      } else if (profiles.length > 0) {
-        setCurrentProfileRole(profiles[0].role)
       }
 
       // Load account type from persistence
@@ -339,6 +380,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           date_format: backendUser.date_format ?? null,
           // Notification preferences
           email_notifications: backendUser.email_notifications ?? null,
+          notification_email: backendUser.notification_email ?? null,
           sms_notifications: backendUser.sms_notifications ?? null,
           login_alerts: backendUser.login_alerts ?? null,
         }

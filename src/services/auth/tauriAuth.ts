@@ -28,11 +28,25 @@ import type { AuthService } from './index'
 // TOKEN STORAGE
 // =============================================================================
 
+/**
+ * Raw response from Rust backend (uses expires_in seconds, not expires_at)
+ */
+interface TauriAuthResponse {
+  access_token: string
+  refresh_token: string
+  user: AuthUser
+  expires_in: number
+}
+
 const TOKEN_KEYS = {
   ACCESS_TOKEN: 'pacioli_access_token',
   REFRESH_TOKEN: 'pacioli_refresh_token',
   TOKEN_EXPIRES: 'pacioli_token_expires',
 } as const
+
+function computeExpiresAt(expiresInSeconds: number): string {
+  return new Date(Date.now() + expiresInSeconds * 1000).toISOString()
+}
 
 function storeTokens(
   accessToken: string,
@@ -80,23 +94,27 @@ export const tauriAuthService: AuthService = {
 
   // Authentication
   async register(input: RegisterInput): Promise<AuthResponse> {
-    const response = await invoke<AuthResponse>('register', { input })
-    storeTokens(
-      response.access_token,
-      response.refresh_token,
-      response.expires_at
-    )
-    return response
+    const raw = await invoke<TauriAuthResponse>('register', { input })
+    const expiresAt = computeExpiresAt(raw.expires_in)
+    storeTokens(raw.access_token, raw.refresh_token, expiresAt)
+    return {
+      access_token: raw.access_token,
+      refresh_token: raw.refresh_token,
+      user: raw.user,
+      expires_at: expiresAt,
+    }
   },
 
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    const response = await invoke<AuthResponse>('login', { credentials })
-    storeTokens(
-      response.access_token,
-      response.refresh_token,
-      response.expires_at
-    )
-    return response
+    const raw = await invoke<TauriAuthResponse>('login', { credentials })
+    const expiresAt = computeExpiresAt(raw.expires_in)
+    storeTokens(raw.access_token, raw.refresh_token, expiresAt)
+    return {
+      access_token: raw.access_token,
+      refresh_token: raw.refresh_token,
+      user: raw.user,
+      expires_at: expiresAt,
+    }
   },
 
   async logout(sessionId: string): Promise<void> {
@@ -117,14 +135,15 @@ export const tauriAuthService: AuthService = {
       throw new Error('No refresh token available')
     }
 
-    const response = await invoke<TokenRefreshResponse>('refresh_token', {
+    const raw = await invoke<TauriAuthResponse>('refresh_token', {
       refreshToken: refreshTokenValue,
     })
 
-    localStorage.setItem(TOKEN_KEYS.ACCESS_TOKEN, response.access_token)
-    localStorage.setItem(TOKEN_KEYS.TOKEN_EXPIRES, response.expires_at)
+    const expiresAt = computeExpiresAt(raw.expires_in)
+    localStorage.setItem(TOKEN_KEYS.ACCESS_TOKEN, raw.access_token)
+    localStorage.setItem(TOKEN_KEYS.TOKEN_EXPIRES, expiresAt)
 
-    return response
+    return { access_token: raw.access_token, expires_at: expiresAt }
   },
 
   async verifyToken(token: string): Promise<TokenVerifyResponse> {
@@ -229,20 +248,22 @@ export const tauriAuthService: AuthService = {
     invitationToken: string,
     accessToken?: string
   ): Promise<AuthResponse> {
-    const response = await invoke<AuthResponse>('accept_invitation', {
+    const raw = await invoke<TauriAuthResponse>('accept_invitation', {
       invitationToken,
       accessToken: accessToken ?? null,
     })
 
-    if (response.access_token) {
-      storeTokens(
-        response.access_token,
-        response.refresh_token,
-        response.expires_at
-      )
+    const expiresAt = computeExpiresAt(raw.expires_in)
+    if (raw.access_token) {
+      storeTokens(raw.access_token, raw.refresh_token, expiresAt)
     }
 
-    return response
+    return {
+      access_token: raw.access_token,
+      refresh_token: raw.refresh_token,
+      user: raw.user,
+      expires_at: expiresAt,
+    }
   },
 
   async revokeInvitation(token: string, invitationId: string): Promise<void> {

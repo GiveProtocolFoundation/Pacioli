@@ -59,7 +59,7 @@ aes-gcm = "0.10"
 
 # Authentication dependencies
 argon2 = "0.5"              # Password hashing (Argon2id)
-jsonwebtoken = "10"          # JWT creation and validation
+jsonwebtoken = { version = "10", features = ["rust_crypto"] }  # JWT creation and validation
 rand = "0.8"                # Secure random generation
 base64 = "0.22"             # Token encoding
 

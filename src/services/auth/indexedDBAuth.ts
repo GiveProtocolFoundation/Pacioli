@@ -286,6 +286,7 @@ class IndexedDBAuthService implements AuthService {
       language: null,
       date_format: null,
       email_notifications: true,
+      notification_email: null,
       sms_notifications: false,
       login_alerts: true,
       password_hash: passwordHash,

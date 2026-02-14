@@ -150,6 +150,7 @@ export interface AuthUser {
   date_format: string | null
   // Notification preferences
   email_notifications: boolean | null
+  notification_email: string | null
   sms_notifications: boolean | null
   login_alerts: boolean | null
 }
@@ -244,6 +245,7 @@ export interface UpdateUserInput {
   date_format?: string
   // Notification preferences
   email_notifications?: boolean
+  notification_email?: string
   sms_notifications?: boolean
   login_alerts?: boolean
 }

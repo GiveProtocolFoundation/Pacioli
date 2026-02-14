@@ -157,7 +157,26 @@ export async function withAutoRefresh<T>(
     }
   }
 
-  return authenticatedRequest(token)
+  try {
+    return await authenticatedRequest(token)
+  } catch (err) {
+    // If the request failed with an auth error, try refreshing once and retrying
+    const errMsg = String(err)
+    if (
+      errMsg.includes('expired') ||
+      errMsg.includes('Invalid token') ||
+      errMsg.includes('invalid token')
+    ) {
+      try {
+        const refreshed = await authService.refreshToken()
+        return await authenticatedRequest(refreshed.access_token)
+      } catch {
+        authService.clearTokens()
+        throw new Error('Session expired. Please log in again.')
+      }
+    }
+    throw err
+  }
 }
 
 /**

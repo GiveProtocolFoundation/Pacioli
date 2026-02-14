@@ -114,6 +114,7 @@ function createMockAuthUser(
     language: null,
     date_format: null,
     email_notifications: null,
+    notification_email: null,
     sms_notifications: null,
     login_alerts: null,
   }

@@ -46,6 +46,7 @@ pub struct User {
     pub date_format: Option<String>,
     // Notification preferences
     pub email_notifications: Option<bool>,
+    pub notification_email: Option<String>,
     pub sms_notifications: Option<bool>,
     pub login_alerts: Option<bool>,
 }
@@ -90,6 +91,7 @@ pub struct UserUpdate {
     pub date_format: Option<String>,
     // Notification preferences
     pub email_notifications: Option<bool>,
+    pub notification_email: Option<String>,
     pub sms_notifications: Option<bool>,
     pub login_alerts: Option<bool>,
 }
@@ -581,6 +583,7 @@ pub async fn update_user(
             language = COALESCE(?, language),
             date_format = COALESCE(?, date_format),
             email_notifications = COALESCE(?, email_notifications),
+            notification_email = COALESCE(?, notification_email),
             sms_notifications = COALESCE(?, sms_notifications),
             login_alerts = COALESCE(?, login_alerts),
             updated_at = ?
@@ -600,6 +603,7 @@ pub async fn update_user(
     .bind(&update.language)
     .bind(&update.date_format)
     .bind(update.email_notifications)
+    .bind(&update.notification_email)
     .bind(update.sms_notifications)
     .bind(update.login_alerts)
     .bind(now)
@@ -1630,7 +1634,7 @@ async fn get_user_by_id(pool: &sqlx::SqlitePool, user_id: &str) -> Result<User, 
                two_factor_enabled, last_login_at, created_at, updated_at,
                first_name, last_name, phone, company, job_title, department, location,
                timezone, language, date_format,
-               email_notifications, sms_notifications, login_alerts
+               email_notifications, notification_email, sms_notifications, login_alerts
         FROM users WHERE id = ?
         "#,
     )

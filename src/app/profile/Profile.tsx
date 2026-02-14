@@ -15,6 +15,9 @@ import {
   Calendar,
   Briefcase,
   Loader2,
+  Mail,
+  ShieldCheck,
+  CheckCircle2,
 } from 'lucide-react'
 import { useOrganization } from '../../contexts/OrganizationContext'
 import { useAuth } from '../../contexts/AuthContext'
@@ -40,6 +43,7 @@ interface UserProfile {
 interface SecuritySettings {
   twoFactorEnabled: boolean
   emailNotifications: boolean
+  notificationEmail: string
   smsNotifications: boolean
   loginAlerts: boolean
 }
@@ -243,6 +247,7 @@ const Profile: React.FC = () => {
     () => ({
       twoFactorEnabled: user?.two_factor_enabled || false,
       emailNotifications: user?.email_notifications ?? true,
+      notificationEmail: user?.notification_email || user?.email || '',
       smsNotifications: user?.sms_notifications ?? false,
       loginAlerts: user?.login_alerts ?? true,
     }),
@@ -308,13 +313,16 @@ const Profile: React.FC = () => {
         language: profile.language || undefined,
         date_format: profile.dateFormat || undefined,
         email_notifications: security.emailNotifications,
+        notification_email: security.emailNotifications
+          ? security.notificationEmail || undefined
+          : undefined,
         sms_notifications: security.smsNotifications,
         login_alerts: security.loginAlerts,
       })
       setHasChanges(false)
       setSaveSuccess(true)
-      // Clear success message after 3 seconds
-      setTimeout(() => setSaveSuccess(false), 3000)
+      // Clear success message after 4 seconds
+      setTimeout(() => setSaveSuccess(false), 4000)
     } catch (err) {
       setSaveError(
         err instanceof Error ? err.message : 'Failed to save profile'
@@ -377,6 +385,17 @@ const Profile: React.FC = () => {
     [handleSecurityChange]
   )
 
+  const isValidEmail = useCallback((email: string) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+  }, [])
+
+  const handleNotificationEmailChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      handleSecurityChange('notificationEmail', e.target.value)
+    },
+    [handleSecurityChange]
+  )
+
   // Show loading state while auth is initializing
   if (authLoading && !user) {
     return (
@@ -402,41 +421,44 @@ const Profile: React.FC = () => {
               </p>
             </div>
             <div className="flex items-center space-x-3">
-              {/* Success message */}
-              {saveSuccess && (
-                <span className="text-sm text-[#7a9b6f] dark:text-[#8faf84]">
-                  Profile saved successfully!
-                </span>
-              )}
               {/* Error message */}
               {(saveError || authError) && (
-                <span className="text-sm text-[#9d6b6b] dark:text-[#b88585]">
-                  {saveError || authError}
-                </span>
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#9d6b6b]/10 dark:bg-[#b88585]/10 border border-[#9d6b6b]/20 dark:border-[#b88585]/20">
+                  <X className="w-4 h-4 text-[#9d6b6b] dark:text-[#b88585]" />
+                  <span className="text-sm font-medium text-[#9d6b6b] dark:text-[#b88585]">
+                    {saveError || authError}
+                  </span>
+                </div>
               )}
               {hasChanges && (
-                <>
-                  <button
-                    onClick={handleCancel}
-                    disabled={isSaving}
-                    className="px-4 py-2 text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] bg-[#fafaf8] dark:bg-[#1a1815] border border-[rgba(201,169,97,0.15)] rounded-lg hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620] flex items-center disabled:opacity-50"
-                  >
-                    <X className="w-4 h-4 mr-2" />
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleSave}
-                    disabled={isSaving}
-                    className="px-4 py-2 text-sm font-medium text-white bg-[#8b4e52] rounded-lg hover:bg-[#7a4248] flex items-center disabled:opacity-50"
-                  >
-                    {isSaving ? (
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    ) : (
-                      <Save className="w-4 h-4 mr-2" />
-                    )}
-                    {isSaving ? 'Saving...' : 'Save Changes'}
-                  </button>
-                </>
+                <button
+                  onClick={handleCancel}
+                  disabled={isSaving}
+                  className="px-4 py-2 text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] bg-[#fafaf8] dark:bg-[#1a1815] border border-[rgba(201,169,97,0.15)] rounded-lg hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620] flex items-center disabled:opacity-50"
+                >
+                  <X className="w-4 h-4 mr-2" />
+                  Cancel
+                </button>
+              )}
+              {(hasChanges || isSaving || saveSuccess) && (
+                <button
+                  onClick={handleSave}
+                  disabled={isSaving || saveSuccess}
+                  className={`px-4 py-2 text-sm font-medium text-white rounded-lg flex items-center transition-colors duration-200 ${
+                    saveSuccess
+                      ? 'bg-[#7a9b6f] dark:bg-[#6a8b5f]'
+                      : 'bg-[#8b4e52] hover:bg-[#7a4248] disabled:opacity-50'
+                  }`}
+                >
+                  {isSaving ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : saveSuccess ? (
+                    <CheckCircle2 className="w-4 h-4 mr-2" />
+                  ) : (
+                    <Save className="w-4 h-4 mr-2" />
+                  )}
+                  {isSaving ? 'Saving...' : saveSuccess ? 'Saved' : 'Save Changes'}
+                </button>
               )}
             </div>
           </div>
@@ -863,6 +885,55 @@ const Profile: React.FC = () => {
                         />
                         <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#c9a961]/50 dark:peer-focus:ring-[#c9a961]/30 rounded-full peer dark:bg-[#2a2620] peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-[#8b4e52]" />
                       </label>
+                    </div>
+
+                    {/* Notification Email Input Section */}
+                    <div
+                      className="overflow-hidden transition-all duration-300 ease-in-out"
+                      style={{
+                        maxHeight: security.emailNotifications ? '220px' : '0',
+                        opacity: security.emailNotifications ? 1 : 0,
+                      }}
+                    >
+                      <div className="py-4 px-4 my-2 rounded-lg bg-[#f3f1ed]/60 dark:bg-[#1a1815]/80 border border-[rgba(201,169,97,0.12)]">
+                        <div className="flex items-center gap-2 mb-3">
+                          <ShieldCheck className="w-4 h-4 text-[#7a9b6f] dark:text-[#8faf84]" />
+                          <span className="text-xs text-[#696557] dark:text-[#b8b3ac]">
+                            Used only for account-related alerts and messages
+                          </span>
+                        </div>
+                        <label
+                          htmlFor="notificationEmail"
+                          className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
+                        >
+                          Notification Email
+                        </label>
+                        <div className="relative">
+                          <input
+                            id="notificationEmail"
+                            type="email"
+                            value={security.notificationEmail}
+                            onChange={handleNotificationEmailChange}
+                            placeholder="you@example.com"
+                            className="w-full pl-3 pr-16 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#0f0e0c] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
+                          />
+                          <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-1.5">
+                            {security.notificationEmail &&
+                              (isValidEmail(security.notificationEmail) ? (
+                                <CheckCircle2 className="w-5 h-5 text-[#7a9b6f] dark:text-[#8faf84]" />
+                              ) : (
+                                <X className="w-5 h-5 text-[#9d6b6b] dark:text-[#b88585]" />
+                              ))}
+                            <Mail className="w-5 h-5 text-[#a39d94]" />
+                          </div>
+                        </div>
+                        {security.notificationEmail &&
+                          !isValidEmail(security.notificationEmail) && (
+                            <p className="text-xs text-[#9d6b6b] dark:text-[#b88585] mt-1.5">
+                              Please enter a valid email address
+                            </p>
+                          )}
+                      </div>
                     </div>
 
                     <div className="flex items-center justify-between py-4">
