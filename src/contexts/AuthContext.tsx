@@ -133,15 +133,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       setIsLoading(true)
       setError(null)
 
-      // Check if we have stored tokens — if not, auto-register a local user
+      // Check if we have stored tokens — if not, provision a local session
       // so that auth-dependent features (profile save, etc.) work in local-only mode
       if (!checkIsAuthenticated()) {
         try {
-          const response = await authService.register({
-            email: 'local@pacioli.app',
-            password: 'LocalUser1',
-            display_name: 'Local User',
-          })
+          let response: AuthResponse
+          if (authService.provisionLocalSession) {
+            // Tauri mode: dedicated command, no credentials needed
+            response = await authService.provisionLocalSession()
+          } else {
+            // Browser/IndexedDB fallback: use throwaway credentials
+            const throwawayPassword = crypto.randomUUID()
+            try {
+              response = await authService.register({
+                email: 'local@pacioli.local',
+                password: throwawayPassword,
+                display_name: 'Local User',
+              })
+            } catch {
+              response = await authService.login({
+                email: 'local@pacioli.local',
+                password: throwawayPassword,
+              })
+            }
+          }
           setUser(response.user)
           setIsAuthenticated(true)
 
@@ -152,32 +167,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           if (profiles.length > 0) {
             setCurrentProfileRole(profiles[0].role)
           }
-        } catch {
-          // Registration may fail if the local user already exists — try logging in
-          try {
-            const response = await authService.login({
-              email: 'local@pacioli.app',
-              password: 'LocalUser1',
-            })
-            setUser(response.user)
-            setIsAuthenticated(true)
-
-            const profiles = await authService.getUserProfiles(
-              response.access_token
-            )
-            setUserProfiles(profiles)
-            if (profiles.length > 0) {
-              setCurrentProfileRole(profiles[0].role)
-            }
-          } catch (loginErr) {
-            console.error(
-              '[AuthContext] Auto-login failed:',
-              loginErr
-            )
-            setIsAuthenticated(false)
-            setUser(null)
-            setUserProfiles([])
-          }
+        } catch (err) {
+          console.error('[AuthContext] Local session provisioning failed:', err)
+          setIsAuthenticated(false)
+          setUser(null)
+          setUserProfiles([])
         }
       } else {
         // Try to get current user with auto-refresh

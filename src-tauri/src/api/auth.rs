@@ -325,6 +325,115 @@ pub async fn register(
     create_session_and_tokens(&db, &auth, &user_id, &input.email, None, None).await
 }
 
+/// Provision a local-only session without email/password credentials.
+///
+/// Creates or retrieves a local user (`local@pacioli.local`) and issues JWT
+/// tokens. Migrates legacy `local@pacioli.app` users automatically.
+#[tauri::command]
+pub async fn provision_local_session(
+    db: State<'_, DatabaseState>,
+    auth: State<'_, AuthState>,
+) -> Result<AuthResponse, String> {
+    let pool = &db.pool;
+    let local_email = "local@pacioli.local";
+    let legacy_email = "local@pacioli.app";
+
+    // Check for existing local user (current or legacy email)
+    let existing: Option<(String, String)> = sqlx::query_as(
+        "SELECT id, email FROM users WHERE email = ? OR email = ? LIMIT 1",
+    )
+    .bind(local_email)
+    .bind(legacy_email)
+    .fetch_optional(pool)
+    .await
+    .map_err(|e| format!("Database error: {}", e))?;
+
+    let user_id = if let Some((id, found_email)) = existing {
+        // Migrate legacy email and clear password hash
+        if found_email == legacy_email {
+            sqlx::query(
+                "UPDATE users SET email = ?, password_hash = NULL, updated_at = ? WHERE id = ?",
+            )
+            .bind(local_email)
+            .bind(Utc::now())
+            .bind(&id)
+            .execute(pool)
+            .await
+            .map_err(|e| format!("Failed to migrate local user: {}", e))?;
+        }
+        id
+    } else {
+        // Create new local user without a password
+        let id = Uuid::new_v4().to_string();
+        let now = Utc::now();
+        let display_name = "Local User";
+
+        sqlx::query(
+            r#"
+            INSERT INTO users (id, email, password_hash, display_name, email_verified, status, created_at, updated_at)
+            VALUES (?, ?, NULL, ?, 1, 'active', ?, ?)
+            "#,
+        )
+        .bind(&id)
+        .bind(local_email)
+        .bind(display_name)
+        .bind(now)
+        .bind(now)
+        .execute(pool)
+        .await
+        .map_err(|e| format!("Failed to create local user: {}", e))?;
+
+        // Create default profile
+        let profile_id = Uuid::new_v4().to_string();
+        sqlx::query(
+            r#"
+            INSERT INTO profiles (id, name, created_at, updated_at)
+            VALUES (?, ?, ?, ?)
+            "#,
+        )
+        .bind(&profile_id)
+        .bind(format!("{}'s Workspace", display_name))
+        .bind(now)
+        .bind(now)
+        .execute(pool)
+        .await
+        .map_err(|e| format!("Failed to create default profile: {}", e))?;
+
+        // Assign owner role
+        let role_id = Uuid::new_v4().to_string();
+        sqlx::query(
+            r#"
+            INSERT INTO user_profile_roles (id, user_id, profile_id, role, status, accepted_at, created_at, updated_at)
+            VALUES (?, ?, ?, 'owner', 'active', ?, ?, ?)
+            "#,
+        )
+        .bind(&role_id)
+        .bind(&id)
+        .bind(&profile_id)
+        .bind(now)
+        .bind(now)
+        .bind(now)
+        .execute(pool)
+        .await
+        .map_err(|e| format!("Failed to assign profile role: {}", e))?;
+
+        id
+    };
+
+    log_audit_event(
+        pool,
+        Some(&user_id),
+        "local_session",
+        "success",
+        None,
+        None,
+        None,
+    )
+    .await;
+
+    create_session_and_tokens(&db, &auth, &user_id, local_email, None, None).await
+}
+
 /// Login with email and password
 #[tauri::command]
 pub async fn login(

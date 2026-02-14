@@ -105,6 +105,18 @@ export const tauriAuthService: AuthService = {
     }
   },
 
+  async provisionLocalSession(): Promise<AuthResponse> {
+    const raw = await invoke<TauriAuthResponse>('provision_local_session')
+    const expiresAt = computeExpiresAt(raw.expires_in)
+    storeTokens(raw.access_token, raw.refresh_token, expiresAt)
+    return {
+      access_token: raw.access_token,
+      refresh_token: raw.refresh_token,
+      user: raw.user,
+      expires_at: expiresAt,
+    }
+  },
+
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     const raw = await invoke<TauriAuthResponse>('login', { credentials })
     const expiresAt = computeExpiresAt(raw.expires_in)

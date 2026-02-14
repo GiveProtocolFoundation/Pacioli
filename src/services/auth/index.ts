@@ -45,6 +45,7 @@ export interface AuthService {
   // Authentication
   register(input: RegisterInput): Promise<AuthResponse>
   login(credentials: LoginCredentials): Promise<AuthResponse>
+  provisionLocalSession?(): Promise<AuthResponse>
   logout(sessionId: string): Promise<void>
   refreshToken(): Promise<TokenRefreshResponse>
   verifyToken(token: string): Promise<TokenVerifyResponse>

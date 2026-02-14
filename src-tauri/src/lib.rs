@@ -305,6 +305,7 @@ pub fn run() {
             api::entities::find_entity_by_address,
             // Authentication commands
             api::auth::register,
+            api::auth::provision_local_session,
             api::auth::login,
             api::auth::logout,
             api::auth::refresh_token,
