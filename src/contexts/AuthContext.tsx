@@ -133,40 +133,46 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       setIsLoading(true)
       setError(null)
 
+      // Provision a fresh local session (used on first launch and as
+      // fallback when stored tokens are stale/expired)
+      const provisionFreshSession = async () => {
+        let response: AuthResponse
+        if (authService.provisionLocalSession) {
+          // Tauri mode: dedicated command, no credentials needed
+          response = await authService.provisionLocalSession()
+        } else {
+          // Browser/IndexedDB fallback: use throwaway credentials
+          const throwawayPassword = crypto.randomUUID()
+          try {
+            response = await authService.register({
+              email: 'local@pacioli.local',
+              password: throwawayPassword,
+              display_name: 'Local User',
+            })
+          } catch {
+            response = await authService.login({
+              email: 'local@pacioli.local',
+              password: throwawayPassword,
+            })
+          }
+        }
+        setUser(response.user)
+        setIsAuthenticated(true)
+
+        const profiles = await authService.getUserProfiles(
+          response.access_token
+        )
+        setUserProfiles(profiles)
+        if (profiles.length > 0) {
+          setCurrentProfileRole(profiles[0].role)
+        }
+      }
+
       // Check if we have stored tokens — if not, provision a local session
       // so that auth-dependent features (profile save, etc.) work in local-only mode
       if (!checkIsAuthenticated()) {
         try {
-          let response: AuthResponse
-          if (authService.provisionLocalSession) {
-            // Tauri mode: dedicated command, no credentials needed
-            response = await authService.provisionLocalSession()
-          } else {
-            // Browser/IndexedDB fallback: use throwaway credentials
-            const throwawayPassword = crypto.randomUUID()
-            try {
-              response = await authService.register({
-                email: 'local@pacioli.local',
-                password: throwawayPassword,
-                display_name: 'Local User',
-              })
-            } catch {
-              response = await authService.login({
-                email: 'local@pacioli.local',
-                password: throwawayPassword,
-              })
-            }
-          }
-          setUser(response.user)
-          setIsAuthenticated(true)
-
-          const profiles = await authService.getUserProfiles(
-            response.access_token
-          )
-          setUserProfiles(profiles)
-          if (profiles.length > 0) {
-            setCurrentProfileRole(profiles[0].role)
-          }
+          await provisionFreshSession()
         } catch (err) {
           console.error('[AuthContext] Local session provisioning failed:', err)
           setIsAuthenticated(false)
@@ -174,32 +180,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           setUserProfiles([])
         }
       } else {
-        // Try to get current user with auto-refresh
-        const currentUser = await withAutoRefresh(token =>
-          authService.getCurrentUser(token)
-        )
-        setUser(currentUser)
-        setIsAuthenticated(true)
-
-        // Load user's profiles
-        const profiles = await withAutoRefresh(token =>
-          authService.getUserProfiles(token)
-        )
-        setUserProfiles(profiles)
-
-        // Set current profile role if we have a stored profile selection
-        const storedProfileId = localStorage.getItem('currentProfileId')
-        if (storedProfileId) {
-          const currentProfileData = profiles.find(
-            p => p.profile_id === storedProfileId
+        try {
+          // Try to resume existing session with auto-refresh
+          const currentUser = await withAutoRefresh(token =>
+            authService.getCurrentUser(token)
           )
-          if (currentProfileData) {
-            setCurrentProfileRole(currentProfileData.role)
+          setUser(currentUser)
+          setIsAuthenticated(true)
+
+          // Load user's profiles
+          const profiles = await withAutoRefresh(token =>
+            authService.getUserProfiles(token)
+          )
+          setUserProfiles(profiles)
+
+          // Set current profile role if we have a stored profile selection
+          const storedProfileId = localStorage.getItem('currentProfileId')
+          if (storedProfileId) {
+            const currentProfileData = profiles.find(
+              p => p.profile_id === storedProfileId
+            )
+            if (currentProfileData) {
+              setCurrentProfileRole(currentProfileData.role)
+            } else if (profiles.length > 0) {
+              setCurrentProfileRole(profiles[0].role)
+            }
           } else if (profiles.length > 0) {
             setCurrentProfileRole(profiles[0].role)
           }
-        } else if (profiles.length > 0) {
-          setCurrentProfileRole(profiles[0].role)
+        } catch (err) {
+          // Stale/expired tokens — clear and provision a fresh local session
+          console.warn('[AuthContext] Token recovery failed, provisioning fresh session:', err)
+          authService.clearTokens()
+          await provisionFreshSession()
         }
       }
 
