@@ -171,6 +171,16 @@ fn get_configs() -> &'static Vec<EvmChainConfig> {
                 false, // Sidechain, not technically L2
                 2,     // ~2 second block time
             ),
+            // BSC (BNB Smart Chain)
+            EvmChainConfig::new(
+                56,
+                "bsc",
+                "BNB",
+                "https://bnb-mainnet.g.alchemy.com/v2",
+                "https://api.etherscan.io/v2/api",
+                false, // Standalone sidechain, like Polygon
+                3,     // ~3 second block time
+            ),
         ]
     })
 }
@@ -287,7 +297,7 @@ mod tests {
     #[test]
     fn test_get_all_chains() {
         let chains = get_all_chains();
-        assert_eq!(chains.len(), 5);
+        assert_eq!(chains.len(), 6);
 
         let chain_ids: Vec<u64> = chains.iter().map(|c| c.chain_id).collect();
         assert!(chain_ids.contains(&1)); // Ethereum
@@ -295,6 +305,7 @@ mod tests {
         assert!(chain_ids.contains(&8453)); // Base
         assert!(chain_ids.contains(&10)); // Optimism
         assert!(chain_ids.contains(&137)); // Polygon
+        assert!(chain_ids.contains(&56)); // BSC
     }
 
     #[test]
@@ -314,7 +325,7 @@ mod tests {
         assert_eq!(l2s.len(), 3); // Arbitrum, Base, Optimism
 
         let l1s = get_l1_chains();
-        assert_eq!(l1s.len(), 2); // Ethereum, Polygon
+        assert_eq!(l1s.len(), 3); // Ethereum, Polygon, BSC
     }
 
     #[test]

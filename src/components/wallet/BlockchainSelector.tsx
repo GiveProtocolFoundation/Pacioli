@@ -19,6 +19,7 @@ const CHAIN_COLORS: Record<BlockchainType, string> = {
   optimism: '#FF0420',
   base: '#0052FF',
   polygon: '#8247E5',
+  bsc: '#F3BA2F',
   bitcoin: '#F7931A',
   solana: '#9945FF',
 }

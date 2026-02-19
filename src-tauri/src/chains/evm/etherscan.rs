@@ -67,6 +67,7 @@ fn get_api_provider_for_chain(chain_id: u64) -> ApiProvider {
         42161 => ApiProvider::Arbiscan,  // Arbitrum
         8453 => ApiProvider::Basescan,   // Base
         10 => ApiProvider::Optimism,     // Optimism
+        56 => ApiProvider::Etherscan,    // BSC (uses Etherscan V2 API)
         _ => ApiProvider::Etherscan,     // Default to Etherscan for unknown chains
     }
 }

@@ -32,6 +32,7 @@ const CryptoIcon: React.FC<CryptoIconProps> = ({
     iBTC: { coingeckoId: 'interbtc', hasLocalIcon: true },
     BTC: { coingeckoId: 'bitcoin', hasLocalIcon: true },
     ETH: { coingeckoId: 'ethereum', hasLocalIcon: false },
+    BNB: { coingeckoId: 'binancecoin', hasLocalIcon: false },
     USDT: { coingeckoId: 'tether', hasLocalIcon: true },
     USDC: { coingeckoId: 'usd-coin', hasLocalIcon: true },
   }
@@ -49,6 +50,7 @@ const CryptoIcon: React.FC<CryptoIconProps> = ({
       interbtc: '21681',
       bitcoin: '1',
       ethereum: '279',
+      binancecoin: '825',
       tether: '325',
       'usd-coin': '6319',
     }

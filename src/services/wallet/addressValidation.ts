@@ -32,6 +32,7 @@ const EVM_CHAINS: BlockchainType[] = [
   'optimism',
   'base',
   'polygon',
+  'bsc',
   'moonbeam',
   'moonriver',
 ]
@@ -280,6 +281,7 @@ export function getBlockchainDisplayName(blockchain: BlockchainType): string {
     optimism: 'Optimism',
     base: 'Base',
     polygon: 'Polygon',
+    bsc: 'BNB Smart Chain',
     bitcoin: 'Bitcoin',
     solana: 'Solana',
   }
@@ -310,6 +312,7 @@ export const BLOCKCHAIN_GROUPS: Record<string, BlockchainType[]> = {
     'optimism',
     'base',
     'polygon',
+    'bsc',
     'moonbeam',
     'moonriver',
   ],
@@ -332,6 +335,7 @@ export function getAddressPlaceholder(blockchain: BlockchainType): string {
     optimism: '0x...',
     base: '0x...',
     polygon: '0x...',
+    bsc: '0x...',
     bitcoin: '1..., 3..., bc1..., or bc1p...',
     solana: 'Base58 encoded address',
   }

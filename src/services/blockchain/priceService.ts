@@ -75,6 +75,7 @@ const NETWORK_NATIVE_TOKENS: Record<string, string> = {
   arbitrum: 'ethereum', // Uses ETH
   optimism: 'ethereum', // Uses ETH
   base: 'ethereum', // Uses ETH
+  bsc: 'binancecoin',
 }
 
 /**

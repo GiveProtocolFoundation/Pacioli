@@ -68,6 +68,15 @@ export const SEED_CHAINS: Chain[] = [
     iconUrl: '/crypto-icons/eth.svg',
   },
   {
+    id: 'bsc',
+    chainId: 'bsc',
+    chainName: 'BNB Smart Chain',
+    nativeTokenId: 'bnb',
+    chainType: 'standalone',
+    explorerUrl: 'https://bscscan.com',
+    isActive: true,
+  },
+  {
     id: 'acala',
     chainId: 'acala',
     chainName: 'Acala',

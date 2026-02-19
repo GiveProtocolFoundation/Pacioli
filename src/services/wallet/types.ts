@@ -124,6 +124,7 @@ export type BlockchainType =
   | 'optimism'
   | 'base'
   | 'polygon'
+  | 'bsc'
   // Other chains
   | 'bitcoin'
   | 'solana'

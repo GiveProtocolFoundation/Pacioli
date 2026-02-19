@@ -52,7 +52,7 @@ const ECOSYSTEM_OPTIONS: EcosystemOption[] = [
   {
     id: 'ethereum',
     label: 'Ethereum & L2s',
-    description: 'Ethereum, Arbitrum, Base, Optimism, Polygon',
+    description: 'Ethereum, Arbitrum, Base, Optimism, Polygon, BSC',
     icon: <div className="w-5 h-5 rounded-full bg-[#627EEA]" />,
     color: '#627EEA',
     defaultChain: 'ethereum',
@@ -79,6 +79,7 @@ const L2_CHAINS: { id: BlockchainType; label: string; color: string }[] = [
   { id: 'base', label: 'Base', color: '#0052FF' },
   { id: 'optimism', label: 'Optimism', color: '#FF0420' },
   { id: 'polygon', label: 'Polygon', color: '#8247E5' },
+  { id: 'bsc', label: 'BNB Smart Chain', color: '#F3BA2F' },
 ]
 
 /**
