@@ -365,26 +365,31 @@ export const SEED_TOKENS: Token[] = [
   },
 ]
 
+/** Get a token by its unique ID. */
 export const getTokenById = (id: string): Token | undefined => {
   return SEED_TOKENS.find(token => token.id === id)
 }
 
+/** Get all active tokens for a given chain. */
 export const getTokensByChain = (chainId: string): Token[] => {
   return SEED_TOKENS.filter(
     token => token.chainId === chainId && token.isActive
   )
 }
 
+/** Get all active tokens of a given digital asset type. */
 export const getTokensByAssetType = (assetType: string): Token[] => {
   return SEED_TOKENS.filter(
     token => token.digitalAssetType === assetType && token.isActive
   )
 }
 
+/** Get a chain by its unique ID. */
 export const getChainById = (id: string): Chain | undefined => {
   return SEED_CHAINS.find(chain => chain.id === id)
 }
 
+/** Search active tokens by symbol or name. */
 export const searchTokens = (query: string): Token[] => {
   const lowerQuery = query.toLowerCase()
   return SEED_TOKENS.filter(

@@ -1,7 +1,7 @@
 import { decodeAddress, encodeAddress } from '@polkadot/util-crypto'
 import { isAddress as isEthAddress, getAddress as checksumAddress } from 'ethers'
 import { PublicKey } from '@solana/web3.js'
-import * as bitcoin from 'bitcoinjs-lib'
+import { address as bitcoinAddress } from 'bitcoinjs-lib'
 import bs58 from 'bs58'
 import type { BlockchainType } from './types'
 
@@ -45,10 +45,12 @@ const SUBSTRATE_CHAINS: BlockchainType[] = [
   'asset-hub',
 ]
 
+/** Check if a blockchain type uses EVM-compatible addresses. */
 export function isEVMChain(blockchain: BlockchainType): boolean {
   return EVM_CHAINS.includes(blockchain)
 }
 
+/** Check if a blockchain type uses Substrate SS58 addresses. */
 export function isSubstrateChain(blockchain: BlockchainType): boolean {
   return SUBSTRATE_CHAINS.includes(blockchain)
 }
@@ -131,19 +133,19 @@ function validateBitcoinAddress(address: string): ValidationResult {
     // Try to decode as different address types
     if (address.startsWith('bc1p')) {
       // Taproot (Bech32m)
-      bitcoin.address.fromBech32(address)
+      bitcoinAddress.fromBech32(address)
       addressType = 'bech32m (Taproot)'
     } else if (address.startsWith('bc1')) {
       // Native SegWit (Bech32)
-      bitcoin.address.fromBech32(address)
+      bitcoinAddress.fromBech32(address)
       addressType = 'bech32 (SegWit)'
     } else if (address.startsWith('3')) {
       // P2SH (Script Hash)
-      bitcoin.address.fromBase58Check(address)
+      bitcoinAddress.fromBase58Check(address)
       addressType = 'p2sh (Script Hash)'
     } else if (address.startsWith('1')) {
       // P2PKH (Legacy)
-      bitcoin.address.fromBase58Check(address)
+      bitcoinAddress.fromBase58Check(address)
       addressType = 'p2pkh (Legacy)'
     } else {
       return {

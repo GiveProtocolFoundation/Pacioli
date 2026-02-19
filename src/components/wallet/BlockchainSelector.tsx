@@ -191,7 +191,7 @@ const BlockchainSelector: React.FC<BlockchainSelectorProps> = ({
 
             {Object.keys(filteredGroups).length === 0 && (
               <div className="px-4 py-8 text-center text-[#a39d94]">
-                No networks found matching "{searchQuery}"
+                No networks found matching &quot;{searchQuery}&quot;
               </div>
             )}
           </div>
