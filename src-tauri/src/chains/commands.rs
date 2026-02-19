@@ -317,6 +317,61 @@ pub async fn validate_bitcoin_address(address: String) -> Result<bool, String> {
 }
 
 // =============================================================================
+// SOLANA-SPECIFIC COMMANDS
+// =============================================================================
+
+use super::solana::{SolanaAdapter, SolanaBalance, SolanaTransaction};
+
+/// Get Solana transactions for an address
+///
+/// # Arguments
+/// * `address` - Solana address (base58 encoded)
+/// * `network` - Network name ("solana", "solana_devnet")
+/// * `max_pages` - Maximum pages to fetch (~100 txs per page)
+#[tauri::command]
+pub async fn get_solana_transactions(
+    address: String,
+    network: Option<String>,
+    max_pages: Option<usize>,
+) -> Result<Vec<SolanaTransaction>, String> {
+    let network_name = network.as_deref().unwrap_or("solana");
+    let adapter = SolanaAdapter::from_network(network_name).map_err(|e| e.to_string())?;
+
+    adapter
+        .fetch_transactions(&address, max_pages)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+/// Get Solana balance for an address
+///
+/// # Arguments
+/// * `address` - Solana address
+/// * `network` - Network name ("solana", "solana_devnet")
+#[tauri::command]
+pub async fn get_solana_balance(
+    address: String,
+    network: Option<String>,
+) -> Result<SolanaBalance, String> {
+    let network_name = network.as_deref().unwrap_or("solana");
+    let adapter = SolanaAdapter::from_network(network_name).map_err(|e| e.to_string())?;
+
+    adapter
+        .fetch_balance(&address)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+/// Validate a Solana address
+///
+/// # Arguments
+/// * `address` - Solana address to validate
+#[tauri::command]
+pub async fn validate_solana_address(address: String) -> Result<bool, String> {
+    Ok(super::solana::validate_solana_address(&address).is_ok())
+}
+
+// =============================================================================
 // BITCOIN XPUB COMMANDS (Phase 5)
 // =============================================================================
 

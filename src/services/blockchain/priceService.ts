@@ -76,6 +76,7 @@ const NETWORK_NATIVE_TOKENS: Record<string, string> = {
   optimism: 'ethereum', // Uses ETH
   base: 'ethereum', // Uses ETH
   bsc: 'binancecoin',
+  solana: 'solana',
 }
 
 /**

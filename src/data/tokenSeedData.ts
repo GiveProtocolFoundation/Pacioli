@@ -97,6 +97,15 @@ export const SEED_CHAINS: Chain[] = [
     explorerUrl: 'https://hydradx.subscan.io',
     isActive: true,
   },
+  {
+    id: 'solana',
+    chainId: 'solana',
+    chainName: 'Solana',
+    nativeTokenId: 'sol',
+    chainType: 'standalone',
+    explorerUrl: 'https://solscan.io',
+    isActive: true,
+  },
 ]
 
 export const SEED_TOKENS: Token[] = [
@@ -208,6 +217,17 @@ export const SEED_TOKENS: Token[] = [
     coingeckoId: 'hydradx',
     isActive: true,
   },
+  {
+    id: 'sol',
+    symbol: 'SOL',
+    name: 'Solana',
+    chainId: 'solana',
+    decimals: 9,
+    tokenStandard: 'native',
+    digitalAssetType: 'native-protocol-tokens',
+    coingeckoId: 'solana',
+    isActive: true,
+  },
 
   // Stablecoins
   {
@@ -284,6 +304,30 @@ export const SEED_TOKENS: Token[] = [
     tokenStandard: 'PSP-22',
     digitalAssetType: 'stablecoins',
     coingeckoId: 'acala-dollar',
+    isActive: true,
+  },
+  {
+    id: 'usdc-solana',
+    symbol: 'USDC',
+    name: 'USD Coin (Solana)',
+    chainId: 'solana',
+    contractAddress: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+    decimals: 6,
+    tokenStandard: 'SPL',
+    digitalAssetType: 'stablecoins',
+    coingeckoId: 'usd-coin',
+    isActive: true,
+  },
+  {
+    id: 'usdt-solana',
+    symbol: 'USDT',
+    name: 'Tether USD (Solana)',
+    chainId: 'solana',
+    contractAddress: 'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB',
+    decimals: 6,
+    tokenStandard: 'SPL',
+    digitalAssetType: 'stablecoins',
+    coingeckoId: 'tether',
     isActive: true,
   },
 

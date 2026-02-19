@@ -51,6 +51,8 @@ pub enum ApiProvider {
     Covalent,
     /// Alchemy (multi-chain RPC).
     Alchemy,
+    /// Helius (Solana enhanced RPC + DAS).
+    Helius,
 }
 
 impl ApiProvider {
@@ -65,6 +67,7 @@ impl ApiProvider {
             ApiProvider::Subscan => "subscan_api_key",
             ApiProvider::Covalent => "covalent_api_key",
             ApiProvider::Alchemy => "alchemy_api_key",
+            ApiProvider::Helius => "helius_api_key",
         }
     }
 
@@ -79,6 +82,7 @@ impl ApiProvider {
             ApiProvider::Subscan => "Subscan",
             ApiProvider::Covalent => "Covalent",
             ApiProvider::Alchemy => "Alchemy",
+            ApiProvider::Helius => "Helius",
         }
     }
 
@@ -97,6 +101,8 @@ impl ApiProvider {
             ApiProvider::Covalent => 1,
             // Alchemy: limited without key
             ApiProvider::Alchemy => 2,
+            // Helius: 5 req/sec on free tier
+            ApiProvider::Helius => 5,
         }
     }
 
@@ -115,6 +121,8 @@ impl ApiProvider {
             ApiProvider::Covalent => 5,
             // Alchemy: 10 req/sec with key
             ApiProvider::Alchemy => 10,
+            // Helius: 30 req/sec with paid key
+            ApiProvider::Helius => 30,
         }
     }
 
@@ -129,6 +137,7 @@ impl ApiProvider {
             "subscan" => Some(ApiProvider::Subscan),
             "covalent" => Some(ApiProvider::Covalent),
             "alchemy" => Some(ApiProvider::Alchemy),
+            "helius" => Some(ApiProvider::Helius),
             _ => None,
         }
     }
@@ -144,6 +153,7 @@ impl ApiProvider {
             ApiProvider::Subscan,
             ApiProvider::Covalent,
             ApiProvider::Alchemy,
+            ApiProvider::Helius,
         ]
     }
 }
@@ -245,8 +255,9 @@ mod tests {
     #[test]
     fn test_all_providers() {
         let all = ApiProvider::all();
-        assert_eq!(all.len(), 8);
+        assert_eq!(all.len(), 9);
         assert!(all.contains(&ApiProvider::Etherscan));
         assert!(all.contains(&ApiProvider::Subscan));
+        assert!(all.contains(&ApiProvider::Helius));
     }
 }

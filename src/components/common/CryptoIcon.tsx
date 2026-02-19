@@ -35,6 +35,7 @@ const CryptoIcon: React.FC<CryptoIconProps> = ({
     BNB: { coingeckoId: 'binancecoin', hasLocalIcon: false },
     USDT: { coingeckoId: 'tether', hasLocalIcon: true },
     USDC: { coingeckoId: 'usd-coin', hasLocalIcon: true },
+    SOL: { coingeckoId: 'solana', hasLocalIcon: false },
   }
 
   const config = cryptoConfig[symbol.toUpperCase()]
@@ -53,6 +54,7 @@ const CryptoIcon: React.FC<CryptoIconProps> = ({
       binancecoin: '825',
       tether: '325',
       'usd-coin': '6319',
+      solana: '4128',
     }
     return imageIds[coinId] || '1'
   }

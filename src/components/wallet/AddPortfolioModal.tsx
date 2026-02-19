@@ -25,7 +25,7 @@ import {
  * Portfolio ecosystem groups for simplified chain selection.
  * Follows "Batteries Included, Turbo Optional" pattern.
  */
-type PortfolioEcosystem = 'polkadot' | 'ethereum' | 'bitcoin'
+type PortfolioEcosystem = 'polkadot' | 'ethereum' | 'bitcoin' | 'solana'
 
 interface EcosystemOption {
   id: PortfolioEcosystem
@@ -68,6 +68,16 @@ const ECOSYSTEM_OPTIONS: EcosystemOption[] = [
     defaultChain: 'bitcoin',
     inputLabel: 'Public Address or xPub',
     inputPlaceholder: '1..., 3..., bc1..., or xpub...',
+  },
+  {
+    id: 'solana',
+    label: 'Solana',
+    description: 'SOL, SPL tokens, DeFi (Jupiter, Marinade, etc.)',
+    icon: <div className="w-5 h-5 rounded-full bg-[#9945FF]" />,
+    color: '#9945FF',
+    defaultChain: 'solana',
+    inputLabel: 'Public Address',
+    inputPlaceholder: 'Base58 encoded Solana address',
   },
 ]
 
@@ -334,6 +344,8 @@ const AddPortfolioModal: React.FC<AddPortfolioModalProps> = ({
       chains = Array.from(selectedPolkadotChains)
     } else if (selectedEcosystem === 'bitcoin') {
       chains = ['bitcoin']
+    } else if (selectedEcosystem === 'solana') {
+      chains = ['solana']
     }
 
     onPortfolioAdded?.({

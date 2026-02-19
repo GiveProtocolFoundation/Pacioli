@@ -14,6 +14,7 @@
 pub mod bitcoin;
 pub mod commands;
 pub mod evm;
+pub mod solana;
 pub mod substrate;
 
 use async_trait::async_trait;
@@ -414,6 +415,15 @@ impl ChainManager {
             return Ok(Box::new(adapter));
         }
 
+        // Try Solana adapter
+        if solana::get_config_by_name(chain_id).is_some() {
+            let mut adapter = solana::SolanaAdapter::from_network(chain_id)?;
+            if let Some(key) = explorer_key {
+                adapter = adapter.with_helius_api_key(key);
+            }
+            return Ok(Box::new(adapter));
+        }
+
         // TODO: Add Substrate adapter initialization here
         // if substrate::is_supported(chain_id) { ... }
 
@@ -461,6 +471,21 @@ impl ChainManager {
             });
         }
 
+        // Add Solana chains
+        for config in solana::get_all_configs() {
+            chains.push(ChainInfo {
+                chain_id: config.name.clone(),
+                name: format_chain_name(&config.name),
+                symbol: config.symbol.clone(),
+                chain_type: ChainType::Solana,
+                numeric_chain_id: None,
+                decimals: config.decimals,
+                logo_url: None,
+                is_testnet: config.is_testnet,
+                explorer_url: Some(config.explorer_url.clone()),
+            });
+        }
+
         // TODO: Add Substrate chains
         // for config in substrate::get_all_chains() { ... }
 
@@ -484,6 +509,11 @@ impl ChainManager {
             if evm::config::get_chain_config(numeric_id).is_some() {
                 return true;
             }
+        }
+
+        // Check Solana
+        if solana::get_config_by_name(chain_id).is_some() {
+            return true;
         }
 
         // TODO: Check Substrate chains

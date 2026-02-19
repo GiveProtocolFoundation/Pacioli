@@ -22,6 +22,7 @@ const ENV_RESEND_API_KEY: &str = "RESEND_API_KEY";
 const ENV_ETHERSCAN_API_KEY: &str = "ETHERSCAN_API_KEY";
 const ENV_POLYGONSCAN_API_KEY: &str = "POLYGONSCAN_API_KEY";
 const ENV_ARBISCAN_API_KEY: &str = "ARBISCAN_API_KEY";
+const ENV_HELIUS_API_KEY: &str = "HELIUS_API_KEY";
 
 // Global EVM indexer state
 type EVMIndexerState = Mutex<EVMIndexer>;
@@ -252,6 +253,14 @@ pub fn run() {
                     manager.set_explorer_api_key("42161", arbiscan_key).await;
                 });
             }
+            if let Ok(helius_key) = std::env::var(ENV_HELIUS_API_KEY) {
+                let manager = chain_manager.blocking_read();
+                tauri::async_runtime::block_on(async {
+                    manager
+                        .set_explorer_api_key("solana", helius_key)
+                        .await;
+                });
+            }
 
             app.manage(chain_manager);
             println!("Chain manager initialized");
@@ -353,6 +362,10 @@ pub fn run() {
             chains::get_bitcoin_balance,
             chains::get_bitcoin_utxos,
             chains::validate_bitcoin_address,
+            // Solana commands
+            chains::get_solana_transactions,
+            chains::get_solana_balance,
+            chains::validate_solana_address,
             // Bitcoin xPub commands (Phase 5)
             chains::bitcoin_is_xpub,
             chains::bitcoin_parse_xpub,
