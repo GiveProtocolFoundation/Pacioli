@@ -141,13 +141,13 @@ const Support: React.FC = () => {
         <div className="mb-8">
           <div className="max-w-2xl mx-auto">
             <div className="relative">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Search className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 type="text"
                 placeholder="Search documentation..."
                 value={searchQuery}
                 onChange={handleSearchChange}
-                className="w-full pl-12 pr-4 py-4 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-lg focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
+                className="w-full pl-4 pr-12 py-4 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-lg focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
               />
             </div>
             <div className="flex items-center justify-center gap-2 mt-4">
@@ -257,7 +257,7 @@ const Support: React.FC = () => {
               <div className="flex items-start">
                 <Video className="w-8 h-8 flex-shrink-0" />
                 <div className="ml-4 flex-1">
-                  <h3 className="text-lg font-semibold mb-2">
+                  <h3 className="text-lg font-semibold mb-2 !text-white">
                     Video Tutorials
                   </h3>
                   <p className="text-sm opacity-90 mb-4">

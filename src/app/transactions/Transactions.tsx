@@ -233,13 +233,13 @@ const Transactions: React.FC = () => {
       {/* Search and Actions Bar */}
       <div className="mb-6 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#a39d94]" />
+          <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#a39d94]" />
           <input
             type="text"
             placeholder="Search transactions..."
             value={searchQuery}
             onChange={handleSearchChange}
-            className="w-full pl-10 pr-4 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] placeholder-[#a39d94] dark:placeholder-[#696557] focus:outline-none focus:ring-2 focus:ring-[#c9a961] focus:border-[#c9a961]"
+            className="w-full pl-4 pr-10 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] placeholder-[#a39d94] dark:placeholder-[#696557] focus:outline-none focus:ring-2 focus:ring-[#c9a961] focus:border-[#c9a961]"
           />
         </div>
 

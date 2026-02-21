@@ -726,7 +726,7 @@ const TransactionForm: React.FC = () => {
                 ) : (
                   <div className="relative">
                     <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#a39d94]" />
+                      <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#a39d94]" />
                       <input
                         id="txn-entity"
                         type="text"
@@ -735,7 +735,7 @@ const TransactionForm: React.FC = () => {
                         onFocus={handleEntityInputFocus}
                         onBlur={handleEntityInputBlur}
                         placeholder="Search entities by name..."
-                        className="w-full pl-16 pr-4 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
+                        className="w-full pl-4 pr-10 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
                       />
                     </div>
 
