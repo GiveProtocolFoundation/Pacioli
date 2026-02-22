@@ -66,7 +66,6 @@ impl ERC20Scanner {
             total_supply,
         })
     }
-}
 
     /// Retrieves the ERC20 token balance for a given wallet.
     ///

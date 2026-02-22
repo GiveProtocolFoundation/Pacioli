@@ -277,13 +277,13 @@ impl EVMIndexer {
     }
 
     /// Returns an `ERC20Scanner` for the specified `chain` if a provider is connected.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `chain` - A string slice representing the blockchain identifier.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// Returns an error if no provider is connected for the specified chain.
     pub fn get_erc20_scanner(&self, chain: &str) -> Result<ERC20Scanner> {
         if let Some(provider) = self.providers.get(chain) {

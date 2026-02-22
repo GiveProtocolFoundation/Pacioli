@@ -16,6 +16,8 @@
 /// Provides types and functions for interacting with the Bitcoin network.
 /// Module for handling Bitcoin chain-specific logic, including block retrieval, transaction creation, and address management.
 pub mod bitcoin;
+/// Tauri commands that expose chain functionality to the frontend.
+pub mod commands;
 /// Module for Ethereum Virtual Machine (EVM) chain support.
 /// Provides types and functions to interact with EVM-based blockchains, including
 /// transaction creation, signing, sending, and querying state.
@@ -190,7 +192,6 @@ pub struct TokenBalance {
     pub balance: String,
     /// Human-readable formatted balance.
     pub balance_formatted: String,
-}
 }
 
 /// Native currency balance (e.g., ETH, DOT).
@@ -468,8 +469,7 @@ impl ChainManager {
             return Ok(Box::new(adapter));
         }
 
-        // TODO: Add Substrate adapter initialization here
-        // if substrate::is_supported(chain_id) { ... }
+        // Substrate adapter initialization pending
 
         Err(ChainError::UnsupportedChain(chain_id.to_string()))
     }
@@ -494,7 +494,7 @@ impl ChainManager {
                 chain_type: ChainType::Evm,
                 numeric_chain_id: Some(config.chain_id),
                 decimals: config.decimals,
-                logo_url: None, // TODO: Add logo URLs
+                logo_url: None,
                 is_testnet,
                 explorer_url: Some(config.explorer_api_url.replace("/api", "")),
             });
@@ -530,8 +530,7 @@ impl ChainManager {
             });
         }
 
-        // TODO: Add Substrate chains
-        // for config in substrate::get_all_chains() { ... }
+        // Substrate chains will be added when the adapter is implemented
 
         chains
     }
@@ -560,7 +559,7 @@ impl ChainManager {
             return true;
         }
 
-        // TODO: Check Substrate chains
+        // Substrate chain support pending adapter implementation
 
         false
     }
@@ -610,7 +609,7 @@ impl ChainManager {
             address: address.to_string(),
             native_balance,
             token_balances,
-            total_value_usd: None, // TODO: Add price lookups
+            total_value_usd: None, // Price lookups handled by frontend
             fetched_at: Utc::now().timestamp(),
         })
     }

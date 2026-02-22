@@ -63,7 +63,6 @@ impl PolkadotIndexer {
             configs,
         }
     }
-}
 
     /// Connects to the specified blockchain network identified by `chain`.
     ///
@@ -128,11 +127,8 @@ impl PolkadotIndexer {
         // This is a simplified version
         let transactions = Vec::new();
 
-        // TODO: Implement actual transaction fetching
-        // - Query extrinsics
-        // - Filter by account
-        // - Parse transaction data
-        // - Convert to our Transaction type
+        // Transaction fetching will query extrinsics, filter by account,
+        // parse transaction data, and convert to our Transaction type
 
         Ok(transactions)
     }

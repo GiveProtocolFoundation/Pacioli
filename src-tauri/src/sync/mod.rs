@@ -93,7 +93,6 @@ impl SyncManager {
             progress: 100.0,
         })
     }
-}
 
     async fn get_last_synced_block(
         &self,
@@ -109,7 +108,7 @@ impl SyncManager {
         .fetch_optional(&db.pool)
         .await?;
 
-        Ok(result.map(|(block,)| block as u32).unwrap_or(0))
+        Ok(result.map_or(0, |(block,)| block as u32))
     }
 
     async fn save_transactions(

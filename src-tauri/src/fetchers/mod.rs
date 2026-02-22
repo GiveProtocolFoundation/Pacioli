@@ -19,6 +19,8 @@
 /// Module for interacting with API keys, including creation, retrieval, and management.
 /// This module provides functionality for fetching and managing API keys.
 pub mod api_keys;
+/// Tauri commands for API key and provider management.
+pub mod commands;
 
 use std::num::NonZeroU32;
 use std::sync::Arc;
@@ -556,7 +558,6 @@ impl FetcherRegistry {
     }
 }
 
-
 // =============================================================================
 // TESTS
 // =============================================================================
@@ -624,7 +625,7 @@ mod tests {
 
     #[test]
     fn test_fetcher_registry() {
-        let mut registry = FetcherRegistry::new();
+        let mut registry = FetcherRegistry::default();
 
         let config = FetcherConfig {
             base_url: "https://example.com".to_string(),

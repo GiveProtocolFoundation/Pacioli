@@ -385,102 +385,62 @@ pub async fn update_entity(
     id: String,
     update: EntityUpdate,
 ) -> Result<Entity, String> {
-    // Build dynamic update query
+    // Collect string field updates using a table-driven approach
+    let string_fields: &[(&str, &Option<String>)] = &[
+        ("entity_type", &update.entity_type),
+        ("name", &update.name),
+        ("display_name", &update.display_name),
+        ("email", &update.email),
+        ("phone", &update.phone),
+        ("website", &update.website),
+        ("address", &update.address),
+        ("country_code", &update.country_code),
+        ("tax_identifier", &update.tax_identifier),
+        ("tax_identifier_type", &update.tax_identifier_type),
+        ("default_wallet_address", &update.default_wallet_address),
+        ("category", &update.category),
+        ("tags", &update.tags),
+        ("default_currency", &update.default_currency),
+        ("tax_documentation_status", &update.tax_documentation_status),
+        ("tax_documentation_date", &update.tax_documentation_date),
+        ("tax_compliance", &update.tax_compliance),
+        ("notes", &update.notes),
+    ];
+
     let mut updates = Vec::new();
     let mut bindings: Vec<String> = Vec::new();
 
-    if let Some(ref v) = update.entity_type {
-        updates.push("entity_type = ?");
-        bindings.push(v.clone());
-    }
-    if let Some(ref v) = update.name {
-        updates.push("name = ?");
-        bindings.push(v.clone());
-    }
-    if let Some(ref v) = update.display_name {
-        updates.push("display_name = ?");
-        bindings.push(v.clone());
-    }
-    if let Some(ref v) = update.email {
-        updates.push("email = ?");
-        bindings.push(v.clone());
-    }
-    if let Some(ref v) = update.phone {
-        updates.push("phone = ?");
-        bindings.push(v.clone());
-    }
-    if let Some(ref v) = update.website {
-        updates.push("website = ?");
-        bindings.push(v.clone());
-    }
-    if let Some(ref v) = update.address {
-        updates.push("address = ?");
-        bindings.push(v.clone());
-    }
-    if let Some(ref v) = update.country_code {
-        updates.push("country_code = ?");
-        bindings.push(v.clone());
-    }
-    if let Some(ref v) = update.tax_identifier {
-        updates.push("tax_identifier = ?");
-        bindings.push(v.clone());
-    }
-    if let Some(ref v) = update.tax_identifier_type {
-        updates.push("tax_identifier_type = ?");
-        bindings.push(v.clone());
-    }
-    if let Some(ref v) = update.default_wallet_address {
-        updates.push("default_wallet_address = ?");
-        bindings.push(v.clone());
-    }
-    if let Some(ref v) = update.category {
-        updates.push("category = ?");
-        bindings.push(v.clone());
-    }
-    if let Some(ref v) = update.tags {
-        updates.push("tags = ?");
-        bindings.push(v.clone());
-    }
-    if let Some(ref v) = update.default_currency {
-        updates.push("default_currency = ?");
-        bindings.push(v.clone());
-    }
-    if let Some(ref v) = update.tax_documentation_status {
-        updates.push("tax_documentation_status = ?");
-        bindings.push(v.clone());
-    }
-    if let Some(ref v) = update.tax_documentation_date {
-        updates.push("tax_documentation_date = ?");
-        bindings.push(v.clone());
-    }
-    if let Some(ref v) = update.tax_compliance {
-        updates.push("tax_compliance = ?");
-        bindings.push(v.clone());
-    }
-    if let Some(ref v) = update.notes {
-        updates.push("notes = ?");
-        bindings.push(v.clone());
+    for (column, value) in string_fields {
+        if let Some(v) = value {
+            updates.push(format!("{column} = ?"));
+            bindings.push(v.clone());
+        }
     }
 
-    if updates.is_empty()
-        && update.default_payment_terms.is_none()
-        && update.reportable_payee.is_none()
-        && update.is_active.is_none()
-    {
-        // Nothing to update, just return the entity
+    let has_non_string_updates = update.default_payment_terms.is_some()
+        || update.reportable_payee.is_some()
+        || update.is_active.is_some();
+
+    if updates.is_empty() && !has_non_string_updates {
         return get_entity_by_id(state, id)
             .await?
             .ok_or_else(|| "Entity not found".to_string());
     }
 
-    let query = format!("UPDATE entities SET {} WHERE id = ?", updates.join(", "));
-
-    let mut q = sqlx::query(&query);
-    for binding in &bindings {
-        q = q.bind(binding);
+    // Apply string field updates in a single query
+    if !updates.is_empty() {
+        let query = format!("UPDATE entities SET {} WHERE id = ?", updates.join(", "));
+        let mut q = sqlx::query(&query);
+        for binding in &bindings {
+            q = q.bind(binding);
+        }
+        q.bind(&id)
+            .execute(&state.pool)
+            .await
+            .map_err(|e| e.to_string())?;
     }
 
-    // Handle non-string fields separately with individual queries
+    // Apply non-string fields with individual queries
     if let Some(terms) = update.default_payment_terms {
         sqlx::query("UPDATE entities SET default_payment_terms = ? WHERE id = ?")
             .bind(terms)
@@ -501,13 +461,6 @@ pub async fn update_entity(
         sqlx::query("UPDATE entities SET is_active = ? WHERE id = ?")
             .bind(active)
             .bind(&id)
-            .execute(&state.pool)
-            .await
-            .map_err(|e| e.to_string())?;
-    }
-
-    if !updates.is_empty() {
-        q.bind(&id)
             .execute(&state.pool)
             .await
             .map_err(|e| e.to_string())?;

@@ -21,171 +21,271 @@ use uuid::Uuid;
 // Types
 // ============================================================================
 
-/// Represents a user in the system including profile details, status, and settings.
+/// Authenticated user account with profile and notification settings.
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
 pub struct User {
+    /// Unique user identifier
     pub id: String,
+    /// User email address
     pub email: String,
+    /// Whether the email has been verified
     pub email_verified: bool,
+    /// User-facing display name
     pub display_name: String,
+    /// URL to the user's avatar image
     pub avatar_url: Option<String>,
+    /// Account status (e.g. active, suspended)
     pub status: String,
+    /// Whether two-factor authentication is enabled
     pub two_factor_enabled: bool,
+    /// Timestamp of the most recent login
     pub last_login_at: Option<DateTime<Utc>>,
+    /// When the account was created
     pub created_at: DateTime<Utc>,
+    /// When the account was last modified
     pub updated_at: DateTime<Utc>,
     // Extended profile fields
+    /// User's first name
     pub first_name: Option<String>,
+    /// User's last name
     pub last_name: Option<String>,
+    /// Phone number
     pub phone: Option<String>,
+    /// Company or organization name
     pub company: Option<String>,
+    /// Job title or position
     pub job_title: Option<String>,
+    /// Department within the organization
     pub department: Option<String>,
+    /// Geographic location
     pub location: Option<String>,
+    /// IANA timezone identifier
     pub timezone: Option<String>,
+    /// Preferred language code
     pub language: Option<String>,
+    /// Preferred date display format
     pub date_format: Option<String>,
     // Notification preferences
+    /// Whether email notifications are enabled
     pub email_notifications: Option<bool>,
+    /// Dedicated email address for notifications
     pub notification_email: Option<String>,
+    /// Whether SMS notifications are enabled
     pub sms_notifications: Option<bool>,
+    /// Whether login alert notifications are enabled
     pub login_alerts: Option<bool>,
 }
 
-/// Response returned after successful authentication, including tokens and user info.
+/// Response returned after successful authentication.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AuthResponse {
+    /// JWT access token for API requests
     pub access_token: String,
+    /// JWT refresh token for obtaining new access tokens
     pub refresh_token: String,
+    /// Authenticated user details
     pub user: User,
+    /// Access token lifetime in seconds
     pub expires_in: i64,
 }
 
-/// Credentials required for user login, containing email and password, with optional device info.
+/// Credentials submitted for user login.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LoginCredentials {
+    /// User email address
     pub email: String,
+    /// User password
     pub password: String,
+    /// Name of the device initiating login
     pub device_name: Option<String>,
+    /// Type of device (e.g. desktop, mobile)
     pub device_type: Option<String>,
 }
 
-/// Input data required to register a new user, including email, password, and display name.
+/// Input fields for new user registration.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RegisterInput {
+    /// Email address for the new account
     pub email: String,
+    /// Password for the new account
     pub password: String,
+    /// Display name for the new user
     pub display_name: String,
 }
 
-/// Data for updating an existing user's profile, including optional personal and notification settings.
+/// Partial update payload for user profile fields.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UserUpdate {
+    /// Updated display name
     pub display_name: Option<String>,
+    /// Updated avatar image URL
     pub avatar_url: Option<String>,
     // Extended profile fields
+    /// Updated first name
     pub first_name: Option<String>,
+    /// Updated last name
     pub last_name: Option<String>,
+    /// Updated phone number
     pub phone: Option<String>,
+    /// Updated company or organization
     pub company: Option<String>,
+    /// Updated job title
     pub job_title: Option<String>,
+    /// Updated department
     pub department: Option<String>,
+    /// Updated geographic location
     pub location: Option<String>,
+    /// Updated IANA timezone identifier
     pub timezone: Option<String>,
+    /// Updated preferred language code
     pub language: Option<String>,
+    /// Updated date display format
     pub date_format: Option<String>,
     // Notification preferences
+    /// Updated email notification preference
     pub email_notifications: Option<bool>,
+    /// Updated notification email address
     pub notification_email: Option<String>,
+    /// Updated SMS notification preference
     pub sms_notifications: Option<bool>,
+    /// Updated login alert preference
     pub login_alerts: Option<bool>,
 }
 
-/// Represents a user session with identifiers and activity timestamps.
+/// Active login session record stored in the database.
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
 pub struct Session {
+    /// Unique session identifier
     pub id: String,
+    /// ID of the user who owns this session
     pub user_id: String,
+    /// Name of the device for this session
     pub device_name: Option<String>,
+    /// Type of device (e.g. desktop, mobile)
     pub device_type: Option<String>,
+    /// IP address the session was created from
     pub ip_address: Option<String>,
+    /// Timestamp of the last activity in this session
     pub last_activity_at: DateTime<Utc>,
+    /// When the session was created
     pub created_at: DateTime<Utc>,
 }
 
-/// Information about a user session exposed to clients, indicating if it is current.
+/// Session details returned to the client, including current-session flag.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SessionInfo {
+    /// Unique session identifier
     pub id: String,
+    /// Name of the device for this session
     pub device_name: Option<String>,
+    /// Type of device (e.g. desktop, mobile)
     pub device_type: Option<String>,
+    /// IP address the session was created from
     pub ip_address: Option<String>,
+    /// Timestamp of the last activity in this session
     pub last_activity_at: DateTime<Utc>,
+    /// When the session was created
     pub created_at: DateTime<Utc>,
+    /// Whether this is the caller's active session
     pub is_current: bool,
 }
 
-/// Role assignment of a user to a profile, tracking invitation and acceptance status.
+/// Mapping of a user to a profile with an assigned role.
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
 pub struct UserProfileRole {
+    /// Unique role assignment identifier
     pub id: String,
+    /// ID of the assigned user
     pub user_id: String,
+    /// ID of the associated profile
     pub profile_id: String,
+    /// Assigned role (e.g. owner, admin, preparer)
     pub role: String,
+    /// Role assignment status (e.g. active, revoked)
     pub status: String,
+    /// When the user was invited
     pub invited_at: Option<DateTime<Utc>>,
+    /// When the user accepted the invitation
     pub accepted_at: Option<DateTime<Utc>>,
+    /// When the role assignment was created
     pub created_at: DateTime<Utc>,
+    /// When the role assignment was last modified
     pub updated_at: DateTime<Utc>,
 }
 
-/// Profile information combined with the user's role within that profile.
+/// Profile summary with the requesting user's role.
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
 pub struct ProfileWithRole {
+    /// Unique profile identifier
     pub id: String,
+    /// Profile display name
     pub name: String,
+    /// URL to the profile's avatar image
     pub avatar_url: Option<String>,
+    /// Role the user holds on this profile
     pub role: String,
+    /// Status of the user's role assignment
     pub role_status: String,
+    /// When the profile was created
     pub created_at: DateTime<Utc>,
 }
 
-/// User information with assigned role and status, used for role-based views.
+/// User summary with their role on a specific profile.
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
 pub struct UserWithRole {
+    /// Unique user identifier
     pub id: String,
+    /// User email address
     pub email: String,
+    /// User-facing display name
     pub display_name: String,
+    /// URL to the user's avatar image
     pub avatar_url: Option<String>,
+    /// Role the user holds on the profile
     pub role: String,
+    /// Status of the role assignment
     pub role_status: String,
+    /// When the user was invited to the profile
     pub invited_at: Option<DateTime<Utc>>,
+    /// When the user accepted the invitation
     pub accepted_at: Option<DateTime<Utc>>,
 }
 
-/// Invitation record linking a user email to a profile with a specific role and status.
+/// Pending or resolved invitation to join a profile.
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
 pub struct Invitation {
+    /// Unique invitation identifier
     pub id: String,
+    /// Email address the invitation was sent to
     pub email: String,
+    /// Profile the invitee will join
     pub profile_id: String,
+    /// Role assigned upon acceptance
     pub role: String,
+    /// Invitation status (pending, accepted, revoked, expired)
     pub status: String,
+    /// Optional message from the inviter
     pub message: Option<String>,
+    /// When the invitation token expires
     pub token_expires_at: DateTime<Utc>,
+    /// When the invitation was created
     pub created_at: DateTime<Utc>,
 }
 
-/// Input parameters required to create a new invitation, including email, profile, and role.
+/// Input fields for creating a new invitation.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct InvitationInput {
+    /// Email address to invite
     pub email: String,
+    /// Profile to grant access to
     pub profile_id: String,
+    /// Role to assign to the invitee
     pub role: String,
+    /// Optional message to include with the invitation
     pub message: Option<String>,
 }
 
-/// Invitation details with associated profile information, inviter, and expiration.
+/// Invitation details with associated profile information
 #[allow(dead_code)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct InvitationWithProfile {
@@ -215,26 +315,34 @@ pub struct InvitationWithProfile {
 // Email Change Types
 // ============================================================================
 
-/// Request payload for changing user email, requiring current password and new email.
+/// Request payload for initiating an email address change.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EmailChangeRequest {
+    /// Current account password for verification
     pub current_password: String,
+    /// Desired new email address
     pub new_email: String,
 }
 
-/// Response returned after initiating an email change, including expiration details.
+/// Response after an email change request is created.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EmailChangeResponse {
+    /// Human-readable confirmation message
     pub message: String,
+    /// When the verification link expires
     pub expires_at: DateTime<Utc>,
 }
 
-/// Status information of an email change request, indicating pending status and expiry.
+/// Current status of a pending email change request.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EmailChangeStatus {
+    /// Whether an email change is currently pending
     pub pending: bool,
+    /// Requested new email address, if pending
     pub new_email: Option<String>,
+    /// When the pending request expires
     pub expires_at: Option<DateTime<Utc>>,
+    /// When the pending request was created
     pub created_at: Option<DateTime<Utc>>,
 }
 

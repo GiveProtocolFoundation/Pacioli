@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use aes_gcm{
+use aes_gcm::{
     aead::{Aead, KeyInit},
     Aes256Gcm, Nonce,
 };
@@ -64,5 +64,4 @@ impl Encryptor {
             .map_err(|e| anyhow::anyhow!("Decryption failed: {}", e))?;
         Ok(plaintext)
     }
-}
 }

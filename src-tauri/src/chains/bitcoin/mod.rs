@@ -12,6 +12,8 @@ pub mod mempool;
 /// Module containing Bitcoin-specific type definitions.
 /// This module defines data structures such as blocks, transactions, and other types used for interacting with the Bitcoin chain.
 pub mod types;
+/// Module for extended public key (xPub) address derivation and portfolio tracking.
+pub mod xpub;
 
 use async_trait::async_trait;
 use std::sync::Arc;
@@ -297,10 +299,8 @@ impl BitcoinAdapter {
                 .filter(|o| o.address.as_deref() == Some(for_address))
                 .map(|o| o.value)
                 .sum::<u64>()
-        } else if is_outgoing {
-            // Send - use total output minus change back to self
-            tx.total_output
         } else {
+            // Send or unrelated — use total output value
             tx.total_output
         };
 
@@ -385,7 +385,7 @@ mod tests {
 
     #[test]
     fn test_validate_address() {
-        let adapter = BitcoinAdapter::new().unwrap();
+        let adapter = BitcoinAdapter::default();
 
         // Valid addresses
         assert!(adapter.validate_address("1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa"));
@@ -398,7 +398,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_adapter_creation() {
-        let adapter = BitcoinAdapter::new().unwrap();
+        let adapter = BitcoinAdapter::default();
         assert_eq!(adapter.chain_id().chain_type, ChainType::Bitcoin);
         assert_eq!(adapter.chain_id().name, "bitcoin");
     }

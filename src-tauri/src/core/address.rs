@@ -8,7 +8,7 @@ pub struct UnifiedAddress {
     /// Optionally holds the SS58-encoded Substrate address.
     pub substrate: Option<String>, // SS58 format
     /// Optionally holds the H160-encoded Ethereum address, prefixed with "0x".
-    pub ethereum: Option<String>,  // H160 format
+    pub ethereum: Option<String>, // H160 format
 }
 
 #[allow(dead_code)]
