@@ -16,35 +16,58 @@ pub struct SubstrateCurrencyHandler {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a token definition on a Substrate-based chain.
 pub struct SubstrateToken {
+    /// Chain identifier for the substrate chain.
     pub chain_id: String,
+    /// Asset identifier within the chain.
     pub asset_id: String,
+    /// Token symbol.
     pub symbol: String,
+    /// Token name.
     pub name: String,
+    /// Number of decimal places the token uses.
     pub decimals: u8,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Records the details of an XCM (Cross-Consensus Message) transfer transaction.
 pub struct XcmTransfer {
+    /// Unique identifier for the XCM transfer record.
     pub id: String,
+    /// Blockchain transaction identifier associated with this transfer.
     pub transaction_id: String,
+    /// Identifier of the source chain.
     pub from_chain_id: String,
+    /// Source account address.
     pub from_address: String,
+    /// Identifier of the destination chain.
     pub to_chain_id: String,
+    /// Destination account address.
     pub to_address: String,
+    /// Identifier of the asset being transferred.
     pub asset_id: String,
+    /// Amount of asset being transferred, as a stringified decimal.
     pub amount: String,
+    /// Current status of the XCM transfer.
     pub status: XcmTransferStatus,
+    /// Intermediate chain identifiers passed during transfer.
     pub hops: Vec<String>,
+    /// Timestamp of when the transfer was initiated.
     pub timestamp: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
+/// Enum representing the status of an XCM transfer.
 pub enum XcmTransferStatus {
+    /// Transfer has been created but not yet sent.
     Pending,
+    /// Transfer is currently in progress between chains.
     InTransit,
+    /// Transfer has completed successfully.
     Completed,
+    /// Transfer has failed.
     Failed,
 }
 
@@ -60,6 +83,7 @@ impl std::fmt::Display for XcmTransferStatus {
 }
 
 impl SubstrateCurrencyHandler {
+    /// Creates a new SubstrateCurrencyHandler with the specified database connection pool.
     pub fn new(pool: Pool<Sqlite>) -> Self {
         Self { pool }
     }

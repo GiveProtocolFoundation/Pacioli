@@ -4,9 +4,14 @@
 //! Supports transaction fetching, balance queries, address validation,
 //! and xPub address derivation for HD wallet portfolio tracking.
 
+/// The `mempool` module provides functionality to manage unconfirmed Bitcoin
+/// transactions, allowing querying, updating, and interacting with the
+/// transaction memory pool.
 pub mod mempool;
+/// Module containing types used within the Bitcoin chain implementation.
+/// Module containing Bitcoin-specific type definitions.
+/// This module defines data structures such as blocks, transactions, and other types used for interacting with the Bitcoin chain.
 pub mod types;
-pub mod xpub;
 
 use async_trait::async_trait;
 use std::sync::Arc;

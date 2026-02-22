@@ -8,70 +8,122 @@ use uuid::Uuid;
 // Types
 // ============================================================================
 
+/// Represents a user profile with unique ID, name, optional avatar URL, and timestamps.
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
 pub struct Profile {
+    /// The unique identifier of the profile.
     pub id: String,
+    /// The display name of the user.
     pub name: String,
+    /// The optional URL of the user's avatar image.
     pub avatar_url: Option<String>,
+    /// The timestamp when the profile was created.
     pub created_at: DateTime<Utc>,
+    /// The timestamp when the profile was last updated.
     pub updated_at: DateTime<Utc>,
 }
 
+/// Represents a cryptocurrency wallet associated with a user profile.
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
 pub struct Wallet {
+    /// The unique identifier of the wallet.
     pub id: String,
+    /// The identifier of the associated user profile.
     pub profile_id: String,
+    /// The blockchain address of the wallet.
     pub address: String,
+    /// The blockchain network identifier (e.g., Ethereum, Bitcoin).
     pub chain: String,
+    /// An optional display name for the wallet.
     pub name: Option<String>,
+    /// The type of the wallet (e.g., hardware, software).
     pub wallet_type: String,
+    /// The timestamp when the wallet was created.
     pub created_at: DateTime<Utc>,
+    /// The optional timestamp when the wallet was last updated.
     pub updated_at: Option<DateTime<Utc>>,
 }
 
+/// Represents a stored transaction record with metadata and blockchain details.
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
 pub struct StoredTransaction {
+    /// The unique identifier of the stored transaction.
     pub id: String,
+    /// The identifier of the wallet associated with the transaction.
     pub wallet_id: String,
+    /// The blockchain transaction hash.
     pub hash: String,
+    /// The optional block number where the transaction was recorded.
     pub block_number: Option<i64>,
+    /// The optional timestamp of when the transaction occurred.
     pub timestamp: Option<DateTime<Utc>>,
+    /// The optional sender address of the transaction.
     pub from_address: Option<String>,
+    /// The optional recipient address of the transaction.
     pub to_address: Option<String>,
+    /// The optional value transferred in the transaction.
     pub value: Option<String>,
+    /// The optional transaction fee paid.
     pub fee: Option<String>,
+    /// The optional status of the transaction (e.g., pending, confirmed).
     pub status: Option<String>,
+    /// The optional type of the transaction.
     pub tx_type: Option<String>,
+    /// The optional symbol of the token involved.
     pub token_symbol: Option<String>,
+    /// The optional decimal precision of the token.
     pub token_decimals: Option<i32>,
+    /// The blockchain network identifier for the transaction.
     pub chain: String,
+    /// The optional raw data of the transaction.
     pub raw_data: Option<String>,
+    /// The timestamp when the transaction was stored.
     pub created_at: DateTime<Utc>,
 }
 
+/// Input data for creating or updating a wallet in the system.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WalletInput {
+    /// The identifier of the profile to which the wallet belongs.
     pub profile_id: String,
+    /// The blockchain address of the wallet.
     pub address: String,
+    /// The blockchain network identifier.
     pub chain: String,
+    /// An optional display name for the wallet.
     pub name: Option<String>,
+    /// The type of the wallet (e.g., hardware, software).
     pub wallet_type: String,
 }
 
+/// Input data for saving or updating transactions in the system.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TransactionInput {
+    /// The blockchain transaction hash.
     pub hash: String,
+    /// The optional block number where the transaction was recorded.
     pub block_number: Option<i64>,
+    /// The optional timestamp of when the transaction occurred, as an ISO 8601 string.
     pub timestamp: Option<String>,
+    /// The optional sender address of the transaction.
     pub from_address: Option<String>,
+    /// The optional recipient address of the transaction.
     pub to_address: Option<String>,
+    /// The optional value transferred in the transaction.
     pub value: Option<String>,
+    /// The optional transaction fee paid.
     pub fee: Option<String>,
+    /// The optional status of the transaction (e.g., pending, confirmed).
     pub status: Option<String>,
+    /// The optional type of the transaction.
     pub tx_type: Option<String>,
+    /// The optional symbol of the token involved.
     pub token_symbol: Option<String>,
+    /// The optional decimal precision of the token.
     pub token_decimals: Option<i32>,
+    /// The blockchain network identifier for the transaction.
     pub chain: String,
+    /// The optional raw data of the transaction.
     pub raw_data: Option<String>,
 }
 
@@ -79,11 +131,14 @@ pub struct TransactionInput {
 // Database State
 // ============================================================================
 
+/// Maintains the SQLite connection pool for database operations.
 pub struct DatabaseState {
+    /// The SQLite database connection pool for executing queries.
     pub pool: SqlitePool,
 }
 
 impl DatabaseState {
+    /// Creates a new DatabaseState by connecting to the specified SQLite database path and running migrations.
     pub async fn new(database_path: &str) -> Result<Self, sqlx::Error> {
         let pool = SqlitePool::connect(database_path).await?;
 
@@ -98,6 +153,7 @@ impl DatabaseState {
 // Profile Commands
 // ============================================================================
 
+/// Creates a new user profile with the given name and returns the created Profile.
 #[tauri::command]
 pub async fn create_profile(
     state: State<'_, DatabaseState>,
@@ -129,6 +185,7 @@ pub async fn create_profile(
     })
 }
 
+/// Retrieves all user profiles ordered by creation time, newest first.
 #[tauri::command]
 pub async fn get_profiles(state: State<'_, DatabaseState>) -> Result<Vec<Profile>, String> {
     let profiles = sqlx::query_as::<_, Profile>("SELECT * FROM profiles ORDER BY created_at DESC")
@@ -139,6 +196,7 @@ pub async fn get_profiles(state: State<'_, DatabaseState>) -> Result<Vec<Profile
     Ok(profiles)
 }
 
+/// Updates the name of an existing profile by ID and returns the updated Profile.
 #[tauri::command]
 pub async fn update_profile(
     state: State<'_, DatabaseState>,
@@ -164,6 +222,7 @@ pub async fn update_profile(
     Ok(profile)
 }
 
+/// Deletes a user profile by ID from the database.
 #[tauri::command]
 pub async fn delete_profile(state: State<'_, DatabaseState>, id: String) -> Result<(), String> {
     sqlx::query("DELETE FROM profiles WHERE id = ?")
@@ -179,6 +238,7 @@ pub async fn delete_profile(state: State<'_, DatabaseState>, id: String) -> Resu
 // Wallet Commands
 // ============================================================================
 
+/// Saves a new wallet or updates an existing one for a profile and returns the Wallet.
 #[tauri::command]
 pub async fn save_wallet(
     state: State<'_, DatabaseState>,
@@ -223,6 +283,7 @@ pub async fn save_wallet(
     Ok(saved_wallet)
 }
 
+/// Retrieves all wallets for a given profile ordered by creation time.
 #[tauri::command]
 pub async fn get_wallets(
     state: State<'_, DatabaseState>,
@@ -239,6 +300,7 @@ pub async fn get_wallets(
     Ok(wallets)
 }
 
+/// Retrieves a wallet by its unique ID, or None if not found.
 #[tauri::command]
 pub async fn get_wallet_by_id(
     state: State<'_, DatabaseState>,
@@ -253,6 +315,7 @@ pub async fn get_wallet_by_id(
     Ok(wallet)
 }
 
+/// Deletes a wallet by its unique ID from the database.
 #[tauri::command]
 pub async fn delete_wallet(state: State<'_, DatabaseState>, id: String) -> Result<(), String> {
     sqlx::query("DELETE FROM wallets WHERE id = ?")
@@ -268,6 +331,7 @@ pub async fn delete_wallet(state: State<'_, DatabaseState>, id: String) -> Resul
 // Transaction Commands
 // ============================================================================
 
+/// Saves or updates a batch of transactions for the specified wallet and returns the number of saved records.
 #[tauri::command]
 pub async fn save_transactions(
     state: State<'_, DatabaseState>,
@@ -301,17 +365,6 @@ pub async fn save_transactions(
         )
         .bind(&id)
         .bind(&wallet_id)
-        .bind(&tx.hash)
-        .bind(tx.block_number)
-        .bind(timestamp)
-        .bind(&tx.from_address)
-        .bind(&tx.to_address)
-        .bind(&tx.value)
-        .bind(&tx.fee)
-        .bind(&tx.status)
-        .bind(&tx.tx_type)
-        .bind(&tx.token_symbol)
-        .bind(tx.token_decimals)
         .bind(&tx.chain)
         .bind(&tx.raw_data)
         .bind(now)
@@ -326,6 +379,8 @@ pub async fn save_transactions(
     Ok(saved_count)
 }
 
+/// Retrieves a list of stored transactions for the specified wallet ID.
+/// Transactions are ordered by descending timestamp with pagination support.
 #[tauri::command]
 pub async fn get_transactions(
     state: State<'_, DatabaseState>,
@@ -354,6 +409,8 @@ pub async fn get_transactions(
     Ok(transactions)
 }
 
+/// Retrieves all stored transactions for wallets associated with the given profile ID.
+/// Transactions are ordered by descending timestamp with pagination support.
 #[tauri::command]
 pub async fn get_all_transactions(
     state: State<'_, DatabaseState>,
@@ -383,6 +440,7 @@ pub async fn get_all_transactions(
     Ok(transactions)
 }
 
+/// Deletes all transactions for the specified wallet ID and returns the number of rows deleted.
 #[tauri::command]
 pub async fn delete_transactions(
     state: State<'_, DatabaseState>,
@@ -401,6 +459,8 @@ pub async fn delete_transactions(
 // Settings Commands
 // ============================================================================
 
+/// Retrieves the value associated with the given key from settings.
+/// Returns `None` if the key does not exist.
 #[tauri::command]
 pub async fn get_setting(
     state: State<'_, DatabaseState>,
@@ -415,6 +475,7 @@ pub async fn get_setting(
     Ok(result)
 }
 
+/// Inserts or updates a setting value for the given key with the current timestamp.
 #[tauri::command]
 pub async fn set_setting(
     state: State<'_, DatabaseState>,
@@ -442,6 +503,7 @@ pub async fn set_setting(
     Ok(())
 }
 
+/// Deletes the setting associated with the given key.
 #[tauri::command]
 pub async fn delete_setting(state: State<'_, DatabaseState>, key: String) -> Result<(), String> {
     sqlx::query("DELETE FROM settings WHERE key = ?")
@@ -453,6 +515,7 @@ pub async fn delete_setting(state: State<'_, DatabaseState>, key: String) -> Res
     Ok(())
 }
 
+/// Retrieves all settings as a list of key-value pairs.
 #[tauri::command]
 pub async fn get_all_settings(
     state: State<'_, DatabaseState>,

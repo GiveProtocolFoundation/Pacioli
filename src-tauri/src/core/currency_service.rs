@@ -16,6 +16,11 @@ pub struct CurrencyService {
 }
 
 impl CurrencyService {
+    /// Constructs a new CurrencyService with the specified SQLite connection pool.
+    ///
+    /// # Arguments
+    ///
+    /// * `pool` - The SQLite connection pool to be used by the service.
     pub fn new(pool: Pool<Sqlite>) -> Self {
         Self { pool }
     }

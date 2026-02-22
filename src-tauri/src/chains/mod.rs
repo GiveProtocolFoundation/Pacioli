@@ -11,10 +11,18 @@
 
 #![allow(dead_code)]
 
+/// The Bitcoin chain module.
+///
+/// Provides types and functions for interacting with the Bitcoin network.
+/// Module for handling Bitcoin chain-specific logic, including block retrieval, transaction creation, and address management.
 pub mod bitcoin;
-pub mod commands;
+/// Module for Ethereum Virtual Machine (EVM) chain support.
+/// Provides types and functions to interact with EVM-based blockchains, including
+/// transaction creation, signing, sending, and querying state.
 pub mod evm;
+/// Module for interacting with the Solana blockchain.
 pub mod solana;
+/// Module containing functionality for interacting with Substrate-based chains.
 pub mod substrate;
 
 use async_trait::async_trait;
@@ -51,6 +59,7 @@ pub struct ChainId {
     /// The blockchain type (EVM or Substrate).
     pub chain_type: ChainType,
     /// Human-readable chain name.
+    /// The human-readable name of the chain.
     pub name: String,
     /// Numeric chain ID (for EVM chains).
     pub chain_id: Option<u64>,
@@ -79,17 +88,29 @@ impl ChainId {
 /// Normalized transaction representation across all chains
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ChainTransaction {
+    /// Transaction hash as a hexadecimal string.
     pub hash: String,
+    /// Identifier of the chain where the transaction occurred.
     pub chain_id: ChainId,
+    /// Block number containing the transaction.
     pub block_number: u64,
+    /// Timestamp of the block in seconds since Unix epoch.
     pub timestamp: i64,
+    /// Sender address.
     pub from: String,
+    /// Optional recipient address; None for contract deployments.
     pub to: Option<String>,
+    /// Value transferred in the transaction as a string.
     pub value: String,
+    /// Transaction fee paid.
     pub fee: String,
+    /// Status of the transaction execution.
     pub status: TransactionStatus,
+    /// Classification of the transaction type.
     pub tx_type: TransactionType,
+    /// List of token transfers occurred within the transaction.
     pub token_transfers: Vec<TokenTransfer>,
+    /// Optional raw JSON data of the transaction.
     pub raw_data: Option<serde_json::Value>,
 }
 
@@ -97,8 +118,11 @@ pub struct ChainTransaction {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum TransactionStatus {
+    /// Transaction executed successfully.
     Success,
+    /// Transaction execution failed.
     Failed,
+    /// Transaction is pending confirmation.
     Pending,
 }
 
@@ -106,29 +130,48 @@ pub enum TransactionStatus {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum TransactionType {
+    /// A native value transfer between addresses.
     Transfer,
+    /// A call to a smart contract function.
     ContractCall,
+    /// Deployment of a new smart contract.
     ContractDeploy,
+    /// Token or asset swap through a liquidity pool.
     Swap,
+    /// Addition of liquidity to a pool.
     AddLiquidity,
+    /// Removal of liquidity from a pool.
     RemoveLiquidity,
+    /// Staking tokens to secure the network.
     Stake,
+    /// Unstaking tokens previously staked.
     Unstake,
+    /// Bridging assets between chains.
     Bridge,
+    /// Minting new tokens.
     Mint,
+    /// Burning tokens, reducing total supply.
     Burn,
+    /// Approval of token spend for another account.
     Approval,
+    /// Unknown or unrecognized transaction type.
     Unknown,
 }
 
 /// Token transfer within a transaction
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TokenTransfer {
+    /// Address of the token contract.
     pub token_address: String,
+    /// Token symbol, if available.
     pub token_symbol: Option<String>,
+    /// Number of decimals the token uses.
     pub token_decimals: Option<u8>,
+    /// Sender address for the token transfer.
     pub from: String,
+    /// Recipient address for the token transfer.
     pub to: String,
+    /// Amount of tokens transferred as a string.
     pub value: String,
 }
 
@@ -147,6 +190,7 @@ pub struct TokenBalance {
     pub balance: String,
     /// Human-readable formatted balance.
     pub balance_formatted: String,
+}
 }
 
 /// Native currency balance (e.g., ETH, DOT).

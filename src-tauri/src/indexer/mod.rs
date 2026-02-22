@@ -5,12 +5,19 @@ use anyhow::Result;
 use std::collections::HashMap;
 use subxt::{OnlineClient, PolkadotConfig};
 
+/// PolkadotIndexer provides functionality to manage and index blockchain data
+/// from supported Substrate-based networks such as Polkadot, Kusama, and Moonbeam.
+/// It maintains RPC/WS clients and chain configurations for each network.
 pub struct PolkadotIndexer {
     clients: HashMap<String, OnlineClient<PolkadotConfig>>,
     configs: HashMap<String, ChainConfig>,
 }
 
 impl PolkadotIndexer {
+    /// Creates a new PolkadotIndexer with default configurations for Polkadot,
+    /// Kusama, and Moonbeam networks. Initializes empty client connections
+    /// and populates the configuration map with RPC endpoints, WebSocket endpoints,
+    /// explorer URLs, token decimals, and symbols for each chain.
     pub fn new() -> Self {
         let mut configs = HashMap::new();
 
@@ -56,7 +63,21 @@ impl PolkadotIndexer {
             configs,
         }
     }
+}
 
+    /// Connects to the specified blockchain network identified by `chain`.
+    ///
+    /// Retrieves the WebSocket or RPC endpoint from the configuration, establishes
+    /// an asynchronous `OnlineClient<PolkadotConfig>` connection, and stores the client
+    /// for future use in `self.clients`.
+    ///
+    /// # Arguments
+    ///
+    /// * `chain` - A string slice that holds the identifier of the chain to connect to.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the client fails to connect to the endpoint.
     pub async fn connect(&mut self, chain: &str) -> Result<()> {
         if let Some(config) = self.configs.get(chain) {
             let url = config.ws_endpoint.as_ref().unwrap_or(&config.rpc_endpoint);
@@ -66,6 +87,15 @@ impl PolkadotIndexer {
         Ok(())
     }
 
+    /// Retrieves the number of the most recent block for the given blockchain.
+    ///
+    /// # Parameters
+    ///
+    /// * `chain` - The identifier of the blockchain to query.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing the latest block number as `u32` if successful, or an error if the chain is not connected or the RPC call fails.
     pub async fn get_latest_block(&self, chain: &str) -> Result<u32> {
         if let Some(client) = self.clients.get(chain) {
             let block = client.blocks().at_latest().await?;
@@ -75,6 +105,18 @@ impl PolkadotIndexer {
         }
     }
 
+    /// Fetches transactions for the specified account on a given chain.
+    ///
+    /// # Arguments
+    ///
+    /// * `chain` - The blockchain network identifier.
+    /// * `address` - The account address to fetch transactions for.
+    /// * `from_block` - Optional starting block number to filter transactions.
+    /// * `to_block` - Optional ending block number to filter transactions.
+    ///
+    /// # Returns
+    ///
+    /// Returns a `Result` containing a vector of `Transaction` instances on success, or an error.
     pub async fn fetch_account_transactions(
         &self,
         _chain: &str,

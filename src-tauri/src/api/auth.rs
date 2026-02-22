@@ -21,6 +21,7 @@ use uuid::Uuid;
 // Types
 // ============================================================================
 
+/// Represents a user in the system including profile details, status, and settings.
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
 pub struct User {
     pub id: String,
@@ -51,6 +52,7 @@ pub struct User {
     pub login_alerts: Option<bool>,
 }
 
+/// Response returned after successful authentication, including tokens and user info.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AuthResponse {
     pub access_token: String,
@@ -59,6 +61,7 @@ pub struct AuthResponse {
     pub expires_in: i64,
 }
 
+/// Credentials required for user login, containing email and password, with optional device info.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LoginCredentials {
     pub email: String,
@@ -67,6 +70,7 @@ pub struct LoginCredentials {
     pub device_type: Option<String>,
 }
 
+/// Input data required to register a new user, including email, password, and display name.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RegisterInput {
     pub email: String,
@@ -74,6 +78,7 @@ pub struct RegisterInput {
     pub display_name: String,
 }
 
+/// Data for updating an existing user's profile, including optional personal and notification settings.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UserUpdate {
     pub display_name: Option<String>,
@@ -96,6 +101,7 @@ pub struct UserUpdate {
     pub login_alerts: Option<bool>,
 }
 
+/// Represents a user session with identifiers and activity timestamps.
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
 pub struct Session {
     pub id: String,
@@ -107,6 +113,7 @@ pub struct Session {
     pub created_at: DateTime<Utc>,
 }
 
+/// Information about a user session exposed to clients, indicating if it is current.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SessionInfo {
     pub id: String,
@@ -118,6 +125,7 @@ pub struct SessionInfo {
     pub is_current: bool,
 }
 
+/// Role assignment of a user to a profile, tracking invitation and acceptance status.
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
 pub struct UserProfileRole {
     pub id: String,
@@ -131,6 +139,7 @@ pub struct UserProfileRole {
     pub updated_at: DateTime<Utc>,
 }
 
+/// Profile information combined with the user's role within that profile.
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
 pub struct ProfileWithRole {
     pub id: String,
@@ -141,6 +150,7 @@ pub struct ProfileWithRole {
     pub created_at: DateTime<Utc>,
 }
 
+/// User information with assigned role and status, used for role-based views.
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
 pub struct UserWithRole {
     pub id: String,
@@ -153,6 +163,7 @@ pub struct UserWithRole {
     pub accepted_at: Option<DateTime<Utc>>,
 }
 
+/// Invitation record linking a user email to a profile with a specific role and status.
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
 pub struct Invitation {
     pub id: String,
@@ -165,6 +176,7 @@ pub struct Invitation {
     pub created_at: DateTime<Utc>,
 }
 
+/// Input parameters required to create a new invitation, including email, profile, and role.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct InvitationInput {
     pub email: String,
@@ -173,7 +185,7 @@ pub struct InvitationInput {
     pub message: Option<String>,
 }
 
-/// Invitation details with associated profile information
+/// Invitation details with associated profile information, inviter, and expiration.
 #[allow(dead_code)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct InvitationWithProfile {
@@ -203,18 +215,21 @@ pub struct InvitationWithProfile {
 // Email Change Types
 // ============================================================================
 
+/// Request payload for changing user email, requiring current password and new email.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EmailChangeRequest {
     pub current_password: String,
     pub new_email: String,
 }
 
+/// Response returned after initiating an email change, including expiration details.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EmailChangeResponse {
     pub message: String,
     pub expires_at: DateTime<Utc>,
 }
 
+/// Status information of an email change request, indicating pending status and expiry.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EmailChangeStatus {
     pub pending: bool,

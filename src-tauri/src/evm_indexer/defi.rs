@@ -6,28 +6,43 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Arc;
 
+/// Scanner for decentralized finance protocols.
+/// Manages a collection of protocol configurations.
 pub struct DeFiProtocolScanner {
     protocols: HashMap<String, ProtocolConfig>,
 }
 
 #[derive(Clone)]
+/// Configuration for a decentralized finance protocol.
+/// Includes the protocol's name, blockchain network, type, and deployed contracts.
 pub struct ProtocolConfig {
+    /// Human-readable name of the protocol.
     pub name: String,
+    /// Identifier of the blockchain network where the protocol is deployed.
     pub chain: String,
+    /// Classification of the protocol's functionality.
     pub protocol_type: ProtocolType,
+    /// Mapping of contract identifiers to their blockchain addresses.
     pub contracts: HashMap<String, Address>,
 }
 
 #[derive(Clone, Debug)]
+/// Enumeration of supported decentralized finance protocol types.
 pub enum ProtocolType {
+    /// Decentralized exchange protocol.
     Dex,
+    /// Lending protocol.
     Lending,
+    /// Staking protocol.
     Staking,
+    /// Farming protocol.
     Farming,
+    /// Bridge protocol for asset transfers between networks.
     Bridge,
 }
 
 impl DeFiProtocolScanner {
+    /// Creates a new DeFiProtocolScanner with default protocol configurations.
     pub fn new() -> Self {
         let mut protocols = HashMap::new();
 
@@ -110,6 +125,18 @@ impl DeFiProtocolScanner {
         Self { protocols }
     }
 
+    /// Scans DeFi positions for a user on a specified protocol.
+    ///
+    /// # Parameters
+    ///
+    /// * `provider` - An `Arc<Provider<Ws>>` used to query the blockchain.
+    /// * `protocol` - A string slice identifying the protocol to scan.
+    /// * `user_address` - The Ethereum address of the user.
+    ///
+    /// # Returns
+    ///
+    /// Returns a `Result` with a vector of `DeFiPosition` on success, or an `anyhow::Error` if
+    /// the protocol is unknown or scanning fails.
     pub async fn scan_defi_positions(
         &self,
         provider: Arc<Provider<Ws>>,
@@ -171,20 +198,32 @@ impl DeFiProtocolScanner {
     }
 }
 
+/// A position in a decentralized finance (DeFi) protocol, including supplied assets, debts, and earned rewards.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeFiPosition {
+    /// The name of the DeFi protocol (e.g., Compound, Aave).
     pub protocol: String,
+    /// The type of position (e.g., "lending", "borrowing", "staking").
     pub position_type: String,
+    /// Assets supplied or staked by the user.
     pub assets: Vec<AssetAmount>,
+    /// Assets borrowed by the user.
     pub debt: Vec<AssetAmount>,
+    /// Rewards earned by the user (e.g., liquidity mining rewards).
     pub rewards: Vec<AssetAmount>,
+    /// The total USD value of the position, if available.
     pub value_usd: Option<f64>,
 }
 
+/// Represents an amount of a specific token, identified by its address or symbol.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AssetAmount {
+    /// The blockchain address of the token contract, if available.
     pub token_address: Option<Address>,
+    /// The symbol of the token (e.g., "ETH", "DAI").
     pub token_symbol: String,
+    /// The raw token amount in the smallest units.
     pub amount: U256,
+    /// Number of decimal places used by the token.
     pub decimals: u8,
 }
