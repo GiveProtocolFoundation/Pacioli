@@ -11,72 +11,119 @@ use uuid::Uuid;
 /// Represents a user profile with unique ID, name, optional avatar URL, and timestamps.
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
 pub struct Profile {
+    /// The unique identifier of the profile.
     pub id: String,
+    /// The display name of the user.
     pub name: String,
+    /// The optional URL of the user's avatar image.
     pub avatar_url: Option<String>,
+    /// The timestamp when the profile was created.
     pub created_at: DateTime<Utc>,
+    /// The timestamp when the profile was last updated.
     pub updated_at: DateTime<Utc>,
 }
 
 /// Represents a cryptocurrency wallet associated with a user profile.
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
 pub struct Wallet {
+    /// The unique identifier of the wallet.
     pub id: String,
+    /// The identifier of the associated user profile.
     pub profile_id: String,
+    /// The blockchain address of the wallet.
     pub address: String,
+    /// The blockchain network identifier (e.g., Ethereum, Bitcoin).
     pub chain: String,
+    /// An optional display name for the wallet.
     pub name: Option<String>,
+    /// The type of the wallet (e.g., hardware, software).
     pub wallet_type: String,
+    /// The timestamp when the wallet was created.
     pub created_at: DateTime<Utc>,
+    /// The optional timestamp when the wallet was last updated.
     pub updated_at: Option<DateTime<Utc>>,
 }
 
 /// Represents a stored transaction record with metadata and blockchain details.
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
 pub struct StoredTransaction {
+    /// The unique identifier of the stored transaction.
     pub id: String,
+    /// The identifier of the wallet associated with the transaction.
     pub wallet_id: String,
+    /// The blockchain transaction hash.
     pub hash: String,
+    /// The optional block number where the transaction was recorded.
     pub block_number: Option<i64>,
+    /// The optional timestamp of when the transaction occurred.
     pub timestamp: Option<DateTime<Utc>>,
+    /// The optional sender address of the transaction.
     pub from_address: Option<String>,
+    /// The optional recipient address of the transaction.
     pub to_address: Option<String>,
+    /// The optional value transferred in the transaction.
     pub value: Option<String>,
+    /// The optional transaction fee paid.
     pub fee: Option<String>,
+    /// The optional status of the transaction (e.g., pending, confirmed).
     pub status: Option<String>,
+    /// The optional type of the transaction.
     pub tx_type: Option<String>,
+    /// The optional symbol of the token involved.
     pub token_symbol: Option<String>,
+    /// The optional decimal precision of the token.
     pub token_decimals: Option<i32>,
+    /// The blockchain network identifier for the transaction.
     pub chain: String,
+    /// The optional raw data of the transaction.
     pub raw_data: Option<String>,
+    /// The timestamp when the transaction was stored.
     pub created_at: DateTime<Utc>,
 }
 
 /// Input data for creating or updating a wallet in the system.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WalletInput {
+    /// The identifier of the profile to which the wallet belongs.
     pub profile_id: String,
+    /// The blockchain address of the wallet.
     pub address: String,
+    /// The blockchain network identifier.
     pub chain: String,
+    /// An optional display name for the wallet.
     pub name: Option<String>,
+    /// The type of the wallet (e.g., hardware, software).
     pub wallet_type: String,
 }
 
 /// Input data for saving or updating transactions in the system.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TransactionInput {
+    /// The blockchain transaction hash.
     pub hash: String,
+    /// The optional block number where the transaction was recorded.
     pub block_number: Option<i64>,
+    /// The optional timestamp of when the transaction occurred, as an ISO 8601 string.
     pub timestamp: Option<String>,
+    /// The optional sender address of the transaction.
     pub from_address: Option<String>,
+    /// The optional recipient address of the transaction.
     pub to_address: Option<String>,
+    /// The optional value transferred in the transaction.
     pub value: Option<String>,
+    /// The optional transaction fee paid.
     pub fee: Option<String>,
+    /// The optional status of the transaction (e.g., pending, confirmed).
     pub status: Option<String>,
+    /// The optional type of the transaction.
     pub tx_type: Option<String>,
+    /// The optional symbol of the token involved.
     pub token_symbol: Option<String>,
+    /// The optional decimal precision of the token.
     pub token_decimals: Option<i32>,
+    /// The blockchain network identifier for the transaction.
     pub chain: String,
+    /// The optional raw data of the transaction.
     pub raw_data: Option<String>,
 }
 
@@ -86,6 +133,7 @@ pub struct TransactionInput {
 
 /// Maintains the SQLite connection pool for database operations.
 pub struct DatabaseState {
+    /// The SQLite database connection pool for executing queries.
     pub pool: SqlitePool,
 }
 

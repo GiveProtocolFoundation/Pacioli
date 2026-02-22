@@ -185,7 +185,7 @@ pub struct InvitationInput {
     pub message: Option<String>,
 }
 
-/// Invitation details with associated profile information
+/// Invitation details with associated profile information, inviter, and expiration.
 #[allow(dead_code)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct InvitationWithProfile {
