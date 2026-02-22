@@ -422,30 +422,36 @@ const AddPortfolioModal: React.FC<AddPortfolioModalProps> = ({
             <div>
               <label className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-3">
                 Select Ecosystem
-              </label>
-              <div className="grid gap-3">
-                {ECOSYSTEM_OPTIONS.map(ecosystem => (
-                  <button
-                    key={ecosystem.id}
-                    type="button"
-                    onClick={() => handleEcosystemSelect(ecosystem.id)}
-                    className={`w-full p-4 rounded-lg border text-left transition-colors ${
-                      selectedEcosystem === ecosystem.id
-                        ? 'border-[#8b4e52] bg-[#8b4e52]/5 dark:bg-[#8b4e52]/10'
-                        : 'border-[rgba(201,169,97,0.15)] hover:border-[#c9a961] hover:bg-[#f3f1ed] dark:hover:bg-[#1a1815]'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        {ecosystem.icon}
-                        <div>
-                          <p className="font-medium text-[#1a1815] dark:text-[#f5f3f0]">
-                            {ecosystem.label}
-                          </p>
-                          <p className="text-xs text-[#696557] dark:text-[#b8b3ac]">
-                            {ecosystem.description}
-                          </p>
+                <div className="grid gap-3">
+                  {ECOSYSTEM_OPTIONS.map(ecosystem => (
+                    <button
+                      key={ecosystem.id}
+                      type="button"
+                      onClick={() => handleEcosystemSelect(ecosystem.id)}
+                      className={`w-full p-4 rounded-lg border text-left transition-colors ${
+                        selectedEcosystem === ecosystem.id
+                          ? 'border-[#8b4e52] bg-[#8b4e52]/5 dark:bg-[#8b4e52]/10'
+                          : 'border-[rgba(201,169,97,0.15)] hover:border-[#c9a961] hover:bg-[#f3f1ed] dark:hover:bg-[#1a1815]'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          {ecosystem.icon}
+                          <div>
+                            <p className="font-medium text-[#1a1815] dark:text-[#f5f3f0]">
+                              {ecosystem.label}
+                            </p>
+                            <p className="text-xs text-[#696557] dark:text-[#b8b3ac]">
+                              {ecosystem.description}
+                            </p>
+                          </div>
                         </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </label>
+            </div>
                       </div>
                       {selectedEcosystem === ecosystem.id && (
                         <CheckCircle className="w-5 h-5 text-[#8b4e52]" />
@@ -543,6 +549,7 @@ const AddPortfolioModal: React.FC<AddPortfolioModalProps> = ({
                           onChange={e => setTrackOnL2s(e.target.checked)}
                           className="sr-only peer"
                         />
+                        <span className="sr-only">Enable tracking on L2 networks</span>
                         <div className="w-9 h-5 bg-[#a39d94] peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#c9a961] rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#8b4e52]" />
                       </label>
                     </div>
@@ -562,6 +569,14 @@ const AddPortfolioModal: React.FC<AddPortfolioModalProps> = ({
                             />
                             <span
                               className="w-2.5 h-2.5 rounded-full"
+                            />
+                            <span className="text-sm text-[#1a1815] dark:text-[#f5f3f0]">{chain.name}</span>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
                               style={{ backgroundColor: chain.color }}
                             />
                             <span className="text-sm text-[#1a1815] dark:text-[#f5f3f0]">
@@ -598,57 +613,44 @@ const AddPortfolioModal: React.FC<AddPortfolioModalProps> = ({
                             className="flex items-center gap-2 p-2 rounded-lg cursor-pointer hover:bg-[#fafaf8] dark:hover:bg-[#0f0e0c]"
                           >
                             <input
-                              type="checkbox"
-                              checked={selectedPolkadotChains.has(chain.id)}
-                              onChange={() => togglePolkadotChain(chain.id)}
-                              className="w-4 h-4 text-[#8b4e52] border-[rgba(201,169,97,0.3)] rounded focus:ring-[#c9a961]"
-                            />
-                            <span
-                              className="w-2.5 h-2.5 rounded-full"
-                              style={{ backgroundColor: chain.color }}
-                            />
-                            <span className="text-sm text-[#1a1815] dark:text-[#f5f3f0]">
-                              {chain.label}
-                            </span>
-                          </label>
-                        ))}
-                      </div>
+                          type="checkbox"
+                          checked={selectedPolkadotChains.has(chain.id)}
+                          onChange={() => togglePolkadotChain(chain.id)}
+                          className="w-4 h-4 text-[#8b4e52] border-[rgba(201,169,97,0.3)] rounded focus:ring-[#c9a961]"
+                        />
+                        <span
+                          className="w-2.5 h-2.5 rounded-full"
+                          style={{ backgroundColor: chain.color }}
+                        />
+                        <span className="text-sm text-[#1a1815] dark:text-[#f5f3f0]">
+                          {chain.label}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
 
-                      <p className="mt-3 text-xs text-[#696557] dark:text-[#b8b3ac]">
-                        SS58 addresses are automatically converted for each
-                        network.
-                      </p>
-                    </div>
-                  )}
-
-                {/* Label Input */}
-                <div>
-                  <label className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2">
-                    Label (Optional)
-                  </label>
-                  <input
-                    type="text"
-                    value={label}
-                    onChange={e => setLabel(e.target.value)}
-                    placeholder="e.g., Main Portfolio, Cold Storage"
-                    maxLength={50}
-                    className="w-full px-4 py-2.5 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
-                  />
+                  <p className="mt-3 text-xs text-[#696557] dark:text-[#b8b3ac]">
+                    SS58 addresses are automatically converted for each
+                    network.
+                  </p>
                 </div>
-              </>
-            )}
+              )}
 
-            {/* Submit Button */}
-            <button
-              onClick={handleSubmit}
-              disabled={!isFormValid}
-              className="w-full px-4 py-3 bg-[#8b4e52] text-white rounded-lg font-medium hover:bg-[#7a4248] disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
-            >
-              <Eye className="w-4 h-4" />
-              Add Portfolio
-            </button>
-
-            <p className="text-xs text-center text-[#a39d94]">
+            {/* Label Input */}
+            <div>
+              <label className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2" htmlFor="portfolio-label">
+                Label (Optional)
+              </label>
+              <input
+                id="portfolio-label"
+                type="text"
+                value={label}
+                onChange={e => setLabel(e.target.value)}
+                placeholder="e.g., Main Portfolio, Cold Storage"
+                maxLength={50}
+                className="w-full px-4 py-2.5 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
+              />
+            </div>
               Transaction history will be fetched automatically using public
               blockchain data.
             </p>

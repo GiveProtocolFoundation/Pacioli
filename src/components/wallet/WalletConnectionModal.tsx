@@ -280,10 +280,11 @@ const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
 
               {/* Address Input */}
               <div>
-                <label className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2">
+                <label htmlFor="wallet-address" className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2">
                   Wallet Address
                 </label>
                 <input
+                  id="wallet-address"
                   type="text"
                   value={address}
                   onChange={handleAddressChange}
@@ -309,10 +310,11 @@ const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
 
               {/* Label Input */}
               <div>
-                <label className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2">
+                <label htmlFor="wallet-label" className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2">
                   Label (Optional)
                 </label>
                 <input
+                  id="wallet-label"
                   type="text"
                   value={label}
                   onChange={e => setLabel(e.target.value)}
