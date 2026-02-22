@@ -170,11 +170,11 @@ class WalletConnectService {
 
     // Handle session events
     this.signClient.on('session_event', event => {
-      console.log('WalletConnect session_event:', event)
+      console.warn('WalletConnect session_event:', event)
     })
 
     this.signClient.on('session_update', ({ topic, params }) => {
-      console.log('WalletConnect session_update:', topic, params)
+      console.warn('WalletConnect session_update:', topic, params)
       if (this.currentSession?.topic === topic) {
         // Update accounts if changed
         const accounts = this.parseAccounts(params.namespaces)
@@ -186,7 +186,7 @@ class WalletConnectService {
     })
 
     this.signClient.on('session_delete', ({ topic }) => {
-      console.log('WalletConnect session_delete:', topic)
+      console.warn('WalletConnect session_delete:', topic)
       if (this.currentSession?.topic === topic) {
         this.notifySessionChange(null)
         this.notifyStateChange('disconnected')

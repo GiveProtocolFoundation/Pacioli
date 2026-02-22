@@ -94,7 +94,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
     const timeoutMs = sessionTimeoutMinutes * 60 * 1000
 
     if (now - lastActivity > timeoutMs) {
-      console.log('[AppContext] Session timed out due to inactivity')
+      console.warn('[AppContext] Session timed out due to inactivity')
       setSessionExpired(true)
       setAppState('Locked')
     }
@@ -147,8 +147,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
       setError(null)
 
       // Ensure storage is initialized
-      const initResult = await storage.ensureInitialized()
-      console.log('[AppContext] Initialization result:', initResult)
+      await storage.ensureInitialized()
 
       // Check if setup is complete
       const setupComplete = await storage.getSetting('setup_complete')

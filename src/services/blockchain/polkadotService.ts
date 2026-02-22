@@ -962,12 +962,7 @@ class PolkadotService {
         }
       }
 
-      const enrichedCount = transactions.filter(
-        tx => tx.usdValue !== undefined
-      ).length
-      console.log(
-        `[PriceService] Enriched ${enrichedCount}/${transactions.length} transactions with USD values`
-      )
+      // USD value enrichment complete
     } catch (error) {
       console.error(
         '[PriceService] Failed to enrich transactions with USD values:',
