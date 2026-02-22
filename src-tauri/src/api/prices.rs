@@ -7,6 +7,9 @@ use super::price_feeds::CoinGeckoClient;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
+/// Environment variable name for the CoinGecko API key.
+static ENV_COINGECKO_API_KEY: &str = "COINGECKO_API_KEY";
+
 /// Response for a single price lookup.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PriceResponse {
@@ -55,7 +58,7 @@ pub async fn get_crypto_price(
     let currency = vs_currency.unwrap_or_else(|| "usd".to_string());
 
     // Load API key from environment if available
-    let api_key = std::env::var("COINGECKO_API_KEY").ok();
+    let api_key = std::env::var(ENV_COINGECKO_API_KEY).ok();
     let client = CoinGeckoClient::new(api_key);
 
     let price = client
@@ -82,7 +85,7 @@ pub async fn get_crypto_prices(
 ) -> Result<HashMap<String, String>, String> {
     let currency = vs_currency.unwrap_or_else(|| "usd".to_string());
 
-    let api_key = std::env::var("COINGECKO_API_KEY").ok();
+    let api_key = std::env::var(ENV_COINGECKO_API_KEY).ok();
     let client = CoinGeckoClient::new(api_key);
 
     let ids: Vec<&str> = coin_ids.iter().map(|s| s.as_str()).collect();
@@ -108,7 +111,7 @@ pub async fn get_historical_crypto_price(
 ) -> Result<HistoricalPriceResponse, String> {
     let currency = vs_currency.unwrap_or_else(|| "usd".to_string());
 
-    let api_key = std::env::var("COINGECKO_API_KEY").ok();
+    let api_key = std::env::var(ENV_COINGECKO_API_KEY).ok();
     let client = CoinGeckoClient::new(api_key);
 
     let price = client
@@ -142,7 +145,7 @@ pub async fn get_batch_historical_prices(
 ) -> Result<BatchHistoricalPriceResponse, String> {
     let currency = vs_currency.unwrap_or_else(|| "usd".to_string());
 
-    let api_key = std::env::var("COINGECKO_API_KEY").ok();
+    let api_key = std::env::var(ENV_COINGECKO_API_KEY).ok();
     let client = CoinGeckoClient::new(api_key);
 
     let mut prices: HashMap<String, Result<String, String>> = HashMap::new();

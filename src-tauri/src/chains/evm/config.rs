@@ -8,6 +8,9 @@ use std::env;
 use std::sync::OnceLock;
 use thiserror::Error;
 
+/// Environment variable name for the Alchemy API key.
+static ENV_ALCHEMY_API_KEY: &str = "ALCHEMY_API_KEY";
+
 /// Errors that can occur when working with chain configuration.
 #[derive(Debug, Error)]
 pub enum ConfigError {
@@ -73,8 +76,8 @@ impl EvmChainConfig {
 
     /// Gets the full RPC URL with the Alchemy API key from environment.
     pub fn get_rpc_url(&self) -> ConfigResult<String> {
-        let api_key = env::var("ALCHEMY_API_KEY")
-            .map_err(|_| ConfigError::MissingEnvVar("ALCHEMY_API_KEY".to_string()))?;
+        let api_key = env::var(ENV_ALCHEMY_API_KEY)
+            .map_err(|_| ConfigError::MissingEnvVar(ENV_ALCHEMY_API_KEY.to_string()))?;
 
         Ok(format!("{}/{}", self.rpc_url, api_key))
     }
