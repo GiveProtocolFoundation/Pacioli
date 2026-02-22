@@ -33,16 +33,27 @@ pub const ORCA_WHIRLPOOL: &str = "whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc";
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum SolanaTransactionType {
+    /// Native SOL transfer
     Transfer,
+    /// SPL token transfer
     TokenTransfer,
+    /// DEX swap (e.g. Jupiter, Raydium, Orca)
     Swap,
+    /// Stake delegation
     Stake,
+    /// Stake withdrawal / undelegation
     Unstake,
+    /// Token mint
     Mint,
+    /// Token burn
     Burn,
+    /// NFT marketplace sale
     NftSale,
+    /// Account creation
     CreateAccount,
+    /// Account closure
     CloseAccount,
+    /// Unclassified transaction
     Unknown,
 }
 
@@ -50,7 +61,9 @@ pub enum SolanaTransactionType {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum SolanaTransactionStatus {
+    /// Transaction confirmed successfully
     Success,
+    /// Transaction failed (instruction error, etc.)
     Failed,
 }
 

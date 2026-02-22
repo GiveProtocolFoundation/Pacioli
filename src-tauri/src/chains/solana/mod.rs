@@ -4,8 +4,11 @@
 //! standard Solana JSON-RPC (fallback). Supports SOL native transfers,
 //! SPL tokens, and DeFi interactions.
 
+/// Helius Enhanced API client for enriched Solana data.
 pub mod helius;
+/// Solana JSON-RPC client (public endpoint fallback).
 pub mod rpc;
+/// Solana-specific types for transactions, tokens, and DAS assets.
 pub mod types;
 
 use async_trait::async_trait;
@@ -200,9 +203,9 @@ impl SolanaAdapter {
                 tx_type: types::SolanaTransactionType::Unknown,
                 native_transfers: vec![],
                 token_transfers: vec![],
-                description: String::new(),
-                source_program: String::new(),
-                fee_payer: String::new(),
+                description: String::default(),
+                source_program: String::default(),
+                fee_payer: String::default(),
             })
             .collect();
 
@@ -527,9 +530,9 @@ impl ChainAdapter for SolanaAdapter {
             tx_type: types::SolanaTransactionType::Unknown,
             native_transfers: vec![],
             token_transfers: vec![],
-            description: String::new(),
-            source_program: String::new(),
-            fee_payer: String::new(),
+            description: String::default(),
+            source_program: String::default(),
+            fee_payer: String::default(),
         };
 
         Ok(self.normalize_transaction(&sol_tx, ""))
