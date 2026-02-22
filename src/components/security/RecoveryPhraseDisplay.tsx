@@ -23,6 +23,13 @@ export const RecoveryPhraseDisplay: React.FC<RecoveryPhraseDisplayProps> = ({
 
   const words = phrase.split(' ')
 
+  const handleConfirmedChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setConfirmed(e.target.checked)
+    },
+    []
+  )
+
   const handleCopy = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(phrase)
@@ -154,7 +161,7 @@ export const RecoveryPhraseDisplay: React.FC<RecoveryPhraseDisplayProps> = ({
         <input
           type="checkbox"
           checked={confirmed}
-          onChange={e => setConfirmed(e.target.checked)}
+          onChange={handleConfirmedChange}
           className="mt-1 w-4 h-4 text-[#8b4e52] border-[rgba(201,169,97,0.3)] rounded focus:ring-[#c9a961]"
         />
         <span className="text-sm text-[#1a1815] dark:text-[#b8b3ac]">

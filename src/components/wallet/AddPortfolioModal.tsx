@@ -303,6 +303,60 @@ const AddPortfolioModal: React.FC<AddPortfolioModalProps> = ({
     })
   }, [])
 
+  // Handle ecosystem select from data attribute
+  const handleEcosystemClick = useCallback(
+    (e: React.MouseEvent<HTMLButtonElement>) => {
+      const ecosystem = e.currentTarget.dataset.ecosystem as PortfolioEcosystem
+      if (ecosystem) {
+        handleEcosystemSelect(ecosystem)
+      }
+    },
+    [handleEcosystemSelect]
+  )
+
+  // Toggle help visibility
+  const handleToggleHelp = useCallback(() => {
+    setShowHelp(prev => !prev)
+  }, [])
+
+  // Handle trackOnL2s checkbox change
+  const handleTrackOnL2sChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setTrackOnL2s(e.target.checked)
+    },
+    []
+  )
+
+  // Handle L2 chain toggle from data attribute
+  const handleL2ChainToggle = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const chain = e.currentTarget.dataset.chain as BlockchainType
+      if (chain) {
+        toggleL2Chain(chain)
+      }
+    },
+    [toggleL2Chain]
+  )
+
+  // Handle Polkadot chain toggle from data attribute
+  const handlePolkadotChainToggle = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const chain = e.currentTarget.dataset.chain as BlockchainType
+      if (chain) {
+        togglePolkadotChain(chain)
+      }
+    },
+    [togglePolkadotChain]
+  )
+
+  // Handle label input change
+  const handleLabelChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setLabel(e.target.value)
+    },
+    []
+  )
+
   // Check if form is valid
   const isFormValid = useMemo(() => {
     if (!selectedEcosystem || !address.trim()) return false
@@ -425,7 +479,8 @@ const AddPortfolioModal: React.FC<AddPortfolioModalProps> = ({
                   <button
                     key={ecosystem.id}
                     type="button"
-                    onClick={() => handleEcosystemSelect(ecosystem.id)}
+                    data-ecosystem={ecosystem.id}
+                    onClick={handleEcosystemClick}
                     className={`w-full p-4 rounded-lg border text-left transition-colors ${
                       selectedEcosystem === ecosystem.id
                         ? 'border-[#8b4e52] bg-[#8b4e52]/5 dark:bg-[#8b4e52]/10'
@@ -463,7 +518,7 @@ const AddPortfolioModal: React.FC<AddPortfolioModalProps> = ({
                     </label>
                     {selectedEcosystem === 'bitcoin' && (
                       <button
-                        onClick={() => setShowHelp(!showHelp)}
+                        onClick={handleToggleHelp}
                         className="text-xs text-[#8b4e52] hover:underline flex items-center gap-1"
                       >
                         <HelpCircle className="w-3 h-3" />
@@ -540,7 +595,7 @@ const AddPortfolioModal: React.FC<AddPortfolioModalProps> = ({
                           <input
                             type="checkbox"
                             checked={trackOnL2s}
-                            onChange={e => setTrackOnL2s(e.target.checked)}
+                            onChange={handleTrackOnL2sChange}
                             className="sr-only peer"
                           />
                           <div className="w-9 h-5 bg-[#a39d94] peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#c9a961] rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#8b4e52]" />
@@ -557,7 +612,8 @@ const AddPortfolioModal: React.FC<AddPortfolioModalProps> = ({
                               <input
                                 type="checkbox"
                                 checked={selectedL2s.has(chain.id)}
-                                onChange={() => toggleL2Chain(chain.id)}
+                                data-chain={chain.id}
+                                onChange={handleL2ChainToggle}
                                 className="w-4 h-4 text-[#8b4e52] border-[rgba(201,169,97,0.3)] rounded focus:ring-[#c9a961]"
                               />
                               <span
@@ -600,7 +656,8 @@ const AddPortfolioModal: React.FC<AddPortfolioModalProps> = ({
                             <input
                               type="checkbox"
                               checked={selectedPolkadotChains.has(chain.id)}
-                              onChange={() => togglePolkadotChain(chain.id)}
+                              data-chain={chain.id}
+                              onChange={handlePolkadotChainToggle}
                               className="w-4 h-4 text-[#8b4e52] border-[rgba(201,169,97,0.3)] rounded focus:ring-[#c9a961]"
                             />
                             <span
@@ -629,7 +686,7 @@ const AddPortfolioModal: React.FC<AddPortfolioModalProps> = ({
                   <input
                     type="text"
                     value={label}
-                    onChange={e => setLabel(e.target.value)}
+                    onChange={handleLabelChange}
                     placeholder="e.g., Main Portfolio, Cold Storage"
                     maxLength={50}
                     className="w-full px-4 py-2.5 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"

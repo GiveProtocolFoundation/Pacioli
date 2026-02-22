@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, useCallback } from 'react'
 import { ChevronDown, Check, Search } from 'lucide-react'
 import {
   BlockchainType,
@@ -81,18 +81,44 @@ const BlockchainSelector: React.FC<BlockchainSelectorProps> = ({
     {} as Record<string, BlockchainType[]>
   )
 
-  const handleSelect = (blockchain: BlockchainType) => {
-    onChange(blockchain)
-    setIsOpen(false)
-    setSearchQuery('')
-  }
+  const handleSelect = useCallback(
+    (blockchain: BlockchainType) => {
+      onChange(blockchain)
+      setIsOpen(false)
+      setSearchQuery('')
+    },
+    [onChange]
+  )
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Escape') {
       setIsOpen(false)
       setSearchQuery('')
     }
-  }
+  }, [])
+
+  const handleToggle = useCallback(() => {
+    if (!disabled) {
+      setIsOpen(prev => !prev)
+    }
+  }, [disabled])
+
+  const handleSearchChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setSearchQuery(e.target.value)
+    },
+    []
+  )
+
+  const handleChainClick = useCallback(
+    (e: React.MouseEvent<HTMLButtonElement>) => {
+      const chain = e.currentTarget.dataset.chain as BlockchainType | undefined
+      if (chain) {
+        handleSelect(chain)
+      }
+    },
+    [handleSelect]
+  )
 
   return (
     <div ref={dropdownRef} className="relative">
@@ -107,7 +133,7 @@ const BlockchainSelector: React.FC<BlockchainSelectorProps> = ({
       <button
         id="blockchain-network"
         type="button"
-        onClick={() => !disabled && setIsOpen(!isOpen)}
+        onClick={handleToggle}
         disabled={disabled}
         className={`w-full px-4 py-2 border rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-left flex items-center justify-between ${
           error
@@ -151,7 +177,7 @@ const BlockchainSelector: React.FC<BlockchainSelectorProps> = ({
                 ref={searchInputRef}
                 type="text"
                 value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
+                onChange={handleSearchChange}
                 placeholder="Search networks..."
                 className="w-full pl-4 pr-10 py-2 text-sm border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#0f0e0c] text-[#1a1815] dark:text-[#f5f3f0] placeholder-[#a39d94] focus:outline-none focus:ring-1 focus:ring-[#c9a961]"
               />
@@ -169,7 +195,8 @@ const BlockchainSelector: React.FC<BlockchainSelectorProps> = ({
                   <button
                     key={chain}
                     type="button"
-                    onClick={() => handleSelect(chain)}
+                    data-chain={chain}
+                    onClick={handleChainClick}
                     className={`w-full px-4 py-2 text-left flex items-center justify-between hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620] ${
                       value === chain
                         ? 'bg-[#c9a961]/10 dark:bg-[#c9a961]/20'

@@ -29,6 +29,34 @@ export const UnlockScreen: React.FC<UnlockScreenProps> = ({ onUnlock }) => {
   const [isResetting, setIsResetting] = useState(false)
   const [resetSuccess, setResetSuccess] = useState(false)
 
+  const handlePasswordChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setPassword(e.target.value)
+    },
+    []
+  )
+
+  const handleRecoveryPhraseChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      setRecoveryPhrase(e.target.value)
+    },
+    []
+  )
+
+  const handleNewPasswordChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setNewPassword(e.target.value)
+    },
+    []
+  )
+
+  const handleConfirmNewPasswordChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setConfirmNewPassword(e.target.value)
+    },
+    []
+  )
+
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault()
@@ -203,7 +231,7 @@ export const UnlockScreen: React.FC<UnlockScreenProps> = ({ onUnlock }) => {
                 <textarea
                   id="recoveryPhrase"
                   value={recoveryPhrase}
-                  onChange={e => setRecoveryPhrase(e.target.value)}
+                  onChange={handleRecoveryPhraseChange}
                   disabled={isResetting}
                   rows={3}
                   className="w-full px-4 py-3 border border-[rgba(201,169,97,0.15)] rounded-lg focus:ring-2 focus:ring-[#c9a961] focus:border-[#c9a961] dark:bg-[#2a2620] dark:text-[#f5f3f0] font-mono text-sm"
@@ -223,7 +251,7 @@ export const UnlockScreen: React.FC<UnlockScreenProps> = ({ onUnlock }) => {
                   id="newPassword"
                   type="password"
                   value={newPassword}
-                  onChange={e => setNewPassword(e.target.value)}
+                  onChange={handleNewPasswordChange}
                   disabled={isResetting}
                   className="w-full px-4 py-3 border border-[rgba(201,169,97,0.15)] rounded-lg focus:ring-2 focus:ring-[#c9a961] focus:border-[#c9a961] dark:bg-[#2a2620] dark:text-[#f5f3f0]"
                   placeholder="••••••••"
@@ -242,7 +270,7 @@ export const UnlockScreen: React.FC<UnlockScreenProps> = ({ onUnlock }) => {
                   id="confirmNewPassword"
                   type="password"
                   value={confirmNewPassword}
-                  onChange={e => setConfirmNewPassword(e.target.value)}
+                  onChange={handleConfirmNewPasswordChange}
                   disabled={isResetting}
                   className="w-full px-4 py-3 border border-[rgba(201,169,97,0.15)] rounded-lg focus:ring-2 focus:ring-[#c9a961] focus:border-[#c9a961] dark:bg-[#2a2620] dark:text-[#f5f3f0]"
                   placeholder="••••••••"
@@ -350,7 +378,7 @@ export const UnlockScreen: React.FC<UnlockScreenProps> = ({ onUnlock }) => {
                 id="password"
                 type="password"
                 value={password}
-                onChange={e => setPassword(e.target.value)}
+                onChange={handlePasswordChange}
                 autoFocus
                 disabled={isUnlocking}
                 className="w-full px-4 py-3 border border-[rgba(201,169,97,0.15)] rounded-lg focus:ring-2 focus:ring-[#c9a961] focus:border-[#c9a961] dark:bg-[#2a2620] dark:text-[#f5f3f0]"

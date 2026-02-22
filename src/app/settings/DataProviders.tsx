@@ -151,6 +151,14 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
   const rateLimit = status?.rate_limit ?? 1
   const turboLimit = status?.turbo_rate_limit ?? 5
 
+  const toggleShowKey = useCallback(() => {
+    setShowKey(prev => !prev)
+  }, [])
+
+  const startEditing = useCallback(() => {
+    setIsEditing(true)
+  }, [])
+
   const handleApiKeyChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       setApiKey(e.target.value)
@@ -257,7 +265,7 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
             />
             <button
               type="button"
-              onClick={() => setShowKey(!showKey)}
+              onClick={toggleShowKey}
               className="absolute right-2 top-1/2 -translate-y-1/2 text-[#696557] hover:text-[#1a1815] dark:text-[#b8b3ac] dark:hover:text-[#f5f3f0]"
             >
               {showKey ? (
@@ -299,7 +307,7 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
                 <span>API key configured</span>
               </div>
               <button
-                onClick={() => setIsEditing(true)}
+                onClick={startEditing}
                 className="px-3 py-1.5 text-sm font-medium text-[#696557] dark:text-[#b8b3ac] hover:text-[#1a1815] dark:hover:text-[#f5f3f0] border border-[rgba(201,169,97,0.15)] rounded-lg hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620]"
               >
                 Update
@@ -319,7 +327,7 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
             </>
           ) : (
             <button
-              onClick={() => setIsEditing(true)}
+              onClick={startEditing}
               className="px-3 py-1.5 text-sm font-medium text-[#8b4e52] dark:text-[#a86e72] border border-[#8b4e52]/30 dark:border-[#8b4e52]/40 rounded-lg hover:bg-[#8b4e52]/10 dark:hover:bg-[#8b4e52]/20 flex items-center gap-1.5"
             >
               <Key className="w-4 h-4" />
@@ -361,28 +369,34 @@ const DataProviders: React.FC = () => {
     fetchStatuses()
   }, [fetchStatuses])
 
-  const handleSaveKey = async (provider: string, key: string) => {
-    const result = await invoke<SaveApiKeyResult>('save_api_key', {
-      provider,
-      apiKey: key,
-    })
-    if (!result.success) {
-      throw new Error(result.error || 'Failed to save API key')
-    }
-    // Refresh statuses
-    await fetchStatuses()
-  }
+  const handleSaveKey = useCallback(
+    async (provider: string, key: string) => {
+      const result = await invoke<SaveApiKeyResult>('save_api_key', {
+        provider,
+        apiKey: key,
+      })
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to save API key')
+      }
+      // Refresh statuses
+      await fetchStatuses()
+    },
+    [fetchStatuses]
+  )
 
-  const handleDeleteKey = async (provider: string) => {
-    const result = await invoke<SaveApiKeyResult>('delete_api_key', {
-      provider,
-    })
-    if (!result.success) {
-      throw new Error(result.error || 'Failed to remove API key')
-    }
-    // Refresh statuses
-    await fetchStatuses()
-  }
+  const handleDeleteKey = useCallback(
+    async (provider: string) => {
+      const result = await invoke<SaveApiKeyResult>('delete_api_key', {
+        provider,
+      })
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to remove API key')
+      }
+      // Refresh statuses
+      await fetchStatuses()
+    },
+    [fetchStatuses]
+  )
 
   const getStatusForProvider = (
     providerId: string

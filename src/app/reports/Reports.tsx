@@ -422,7 +422,7 @@ const Reports: React.FC = () => {
   const favoriteReports = reports.filter(r => r.favorite)
 
   /** Formats a date string for display in the recent runs sidebar */
-  const formatDate = (dateString: string) => {
+  const formatDate = useCallback((dateString: string) => {
     const date = new Date(dateString)
     return date.toLocaleDateString('en-US', {
       month: 'short',
@@ -431,10 +431,10 @@ const Reports: React.FC = () => {
       hour: '2-digit',
       minute: '2-digit',
     })
-  }
+  }, [])
 
   /** Returns a colored status badge element for a report run status */
-  const getStatusBadge = (status: RecentRun['status']) => {
+  const getStatusBadge = useCallback((status: RecentRun['status']) => {
     const styles = {
       completed:
         'bg-[#7a9b6f]/10 dark:bg-[#7a9b6f]/20 text-[#7a9b6f] dark:text-[#8faf84]',
@@ -451,7 +451,7 @@ const Reports: React.FC = () => {
         {status.charAt(0).toUpperCase() + status.slice(1)}
       </span>
     )
-  }
+  }, [])
 
   const handleSearchChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {

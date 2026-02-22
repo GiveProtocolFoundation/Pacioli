@@ -199,6 +199,42 @@ const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
     [onWalletAdded]
   )
 
+  // Tab change handler using data-tab attribute
+  const handleTabChange = useCallback(
+    (e: React.MouseEvent<HTMLButtonElement>) => {
+      const tab = e.currentTarget.dataset.tab as TabType | undefined
+      if (tab) setActiveTab(tab)
+    },
+    []
+  )
+
+  // Toggle help visibility
+  const handleToggleHelp = useCallback(() => {
+    setShowHelp(prev => !prev)
+  }, [])
+
+  // Label input change handler
+  const handleLabelChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setLabel(e.target.value)
+    },
+    []
+  )
+
+  // WalletConnect: Add account using data attributes
+  const handleAddWcAccountClick = useCallback(
+    (e: React.MouseEvent<HTMLButtonElement>) => {
+      const accountAddress = e.currentTarget.dataset.address
+      const accountChain = e.currentTarget.dataset.chain
+      if (!accountAddress || !accountChain || !wcSession) return
+      const account = wcSession.accounts.find(
+        a => a.address === accountAddress && a.chain === accountChain
+      )
+      if (account) handleAddWcAccount(account)
+    },
+    [wcSession, handleAddWcAccount]
+  )
+
   if (!isOpen) return null
 
   const isAddressValid = selectedBlockchain && address.trim() && !addressError
@@ -233,7 +269,8 @@ const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
         {/* Tabs */}
         <div className="flex border-b border-[rgba(201,169,97,0.15)]">
           <button
-            onClick={() => setActiveTab('add')}
+            data-tab="add"
+            onClick={handleTabChange}
             className={`flex-1 px-4 py-3 text-sm font-medium flex items-center justify-center gap-2 ${
               activeTab === 'add'
                 ? 'text-[#8b4e52] border-b-2 border-[#8b4e52] bg-[#8b4e52]/5'
@@ -244,7 +281,8 @@ const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
             Add Wallet
           </button>
           <button
-            onClick={() => setActiveTab('walletconnect')}
+            data-tab="walletconnect"
+            onClick={handleTabChange}
             className={`flex-1 px-4 py-3 text-sm font-medium flex items-center justify-center gap-2 ${
               activeTab === 'walletconnect'
                 ? 'text-[#8b4e52] border-b-2 border-[#8b4e52] bg-[#8b4e52]/5'
@@ -255,7 +293,8 @@ const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
             WalletConnect
           </button>
           <button
-            onClick={() => setActiveTab('manage')}
+            data-tab="manage"
+            onClick={handleTabChange}
             className={`flex-1 px-4 py-3 text-sm font-medium flex items-center justify-center gap-2 ${
               activeTab === 'manage'
                 ? 'text-[#8b4e52] border-b-2 border-[#8b4e52] bg-[#8b4e52]/5'
@@ -323,7 +362,7 @@ const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
                   id="wallet-label"
                   type="text"
                   value={label}
-                  onChange={e => setLabel(e.target.value)}
+                  onChange={handleLabelChange}
                   placeholder="e.g., Main Trading Wallet"
                   maxLength={50}
                   className="w-full px-4 py-2.5 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
@@ -339,7 +378,7 @@ const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
                       About Verification
                     </h4>
                     <button
-                      onClick={() => setShowHelp(!showHelp)}
+                      onClick={handleToggleHelp}
                       className="text-xs text-[#8b4e52] hover:underline flex items-center gap-1"
                     >
                       <HelpCircle className="w-3 h-3" />
@@ -470,7 +509,9 @@ const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
                             </span>
                           ) : (
                             <button
-                              onClick={() => handleAddWcAccount(account)}
+                              data-address={account.address}
+                              data-chain={account.chain}
+                              onClick={handleAddWcAccountClick}
                               className="ml-3 px-3 py-1.5 bg-[#8b4e52] text-white text-xs rounded-lg hover:bg-[#7a4248] flex items-center gap-1"
                             >
                               <Plus className="w-3 h-3" />

@@ -216,9 +216,20 @@ const WalletManager: React.FC = () => {
     setIsConnectionModalOpen(true)
   }, [])
 
+  const handleToggleAddMenu = useCallback(() => {
+    setShowAddMenu(prev => !prev)
+  }, [])
+
   const handleCloseAddMenu = useCallback(() => {
     setShowAddMenu(false)
   }, [])
+
+  const handleAddMenuKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLDivElement>) => {
+      if (e.key === 'Escape') handleCloseAddMenu()
+    },
+    [handleCloseAddMenu]
+  )
 
   // Handle adding a portfolio from the AddPortfolioModal
   const handleAddPortfolio = useCallback(
@@ -623,7 +634,7 @@ const WalletManager: React.FC = () => {
           {/* Add Button with Dropdown Menu */}
           <div className="relative">
             <button
-              onClick={() => setShowAddMenu(!showAddMenu)}
+              onClick={handleToggleAddMenu}
               className="flex items-center gap-2 px-4 py-2 bg-[#8b4e52] text-white rounded-lg font-medium hover:bg-[#7a4248] transition-colors"
             >
               <Plus className="w-5 h-5" />
@@ -640,9 +651,7 @@ const WalletManager: React.FC = () => {
                   className="fixed inset-0 z-10"
                   role="presentation"
                   onClick={handleCloseAddMenu}
-                  onKeyDown={e => {
-                    if (e.key === 'Escape') handleCloseAddMenu()
-                  }}
+                  onKeyDown={handleAddMenuKeyDown}
                 />
                 {/* Dropdown Menu */}
                 <div className="absolute right-0 mt-2 w-64 bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg shadow-lg border border-[rgba(201,169,97,0.15)] z-20 overflow-hidden">
