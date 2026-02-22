@@ -186,8 +186,8 @@ export async function parseXpub(xpub: string): Promise<XpubInfo> {
  */
 export async function deriveAddresses(
   xpub: string,
-  receivingCount: number = 20,
-  changeCount: number = 10
+  receivingCount = 20,
+  changeCount = 10
 ): Promise<XpubPortfolio> {
   return invoke<XpubPortfolio>('bitcoin_derive_addresses', {
     xpub,
@@ -210,9 +210,9 @@ export async function deriveAddresses(
  */
 export async function fetchXpubBalances(
   xpub: string,
-  receivingCount: number = 20,
-  changeCount: number = 10,
-  network: string = 'bitcoin'
+  receivingCount = 20,
+  changeCount = 10,
+  network = 'bitcoin'
 ): Promise<[DerivedAddress, BitcoinBalance][]> {
   return invoke<[DerivedAddress, BitcoinBalance][]>(
     'bitcoin_fetch_xpub_balances',
@@ -237,10 +237,10 @@ export async function fetchXpubBalances(
  */
 export async function fetchXpubTransactions(
   xpub: string,
-  receivingCount: number = 20,
-  changeCount: number = 10,
-  network: string = 'bitcoin',
-  maxPagesPerAddress: number = 2
+  receivingCount = 20,
+  changeCount = 10,
+  network = 'bitcoin',
+  maxPagesPerAddress = 2
 ): Promise<[DerivedAddress, BitcoinTransaction[]][]> {
   return invoke<[DerivedAddress, BitcoinTransaction[]][]>(
     'bitcoin_fetch_xpub_transactions',
@@ -275,7 +275,7 @@ export async function validateBitcoinAddress(
  */
 export async function getBitcoinBalance(
   address: string,
-  network: string = 'bitcoin'
+  network = 'bitcoin'
 ): Promise<BitcoinBalance> {
   return invoke<BitcoinBalance>('get_bitcoin_balance', { address, network })
 }
@@ -289,7 +289,7 @@ export async function getBitcoinBalance(
  */
 export async function getBitcoinTransactions(
   address: string,
-  network: string = 'bitcoin',
+  network = 'bitcoin',
   maxPages?: number
 ): Promise<BitcoinTransaction[]> {
   return invoke<BitcoinTransaction[]>('get_bitcoin_transactions', {
@@ -307,7 +307,7 @@ export async function getBitcoinTransactions(
  */
 export async function getBitcoinUtxos(
   address: string,
-  network: string = 'bitcoin'
+  network = 'bitcoin'
 ): Promise<BitcoinUtxo[]> {
   return invoke<BitcoinUtxo[]>('get_bitcoin_utxos', { address, network })
 }

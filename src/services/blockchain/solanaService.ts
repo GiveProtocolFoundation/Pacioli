@@ -102,7 +102,7 @@ export interface SolanaTransaction {
  */
 export async function getSolanaBalance(
   address: string,
-  network: string = 'solana'
+  network = 'solana'
 ): Promise<SolanaBalance> {
   return invoke<SolanaBalance>('get_solana_balance', { address, network })
 }
@@ -116,7 +116,7 @@ export async function getSolanaBalance(
  */
 export async function getSolanaTransactions(
   address: string,
-  network: string = 'solana',
+  network = 'solana',
   maxPages?: number
 ): Promise<SolanaTransaction[]> {
   return invoke<SolanaTransaction[]>('get_solana_transactions', {
