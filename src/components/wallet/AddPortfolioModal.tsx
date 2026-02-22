@@ -467,7 +467,7 @@ const AddPortfolioModal: React.FC<AddPortfolioModalProps> = ({
                         className="text-xs text-[#8b4e52] hover:underline flex items-center gap-1"
                       >
                         <HelpCircle className="w-3 h-3" />
-                        What's xPub?
+                        What&apos;s xPub?
                       </button>
                     )}
                   </div>
@@ -480,8 +480,9 @@ const AddPortfolioModal: React.FC<AddPortfolioModalProps> = ({
                         without needing private keys.
                       </p>
                       <p>
-                        You can find it in your wallet's settings under
-                        "Extended Public Key" or "Account xPub".
+                        You can find it in your wallet&apos;s settings under
+                        &quot;Extended Public Key&quot; or &quot;Account
+                        xPub&quot;.
                       </p>
                     </div>
                   )}
@@ -572,8 +573,8 @@ const AddPortfolioModal: React.FC<AddPortfolioModalProps> = ({
                       )}
 
                       <p className="mt-3 text-xs text-[#696557] dark:text-[#b8b3ac]">
-                        Same address works across all EVM chains. We'll fetch
-                        transactions from each selected network.
+                        Same address works across all EVM chains. We&apos;ll
+                        fetch transactions from each selected network.
                       </p>
                     </div>
                   )}
