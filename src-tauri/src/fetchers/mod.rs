@@ -516,6 +516,7 @@ impl ResilientFetcher {
 ///
 /// Provides centralized access to fetchers for different providers,
 /// with automatic reinitialization when API keys change.
+#[derive(Default)]
 pub struct FetcherRegistry {
     fetchers: std::collections::HashMap<String, ResilientFetcher>,
 }
@@ -554,13 +555,6 @@ impl FetcherRegistry {
     }
 }
 
-impl Default for FetcherRegistry {
-    fn default() -> Self {
-        Self {
-            fetchers: std::collections::HashMap::new(),
-        }
-    }
-}
 
 // =============================================================================
 // TESTS
