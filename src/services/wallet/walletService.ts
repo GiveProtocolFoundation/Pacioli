@@ -403,18 +403,17 @@ class WalletService {
     if (walletType === WalletType.PHANTOM) {
       // Phantom account change subscription
       const handleAccountChanged = (publicKey: unknown) => {
-        if (publicKey) {
-          callback([
-            {
-              address: (publicKey as { toString(): string }).toString(),
-              name: 'Phantom Account',
-              source: WalletType.PHANTOM,
-              type: ChainType.SOLANA,
-            },
-          ])
-        } else {
-          callback([])
-        }
+        const accounts: WalletAccount[] = publicKey
+          ? [
+              {
+                address: (publicKey as { toString(): string }).toString(),
+                name: 'Phantom Account',
+                source: WalletType.PHANTOM,
+                type: ChainType.SOLANA,
+              },
+            ]
+          : []
+        callback(accounts)
       }
 
       window.phantom?.solana?.on('accountChanged', handleAccountChanged)
