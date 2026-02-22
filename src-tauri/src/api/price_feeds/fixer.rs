@@ -46,7 +46,7 @@ impl FixerClient {
     /// * `to_currency` - Target currency (e.g., "EUR")
     ///
     /// # Example
-    /// ```
+    /// ```ignore
     /// let client = FixerClient::new("your_api_key".to_string());
     /// let rate = client.get_rate("USD", "EUR").await?;
     /// ```
@@ -155,7 +155,7 @@ impl FixerClient {
     /// * `date` - Date in format "YYYY-MM-DD"
     ///
     /// # Example
-    /// ```
+    /// ```ignore
     /// let rate = client.get_historical_rate("USD", "EUR", "2025-01-01").await?;
     /// ```
     pub async fn get_historical_rate(

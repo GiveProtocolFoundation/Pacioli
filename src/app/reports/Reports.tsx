@@ -295,6 +295,56 @@ const FavoritesToggle: React.FC<{
   </button>
 )
 
+/** Displays a stat card with label, value, and icon */
+const StatCard: React.FC<{
+  label: string
+  value: number
+  Icon: React.ElementType
+}> = ({ label, value, Icon }) => (
+  <div className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg border border-[rgba(201,169,97,0.15)] p-4">
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="text-sm text-[#696557] dark:text-[#b8b3ac]">{label}</p>
+        <p className="text-2xl font-semibold text-[#1a1815] dark:text-[#f5f3f0] mt-1 stat-value">
+          {value}
+        </p>
+      </div>
+      <div className="stat-icon-container">
+        <Icon />
+      </div>
+    </div>
+  </div>
+)
+
+/** Renders a single recent report run entry with status badge and download link */
+const RecentRunItem: React.FC<{
+  run: RecentRun
+  getStatusBadge: (status: RecentRun['status']) => React.ReactNode
+  formatDate: (dateString: string) => string
+}> = ({ run, getStatusBadge, formatDate }) => (
+  <div className="pb-3 border-b border-[rgba(201,169,97,0.15)] last:border-0 last:pb-0">
+    <div className="flex items-start justify-between mb-1">
+      <p className="text-sm font-medium text-[#1a1815] dark:text-[#f5f3f0]">
+        {run.reportName}
+      </p>
+      {getStatusBadge(run.status)}
+    </div>
+    <p className="text-xs text-[#696557] dark:text-[#b8b3ac]">
+      By {run.ranBy}
+    </p>
+    <p className="text-xs text-[#a39d94] dark:text-[#696557] mt-1">
+      {formatDate(run.ranAt)}
+    </p>
+    {run.status === 'completed' && (
+      <button className="download-link mt-2 flex items-center">
+        <Download className="w-3 h-3 mr-1" />
+        Download {run.format.toUpperCase()}
+      </button>
+    )}
+  </div>
+)
+
+/** Displays report icon, name, description, and last-run timestamp */
 const ReportInfo = ({
   report,
   Icon,
@@ -332,6 +382,27 @@ const ReportInfo = ({
   </div>
 )
 
+/** Page header with title and custom report button */
+const ReportsHeader: React.FC = () => (
+  <header className="bg-[#fafaf8] dark:bg-[#0f0e0c] border-b border-[rgba(201,169,97,0.15)]">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1>Reports</h1>
+          <p className="text-sm text-[#696557] dark:text-[#b8b3ac] mt-1">
+            Financial and cryptocurrency reporting
+          </p>
+        </div>
+        <button className="px-4 py-2 text-sm font-medium text-white bg-[#8b4e52] rounded-lg hover:bg-[#7a4248] flex items-center justify-center">
+          <Plus className="w-4 h-4 mr-2" />
+          Custom Report
+        </button>
+      </div>
+    </div>
+  </header>
+)
+
+/** Main reports page with search, category filtering, and recent run history */
 const Reports: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<
     ReportCategory | 'all'
@@ -352,6 +423,7 @@ const Reports: React.FC = () => {
 
   const favoriteReports = reports.filter(r => r.favorite)
 
+  /** Formats a date string for display in the recent runs sidebar */
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
     return date.toLocaleDateString('en-US', {
@@ -363,6 +435,7 @@ const Reports: React.FC = () => {
     })
   }
 
+  /** Returns a colored status badge element for a report run status */
   const getStatusBadge = (status: RecentRun['status']) => {
     const styles = {
       completed:
@@ -404,22 +477,7 @@ const Reports: React.FC = () => {
   return (
     <div className="min-h-screen ledger-background">
       {/* Header */}
-      <header className="bg-[#fafaf8] dark:bg-[#0f0e0c] border-b border-[rgba(201,169,97,0.15)]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <h1>Reports</h1>
-              <p className="text-sm text-[#696557] dark:text-[#b8b3ac] mt-1">
-                Financial and cryptocurrency reporting
-              </p>
-            </div>
-            <button className="px-4 py-2 text-sm font-medium text-white bg-[#8b4e52] rounded-lg hover:bg-[#7a4248] flex items-center justify-center">
-              <Plus className="w-4 h-4 mr-2" />
-              Custom Report
-            </button>
-          </div>
-        </div>
-      </header>
+      <ReportsHeader />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -427,56 +485,13 @@ const Reports: React.FC = () => {
           <div className="lg:col-span-2 space-y-6">
             {/* Quick Stats */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg border border-[rgba(201,169,97,0.15)] p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-[#696557] dark:text-[#b8b3ac]">
-                      Total Reports
-                    </p>
-                    <p className="text-2xl font-semibold text-[#1a1815] dark:text-[#f5f3f0] mt-1 stat-value">
-                      {reports.length}
-                    </p>
-                  </div>
-                  <div className="stat-icon-container">
-                    <FileText />
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg border border-[rgba(201,169,97,0.15)] p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-[#696557] dark:text-[#b8b3ac]">
-                      Favorites
-                    </p>
-                    <p className="text-2xl font-semibold text-[#1a1815] dark:text-[#f5f3f0] mt-1 stat-value">
-                      {favoriteReports.length}
-                    </p>
-                  </div>
-                  <div className="stat-icon-container">
-                    <Star />
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg border border-[rgba(201,169,97,0.15)] p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-[#696557] dark:text-[#b8b3ac]">
-                      Run Today
-                    </p>
-                    <p className="text-2xl font-semibold text-[#1a1815] dark:text-[#f5f3f0] mt-1 stat-value">
-                      {
-                        recentRuns.filter(r => r.ranAt.startsWith('2025-10-17'))
-                          .length
-                      }
-                    </p>
-                  </div>
-                  <div className="stat-icon-container">
-                    <Clock />
-                  </div>
-                </div>
-              </div>
+              <StatCard label="Total Reports" value={reports.length} Icon={FileText} />
+              <StatCard label="Favorites" value={favoriteReports.length} Icon={Star} />
+              <StatCard
+                label="Run Today"
+                value={recentRuns.filter(r => r.ranAt.startsWith('2025-10-17')).length}
+                Icon={Clock}
+              />
             </div>
 
             {/* Search and Filters */}
@@ -584,29 +599,12 @@ const Reports: React.FC = () => {
               </h3>
               <div className="space-y-3">
                 {recentRuns.map(run => (
-                  <div
+                  <RecentRunItem
                     key={run.id}
-                    className="pb-3 border-b border-[rgba(201,169,97,0.15)] last:border-0 last:pb-0"
-                  >
-                    <div className="flex items-start justify-between mb-1">
-                      <p className="text-sm font-medium text-[#1a1815] dark:text-[#f5f3f0]">
-                        {run.reportName}
-                      </p>
-                      {getStatusBadge(run.status)}
-                    </div>
-                    <p className="text-xs text-[#696557] dark:text-[#b8b3ac]">
-                      By {run.ranBy}
-                    </p>
-                    <p className="text-xs text-[#a39d94] dark:text-[#696557] mt-1">
-                      {formatDate(run.ranAt)}
-                    </p>
-                    {run.status === 'completed' && (
-                      <button className="download-link mt-2 flex items-center">
-                        <Download className="w-3 h-3 mr-1" />
-                        Download {run.format.toUpperCase()}
-                      </button>
-                    )}
-                  </div>
+                    run={run}
+                    getStatusBadge={getStatusBadge}
+                    formatDate={formatDate}
+                  />
                 ))}
               </div>
             </div>

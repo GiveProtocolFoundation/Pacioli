@@ -37,6 +37,30 @@ interface AccountsTableProps {
   canEdit: boolean
 }
 
+/** Table header row for the chart of accounts */
+const AccountsTableHeader: React.FC<{ canEdit: boolean }> = ({ canEdit }) => (
+  <tr>
+    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+      Code
+    </th>
+    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+      Account Name
+    </th>
+    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+      Type
+    </th>
+    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+      Description
+    </th>
+    {canEdit && (
+      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+        Actions
+      </th>
+    )}
+  </tr>
+)
+
+/** Renders the chart of accounts table with inline editing and delete actions */
 const AccountsTable: React.FC<AccountsTableProps> = ({
   filteredAccounts,
   editingAccount,
@@ -56,25 +80,7 @@ const AccountsTable: React.FC<AccountsTableProps> = ({
     <div className="overflow-x-auto">
       <table className="w-full">
         <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-          <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Code
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Account Name
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Type
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Description
-            </th>
-            {canEdit && (
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Actions
-              </th>
-            )}
-          </tr>
+          <AccountsTableHeader canEdit={canEdit} />
         </thead>
         <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
           {editingAccount && (
@@ -173,6 +179,7 @@ const AccountsTable: React.FC<AccountsTableProps> = ({
   </div>
 )
 
+/** Chart of accounts management page with search, type filtering, and CRUD operations */
 const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
   jurisdiction = 'us-gaap',
   accountType = 'not-for-profit',

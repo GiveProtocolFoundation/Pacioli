@@ -124,6 +124,27 @@ const EntityRow: React.FC<EntityRowProps> = ({ entity, actionsMenu }) => (
   </tr>
 )
 
+/** Page header with title, subtitle, and add entity button */
+const EntitiesPageHeader: React.FC<{ onAdd: () => void }> = ({ onAdd }) => (
+  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div>
+      <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
+        Entities
+      </h1>
+      <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+        Manage vendors, customers, and other counterparties
+      </p>
+    </div>
+    <button
+      onClick={onAdd}
+      className="inline-flex items-center gap-2 px-4 py-2 bg-[#8b4e52] text-white rounded-lg hover:bg-[#7a4248] transition-colors"
+    >
+      <Plus className="w-4 h-4" />
+      Add Entity
+    </button>
+  </div>
+)
+
 /** Table header row for the entities table */
 const EntitiesTableHeader: React.FC = () => (
   <tr>
@@ -459,23 +480,7 @@ const Entities: React.FC = () => {
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
-            Entities
-          </h1>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            Manage vendors, customers, and other counterparties
-          </p>
-        </div>
-        <button
-          onClick={handleAddEntityOpen}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-[#8b4e52] text-white rounded-lg hover:bg-[#7a4248] transition-colors"
-        >
-          <Plus className="w-4 h-4" />
-          Add Entity
-        </button>
-      </div>
+      <EntitiesPageHeader onAdd={handleAddEntityOpen} />
 
       {/* Error message */}
       {error && (

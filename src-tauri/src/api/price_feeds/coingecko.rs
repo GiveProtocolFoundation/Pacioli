@@ -43,7 +43,7 @@ impl CoinGeckoClient {
     /// * `vs_currency` - Target currency (e.g., "usd", "eur")
     ///
     /// # Example
-    /// ```
+    /// ```ignore
     /// let client = CoinGeckoClient::new(None);
     /// let price = client.get_price("polkadot", "usd").await?;
     /// ```
