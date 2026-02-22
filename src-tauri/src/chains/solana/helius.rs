@@ -188,8 +188,9 @@ impl HeliusClient {
             crate::fetchers::FetchError::ConfigError(msg) => ChainError::ConfigError(msg),
         })?;
 
-        serde_json::from_str(&text)
-            .map_err(|e| ChainError::ParseError(format!("Failed to parse Helius transactions: {}", e)))
+        serde_json::from_str(&text).map_err(|e| {
+            ChainError::ParseError(format!("Failed to parse Helius transactions: {}", e))
+        })
     }
 
     /// Fetch all transactions for an address with pagination
@@ -240,11 +241,7 @@ impl HeliusClient {
     /// Get all token assets for an address using DAS API
     ///
     /// Uses Helius enhanced RPC: `getAssetsByOwner`
-    pub async fn get_assets_by_owner(
-        &self,
-        owner: &str,
-        page: u32,
-    ) -> ChainResult<DasAssetList> {
+    pub async fn get_assets_by_owner(&self, owner: &str, page: u32) -> ChainResult<DasAssetList> {
         self.rpc_call(
             "getAssetsByOwner",
             json!({
@@ -260,9 +257,7 @@ impl HeliusClient {
 
     /// Get SOL balance via Helius RPC
     pub async fn get_balance(&self, address: &str) -> ChainResult<u64> {
-        let result: RpcBalanceResult = self
-            .rpc_call("getBalance", json!([address]))
-            .await?;
+        let result: RpcBalanceResult = self.rpc_call("getBalance", json!([address])).await?;
         Ok(result.value)
     }
 }

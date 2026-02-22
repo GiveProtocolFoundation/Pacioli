@@ -681,7 +681,9 @@ mod tests {
             native_transfers: vec![],
             token_transfers: vec![],
             events: HeliusEvents::default(),
-            transaction_error: Some(serde_json::json!({"InstructionError": [0, "InsufficientFunds"]})),
+            transaction_error: Some(
+                serde_json::json!({"InstructionError": [0, "InsufficientFunds"]}),
+            ),
         };
 
         let sol_tx = helius_tx.to_solana_transaction();

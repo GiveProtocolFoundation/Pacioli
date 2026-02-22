@@ -17,7 +17,7 @@ use crate::chains::{
     TokenBalance, TokenTransfer, TransactionStatus, TransactionType,
 };
 
-pub use types::{SolanaBalance, SolanaTransaction, SolanaTokenAccount};
+pub use types::{SolanaBalance, SolanaTokenAccount, SolanaTransaction};
 
 /// Solana network configuration
 #[derive(Debug, Clone)]
@@ -229,7 +229,8 @@ impl SolanaAdapter {
                             .and_then(|c| c.metadata)
                             .map(|m| m.name)
                             .unwrap_or_default();
-                        let ui_balance = format_token_balance(&token_info.balance, token_info.decimals);
+                        let ui_balance =
+                            format_token_balance(&token_info.balance, token_info.decimals);
                         Some(SolanaTokenAccount {
                             mint: a.id,
                             symbol: if token_info.symbol.is_empty() {
@@ -258,7 +259,10 @@ impl SolanaAdapter {
         // Fallback: standard RPC
         let rpc = self.get_rpc_client().await?;
         let balance = rpc.get_balance(address).await?;
-        let token_entries = rpc.get_token_accounts_by_owner(address).await.unwrap_or_default();
+        let token_entries = rpc
+            .get_token_accounts_by_owner(address)
+            .await
+            .unwrap_or_default();
 
         let token_accounts = token_entries
             .into_iter()
@@ -294,11 +298,7 @@ impl SolanaAdapter {
     }
 
     /// Convert SolanaTransaction to normalized ChainTransaction
-    fn normalize_transaction(
-        &self,
-        tx: &SolanaTransaction,
-        for_address: &str,
-    ) -> ChainTransaction {
+    fn normalize_transaction(&self, tx: &SolanaTransaction, for_address: &str) -> ChainTransaction {
         // Determine from/to from native transfers
         let (from, to) = if !tx.native_transfers.is_empty() {
             let first = &tx.native_transfers[0];
@@ -384,9 +384,9 @@ pub fn validate_solana_address(address: &str) -> ChainResult<()> {
     }
 
     // Try to decode as base58
-    let decoded = bs58::decode(address).into_vec().map_err(|_| {
-        ChainError::InvalidAddress("Invalid base58 encoding".to_string())
-    })?;
+    let decoded = bs58::decode(address)
+        .into_vec()
+        .map_err(|_| ChainError::InvalidAddress("Invalid base58 encoding".to_string()))?;
 
     // Must be exactly 32 bytes (ed25519 public key)
     if decoded.len() != 32 {

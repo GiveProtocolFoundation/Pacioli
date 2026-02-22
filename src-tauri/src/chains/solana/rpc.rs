@@ -129,9 +129,7 @@ impl SolanaRpcClient {
 
     /// Get SOL balance for an address (in lamports)
     pub async fn get_balance(&self, address: &str) -> ChainResult<u64> {
-        let result: RpcBalanceResult = self
-            .rpc_call("getBalance", json!([address]))
-            .await?;
+        let result: RpcBalanceResult = self.rpc_call("getBalance", json!([address])).await?;
         Ok(result.value)
     }
 
@@ -183,18 +181,12 @@ impl SolanaRpcClient {
             config.insert("limit".to_string(), json!(lim));
         }
 
-        self.rpc_call(
-            "getSignaturesForAddress",
-            json!([address, config]),
-        )
-        .await
+        self.rpc_call("getSignaturesForAddress", json!([address, config]))
+            .await
     }
 
     /// Get a parsed transaction by signature
-    pub async fn get_transaction(
-        &self,
-        signature: &str,
-    ) -> ChainResult<serde_json::Value> {
+    pub async fn get_transaction(&self, signature: &str) -> ChainResult<serde_json::Value> {
         self.rpc_call(
             "getTransaction",
             json!([
@@ -220,8 +212,7 @@ mod tests {
 
     #[test]
     fn test_client_creation_custom_url() {
-        let client =
-            SolanaRpcClient::with_url("https://api.devnet.solana.com", 5);
+        let client = SolanaRpcClient::with_url("https://api.devnet.solana.com", 5);
         assert!(client.is_ok());
         let client = client.unwrap();
         assert_eq!(client.rpc_url, "https://api.devnet.solana.com");

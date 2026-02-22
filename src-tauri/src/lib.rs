@@ -256,9 +256,7 @@ pub fn run() {
             if let Ok(helius_key) = std::env::var(ENV_HELIUS_API_KEY) {
                 let manager = chain_manager.blocking_read();
                 tauri::async_runtime::block_on(async {
-                    manager
-                        .set_explorer_api_key("solana", helius_key)
-                        .await;
+                    manager.set_explorer_api_key("solana", helius_key).await;
                 });
             }
 
