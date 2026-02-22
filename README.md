@@ -1,6 +1,6 @@
 # Pacioli
 
-**Open-Source Crypto Accounting Platform for Polkadot Ecosystem**
+**Open-Source Currency Agnostic (fiat and crypto) Accounting Platform**
 
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL%203.0-blue.svg)](LICENSE)
 
