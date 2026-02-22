@@ -240,14 +240,11 @@ const AddPortfolioModal: React.FC<AddPortfolioModalProps> = ({
   }, [resetForm, onClose])
 
   // Handle ecosystem selection
-  const handleEcosystemSelect = useCallback(
-    (ecosystem: PortfolioEcosystem) => {
-      setSelectedEcosystem(ecosystem)
-      setAddress('')
-      setAddressError(null)
-    },
-    []
-  )
+  const handleEcosystemSelect = useCallback((ecosystem: PortfolioEcosystem) => {
+    setSelectedEcosystem(ecosystem)
+    setAddress('')
+    setAddressError(null)
+  }, [])
 
   // Handle address input change with validation
   const handleAddressChange = useCallback(
@@ -411,8 +408,8 @@ const AddPortfolioModal: React.FC<AddPortfolioModalProps> = ({
                     Read-Only Mode
                   </p>
                   <p className="text-xs text-[#696557] dark:text-[#b8b3ac] mt-0.5">
-                    Pacioli observes blockchain data. No private keys or
-                    wallet connections required.
+                    Pacioli observes blockchain data. No private keys or wallet
+                    connections required.
                   </p>
                 </div>
               </div>
@@ -484,7 +481,8 @@ const AddPortfolioModal: React.FC<AddPortfolioModalProps> = ({
                       </p>
                       <p>
                         You can find it in your wallet&apos;s settings under
-                        &quot;Extended Public Key&quot; or &quot;Account xPub&quot;.
+                        &quot;Extended Public Key&quot; or &quot;Account
+                        xPub&quot;.
                       </p>
                     </div>
                   )}
@@ -527,57 +525,59 @@ const AddPortfolioModal: React.FC<AddPortfolioModalProps> = ({
                 </div>
 
                 {/* EVM Multi-Chain Option */}
-                {selectedEcosystem === 'ethereum' && address && !addressError && (
-                  <div className="p-4 bg-[#f3f1ed] dark:bg-[#1a1815] rounded-lg border border-[rgba(201,169,97,0.15)]">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-2">
-                        <Zap className="w-4 h-4 text-[#c9a961]" />
-                        <span className="text-sm font-medium text-[#1a1815] dark:text-[#f5f3f0]">
-                          Track on L2 Networks
-                        </span>
+                {selectedEcosystem === 'ethereum' &&
+                  address &&
+                  !addressError && (
+                    <div className="p-4 bg-[#f3f1ed] dark:bg-[#1a1815] rounded-lg border border-[rgba(201,169,97,0.15)]">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <Zap className="w-4 h-4 text-[#c9a961]" />
+                          <span className="text-sm font-medium text-[#1a1815] dark:text-[#f5f3f0]">
+                            Track on L2 Networks
+                          </span>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={trackOnL2s}
+                            onChange={e => setTrackOnL2s(e.target.checked)}
+                            className="sr-only peer"
+                          />
+                          <div className="w-9 h-5 bg-[#a39d94] peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#c9a961] rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#8b4e52]" />
+                        </label>
                       </div>
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={trackOnL2s}
-                          onChange={e => setTrackOnL2s(e.target.checked)}
-                          className="sr-only peer"
-                        />
-                        <div className="w-9 h-5 bg-[#a39d94] peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#c9a961] rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#8b4e52]" />
-                      </label>
+
+                      {trackOnL2s && (
+                        <div className="grid grid-cols-2 gap-2">
+                          {L2_CHAINS.map(chain => (
+                            <label
+                              key={chain.id}
+                              className="flex items-center gap-2 p-2 rounded-lg cursor-pointer hover:bg-[#fafaf8] dark:hover:bg-[#0f0e0c]"
+                            >
+                              <input
+                                type="checkbox"
+                                checked={selectedL2s.has(chain.id)}
+                                onChange={() => toggleL2Chain(chain.id)}
+                                className="w-4 h-4 text-[#8b4e52] border-[rgba(201,169,97,0.3)] rounded focus:ring-[#c9a961]"
+                              />
+                              <span
+                                className="w-2.5 h-2.5 rounded-full"
+                                style={{ backgroundColor: chain.color }}
+                              />
+                              <span className="text-sm text-[#1a1815] dark:text-[#f5f3f0]">
+                                {chain.label}
+                              </span>
+                            </label>
+                          ))}
+                        </div>
+                      )}
+
+                      <p className="mt-3 text-xs text-[#696557] dark:text-[#b8b3ac]">
+                        Same address works across all EVM chains. We&apos;ll
+                        fetch transactions from each selected network.
+                      </p>
                     </div>
-
-                    {trackOnL2s && (
-                      <div className="grid grid-cols-2 gap-2">
-                        {L2_CHAINS.map(chain => (
-                          <label
-                            key={chain.id}
-                            className="flex items-center gap-2 p-2 rounded-lg cursor-pointer hover:bg-[#fafaf8] dark:hover:bg-[#0f0e0c]"
-                          >
-                            <input
-                              type="checkbox"
-                              checked={selectedL2s.has(chain.id)}
-                              onChange={() => toggleL2Chain(chain.id)}
-                              className="w-4 h-4 text-[#8b4e52] border-[rgba(201,169,97,0.3)] rounded focus:ring-[#c9a961]"
-                            />
-                            <span
-                              className="w-2.5 h-2.5 rounded-full"
-                              style={{ backgroundColor: chain.color }}
-                            />
-                            <span className="text-sm text-[#1a1815] dark:text-[#f5f3f0]">
-                              {chain.label}
-                            </span>
-                          </label>
-                        ))}
-                      </div>
-                    )}
-
-                    <p className="mt-3 text-xs text-[#696557] dark:text-[#b8b3ac]">
-                      Same address works across all EVM chains. We&apos;ll fetch
-                      transactions from each selected network.
-                    </p>
-                  </div>
-                )}
+                  )}
 
                 {/* Polkadot Chain Selection */}
                 {selectedEcosystem === 'polkadot' &&
