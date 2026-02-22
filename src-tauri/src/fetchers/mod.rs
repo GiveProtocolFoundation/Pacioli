@@ -523,9 +523,7 @@ pub struct FetcherRegistry {
 impl FetcherRegistry {
     /// Create a new empty registry.
     pub fn new() -> Self {
-        Self {
-            fetchers: std::collections::HashMap::new(),
-        }
+        Self::default()
     }
 
     /// Register a fetcher for a provider.
@@ -558,7 +556,9 @@ impl FetcherRegistry {
 
 impl Default for FetcherRegistry {
     fn default() -> Self {
-        Self::new()
+        Self {
+            fetchers: std::collections::HashMap::new(),
+        }
     }
 }
 
