@@ -210,7 +210,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           }
         } catch (err) {
           // Stale/expired tokens — clear and provision a fresh local session
-          console.warn('[AuthContext] Token recovery failed, provisioning fresh session:', err)
+          console.warn(
+            '[AuthContext] Token recovery failed, provisioning fresh session:',
+            err
+          )
           authService.clearTokens()
           await provisionFreshSession()
         }

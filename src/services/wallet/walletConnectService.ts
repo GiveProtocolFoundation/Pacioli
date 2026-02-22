@@ -15,13 +15,13 @@ const NAMESPACES = {
   eip155: {
     methods: ['personal_sign', 'eth_signTypedData', 'eth_sendTransaction'],
     chains: [
-      'eip155:1',      // Ethereum Mainnet
-      'eip155:137',    // Polygon
-      'eip155:42161',  // Arbitrum One
-      'eip155:10',     // Optimism
-      'eip155:8453',   // Base
-      'eip155:1284',   // Moonbeam
-      'eip155:1285',   // Moonriver
+      'eip155:1', // Ethereum Mainnet
+      'eip155:137', // Polygon
+      'eip155:42161', // Arbitrum One
+      'eip155:10', // Optimism
+      'eip155:8453', // Base
+      'eip155:1284', // Moonbeam
+      'eip155:1285', // Moonriver
     ],
     events: ['accountsChanged', 'chainChanged'],
   },
@@ -125,7 +125,9 @@ class WalletConnectService {
    */
   async initialize(): Promise<void> {
     if (!PROJECT_ID) {
-      throw new Error('WalletConnect Project ID not configured. Set VITE_WALLETCONNECT_PROJECT_ID in your environment.')
+      throw new Error(
+        'WalletConnect Project ID not configured. Set VITE_WALLETCONNECT_PROJECT_ID in your environment.'
+      )
     }
 
     if (this.signClient) {
@@ -167,7 +169,7 @@ class WalletConnectService {
     if (!this.signClient) return
 
     // Handle session events
-    this.signClient.on('session_event', (event) => {
+    this.signClient.on('session_event', event => {
       console.log('WalletConnect session_event:', event)
     })
 
@@ -210,7 +212,9 @@ class WalletConnectService {
     }
   }
 
-  private parseAccounts(namespaces: Record<string, { accounts: string[] }>): WalletConnectAccount[] {
+  private parseAccounts(
+    namespaces: Record<string, { accounts: string[] }>
+  ): WalletConnectAccount[] {
     const accounts: WalletConnectAccount[] = []
 
     for (const [namespace, data] of Object.entries(namespaces)) {
@@ -298,7 +302,10 @@ class WalletConnectService {
       return wcSession
     } catch (error) {
       this.modal?.closeModal()
-      this.notifyStateChange('error', error instanceof Error ? error.message : 'Connection failed')
+      this.notifyStateChange(
+        'error',
+        error instanceof Error ? error.message : 'Connection failed'
+      )
       throw error
     }
   }

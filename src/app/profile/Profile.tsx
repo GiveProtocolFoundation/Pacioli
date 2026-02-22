@@ -461,7 +461,11 @@ const Profile: React.FC = () => {
                   ) : (
                     <Save className="w-4 h-4 mr-2" />
                   )}
-                  {isSaving ? 'Saving...' : saveSuccess ? 'Saved' : 'Save Changes'}
+                  {isSaving
+                    ? 'Saving...'
+                    : saveSuccess
+                      ? 'Saved'
+                      : 'Save Changes'}
                 </button>
               )}
             </div>

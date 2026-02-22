@@ -209,7 +209,10 @@ const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
 
   // Get unique account types
   const accountTypes = useMemo(() => {
-    return ['All', ...Object.keys(groupedAccounts).sort((a, b) => a.localeCompare(b))]
+    return [
+      'All',
+      ...Object.keys(groupedAccounts).sort((a, b) => a.localeCompare(b)),
+    ]
   }, [groupedAccounts])
 
   // Filter accounts

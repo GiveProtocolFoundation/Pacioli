@@ -46,28 +46,32 @@ const PROVIDER_CONFIGS: ProviderConfig[] = [
     id: 'etherscan',
     name: 'Etherscan',
     description: 'Ethereum mainnet block explorer API',
-    docsUrl: 'https://docs.etherscan.io/getting-started/viewing-api-usage-statistics',
+    docsUrl:
+      'https://docs.etherscan.io/getting-started/viewing-api-usage-statistics',
     chains: ['Ethereum'],
   },
   {
     id: 'polygonscan',
     name: 'Polygonscan',
     description: 'Polygon network block explorer API',
-    docsUrl: 'https://docs.polygonscan.com/getting-started/viewing-api-usage-statistics',
+    docsUrl:
+      'https://docs.polygonscan.com/getting-started/viewing-api-usage-statistics',
     chains: ['Polygon'],
   },
   {
     id: 'arbiscan',
     name: 'Arbiscan',
     description: 'Arbitrum network block explorer API',
-    docsUrl: 'https://docs.arbiscan.io/getting-started/viewing-api-usage-statistics',
+    docsUrl:
+      'https://docs.arbiscan.io/getting-started/viewing-api-usage-statistics',
     chains: ['Arbitrum'],
   },
   {
     id: 'basescan',
     name: 'Basescan',
     description: 'Base network block explorer API',
-    docsUrl: 'https://docs.basescan.org/getting-started/viewing-api-usage-statistics',
+    docsUrl:
+      'https://docs.basescan.org/getting-started/viewing-api-usage-statistics',
     chains: ['Base'],
   },
   {
@@ -104,11 +108,11 @@ const TurboModeIndicator: React.FC<{ isActive: boolean }> = ({ isActive }) => (
 )
 
 /** Displays the current rate limit and potential turbo limit for a provider */
-const RateLimitBadge: React.FC<{ rateLimit: number; turboLimit: number; isTurbo: boolean }> = ({
-  rateLimit,
-  turboLimit,
-  isTurbo,
-}) => (
+const RateLimitBadge: React.FC<{
+  rateLimit: number
+  turboLimit: number
+  isTurbo: boolean
+}> = ({ rateLimit, turboLimit, isTurbo }) => (
   <div className="flex items-center gap-2 text-xs text-[#696557] dark:text-[#b8b3ac]">
     <Gauge className="w-3.5 h-3.5" />
     <span>
@@ -147,9 +151,12 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
   const rateLimit = status?.rate_limit ?? 1
   const turboLimit = status?.turbo_rate_limit ?? 5
 
-  const handleApiKeyChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setApiKey(e.target.value)
-  }, [])
+  const handleApiKeyChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setApiKey(e.target.value)
+    },
+    []
+  )
 
   const handleSave = async () => {
     if (!apiKey.trim()) {
@@ -204,7 +211,11 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
             {config.description}
           </p>
           <div className="flex items-center gap-4 mt-2">
-            <RateLimitBadge rateLimit={rateLimit} turboLimit={turboLimit} isTurbo={isTurbo} />
+            <RateLimitBadge
+              rateLimit={rateLimit}
+              turboLimit={turboLimit}
+              isTurbo={isTurbo}
+            />
             <div className="flex items-center gap-1 text-xs text-[#a39d94] dark:text-[#8b8580]">
               {config.chains.map((chain, i) => (
                 <span key={chain}>
@@ -249,7 +260,11 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
               onClick={() => setShowKey(!showKey)}
               className="absolute right-2 top-1/2 -translate-y-1/2 text-[#696557] hover:text-[#1a1815] dark:text-[#b8b3ac] dark:hover:text-[#f5f3f0]"
             >
-              {showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              {showKey ? (
+                <EyeOff className="w-4 h-4" />
+              ) : (
+                <Eye className="w-4 h-4" />
+              )}
             </button>
           </div>
           <div className="flex items-center gap-2">
@@ -329,7 +344,9 @@ const DataProviders: React.FC = () => {
   // Fetch provider statuses on mount
   const fetchStatuses = useCallback(async () => {
     try {
-      const statuses = await invoke<ProviderStatus[]>('get_all_provider_statuses')
+      const statuses = await invoke<ProviderStatus[]>(
+        'get_all_provider_statuses'
+      )
       setProviderStatuses(statuses)
       setError(null)
     } catch (err) {
@@ -345,7 +362,10 @@ const DataProviders: React.FC = () => {
   }, [fetchStatuses])
 
   const handleSaveKey = async (provider: string, key: string) => {
-    const result = await invoke<SaveApiKeyResult>('save_api_key', { provider, apiKey: key })
+    const result = await invoke<SaveApiKeyResult>('save_api_key', {
+      provider,
+      apiKey: key,
+    })
     if (!result.success) {
       throw new Error(result.error || 'Failed to save API key')
     }
@@ -354,7 +374,9 @@ const DataProviders: React.FC = () => {
   }
 
   const handleDeleteKey = async (provider: string) => {
-    const result = await invoke<SaveApiKeyResult>('delete_api_key', { provider })
+    const result = await invoke<SaveApiKeyResult>('delete_api_key', {
+      provider,
+    })
     if (!result.success) {
       throw new Error(result.error || 'Failed to remove API key')
     }
@@ -362,11 +384,13 @@ const DataProviders: React.FC = () => {
     await fetchStatuses()
   }
 
-  const getStatusForProvider = (providerId: string): ProviderStatus | undefined => {
-    return providerStatuses.find((s) => s.provider === providerId)
+  const getStatusForProvider = (
+    providerId: string
+  ): ProviderStatus | undefined => {
+    return providerStatuses.find(s => s.provider === providerId)
   }
 
-  const turboCount = providerStatuses.filter((s) => s.is_turbo_mode).length
+  const turboCount = providerStatuses.filter(s => s.is_turbo_mode).length
   const totalProviders = PROVIDER_CONFIGS.length
 
   return (
@@ -380,8 +404,8 @@ const DataProviders: React.FC = () => {
           </h2>
         </div>
         <p className="text-sm text-[#696557] dark:text-[#b8b3ac]">
-          Configure API keys to unlock faster sync speeds. All keys are stored securely in your
-          system keychain.
+          Configure API keys to unlock faster sync speeds. All keys are stored
+          securely in your system keychain.
         </p>
       </div>
 
@@ -394,9 +418,9 @@ const DataProviders: React.FC = () => {
               Batteries Included, Turbo Optional
             </h3>
             <p className="text-sm text-[#696557] dark:text-[#b8b3ac]">
-              Pacioli works out of the box with conservative rate limits. Add your free API keys
-              from block explorers to unlock 5x faster sync speeds. API keys are free to obtain
-              from each provider.
+              Pacioli works out of the box with conservative rate limits. Add
+              your free API keys from block explorers to unlock 5x faster sync
+              speeds. API keys are free to obtain from each provider.
             </p>
             <div className="mt-3 flex items-center gap-4">
               <div className="flex items-center gap-2">
@@ -420,8 +444,10 @@ const DataProviders: React.FC = () => {
       {!isLoading && !error && (
         <div className="mb-6 flex items-center gap-4 text-sm">
           <span className="text-[#696557] dark:text-[#b8b3ac]">
-            <span className="font-medium text-[#1a1815] dark:text-[#f5f3f0]">{turboCount}</span> of{' '}
-            {totalProviders} providers in Turbo Mode
+            <span className="font-medium text-[#1a1815] dark:text-[#f5f3f0]">
+              {turboCount}
+            </span>{' '}
+            of {totalProviders} providers in Turbo Mode
           </span>
           {turboCount === totalProviders && (
             <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[#4a7c59]/20 text-[#4a7c59] dark:bg-[#6b9e7a]/20 dark:text-[#6b9e7a]">
@@ -436,7 +462,9 @@ const DataProviders: React.FC = () => {
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
           <Loader2 className="w-6 h-6 animate-spin text-[#8b4e52]" />
-          <span className="ml-2 text-[#696557] dark:text-[#b8b3ac]">Loading providers...</span>
+          <span className="ml-2 text-[#696557] dark:text-[#b8b3ac]">
+            Loading providers...
+          </span>
         </div>
       ) : error ? (
         <div className="flex items-center justify-center py-12 text-[#8b4e52] dark:text-[#a86e72]">
@@ -445,7 +473,7 @@ const DataProviders: React.FC = () => {
         </div>
       ) : (
         <div className="space-y-4">
-          {PROVIDER_CONFIGS.map((config) => (
+          {PROVIDER_CONFIGS.map(config => (
             <ProviderCard
               key={config.id}
               config={config}
@@ -463,9 +491,9 @@ const DataProviders: React.FC = () => {
           Security Note
         </h4>
         <p className="text-xs text-[#696557] dark:text-[#b8b3ac]">
-          API keys are stored in your operating system&apos;s secure keychain (Keychain on macOS,
-          Credential Manager on Windows, Secret Service on Linux). Keys are never transmitted
-          to Pacioli servers.
+          API keys are stored in your operating system&apos;s secure keychain
+          (Keychain on macOS, Credential Manager on Windows, Secret Service on
+          Linux). Keys are never transmitted to Pacioli servers.
         </p>
       </div>
     </div>

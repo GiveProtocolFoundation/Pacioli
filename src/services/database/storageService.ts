@@ -192,13 +192,16 @@ export const StorageService = {
   /**
    * Add a tracked wallet
    */
-  addTrackedWallet(wallet: Omit<TrackedWallet, 'id' | 'createdAt' | 'updatedAt'>): TrackedWallet {
+  addTrackedWallet(
+    wallet: Omit<TrackedWallet, 'id' | 'createdAt' | 'updatedAt'>
+  ): TrackedWallet {
     const wallets = StorageService.loadTrackedWallets()
 
     // Check for duplicates
     const existing = wallets.find(
-      w => w.address.toLowerCase() === wallet.address.toLowerCase() &&
-           w.blockchain === wallet.blockchain
+      w =>
+        w.address.toLowerCase() === wallet.address.toLowerCase() &&
+        w.blockchain === wallet.blockchain
     )
     if (existing) {
       throw new Error('This wallet address is already tracked')
@@ -233,7 +236,10 @@ export const StorageService = {
   /**
    * Update a tracked wallet
    */
-  updateTrackedWallet(id: string, updates: Partial<TrackedWallet>): TrackedWallet | null {
+  updateTrackedWallet(
+    id: string,
+    updates: Partial<TrackedWallet>
+  ): TrackedWallet | null {
     const wallets = StorageService.loadTrackedWallets()
     const index = wallets.findIndex(w => w.id === id)
 

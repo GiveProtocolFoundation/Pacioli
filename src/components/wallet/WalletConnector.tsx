@@ -288,6 +288,11 @@ const WALLET_INFO = {
     description: 'Ethereum wallet for EVM chains',
     installUrl: 'https://metamask.io/',
   },
+  [WalletType.PHANTOM]: {
+    name: 'Phantom',
+    description: 'Solana wallet for SOL and SPL tokens',
+    installUrl: 'https://phantom.app/',
+  },
 }
 
 /**

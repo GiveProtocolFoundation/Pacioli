@@ -71,6 +71,7 @@ const WalletLogo: React.FC<WalletLogoProps> = ({ provider }) => {
     talisman: 'TA',
     nova: 'NV',
     metamask: 'MM',
+    phantom: 'PH',
     walletconnect: 'WC',
   }
 
@@ -80,6 +81,7 @@ const WalletLogo: React.FC<WalletLogoProps> = ({ provider }) => {
     talisman: 'bg-red-500',
     nova: 'bg-[#8b4e52]',
     metamask: 'bg-orange-500',
+    phantom: 'bg-purple-500',
     walletconnect: 'bg-[#8b4e52]',
   }
 

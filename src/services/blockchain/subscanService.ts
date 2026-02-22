@@ -472,7 +472,11 @@ class SubscanService {
   private static classifyFromDisplayInfo(
     fromDisplay: string,
     toDisplay: string
-  ): { method: string; section: string; type: SubstrateTransaction['type'] } | null {
+  ): {
+    method: string
+    section: string
+    type: SubstrateTransaction['type']
+  } | null {
     const displayText = `${fromDisplay} ${toDisplay}`.toLowerCase()
 
     // Staking rewards - from nomination pools or validators
@@ -491,7 +495,11 @@ class SubscanService {
 
     // Treasury operations
     if (displayText.includes('treasury')) {
-      return { method: 'treasury_transfer', section: 'treasury', type: 'governance' }
+      return {
+        method: 'treasury_transfer',
+        section: 'treasury',
+        type: 'governance',
+      }
     }
 
     // Validator operations
@@ -501,7 +509,11 @@ class SubscanService {
 
     // Governance/Council operations
     if (displayText.includes('council') || displayText.includes('governance')) {
-      return { method: 'governance_action', section: 'governance', type: 'governance' }
+      return {
+        method: 'governance_action',
+        section: 'governance',
+        type: 'governance',
+      }
     }
 
     // Crowdloan operations
@@ -519,21 +531,30 @@ class SubscanService {
     displayText: string,
     toDisplay: string
   ): { method: string; section: string; type: SubstrateTransaction['type'] } {
-    if (displayText.includes('join') || toDisplay.toLowerCase().includes('pool#')) {
+    if (
+      displayText.includes('join') ||
+      toDisplay.toLowerCase().includes('pool#')
+    ) {
       return { method: 'join', section: 'nominationPools', type: 'staking' }
     }
     if (displayText.includes('unbond') || displayText.includes('withdraw')) {
       return { method: 'unbond', section: 'nominationPools', type: 'staking' }
     }
-    return { method: 'pool_transaction', section: 'nominationPools', type: 'staking' }
+    return {
+      method: 'pool_transaction',
+      section: 'nominationPools',
+      type: 'staking',
+    }
   }
 
   /**
    * Classify validator/stash operations
    */
-  private static classifyValidatorOperation(
-    displayText: string
-  ): { method: string; section: string; type: SubstrateTransaction['type'] } {
+  private static classifyValidatorOperation(displayText: string): {
+    method: string
+    section: string
+    type: SubstrateTransaction['type']
+  } {
     if (displayText.includes('bond')) {
       return { method: 'bond', section: 'staking', type: 'staking' }
     }
@@ -547,23 +568,34 @@ class SubscanService {
    * Classify action from explicit module/function fields on the transfer
    */
   private static classifyFromExplicitFields(transfer: SubscanTransfer): {
-    method: string; section: string; type: SubstrateTransaction['type']
+    method: string
+    section: string
+    type: SubstrateTransaction['type']
   } | null {
     // Use call_module_function if available
     if (transfer.call_module_function && transfer.call_module) {
       return {
         method: transfer.call_module_function,
         section: transfer.call_module,
-        type: SubscanService.classifyExtrinsicType(transfer.call_module, transfer.call_module_function),
+        type: SubscanService.classifyExtrinsicType(
+          transfer.call_module,
+          transfer.call_module_function
+        ),
       }
     }
 
     // Use extrinsic data if available
-    if (transfer.extrinsic?.call_module_function && transfer.extrinsic?.call_module) {
+    if (
+      transfer.extrinsic?.call_module_function &&
+      transfer.extrinsic?.call_module
+    ) {
       return {
         method: transfer.extrinsic.call_module_function,
         section: transfer.extrinsic.call_module,
-        type: SubscanService.classifyExtrinsicType(transfer.extrinsic.call_module, transfer.extrinsic.call_module_function),
+        type: SubscanService.classifyExtrinsicType(
+          transfer.extrinsic.call_module,
+          transfer.extrinsic.call_module_function
+        ),
       }
     }
 
@@ -572,7 +604,10 @@ class SubscanService {
       return {
         method: transfer.event.event_id,
         section: transfer.event.module_id,
-        type: SubscanService.classifyExtrinsicType(transfer.event.module_id, transfer.event.event_id),
+        type: SubscanService.classifyExtrinsicType(
+          transfer.event.module_id,
+          transfer.event.event_id
+        ),
       }
     }
 
@@ -580,7 +615,10 @@ class SubscanService {
       return {
         method: transfer.event_id,
         section: transfer.module || 'balances',
-        type: SubscanService.classifyExtrinsicType(transfer.module || 'balances', transfer.event_id),
+        type: SubscanService.classifyExtrinsicType(
+          transfer.module || 'balances',
+          transfer.event_id
+        ),
       }
     }
 
@@ -607,7 +645,10 @@ class SubscanService {
       ''
 
     if (fromDisplay || toDisplay) {
-      const displayResult = SubscanService.classifyFromDisplayInfo(fromDisplay, toDisplay)
+      const displayResult = SubscanService.classifyFromDisplayInfo(
+        fromDisplay,
+        toDisplay
+      )
       if (displayResult) return displayResult
     }
 

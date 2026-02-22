@@ -329,9 +329,7 @@ const RecentRunItem: React.FC<{
       </p>
       {getStatusBadge(run.status)}
     </div>
-    <p className="text-xs text-[#696557] dark:text-[#b8b3ac]">
-      By {run.ranBy}
-    </p>
+    <p className="text-xs text-[#696557] dark:text-[#b8b3ac]">By {run.ranBy}</p>
     <p className="text-xs text-[#a39d94] dark:text-[#696557] mt-1">
       {formatDate(run.ranAt)}
     </p>
@@ -485,11 +483,22 @@ const Reports: React.FC = () => {
           <div className="lg:col-span-2 space-y-6">
             {/* Quick Stats */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <StatCard label="Total Reports" value={reports.length} Icon={FileText} />
-              <StatCard label="Favorites" value={favoriteReports.length} Icon={Star} />
+              <StatCard
+                label="Total Reports"
+                value={reports.length}
+                Icon={FileText}
+              />
+              <StatCard
+                label="Favorites"
+                value={favoriteReports.length}
+                Icon={Star}
+              />
               <StatCard
                 label="Run Today"
-                value={recentRuns.filter(r => r.ranAt.startsWith('2025-10-17')).length}
+                value={
+                  recentRuns.filter(r => r.ranAt.startsWith('2025-10-17'))
+                    .length
+                }
                 Icon={Clock}
               />
             </div>

@@ -214,12 +214,15 @@ export async function fetchXpubBalances(
   changeCount: number = 10,
   network: string = 'bitcoin'
 ): Promise<[DerivedAddress, BitcoinBalance][]> {
-  return invoke<[DerivedAddress, BitcoinBalance][]>('bitcoin_fetch_xpub_balances', {
-    xpub,
-    receivingCount,
-    changeCount,
-    network,
-  })
+  return invoke<[DerivedAddress, BitcoinBalance][]>(
+    'bitcoin_fetch_xpub_balances',
+    {
+      xpub,
+      receivingCount,
+      changeCount,
+      network,
+    }
+  )
 }
 
 /**
@@ -239,13 +242,16 @@ export async function fetchXpubTransactions(
   network: string = 'bitcoin',
   maxPagesPerAddress: number = 2
 ): Promise<[DerivedAddress, BitcoinTransaction[]][]> {
-  return invoke<[DerivedAddress, BitcoinTransaction[]][]>('bitcoin_fetch_xpub_transactions', {
-    xpub,
-    receivingCount,
-    changeCount,
-    network,
-    maxPagesPerAddress,
-  })
+  return invoke<[DerivedAddress, BitcoinTransaction[]][]>(
+    'bitcoin_fetch_xpub_transactions',
+    {
+      xpub,
+      receivingCount,
+      changeCount,
+      network,
+      maxPagesPerAddress,
+    }
+  )
 }
 
 // =============================================================================
@@ -255,7 +261,9 @@ export async function fetchXpubTransactions(
 /**
  * Validate a Bitcoin address
  */
-export async function validateBitcoinAddress(address: string): Promise<boolean> {
+export async function validateBitcoinAddress(
+  address: string
+): Promise<boolean> {
   return invoke<boolean>('validate_bitcoin_address', { address })
 }
 

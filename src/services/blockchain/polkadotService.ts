@@ -523,7 +523,11 @@ class PolkadotService {
         const final = deduplicated.slice(0, limit)
 
         // Still enrich with USD values
-        await PolkadotService.enrichTransactionsWithUsdValues(final, network, onProgress)
+        await PolkadotService.enrichTransactionsWithUsdValues(
+          final,
+          network,
+          onProgress
+        )
 
         onProgress?.({
           stage: 'complete',
@@ -617,7 +621,11 @@ class PolkadotService {
       const final = deduplicated.slice(0, limit)
 
       // PHASE 4: Enrich with USD values
-      await PolkadotService.enrichTransactionsWithUsdValues(final, network, onProgress)
+      await PolkadotService.enrichTransactionsWithUsdValues(
+        final,
+        network,
+        onProgress
+      )
 
       onProgress?.({
         stage: 'complete',

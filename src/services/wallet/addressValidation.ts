@@ -1,5 +1,8 @@
 import { decodeAddress, encodeAddress } from '@polkadot/util-crypto'
-import { isAddress as isEthAddress, getAddress as checksumAddress } from 'ethers'
+import {
+  isAddress as isEthAddress,
+  getAddress as checksumAddress,
+} from 'ethers'
 import { PublicKey } from '@solana/web3.js'
 import { address as bitcoinAddress } from 'bitcoinjs-lib'
 import bs58 from 'bs58'
