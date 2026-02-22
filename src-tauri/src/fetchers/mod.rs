@@ -390,6 +390,66 @@ impl ResilientFetcher {
         serde_json::from_str(&text).map_err(|e| FetchError::ParseError(e.to_string()))
     }
 
+    /// Make a POST request with a JSON body and automatic rate limiting.
+    ///
+    /// # Arguments
+    ///
+    /// * `url` - Full URL to request
+    /// * `body` - JSON-serializable body
+    ///
+    /// # Returns
+    ///
+    /// Response text on success.
+    pub async fn post(&self, url: &str, body: &impl serde::Serialize) -> FetchResult<String> {
+        self.wait_for_permit().await;
+
+        let json_body = serde_json::to_string(body)
+            .map_err(|e| FetchError::ParseError(format!("Failed to serialize body: {}", e)))?;
+
+        let response = self
+            .client
+            .post(url)
+            .header("Content-Type", "application/json")
+            .body(json_body)
+            .send()
+            .await
+            .map_err(|e| {
+                if e.is_timeout() {
+                    FetchError::Timeout
+                } else {
+                    FetchError::HttpError(e.to_string())
+                }
+            })?;
+
+        if response.status() == reqwest::StatusCode::TOO_MANY_REQUESTS {
+            return Err(FetchError::RateLimited);
+        }
+
+        if !response.status().is_success() {
+            let status = response.status();
+            let body_text = response.text().await.unwrap_or_default();
+            return Err(FetchError::ApiError(format!(
+                "HTTP {}: {}",
+                status, body_text
+            )));
+        }
+
+        response
+            .text()
+            .await
+            .map_err(|e| FetchError::ParseError(e.to_string()))
+    }
+
+    /// Make a POST request and parse JSON response.
+    pub async fn post_json<T: serde::de::DeserializeOwned>(
+        &self,
+        url: &str,
+        body: &impl serde::Serialize,
+    ) -> FetchResult<T> {
+        let text = self.post(url, body).await?;
+        serde_json::from_str(&text).map_err(|e| FetchError::ParseError(e.to_string()))
+    }
+
     /// Build a URL with the base URL.
     pub fn build_url(&self, path: &str) -> String {
         if path.starts_with("http://") || path.starts_with("https://") {

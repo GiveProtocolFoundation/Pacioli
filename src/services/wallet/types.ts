@@ -8,11 +8,13 @@ export enum WalletType {
   TALISMAN = 'talisman',
   SUBWALLET = 'subwallet',
   METAMASK = 'metamask',
+  PHANTOM = 'phantom',
 }
 
 export enum ChainType {
   SUBSTRATE = 'substrate',
   EVM = 'evm',
+  SOLANA = 'solana',
 }
 
 export enum NetworkType {

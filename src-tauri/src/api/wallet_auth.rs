@@ -28,6 +28,8 @@ pub enum WalletType {
     Substrate,
     /// EVM wallet type using secp256k1 cryptography.
     Evm,
+    /// Solana wallet type using ed25519 cryptography.
+    Solana,
 }
 
 impl std::fmt::Display for WalletType {
@@ -35,6 +37,7 @@ impl std::fmt::Display for WalletType {
         match self {
             WalletType::Substrate => write!(f, "substrate"),
             WalletType::Evm => write!(f, "evm"),
+            WalletType::Solana => write!(f, "solana"),
         }
     }
 }
@@ -46,6 +49,7 @@ impl std::str::FromStr for WalletType {
         match s.to_lowercase().as_str() {
             "substrate" => Ok(WalletType::Substrate),
             "evm" => Ok(WalletType::Evm),
+            "solana" => Ok(WalletType::Solana),
             _ => Err(format!("Unknown wallet type: {}", s)),
         }
     }
@@ -577,6 +581,14 @@ fn create_sign_message(wallet_address: &str, nonce: &str, wallet_type: &WalletTy
                 Utc::now().to_rfc3339()
             )
         }
+        WalletType::Solana => {
+            format!(
+                "Sign this message to authenticate with Pacioli.\n\nWallet: {}\nNonce: {}\nTimestamp: {}",
+                wallet_address,
+                nonce,
+                Utc::now().format("%Y-%m-%d %H:%M:%S UTC")
+            )
+        }
     }
 }
 
@@ -605,6 +617,16 @@ fn validate_wallet_address(address: &str, wallet_type: &WalletType) -> Result<()
             }
             Ok(())
         }
+        WalletType::Solana => {
+            // Solana addresses are base58-encoded 32-byte public keys
+            let bytes = bs58::decode(address)
+                .into_vec()
+                .map_err(|_| "Invalid Solana address: not valid base58".to_string())?;
+            if bytes.len() != 32 {
+                return Err("Invalid Solana address: must be 32 bytes".to_string());
+            }
+            Ok(())
+        }
     }
 }
 
@@ -623,6 +645,7 @@ fn verify_signature(
     match wallet_type {
         WalletType::Substrate => verify_substrate_signature(address, message, signature),
         WalletType::Evm => verify_evm_signature(address, message, signature),
+        WalletType::Solana => verify_solana_signature(address, message, signature),
     }
 }
 
@@ -721,6 +744,51 @@ fn verify_evm_signature(address: &str, message: &str, signature: &str) -> Result
     }
 }
 
+/// Verify a Solana ed25519 signature
+fn verify_solana_signature(address: &str, message: &str, signature: &str) -> Result<(), String> {
+    use ed25519_dalek::{Signature, VerifyingKey};
+
+    // Decode the base58 address to get the 32-byte public key
+    let pubkey_bytes = bs58::decode(address)
+        .into_vec()
+        .map_err(|e| format!("Invalid Solana address: {}", e))?;
+
+    if pubkey_bytes.len() != 32 {
+        return Err("Invalid Solana address: must be 32 bytes".to_string());
+    }
+
+    let pubkey_array: [u8; 32] = pubkey_bytes
+        .try_into()
+        .map_err(|_| "Failed to convert public key bytes")?;
+
+    let verifying_key = VerifyingKey::from_bytes(&pubkey_array)
+        .map_err(|e| format!("Invalid ed25519 public key: {}", e))?;
+
+    // Decode the base58 signature (Phantom wallet encodes signatures as base58)
+    let sig_bytes = bs58::decode(signature)
+        .into_vec()
+        .map_err(|e| format!("Invalid signature encoding: {}", e))?;
+
+    if sig_bytes.len() != 64 {
+        return Err(format!(
+            "Invalid signature length: expected 64 bytes, got {}",
+            sig_bytes.len()
+        ));
+    }
+
+    let sig_array: [u8; 64] = sig_bytes
+        .try_into()
+        .map_err(|_| "Failed to convert signature bytes")?;
+
+    let sig = Signature::from_bytes(&sig_array);
+
+    // Verify the signature over the raw message bytes
+    use ed25519_dalek::Verifier;
+    verifying_key
+        .verify(message.as_bytes(), &sig)
+        .map_err(|_| "Invalid Solana signature".to_string())
+}
+
 /// Create a new user account with wallet authentication
 async fn create_user_with_wallet(
     pool: &sqlx::SqlitePool,
@@ -747,6 +815,7 @@ async fn create_user_with_wallet(
                 match wallet_type {
                     WalletType::Substrate => "Substrate",
                     WalletType::Evm => "Ethereum",
+                    WalletType::Solana => "Solana",
                 }
             )
         },

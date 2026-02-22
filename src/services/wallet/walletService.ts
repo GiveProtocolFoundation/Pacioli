@@ -52,6 +52,11 @@ class WalletService {
         isEnabled: false,
         isConnected: false,
       },
+      [WalletType.PHANTOM]: {
+        isDetected: false,
+        isEnabled: false,
+        isConnected: false,
+      },
     }
 
     // Detect Substrate wallets
@@ -119,6 +124,19 @@ class WalletService {
       }
     } catch (error) {
       console.error('Error detecting MetaMask:', error)
+    }
+
+    // Detect Phantom (Solana wallet)
+    try {
+      if (window.phantom?.solana?.isPhantom) {
+        status[WalletType.PHANTOM] = {
+          isDetected: true,
+          isEnabled: true,
+          isConnected: false,
+        }
+      }
+    } catch (error) {
+      console.error('Error detecting Phantom:', error)
     }
 
     return status
@@ -271,6 +289,59 @@ class WalletService {
   }
 
   /**
+   * Connect to Phantom (Solana wallet)
+   */
+  async connectSolanaWallet(): Promise<ConnectedWallet> {
+    try {
+      const phantom = window.phantom?.solana
+
+      if (!phantom?.isPhantom) {
+        throw new Error(
+          'Phantom not installed. Please install Phantom wallet extension.'
+        )
+      }
+
+      const response = await phantom.connect()
+      const publicKey = response.publicKey.toString()
+
+      const accounts: WalletAccount[] = [
+        {
+          address: publicKey,
+          name: 'Phantom Account',
+          source: WalletType.PHANTOM,
+          type: ChainType.SOLANA,
+        },
+      ]
+
+      const connectedWallet: ConnectedWallet = {
+        type: WalletType.PHANTOM,
+        name: 'Phantom',
+        version: '1.0.0',
+        accounts,
+        isConnected: true,
+        chainType: ChainType.SOLANA,
+      }
+
+      this.connectedWallets.set(WalletType.PHANTOM, connectedWallet)
+      return connectedWallet
+    } catch (error) {
+      console.error('Error connecting to Phantom:', error)
+
+      if (error && typeof error === 'object' && 'code' in error) {
+        const err = error as { code: number; message: string }
+        if (err.code === 4001) {
+          throw new Error('Connection rejected by user')
+        }
+      }
+
+      if (error instanceof Error) {
+        throw error
+      }
+      throw new Error('Failed to connect to Phantom')
+    }
+  }
+
+  /**
    * Get all connected wallets
    */
   getConnectedWallets(): ConnectedWallet[] {
@@ -329,14 +400,56 @@ class WalletService {
       }
     }
 
+    if (walletType === WalletType.PHANTOM) {
+      // Phantom account change subscription
+      const handleAccountChanged = (publicKey: unknown) => {
+        if (publicKey) {
+          callback([
+            {
+              address: (publicKey as { toString(): string }).toString(),
+              name: 'Phantom Account',
+              source: WalletType.PHANTOM,
+              type: ChainType.SOLANA,
+            },
+          ])
+        } else {
+          callback([])
+        }
+      }
+
+      window.phantom?.solana?.on('accountChanged', handleAccountChanged)
+      return () => {
+        window.phantom?.solana?.removeListener(
+          'accountChanged',
+          handleAccountChanged
+        )
+      }
+    }
+
     // Substrate wallets - would need to implement polling or extension-specific subscriptions
     return undefined
   }
 }
 
-// Extend Window interface for MetaMask and other EVM wallets
+// Extend Window interface for MetaMask, Phantom, and other wallets
 declare global {
   interface Window {
+    phantom?: {
+      solana?: {
+        isPhantom?: boolean
+        connect: () => Promise<{ publicKey: { toString(): string } }>
+        disconnect: () => Promise<void>
+        signMessage: (
+          message: Uint8Array,
+          encoding: string
+        ) => Promise<{ signature: Uint8Array }>
+        on: (event: string, handler: (...args: unknown[]) => void) => void
+        removeListener: (
+          event: string,
+          handler: (...args: unknown[]) => void
+        ) => void
+      }
+    }
     ethereum?: {
       isMetaMask?: boolean
       isTalisman?: boolean

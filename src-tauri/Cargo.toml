@@ -84,6 +84,9 @@ nonzero_ext = "0.3"         # NonZero integer macros
 bitcoin = { version = "0.32", features = ["std", "secp-recovery"] }
 bs58 = { version = "0.5", features = ["check"] }
 
+# Solana ED25519 signature verification
+ed25519-dalek = { version = "2", features = ["std"] }
+
 [dev-dependencies]
 tempfile = "3"              # Temporary files/directories for tests
 

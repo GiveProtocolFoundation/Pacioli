@@ -16,7 +16,7 @@ export type { UserRole }
 /**
  * Supported wallet types for authentication
  */
-export type WalletType = 'substrate' | 'evm'
+export type WalletType = 'substrate' | 'evm' | 'solana'
 
 /**
  * Wallet authentication challenge
@@ -86,6 +86,7 @@ export type WalletProvider =
   | 'talisman'
   | 'nova'
   | 'metamask'
+  | 'phantom'
   | 'walletconnect'
 
 /**

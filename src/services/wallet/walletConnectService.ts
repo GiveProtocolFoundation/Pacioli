@@ -33,13 +33,20 @@ const NAMESPACES = {
     ],
     events: ['accountsChanged'],
   },
+  solana: {
+    methods: ['solana_signMessage', 'solana_signTransaction'],
+    chains: [
+      'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp', // Solana Mainnet
+    ],
+    events: ['accountsChanged'],
+  },
 }
 
 export interface WalletConnectAccount {
   address: string
   chain: string
   chainId: string
-  namespace: 'eip155' | 'polkadot'
+  namespace: 'eip155' | 'polkadot' | 'solana'
 }
 
 export interface WalletConnectSession {
@@ -141,6 +148,7 @@ class WalletConnectService {
         chains: [
           ...NAMESPACES.eip155.chains,
           ...NAMESPACES.polkadot.chains,
+          ...NAMESPACES.solana.chains,
         ],
       })
 
@@ -256,6 +264,11 @@ class WalletConnectService {
             chains: NAMESPACES.polkadot.chains,
             events: NAMESPACES.polkadot.events,
           },
+          solana: {
+            methods: NAMESPACES.solana.methods,
+            chains: NAMESPACES.solana.chains,
+            events: NAMESPACES.solana.events,
+          },
         },
       })
 
@@ -335,6 +348,22 @@ class WalletConnectService {
         return (result as { signature: string }).signature
       }
 
+      if (account.namespace === 'solana') {
+        // Solana sign message
+        const result = await this.signClient.request({
+          topic: this.currentSession.topic,
+          chainId: account.chain,
+          request: {
+            method: 'solana_signMessage',
+            params: {
+              pubkey: address,
+              message,
+            },
+          },
+        })
+        return (result as { signature: string }).signature
+      }
+
       throw new Error(`Unsupported namespace: ${account.namespace}`)
     } catch (error) {
       console.error('Sign message error:', error)
@@ -380,6 +409,7 @@ class WalletConnectService {
       'eip155:1285': 'Moonriver',
       'polkadot:91b171bb158e2d3848fa23a9f1c25182': 'Polkadot',
       'polkadot:b0a8d493285c2df73290dfb7e61f870f': 'Kusama',
+      'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp': 'Solana',
     }
     return chainNames[chain] || chain
   }
