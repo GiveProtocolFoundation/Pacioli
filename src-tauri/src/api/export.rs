@@ -3,6 +3,17 @@ use anyhow::Result;
 use csv::Writer;
 use serde_json;
 
+/// Exports transactions to a CSV file at the specified path.
+///
+/// # Arguments
+/// * `db` - Tauri state containing the database connection.
+/// * `path` - The file system path where the CSV will be saved.
+/// * `profile_id` - Identifier for the user profile to export.
+/// * `start_date` - Optional start date filter.
+/// * `end_date` - Optional end date filter.
+///
+/// # Errors
+/// Returns a `String` error if database retrieval or file operations fail.
 #[tauri::command]
 pub async fn export_transactions_csv(
     db: tauri::State<'_, Database>,
@@ -47,6 +58,18 @@ pub async fn export_transactions_csv(
     Ok(())
 }
 
+/// Generates and returns a tax report for the specified year as JSON.
+///
+/// # Arguments
+/// * `db` - Tauri state containing the database connection.
+/// * `profile_id` - Identifier for the user profile.
+/// * `year` - The year for which the tax report is generated.
+///
+/// # Returns
+/// A JSON value containing the tax report structure.
+///
+/// # Errors
+/// Returns a `String` error if report generation fails.
 #[tauri::command]
 pub async fn export_tax_report(
     db: tauri::State<'_, Database>,

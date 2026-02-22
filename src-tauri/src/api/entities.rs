@@ -10,137 +10,250 @@ use super::persistence::DatabaseState;
 // Types
 // ============================================================================
 
+/// Represents an entity stored in the system with its full attributes and metadata.
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
 pub struct Entity {
+    /// Unique identifier for the entity.
     pub id: String,
+    /// Identifier of the profile that owns this entity.
     pub profile_id: String,
+    /// Classification or category of the entity.
     pub entity_type: String,
+    /// Official name of the entity.
     pub name: String,
+    /// Optional human-readable display name for the entity.
     pub display_name: Option<String>,
+    /// Optional contact email address for the entity.
     pub email: Option<String>,
+    /// Optional contact phone number for the entity.
     pub phone: Option<String>,
+    /// Optional website URL for the entity.
     pub website: Option<String>,
-    pub address: Option<String>, // JSON string
+    /// Optional JSON string representing the entity's address.
+    pub address: Option<String>,
+    /// Optional country code in ISO format.
     pub country_code: Option<String>,
+    /// Optional tax identification number for the entity.
     pub tax_identifier: Option<String>,
+    /// Optional type of the tax identifier.
     pub tax_identifier_type: Option<String>,
+    /// Optional default wallet address associated with the entity.
     pub default_wallet_address: Option<String>,
+    /// Optional category label for the entity.
     pub category: Option<String>,
-    pub tags: Option<String>, // JSON array string
+    /// Optional JSON array string of tags associated with the entity.
+    pub tags: Option<String>,
+    /// Optional default payment terms (in days) for the entity.
     pub default_payment_terms: Option<i32>,
+    /// Optional default currency code for transactions.
     pub default_currency: Option<String>,
+    /// Indicates if the entity is a reportable payee.
     pub reportable_payee: bool,
+    /// Current status of the entity's tax documentation.
     pub tax_documentation_status: String,
+    /// Optional date when tax documentation was completed.
     pub tax_documentation_date: Option<String>,
-    pub tax_compliance: Option<String>, // JSON string
+    /// Optional JSON string detailing tax compliance information.
+    pub tax_compliance: Option<String>,
+    /// Optional additional notes about the entity.
     pub notes: Option<String>,
+    /// Whether the entity is active in the system.
     pub is_active: bool,
+    /// Timestamp when the entity record was created.
     pub created_at: DateTime<Utc>,
+    /// Timestamp when the entity record was last updated.
     pub updated_at: DateTime<Utc>,
 }
 
+/// Input parameters required to create a new entity in the system.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EntityInput {
+    /// Identifier of the profile that will own the new entity.
     pub profile_id: String,
+    /// Classification or category of the new entity.
     pub entity_type: String,
+    /// Official name of the new entity.
     pub name: String,
+    /// Optional human-readable display name for the new entity.
     pub display_name: Option<String>,
+    /// Optional contact email address for the new entity.
     pub email: Option<String>,
+    /// Optional contact phone number for the new entity.
     pub phone: Option<String>,
+    /// Optional website URL for the new entity.
     pub website: Option<String>,
+    /// Optional JSON string representing the entity's address.
     pub address: Option<String>,
+    /// Optional country code in ISO format.
     pub country_code: Option<String>,
+    /// Optional tax identification number for the new entity.
     pub tax_identifier: Option<String>,
+    /// Optional type of the tax identifier.
     pub tax_identifier_type: Option<String>,
+    /// Optional default wallet address for the new entity.
     pub default_wallet_address: Option<String>,
+    /// Optional category label for the new entity.
     pub category: Option<String>,
+    /// Optional JSON array string of tags for the new entity.
     pub tags: Option<String>,
+    /// Optional default payment terms (in days) for the new entity.
     pub default_payment_terms: Option<i32>,
+    /// Optional default currency code for transactions.
     pub default_currency: Option<String>,
+    /// Whether the new entity should be marked as a reportable payee.
     pub reportable_payee: Option<bool>,
+    /// Optional initial status of tax documentation.
     pub tax_documentation_status: Option<String>,
+    /// Optional date when tax documentation was completed.
     pub tax_documentation_date: Option<String>,
+    /// Optional JSON string detailing tax compliance information.
     pub tax_compliance: Option<String>,
+    /// Optional additional notes for the new entity.
     pub notes: Option<String>,
 }
 
+/// Fields for updating an existing entity's information in the system.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EntityUpdate {
+    /// Updated classification or category of the entity.
     pub entity_type: Option<String>,
+    /// Updated official name of the entity.
     pub name: Option<String>,
+    /// Updated human-readable display name for the entity.
     pub display_name: Option<String>,
+    /// Updated contact email address for the entity.
     pub email: Option<String>,
+    /// Updated contact phone number for the entity.
     pub phone: Option<String>,
+    /// Updated website URL for the entity.
     pub website: Option<String>,
+    /// Updated JSON string representing the entity's address.
     pub address: Option<String>,
+    /// Updated country code in ISO format.
     pub country_code: Option<String>,
+    /// Updated tax identification number for the entity.
     pub tax_identifier: Option<String>,
+    /// Updated type of the tax identifier.
     pub tax_identifier_type: Option<String>,
+    /// Updated default wallet address associated with the entity.
     pub default_wallet_address: Option<String>,
+    /// Updated category label for the entity.
     pub category: Option<String>,
+    /// Updated JSON array string of tags associated with the entity.
     pub tags: Option<String>,
+    /// Updated default payment terms (in days) for the entity.
     pub default_payment_terms: Option<i32>,
+    /// Updated default currency code for transactions.
     pub default_currency: Option<String>,
+    /// Updated flag indicating if the entity is a reportable payee.
     pub reportable_payee: Option<bool>,
+    /// Updated status of the entity's tax documentation.
     pub tax_documentation_status: Option<String>,
+    /// Updated date when tax documentation was completed.
     pub tax_documentation_date: Option<String>,
+    /// Updated JSON string detailing tax compliance information.
     pub tax_compliance: Option<String>,
+    /// Updated additional notes for the entity.
     pub notes: Option<String>,
+    /// Updated active status of the entity.
     pub is_active: Option<bool>,
 }
 
+/// Represents an address record associated with an entity, including verification metadata.
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
 pub struct EntityAddress {
+    /// Unique identifier for this address record.
     pub id: String,
+    /// Identifier of the entity this address belongs to.
     pub entity_id: String,
+    /// The blockchain address string.
     pub address: String,
+    /// The blockchain network or chain name.
     pub chain: String,
+    /// Optional type label for the address (e.g., "withdrawal").
     pub address_type: Option<String>,
+    /// Optional human-readable label for the address.
     pub label: Option<String>,
+    /// Whether this address has been verified.
     pub is_verified: bool,
+    /// Optional timestamp when the address was verified.
     pub verified_at: Option<String>,
+    /// Optional method used for address verification.
     pub verification_method: Option<String>,
+    /// Timestamp when the address record was created.
     pub created_at: DateTime<Utc>,
 }
 
+/// Input parameters required to create a new entity address.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EntityAddressInput {
+    /// Identifier of the entity to associate with this address.
     pub entity_id: String,
+    /// The blockchain address string to register.
     pub address: String,
+    /// The blockchain network or chain name.
     pub chain: String,
+    /// Optional type label for the address.
     pub address_type: Option<String>,
+    /// Optional human-readable label for the address.
     pub label: Option<String>,
+    /// Optional flag indicating if the address is verified.
     pub is_verified: Option<bool>,
+    /// Optional method used for address verification.
     pub verification_method: Option<String>,
 }
 
+/// Information about a known address and its associated entity metadata.
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
 pub struct KnownAddress {
+    /// The blockchain address string.
     pub address: String,
+    /// The blockchain network or chain name.
     pub chain: String,
+    /// Name of the entity associated with this address.
     pub entity_name: String,
+    /// Optional classification or category of the associated entity.
     pub entity_type: Option<String>,
+    /// Optional primary category label for the entity.
     pub category: Option<String>,
+    /// Optional secondary category or subcategory label.
     pub subcategory: Option<String>,
+    /// Optional country code in ISO format for the entity.
     pub country_code: Option<String>,
+    /// Optional website URL for the entity.
     pub website: Option<String>,
+    /// Optional URL to the entity's logo image.
     pub logo_url: Option<String>,
+    /// Confidence score indicating the reliability of this address mapping.
     pub confidence: String,
+    /// Optional source identifier for this known address data.
     pub source: Option<String>,
+    /// Whether this known address is currently active.
     pub is_active: bool,
+    /// Timestamp when the known address record was created.
     pub created_at: DateTime<Utc>,
+    /// Timestamp when the known address record was last updated.
     pub updated_at: DateTime<Utc>,
 }
 
+/// Represents a matching result for an address lookup, either an entity or known address.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AddressMatch {
+    /// The blockchain address string being matched.
     pub address: String,
+    /// The blockchain network or chain name.
     pub chain: String,
-    pub match_type: String, // 'entity' or 'known'
+    /// Type of match: either 'entity' or 'known'.
+    pub match_type: String,
+    /// Optional identifier of the matched entity.
     pub entity_id: Option<String>,
+    /// Name of the matched entity.
     pub entity_name: String,
+    /// Optional classification or type of the matched entity.
     pub entity_type: Option<String>,
+    /// Optional category label for the matched result.
     pub category: Option<String>,
+    /// Confidence score for the match accuracy.
     pub confidence: String,
 }
 
@@ -219,6 +332,7 @@ pub async fn create_entity(
     create_entity_internal(&state.pool, entity).await
 }
 
+/// Retrieve a list of entities for the specified profile, optionally filtering by entity type and active status.
 #[tauri::command]
 pub async fn get_entities(
     state: State<'_, DatabaseState>,
@@ -249,6 +363,7 @@ pub async fn get_entities(
     Ok(entities)
 }
 
+/// Fetch an entity by its unique identifier, returning `None` if not found.
 #[tauri::command]
 pub async fn get_entity_by_id(
     state: State<'_, DatabaseState>,
@@ -403,6 +518,17 @@ pub async fn update_entity(
         .ok_or_else(|| "Entity not found".to_string())
 }
 
+/// Deletes the entity with the specified ID from the database.
+///
+/// # Arguments
+///
+/// * `state` - The application state containing the database connection pool.
+/// * `id` - The unique identifier of the entity to delete.
+///
+/// # Returns
+///
+/// * `Ok(())` if the deletion succeeds.
+/// * `Err(String)` if an error occurs during deletion.
 #[tauri::command]
 pub async fn delete_entity(state: State<'_, DatabaseState>, id: String) -> Result<(), String> {
     sqlx::query("DELETE FROM entities WHERE id = ?")
@@ -483,6 +609,7 @@ pub async fn add_entity_address(
     add_entity_address_internal(&state.pool, address_input).await
 }
 
+/// Retrieve all blockchain addresses associated with the specified entity, ordered by creation time descending
 #[tauri::command]
 pub async fn get_entity_addresses(
     state: State<'_, DatabaseState>,
@@ -499,6 +626,7 @@ pub async fn get_entity_addresses(
     Ok(addresses)
 }
 
+/// Delete a blockchain address record by its unique ID
 #[tauri::command]
 pub async fn delete_entity_address(
     state: State<'_, DatabaseState>,
@@ -610,6 +738,7 @@ pub async fn batch_lookup_addresses(
     Ok(matches)
 }
 
+/// Fetch a list of known addresses from the database, optionally filtered by chain and entity type
 #[tauri::command]
 pub async fn get_known_addresses(
     state: State<'_, DatabaseState>,
@@ -708,6 +837,18 @@ pub async fn create_entity_from_known(
 // Search & Filter
 // ============================================================================
 
+/// Searches for entities matching the provided query and profile ID.
+///
+/// # Arguments
+///
+/// * `state` - Application state containing the database connection pool.
+/// * `profile_id` - The profile identifier to scope the search.
+/// * `query` - The search term to filter entity fields.
+/// * `limit` - Optional maximum number of results; defaults to 20.
+///
+/// # Returns
+///
+/// A `Result` containing a vector of matching `Entity` objects on success, or an error message string on failure.
 #[tauri::command]
 pub async fn search_entities(
     state: State<'_, DatabaseState>,
@@ -747,6 +888,18 @@ pub async fn search_entities(
     Ok(entities)
 }
 
+/// Finds an entity associated with the given address and profile ID, optionally scoped to a specific blockchain chain.
+///
+/// # Arguments
+///
+/// * `state` - Application state containing the database connection pool.
+/// * `profile_id` - The profile identifier to scope the search.
+/// * `address` - The address to look up.
+/// * `chain` - Optional blockchain chain identifier.
+///
+/// # Returns
+///
+/// A `Result` containing an `Option<Entity>` if found on success, or an error message string on failure.
 #[tauri::command]
 pub async fn find_entity_by_address(
     state: State<'_, DatabaseState>,

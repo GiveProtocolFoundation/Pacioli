@@ -10,9 +10,15 @@ use ethers::providers::{Http, Provider, Ws};
 use std::collections::HashMap;
 use std::sync::Arc;
 
+/// Re-exports DeFiPosition and DeFiProtocolScanner for public use.
 pub use defi::{DeFiPosition, DeFiProtocolScanner};
+
+/// Re-exports ERC20Scanner for public use.
 pub use erc20::ERC20Scanner;
 
+/// An indexer for Ethereum Virtual Machine (EVM) compatible blockchains.
+///
+/// Manages WebSocket and HTTP providers as well as chain configurations.
 pub struct EVMIndexer {
     providers: HashMap<String, Arc<Provider<Ws>>>,
     http_providers: HashMap<String, Arc<Provider<Http>>>,
@@ -20,18 +26,30 @@ pub struct EVMIndexer {
 }
 
 #[derive(Clone, Debug)]
+/// Configuration for connecting to and interacting with an EVM-compatible chain.
 pub struct EVMChainConfig {
+    /// Human-readable name of the chain.
     pub name: String,
+    /// Unique numeric identifier of the chain (chain ID).
     pub chain_id: u64,
+    /// HTTP RPC endpoint URL of the chain node.
     pub rpc_url: String,
+    /// Optional WebSocket endpoint URL for subscribing to chain events.
     pub ws_url: Option<String>,
+    /// Optional API endpoint for the chain explorer (e.g., Etherscan).
     pub explorer_api: Option<String>,
+    /// Native token metadata for the chain.
     pub native_token: Token,
+    /// Optional address of the multicall contract.
     pub multicall_address: Option<String>,
+    /// Indicates if the chain supports substrate-specific features.
     pub substrate_features: bool, // For Moonbeam/Astar specific features
 }
 
 impl EVMIndexer {
+    /// Creates a new `EVMIndexer` with default configurations for supported EVM chains.
+    ///
+    /// Initializes providers and pre-configured chain settings for Moonbeam and Moonriver.
     pub fn new() -> Self {
         let mut chain_configs = HashMap::new();
 
@@ -144,6 +162,18 @@ impl EVMIndexer {
         }
     }
 
+    /// Establishes connections to the given EVM chain by initializing and storing WebSocket and HTTP providers.
+    ///
+    /// Attempts a WebSocket connection if available, and always initializes an HTTP provider using the chain's RPC URL.
+    /// The providers are stored internally for subsequent interactions.
+    ///
+    /// # Arguments
+    ///
+    /// * `chain` - The identifier of the chain to connect to.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the provider initialization or connection fails.
     pub async fn connect(&mut self, chain: &str) -> Result<()> {
         if let Some(config) = self.chain_configs.get(chain) {
             // Connect via WebSocket if available
@@ -160,6 +190,15 @@ impl EVMIndexer {
         Ok(())
     }
 
+    /// Retrieves the latest block number from the provider associated with the given chain.
+    ///
+    /// # Arguments
+    ///
+    /// * `chain` - Identifier of the blockchain network to query.
+    ///
+    /// # Returns
+    ///
+    /// On success, returns the block number as a `u64`. Otherwise returns an error if the provider is not connected for the specified chain or if the provider request fails.
     pub async fn get_block_number(&self, chain: &str) -> Result<u64> {
         if let Some(provider) = self.providers.get(chain) {
             let block_number = provider.get_block_number().await?;
@@ -172,6 +211,17 @@ impl EVMIndexer {
         }
     }
 
+    /// Retrieves the balance of the specified `address` on the given blockchain `chain`.
+    ///
+    /// # Arguments
+    ///
+    /// * `chain` - The name of the blockchain network.
+    /// * `address` - The address to retrieve the balance for.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing the balance as `U256` if successful, or an error if
+    /// the provider is not connected or the address is invalid.
     pub async fn get_balance(&self, chain: &str, address: &str) -> Result<U256> {
         let addr: Address = address.parse()?;
 
@@ -183,6 +233,18 @@ impl EVMIndexer {
         }
     }
 
+    /// Asynchronously retrieves all transactions involving the specified `address` on the given
+    /// `chain` between blocks `from_block` and `to_block` (inclusive).
+    ///
+    /// # Parameters
+    /// - `chain`: The blockchain network identifier.
+    /// - `address`: The address whose transactions to fetch.
+    /// - `from_block`: The starting block number (inclusive).
+    /// - `to_block`: The ending block number (inclusive).
+    ///
+    /// # Returns
+    /// A `Result` containing a `Vec<CoreTransaction>` of matching transactions if successful,
+    /// or an error if the query or parsing fails.
     pub async fn get_transactions(
         &self,
         chain: &str,
@@ -214,6 +276,15 @@ impl EVMIndexer {
         Ok(transactions)
     }
 
+    /// Returns an `ERC20Scanner` for the specified `chain` if a provider is connected.
+    /// 
+    /// # Arguments
+    /// 
+    /// * `chain` - A string slice representing the blockchain identifier.
+    /// 
+    /// # Errors
+    /// 
+    /// Returns an error if no provider is connected for the specified chain.
     pub fn get_erc20_scanner(&self, chain: &str) -> Result<ERC20Scanner> {
         if let Some(provider) = self.providers.get(chain) {
             Ok(ERC20Scanner::new(provider.clone()))
@@ -225,10 +296,25 @@ impl EVMIndexer {
         }
     }
 
+    /// Creates a new `DeFiProtocolScanner` for scanning DeFi protocols.
+    ///
+    /// This method initializes a fresh scanner with default settings.
     pub fn get_defi_scanner(&self) -> DeFiProtocolScanner {
         DeFiProtocolScanner::new()
     }
 
+    /// Scans ERC20 token balances for a given wallet on the specified blockchain.
+    ///
+    /// # Arguments
+    ///
+    /// * `chain` - Identifier of the blockchain network (e.g., "ethereum").
+    /// * `wallet_address` - Hexadecimal string of the wallet address.
+    /// * `token_addresses` - Vector of token contract address strings to query balances for.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing a vector of `(String, U256)` tuples with the token address and its balance,
+    /// or an error if scanning fails.
     pub async fn scan_erc20_balances(
         &self,
         chain: &str,
@@ -256,6 +342,22 @@ impl EVMIndexer {
         Ok(balances)
     }
 
+    /// Scans DeFi positions for the specified user across multiple protocols on a given blockchain.
+    ///
+    /// This method retrieves the appropriate DeFi scanner and provider for the specified chain,
+    /// parses the user address, and iterates through each protocol to collect positions. Errors during
+    /// individual protocol scans are logged but do not halt the entire operation.
+    ///
+    /// # Arguments
+    ///
+    /// * `chain` - The identifier of the blockchain to query (e.g., "ethereum").
+    /// * `user_address` - The user's address as a string to parse and use for scanning.
+    /// * `protocols` - A list of protocol identifiers to scan (e.g., ["aave", "compound"]).
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing a vector of `DeFiPosition` instances for all successfully scanned protocols,
+    /// or an error if the provider for the given chain is not connected or if parsing the user address fails.
     pub async fn scan_defi_positions(
         &self,
         chain: &str,

@@ -20,15 +20,18 @@ fn get_api_key() -> Option<&'static String> {
     RESEND_API_KEY.get()
 }
 
-/// Email address with optional name
+/// Represents an email address with an optional display name.
 #[derive(Debug, Clone, Serialize)]
 pub struct EmailAddress {
+    /// The email address.
     pub email: String,
+    /// The optional display name of the email recipient.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
 }
 
 impl EmailAddress {
+    /// Creates a new `EmailAddress` with the given email.
     pub fn new(email: impl Into<String>) -> Self {
         Self {
             email: email.into(),
@@ -36,6 +39,7 @@ impl EmailAddress {
         }
     }
 
+    /// Creates a new `EmailAddress` with the given email and name.
     pub fn with_name(email: impl Into<String>, name: impl Into<String>) -> Self {
         Self {
             email: email.into(),

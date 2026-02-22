@@ -7,12 +7,25 @@ use anyhow::Result;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 
+/// Manages synchronization of account transactions with the database for a given blockchain.
+///
+/// `SyncManager` maintains references to a `Database` and a `PolkadotIndexer` to
+/// fetch and store transaction data.
 pub struct SyncManager {
     db: Arc<Mutex<Database>>,
     indexer: Arc<Mutex<PolkadotIndexer>>,
 }
 
 impl SyncManager {
+    /// Creates a new `SyncManager` with the given database.
+    ///
+    /// # Arguments
+    ///
+    /// * `db` - An `Arc<Mutex<Database>>` providing access to persisted data.
+    ///
+    /// # Returns
+    ///
+    /// A `SyncManager` instance ready to perform sync operations.
     pub fn new(db: Arc<Mutex<Database>>) -> Self {
         Self {
             db,
@@ -20,6 +33,22 @@ impl SyncManager {
         }
     }
 
+    /// Synchronizes transactions for a specific account on a blockchain.
+    ///
+    /// This method fetches new transactions for the given `address` between the last
+    /// synced block stored in the database and the latest block on the chain. It saves
+    /// retrieved transactions, updates the sync status, and returns the final status.
+    ///
+    /// # Arguments
+    ///
+    /// * `chain` - The identifier of the blockchain to sync against.
+    /// * `address` - The account address whose transactions are being synchronized.
+    /// * `profile_id` - The profile identifier associated with the account in the database.
+    ///
+    /// # Returns
+    ///
+    /// On success, returns a `SyncStatus` indicating the synchronization result. On failure,
+    /// returns an error wrapped in `anyhow::Result`.
     pub async fn sync_account(
         &self,
         chain: &str,
@@ -64,6 +93,7 @@ impl SyncManager {
             progress: 100.0,
         })
     }
+}
 
     async fn get_last_synced_block(
         &self,

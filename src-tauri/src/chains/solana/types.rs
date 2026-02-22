@@ -281,28 +281,36 @@ pub struct DasMetadata {
 /// JSON-RPC 2.0 response wrapper
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RpcResponse<T> {
+    /// JSON-RPC protocol version, typically "2.0"
     pub jsonrpc: String,
+    /// Optional result payload of the RPC call
     pub result: Option<T>,
+    /// Optional error object if the RPC call failed
     pub error: Option<RpcError>,
+    /// Identifier of the RPC request
     pub id: u64,
 }
 
 /// JSON-RPC error
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RpcError {
+    /// Error code indicating the type of error
     pub code: i64,
+    /// Human-readable error message
     pub message: String,
 }
 
 /// getBalance response value
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RpcBalanceResult {
+    /// Balance value in lamports
     pub value: u64,
 }
 
 /// getTokenAccountsByOwner response
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RpcTokenAccountsResult {
+    /// List of token account entries
     pub value: Vec<RpcTokenAccountEntry>,
 }
 
@@ -332,7 +340,9 @@ pub struct RpcParsedData {
 /// Parsed token account info
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RpcParsedInfo {
+    /// Detailed token account information
     pub info: RpcTokenInfo,
+    /// The type of account, e.g., "account"
     #[serde(rename = "type")]
     pub account_type: String,
 }
@@ -344,7 +354,7 @@ pub struct RpcTokenInfo {
     pub mint: String,
     /// Token owner
     pub owner: String,
-    /// Token amount
+    /// Token amount information
     #[serde(rename = "tokenAmount")]
     pub token_amount: RpcTokenAmount,
 }
@@ -354,7 +364,7 @@ pub struct RpcTokenInfo {
 pub struct RpcTokenAmount {
     /// Amount as string
     pub amount: String,
-    /// Decimals
+    /// Number of decimals for the token amount
     pub decimals: u8,
     /// UI amount (float)
     #[serde(rename = "uiAmount")]
@@ -386,6 +396,7 @@ pub struct RpcSignatureInfo {
 
 /// Normalized Solana transaction for the application
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a Solana transaction, including signature, slot, timestamp, fee, status, transfers, description, source program, and fee payer.
 pub struct SolanaTransaction {
     /// Transaction signature
     pub signature: String,
@@ -411,26 +422,33 @@ pub struct SolanaTransaction {
     pub fee_payer: String,
 }
 
-/// Normalized native SOL transfer
+/// Represents a normalized native SOL transfer between two addresses.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SolanaNativeTransfer {
+    /// Sender’s address of the SOL transfer.
     pub from: String,
+    /// Recipient’s address of the SOL transfer.
     pub to: String,
     /// Amount in lamports
     pub amount: u64,
 }
 
-/// Normalized SPL token transfer
+/// Represents a normalized SPL token transfer with token mint and standard.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SolanaTokenTransfer {
+    /// Sender’s address of the token transfer.
     pub from: String,
+    /// Recipient’s address of the token transfer.
     pub to: String,
+    /// SPL token mint address.
     pub mint: String,
+    /// Amount of tokens transferred.
     pub amount: f64,
+    /// Token standard classification (e.g., fungible, non-fungible).
     pub token_standard: String,
 }
 
-/// Solana address balance
+/// Represents the balance information for a Solana address, including native lamports and associated token accounts.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SolanaBalance {
     /// Address
@@ -441,7 +459,7 @@ pub struct SolanaBalance {
     pub token_accounts: Vec<SolanaTokenAccount>,
 }
 
-/// Token account for balance display
+/// Represents a token account associated with a Solana address.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SolanaTokenAccount {
     /// Token mint address

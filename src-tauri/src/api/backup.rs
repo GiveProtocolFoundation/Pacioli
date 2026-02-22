@@ -2,6 +2,11 @@ use anyhow::Result;
 use tauri::Manager;
 
 #[tauri::command]
+/// Creates a backup of the application's data directory.
+///
+/// This asynchronous command retrieves the application data directory from the provided
+/// `AppHandle`, generates a timestamped ZIP filename, and performs the backup process.
+/// Returns the name of the created backup archive on success, or an error message on failure.
 pub async fn create_backup(app_handle: tauri::AppHandle) -> Result<String, String> {
     let _data_dir = app_handle
         .path()
@@ -20,6 +25,11 @@ pub async fn create_backup(app_handle: tauri::AppHandle) -> Result<String, Strin
 }
 
 #[tauri::command]
+/// Restores application data from a backup archive.
+///
+/// This asynchronous command accepts an `AppHandle` and the path to a backup ZIP file.
+/// It extracts the archive contents and restores the application's database and settings.
+/// Returns `()` on success, or an error message if the restore operation fails.
 pub async fn restore_backup(
     _app_handle: tauri::AppHandle,
     _backup_path: String,

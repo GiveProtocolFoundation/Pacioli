@@ -23,15 +23,33 @@ abigen!(
     ]"#
 );
 
+/// ERC20Scanner provides functionality to scan ERC20 token data from a blockchain provider.
 pub struct ERC20Scanner {
     provider: Arc<Provider<Ws>>,
 }
 
 impl ERC20Scanner {
+    /// Creates a new ERC20Scanner with the given WebSocket provider.
+    ///
+    /// # Arguments
+    ///
+    /// * `provider` - An `Arc<Provider<Ws>>` instance used to interact with the Ethereum network.
     pub fn new(provider: Arc<Provider<Ws>>) -> Self {
         Self { provider }
     }
 
+    /// Fetches token information for the specified ERC20 token contract address.
+    ///
+    /// This method calls the token contract to retrieve its name, symbol, decimals,
+    /// and total supply, and returns a `TokenInfo` struct containing these details.
+    ///
+    /// # Arguments
+    ///
+    /// * `token_address` - The Ethereum address of the ERC20 token contract.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing `TokenInfo` on success or an error if the calls fail.
     pub async fn get_token_info(&self, token_address: Address) -> Result<TokenInfo> {
         let contract = IERC20::new(token_address, self.provider.clone());
 
@@ -48,7 +66,18 @@ impl ERC20Scanner {
             total_supply,
         })
     }
+}
 
+    /// Retrieves the ERC20 token balance for a given wallet.
+    ///
+    /// # Arguments
+    ///
+    /// * `token_address` - The address of the ERC20 token contract.
+    /// * `wallet_address` - The address of the wallet to query the balance for.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing the token balance as a `U256` on success, or an error on failure.
     pub async fn get_token_balance(
         &self,
         token_address: Address,
@@ -59,6 +88,8 @@ impl ERC20Scanner {
         Ok(balance)
     }
 
+    /// Scans `Transfer` events for the given ERC-20 token and wallet address between `from_block` and `to_block`.
+    /// Returns a `Vec<TokenTransfer>` containing each transfer event involving the wallet.
     pub async fn scan_token_transfers(
         &self,
         token_address: Address,
@@ -94,21 +125,34 @@ impl ERC20Scanner {
     }
 }
 
+/// Metadata information for an ERC-20 token.
 #[derive(Debug, Clone)]
 pub struct TokenInfo {
+    /// The Ethereum address of the token contract.
     pub address: Address,
+    /// The name of the token (e.g., "MyToken").
     pub name: String,
+    /// The symbol of the token (e.g., "MTK").
     pub symbol: String,
+    /// The number of decimal places used by the token.
     pub decimals: u8,
+    /// The total token supply as reported by the contract.
     pub total_supply: U256,
 }
 
+/// Represents a single ERC-20 token transfer event involving a specific wallet.
 #[derive(Debug, Clone)]
 pub struct TokenTransfer {
+    /// The block number in which the transfer occurred.
     pub block_number: u64,
+    /// The hash of the transaction that included the transfer.
     pub transaction_hash: TxHash,
+    /// The address that sent the tokens.
     pub from: Address,
+    /// The address that received the tokens.
     pub to: Address,
+    /// The amount of tokens transferred.
     pub value: U256,
+    /// The address of the token contract.
     pub token_address: Address,
 }

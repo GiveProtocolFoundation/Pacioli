@@ -16,8 +16,9 @@
 // Allow dead code for infrastructure components not yet integrated
 #![allow(dead_code)]
 
+/// Module for interacting with API keys, including creation, retrieval, and management.
+/// This module provides functionality for fetching and managing API keys.
 pub mod api_keys;
-pub mod commands;
 
 use std::num::NonZeroU32;
 use std::sync::Arc;

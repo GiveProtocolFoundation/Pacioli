@@ -16,6 +16,7 @@ pub struct SubstrateCurrencyHandler {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a token definition on a Substrate-based chain.
 pub struct SubstrateToken {
     pub chain_id: String,
     pub asset_id: String,
@@ -25,6 +26,7 @@ pub struct SubstrateToken {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Records the details of an XCM (Cross-Consensus Message) transfer transaction.
 pub struct XcmTransfer {
     pub id: String,
     pub transaction_id: String,
@@ -41,6 +43,7 @@ pub struct XcmTransfer {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
+/// Enum representing the status of an XCM transfer.
 pub enum XcmTransferStatus {
     Pending,
     InTransit,
@@ -60,6 +63,7 @@ impl std::fmt::Display for XcmTransferStatus {
 }
 
 impl SubstrateCurrencyHandler {
+    /// Creates a new SubstrateCurrencyHandler with the specified database connection pool.
     pub fn new(pool: Pool<Sqlite>) -> Self {
         Self { pool }
     }
