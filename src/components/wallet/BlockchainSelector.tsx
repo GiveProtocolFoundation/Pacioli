@@ -96,7 +96,10 @@ const BlockchainSelector: React.FC<BlockchainSelectorProps> = ({
 
   return (
     <div ref={dropdownRef} className="relative">
-      <label htmlFor="blockchain-network" className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2">
+      <label
+        htmlFor="blockchain-network"
+        className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
+      >
         Blockchain Network
       </label>
 
