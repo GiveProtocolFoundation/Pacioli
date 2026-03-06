@@ -197,7 +197,6 @@ export const SetPasswordDialog: React.FC<SetPasswordDialogProps> = ({
                   type="password"
                   value={currentPassword}
                   onChange={handleCurrentPasswordChange}
-                  autoFocus
                   disabled={isSubmitting}
                   className="mt-1 block w-full px-3 py-2 border border-[rgba(201,169,97,0.15)] rounded-md shadow-sm focus:outline-none focus:ring-[#c9a961] focus:border-[#c9a961] dark:bg-[#2a2620] dark:text-[#f5f3f0] sm:text-sm"
                 />
@@ -218,7 +217,6 @@ export const SetPasswordDialog: React.FC<SetPasswordDialogProps> = ({
                     type="password"
                     value={newPassword}
                     onChange={handleNewPasswordChange}
-                    autoFocus={mode === 'set'}
                     disabled={isSubmitting}
                     className="mt-1 block w-full px-3 py-2 border border-[rgba(201,169,97,0.15)] rounded-md shadow-sm focus:outline-none focus:ring-[#c9a961] focus:border-[#c9a961] dark:bg-[#2a2620] dark:text-[#f5f3f0] sm:text-sm"
                   />

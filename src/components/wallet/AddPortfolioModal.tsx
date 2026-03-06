@@ -471,9 +471,9 @@ const AddPortfolioModal: React.FC<AddPortfolioModalProps> = ({
 
             {/* Ecosystem Selection */}
             <div>
-              <label className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-3">
+              <span className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-3">
                 Select Ecosystem
-              </label>
+              </span>
               <div className="grid gap-3">
                 {ECOSYSTEM_OPTIONS.map(ecosystem => (
                   <button
@@ -591,7 +591,10 @@ const AddPortfolioModal: React.FC<AddPortfolioModalProps> = ({
                             Track on L2 Networks
                           </span>
                         </div>
-                        <label className="relative inline-flex items-center cursor-pointer">
+                        <label
+                          className="relative inline-flex items-center cursor-pointer"
+                          aria-label="Track on L2 Networks"
+                        >
                           <input
                             type="checkbox"
                             checked={trackOnL2s}
@@ -680,10 +683,14 @@ const AddPortfolioModal: React.FC<AddPortfolioModalProps> = ({
 
                 {/* Label Input */}
                 <div>
-                  <label className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2">
+                  <label
+                    htmlFor="portfolio-label"
+                    className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
+                  >
                     Label (Optional)
                   </label>
                   <input
+                    id="portfolio-label"
                     type="text"
                     value={label}
                     onChange={handleLabelChange}

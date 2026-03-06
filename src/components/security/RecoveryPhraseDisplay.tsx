@@ -99,7 +99,7 @@ export const RecoveryPhraseDisplay: React.FC<RecoveryPhraseDisplayProps> = ({
         <div className="grid grid-cols-3 gap-2">
           {words.map((word, index) => (
             <div
-              key={index}
+              key={`word-${word}-${index}`}
               className="flex items-center gap-2 p-2 bg-[#fafaf8] dark:bg-[#1a1815] rounded border border-[rgba(201,169,97,0.15)]"
             >
               <span className="text-xs text-[#a39d94] dark:text-[#696557] w-5">

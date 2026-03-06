@@ -379,7 +379,6 @@ export const UnlockScreen: React.FC<UnlockScreenProps> = ({ onUnlock }) => {
                 type="password"
                 value={password}
                 onChange={handlePasswordChange}
-                autoFocus
                 disabled={isUnlocking}
                 className="w-full px-4 py-3 border border-[rgba(201,169,97,0.15)] rounded-lg focus:ring-2 focus:ring-[#c9a961] focus:border-[#c9a961] dark:bg-[#2a2620] dark:text-[#f5f3f0]"
                 placeholder="••••••••"
