@@ -86,7 +86,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
   // Check for session timeout (secure_plus mode only)
   const checkSessionTimeout = useCallback(() => {
     if (securityMode !== 'secure_plus' || appState !== 'Unlocked') {
-      return
+      return undefined
     }
 
     const now = Date.now()
@@ -115,12 +115,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
         }
       }
     }
+    return undefined
   }, [securityMode, appState, checkSessionTimeout])
 
   // Set up global activity listeners for secure_plus mode
   useEffect(() => {
     if (securityMode !== 'secure_plus' || appState !== 'Unlocked') {
-      return
+      return undefined
     }
 
     const activityEvents = ['mousedown', 'keydown', 'touchstart', 'scroll']

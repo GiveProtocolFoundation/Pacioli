@@ -169,7 +169,7 @@ const AddPortfolioModal: React.FC<AddPortfolioModalProps> = ({
     if (!looksLikeXpub || selectedEcosystem !== 'bitcoin') {
       setIsXpub(false)
       setXpubInfo(null)
-      return
+      return undefined
     }
 
     let cancelled = false

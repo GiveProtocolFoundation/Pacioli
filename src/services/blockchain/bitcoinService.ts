@@ -343,6 +343,8 @@ export function getAddressTypeDisplayName(addressType: AddressType): string {
       return 'Native SegWit (P2WPKH)'
     case 'Taproot':
       return 'Taproot (P2TR)'
+    default:
+      return addressType
   }
 }
 

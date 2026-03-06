@@ -151,6 +151,8 @@ export const SetPasswordDialog: React.FC<SetPasswordDialogProps> = ({
         return 'Change Password'
       case 'remove':
         return 'Remove Password'
+      default:
+        return 'Password'
     }
   }
 
@@ -162,6 +164,8 @@ export const SetPasswordDialog: React.FC<SetPasswordDialogProps> = ({
         return 'Enter your current password and choose a new one.'
       case 'remove':
         return 'Enter your current password to remove password protection. Your data will be accessible without a password.'
+      default:
+        return ''
     }
   }
 

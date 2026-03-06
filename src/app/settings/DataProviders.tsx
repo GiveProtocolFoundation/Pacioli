@@ -166,7 +166,7 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
     []
   )
 
-  const handleSave = async () => {
+  const handleSave = useCallback(async () => {
     if (!apiKey.trim()) {
       setError('API key cannot be empty')
       return
@@ -184,9 +184,9 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
     } finally {
       setIsSaving(false)
     }
-  }
+  }, [apiKey, config.id, onSave])
 
-  const handleDelete = async () => {
+  const handleDelete = useCallback(async () => {
     setIsSaving(true)
     setError(null)
 
@@ -197,13 +197,13 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
     } finally {
       setIsSaving(false)
     }
-  }
+  }, [config.id, onDelete])
 
-  const handleCancel = () => {
+  const handleCancel = useCallback(() => {
     setApiKey('')
     setIsEditing(false)
     setError(null)
-  }
+  }, [])
 
   return (
     <div className="border border-[rgba(201,169,97,0.15)] rounded-lg p-4 hover:border-[rgba(201,169,97,0.3)] transition-colors">

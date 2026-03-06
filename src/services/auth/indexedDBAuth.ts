@@ -145,7 +145,7 @@ class IndexedDBAuthService implements AuthService {
   private initPromise: Promise<void> | null = null
 
   private async init(): Promise<void> {
-    if (this.db) return
+    if (this.db) return undefined
     if (this.initPromise) return this.initPromise
 
     this.initPromise = new Promise((resolve, reject) => {
