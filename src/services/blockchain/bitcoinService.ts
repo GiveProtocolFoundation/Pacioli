@@ -162,7 +162,7 @@ export interface BitcoinUtxo {
  *
  * Supports: xpub, ypub, zpub (mainnet) and tpub, upub, vpub (testnet)
  */
-export async function isXpub(input: string): Promise<boolean> {
+export function isXpub(input: string): Promise<boolean> {
   return invoke<boolean>('bitcoin_is_xpub', { input })
 }
 
@@ -172,7 +172,7 @@ export async function isXpub(input: string): Promise<boolean> {
  * @param xpub Extended public key string
  * @returns XpubInfo with address type, network, and fingerprint
  */
-export async function parseXpub(xpub: string): Promise<XpubInfo> {
+export function parseXpub(xpub: string): Promise<XpubInfo> {
   return invoke<XpubInfo>('bitcoin_parse_xpub', { xpub })
 }
 
@@ -184,7 +184,7 @@ export async function parseXpub(xpub: string): Promise<XpubInfo> {
  * @param changeCount Number of change addresses to derive
  * @returns XpubPortfolio containing xPub info and derived addresses
  */
-export async function deriveAddresses(
+export function deriveAddresses(
   xpub: string,
   receivingCount = 20,
   changeCount = 10
@@ -208,7 +208,7 @@ export async function deriveAddresses(
  * @param network Network name ("bitcoin", "testnet", "signet")
  * @returns Array of (address, balance) tuples for addresses with activity
  */
-export async function fetchXpubBalances(
+export function fetchXpubBalances(
   xpub: string,
   receivingCount = 20,
   changeCount = 10,
@@ -235,7 +235,7 @@ export async function fetchXpubBalances(
  * @param maxPagesPerAddress Maximum pages of transactions per address
  * @returns Array of (address, transactions) tuples for addresses with transactions
  */
-export async function fetchXpubTransactions(
+export function fetchXpubTransactions(
   xpub: string,
   receivingCount = 20,
   changeCount = 10,
@@ -261,9 +261,7 @@ export async function fetchXpubTransactions(
 /**
  * Validate a Bitcoin address
  */
-export async function validateBitcoinAddress(
-  address: string
-): Promise<boolean> {
+export function validateBitcoinAddress(address: string): Promise<boolean> {
   return invoke<boolean>('validate_bitcoin_address', { address })
 }
 
@@ -273,7 +271,7 @@ export async function validateBitcoinAddress(
  * @param address Bitcoin address
  * @param network Network name ("bitcoin", "testnet", "signet")
  */
-export async function getBitcoinBalance(
+export function getBitcoinBalance(
   address: string,
   network = 'bitcoin'
 ): Promise<BitcoinBalance> {
@@ -287,7 +285,7 @@ export async function getBitcoinBalance(
  * @param network Network name ("bitcoin", "testnet", "signet")
  * @param maxPages Maximum pages to fetch (25 txs per page)
  */
-export async function getBitcoinTransactions(
+export function getBitcoinTransactions(
   address: string,
   network = 'bitcoin',
   maxPages?: number
@@ -305,7 +303,7 @@ export async function getBitcoinTransactions(
  * @param address Bitcoin address
  * @param network Network name ("bitcoin", "testnet", "signet")
  */
-export async function getBitcoinUtxos(
+export function getBitcoinUtxos(
   address: string,
   network = 'bitcoin'
 ): Promise<BitcoinUtxo[]> {
