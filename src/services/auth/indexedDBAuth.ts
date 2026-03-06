@@ -643,65 +643,58 @@ class IndexedDBAuthService implements AuthService {
     return count
   }
 
-  // Profile roles - simplified for browser mode
-  getUserProfiles(_token: string): Promise<ProfileWithRole[]> {
-    // In browser mode, return empty - profiles are managed through persistence
-    return Promise.resolve([])
-  }
+  // Profile roles - stub implementations for browser mode
 
-  getProfileUsers(_token: string, _profileId: string): Promise<ProfileUser[]> {
-    return Promise.resolve([])
-  }
+  /** Get user profiles (no-op in browser mode) */
+  getUserProfiles = (_token: string): Promise<ProfileWithRole[]> =>
+    Promise.resolve([])
 
-  updateUserRole(
+  /** Get profile users (no-op in browser mode) */
+  getProfileUsers = (
+    _token: string,
+    _profileId: string
+  ): Promise<ProfileUser[]> => Promise.resolve([])
+
+  /** Update user role (no-op in browser mode) */
+  updateUserRole = (
     _token: string,
     _profileId: string,
     _userId: string,
     _role: UserRole
-  ): Promise<void> {
-    // No-op in browser mode
-    return Promise.resolve()
-  }
+  ): Promise<void> => Promise.resolve()
 
-  removeUserFromProfile(
+  /** Remove user from profile (no-op in browser mode) */
+  removeUserFromProfile = (
     _token: string,
     _profileId: string,
     _userId: string
-  ): Promise<void> {
-    // No-op in browser mode
-    return Promise.resolve()
-  }
+  ): Promise<void> => Promise.resolve()
 
-  // Invitations - simplified for browser mode
-  createInvitation(
+  // Invitations - stub implementations for browser mode
+
+  /** Create invitation (not supported in browser mode) */
+  createInvitation = (
     _token: string,
     _input: CreateInvitationInput
-  ): Promise<Invitation> {
-    return Promise.reject(
-      new Error('Invitations not supported in browser mode')
-    )
-  }
+  ): Promise<Invitation> =>
+    Promise.reject(new Error('Invitations not supported in browser mode'))
 
-  getProfileInvitations(
+  /** Get profile invitations (no-op in browser mode) */
+  getProfileInvitations = (
     _token: string,
     _profileId: string
-  ): Promise<Invitation[]> {
-    return Promise.resolve([])
-  }
+  ): Promise<Invitation[]> => Promise.resolve([])
 
-  acceptInvitation(
+  /** Accept invitation (not supported in browser mode) */
+  acceptInvitation = (
     _invitationToken: string,
     _accessToken?: string
-  ): Promise<AuthResponse> {
-    return Promise.reject(
-      new Error('Invitations not supported in browser mode')
-    )
-  }
+  ): Promise<AuthResponse> =>
+    Promise.reject(new Error('Invitations not supported in browser mode'))
 
-  revokeInvitation(_token: string, _invitationId: string): Promise<void> {
-    // No-op
-    return Promise.resolve()
-  }
+  /** Revoke invitation (no-op in browser mode) */
+  revokeInvitation = (_token: string, _invitationId: string): Promise<void> =>
+    Promise.resolve()
 
   // Email change - simplified for browser mode (direct update, no email verification)
   async requestEmailChange(
@@ -758,18 +751,17 @@ class IndexedDBAuthService implements AuthService {
     }
   }
 
-  verifyEmailChange(_verificationToken: string): Promise<string> {
-    // In browser mode, email is updated directly in requestEmailChange
-    return Promise.resolve('Email already updated (browser mode)')
-  }
+  /** Verify email change (no-op in browser mode, email updated directly) */
+  verifyEmailChange = (_verificationToken: string): Promise<string> =>
+    Promise.resolve('Email already updated (browser mode)')
 
-  cancelEmailChange(_cancellationToken: string): Promise<string> {
-    return Promise.resolve('No pending email change (browser mode)')
-  }
+  /** Cancel email change (no-op in browser mode) */
+  cancelEmailChange = (_cancellationToken: string): Promise<string> =>
+    Promise.resolve('No pending email change (browser mode)')
 
-  getEmailChangeStatus(_token: string): Promise<EmailChangeStatus> {
-    return Promise.resolve({ pending: false })
-  }
+  /** Get email change status (no-op in browser mode) */
+  getEmailChangeStatus = (_token: string): Promise<EmailChangeStatus> =>
+    Promise.resolve({ pending: false })
 }
 
 export const indexedDBAuthService = new IndexedDBAuthService()
