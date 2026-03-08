@@ -47,6 +47,11 @@ async function hashPassword(password: string): Promise<string> {
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
 }
 
+/**
+ * Generates a random hexadecimal token string of 32 bytes.
+ * Utilizes the Web Crypto API to generate secure random values.
+ * @returns {string} A 64-character hexadecimal token.
+ */
 function generateToken(): string {
   const array = new Uint8Array(32)
   crypto.getRandomValues(array)
@@ -55,14 +60,28 @@ function generateToken(): string {
     .join('')
 }
 
+/**
+ * Generates a unique identifier using the crypto API.
+ * @returns {string} A newly generated unique identifier.
+ */
 function generateId(): string {
   return crypto.randomUUID()
 }
 
+/**
+ * Returns the current date and time as an ISO string.
+ *
+ * @returns {string} The current date and time in ISO 8601 format.
+ */
 function getNow(): string {
   return new Date().toISOString()
 }
 
+/**
+ * Returns an ISO string representing the date and time after a given number of hours.
+ * @param hours The number of hours to add to the current date.
+ * @returns An ISO formatted string representing the future date and time.
+ */
 function getExpiresAt(hours: number): string {
   const date = new Date()
   date.setHours(date.getHours() + hours)
@@ -79,6 +98,14 @@ const TOKEN_KEYS = {
   TOKEN_EXPIRES: 'pacioli_token_expires',
 } as const
 
+/**
+ * Stores the access token, refresh token, and expiration time in local storage.
+ *
+ * @param {string} accessToken - The access token to store.
+ * @param {string} refreshToken - The refresh token to store.
+ * @param {string} expiresAt - The expiration timestamp of the token.
+ * @returns {void}
+ */
 function storeTokens(
   accessToken: string,
   refreshToken: string,
@@ -89,20 +116,39 @@ function storeTokens(
   localStorage.setItem(TOKEN_KEYS.TOKEN_EXPIRES, expiresAt)
 }
 
+/**
+ * Clears authentication tokens from local storage.
+ *
+ * @returns {void}
+ */
 function clearTokens(): void {
   localStorage.removeItem(TOKEN_KEYS.ACCESS_TOKEN)
   localStorage.removeItem(TOKEN_KEYS.REFRESH_TOKEN)
   localStorage.removeItem(TOKEN_KEYS.TOKEN_EXPIRES)
 }
 
+/**
+ * Retrieves the access token from local storage.
+ *
+ * @returns {string|null} The access token if present, otherwise null.
+ */
 function getAccessToken(): string | null {
   return localStorage.getItem(TOKEN_KEYS.ACCESS_TOKEN)
 }
 
+/**
+ * Retrieves the refresh token from local storage.
+ * @returns {string | null} The refresh token as a string if present, or null otherwise.
+ */
 function getRefreshToken(): string | null {
   return localStorage.getItem(TOKEN_KEYS.REFRESH_TOKEN)
 }
 
+/**
+ * Determines whether the stored token has expired.
+ * Retrieves the token expiry time from localStorage and checks against current time with a one-minute buffer.
+ * @returns {boolean} True if the token is expired or not found; otherwise false.
+ */
 function isTokenExpired(): boolean {
   const expiresAt = localStorage.getItem(TOKEN_KEYS.TOKEN_EXPIRES)
   if (!expiresAt) return true
@@ -140,10 +186,20 @@ interface StoredRefreshToken {
   created_at: string
 }
 
+/**
+ * Auth service implementation using IndexedDB for storage.
+ * Provides methods to manage user authentication data in the browser's IndexedDB.
+ */
 class IndexedDBAuthService implements AuthService {
   private db: IDBDatabase | null = null
   private initPromise: Promise<void> | null = null
 
+  /**
+   * Initializes the IndexedDB database connection.
+   * Opens the database and creates object stores if needed.
+   *
+   * @returns Promise that resolves when the database is initialized.
+   */
   private init(): Promise<void> {
     if (this.db) return Promise.resolve()
     if (this.initPromise) return this.initPromise
@@ -214,6 +270,13 @@ class IndexedDBAuthService implements AuthService {
     return this.initPromise
   }
 
+  /**
+   * Retrieves the specified object store from the IndexedDB database.
+   *
+   * @param storeName - The name of the object store to retrieve.
+   * @param mode - The transaction mode for the store. Defaults to 'readonly'.
+   * @returns The requested object store.
+   */
   private async getStore(
     storeName: string,
     mode: IDBTransactionMode = 'readonly'
@@ -226,6 +289,13 @@ class IndexedDBAuthService implements AuthService {
     return transaction.objectStore(storeName)
   }
 
+  /**
+   * Promisifies an IDBRequest, returning a promise that resolves with the result on success,
+   * or rejects with the error on failure.
+   *
+   * @param request The IDBRequest to be promisified.
+   * @returns A Promise that resolves with the request result or rejects with the request error.
+   */
   private static promisifyRequest<T>(request: IDBRequest<T>): Promise<T> {
     return new Promise((resolve, reject) => {
       request.onsuccess = () => resolve(request.result)
@@ -233,6 +303,12 @@ class IndexedDBAuthService implements AuthService {
     })
   }
 
+  /**
+   * Removes the password hash from a stored user object to produce an AuthUser.
+   *
+   * @param {StoredUser} user - The stored user object containing sensitive data.
+   * @returns {AuthUser} The sanitized user object without the password hash.
+   */
   private static sanitizeUser(user: StoredUser): AuthUser {
     const { password_hash: _password_hash, ...authUser } = user
     return authUser
@@ -300,6 +376,11 @@ class IndexedDBAuthService implements AuthService {
     return this.createSession(newUser)
   }
 
+  /**
+   * Authenticates a user using their credentials.
+   * @param credentials The login credentials containing email and password.
+   * @returns A promise that resolves to an AuthResponse containing tokens and session info.
+   */
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     await this.init()
 
@@ -338,6 +419,12 @@ class IndexedDBAuthService implements AuthService {
     return this.createSession(updatedUser, credentials.device_name)
   }
 
+  /**
+   * Creates a new session for the authenticated user.
+   * @param user The stored user object for whom the session is created.
+   * @param deviceName Optional name of the device for the session.
+   * @returns A promise that resolves to an AuthResponse containing tokens and session info.
+   */
   private async createSession(
     user: StoredUser,
     deviceName?: string
@@ -395,6 +482,11 @@ class IndexedDBAuthService implements AuthService {
     }
   }
 
+  /**
+   * Logs out a session by deleting the session and its associated refresh tokens, then clears local tokens.
+   * @param sessionId - The ID of the session to logout.
+   * @returns A promise that resolves when logout is complete.
+   */
   async logout(sessionId: string): Promise<void> {
     try {
       // Delete session
@@ -418,6 +510,10 @@ class IndexedDBAuthService implements AuthService {
     clearTokens()
   }
 
+  /**
+   * Refreshes the access token using the stored refresh token.
+   * @returns {Promise<TokenRefreshResponse>} An object containing the new access token and its expiry time.
+   */
   async refreshToken(): Promise<TokenRefreshResponse> {
     const refreshTokenValue = getRefreshToken()
     if (!refreshTokenValue) {
@@ -468,6 +564,11 @@ class IndexedDBAuthService implements AuthService {
     }
   }
 
+  /**
+   * Verifies the provided token by hashing it and checking against stored sessions.
+   * @param token The access token to verify.
+   * @returns A Promise resolving to a TokenVerifyResponse indicating validity and session details.
+   */
   async verifyToken(token: string): Promise<TokenVerifyResponse> {
     const tokenHash = await hashPassword(token)
     const sessionStore = await this.getStore(STORES.SESSIONS, 'readonly')
@@ -511,6 +612,13 @@ class IndexedDBAuthService implements AuthService {
     return IndexedDBAuthService.sanitizeUser(user)
   }
 
+  /**
+   * Updates a user record in the IndexedDB using the provided authentication token and input data.
+   *
+   * @param token - The authentication token representing the current session.
+   * @param input - The data to update the user's record with.
+   * @returns The updated and sanitized AuthUser object.
+   */
   async updateUser(token: string, input: UpdateUserInput): Promise<AuthUser> {
     const verified = await this.verifyToken(token)
     if (!verified.valid || !verified.user_id) {
@@ -536,6 +644,12 @@ class IndexedDBAuthService implements AuthService {
     return IndexedDBAuthService.sanitizeUser(updatedUser)
   }
 
+  /**
+   * Changes the user's password using a token for verification.
+   * @param token The password reset token.
+   * @param input The input containing the current and new passwords.
+   * @returns A promise that resolves when the password has been changed.
+   */
   async changePassword(
     token: string,
     input: ChangePasswordInput
@@ -597,6 +711,13 @@ class IndexedDBAuthService implements AuthService {
     }))
   }
 
+  /**
+   * Revokes a user session and removes associated refresh tokens.
+   *
+   * @param token The authentication token to verify.
+   * @param sessionId The ID of the session to revoke.
+   * @returns A promise that resolves when the session and its tokens have been deleted.
+   */
   async revokeSession(token: string, sessionId: string): Promise<void> {
     const verified = await this.verifyToken(token)
     if (!verified.valid) {
@@ -617,6 +738,12 @@ class IndexedDBAuthService implements AuthService {
     }
   }
 
+  /**
+   * Revokes all sessions for the user associated with the provided token, except the current session.
+   *
+   * @param token The authentication token of the session requesting revocation.
+   * @returns A promise that resolves to the number of sessions revoked.
+   */
   async revokeAllSessions(token: string): Promise<number> {
     const verified = await this.verifyToken(token)
     if (!verified.valid || !verified.user_id) {

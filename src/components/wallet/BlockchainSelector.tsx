@@ -31,6 +31,15 @@ interface BlockchainSelectorProps {
   disabled?: boolean
 }
 
+/**
+ * A dropdown selector for choosing a blockchain.
+ * @param {Object} props - Component props.
+ * @param {BlockchainType | ''} props.value - Currently selected blockchain or empty string.
+ * @param {(blockchain: BlockchainType) => void} props.onChange - Callback when blockchain changes.
+ * @param {string} [props.error] - Optional error message to display.
+ * @param {boolean} [props.disabled=false] - Whether the selector is disabled.
+ * @returns {JSX.Element} The rendered blockchain selector component.
+ */
 const BlockchainSelector: React.FC<BlockchainSelectorProps> = ({
   value,
   onChange,
@@ -44,6 +53,10 @@ const BlockchainSelector: React.FC<BlockchainSelectorProps> = ({
 
   // Close dropdown when clicking outside
   useEffect(() => {
+    /**
+     * Handles click events outside the dropdown to close it and reset search.
+     * @param {MouseEvent} event - The mouse event triggered.
+     */
     const handleClickOutside = (event: MouseEvent) => {
       if (
         dropdownRef.current &&

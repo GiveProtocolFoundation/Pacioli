@@ -153,12 +153,22 @@ const AddPortfolioModal: React.FC<AddPortfolioModalProps> = ({
   const [isValidatingXpub, setIsValidatingXpub] = useState(false)
 
   // Get current ecosystem config
+  /**
+   * Retrieves the current ecosystem configuration based on the selected ecosystem ID.
+   *
+   * @returns {Object|undefined} The configuration object for the selected ecosystem, or undefined if not found.
+   */
   const ecosystemConfig = useMemo(
     () => ECOSYSTEM_OPTIONS.find(e => e.id === selectedEcosystem),
     [selectedEcosystem]
   )
 
   // Quick check if address looks like xPub (for UI feedback)
+  /**
+   * Determines whether the provided address string starts with a recognized xPub prefix.
+   *
+   * @returns {boolean} True if the address starts with a known xPub prefix, false otherwise.
+   */
   const looksLikeXpub = useMemo(() => {
     const prefixes = ['xpub', 'ypub', 'zpub', 'tpub', 'upub', 'vpub']
     return prefixes.some(prefix => address.startsWith(prefix))
@@ -175,6 +185,11 @@ const AddPortfolioModal: React.FC<AddPortfolioModalProps> = ({
     let cancelled = false
     setIsValidatingXpub(true)
 
+    /**
+     * Validates the xPub address by performing a quick format check and parsing full details if valid.
+     *
+     * @returns {Promise<void>} A promise that resolves after validation and state updates.
+     */
     const validateXpub = async () => {
       try {
         // First quick check with the fast function

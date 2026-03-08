@@ -1,8 +1,13 @@
 /**
- * Recovery Phrase Display Component
- * Displays the 12-word recovery phrase with copy functionality
+ * RecoveryPhraseDisplay Component
+ * Displays the 12-word recovery phrase with copy functionality.
+ *
+ * @param {RecoveryPhraseDisplayProps} props - Props for the component.
+ * @param {string} props.phrase - The recovery phrase to display.
+ * @param {() => void} props.onConfirm - Callback invoked when the user confirms they've copied the phrase.
+ * @param {() => void} [props.onBack] - Optional callback for navigating back.
+ * @returns {JSX.Element} The rendered component.
  */
-
 import React, { useState, useCallback } from 'react'
 import { useLanguage } from '../../contexts/LanguageContext'
 
@@ -23,6 +28,12 @@ export const RecoveryPhraseDisplay: React.FC<RecoveryPhraseDisplayProps> = ({
 
   const words = phrase.split(' ')
 
+  /**
+   * Handles change event for the confirmation checkbox.
+   *
+   * @param {React.ChangeEvent<HTMLInputElement>} e - The change event object.
+   * @returns {void}
+   */
   const handleConfirmedChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       setConfirmed(e.target.checked)
@@ -30,6 +41,11 @@ export const RecoveryPhraseDisplay: React.FC<RecoveryPhraseDisplayProps> = ({
     []
   )
 
+  /**
+   * Copies the recovery phrase to the clipboard and provides feedback.
+   *
+   * @returns {Promise<void>} A promise that resolves when the copy operation completes.
+   */
   const handleCopy = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(phrase)
@@ -38,6 +54,9 @@ export const RecoveryPhraseDisplay: React.FC<RecoveryPhraseDisplayProps> = ({
     } catch (err) {
       console.error('Failed to copy:', err)
     }
+  }, [phrase])
+
+  // ...rest of the component implementation
   }, [phrase])
 
   return (

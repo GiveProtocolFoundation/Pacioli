@@ -11,6 +11,12 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 
+/**
+ * ThemeProvider component that wraps its children and provides theme context.
+ * @param {object} props - Component properties.
+ * @param {React.ReactNode} props.children - Child components that will have access to the theme context.
+ * @returns {JSX.Element} The ThemeProvider component.
+ */
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
@@ -45,10 +51,19 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
     localStorage.setItem('theme', theme)
   }, [theme])
 
+  /**
+   * Toggles between 'light' and 'dark' themes.
+   * @returns {void}
+   */
   const toggleTheme = () => {
     setThemeState(prev => (prev === 'light' ? 'dark' : 'light'))
   }
 
+  /**
+   * Sets the theme to a specified value.
+   * @param {Theme} newTheme - The new theme to set.
+   * @returns {void}
+   */
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme)
   }
@@ -60,6 +75,10 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
   )
 }
 
+/**
+ * Custom hook to access the theme context.
+ * @returns {ThemeContextType} The current theme context.
+ */
 export const useTheme = () => {
   const context = useContext(ThemeContext)
   if (context === undefined) {

@@ -25,6 +25,14 @@ interface TransactionListProps {
   onPurge?: () => void
 }
 
+/**
+ * TransactionList component displays a list of transactions with sorting, loading state, error handling, and a purge option.
+ * @param transactions - List of transaction objects to display.
+ * @param isLoading - Indicates if the transactions are currently loading.
+ * @param error - Error message if loading failed.
+ * @param onPurge - Callback function to purge the transaction list.
+ * @returns The rendered TransactionList component.
+ */
 export const TransactionList: React.FC<TransactionListProps> = ({
   transactions,
   isLoading,
@@ -42,6 +50,11 @@ export const TransactionList: React.FC<TransactionListProps> = ({
   }, [transactions])
 
   // Helper: Get network decimals
+  /**
+   * getNetworkDecimals returns the decimal precision for a given network name.
+   * @param network - The name of the network (e.g., 'polkadot', 'kusama').
+   * @returns The decimal precision for the specified network.
+   */
   const getNetworkDecimals = useCallback((network: string): number => {
     const networkDecimals: Record<string, number> = {
       polkadot: 10,

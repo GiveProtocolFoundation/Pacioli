@@ -109,6 +109,16 @@ const TurboModeIndicator: React.FC<{ isActive: boolean }> = ({ isActive }) => (
 
 /** Displays the current rate limit and potential turbo limit for a provider */
 const RateLimitBadge: React.FC<{
+/**
+ * Component that displays rate limit and turbo limit information.
+ *
+ * @param {object} props - The component props.
+ * @param {number} props.rateLimit - The current rate limit in requests per second.
+ * @param {number} props.turboLimit - The maximum rate limit available with API key.
+ * @param {boolean} props.isTurbo - Flag indicating if turbo mode is enabled.
+ * @returns {JSX.Element} The JSX element displaying rate limit info.
+ */
+const RateLimitBadge: React.FC<{ 
   rateLimit: number
   turboLimit: number
   isTurbo: boolean
@@ -134,6 +144,17 @@ interface ProviderCardProps {
   onDelete: (provider: string) => Promise<void>
 }
 
+/**
+ * React component that renders a card for a data provider, including configuration, status,
+ * and actions to save or delete the provider's API key.
+ *
+ * @param {ProviderCardProps} props - The properties for configuring the provider card.
+ * @param {ProviderConfig} props.config - The provider's configuration information.
+ * @param {ProviderStatus|undefined} props.status - The current status of the provider.
+ * @param {(provider: string, key: string) => Promise<void>} props.onSave - Callback invoked to save the API key for the provider.
+ * @param {(provider: string) => Promise<void>} props.onDelete - Callback invoked to delete the provider's API key.
+ * @returns {JSX.Element} The JSX element representing the provider card.
+ */
 const ProviderCard: React.FC<ProviderCardProps> = ({
   config,
   status,
@@ -151,15 +172,31 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
   const rateLimit = status?.rate_limit ?? 1
   const turboLimit = status?.turbo_rate_limit ?? 5
 
+  /**
+   * Toggles the visibility of the API key input field.
+   */
   const toggleShowKey = useCallback(() => {
     setShowKey(prev => !prev)
   }, [])
 
+  /**
+   * Starts editing mode for the API key.
+   */
   const startEditing = useCallback(() => {
     setIsEditing(true)
   }, [])
 
+  /**
+   * Handles changes to the API key input field.
+   *
+   * @param {React.ChangeEvent<HTMLInputElement>} event - The change event from the input field.
+   */
   const handleApiKeyChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      setApiKey(event.target.value)
+    },
+    []
+  )
     (e: React.ChangeEvent<HTMLInputElement>) => {
       setApiKey(e.target.value)
     },
@@ -398,6 +435,11 @@ const DataProviders: React.FC = () => {
     [fetchStatuses]
   )
 
+  /**
+   * Retrieves the status for a given provider ID.
+   * @param providerId - The ID of the provider to lookup.
+   * @returns The ProviderStatus object if found, otherwise undefined.
+   */
   const getStatusForProvider = (
     providerId: string
   ): ProviderStatus | undefined => {

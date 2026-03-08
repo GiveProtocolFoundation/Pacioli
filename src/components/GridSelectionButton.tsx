@@ -12,6 +12,17 @@ interface GridSelectionButtonProps {
   gridLayout?: boolean
 }
 
+/**
+ * Renders a button for selecting items in a grid layout.
+ *
+ * @param {LucideIcon} icon - The icon component to render inside the button.
+ * @param {string} title - The main title displayed on the button.
+ * @param {string} description - A brief description displayed below the title.
+ * @param {string} [subtitle] - An optional subtitle displayed next to the title.
+ * @param {boolean} isSelected - Whether the button is currently selected.
+ * @param {() => void} onClick - Callback invoked when the button is clicked.
+ * @returns {JSX.Element} The rendered grid selection button component.
+ */
 export const GridSelectionButton: React.FC<GridSelectionButtonProps> = ({
   icon: Icon,
   title,

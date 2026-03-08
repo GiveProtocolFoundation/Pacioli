@@ -297,6 +297,11 @@ const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
   )
 }
 
+/**
+ * Entities component displays and manages a list of entities with search, filter, and delete functionality.
+ * 
+ * @returns JSX.Element - The rendered Entities component.
+ */
 const Entities: React.FC = () => {
   const { currentProfile } = useProfile()
   const { entities, isLoading, error, deleteEntity } = useEntity()

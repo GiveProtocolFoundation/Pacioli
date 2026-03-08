@@ -19,6 +19,14 @@ import { TransactionType, TransactionStatus } from '../../types/transaction'
 
 type FilterType = 'all' | 'revenue' | 'expense' | 'transfers'
 
+/**
+ * Component that renders tabs to filter transactions.
+ *
+ * @param {object} props - Component properties.
+ * @param {string} props.filter - Currently selected filter key.
+ * @param {{ type: TransactionType }[]} props.transactions - Array of transactions to filter.
+ * @returns {JSX.Element} A navigation bar with tabs for transaction filters.
+ */
 const FilterTabs = ({
   filter,
   transactions,
@@ -50,31 +58,15 @@ const FilterTabs = ({
           count: transactions.filter(t => t.type === 'transfer').length,
         },
       ].map(tab => (
-        <Link
-          key={tab.key}
-          to={`/transactions?filter=${tab.key}`}
-          className={`pb-4 px-1 border-b-2 font-medium text-sm transition-colors ${
-            filter === tab.key
-              ? 'border-[#8b4e52] text-[#8b4e52] dark:text-[#a86e72]'
-              : 'border-transparent text-[#696557] dark:text-[#b8b3ac] hover:text-[#1a1815] dark:hover:text-[#f5f3f0] hover:border-[rgba(201,169,97,0.3)]'
-          }`}
-        >
-          {tab.label}
-          <span
-            className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
-              filter === tab.key
-                ? 'bg-[#8b4e52]/10 text-[#8b4e52] dark:bg-[#8b4e52]/20 dark:text-[#a86e72]'
-                : 'bg-[#f3f1ed] text-[#696557] dark:bg-[#2a2620] dark:text-[#b8b3ac]'
-            }`}
-          >
-            {tab.count}
-          </span>
-        </Link>
       ))}
     </nav>
   </div>
 )
 
+/**
+ * Transactions component responsible for displaying and filtering financial transactions.
+ * @returns {JSX.Element} The rendered Transactions component.
+ */
 const Transactions: React.FC = () => {
   const location = useLocation()
   const navigate = useNavigate()
@@ -107,6 +99,11 @@ const Transactions: React.FC = () => {
       })
   }, [transactions, filter, searchQuery])
 
+  /**
+   * Returns the icon representing the given transaction type.
+   * @param {TransactionType} type - The type of transaction.
+   * @returns {JSX.Element|null} The React component for the transaction type icon.
+   */
   const getTypeIcon = (type: TransactionType) => {
     switch (type) {
       case 'revenue':
@@ -120,6 +117,11 @@ const Transactions: React.FC = () => {
     }
   }
 
+  /**
+   * Returns CSS classes corresponding to the given transaction type.
+   * @param {TransactionType} type - The type of transaction.
+   * @returns {string} CSS class names for styling the transaction type.
+   */
   const getTypeColor = (type: TransactionType) => {
     switch (type) {
       case 'revenue':
@@ -133,6 +135,11 @@ const Transactions: React.FC = () => {
     }
   }
 
+  /**
+   * Returns CSS classes corresponding to the given transaction status.
+   * @param {TransactionStatus} status - The status of the transaction.
+   * @returns {string} CSS class names for styling the transaction status.
+   */
   const getStatusColor = (status: TransactionStatus) => {
     switch (status) {
       case 'completed':
@@ -150,6 +157,11 @@ const Transactions: React.FC = () => {
     }
   }
 
+  /**
+   * Returns a human-readable label for the given transaction status.
+   * @param {TransactionStatus} status - The status of the transaction.
+   * @returns {string} The label for the transaction status.
+   */
   const getStatusLabel = (status: TransactionStatus) => {
     switch (status) {
       case 'pending_approval':

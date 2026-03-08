@@ -21,6 +21,12 @@ const getRoleBadgeColor = (role: string): string => {
 }
 
 // Format role name for display
+/**
+ * Formats a role identifier string by splitting on hyphens,
+ * capitalizing each word, and joining them with spaces.
+ * @param role - The role string to format (e.g., 'admin-user').
+ * @returns The formatted role name (e.g., 'Admin User').
+ */
 const formatRoleName = (role: string): string => {
   return role
     .split('-')
@@ -29,6 +35,11 @@ const formatRoleName = (role: string): string => {
 }
 
 // Get initials from name
+/**
+ * Generates initials from a full name.
+ * @param name - The full name to extract initials from.
+ * @returns The uppercase initials (maximum two characters).
+ */
 const getInitials = (name: string): string => {
   return name
     .split(' ')
@@ -42,6 +53,11 @@ interface TeamMemberCardProps {
   member: ProfileUser
 }
 
+/**
+ * A card component that displays a team member's profile information.
+ * @param member - The team member's profile data.
+ * @returns A JSX element representing the team member card.
+ */
 const TeamMemberCard: React.FC<TeamMemberCardProps> = ({ member }) => {
   return (
     <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow">
@@ -69,31 +85,12 @@ const TeamMemberCard: React.FC<TeamMemberCardProps> = ({ member }) => {
           </div>
 
           {/* Contact info */}
-          <div className="space-y-1.5 mt-3">
-            <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
-              <Mail className="w-4 h-4 mr-2 flex-shrink-0" />
-              <span className="truncate">{member.email}</span>
-            </div>
-          </div>
 
-          {/* Status badge */}
-          <div className="mt-3">
-            <span
-              className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                member.status === 'active'
-                  ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                  : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
-              }`}
-            >
-              {member.status === 'active' ? 'Active' : 'Pending'}
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
+/**
+ * Team component.
+ * Displays the list of team members with their emails and statuses, and handles loading state and errors.
+ * @returns {JSX.Element} The rendered Team component.
+ */
 const Team: React.FC = () => {
   const navigate = useNavigate()
   const { isBusinessAccount, userProfiles } = useAuth()
@@ -105,6 +102,10 @@ const Team: React.FC = () => {
   const currentProfileId =
     localStorage.getItem('currentProfileId') || userProfiles[0]?.profile_id
 
+  /**
+   * Loads team members for the current profile ID.
+   * @returns {Promise<void>} A promise that resolves when team members have been loaded.
+   */
   // Load team members
   const loadMembers = useCallback(async () => {
     if (!currentProfileId) {

@@ -26,10 +26,20 @@ const translations: Record<SupportedLanguage, Translations> = {
   eo,
 }
 
+/**
+ * Retrieves the translations for the specified language.
+ * @param {SupportedLanguage} language - The language code for which to get translations.
+ * @returns {Translations} The translations object for the specified language, or the default English translations if not found.
+ */
 export function getTranslations(language: SupportedLanguage): Translations {
   return translations[language] || translations.en
 }
 
+
+/**
+ * Detects the browser's language and returns a supported language code.
+ * @returns {SupportedLanguage} The detected supported language code.
+ */
 export function detectBrowserLanguage(): SupportedLanguage {
   if (typeof navigator === 'undefined') return 'en'
 

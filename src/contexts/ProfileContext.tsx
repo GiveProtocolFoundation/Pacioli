@@ -46,6 +46,11 @@ const ProfileContext = createContext<ProfileContextType | undefined>(undefined)
 
 const CURRENT_PROFILE_KEY = 'currentProfileId'
 
+/**
+ * Provides profile and wallet context to descendant components.
+ * @param {React.ReactNode} children - The child components that will have access to profile context and actions.
+ * @returns {JSX.Element} The provider component wrapping the children.
+ */
 export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
@@ -209,7 +214,6 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({
   const refreshWallets = useCallback(async () => {
     await loadWallets()
   }, [loadWallets])
-
   return (
     <ProfileContext.Provider
       value={{
@@ -234,6 +238,12 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({
   )
 }
 
+/**
+ * Custom React hook to access the ProfileContext.
+ * Throws an error if used outside a ProfileProvider.
+ *
+ * @returns The ProfileContext value.
+ */
 export const useProfile = () => {
   const context = useContext(ProfileContext)
   if (context === undefined) {

@@ -58,9 +58,18 @@ export const EVM_CHAINS: Record<string, EVMChain> = {
   },
 }
 
+/**
+ * Service to manage JSON RPC providers for various EVM-compatible chains.
+ */
 export class EVMService {
   private providers: Map<string, ethers.JsonRpcProvider> = new Map()
 
+  /**
+   * Retrieves or initializes a JsonRpcProvider for the specified chain.
+   * @param chain The name of the chain to get the provider for.
+   * @returns The JsonRpcProvider instance for the chain.
+   * @throws Error if the chain is unknown or provider is not found.
+   */
   getProvider(chain: string): ethers.JsonRpcProvider {
     if (!this.providers.has(chain)) {
       const config = EVM_CHAINS[chain]
@@ -76,6 +85,11 @@ export class EVMService {
     return provider
   }
 
+  /**
+   * Imports account details from MetaMask via BrowserProvider.
+   * @returns An object containing the user's address, selected chain, and chainId.
+   * @throws Error if MetaMask is not installed or the network is unsupported.
+   */
   static async importFromMetaMask() {
     if (!window.ethereum) {
       throw new Error('MetaMask not installed')
@@ -105,7 +119,15 @@ export class EVMService {
       chainId,
     }
   }
+}
 
+  /**
+   * Sync EVM transactions for a given blockchain network and address.
+   *
+   * @param chain - The blockchain network identifier.
+   * @param address - The wallet address to sync transactions for.
+   * @returns A promise that resolves to a string result from the sync operation.
+   */
   static async syncEVMTransactions(
     chain: string,
     address: string
@@ -113,6 +135,13 @@ export class EVMService {
     return invoke<string>('sync_evm_transactions', { chain, address })
   }
 
+  /**
+   * Retrieves token balances for a specified EVM chain and address.
+   *
+   * @param chain The blockchain network identifier (e.g., 'eth', 'bsc').
+   * @param address The wallet address to fetch token balances for.
+   * @returns A promise that resolves to an array of [token symbol, balance] tuples.
+   */
   static async getTokenBalances(
     chain: string,
     address: string
@@ -123,6 +152,13 @@ export class EVMService {
     })
   }
 
+  /**
+   * Scans DeFi positions for a given address on a specified blockchain.
+   *
+   * @param chain The blockchain identifier to scan.
+   * @param address The wallet address to query for DeFi positions.
+   * @returns A promise resolving to an array of DeFi position identifiers.
+   */
   static async scanDeFiPositions(
     chain: string,
     address: string
@@ -130,10 +166,26 @@ export class EVMService {
     return invoke<string[]>('scan_defi_positions', { chain, address })
   }
 
+  /**
+   * Retrieves the EVM balance for a given chain and address.
+   *
+   * @param chain - The EVM chain name.
+   * @param address - The address to get the balance for.
+   * @returns The balance as a string.
+   */
   static async getBalance(chain: string, address: string): Promise<string> {
     return invoke<string>('get_evm_balance', { chain, address })
   }
 
+  /**
+   * Retrieves transaction hashes for a given blockchain and address within a block range.
+   *
+   * @param chain The blockchain identifier to query.
+   * @param address The address to fetch transactions for.
+   * @param fromBlock The starting block number (inclusive). Defaults to 0 if not provided.
+   * @param toBlock The ending block number (inclusive). Defaults to 'latest' if not provided.
+   * @returns Promise<string[]> A promise that resolves to an array of transaction hash strings.
+   */
   static async getTransactions(
     chain: string,
     address: string,
@@ -148,16 +200,34 @@ export class EVMService {
     })
   }
 
+  /**
+   * Connects to the specified EVM chain.
+   * @param chain - The name or identifier of the EVM chain to connect to.
+   * @returns A promise that resolves when the connection is established.
+   */
   static async connectToChain(chain: string): Promise<void> {
     return invoke<void>('connect_evm_chain', { chain })
   }
 
+  /**
+   * Retrieves the configuration for a specified EVM chain.
+   *
+   * @param chain - The identifier of the EVM chain.
+   * @returns The configuration object for the specified chain.
+   */
   static async getChainInfo(chain: string) {
     const config = EVM_CHAINS[chain]
     if (!config) throw new Error(`Unknown chain: ${chain}`)
     return config
   }
 
+  /**
+   * Switches the Ethereum network in MetaMask to the specified chain ID.
+   *
+   * @param chainId - The numeric ID of the Ethereum chain to switch to.
+   * @returns {Promise<void>} A promise that resolves when the network switch is complete.
+   * @throws {Error} If MetaMask is not installed or the specified chain is unknown.
+   */
   static async switchNetwork(chainId: number) {
     if (!window.ethereum) {
       throw new Error('MetaMask not installed')
@@ -185,6 +255,13 @@ export class EVMService {
     }
   }
 
+  /**
+   * Adds a new Ethereum chain/network to MetaMask.
+   *
+   * @param chain - The EVMChain object containing chain details such as chainId, name, native token, RPC and explorer URLs.
+   * @returns A promise that resolves when the network is successfully added.
+   * @throws {Error} If MetaMask (window.ethereum) is not installed or the request fails.
+   */
   private static async addNetwork(chain: EVMChain) {
     if (!window.ethereum) {
       throw new Error('MetaMask not installed')

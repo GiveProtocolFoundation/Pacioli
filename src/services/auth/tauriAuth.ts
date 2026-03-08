@@ -44,10 +44,24 @@ const TOKEN_KEYS = {
   TOKEN_EXPIRES: 'pacioli_token_expires',
 } as const
 
+/**
+ * Computes the ISO 8601 expiration timestamp given the current time and a duration in seconds.
+ *
+ * @param {number} expiresInSeconds - The number of seconds until expiration.
+ * @returns {string} The expiration timestamp as an ISO string.
+ */
 function computeExpiresAt(expiresInSeconds: number): string {
   return new Date(Date.now() + expiresInSeconds * 1000).toISOString()
 }
 
+/**
+ * Stores the access and refresh tokens along with their expiration time in localStorage.
+ *
+ * @param accessToken - The access token string.
+ * @param refreshToken - The refresh token string.
+ * @param expiresAt - The expiration timestamp of the access token.
+ * @returns void
+ */
 function storeTokens(
   accessToken: string,
   refreshToken: string,
@@ -58,20 +72,43 @@ function storeTokens(
   localStorage.setItem(TOKEN_KEYS.TOKEN_EXPIRES, expiresAt)
 }
 
+/**
+ * Clears all stored authentication tokens from localStorage.
+ *
+ * @returns {void} Does not return a value.
+ */
 function clearTokens(): void {
   localStorage.removeItem(TOKEN_KEYS.ACCESS_TOKEN)
   localStorage.removeItem(TOKEN_KEYS.REFRESH_TOKEN)
   localStorage.removeItem(TOKEN_KEYS.TOKEN_EXPIRES)
 }
 
+/**
+ * Retrieves the access token from local storage.
+ *
+ * @returns {string | null} The access token, or null if not found.
+ */
 function getAccessToken(): string | null {
   return localStorage.getItem(TOKEN_KEYS.ACCESS_TOKEN)
 }
 
+/**
+ * Retrieves the refresh token from localStorage.
+ *
+ * @returns The refresh token if present, otherwise null.
+ */
 function getRefreshToken(): string | null {
   return localStorage.getItem(TOKEN_KEYS.REFRESH_TOKEN)
 }
 
+/**
+ * Checks whether the stored token is expired.
+ *
+ * Retrieves the token expiration timestamp from localStorage and compares
+ * it to the current time minus a 60-second buffer.
+ *
+ * @returns {boolean} True if the token is expired or missing; false otherwise.
+ */
 function isTokenExpired(): boolean {
   const expiresAt = localStorage.getItem(TOKEN_KEYS.TOKEN_EXPIRES)
   if (!expiresAt) return true

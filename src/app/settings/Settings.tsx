@@ -99,6 +99,11 @@ interface SettingsProps {
   userType?: 'individual' | 'organization'
 }
 
+/**
+ * SettingsHeader component displays the settings header with title and description.
+ *
+ * @returns React element containing the settings header section.
+ */
 const SettingsHeader: React.FC = () => (
   <header className="bg-[#fafaf8] dark:bg-[#0f0e0c] border-b border-[rgba(201,169,97,0.15)]">
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -112,6 +117,14 @@ const SettingsHeader: React.FC = () => (
   </header>
 )
 
+/**
+ * SidebarNavigation component renders a navigation sidebar for settings sections.
+ *
+ * @param items Array of navigation items to display.
+ * @param activeSection Currently active settings section ID.
+ * @param onSectionChange Callback invoked when a section is selected.
+ * @returns React element containing the sidebar navigation.
+ */
 const SidebarNavigation: React.FC<{
   items: typeof navigationItems
   activeSection: SettingsSection
@@ -167,31 +180,15 @@ const SidebarNavigation: React.FC<{
                       )}
                     </div>
                     <p className="text-xs text-[#a39d94] dark:text-[#8b8580] mt-0.5 truncate">
-                      {item.description}
-                    </p>
-                  </div>
-                </div>
-                {isActive && !item.comingSoon && (
-                  <ChevronRight className="w-4 h-4 text-[#8b4e52] dark:text-[#a86e72] flex-shrink-0 ml-2" />
-                )}
-              </button>
-            )
-          })}
-        </nav>
-      </div>
-
-      <div className="lg:hidden mt-4 p-3 bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 rounded-lg border border-[#8b4e52]/30 dark:border-[#8b4e52]/40">
-        <div className="flex items-center text-sm">
-          <SettingsIcon className="w-4 h-4 text-[#8b4e52] dark:text-[#a86e72] mr-2" />
-          <span className="text-[#8b4e52] dark:text-[#a86e72] font-medium">
-            {items.find(item => item.id === activeSection)?.label}
-          </span>
-        </div>
-      </div>
-    </aside>
+      </aside>
   )
 }
 
+/**
+ * Settings component renders the settings navigation and content based on user type.
+ * @param {string} userType - The type of the user (defaults to 'organization').
+ * @returns {JSX.Element} The rendered Settings component.
+ */
 const Settings: React.FC<SettingsProps> = ({ userType = 'organization' }) => {
   const location = useLocation()
   const navigate = useNavigate()
@@ -207,6 +204,10 @@ const Settings: React.FC<SettingsProps> = ({ userType = 'organization' }) => {
     return 'general'
   }, [location.pathname])
 
+  /**
+   * Handles navigation to a different settings section by updating the URL.
+   * @param {SettingsSection} section - The section to navigate to.
+   */
   const handleSectionChange = useCallback(
     (section: SettingsSection) => {
       const item = navigationItems.find(item => item.id === section)

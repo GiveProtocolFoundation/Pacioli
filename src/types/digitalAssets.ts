@@ -199,18 +199,32 @@ export interface ChainMetadata {
   lastUpdated: string
 }
 
+/**
+ * Retrieves information for a given digital asset type.
+ * @param type - The digital asset type.
+ * @returns The DigitalAssetTypeInfo object corresponding to the specified type.
+ */
 export const getDigitalAssetTypeInfo = (
   type: DigitalAssetType
 ): DigitalAssetTypeInfo => {
   return DIGITAL_ASSET_TYPES[type]
 }
 
+/**
+ * Retrieves the account number associated with a given digital asset type.
+ * @param type - The digital asset type.
+ * @returns The account number as a string.
+ */
 export const getAccountNumberForAssetType = (
   type: DigitalAssetType
 ): string => {
   return DIGITAL_ASSET_TYPES[type].accountNumber
 }
 
+/**
+ * Retrieves all available digital asset types information.
+ * @returns An array of DigitalAssetTypeInfo objects.
+ */
 export const getAllDigitalAssetTypes = (): DigitalAssetTypeInfo[] => {
   return Object.values(DIGITAL_ASSET_TYPES)
 }

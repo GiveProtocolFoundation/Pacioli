@@ -101,6 +101,12 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 // Session ID storage key
 const SESSION_ID_KEY = 'pacioli_session_id'
 
+/**
+ * AuthProvider component that provides authentication context to its children.
+ * @param {{ children: React.ReactNode }} props - Component props.
+ * @param {React.ReactNode} props.children - Child components to be wrapped by the provider.
+ * @returns {JSX.Element} The context provider with authentication state and methods.
+ */
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
@@ -123,6 +129,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   // Auto-refresh token interval
   const refreshIntervalRef = useRef<number | null>(null)
 
+  /**
+   * Initializes authentication state on component mount.
+   * Prevents multiple simultaneous initializations.
+   * @returns {Promise<void>} Resolves when authentication state is initialized.
+   */
   // Initialize auth state on mount
   const initializeAuth = useCallback(async () => {
     // Prevent multiple simultaneous initializations
@@ -284,6 +295,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // Update current profile role when profile selection changes
   useEffect(() => {
+    /**
+     * Handles storage events for 'currentProfileId' changes and updates the current profile role.
+     * @param {StorageEvent} e - The storage event triggered when the storage area changes.
+     */
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'currentProfileId' && e.newValue) {
         const profile = userProfiles.find(p => p.profile_id === e.newValue)
@@ -538,6 +553,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   )
 }
 
+/**
+ * Hook to access authentication context.
+ *
+ * Throws an error if used outside the AuthProvider.
+ *
+ * @returns The authentication context value.
+ */
 export const useAuth = () => {
   const context = useContext(AuthContext)
   if (context === undefined) {

@@ -49,6 +49,10 @@ interface MockSession {
   expires_at: string
 }
 
+/**
+ * Retrieves mock storage data from localStorage or returns default storage values.
+ * @returns {MockStorageData} An object containing users and sessions maps.
+ */
 function getMockStorage(): MockStorageData {
   const stored = localStorage.getItem(MOCK_STORAGE_KEY)
   if (stored) {
@@ -64,6 +68,12 @@ function getMockStorage(): MockStorageData {
   }
 }
 
+/**
+ * Saves the mock storage data to the browser's localStorage.
+ *
+ * @param data - The mock storage data containing users and sessions entries.
+ * @returns void
+ */
 function saveMockStorage(data: MockStorageData): void {
   localStorage.setItem(
     MOCK_STORAGE_KEY,
@@ -74,10 +84,19 @@ function saveMockStorage(data: MockStorageData): void {
   )
 }
 
+/**
+ * Generates a unique identifier string composed of the current timestamp and a random string.
+ * @returns {string} The generated unique identifier.
+ */
 function generateId(): string {
   return `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 }
 
+/**
+ * Generates a mock authentication token.
+ *
+ * @returns {string} A mock token string prefixed with 'mock_token_' and a generated ID.
+ */
 function generateToken(): string {
   return `mock_token_${generateId()}`
 }
@@ -130,6 +149,13 @@ const TOKEN_KEYS = {
   TOKEN_EXPIRES: 'pacioli_token_expires',
 } as const
 
+/**
+ * Stores authentication tokens in localStorage.
+ *
+ * @param accessToken - The access token to be stored.
+ * @param refreshToken - The refresh token to be stored.
+ * @param expiresAt - The expiration timestamp for the access token.
+ */
 function storeTokens(
   accessToken: string,
   refreshToken: string,
@@ -140,20 +166,38 @@ function storeTokens(
   localStorage.setItem(TOKEN_KEYS.TOKEN_EXPIRES, expiresAt)
 }
 
+/**
+ * Clears authentication tokens from localStorage.
+ * @returns {void}
+ */
 function clearTokens(): void {
   localStorage.removeItem(TOKEN_KEYS.ACCESS_TOKEN)
   localStorage.removeItem(TOKEN_KEYS.REFRESH_TOKEN)
   localStorage.removeItem(TOKEN_KEYS.TOKEN_EXPIRES)
 }
 
+/**
+ * Retrieves the access token from localStorage.
+ *
+ * @returns The access token string if present, otherwise null.
+ */
 function getAccessToken(): string | null {
   return localStorage.getItem(TOKEN_KEYS.ACCESS_TOKEN)
 }
 
+/**
+ * Retrieves the refresh token from localStorage.
+ * @returns {string | null} The refresh token if it exists, otherwise null.
+ */
 function getRefreshToken(): string | null {
   return localStorage.getItem(TOKEN_KEYS.REFRESH_TOKEN)
 }
 
+/**
+ * Checks if the stored authentication token has expired.
+ *
+ * @returns {boolean} True if the token is expired or not present, false otherwise.
+ */
 function isTokenExpired(): boolean {
   const expiresAt = localStorage.getItem(TOKEN_KEYS.TOKEN_EXPIRES)
   if (!expiresAt) return true

@@ -88,6 +88,11 @@ const assetAllocation = [
   { name: 'Others', value: 7, amount: 134993, color: '#8B5CF6' },
 ]
 
+/**
+ * KPI card component that displays key performance indicator details.
+ * @param {KPI} kpi - The KPI data including icon, trend, label, value, and changeLabel.
+ * @returns {JSX.Element} The rendered KPI card component.
+ */
 const KPICard: React.FC<{ kpi: KPI }> = ({ kpi }) => {
   const Icon = kpi.icon
   const TrendIcon = kpi.trend === 'up' ? ArrowUpRight : ArrowDownRight
@@ -119,6 +124,15 @@ const KPICard: React.FC<{ kpi: KPI }> = ({ kpi }) => {
   )
 }
 
+/**
+ * Time period dropdown component for selecting between different time periods.
+ * @param {{ value: TimePeriod; label: string }[]} timePeriods - Available time periods to select.
+ * @param {TimePeriod} current - Currently selected time period.
+ * @param {boolean} show - Controls the visibility of the dropdown menu.
+ * @param {() => void} onToggle - Callback to toggle the dropdown's visibility.
+ * @param {(value: TimePeriod) => void} onSelect - Callback invoked when a time period is selected.
+ * @returns {JSX.Element} The rendered time period dropdown component.
+ */
 const TimePeriodDropdown: React.FC<{
   timePeriods: { value: TimePeriod; label: string }[]
   current: TimePeriod
@@ -166,6 +180,10 @@ const TimePeriodDropdown: React.FC<{
   )
 }
 
+/**
+ * Analytics component that displays portfolio analytics, including charts, KPI cards, and time period selection.
+ * @returns {JSX.Element} The analytics page component.
+ */
 const Analytics: React.FC = () => {
   const [timePeriod, setTimePeriod] = useState<TimePeriod>('30d')
   const [showPeriodDropdown, setShowPeriodDropdown] = useState(false)

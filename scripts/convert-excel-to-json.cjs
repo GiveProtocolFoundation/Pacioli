@@ -12,6 +12,12 @@ const ifrsFile = path.join(
 )
 const outputDir = path.join(__dirname, '../src/data/chart-of-accounts')
 
+/**
+ * Parses a worksheet into an array of account objects.
+ *
+ * @param {object} sheet - The worksheet to parse.
+ * @returns {Array<object>} The parsed accounts.
+ */
 function parseSheet(sheet) {
   const data = XLSX.utils.sheet_to_json(sheet, { header: 1 })
 
@@ -53,6 +59,15 @@ function parseSheet(sheet) {
   return accounts
 }
 
+/**
+ * Converts an Excel file to JSON chart of accounts files for each sheet mapping.
+ * Reads the provided Excel file, processes each sheet according to mapping rules,
+ * and writes out JSON files to the output directory.
+ *
+ * @param {string} filePath - The path to the Excel file to convert.
+ * @param {string} jurisdiction - The jurisdiction code used in output naming.
+ * @returns {void}
+ */
 function convertFile(filePath, jurisdiction) {
   console.log(`\nProcessing ${jurisdiction.toUpperCase()} file...`)
 
@@ -71,7 +86,7 @@ function convertFile(filePath, jurisdiction) {
     const accountType = sheetMapping[sheetName]
 
     if (!accountType) {
-      console.log(`  Skipping sheet: ${sheetName} (no mapping)`)
+      console.log(`  Skipping sheet: ${sheetName} (no mapping)`)  
       return
     }
 

@@ -49,11 +49,21 @@ type TimePeriod =
   | 'this_year'
   | 'last_year'
 
+/**
+ * Balances component that displays cryptocurrency balances for wallets over a selected time period.
+ *
+ * @returns JSX.Element representing the balances interface.
+ */
 const Balances: React.FC = () => {
   const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>('30_days')
   useTheme() // Hook called for potential side effects
   const navigate = useNavigate()
 
+  /**
+   * Handles the connect wallet action by navigating to the wallet manager page.
+   *
+   * @returns void
+   */
   const handleConnectWallet = useCallback(() => {
     navigate('/wallet-manager')
   }, [navigate])
@@ -277,6 +287,13 @@ const Balances: React.FC = () => {
     []
   )
 
+  /**
+   * Renders SVG linear gradient definitions for each currency color.
+   *
+   * @param props - Component props.
+   * @param props.currencyColors - Mapping of currency codes to their color values.
+   * @returns Fragment containing linearGradient definitions.
+   */
   const ChartGradients = ({
     currencyColors,
   }: {
@@ -307,6 +324,16 @@ const Balances: React.FC = () => {
     </>
   )
 
+  /**
+   * Renders a stacked area chart of wallet balances over time.
+   *
+   * @param props - Component props.
+   * @param props.chartData - Array of data points with date and currency balances.
+   * @param props.currencyColors - Mapping of currency codes to their color values.
+   * @param props.formatYAxisTick - Function to format Y-axis tick values.
+   * @param props.formatCurrency - Function to format tooltip currency values.
+   * @returns The rendered AreaChart component.
+   */
   const WalletBalanceChart = ({
     chartData,
     currencyColors,

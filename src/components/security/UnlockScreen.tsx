@@ -15,6 +15,12 @@ interface UnlockScreenProps {
   onUnlock?: () => void
 }
 
+/**
+ * UnlockScreen component
+ * Renders the unlock view and handles password or recovery phrase flows
+ * @param onUnlock Optional callback invoked after successful unlock
+ * @returns JSX.Element representing the unlock screen UI
+ */
 export const UnlockScreen: React.FC<UnlockScreenProps> = ({ onUnlock }) => {
   const { unlock, isUnlocking, error, sessionExpired } = useApp()
   const { t } = useLanguage()
@@ -29,6 +35,11 @@ export const UnlockScreen: React.FC<UnlockScreenProps> = ({ onUnlock }) => {
   const [isResetting, setIsResetting] = useState(false)
   const [resetSuccess, setResetSuccess] = useState(false)
 
+  /**
+   * Handles changes to the password input field
+   * @param e React change event from the password input
+   * @returns void
+   */
   const handlePasswordChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       setPassword(e.target.value)
@@ -36,11 +47,17 @@ export const UnlockScreen: React.FC<UnlockScreenProps> = ({ onUnlock }) => {
     []
   )
 
+  /**
+   * Handles changes to the recovery phrase textarea
+   * @param e React change event from the recovery phrase textarea
+   * @returns void
+   */
   const handleRecoveryPhraseChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       setRecoveryPhrase(e.target.value)
     },
     []
+  )
   )
 
   const handleNewPasswordChange = useCallback(

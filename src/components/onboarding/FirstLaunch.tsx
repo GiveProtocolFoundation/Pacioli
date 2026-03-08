@@ -573,6 +573,11 @@ const CompleteStep: React.FC<CompleteStepProps> = ({
   onComplete,
   t,
 }) => {
+  /**
+   * Returns the label for the current security mode.
+   *
+   * @returns {string} Label corresponding to the security mode.
+   */
   const getSecurityModeLabel = () => {
     if (securityMode === 'easy') return t.firstLaunch.easyAccess
     if (securityMode === 'secure') return t.firstLaunch.secureUse

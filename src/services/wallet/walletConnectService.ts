@@ -65,6 +65,9 @@ type ConnectionState = 'disconnected' | 'connecting' | 'connected' | 'error'
 type StateChangeCallback = (state: ConnectionState, error?: string) => void
 type SessionCallback = (session: WalletConnectSession | null) => void
 
+/**
+ * Service for connecting to and managing WalletConnect sessions.
+ */
 class WalletConnectService {
   private signClient: SignClient | null = null
   private modal: WalletConnectModal | null = null
@@ -110,11 +113,20 @@ class WalletConnectService {
     return () => this.sessionCallbacks.delete(callback)
   }
 
+  /**
+   * Notifies all registered callbacks of a state change.
+   * @param state The new connection state.
+   * @param error Optional error message if there was an error during the state change.
+   */
   private notifyStateChange(state: ConnectionState, error?: string) {
     this.connectionState = state
     this.stateCallbacks.forEach(cb => cb(state, error))
   }
 
+  /**
+   * Notify subscribers of a session change.
+   * @param session - The new WalletConnect session, or null if disconnected.
+   */
   private notifySessionChange(session: WalletConnectSession | null) {
     this.currentSession = session
     this.sessionCallbacks.forEach(cb => cb(session))
@@ -165,6 +177,11 @@ class WalletConnectService {
     }
   }
 
+  /**
+   * Sets up event listeners on the signClient to handle session events such as 'session_event', 'session_update', and 'session_delete'.
+   *
+   * @returns void
+   */
   private setupEventListeners() {
     if (!this.signClient) return
 
@@ -194,6 +211,11 @@ class WalletConnectService {
     })
   }
 
+  /**
+   * Restores the most recent WalletConnect session if available.
+   *
+   * @returns {Promise<void>} Resolves when the session is restored or if no session exists.
+   */
   private restoreSession(): void {
     if (!this.signClient) return
 
@@ -210,8 +232,12 @@ class WalletConnectService {
       })
       this.notifyStateChange('connected')
     }
-  }
-
+  /**
+   * Parses the provided namespaces to extract WalletConnectAccount entries.
+   *
+   * @param namespaces - A record mapping namespace keys to account data, each containing an array of account strings in the format "namespace:chainId:address".
+   * @returns An array of WalletConnectAccount objects derived from the input namespaces, each with address, chain, chainId, and namespace.
+   */
   /** Parse WalletConnect namespace accounts into structured account objects */
   private parseAccounts(
     namespaces: Record<string, { accounts: string[] }>

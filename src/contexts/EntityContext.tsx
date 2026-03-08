@@ -74,6 +74,12 @@ interface EntityContextType {
 
 const EntityContext = createContext<EntityContextType | undefined>(undefined)
 
+/**
+ * Provides entity-related context to its child components.
+ * @param {{ children: React.ReactNode }} props - The component props.
+ * @param {React.ReactNode} props.children - Child components that consume the context.
+ * @returns {JSX.Element} The EntityProvider component.
+ */
 export const EntityProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
@@ -85,7 +91,11 @@ export const EntityProvider: React.FC<{ children: React.ReactNode }> = ({
   const [knownAddressesLoading, setKnownAddressesLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Load entities when profile changes
+  /**
+   * Loads the entities for the current profile and updates the state.
+   * @async
+   * @returns {Promise<void>} A promise that resolves when entities are loaded.
+   */
   const loadEntities = useCallback(async () => {
     if (!currentProfile) {
       setEntities([])
@@ -307,6 +317,11 @@ export const EntityProvider: React.FC<{ children: React.ReactNode }> = ({
   )
 }
 
+/**
+ * Custom hook to access the EntityContext.
+ * @throws {Error} If used outside of an EntityProvider.
+ * @returns The EntityContext value including state and actions for entities.
+ */
 export const useEntity = () => {
   const context = useContext(EntityContext)
   if (context === undefined) {
@@ -316,6 +331,10 @@ export const useEntity = () => {
 }
 
 // Convenience hooks for specific entity types
+/**
+ * Custom hook to retrieve active vendor entities.
+ * @returns An object containing active vendors and other entity context actions.
+ */
 export const useVendors = () => {
   const { getFilteredEntities, ...rest } = useEntity()
   const vendors = getFilteredEntities({
@@ -325,6 +344,10 @@ export const useVendors = () => {
   return { vendors, ...rest }
 }
 
+/**
+ * Custom hook to retrieve active customer entities.
+ * @returns An object containing active customers and other entity context actions.
+ */
 export const useCustomers = () => {
   const { getFilteredEntities, ...rest } = useEntity()
   const customers = getFilteredEntities({

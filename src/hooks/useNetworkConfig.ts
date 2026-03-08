@@ -40,17 +40,6 @@ export const NETWORK_CONFIGS: Record<string, NetworkConfig> = {
     rpcUrls: ['https://rpc.api.moonbeam.network'],
     blockExplorerUrls: ['https://moonbeam.moonscan.io'],
   },
-  moonriver: {
-    chainId: '0x505', // 1285 in hex
-    chainName: 'Moonriver',
-    nativeCurrency: {
-      name: 'Moonriver',
-      symbol: 'MOVR',
-      decimals: 18,
-    },
-    rpcUrls: ['https://rpc.api.moonriver.moonbeam.network'],
-    blockExplorerUrls: ['https://moonriver.moonscan.io'],
-  },
   astar: {
     chainId: '0x250', // 592 in hex
     chainName: 'Astar',
@@ -64,10 +53,25 @@ export const NETWORK_CONFIGS: Record<string, NetworkConfig> = {
   },
 }
 
+/**
+ * React hook to manage Ethereum network configuration via MetaMask.
+ *
+ * @returns {{
+ *   currentNetwork: string,
+ *   isConnected: boolean,
+ *   switchNetwork: (networkName: string) => Promise<void>
+ * }} Object containing the current network name, connection status, and a function to switch networks.
+ */
 export const useNetworkConfig = () => {
   const [currentNetwork, setCurrentNetwork] = useState<string>('paseo')
   const [isConnected, setIsConnected] = useState(false)
 
+  /**
+   * Switches to the specified Ethereum network in MetaMask.
+   *
+   * @param {string} networkName - The key of the network to switch to as defined in NETWORK_CONFIGS.
+   * @returns {Promise<void>} Resolves when the network switch is successful.
+   */
   const switchNetwork = useCallback(async (networkName: string) => {
     if (!window.ethereum) {
       throw new Error('MetaMask is not installed')

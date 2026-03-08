@@ -39,6 +39,17 @@ interface AccountBalance {
   change24h: number
 }
 
+/**
+ * Displays a statistic card with title, value, change indicator, and icon.
+ * @param title The title of the statistic.
+ * @param value The value to display.
+ * @param changeIcon Icon indicating the change direction.
+ * @param changeColor CSS class for the color of the change value.
+ * @param changeValue The change in value (e.g., "+2.3%").
+ * @param changeLabel Optional label for the change value.
+ * @param icon Icon to display in the card.
+ * @returns The rendered statistic card component.
+ */
 const StatsCard: React.FC<{
   title: string
   value: React.ReactNode
@@ -78,6 +89,10 @@ const StatsCard: React.FC<{
   </div>
 )
 
+/**
+ * Dashboard component displaying account balances and recent transactions.
+ * @returns The rendered dashboard component.
+ */
 const Dashboard: React.FC = () => {
   const navigate = useNavigate()
   const { settings: currencySettings } = useCurrency()

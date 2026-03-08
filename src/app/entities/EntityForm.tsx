@@ -714,6 +714,12 @@ const EntityForm: React.FC<EntityFormProps> = ({
     return handlers
   }, [addresses, handleRemoveAddress])
 
+  /**
+   * Renders the body section of the entity form, including error display and various
+   * information sections.
+   *
+   * @returns {JSX.Element} The rendered body section component.
+   */
   const BodySection = () => (
     <div className="p-6 space-y-6">
       {error && (

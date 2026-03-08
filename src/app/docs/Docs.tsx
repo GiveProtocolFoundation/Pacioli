@@ -230,13 +230,18 @@ const SectionItems: React.FC<{
                 )
               })}
             </div>
-          )}
+          )
         </div>
       )
     })}
   </div>
 )
 
+/**
+ * Docs component renders documentation sidebar and content.
+ *
+ * @returns React element for documentation navigation and display.
+ */
 const Docs: React.FC = () => {
   const [expandedSections, setExpandedSections] = useState<string[]>([
     'getting-started',
@@ -244,6 +249,11 @@ const Docs: React.FC = () => {
   const [expandedItems, setExpandedItems] = useState<string[]>([])
   const [selectedDoc, setSelectedDoc] = useState<string>('what-is-pacioli')
 
+  /**
+   * Toggles expansion of a documentation section.
+   *
+   * @param e - Mouse event from clicking the section button.
+   */
   const handleSectionClick = useCallback(
     (e: React.MouseEvent<HTMLButtonElement>) => {
       const sectionId = e.currentTarget.getAttribute('data-section-id')
@@ -258,6 +268,11 @@ const Docs: React.FC = () => {
     []
   )
 
+  /**
+   * Handles clicking on a documentation item.
+   *
+   * @param e - Mouse event from clicking the item button.
+   */
   const handleItemClick = useCallback(
     (e: React.MouseEvent<HTMLButtonElement>) => {
       const itemId = e.currentTarget.getAttribute('data-item-id')

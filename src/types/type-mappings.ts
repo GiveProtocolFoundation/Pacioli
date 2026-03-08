@@ -63,12 +63,24 @@ export const DIGITAL_ASSET_TYPE_REVERSE_MAP: Record<
   [DBDigitalAssetType.OtherDigitalAsset]: 'other-digital-assets',
 }
 
+/**
+ * Converts a UI digital asset type to its corresponding database digital asset type.
+ *
+ * @param uiType - The UI digital asset type to convert.
+ * @returns The corresponding database digital asset type.
+ */
 export function uiToDbDigitalAssetType(
   uiType: UIDigitalAssetType
 ): DBDigitalAssetType {
   return DIGITAL_ASSET_TYPE_MAP[uiType]
 }
 
+/**
+ * Converts a database digital asset type to a UI digital asset type.
+ *
+ * @param dbType - The digital asset type from the database.
+ * @returns The corresponding digital asset type for the UI.
+ */
 export function dbToUiDigitalAssetType(
   dbType: DBDigitalAssetType
 ): UIDigitalAssetType {
@@ -96,10 +108,21 @@ export const CHAIN_TYPE_REVERSE_MAP: Partial<Record<DBChainType, UIChainType>> =
     [DBChainType.Other]: 'sidechain',
   }
 
+/**
+ * Converts a UI chain type to its corresponding database chain type.
+ *
+ * @param uiType - The chain type from the UI.
+ * @returns The corresponding chain type used in the database.
+ */
 export function uiToDbChainType(uiType: UIChainType): DBChainType {
   return CHAIN_TYPE_MAP[uiType]
 }
 
+/**
+ * Converts a database chain type to a UI chain type.
+ * @param dbType - The chain type from the database.
+ * @returns The corresponding chain type for the UI, defaults to 'standalone' if not found.
+ */
 export function dbToUiChainType(dbType: DBChainType): UIChainType {
   return CHAIN_TYPE_REVERSE_MAP[dbType] || 'standalone'
 }
@@ -125,12 +148,22 @@ export const ACCOUNT_TYPE_REVERSE_MAP: Record<DBAccountType, AccountTypeValue> =
     [DBAccountType.Expense]: 'Expense',
   }
 
+/**
+ * Converts a chart account type to a database account type.
+ * @param chartType The account type value from the chart.
+ * @returns The corresponding database account type.
+ */
 export function chartToDbAccountType(
   chartType: AccountTypeValue
 ): DBAccountType {
   return ACCOUNT_TYPE_MAP[chartType]
 }
 
+/**
+ * Converts a database account type to the corresponding chart account type value.
+ * @param dbType The database account type.
+ * @returns The corresponding chart account type value.
+ */
 export function dbToChartAccountType(dbType: DBAccountType): AccountTypeValue {
   return ACCOUNT_TYPE_REVERSE_MAP[dbType]
 }
@@ -178,6 +211,12 @@ export function uiToDbTransactionType(
   }
 }
 
+/**
+ * Converts a DBTransactionType value to its corresponding UITransactionType.
+ *
+ * @param {DBTransactionType} dbType - The transaction type from the database.
+ * @returns {UITransactionType} The UI transaction category: 'revenue', 'expense', or 'transfer'.
+ */
 export function dbToUiTransactionType(
   dbType: DBTransactionType
 ): UITransactionType {
@@ -213,6 +252,11 @@ export function isDBDigitalAssetType(
   )
 }
 
+/**
+ * Checks if the provided value is a valid UIDigitalAssetType.
+ * @param value - The value to check.
+ * @returns True if the value is a UIDigitalAssetType, false otherwise.
+ */
 export function isUIDigitalAssetType(
   value: unknown
 ): value is UIDigitalAssetType {
@@ -222,13 +266,22 @@ export function isUIDigitalAssetType(
   )
 }
 
+/**
+ * Checks if the provided value is a valid DBAccountType.
+ * @param value The value to check.
+ * @returns True if the value is a DBAccountType; otherwise, false.
+ */
 export function isDBAccountType(value: unknown): value is DBAccountType {
   return (
     typeof value === 'string' &&
     Object.values(DBAccountType).includes(value as DBAccountType)
   )
 }
-
+/**
+ * Checks whether a given value is a DBTransactionType.
+ * @param value The value to check.
+ * @returns True if the value is a DBTransactionType; false otherwise.
+ */
 export function isDBTransactionType(
   value: unknown
 ): value is DBTransactionType {

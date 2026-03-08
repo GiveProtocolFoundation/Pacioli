@@ -55,6 +55,12 @@ const AppContext = createContext<AppContextType | undefined>(undefined)
 // Default session timeout in minutes
 const DEFAULT_SESSION_TIMEOUT = 15
 
+/**
+ * AppProvider component that wraps the application and provides the AppContext.
+ * Manages application state including locking mechanism, session timeout, error handling, and security settings.
+ * @param children - The child components to be wrapped by the provider.
+ * @returns The AppProvider component wrapping children with AppContext.
+ */
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
@@ -74,7 +80,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
   const lastActivityRef = useRef<number>(Date.now())
   const timeoutCheckIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Record user activity (call this on user interactions)
+  /**
+   * Records user activity by updating the last activity timestamp and resets session expiration flag if set.
+   * @returns void
+   */
   const recordActivity = useCallback(() => {
     lastActivityRef.current = Date.now()
     // Clear session expired flag on activity
@@ -126,6 +135,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
 
     const activityEvents = ['mousedown', 'keydown', 'touchstart', 'scroll']
 
+    /**
+     * Handles user activity events by recording activity.
+     * @returns {void}
+     */
     const handleActivity = () => {
       recordActivity()
     }
@@ -381,6 +394,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
   )
 }
 
+/**
+ * Hook to access the AppContext.
+ * @returns The AppContext value including state and actions.
+ * @throws Error if used outside of an AppProvider.
+ */
 export const useApp = () => {
   const context = useContext(AppContext)
   if (context === undefined) {

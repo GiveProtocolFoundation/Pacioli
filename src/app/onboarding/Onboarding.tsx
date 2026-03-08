@@ -16,12 +16,24 @@ interface ProgressStepProps {
   stepNumber: number
 }
 
+/**
+ * ProgressStep component displays a step indicator with label and status.
+ * @param label - The text label for the step.
+ * @param isActive - Indicates if this step is the current active step.
+ * @param isCompleted - Indicates if this step has been completed.
+ * @param stepNumber - The numerical order of the step.
+ * @returns A JSX element representing the progress step.
+ */
 const ProgressStep: React.FC<ProgressStepProps> = ({
   label,
   isActive,
   isCompleted,
   stepNumber,
 }) => {
+  /**
+   * getStepClassName returns CSS class names based on step status.
+   * @returns string of CSS classes for the step indicator background and text.
+   */
   const getStepClassName = () => {
     if (isActive) return 'bg-[#8b4e52] text-white'
     if (isCompleted) return 'bg-[#7a9b6f] text-white'
@@ -40,10 +52,11 @@ const ProgressStep: React.FC<ProgressStepProps> = ({
   )
 }
 
-interface ProgressConnectorProps {
-  isCompleted: boolean
-}
-
+/**
+ * ProgressConnector component renders the connector line between progress steps.
+ * @param isCompleted - Indicates if the previous step is completed, determining connector style.
+ * @returns A JSX element representing the progress connector.
+ */
 const ProgressConnector: React.FC<ProgressConnectorProps> = ({
   isCompleted,
 }) => (
@@ -54,6 +67,10 @@ const ProgressConnector: React.FC<ProgressConnectorProps> = ({
   </div>
 )
 
+/**
+ * Onboarding component orchestrates a multi-step user onboarding process.
+ * @returns JSX element rendering the onboarding workflow.
+ */
 const Onboarding: React.FC = () => {
   const navigate = useNavigate()
   const [currentStep, setCurrentStep] = useState<Step>('jurisdiction')
@@ -119,18 +136,30 @@ const Onboarding: React.FC = () => {
   const isJurisdictionStep = currentStep === 'jurisdiction'
   const isAccountTypeStep = currentStep === 'account-type'
 
+  /**
+   * Returns the CSS class name for the back button depending on the current step.
+   * @returns {string} The class name for the back button.
+   */
   const getBackButtonClassName = () => {
     return isJurisdictionStep
       ? 'text-gray-400 cursor-not-allowed'
       : 'text-gray-700 hover:bg-gray-50'
   }
 
+  /**
+   * Returns the CSS class name for the continue button depending on whether continuation is allowed.
+   * @returns {string} The class name for the continue button.
+   */
   const getContinueButtonClassName = () => {
     return canContinue
       ? 'bg-[#8b4e52] text-white hover:bg-[#7a4248]'
       : 'bg-gray-200 text-gray-400 cursor-not-allowed'
   }
 
+  /**
+   * Returns the text for the continue button depending on the current step.
+   * @returns {string} The text for the continue button.
+   */
   const getContinueButtonText = () => {
     return isAccountTypeStep ? 'Complete Setup' : 'Continue'
   }
@@ -150,7 +179,7 @@ const Onboarding: React.FC = () => {
               Pacioli
             </span>
           </div>
-          <p className="text-gray-600">Let&apos;s set up your account</p>
+          <p className="text-gray-600">Let&amp;apos;s set up your account</p>
         </div>
 
         {/* Progress Steps */}

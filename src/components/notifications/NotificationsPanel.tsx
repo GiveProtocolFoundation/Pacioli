@@ -259,7 +259,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
 /**
  * Filter tabs for categorizing notifications by type.
  */
-const FilterTabs: React.FC<{
+const FilterTabs: React.FC<{  
   filter: FilterType
   userType: 'individual' | 'organization'
   onAll: () => void
@@ -276,6 +276,11 @@ const FilterTabs: React.FC<{
   onWorkflow,
   onApproval,
 }) => {
+  /**
+   * Returns CSS class string for button based on active state.
+   * @param isActive - indicates if button is active.
+   * @returns CSS class names string.
+   */
   const getButtonClass = (isActive: boolean) =>
     `px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
       isActive
@@ -581,6 +586,10 @@ const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
 
   if (!isOpen) return null
 
+  /**
+   * Renders the content of the notifications panel based on loading and filtered notifications.
+   * @returns React element representing the panel content.
+   */
   const renderContent = () => {
     if (isLoading) return <LoadingState />
     if (filteredNotifications.length === 0) return <EmptyState />
@@ -605,7 +614,7 @@ const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
           actionRequiredCount={stats.actionRequired}
           isLoading={isLoading}
           onRefresh={handleRefresh}
-          onMarkAllAsRead={handleMarkAllAsRead}
+          onMarkAllAsRead={handleMarkAsReadAll}
           onClose={onClose}
         />
         <FilterTabs

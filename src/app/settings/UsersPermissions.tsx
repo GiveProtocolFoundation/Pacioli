@@ -351,7 +351,14 @@ const mockRoles: Role[] = [
 ]
 
 type ViewMode = 'users' | 'roles'
-
+/**
+ * InviteUserModal component renders a modal dialog for inviting users.
+ *
+ * @param {Role[]} roles - List of available roles to assign to the user.
+ * @param {() => void} handleClose - Callback function to close the modal.
+ * @param {() => void} handleSend - Callback function to send the invitation.
+ * @returns {JSX.Element} The InviteUserModal component.
+ */
 const InviteUserModal: React.FC<{
   roles: Role[]
   handleClose: () => void
@@ -761,6 +768,10 @@ const RolesView: React.FC<RolesViewProps> = ({ roles, users }) => (
   </>
 )
 
+/**
+ * UsersPermissions component renders UI for managing users and permissions including view modes, search, status filters, and invite modal.
+ * @returns React element representing the users and permissions settings UI.
+ */
 const UsersPermissions: React.FC = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('users')
   const [users] = useState<User[]>(mockUsers)
@@ -779,6 +790,11 @@ const UsersPermissions: React.FC = () => {
     return matchesSearch && matchesStatus
   })
 
+  /**
+   * Returns CSS classes for styling the status badge based on the user's status.
+   * @param status - The status of the user ('active', 'inactive', or 'pending').
+   * @returns CSS class string for the corresponding status badge.
+   */
   const getStatusBadge = useCallback((status: User['status']) => {
     const styles = {
       active:

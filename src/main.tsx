@@ -8,6 +8,13 @@ import { CurrencyProvider } from './contexts/CurrencyContext'
 import { OrganizationProvider } from './contexts/OrganizationContext'
 import { AuthProvider } from './contexts/AuthContext'
 
+/**
+ * Combines authentication, theme, currency, and organization context providers.
+ *
+ * @param {{ children: React.ReactNode }} props - Component props.
+ * @param {React.ReactNode} props.children - The child nodes to be wrapped by the providers.
+ * @returns {JSX.Element} The combined context providers wrapping the children.
+ */
 const Providers: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <AuthProvider>
     <ThemeProvider>

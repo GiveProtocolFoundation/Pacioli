@@ -110,31 +110,11 @@ const convertToNetworkFormat = (
   }
 
   try {
-    // Get SS58 prefix for each network
-    const ss58Formats: Record<NetworkType, number> = {
-      polkadot: 0, // Polkadot addresses start with '1'
-      kusama: 2, // Kusama addresses start with various letters
-      moonbeam: 1284, // Moonbeam
-      moonriver: 1285, // Moonriver
-      astar: 5, // Astar
-      acala: 10, // Acala
-    }
-
-    const ss58Prefix = ss58Formats[network]
-
-    // Decode the address (removes SS58 encoding, gets raw public key)
-    const publicKey = decodeAddress(address)
-
-    // Re-encode with correct network prefix
-    const networkAddress = encodeAddress(publicKey, ss58Prefix)
-
-    return networkAddress
-  } catch (error) {
-    console.error('Failed to convert address format:', error)
-    return address // Fallback to original if conversion fails
-  }
-}
-
+/**
+ * WalletManager component responsible for managing connected wallets, tracking transactions,
+ * and handling syncing status and UI state.
+ * @returns JSX.Element representing the wallet management interface.
+ */
 const WalletManager: React.FC = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -278,6 +258,10 @@ const WalletManager: React.FC = () => {
     }
     initializationStartedRef.current = true
 
+    /**
+     * Initializes the IndexedDB database and performs data migrations if needed.
+     * @returns {Promise<void>} Resolves when initialization and migrations are complete.
+     */
     const initializeDB = async () => {
       try {
         setMigrationStatus('Initializing database...')
@@ -338,6 +322,11 @@ const WalletManager: React.FC = () => {
     // Track if this effect is still current (for cleanup on race conditions)
     let isCurrent = true
 
+    /**
+     * Loads transactions and sync status from IndexedDB based on the selected network and address.
+     *
+     * @returns {Promise<void>} A promise that resolves when data loading completes.
+     */
     const loadData = async () => {
       if (!dbInitialized || !selectedAddress) {
         setSyncStatus(null)

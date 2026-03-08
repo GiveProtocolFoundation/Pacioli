@@ -50,6 +50,12 @@ interface OrganizationInformationSectionProps {
   onLogoUpload: (e: React.ChangeEvent<HTMLInputElement>) => void
 }
 
+/**
+ * Component for uploading and displaying the organization logo.
+ * @param {string | null} logo - The current logo URL or null if none.
+ * @param {(e: React.ChangeEvent<HTMLInputElement>) => void} onLogoUpload - Handler called when a new logo file is uploaded.
+ * @returns {JSX.Element} The logo upload component.
+ */
 const LogoUpload: React.FC<{
   logo: string | null
   onLogoUpload: (e: React.ChangeEvent<HTMLInputElement>) => void
@@ -89,6 +95,15 @@ const LogoUpload: React.FC<{
   </div>
 )
 
+/**
+ * Component rendering the organization information form section,
+ * including inputs for organization settings and logo upload.
+ *
+ * @param {OrganizationSettings} organizationSettings - Current organization settings.
+ * @param {(key: keyof OrganizationSettings, value: OrganizationSettings[keyof OrganizationSettings]) => void} onOrganizationChange - Handler called when any organization field changes.
+ * @param {(e: React.ChangeEvent<HTMLInputElement>) => void} onLogoUpload - Handler called when a new logo file is uploaded.
+ * @returns {JSX.Element} The organization information section component.
+ */
 const OrganizationInformationSection: React.FC<
   OrganizationInformationSectionProps
 > = ({ organizationSettings, onOrganizationChange, onLogoUpload }) => {
@@ -314,23 +329,6 @@ const OrganizationInformationSection: React.FC<
         <div>
           <label
             htmlFor="country"
-            className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
-          >
-            Country
-          </label>
-          <input
-            id="country"
-            type="text"
-            value={organizationSettings.country}
-            onChange={createTextHandler('country')}
-            className="w-full px-3 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
-          />
-        </div>
-      </div>
-    </div>
-  )
-}
-
 interface FiscalYearSectionProps {
   systemSettings: SystemSettings
   onSystemChange: <K extends keyof SystemSettings>(
@@ -339,6 +337,11 @@ interface FiscalYearSectionProps {
   ) => void
 }
 
+/**
+ * Displays a warning about changing the fiscal year and its implications.
+ *
+ * @returns JSX element containing an alert icon and descriptive text.
+ */
 const FiscalYearWarning: React.FC = () => (
   <div className="flex">
     <AlertCircle className="w-5 h-5 text-[#8b4e52] dark:text-[#a86e72] flex-shrink-0" />
@@ -351,6 +354,11 @@ const FiscalYearWarning: React.FC = () => (
   </div>
 )
 
+/**
+ * Provides a set of option elements for selecting fiscal year end dates.
+ *
+ * @returns JSX fragment containing optgroups and options for fiscal year end dates.
+ */
 const FiscalYearOptions: React.FC = () => (
   <>
     <optgroup label="Calendar Year End">
@@ -372,6 +380,13 @@ const FiscalYearOptions: React.FC = () => (
   </>
 )
 
+/**
+ * Renders the fiscal year settings section, allowing users to select fiscal year end and warning.
+ *
+ * @param systemSettings Current system settings object.
+ * @param onSystemChange Handler to update system settings.
+ * @returns JSX element for configuring fiscal year.
+ */
 const FiscalYearSection: React.FC<FiscalYearSectionProps> = ({
   systemSettings,
   onSystemChange,
@@ -426,6 +441,13 @@ interface TimezoneSelectProps {
   onChange: (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => void
 }
 
+/**
+ * Component that renders a timezone selection dropdown.
+ *
+ * @param value - The currently selected timezone value.
+ * @param onChange - Callback invoked when the timezone selection changes.
+ * @returns JSX element for timezone selection.
+ */
 const TimezoneSelect: React.FC<TimezoneSelectProps> = ({ value, onChange }) => (
   <div>
     <label
@@ -470,6 +492,13 @@ const TimezoneSelect: React.FC<TimezoneSelectProps> = ({ value, onChange }) => (
   </div>
 )
 
+/**
+ * Component that renders general settings form for the application, 
+ * including theme, organization logo, and organizational info.
+ *
+ * @param userType - The type of user, defaulting to 'organization'.
+ * @returns JSX element for general settings.
+ */
 const GeneralSettings: React.FC<GeneralSettingsProps> = ({
   userType = 'organization',
 }) => {

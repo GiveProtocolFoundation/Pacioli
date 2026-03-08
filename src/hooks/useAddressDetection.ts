@@ -31,7 +31,6 @@ interface AddressDetectionResult {
   detectAddresses: (
     addresses: Array<{ address: string; chain: string }>
   ) => Promise<void>
-
   /**
    * Detect entity for a single address
    */
@@ -56,6 +55,12 @@ interface AddressDetectionResult {
   clearMatches: () => void
 }
 
+/**
+ * Custom hook for detecting and matching blockchain addresses.
+ * @param options - Configuration options for address detection.
+ * @param options.autoDetect - Whether to automatically trigger detection.
+ * @returns The address detection result including state and actions.
+ */
 export function useAddressDetection(
   options: UseAddressDetectionOptions = {}
 ): AddressDetectionResult {
@@ -69,11 +74,21 @@ export function useAddressDetection(
     Array<{ address: string; chain: string }>
   >([])
 
-  // Create a key for the address-chain combination
+  /**
+   * Generate a unique key for address detection combining chain and address.
+   * @param address - The address string.
+   * @param chain - The blockchain chain identifier.
+   * @returns A string key in the format 'chain:address'.
+   */
   const makeKey = (address: string, chain: string) =>
     `${chain}:${address.toLowerCase()}`
 
-  // Detect a single address
+  /**
+   * Detect entity data for a single address.
+   * @param address - The address to detect.
+   * @param chain - The chain identifier for the address.
+   * @returns A promise resolving to the address match or null if none.
+   */
   const detectAddress = useCallback(
     async (address: string, chain: string): Promise<AddressMatch | null> => {
       const key = makeKey(address, chain)

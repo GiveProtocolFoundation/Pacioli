@@ -16,12 +16,21 @@ export interface TokenBalance {
   decimals?: number
 }
 
+/**
+ * Custom React hook providing EVM (Ethereum Virtual Machine) service functionality.
+ * Allows connecting to MetaMask, switching networks, fetching token balances, and disconnecting.
+ * @returns An object containing currentAccount, isConnecting, connectMetaMask, switchNetwork, balances, fetchBalances, isLoadingBalances, and disconnect
+ */
 export const useEVMService = () => {
   const [currentAccount, setCurrentAccount] = useState<EVMAccount | null>(null)
   const [isConnecting, setIsConnecting] = useState(false)
   const [balances, setBalances] = useState<TokenBalance[]>([])
   const [isLoadingBalances, setIsLoadingBalances] = useState(false)
 
+  /**
+   * Connects to MetaMask and sets the current account.
+   * @returns {Promise<EVMAccount>} The connected EVM account object.
+   */
   const connectMetaMask = useCallback(async () => {
     setIsConnecting(true)
     try {
@@ -39,6 +48,11 @@ export const useEVMService = () => {
     }
   }, [])
 
+  /**
+   * Switches the network to the specified chain ID.
+   * @param {number} chainId - The chain ID to switch to.
+   * @returns {Promise<void>}
+   */
   const switchNetwork = useCallback(
     async (chainId: number) => {
       try {

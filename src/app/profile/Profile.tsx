@@ -56,6 +56,14 @@ interface PersonalInfoProps {
   showPhone?: boolean
 }
 
+/**
+ * Renders the personal information form fields.
+ *
+ * @param profile The user's profile data.
+ * @param createProfileInputHandler A function that returns an event handler for updating profile input fields.
+ * @param showPhone Controls whether the phone number field is displayed.
+ * @returns A JSX element that renders personal information fields.
+ */
 const PersonalInfo: React.FC<PersonalInfoProps> = ({
   profile,
   createProfileInputHandler,
@@ -127,6 +135,12 @@ interface WorkInfoProps {
   ) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void
 }
 
+/**
+ * WorkInfo component displays work information fields for a user profile.
+ * @param profile The user profile data.
+ * @param createProfileInputHandler A function that returns an event handler for profile input changes.
+ * @returns JSX element representing the work information form fields.
+ */
 const WorkInfo: React.FC<WorkInfoProps> = ({
   profile,
   createProfileInputHandler,
@@ -213,6 +227,10 @@ const WorkInfo: React.FC<WorkInfoProps> = ({
   </>
 )
 
+/**
+ * Profile component displays and allows editing of the user's profile information.
+ * @returns JSX element containing the profile form.
+ */
 const Profile: React.FC = () => {
   const { userAvatar, setUserAvatar } = useOrganization()
   const {

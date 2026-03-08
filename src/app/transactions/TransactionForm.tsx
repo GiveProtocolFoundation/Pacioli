@@ -43,6 +43,10 @@ import { ConnectedWallet } from '../../services/wallet/types'
 /** Transaction type code for transfers between own wallets */
 const TRANSFER_OWN_WALLETS_CODE = 'DSP_TRANSFER_OWN'
 
+/**
+ * Component for creating or editing a transaction form.
+ * Handles the UI and logic for submitting or updating transactions.
+ */
 const TransactionForm: React.FC = () => {
   const navigate = useNavigate()
   const { id } = useParams<{ id?: string }>()
@@ -56,6 +60,11 @@ const TransactionForm: React.FC = () => {
   const existingTransaction = id ? getTransaction(id) : undefined
 
   // Helper to parse date string to dayjs object
+  /**
+   * Parses a date string into a Dayjs object, defaults to current date if invalid.
+   * @param dateStr The date string to parse.
+   * @returns The parsed Dayjs object.
+   */
   const parseDateToDayjs = (dateStr: string | undefined): Dayjs => {
     if (!dateStr) return dayjs()
 
@@ -64,6 +73,11 @@ const TransactionForm: React.FC = () => {
   }
 
   // Helper to format dayjs to ISO string for storage
+  /**
+   * Formats a Dayjs object into an ISO string suitable for storage.
+   * @param date The Dayjs object to format.
+   * @returns The ISO string representation of the date.
+   */
   const formatDayjsForStorage = (date: Dayjs | null): string => {
     if (!date) return dayjs().toISOString()
     return date.toISOString()
