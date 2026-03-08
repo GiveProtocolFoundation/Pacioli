@@ -88,7 +88,7 @@ case "${1:-help}" in
         ;;
 
     update)
-        run_in_repos "[ -f package.json ] && pnpm install || echo 'No package.json found'" "Updating dependencies..."
+        run_in_repos "[[ -f package.json ]] && pnpm install || echo 'No package.json found'" "Updating dependencies..."
         log_success "Dependencies updated"
         ;;
 
@@ -129,12 +129,12 @@ case "${1:-help}" in
         ;;
 
     test)
-        run_in_repos "[ -f package.json ] && pnpm test || echo 'No tests configured'" "Running tests..."
+        run_in_repos "[[ -f package.json ]] && pnpm test || echo 'No tests configured'" "Running tests..."
         log_success "Tests complete"
         ;;
 
     lint)
-        run_in_repos "[ -f package.json ] && pnpm lint || echo 'No linter configured'" "Running linters..."
+        run_in_repos "[[ -f package.json ]] && pnpm lint || echo 'No linter configured'" "Running linters..."
         log_success "Linting complete"
         ;;
 
