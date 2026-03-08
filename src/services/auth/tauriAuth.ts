@@ -23,9 +23,18 @@ import type {
   EmailChangeStatus,
 } from '../../types/auth'
 import type { AuthService } from './index'
+import {
+  storeTokens,
+  clearTokens,
+  getAccessToken,
+  getRefreshToken,
+  isTokenExpired,
+  setAccessToken,
+  setTokenExpires,
+} from './tokenStorage'
 
 // =============================================================================
-// TOKEN STORAGE
+// TAURI-SPECIFIC TYPES
 // =============================================================================
 
 /**
@@ -38,47 +47,8 @@ interface TauriAuthResponse {
   expires_in: number
 }
 
-const TOKEN_KEYS = {
-  ACCESS_TOKEN: 'pacioli_access_token',
-  REFRESH_TOKEN: 'pacioli_refresh_token',
-  TOKEN_EXPIRES: 'pacioli_token_expires',
-} as const
-
 function computeExpiresAt(expiresInSeconds: number): string {
   return new Date(Date.now() + expiresInSeconds * 1000).toISOString()
-}
-
-function storeTokens(
-  accessToken: string,
-  refreshToken: string,
-  expiresAt: string
-): void {
-  localStorage.setItem(TOKEN_KEYS.ACCESS_TOKEN, accessToken)
-  localStorage.setItem(TOKEN_KEYS.REFRESH_TOKEN, refreshToken)
-  localStorage.setItem(TOKEN_KEYS.TOKEN_EXPIRES, expiresAt)
-}
-
-function clearTokens(): void {
-  localStorage.removeItem(TOKEN_KEYS.ACCESS_TOKEN)
-  localStorage.removeItem(TOKEN_KEYS.REFRESH_TOKEN)
-  localStorage.removeItem(TOKEN_KEYS.TOKEN_EXPIRES)
-}
-
-function getAccessToken(): string | null {
-  return localStorage.getItem(TOKEN_KEYS.ACCESS_TOKEN)
-}
-
-function getRefreshToken(): string | null {
-  return localStorage.getItem(TOKEN_KEYS.REFRESH_TOKEN)
-}
-
-function isTokenExpired(): boolean {
-  const expiresAt = localStorage.getItem(TOKEN_KEYS.TOKEN_EXPIRES)
-  if (!expiresAt) return true
-
-  const expiry = new Date(expiresAt)
-  const now = new Date()
-  return now.getTime() >= expiry.getTime() - 60000
 }
 
 // =============================================================================
@@ -152,8 +122,8 @@ export const tauriAuthService: AuthService = {
     })
 
     const expiresAt = computeExpiresAt(raw.expires_in)
-    localStorage.setItem(TOKEN_KEYS.ACCESS_TOKEN, raw.access_token)
-    localStorage.setItem(TOKEN_KEYS.TOKEN_EXPIRES, expiresAt)
+    setAccessToken(raw.access_token)
+    setTokenExpires(expiresAt)
 
     return { access_token: raw.access_token, expires_at: expiresAt }
   },

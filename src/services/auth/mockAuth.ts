@@ -22,6 +22,15 @@ import type {
   EmailChangeStatus,
 } from '../../types/auth'
 import type { AuthService } from './index'
+import {
+  storeTokens,
+  clearTokens,
+  getAccessToken,
+  getRefreshToken,
+  isTokenExpired,
+  setAccessToken,
+  setTokenExpires,
+} from './tokenStorage'
 
 // =============================================================================
 // MOCK DATA STORAGE
@@ -118,48 +127,6 @@ function createMockAuthUser(
     sms_notifications: null,
     login_alerts: null,
   }
-}
-
-// =============================================================================
-// TOKEN STORAGE (shared with real implementation)
-// =============================================================================
-
-const TOKEN_KEYS = {
-  ACCESS_TOKEN: 'pacioli_access_token',
-  REFRESH_TOKEN: 'pacioli_refresh_token',
-  TOKEN_EXPIRES: 'pacioli_token_expires',
-} as const
-
-function storeTokens(
-  accessToken: string,
-  refreshToken: string,
-  expiresAt: string
-): void {
-  localStorage.setItem(TOKEN_KEYS.ACCESS_TOKEN, accessToken)
-  localStorage.setItem(TOKEN_KEYS.REFRESH_TOKEN, refreshToken)
-  localStorage.setItem(TOKEN_KEYS.TOKEN_EXPIRES, expiresAt)
-}
-
-function clearTokens(): void {
-  localStorage.removeItem(TOKEN_KEYS.ACCESS_TOKEN)
-  localStorage.removeItem(TOKEN_KEYS.REFRESH_TOKEN)
-  localStorage.removeItem(TOKEN_KEYS.TOKEN_EXPIRES)
-}
-
-function getAccessToken(): string | null {
-  return localStorage.getItem(TOKEN_KEYS.ACCESS_TOKEN)
-}
-
-function getRefreshToken(): string | null {
-  return localStorage.getItem(TOKEN_KEYS.REFRESH_TOKEN)
-}
-
-function isTokenExpired(): boolean {
-  const expiresAt = localStorage.getItem(TOKEN_KEYS.TOKEN_EXPIRES)
-  if (!expiresAt) return true
-  const expiry = new Date(expiresAt)
-  const now = new Date()
-  return now.getTime() >= expiry.getTime() - 60000
 }
 
 // =============================================================================
@@ -284,8 +251,8 @@ export const mockAuthService: AuthService = {
     const expiresAt = new Date(now.getTime() + 24 * 60 * 60 * 1000)
     const accessToken = generateToken()
 
-    localStorage.setItem(TOKEN_KEYS.ACCESS_TOKEN, accessToken)
-    localStorage.setItem(TOKEN_KEYS.TOKEN_EXPIRES, expiresAt.toISOString())
+    setAccessToken(accessToken)
+    setTokenExpires(expiresAt.toISOString())
 
     return {
       access_token: accessToken,
