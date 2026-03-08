@@ -80,7 +80,8 @@ impl HeliusClient {
             .ok_or_else(|| ChainError::ConfigError("Rate limit must be > 0".to_string()))?;
         let rpc_limiter = Arc::new(RateLimiter::direct(Quota::per_second(rps)));
 
-        let rpc_url = format!("{}/?api-key={}", HELIUS_RPC_BASE, api_key);
+        // Do not embed the API key in the URL; it will be sent via header instead.
+        let rpc_url = format!("{}/", HELIUS_RPC_BASE);
 
         Ok(Self {
             rest_fetcher,
@@ -116,6 +117,8 @@ impl HeliusClient {
         let response = self
             .rpc_client
             .post(&self.rpc_url)
+            // Send the API key in a header instead of embedding it in the URL.
+            .header("x-api-key", &self.api_key)
             .json(&body)
             .send()
             .await
