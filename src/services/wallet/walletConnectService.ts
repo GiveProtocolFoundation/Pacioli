@@ -158,7 +158,7 @@ class WalletConnectService {
       this.setupEventListeners()
 
       // Check for existing sessions
-      await this.restoreSession()
+      this.restoreSession()
     } catch (error) {
       console.error('Failed to initialize WalletConnect:', error)
       throw error
@@ -194,7 +194,7 @@ class WalletConnectService {
     })
   }
 
-  private async restoreSession(): Promise<void> {
+  private restoreSession(): void {
     if (!this.signClient) return
 
     const sessions = this.signClient.session.getAll()
@@ -212,6 +212,7 @@ class WalletConnectService {
     }
   }
 
+  /** Parse WalletConnect namespace accounts into structured account objects */
   private parseAccounts(
     namespaces: Record<string, { accounts: string[] }>
   ): WalletConnectAccount[] {

@@ -230,7 +230,7 @@ class NotificationService {
   /**
    * Mark a notification as read
    */
-  async markAsRead(id: string): Promise<Notification | null> {
+  markAsRead(id: string): Promise<Notification | null> {
     return this.update(id, { read: true })
   }
 
@@ -260,7 +260,7 @@ class NotificationService {
   /**
    * Dismiss a notification
    */
-  async dismiss(id: string): Promise<Notification | null> {
+  dismiss(id: string): Promise<Notification | null> {
     return this.update(id, { dismissed: true })
   }
 
@@ -280,7 +280,7 @@ class NotificationService {
   /**
    * Resolve a notification (mark as addressed/handled)
    */
-  async resolve(id: string): Promise<Notification | null> {
+  resolve(id: string): Promise<Notification | null> {
     return this.update(id, { resolved: true, read: true })
   }
 
