@@ -648,13 +648,13 @@ mod tests {
             is_error: "0".to_string(),
             tx_receipt_status: "1".to_string(),
             input: "0x".to_string(),
-            contract_address: String::new(),
-            function_name: String::new(),
-            method_id: String::new(),
+            contract_address: String::default(),
+            function_name: String::default(),
+            method_id: String::default(),
             confirmations: "100".to_string(),
             cumulative_gas_used: "21000".to_string(),
-            max_fee_per_gas: String::new(),
-            max_priority_fee_per_gas: String::new(),
+            max_fee_per_gas: String::default(),
+            max_priority_fee_per_gas: String::default(),
         };
 
         assert_eq!(tx.classify_transaction_type(), TransactionType::Transfer);
@@ -676,13 +676,13 @@ mod tests {
             is_error: "0".to_string(),
             tx_receipt_status: "1".to_string(),
             input: "0x38ed1739000000000000".to_string(), // swapExactTokensForTokens
-            contract_address: String::new(),
-            function_name: String::new(),
-            method_id: String::new(),
+            contract_address: String::default(),
+            function_name: String::default(),
+            method_id: String::default(),
             confirmations: "100".to_string(),
             cumulative_gas_used: "150000".to_string(),
-            max_fee_per_gas: String::new(),
-            max_priority_fee_per_gas: String::new(),
+            max_fee_per_gas: String::default(),
+            max_priority_fee_per_gas: String::default(),
         };
 
         assert_eq!(tx.classify_transaction_type(), TransactionType::Swap);
@@ -698,7 +698,7 @@ mod tests {
             block_number: "1000".to_string(),
             time_stamp: "1234567890".to_string(),
             from: "0xabc".to_string(),
-            to: String::new(),
+            to: String::default(),
             value: "0".to_string(),
             gas: "500000".to_string(),
             gas_price: "20000000000".to_string(),
@@ -708,12 +708,12 @@ mod tests {
             tx_receipt_status: "1".to_string(),
             input: "0x608060405234801561001057600080fd5b50".to_string(),
             contract_address: "0xnewcontract".to_string(),
-            function_name: String::new(),
-            method_id: String::new(),
+            function_name: String::default(),
+            method_id: String::default(),
             confirmations: "100".to_string(),
             cumulative_gas_used: "400000".to_string(),
-            max_fee_per_gas: String::new(),
-            max_priority_fee_per_gas: String::new(),
+            max_fee_per_gas: String::default(),
+            max_priority_fee_per_gas: String::default(),
         };
 
         assert_eq!(
@@ -781,12 +781,12 @@ mod tests {
             from: "0xabc".to_string(),
             to: "0xdef".to_string(),
             value: "1000000000000000000".to_string(),
-            contract_address: String::new(),
+            contract_address: String::default(),
             trace_type: "call".to_string(),
             gas: "100000".to_string(),
             gas_used: "50000".to_string(),
             is_error: "0".to_string(),
-            err_code: String::new(),
+            err_code: String::default(),
             trace_id: "0".to_string(),
         };
 

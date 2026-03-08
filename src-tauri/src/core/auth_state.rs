@@ -158,13 +158,13 @@ mod tests {
 
     #[test]
     fn test_auth_state_creation() {
-        let state = AuthState::new();
+        let state = AuthState::default();
         assert_eq!(state.get_jwt_secret().len(), 32);
     }
 
     #[test]
     fn test_session_caching() {
-        let state = AuthState::new();
+        let state = AuthState::default();
 
         // Cache a session
         state.cache_session("session_123", "user_456", "test@example.com");
@@ -180,7 +180,7 @@ mod tests {
 
     #[test]
     fn test_session_invalidation() {
-        let state = AuthState::new();
+        let state = AuthState::default();
 
         state.cache_session("session_123", "user_456", "test@example.com");
         assert!(state.get_cached_session("session_123").is_some());
@@ -191,7 +191,7 @@ mod tests {
 
     #[test]
     fn test_user_sessions_invalidation() {
-        let state = AuthState::new();
+        let state = AuthState::default();
 
         // Cache multiple sessions for same user
         state.cache_session("session_1", "user_123", "test@example.com");
