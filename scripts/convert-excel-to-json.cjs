@@ -86,7 +86,7 @@ function convertFile(filePath, jurisdiction) {
     const accountType = sheetMapping[sheetName]
 
     if (!accountType) {
-      console.log(`  Skipping sheet: ${sheetName} (no mapping)`)  
+      console.log(`  Skipping sheet: ${sheetName} (no mapping)`)
       return
     }
 

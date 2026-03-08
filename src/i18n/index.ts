@@ -35,7 +35,6 @@ export function getTranslations(language: SupportedLanguage): Translations {
   return translations[language] || translations.en
 }
 
-
 /**
  * Detects the browser's language and returns a supported language code.
  * @returns {SupportedLanguage} The detected supported language code.

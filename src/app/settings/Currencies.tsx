@@ -36,128 +36,128 @@ interface ChangeActionsProps {
   onSave: () => void
 }
 
-  /**
-   * ChangeActions component displays action buttons for resetting or saving changes.
-   * @param {boolean} hasChanges - indicates if there are unsaved changes.
-   * @param {() => void} onReset - callback to reset changes.
-   * @param {() => void} onSave - callback to save changes.
-   * @returns {JSX.Element | null} The action buttons component or null if no changes.
-   */
-  const ChangeActions: React.FC<ChangeActionsProps> = ({
-    hasChanges,
-    onReset,
-    onSave,
-  }) => {
-    if (!hasChanges) return null
-    return (
-      <div className="flex items-center space-x-3">
-        <button
-          onClick={onReset}
-          className="px-4 py-2 text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] bg-[#fafaf8] dark:bg-[#1a1815] border border-[rgba(201,169,97,0.15)] rounded-lg hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620] flex items-center"
-        >
-          <X className="w-4 h-4 mr-2" />
-          Cancel
-        </button>
-        <button
-          onClick={onSave}
-          className="px-4 py-2 text-sm font-medium text-white bg-[#8b4e52] rounded-lg hover:bg-[#7a4248] flex items-center"
-        >
-          <Save className="w-4 h-4 mr-2" />
-          Save Changes
-        </button>
-      </div>
-    )
-  }
+/**
+ * ChangeActions component displays action buttons for resetting or saving changes.
+ * @param {boolean} hasChanges - indicates if there are unsaved changes.
+ * @param {() => void} onReset - callback to reset changes.
+ * @param {() => void} onSave - callback to save changes.
+ * @returns {JSX.Element | null} The action buttons component or null if no changes.
+ */
+const ChangeActions: React.FC<ChangeActionsProps> = ({
+  hasChanges,
+  onReset,
+  onSave,
+}) => {
+  if (!hasChanges) return null
+  return (
+    <div className="flex items-center space-x-3">
+      <button
+        onClick={onReset}
+        className="px-4 py-2 text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] bg-[#fafaf8] dark:bg-[#1a1815] border border-[rgba(201,169,97,0.15)] rounded-lg hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620] flex items-center"
+      >
+        <X className="w-4 h-4 mr-2" />
+        Cancel
+      </button>
+      <button
+        onClick={onSave}
+        className="px-4 py-2 text-sm font-medium text-white bg-[#8b4e52] rounded-lg hover:bg-[#7a4248] flex items-center"
+      >
+        <Save className="w-4 h-4 mr-2" />
+        Save Changes
+      </button>
+    </div>
+  )
+}
 
 interface PrimaryCurrencySectionProps {
   value: string
   onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void
 }
 
-  /**
-   * PrimaryCurrencySection component renders the section to select the primary reporting currency.
-   * @param {string} value - currently selected currency value.
-   * @param {(e: React.ChangeEvent<HTMLSelectElement>) => void} onChange - callback for when the currency selection changes.
-   * @returns {JSX.Element} The rendered primary currency selection section.
-   */
-  const PrimaryCurrencySection: React.FC<PrimaryCurrencySectionProps> = ({
-    value,
-    onChange,
-  }) => (
-    <div className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg shadow-sm border border-[rgba(201,169,97,0.15)] p-6">
-      <div className="flex items-center mb-4">
-        <DollarSign className="w-5 h-5 text-[#8b4e52] mr-2" />
-        <h2 className="text-lg font-semibold text-[#1a1815] dark:text-[#f5f3f0]">
-          Primary Reporting Currency
-        </h2>
-      </div>
-      <p className="text-sm text-[#696557] dark:text-[#b8b3ac] mb-4">
-        Your primary currency is used for all financial reports and statements.
-        Transactions in other currencies will be automatically converted.
-      </p>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label
-            htmlFor="primary-currency"
-            className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
-          >
-            Select Primary Currency
-          </label>
-          <select
-            id="primary-currency"
-            value={value}
-            onChange={onChange}
-            className="select-input w-full px-3 pr-8 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
-          >
-            <optgroup label="Fiat Currencies">
-              {FIAT_CURRENCIES.map(currency => (
-                <option key={currency.value} value={currency.value}>
-                  {currency.label}
-                </option>
-              ))}
-            </optgroup>
-            <optgroup label="Cryptocurrencies">
-              {CRYPTO_CURRENCIES.map(currency => (
-                <option key={currency.value} value={currency.value}>
-                  {currency.label}
-                </option>
-              ))}
-            </optgroup>
-          </select>
-        </div>
+/**
+ * PrimaryCurrencySection component renders the section to select the primary reporting currency.
+ * @param {string} value - currently selected currency value.
+ * @param {(e: React.ChangeEvent<HTMLSelectElement>) => void} onChange - callback for when the currency selection changes.
+ * @returns {JSX.Element} The rendered primary currency selection section.
+ */
+const PrimaryCurrencySection: React.FC<PrimaryCurrencySectionProps> = ({
+  value,
+  onChange,
+}) => (
+  <div className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg shadow-sm border border-[rgba(201,169,97,0.15)] p-6">
+    <div className="flex items-center mb-4">
+      <DollarSign className="w-5 h-5 text-[#8b4e52] mr-2" />
+      <h2 className="text-lg font-semibold text-[#1a1815] dark:text-[#f5f3f0]">
+        Primary Reporting Currency
+      </h2>
+    </div>
+    <p className="text-sm text-[#696557] dark:text-[#b8b3ac] mb-4">
+      Your primary currency is used for all financial reports and statements.
+      Transactions in other currencies will be automatically converted.
+    </p>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label
+          htmlFor="primary-currency"
+          className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
+        >
+          Select Primary Currency
+        </label>
+        <select
+          id="primary-currency"
+          value={value}
+          onChange={onChange}
+          className="select-input w-full px-3 pr-8 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
+        >
+          <optgroup label="Fiat Currencies">
+            {FIAT_CURRENCIES.map(currency => (
+              <option key={currency.value} value={currency.value}>
+                {currency.label}
+              </option>
+            ))}
+          </optgroup>
+          <optgroup label="Cryptocurrencies">
+            {CRYPTO_CURRENCIES.map(currency => (
+              <option key={currency.value} value={currency.value}>
+                {currency.label}
+              </option>
+            ))}
+          </optgroup>
+        </select>
       </div>
     </div>
+  </div>
+)
+
+/**
+ * Currencies component provides UI to configure currency settings including selection of primary currency, reporting currencies, and API keys.
+ * @returns {JSX.Element} The currencies settings form component.
+ */
+const Currencies: React.FC = () => {
+  const { settings: contextSettings, updateSettings: updateContextSettings } =
+    useCurrency()
+  const [localSettings, setLocalSettings] = useState<CurrencySettings>(() => ({
+    ...contextSettings,
+    coingeckoApiKey: '',
+    fixerApiKey: '',
+  }))
+
+  const [showApiKeys, setShowApiKeys] = useState(false)
+  const [hasChanges, setHasChanges] = useState(false)
+
+  const handleChange = useCallback(
+    <K extends keyof CurrencySettings>(key: K, value: CurrencySettings[K]) => {
+      setLocalSettings(prev => ({ ...prev, [key]: value }))
+      setHasChanges(true)
+    },
+    []
   )
 
-  /**
-   * Currencies component provides UI to configure currency settings including selection of primary currency, reporting currencies, and API keys.
-   * @returns {JSX.Element} The currencies settings form component.
-   */
-  const Currencies: React.FC = () => {
-    const { settings: contextSettings, updateSettings: updateContextSettings } =
-      useCurrency()
-    const [localSettings, setLocalSettings] = useState<CurrencySettings>(() => ({
-      ...contextSettings,
-      coingeckoApiKey: '',
-      fixerApiKey: '',
-    }))
-
-    const [showApiKeys, setShowApiKeys] = useState(false)
-    const [hasChanges, setHasChanges] = useState(false)
-
-    const handleChange = useCallback(
-      <K extends keyof CurrencySettings>(key: K, value: CurrencySettings[K]) => {
-        setLocalSettings(prev => ({ ...prev, [key]: value }))
-        setHasChanges(true)
-      },
-      []
-    )
-
-    const handleToggleReportingCurrency = useCallback((currency: string) => {
-      setLocalSettings(prev => {
-        const newReportingCurrencies = prev.reportingCurrencies.includes(currency)
-          ? prev.reportingCurrencies.filter(c => c !== currency)
-          : [...prev.reportingCurrencies, currency]
+  const handleToggleReportingCurrency = useCallback((currency: string) => {
+    setLocalSettings(prev => {
+      const newReportingCurrencies = prev.reportingCurrencies.includes(currency)
+        ? prev.reportingCurrencies.filter(c => c !== currency)
+        : [...prev.reportingCurrencies, currency]
 
       setHasChanges(true)
       return { ...prev, reportingCurrencies: newReportingCurrencies }

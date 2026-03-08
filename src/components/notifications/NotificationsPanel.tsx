@@ -259,7 +259,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
 /**
  * Filter tabs for categorizing notifications by type.
  */
-const FilterTabs: React.FC<{  
+const FilterTabs: React.FC<{
   filter: FilterType
   userType: 'individual' | 'organization'
   onAll: () => void
