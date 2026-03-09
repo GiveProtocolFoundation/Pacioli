@@ -243,8 +243,8 @@ export const mockAuthService: AuthService = {
   },
 
   logout(_sessionId: string): Promise<void> {
-    clearTokens();
-    return Promise.resolve();
+    clearTokens()
+    return Promise.resolve()
   },
 
   refreshToken(): Promise<TokenRefreshResponse> {
@@ -266,7 +266,7 @@ export const mockAuthService: AuthService = {
       valid: true,
       user_id: 'mock_user_id',
       expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-    });
+    })
   },
 
   getCurrentUser(_token: string): Promise<AuthUser> {
@@ -333,13 +333,10 @@ export const mockAuthService: AuthService = {
         role: 'admin',
         granted_at: new Date().toISOString(),
       },
-    ]);
+    ])
   },
 
-  getProfileUsers(
-    _token: string,
-    _profileId: string
-  ): Promise<ProfileUser[]> {
+  getProfileUsers(_token: string, _profileId: string): Promise<ProfileUser[]> {
     return Promise.resolve([
       {
         user_id: 'mock_user_id',
@@ -349,7 +346,7 @@ export const mockAuthService: AuthService = {
         granted_at: new Date().toISOString(),
         status: 'active',
       },
-    ]);
+    ])
   },
 
   async updateUserRole(
@@ -445,6 +442,6 @@ export const mockAuthService: AuthService = {
   getEmailChangeStatus(_token: string): Promise<EmailChangeStatus> {
     return Promise.resolve({
       pending: false,
-    });
+    })
   },
 }

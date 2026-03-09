@@ -144,10 +144,7 @@ export const tauriAuthService: AuthService = {
     })
   },
 
-  changePassword(
-    token: string,
-    input: ChangePasswordInput
-  ): Promise<void> {
+  changePassword(token: string, input: ChangePasswordInput): Promise<void> {
     return invoke('change_password', {
       token,
       currentPassword: input.current_password,
@@ -173,10 +170,7 @@ export const tauriAuthService: AuthService = {
     return invoke<ProfileWithRole[]>('get_user_profiles', { token })
   },
 
-  getProfileUsers(
-    token: string,
-    profileId: string
-  ): Promise<ProfileUser[]> {
+  getProfileUsers(token: string, profileId: string): Promise<ProfileUser[]> {
     return invoke<ProfileUser[]>('get_profile_users', { token, profileId })
   },
 
