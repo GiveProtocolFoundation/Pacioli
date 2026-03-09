@@ -128,23 +128,23 @@ export const tauriAuthService: AuthService = {
     return { access_token: raw.access_token, expires_at: expiresAt }
   },
 
-  async verifyToken(token: string): Promise<TokenVerifyResponse> {
+  verifyToken(token: string): Promise<TokenVerifyResponse> {
     return invoke<TokenVerifyResponse>('verify_token', { token })
   },
 
   // User management
-  async getCurrentUser(token: string): Promise<AuthUser> {
+  getCurrentUser(token: string): Promise<AuthUser> {
     return invoke<AuthUser>('get_current_user', { token })
   },
 
-  async updateUser(token: string, input: UpdateUserInput): Promise<AuthUser> {
+  updateUser(token: string, input: UpdateUserInput): Promise<AuthUser> {
     return invoke<AuthUser>('update_user', {
       token,
       update: input,
     })
   },
 
-  async changePassword(
+  changePassword(
     token: string,
     input: ChangePasswordInput
   ): Promise<void> {
@@ -156,31 +156,31 @@ export const tauriAuthService: AuthService = {
   },
 
   // Session management
-  async getUserSessions(token: string): Promise<Session[]> {
+  getUserSessions(token: string): Promise<Session[]> {
     return invoke<Session[]>('get_user_sessions', { token })
   },
 
-  async revokeSession(token: string, sessionId: string): Promise<void> {
+  revokeSession(token: string, sessionId: string): Promise<void> {
     return invoke('revoke_session', { token, sessionId })
   },
 
-  async revokeAllSessions(token: string): Promise<number> {
+  revokeAllSessions(token: string): Promise<number> {
     return invoke<number>('revoke_all_sessions', { token })
   },
 
   // Profile roles
-  async getUserProfiles(token: string): Promise<ProfileWithRole[]> {
+  getUserProfiles(token: string): Promise<ProfileWithRole[]> {
     return invoke<ProfileWithRole[]>('get_user_profiles', { token })
   },
 
-  async getProfileUsers(
+  getProfileUsers(
     token: string,
     profileId: string
   ): Promise<ProfileUser[]> {
     return invoke<ProfileUser[]>('get_profile_users', { token, profileId })
   },
 
-  async updateUserRole(
+  updateUserRole(
     token: string,
     profileId: string,
     userId: string,
@@ -194,7 +194,7 @@ export const tauriAuthService: AuthService = {
     })
   },
 
-  async removeUserFromProfile(
+  removeUserFromProfile(
     token: string,
     profileId: string,
     userId: string
@@ -207,7 +207,7 @@ export const tauriAuthService: AuthService = {
   },
 
   // Invitations
-  async createInvitation(
+  createInvitation(
     token: string,
     input: CreateInvitationInput
   ): Promise<Invitation> {
@@ -219,7 +219,7 @@ export const tauriAuthService: AuthService = {
     })
   },
 
-  async getProfileInvitations(
+  getProfileInvitations(
     token: string,
     profileId: string
   ): Promise<Invitation[]> {
@@ -248,12 +248,12 @@ export const tauriAuthService: AuthService = {
     }
   },
 
-  async revokeInvitation(token: string, invitationId: string): Promise<void> {
+  revokeInvitation(token: string, invitationId: string): Promise<void> {
     return invoke('revoke_invitation', { token, invitationId })
   },
 
   // Email change
-  async requestEmailChange(
+  requestEmailChange(
     token: string,
     currentPassword: string,
     newEmail: string
@@ -267,15 +267,15 @@ export const tauriAuthService: AuthService = {
     })
   },
 
-  async verifyEmailChange(verificationToken: string): Promise<string> {
+  verifyEmailChange(verificationToken: string): Promise<string> {
     return invoke<string>('verify_email_change', { verificationToken })
   },
 
-  async cancelEmailChange(cancellationToken: string): Promise<string> {
+  cancelEmailChange(cancellationToken: string): Promise<string> {
     return invoke<string>('cancel_email_change', { cancellationToken })
   },
 
-  async getEmailChangeStatus(token: string): Promise<EmailChangeStatus> {
+  getEmailChangeStatus(token: string): Promise<EmailChangeStatus> {
     return invoke<EmailChangeStatus>('get_email_change_status', { token })
   },
 }
