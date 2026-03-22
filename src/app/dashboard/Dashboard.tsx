@@ -20,6 +20,7 @@ import { useCurrency } from '../../contexts/CurrencyContext'
 import { useTheme } from '../../contexts/ThemeContext'
 import { formatCurrency } from '../../utils/currencyFormatter'
 import { getCryptoLogoPath, getCryptoBrandColor } from '../../utils/cryptoLogos'
+import SparklineChart from './SparklineChart'
 
 interface Transaction {
   id: string
@@ -47,6 +48,8 @@ const StatsCard: React.FC<{
   changeValue: string
   changeLabel?: string
   icon: React.ReactNode
+  variant?: 'default' | 'hero'
+  sparklineData?: number[]
 }> = ({
   title,
   value,
@@ -55,28 +58,46 @@ const StatsCard: React.FC<{
   changeValue,
   changeLabel,
   icon,
-}) => (
-  <div className="ledger-card p-6">
-    <div className="flex items-center justify-between">
-      <div>
-        <p className="ledger-card-label">{title}</p>
-        <p className="text-3xl font-bold text-[#1a1815] dark:text-[#f5f3f0] mt-2 stat-value">
-          {value}
-        </p>
-        <div className="flex items-center mt-2">
-          {changeIcon}
-          <span className={`text-sm font-medium ${changeColor}`}>
-            {changeValue}
-          </span>
-          {changeLabel && (
-            <span className="text-sm text-[#a39d94] ml-1">{changeLabel}</span>
-          )}
+  variant = 'default',
+  sparklineData,
+}) => {
+  const isHero = variant === 'hero'
+
+  return (
+    <div className={isHero ? 'dashboard-hero-card' : 'ledger-card p-6'}>
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="ledger-card-label">{title}</p>
+          <p
+            className={`font-bold text-[#1a1815] dark:text-[#f5f3f0] mt-2 dashboard-heading ${isHero ? 'text-4xl' : 'text-3xl'}`}
+          >
+            {value}
+          </p>
+          <div className="flex items-center mt-2">
+            {changeIcon}
+            <span className={`text-sm ${changeColor}`}>{changeValue}</span>
+            {changeLabel && (
+              <span className="text-sm dashboard-muted-text ml-1">{changeLabel}</span>
+            )}
+          </div>
         </div>
+        <div className="stat-icon-container">{icon}</div>
       </div>
-      <div className="stat-icon-container">{icon}</div>
+      {sparklineData && (
+        <div className="mt-4">
+          <SparklineChart data={sparklineData} />
+        </div>
+      )}
     </div>
-  </div>
-)
+  )
+}
+
+// Mock sparkline data — 30-point portfolio trend
+const portfolioSparkline = [
+  45200, 45800, 46100, 45500, 46300, 47100, 46800, 47500, 48200, 47800, 48500,
+  49100, 48700, 49300, 49800, 49200, 49600, 50100, 49500, 50200, 50800, 50300,
+  50900, 51200, 50600, 51400, 51800, 51200, 51900, 50000,
+]
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate()
@@ -88,12 +109,12 @@ const Dashboard: React.FC = () => {
   }, [navigate])
 
   const [accountBalances] = useState<AccountBalance[]>([
-    { crypto: 'DOT', amount: 1250.5, usdValue: 9378.75, change24h: 2.3 },
-    { crypto: 'KSM', amount: 185.3, usdValue: 8338.5, change24h: -1.2 },
-    { crypto: 'GLMR', amount: 45000, usdValue: 13500, change24h: 3.4 },
-    { crypto: 'ASTR', amount: 125000, usdValue: 8750, change24h: 1.8 },
-    { crypto: 'BNC', amount: 8500, usdValue: 2550, change24h: 0.9 },
-    { crypto: 'iBTC', amount: 0.15, usdValue: 10050, change24h: 2.1 },
+    { crypto: 'DOT', amount: 2000, usdValue: 15000, change24h: 2.3 },
+    { crypto: 'GLMR', amount: 40000, usdValue: 12000, change24h: 3.4 },
+    { crypto: 'KSM', amount: 160, usdValue: 7200, change24h: -1.2 },
+    { crypto: 'ASTR', amount: 100000, usdValue: 7000, change24h: 1.8 },
+    { crypto: 'iBTC', amount: 0.1, usdValue: 6700, change24h: 2.1 },
+    { crypto: 'BNC', amount: 7000, usdValue: 2100, change24h: 0.9 },
   ])
 
   const [recentTransactions] = useState<Transaction[]>([
@@ -103,8 +124,8 @@ const Dashboard: React.FC = () => {
       description: 'Donation from Anonymous',
       type: 'donation',
       crypto: 'DOT',
-      amount: 500,
-      usdValue: 3750,
+      amount: 150,
+      usdValue: 1125,
       status: 'completed',
     },
     {
@@ -113,8 +134,8 @@ const Dashboard: React.FC = () => {
       description: 'Program Expense - Education',
       type: 'expense',
       crypto: 'GLMR',
-      amount: -5000,
-      usdValue: -1500,
+      amount: -2000,
+      usdValue: -600,
       status: 'completed',
     },
     {
@@ -123,8 +144,8 @@ const Dashboard: React.FC = () => {
       description: 'XCM Transfer DOT to Moonbeam',
       type: 'exchange',
       crypto: 'DOT',
-      amount: -100,
-      usdValue: 750,
+      amount: -50,
+      usdValue: 375,
       status: 'completed',
     },
     {
@@ -133,8 +154,8 @@ const Dashboard: React.FC = () => {
       description: 'Staking Rewards - Polkadot',
       type: 'transfer',
       crypto: 'DOT',
-      amount: 25.5,
-      usdValue: 191.25,
+      amount: 12,
+      usdValue: 90,
       status: 'completed',
     },
     {
@@ -143,8 +164,8 @@ const Dashboard: React.FC = () => {
       description: 'Parachain Crowdloan Reward',
       type: 'donation',
       crypto: 'ASTR',
-      amount: 10000,
-      usdValue: 700,
+      amount: 5000,
+      usdValue: 350,
       status: 'pending',
     },
   ])
@@ -158,15 +179,15 @@ const Dashboard: React.FC = () => {
   const getTypeColor = (type: string) => {
     switch (type) {
       case 'donation':
-        return 'text-[#7a9b6f] dark:text-[#8faf84] bg-[#7a9b6f]/10'
+        return 'change-positive bg-[#166534]/8'
       case 'expense':
-        return 'text-[#9d6b6b] dark:text-[#b88585] bg-[#9d6b6b]/10'
+        return 'change-negative bg-[#991B1B]/8'
       case 'exchange':
-        return 'text-[#8b4e52] dark:text-[#a86e72] bg-[#8b4e52]/10'
+        return 'text-[#5D2A2C] dark:text-[#c08589] bg-[#5D2A2C]/8'
       case 'transfer':
-        return 'text-[#c9a961] dark:text-[#d4b87a] bg-[#c9a961]/10'
+        return 'text-[#6B5D2E] dark:text-[#d4b87a] bg-[#c9a961]/10'
       default:
-        return 'text-[#696557] bg-[#fafaf8] dark:text-[#b8b3ac] dark:bg-[#1a1815]'
+        return 'dashboard-body-text bg-[#fafaf8] dark:bg-[#1a1815]'
     }
   }
 
@@ -178,7 +199,7 @@ const Dashboard: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <h1>Dashboard</h1>
-              <p className="text-sm text-[#696557] dark:text-[#b8b3ac] mt-1">
+              <p className="text-sm dashboard-body-text mt-1">
                 Welcome back! Here&apos;s your crypto portfolio overview.
               </p>
             </div>
@@ -187,10 +208,6 @@ const Dashboard: React.FC = () => {
                 <Download className="btn-icon" />
                 Export Report
               </button>
-              <button onClick={handleNewTransaction} className="btn-primary">
-                <Plus className="btn-icon" />
-                New Transaction
-              </button>
             </div>
           </div>
         </div>
@@ -198,48 +215,51 @@ const Dashboard: React.FC = () => {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-10 py-10">
-        {/* Key Metrics */}
+        {/* Key Metrics — Hero (2 cols) + 2 standard cards on row 1, 2 cards on row 2 */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-          <StatsCard
-            title="Total Portfolio Value"
-            value={formatCurrency(
-              totalPortfolioValue,
-              currencySettings.primaryCurrency,
-              {
-                decimalPlaces: currencySettings.decimalPlaces,
-                useThousandsSeparator: currencySettings.useThousandsSeparator,
-                decimalSeparatorStandard:
-                  currencySettings.decimalSeparatorStandard,
+          {/* Hero card spans 2 columns */}
+          <div className="md:col-span-2 lg:col-span-2">
+            <StatsCard
+              title="Total Portfolio Value"
+              variant="hero"
+              sparklineData={portfolioSparkline}
+              value={formatCurrency(
+                totalPortfolioValue,
+                currencySettings.primaryCurrency,
+                {
+                  decimalPlaces: currencySettings.decimalPlaces,
+                  useThousandsSeparator: currencySettings.useThousandsSeparator,
+                  decimalSeparatorStandard:
+                    currencySettings.decimalSeparatorStandard,
+                }
+              )}
+              changeIcon={
+                portfolioChange >= 0 ? (
+                  <TrendingUp className="w-4 h-4 change-positive mr-1" />
+                ) : (
+                  <TrendingDown className="w-4 h-4 change-negative mr-1" />
+                )
               }
-            )}
-            changeIcon={
-              portfolioChange >= 0 ? (
-                <TrendingUp className="w-4 h-4 text-[#7a9b6f] dark:text-[#8faf84] mr-1" />
-              ) : (
-                <TrendingDown className="w-4 h-4 text-[#9d6b6b] dark:text-[#b88585] mr-1" />
-              )
-            }
-            changeColor={
-              portfolioChange >= 0
-                ? 'text-[#7a9b6f] dark:text-[#8faf84]'
-                : 'text-[#9d6b6b] dark:text-[#b88585]'
-            }
-            changeValue={`${portfolioChange >= 0 ? '+' : ''}${portfolioChange}%`}
-            changeLabel="24h"
-            icon={<Wallet />}
-          />
+              changeColor={
+                portfolioChange >= 0 ? 'change-positive' : 'change-negative'
+              }
+              changeValue={`${portfolioChange >= 0 ? '+' : ''}${portfolioChange}%`}
+              changeLabel="24h"
+              icon={<Wallet />}
+            />
+          </div>
           <StatsCard
             title="Total Donations (YTD)"
-            value={formatCurrency(425600, currencySettings.primaryCurrency, {
+            value={formatCurrency(38500, currencySettings.primaryCurrency, {
               decimalPlaces: currencySettings.decimalPlaces,
               useThousandsSeparator: currencySettings.useThousandsSeparator,
               decimalSeparatorStandard:
                 currencySettings.decimalSeparatorStandard,
             })}
             changeIcon={
-              <ArrowUpRight className="w-4 h-4 text-[#7a9b6f] dark:text-[#8faf84] mr-1" />
+              <ArrowUpRight className="w-4 h-4 change-positive mr-1" />
             }
-            changeColor="text-[#7a9b6f] dark:text-[#8faf84]"
+            changeColor="change-positive"
             changeValue="+12.5%"
             changeLabel="vs last year"
             icon={<DollarSign />}
@@ -249,8 +269,8 @@ const Dashboard: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="ledger-card-label">Program Expenses</p>
-                <p className="text-3xl font-bold text-[#1a1815] dark:text-[#f5f3f0] mt-2 stat-value">
-                  {formatCurrency(125000, currencySettings.primaryCurrency, {
+                <p className="text-3xl font-bold text-[#1a1815] dark:text-[#f5f3f0] mt-2 dashboard-heading">
+                  {formatCurrency(8200, currencySettings.primaryCurrency, {
                     decimalPlaces: currencySettings.decimalPlaces,
                     useThousandsSeparator:
                       currencySettings.useThousandsSeparator,
@@ -259,11 +279,9 @@ const Dashboard: React.FC = () => {
                   })}
                 </p>
                 <div className="flex items-center mt-2">
-                  <ArrowDownRight className="w-4 h-4 text-[#9d6b6b] dark:text-[#b88585] mr-1" />
-                  <span className="text-sm font-medium text-[#9d6b6b] dark:text-[#b88585]">
-                    -5.2%
-                  </span>
-                  <span className="text-sm text-[#a39d94] dark:text-[#8b8580] ml-1">
+                  <ArrowDownRight className="w-4 h-4 change-negative mr-1" />
+                  <span className="text-sm change-negative">-5.2%</span>
+                  <span className="text-sm dashboard-muted-text ml-1">
                     vs last year
                   </span>
                 </div>
@@ -279,8 +297,8 @@ const Dashboard: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="ledger-card-label">Program Expenses (YTD)</p>
-                <p className="text-3xl font-bold text-[#1a1815] dark:text-[#f5f3f0] mt-2 stat-value">
-                  {formatCurrency(312450, currencySettings.primaryCurrency, {
+                <p className="text-3xl font-bold text-[#1a1815] dark:text-[#f5f3f0] mt-2 dashboard-heading">
+                  {formatCurrency(28250, currencySettings.primaryCurrency, {
                     decimalPlaces: currencySettings.decimalPlaces,
                     useThousandsSeparator:
                       currencySettings.useThousandsSeparator,
@@ -289,10 +307,10 @@ const Dashboard: React.FC = () => {
                   })}
                 </p>
                 <div className="flex items-center mt-2">
-                  <span className="text-sm font-medium text-[#696557] dark:text-[#b8b3ac]">
+                  <span className="text-sm font-medium dashboard-body-text">
                     73.4%
                   </span>
-                  <span className="text-sm text-[#a39d94] dark:text-[#8b8580] ml-1">
+                  <span className="text-sm dashboard-muted-text ml-1">
                     of donations
                   </span>
                 </div>
@@ -308,11 +326,11 @@ const Dashboard: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="ledger-card-label">Active Wallets</p>
-                <p className="text-3xl font-bold text-[#1a1815] dark:text-[#f5f3f0] mt-2 stat-value">
-                  8
+                <p className="text-3xl font-bold text-[#1a1815] dark:text-[#f5f3f0] mt-2 dashboard-heading">
+                  6
                 </p>
                 <div className="flex items-center mt-2">
-                  <span className="text-sm font-medium text-[#696557] dark:text-[#b8b3ac]">
+                  <span className="text-sm font-medium dashboard-body-text">
                     4 blockchains
                   </span>
                 </div>
@@ -368,7 +386,7 @@ const Dashboard: React.FC = () => {
                             <p className="font-medium text-[#1a1815] dark:text-[#f5f3f0]">
                               {account.crypto}
                             </p>
-                            <p className="text-sm text-[#a39d94] dark:text-[#8b8580] tabular-nums">
+                            <p className="text-sm dashboard-muted-text dashboard-mono">
                               {account.amount.toLocaleString('en-US', {
                                 minimumFractionDigits: 1,
                                 maximumFractionDigits: 1,
@@ -378,7 +396,7 @@ const Dashboard: React.FC = () => {
                           </div>
                         </div>
                         <div className="token-values">
-                          <p className="font-semibold text-[#1a1815] dark:text-[#f5f3f0] tabular-nums">
+                          <p className="font-semibold text-[#1a1815] dark:text-[#f5f3f0] dashboard-mono">
                             {formatCurrency(
                               account.usdValue,
                               currencySettings.primaryCurrency,
@@ -392,7 +410,7 @@ const Dashboard: React.FC = () => {
                             )}
                           </p>
                           <div
-                            className={`percentage-change ${account.change24h >= 0 ? 'text-[#7a9b6f] dark:text-[#8faf84]' : 'text-[#9d6b6b] dark:text-[#b88585]'}`}
+                            className={`percentage-change ${account.change24h >= 0 ? 'change-positive' : 'change-negative'}`}
                           >
                             {account.change24h >= 0 ? (
                               <TrendingUp className="w-3 h-3" />
@@ -416,7 +434,7 @@ const Dashboard: React.FC = () => {
             <div className="ledger-card border border-[rgba(201,169,97,0.15)] mt-10">
               <div className="px-6 py-4 border-b border-[rgba(201,169,97,0.15)] flex items-center justify-between">
                 <h2>Recent Transactions</h2>
-                <button className="text-sm text-[#8b4e52] dark:text-[#a86e72] hover:opacity-90 font-medium">
+                <button className="text-sm dashboard-link">
                   View All
                 </button>
               </div>
@@ -448,11 +466,11 @@ const Dashboard: React.FC = () => {
                             {tx.type.charAt(0).toUpperCase() + tx.type.slice(1)}
                           </span>
                         </td>
-                        <td className="ledger-table-cell-number whitespace-nowrap text-sm tabular-nums">
+                        <td className="ledger-table-cell-number whitespace-nowrap text-sm dashboard-mono">
                           <span
                             className={
                               tx.amount >= 0
-                                ? 'text-[#7a9b6f] dark:text-[#8faf84]'
+                                ? 'change-positive'
                                 : 'text-[#1a1815] dark:text-[#f5f3f0]'
                             }
                           >
@@ -460,7 +478,7 @@ const Dashboard: React.FC = () => {
                             {tx.amount.toLocaleString()} {tx.crypto}
                           </span>
                         </td>
-                        <td className="ledger-table-cell-number whitespace-nowrap text-sm text-[#1a1815] dark:text-[#f5f3f0] tabular-nums">
+                        <td className="ledger-table-cell-number whitespace-nowrap text-sm text-[#1a1815] dark:text-[#f5f3f0] dashboard-mono">
                           {formatCurrency(
                             Math.abs(tx.usdValue),
                             currencySettings.primaryCurrency,
@@ -501,6 +519,13 @@ const Dashboard: React.FC = () => {
                 <h2>Quick Actions</h2>
               </div>
               <div className="p-6 space-y-3">
+                <button
+                  onClick={handleNewTransaction}
+                  className="btn-primary w-full justify-center"
+                >
+                  <Plus className="btn-icon" />
+                  New Transaction
+                </button>
                 <button className="btn-quick-action">
                   <Heart className="btn-icon" />
                   Record Donation
@@ -527,28 +552,26 @@ const Dashboard: React.FC = () => {
               </div>
               <div className="p-6 space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-[#696557] dark:text-[#b8b3ac]">
+                  <span className="text-sm dashboard-body-text">
                     Tax Year 2025
                   </span>
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium badge-on-track">
+                  <span className="status-pill status-pill-success">
                     On Track
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-[#696557] dark:text-[#b8b3ac]">
+                  <span className="text-sm dashboard-body-text">
                     IRS Form 990
                   </span>
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium badge-due-soon">
+                  <span className="status-pill status-pill-warning">
                     Due Soon
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-[#696557] dark:text-[#b8b3ac]">
+                  <span className="text-sm dashboard-body-text">
                     Audit Ready
                   </span>
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium badge-completed">
-                    Yes
-                  </span>
+                  <span className="status-pill status-pill-success">Yes</span>
                 </div>
               </div>
             </div>
@@ -560,19 +583,19 @@ const Dashboard: React.FC = () => {
               </div>
               <div className="p-6">
                 <div className="space-y-3">
-                  <div className="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/30 rounded-lg">
-                    <p className="text-sm font-medium text-amber-700 dark:text-amber-400">
+                  <div className="alert-toast alert-toast-warning">
+                    <p className="text-sm font-medium text-soft-warning dark:text-[#fbbf24]">
                       Pending Approval
                     </p>
-                    <p className="text-xs text-amber-600 dark:text-amber-500 mt-1">
+                    <p className="text-xs dashboard-body-text mt-1">
                       2 transactions need review
                     </p>
                   </div>
-                  <div className="p-3 bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 border border-[#8b4e52]/20 dark:border-[#8b4e52]/30 rounded-lg">
-                    <p className="text-sm font-medium text-[#8b4e52] dark:text-[#a86e72]">
+                  <div className="alert-toast alert-toast-danger">
+                    <p className="text-sm font-medium text-soft-danger dark:text-[#f87171]">
                       Price Alert
                     </p>
-                    <p className="text-xs text-[#696557] dark:text-[#b8b3ac] mt-1">
+                    <p className="text-xs dashboard-body-text mt-1">
                       BTC reached target price
                     </p>
                   </div>

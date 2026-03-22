@@ -754,7 +754,7 @@ const WalletManager: React.FC = () => {
                     id="network-select"
                     value={selectedNetwork}
                     onChange={handleNetworkChange}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#c9a961] dark:focus:ring-[#c9a961] focus:border-transparent"
+                    className="w-full px-3 py-2 border border-[rgba(201,169,97,0.15)] dark:border-[rgba(201,169,97,0.25)] rounded bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:ring-2 focus:ring-[#c9a961] dark:focus:ring-[#c9a961] focus:border-transparent"
                   >
                     <option value={NetworkType.POLKADOT}>Polkadot</option>
                     <option value={NetworkType.KUSAMA}>Kusama</option>
@@ -777,7 +777,7 @@ const WalletManager: React.FC = () => {
                     id="address-select"
                     value={selectedAddress}
                     onChange={handleAddressChange}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#c9a961] dark:focus:ring-[#c9a961] focus:border-transparent"
+                    className="w-full px-3 py-2 border border-[rgba(201,169,97,0.15)] dark:border-[rgba(201,169,97,0.25)] rounded bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:ring-2 focus:ring-[#c9a961] dark:focus:ring-[#c9a961] focus:border-transparent"
                   >
                     <option value="">Select an address...</option>
                     {allAddresses.map(addr => (

@@ -246,7 +246,7 @@ const Docs: React.FC = () => {
 
   const handleSectionClick = useCallback(
     (e: React.MouseEvent<HTMLButtonElement>) => {
-      const sectionId = e.currentTarget.getAttribute('data-section-id')
+      const sectionId = e.currentTarget.dataset.sectionId
       if (sectionId) {
         setExpandedSections(prev =>
           prev.includes(sectionId)
@@ -260,9 +260,8 @@ const Docs: React.FC = () => {
 
   const handleItemClick = useCallback(
     (e: React.MouseEvent<HTMLButtonElement>) => {
-      const itemId = e.currentTarget.getAttribute('data-item-id')
-      const hasSubItems =
-        e.currentTarget.getAttribute('data-has-subitems') === 'true'
+      const itemId = e.currentTarget.dataset.itemId
+      const hasSubItems = e.currentTarget.dataset.hasSubitems === 'true'
       if (itemId) {
         if (hasSubItems) {
           setExpandedItems(prev =>
@@ -280,7 +279,7 @@ const Docs: React.FC = () => {
 
   const handleSelectDoc = useCallback(
     (e: React.MouseEvent<HTMLButtonElement>) => {
-      const docId = e.currentTarget.getAttribute('data-doc-id')
+      const docId = e.currentTarget.dataset.docId
       if (docId) {
         setSelectedDoc(docId)
       }

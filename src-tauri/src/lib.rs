@@ -407,6 +407,7 @@ pub fn run() {
             // Fetcher commands (resilient API access)
             fetchers::commands::save_api_key,
             fetchers::commands::delete_api_key,
+            fetchers::commands::get_api_key,
             fetchers::commands::has_api_key,
             fetchers::commands::get_provider_status,
             fetchers::commands::get_all_provider_statuses,

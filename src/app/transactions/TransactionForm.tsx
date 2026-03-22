@@ -249,7 +249,7 @@ const TransactionForm: React.FC = () => {
       const amount = parseFloat(value) || 0
       handleInputChange('amount', amount)
 
-      const estimatedFiatValue = amount * 2500
+      const estimatedFiatValue = amount * 7.5
       handleInputChange('fiatValue', estimatedFiatValue)
     },
     [handleInputChange]

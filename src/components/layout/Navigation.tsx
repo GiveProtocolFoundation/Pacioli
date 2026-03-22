@@ -214,7 +214,7 @@ const Navigation: React.FC<NavigationProps> = ({
               className={`block w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${
                 isSubActive
                   ? 'text-[#7a4d50] dark:text-[#f5f3f0] bg-[rgba(139,78,82,0.1)] dark:bg-[rgba(139,78,82,0.15)] font-medium'
-                  : 'text-[#696557] dark:text-[#8b8580] hover:bg-[rgba(201,169,97,0.05)] dark:hover:bg-[rgba(201,169,97,0.08)] dark:hover:text-[#b8b3ac] font-normal'
+                  : 'text-[#4A4543] dark:text-[#b8b3ac] hover:bg-[rgba(201,169,97,0.05)] dark:hover:bg-[rgba(201,169,97,0.08)] dark:hover:text-[#b8b3ac] font-normal'
               }`}
             >
               {subItem.name}
@@ -269,7 +269,7 @@ const Navigation: React.FC<NavigationProps> = ({
                       className={`w-full flex items-center justify-between px-3 py-2.5 text-sm rounded-lg transition-colors ${
                         isActive
                           ? 'bg-[rgba(139,78,82,0.1)] dark:bg-[rgba(139,78,82,0.15)] text-[#7a4d50] dark:text-[#f5f3f0] font-semibold border-l-[3px] border-[#7a4d50] dark:border-[#8b4e52] -ml-0.5'
-                          : 'text-[#696557] dark:text-[#8b8580] hover:bg-[rgba(201,169,97,0.05)] dark:hover:bg-[rgba(201,169,97,0.08)] dark:hover:text-[#b8b3ac] font-medium'
+                          : 'text-[#4A4543] dark:text-[#b8b3ac] hover:bg-[rgba(201,169,97,0.05)] dark:hover:bg-[rgba(201,169,97,0.08)] dark:hover:text-[#b8b3ac] font-medium'
                       }`}
                     >
                       <div className="flex items-center">
@@ -297,7 +297,7 @@ const Navigation: React.FC<NavigationProps> = ({
                       className={`w-full flex items-center justify-between px-3 py-2.5 text-sm rounded-lg transition-colors ${
                         isActive
                           ? 'bg-[rgba(139,78,82,0.1)] dark:bg-[rgba(139,78,82,0.15)] text-[#7a4d50] dark:text-[#f5f3f0] font-semibold border-l-[3px] border-[#7a4d50] dark:border-[#8b4e52] -ml-0.5'
-                          : 'text-[#696557] dark:text-[#8b8580] hover:bg-[rgba(201,169,97,0.05)] dark:hover:bg-[rgba(201,169,97,0.08)] dark:hover:text-[#b8b3ac] font-medium'
+                          : 'text-[#4A4543] dark:text-[#b8b3ac] hover:bg-[rgba(201,169,97,0.05)] dark:hover:bg-[rgba(201,169,97,0.08)] dark:hover:text-[#b8b3ac] font-medium'
                       }`}
                     >
                       <div className="flex items-center">
@@ -414,7 +414,7 @@ const Navigation: React.FC<NavigationProps> = ({
                           className={`w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
                             isActive
                               ? 'bg-[rgba(139,78,82,0.1)] text-[#7a4d50] dark:text-[#8b4e52]'
-                              : 'text-[#696557] dark:text-[#8b8580] hover:bg-[rgba(201,169,97,0.05)]'
+                              : 'text-[#4A4543] dark:text-[#b8b3ac] hover:bg-[rgba(201,169,97,0.05)]'
                           }`}
                         >
                           <div className="flex items-center">
@@ -443,7 +443,7 @@ const Navigation: React.FC<NavigationProps> = ({
                           className={`w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
                             isActive
                               ? 'bg-[rgba(139,78,82,0.1)] text-[#7a4d50] dark:text-[#8b4e52]'
-                              : 'text-[#696557] dark:text-[#8b8580] hover:bg-[rgba(201,169,97,0.05)]'
+                              : 'text-[#4A4543] dark:text-[#b8b3ac] hover:bg-[rgba(201,169,97,0.05)]'
                           }`}
                         >
                           <div className="flex items-center">

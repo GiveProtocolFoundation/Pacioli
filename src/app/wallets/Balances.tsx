@@ -66,10 +66,9 @@ const Balances: React.FC = () => {
       address: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY',
       blockchain: 'Polkadot',
       balances: {
-        DOT: { amount: 850, usdValue: 6375, change24h: 2.3 },
-        USDC: { amount: 5000, usdValue: 5000, change24h: 0.0 },
+        DOT: { amount: 1300, usdValue: 9750, change24h: 2.3 },
       },
-      totalUsdValue: 11375,
+      totalUsdValue: 9750,
     },
     {
       id: '2',
@@ -77,9 +76,9 @@ const Balances: React.FC = () => {
       address: 'FcjmeNzPk3vgdENm1rHeiMCxFK96beUoi2kb59FmCoZtkGF',
       blockchain: 'Kusama',
       balances: {
-        KSM: { amount: 185.3, usdValue: 8338.5, change24h: -1.2 },
+        KSM: { amount: 160, usdValue: 7200, change24h: -1.2 },
       },
-      totalUsdValue: 8338.5,
+      totalUsdValue: 7200,
     },
     {
       id: '3',
@@ -87,10 +86,10 @@ const Balances: React.FC = () => {
       address: '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb',
       blockchain: 'Moonbeam',
       balances: {
-        GLMR: { amount: 45000, usdValue: 13500, change24h: 3.4 },
-        DOT: { amount: 200.5, usdValue: 1503.75, change24h: 2.3 },
+        GLMR: { amount: 40000, usdValue: 12000, change24h: 3.4 },
+        DOT: { amount: 350, usdValue: 2625, change24h: 2.3 },
       },
-      totalUsdValue: 15003.75,
+      totalUsdValue: 14625,
     },
     {
       id: '4',
@@ -98,9 +97,9 @@ const Balances: React.FC = () => {
       address: 'YQnbw3oWxBB2X6CJbE4XKvxN3FxZ4aXPn9xk3a5BvqjKJxY',
       blockchain: 'Astar',
       balances: {
-        ASTR: { amount: 125000, usdValue: 8750, change24h: 1.8 },
+        ASTR: { amount: 100000, usdValue: 7000, change24h: 1.8 },
       },
-      totalUsdValue: 8750,
+      totalUsdValue: 7000,
     },
     {
       id: '5',
@@ -108,10 +107,10 @@ const Balances: React.FC = () => {
       address: 'eCSrvbA5gGNQr7VZ48fkCX5vkt1H16F8Np9g2hYssRXHVJF',
       blockchain: 'Bifrost',
       balances: {
-        BNC: { amount: 8500, usdValue: 2550, change24h: 0.9 },
-        DOT: { amount: 200, usdValue: 1500, change24h: 2.3 },
+        BNC: { amount: 7000, usdValue: 2100, change24h: 0.9 },
+        DOT: { amount: 350, usdValue: 2625, change24h: 2.3 },
       },
-      totalUsdValue: 4050,
+      totalUsdValue: 4725,
     },
     {
       id: '6',
@@ -119,9 +118,9 @@ const Balances: React.FC = () => {
       address: 'a3dWi7hBvZxZGVWkcJXbPVTJhxCUxVbAkMARAjzLECrq9Y6',
       blockchain: 'Interlay',
       balances: {
-        iBTC: { amount: 0.15, usdValue: 10050, change24h: 2.1 },
+        iBTC: { amount: 0.1, usdValue: 6700, change24h: 2.1 },
       },
-      totalUsdValue: 10050,
+      totalUsdValue: 6700,
     },
   ])
 
@@ -190,11 +189,11 @@ const Balances: React.FC = () => {
         )
 
         // Generate realistic-looking data with some volatility
-        const baseValue = 300000
-        const trend = i * (20000 / dataPoints) // Slight upward trend
+        const baseValue = 48000
+        const trend = i * (2000 / dataPoints) // Slight upward trend
         // Use deterministic pseudo-random based on seed and index
         const pseudoRandom = ((seed * (i + 1) * 9301 + 49297) % 233280) / 233280
-        const volatility = Math.sin(i / 3) * 15000 + pseudoRandom * 10000
+        const volatility = Math.sin(i / 3) * 1500 + pseudoRandom * 1000
 
         const totalValue = baseValue + trend + volatility
 

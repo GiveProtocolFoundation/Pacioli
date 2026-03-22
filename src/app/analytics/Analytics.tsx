@@ -33,18 +33,18 @@ const kpis: KPI[] = [
   {
     id: 'total-value',
     label: 'Total Portfolio Value',
-    value: '$2,847,392.45',
-    change: 12.5,
-    changeLabel: '+$316,428 (30d)',
+    value: '$50,000.00',
+    change: 2.8,
+    changeLabel: '+$1,365 (30d)',
     icon: DollarSign,
     trend: 'up',
   },
   {
     id: 'crypto-holdings',
     label: 'Crypto Holdings',
-    value: '$1,924,180.22',
-    change: 18.3,
-    changeLabel: '+$298,620 (30d)',
+    value: '$47,900.00',
+    change: 3.2,
+    changeLabel: '+$1,480 (30d)',
     icon: Coins,
     trend: 'up',
   },
@@ -60,9 +60,9 @@ const kpis: KPI[] = [
   {
     id: 'monthly-revenue',
     label: 'Monthly Revenue',
-    value: '$84,295.50',
+    value: '$4,850.00',
     change: -5.2,
-    changeLabel: '-$4,621 vs last month',
+    changeLabel: '-$266 vs last month',
     icon: TrendingUp,
     trend: 'down',
   },
@@ -70,22 +70,22 @@ const kpis: KPI[] = [
 
 // Mock chart data for visualization
 const portfolioData = [
-  { date: '10/01', value: 2500000 },
-  { date: '10/03', value: 2550000 },
-  { date: '10/05', value: 2480000 },
-  { date: '10/07', value: 2620000 },
-  { date: '10/09', value: 2700000 },
-  { date: '10/11', value: 2680000 },
-  { date: '10/13', value: 2750000 },
-  { date: '10/15', value: 2847392 },
+  { date: '10/01', value: 46500 },
+  { date: '10/03', value: 47400 },
+  { date: '10/05', value: 47100 },
+  { date: '10/07', value: 48100 },
+  { date: '10/09', value: 48700 },
+  { date: '10/11', value: 48500 },
+  { date: '10/13', value: 49200 },
+  { date: '10/15', value: 50000 },
 ]
 
 const assetAllocation = [
-  { name: 'DOT', value: 35, amount: 673163, color: '#E6007A' },
-  { name: 'BTC', value: 28, amount: 538770, color: '#F7931A' },
-  { name: 'GLMR', value: 18, amount: 346352, color: '#53CBC8' },
-  { name: 'ASTR', value: 12, amount: 230901, color: '#0081FF' },
-  { name: 'Others', value: 7, amount: 134993, color: '#8B5CF6' },
+  { name: 'DOT', value: 30, amount: 15000, color: '#E6007A' },
+  { name: 'GLMR', value: 24, amount: 12000, color: '#53CBC8' },
+  { name: 'KSM', value: 14, amount: 7200, color: '#000000' },
+  { name: 'ASTR', value: 14, amount: 7000, color: '#0081FF' },
+  { name: 'Others', value: 18, amount: 8800, color: '#8B5CF6' },
 ]
 
 const KPICard: React.FC<{ kpi: KPI }> = ({ kpi }) => {
@@ -128,7 +128,7 @@ const TimePeriodDropdown: React.FC<{
 }> = ({ timePeriods, current, show, onToggle, onSelect }) => {
   const handleSelect = useCallback(
     (e: React.MouseEvent<HTMLButtonElement>) => {
-      const value = e.currentTarget.getAttribute('data-value') as TimePeriod
+      const value = e.currentTarget.dataset.value as TimePeriod
       onSelect(value)
     },
     [onSelect]
@@ -349,18 +349,7 @@ const Analytics: React.FC = () => {
                   fill="none"
                   stroke="#E6007A"
                   strokeWidth="40"
-                  strokeDasharray="176 352"
-                  transform="rotate(-90 100 100)"
-                />
-                <circle
-                  cx="100"
-                  cy="100"
-                  r="80"
-                  fill="none"
-                  stroke="#F7931A"
-                  strokeWidth="40"
-                  strokeDasharray="140 352"
-                  strokeDashoffset="-176"
+                  strokeDasharray="151 503"
                   transform="rotate(-90 100 100)"
                 />
                 <circle
@@ -370,8 +359,19 @@ const Analytics: React.FC = () => {
                   fill="none"
                   stroke="#53CBC8"
                   strokeWidth="40"
-                  strokeDasharray="90 352"
-                  strokeDashoffset="-316"
+                  strokeDasharray="121 503"
+                  strokeDashoffset="-151"
+                  transform="rotate(-90 100 100)"
+                />
+                <circle
+                  cx="100"
+                  cy="100"
+                  r="80"
+                  fill="none"
+                  stroke="#000000"
+                  strokeWidth="40"
+                  strokeDasharray="70 503"
+                  strokeDashoffset="-272"
                   transform="rotate(-90 100 100)"
                 />
                 <circle
@@ -381,8 +381,8 @@ const Analytics: React.FC = () => {
                   fill="none"
                   stroke="#0081FF"
                   strokeWidth="40"
-                  strokeDasharray="60 352"
-                  strokeDashoffset="-406"
+                  strokeDasharray="70 503"
+                  strokeDashoffset="-342"
                   transform="rotate(-90 100 100)"
                 />
                 <circle
@@ -392,8 +392,8 @@ const Analytics: React.FC = () => {
                   fill="none"
                   stroke="#8B5CF6"
                   strokeWidth="40"
-                  strokeDasharray="35 352"
-                  strokeDashoffset="-466"
+                  strokeDasharray="91 503"
+                  strokeDashoffset="-412"
                   transform="rotate(-90 100 100)"
                 />
               </svg>
@@ -476,7 +476,7 @@ const Analytics: React.FC = () => {
                   Total this week
                 </span>
                 <span className="font-semibold text-gray-900 dark:text-white">
-                  $142,850
+                  $2,850
                 </span>
               </div>
             </div>
@@ -510,7 +510,7 @@ const Analytics: React.FC = () => {
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-semibold text-green-600 dark:text-green-400">
-                    +$2,450.32
+                    +$125.50
                   </p>
                   <p className="text-xs text-gray-500 dark:text-[#94a3b8]">
                     This month
@@ -529,7 +529,7 @@ const Analytics: React.FC = () => {
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-semibold text-[#8b4e52] dark:text-[#a86e72]">
-                    +$1,820.18
+                    +$95.75
                   </p>
                   <p className="text-xs text-gray-500 dark:text-[#94a3b8]">
                     This month
@@ -548,7 +548,7 @@ const Analytics: React.FC = () => {
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-semibold text-purple-600 dark:text-purple-400">
-                    +$986.45
+                    +$48.20
                   </p>
                   <p className="text-xs text-gray-500 dark:text-[#94a3b8]">
                     This month
@@ -563,7 +563,7 @@ const Analytics: React.FC = () => {
                   Total Rewards
                 </span>
                 <span className="text-lg font-semibold text-gray-900 dark:text-white">
-                  $5,256.95
+                  $269.45
                 </span>
               </div>
             </div>

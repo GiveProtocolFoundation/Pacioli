@@ -182,7 +182,7 @@ const Transactions: React.FC = () => {
 
   const handleRowClick = useCallback(
     (e: React.MouseEvent<HTMLTableRowElement>) => {
-      const id = e.currentTarget.getAttribute('data-id')
+      const id = e.currentTarget.dataset.id
       if (id) {
         navigate(`/transactions/edit/${id}`)
       }
@@ -193,7 +193,7 @@ const Transactions: React.FC = () => {
   const handleEditButtonClick = useCallback(
     (e: React.MouseEvent<HTMLButtonElement>) => {
       e.stopPropagation()
-      const id = e.currentTarget.getAttribute('data-id')
+      const id = e.currentTarget.dataset.id
       if (id) {
         navigate(`/transactions/edit/${id}`)
       }

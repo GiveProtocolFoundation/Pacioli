@@ -7,6 +7,7 @@
  * Get a free API key at: https://etherscan.io/myapikey
  */
 
+import { invoke } from '@tauri-apps/api/core'
 import type { NetworkType, SubstrateTransaction } from '../wallet/types'
 
 interface MoonscanConfig {
@@ -84,14 +85,23 @@ class MoonscanService {
     },
   }
 
-  // API key can be set via environment variable or localStorage
-  private static getApiKey(): string | null {
-    // Check localStorage first (user-configured)
-    const storedKey = localStorage.getItem('etherscan_api_key')
+  // Retrieve API key: Tauri keychain → localStorage → env var
+  private static async getApiKey(): Promise<string | null> {
+    // Try Tauri keychain first (desktop app)
+    try {
+      const key = await invoke<string | null>('get_api_key', {
+        provider: 'etherscan',
+      })
+      if (key) return key
+    } catch {
+      // Tauri not available — fall through to browser fallbacks
+    }
+
+    // Check localStorage (browser dev mode, set via DataProviders page)
+    const storedKey = localStorage.getItem('pacioli_api_key_etherscan')
     if (storedKey) return storedKey
 
     // Check for environment variable (build-time configured)
-    // Note: In Vite, env vars must be prefixed with VITE_
     if (
       typeof import.meta !== 'undefined' &&
       import.meta.env?.VITE_ETHERSCAN_API_KEY
@@ -112,15 +122,8 @@ class MoonscanService {
   /**
    * Check if API key is configured
    */
-  static hasApiKey(): boolean {
-    return Boolean(MoonscanService.getApiKey())
-  }
-
-  /**
-   * Set API key (stores in localStorage)
-   */
-  static setApiKey(apiKey: string): void {
-    localStorage.setItem('etherscan_api_key', apiKey)
+  static async hasApiKey(): Promise<boolean> {
+    return Boolean(await MoonscanService.getApiKey())
   }
 
   /**
@@ -142,11 +145,11 @@ class MoonscanService {
       throw new Error(`Moonscan not configured for ${network}`)
     }
 
-    const apiKey = MoonscanService.getApiKey()
+    const apiKey = await MoonscanService.getApiKey()
     if (!apiKey) {
       throw new Error(
         'Etherscan API key required for EVM transaction history. ' +
-          'Get a free key at https://etherscan.io/myapikey and add it in Settings.'
+          'Get a free key at https://etherscan.io/myapikey and add it in Settings > Data Providers.'
       )
     }
 
@@ -237,7 +240,7 @@ class MoonscanService {
       throw new Error(`Moonscan not configured for ${network}`)
     }
 
-    const apiKey = MoonscanService.getApiKey()
+    const apiKey = await MoonscanService.getApiKey()
     if (!apiKey) {
       // Skip token transfers if no API key (already checked in fetchTransactions)
       return []

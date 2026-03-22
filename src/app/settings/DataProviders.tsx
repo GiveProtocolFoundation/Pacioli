@@ -12,6 +12,7 @@ import {
   AlertCircle,
   Gauge,
 } from 'lucide-react'
+import { isTauriAvailable } from '../../utils/tauri'
 
 // =============================================================================
 // Types
@@ -38,6 +39,24 @@ interface ProviderConfig {
   description: string
   docsUrl: string
   chains: string[]
+}
+
+// localStorage key prefix for browser-mode API key storage
+const LS_KEY_PREFIX = 'pacioli_api_key_'
+
+// Browser-mode fallback: build ProviderStatus from localStorage
+function getLocalStorageStatuses(): ProviderStatus[] {
+  return PROVIDER_CONFIGS.map(config => {
+    const hasKey = Boolean(localStorage.getItem(`${LS_KEY_PREFIX}${config.id}`))
+    return {
+      provider: config.id,
+      name: config.name,
+      has_api_key: hasKey,
+      rate_limit: hasKey ? 5 : 1,
+      turbo_rate_limit: 5,
+      is_turbo_mode: hasKey,
+    }
+  })
 }
 
 // Provider metadata with documentation links
@@ -145,6 +164,7 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
   const [showKey, setShowKey] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showSaveSuccess, setShowSaveSuccess] = useState(false)
 
   const hasKey = status?.has_api_key ?? false
   const isTurbo = status?.is_turbo_mode ?? false
@@ -179,6 +199,8 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
       await onSave(config.id, apiKey.trim())
       setApiKey('')
       setIsEditing(false)
+      setShowSaveSuccess(true)
+      setTimeout(() => setShowSaveSuccess(false), 3000)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save API key')
     } finally {
@@ -304,7 +326,9 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
             <>
               <div className="flex items-center gap-1.5 text-sm text-[#4a7c59] dark:text-[#6b9e7a]">
                 <Check className="w-4 h-4" />
-                <span>API key configured</span>
+                <span>
+                  {showSaveSuccess ? 'API key saved successfully!' : 'API key configured'}
+                </span>
               </div>
               <button
                 onClick={startEditing}
@@ -352,10 +376,14 @@ const DataProviders: React.FC = () => {
   // Fetch provider statuses on mount
   const fetchStatuses = useCallback(async () => {
     try {
-      const statuses = await invoke<ProviderStatus[]>(
-        'get_all_provider_statuses'
-      )
-      setProviderStatuses(statuses)
+      if (isTauriAvailable()) {
+        const statuses = await invoke<ProviderStatus[]>(
+          'get_all_provider_statuses'
+        )
+        setProviderStatuses(statuses)
+      } else {
+        setProviderStatuses(getLocalStorageStatuses())
+      }
       setError(null)
     } catch (err) {
       console.error('Failed to fetch provider statuses:', err)
@@ -371,12 +399,16 @@ const DataProviders: React.FC = () => {
 
   const handleSaveKey = useCallback(
     async (provider: string, key: string) => {
-      const result = await invoke<SaveApiKeyResult>('save_api_key', {
-        provider,
-        apiKey: key,
-      })
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to save API key')
+      if (isTauriAvailable()) {
+        const result = await invoke<SaveApiKeyResult>('save_api_key', {
+          provider,
+          apiKey: key,
+        })
+        if (!result.success) {
+          throw new Error(result.error || 'Failed to save API key')
+        }
+      } else {
+        localStorage.setItem(`${LS_KEY_PREFIX}${provider}`, key)
       }
       // Refresh statuses
       await fetchStatuses()
@@ -386,11 +418,15 @@ const DataProviders: React.FC = () => {
 
   const handleDeleteKey = useCallback(
     async (provider: string) => {
-      const result = await invoke<SaveApiKeyResult>('delete_api_key', {
-        provider,
-      })
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to remove API key')
+      if (isTauriAvailable()) {
+        const result = await invoke<SaveApiKeyResult>('delete_api_key', {
+          provider,
+        })
+        if (!result.success) {
+          throw new Error(result.error || 'Failed to remove API key')
+        }
+      } else {
+        localStorage.removeItem(`${LS_KEY_PREFIX}${provider}`)
       }
       // Refresh statuses
       await fetchStatuses()
@@ -505,9 +541,9 @@ const DataProviders: React.FC = () => {
           Security Note
         </h4>
         <p className="text-xs text-[#696557] dark:text-[#b8b3ac]">
-          API keys are stored in your operating system&apos;s secure keychain
-          (Keychain on macOS, Credential Manager on Windows, Secret Service on
-          Linux). Keys are never transmitted to Pacioli servers.
+          {isTauriAvailable()
+            ? "API keys are stored in your operating system's secure keychain (Keychain on macOS, Credential Manager on Windows, Secret Service on Linux). Keys are never transmitted to Pacioli servers."
+            : 'Running in browser mode. API keys are stored in localStorage for development. Use the desktop app (pnpm tauri:dev) for secure OS keychain storage.'}
         </p>
       </div>
     </div>
