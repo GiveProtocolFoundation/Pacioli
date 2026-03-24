@@ -244,7 +244,7 @@ impl MempoolTransaction {
         let total_input: u64 = inputs.iter().map(|i| i.value).sum();
         let total_output: u64 = outputs.iter().map(|o| o.value).sum();
 
-        let is_coinbase = self.vin.first().map_or(false, |i| i.is_coinbase);
+        let is_coinbase = self.vin.first().is_some_and(|i| i.is_coinbase);
 
         let confirmations = match (self.status.block_height, current_height) {
             (Some(block_height), Some(current)) if current >= block_height => {
