@@ -15,10 +15,12 @@ import {
 import { useTransactions } from '../../contexts/TransactionContext'
 import { useCurrency } from '../../contexts/CurrencyContext'
 import { useTokens } from '../../contexts/TokenContext'
-import { TransactionType, TransactionStatus } from '../../types/transaction'
+import { Transaction, TransactionType, TransactionStatus } from '../../types/transaction'
+import type { Token, Chain } from '../../types/digitalAssets'
 
 type FilterType = 'all' | 'revenue' | 'expense' | 'transfers'
 
+/** Tab navigation for filtering transactions by type (all, revenue, expense, transfers) */
 const FilterTabs = ({
   filter,
   transactions,
@@ -75,6 +77,68 @@ const FilterTabs = ({
   </div>
 )
 
+interface TransactionAmountCellProps {
+  transaction: Transaction
+  getToken: (id: string) => Token | undefined
+  getChain: (id: string) => Chain | undefined
+  currencySettings: { primaryCurrency: string }
+  handleImageError: (e: React.SyntheticEvent<HTMLImageElement>) => void
+}
+
+/** Renders the amount cell in a transaction table row, showing token icon, crypto amount, fiat value, and chain info */
+const TransactionAmountCell: React.FC<TransactionAmountCellProps> = ({
+  transaction,
+  getToken,
+  getChain,
+  currencySettings,
+  handleImageError,
+}) => {
+  const token = getToken(transaction.tokenId)
+  const chain = getChain(transaction.chainId)
+  return (
+    <>
+      <div className="flex items-center gap-2">
+        {token?.iconUrl && (
+          <img
+            src={token.iconUrl}
+            alt={token.symbol}
+            className="w-5 h-5 rounded-full"
+            onError={handleImageError}
+          />
+        )}
+        <div
+          className={`text-sm font-semibold ${
+            transaction.type === 'revenue'
+              ? 'text-[#7a9b6f]'
+              : transaction.type === 'expense'
+                ? 'text-[#9d6b6b]'
+                : 'text-[#c9a961]'
+          }`}
+        >
+          {transaction.type === 'revenue'
+            ? '+'
+            : transaction.type === 'expense'
+              ? '-'
+              : ''}
+          {transaction.amount}{' '}
+          {token?.symbol || transaction.crypto}
+        </div>
+      </div>
+      <div className="text-xs text-[#a39d94] dark:text-[#8b8580]">
+        {transaction.fiatCurrency ||
+          currencySettings.primaryCurrency}{' '}
+        {transaction.fiatValue.toLocaleString()}
+      </div>
+      {chain && (
+        <div className="text-xs text-[#a39d94] dark:text-[#8b8580]">
+          on {chain.chainName}
+        </div>
+      )}
+    </>
+  )
+}
+
+/** Transactions list page with search, filtering, and tabular display of all crypto transactions */
 const Transactions: React.FC = () => {
   const location = useLocation()
   const navigate = useNavigate()
@@ -107,6 +171,7 @@ const Transactions: React.FC = () => {
       })
   }, [transactions, filter, searchQuery])
 
+  /** Returns the appropriate directional arrow icon for a given transaction type */
   const getTypeIcon = (type: TransactionType) => {
     switch (type) {
       case 'revenue':
@@ -120,6 +185,7 @@ const Transactions: React.FC = () => {
     }
   }
 
+  /** Returns Tailwind CSS color classes for styling a transaction type badge */
   const getTypeColor = (type: TransactionType) => {
     switch (type) {
       case 'revenue':
@@ -133,6 +199,7 @@ const Transactions: React.FC = () => {
     }
   }
 
+  /** Returns Tailwind CSS color classes for styling a transaction status badge */
   const getStatusColor = (status: TransactionStatus) => {
     switch (status) {
       case 'completed':
@@ -337,51 +404,13 @@ const Transactions: React.FC = () => {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    {(() => {
-                      const token = getToken(transaction.tokenId)
-                      const chain = getChain(transaction.chainId)
-                      return (
-                        <>
-                          <div className="flex items-center gap-2">
-                            {token?.iconUrl && (
-                              <img
-                                src={token.iconUrl}
-                                alt={token.symbol}
-                                className="w-5 h-5 rounded-full"
-                                onError={handleImageError}
-                              />
-                            )}
-                            <div
-                              className={`text-sm font-semibold ${
-                                transaction.type === 'revenue'
-                                  ? 'text-[#7a9b6f]'
-                                  : transaction.type === 'expense'
-                                    ? 'text-[#9d6b6b]'
-                                    : 'text-[#c9a961]'
-                              }`}
-                            >
-                              {transaction.type === 'revenue'
-                                ? '+'
-                                : transaction.type === 'expense'
-                                  ? '-'
-                                  : ''}
-                              {transaction.amount}{' '}
-                              {token?.symbol || transaction.crypto}
-                            </div>
-                          </div>
-                          <div className="text-xs text-[#a39d94] dark:text-[#8b8580]">
-                            {transaction.fiatCurrency ||
-                              currencySettings.primaryCurrency}{' '}
-                            {transaction.fiatValue.toLocaleString()}
-                          </div>
-                          {chain && (
-                            <div className="text-xs text-[#a39d94] dark:text-[#8b8580]">
-                              on {chain.chainName}
-                            </div>
-                          )}
-                        </>
-                      )
-                    })()}
+                    <TransactionAmountCell
+                      transaction={transaction}
+                      getToken={getToken}
+                      getChain={getChain}
+                      currencySettings={currencySettings}
+                      handleImageError={handleImageError}
+                    />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span

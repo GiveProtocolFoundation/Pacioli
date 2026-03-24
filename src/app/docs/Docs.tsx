@@ -237,6 +237,7 @@ const SectionItems: React.FC<{
   </div>
 )
 
+/** Documentation browser with hierarchical sidebar navigation and content placeholder area */
 const Docs: React.FC = () => {
   const [expandedSections, setExpandedSections] = useState<string[]>([
     'getting-started',
@@ -411,9 +412,9 @@ const Docs: React.FC = () => {
                   </div>
 
                   <div>
-                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mb-3"></div>
-                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full mb-2"></div>
-                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-4/5"></div>
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mb-3" />
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full mb-2" />
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-4/5" />
                   </div>
                 </div>
 

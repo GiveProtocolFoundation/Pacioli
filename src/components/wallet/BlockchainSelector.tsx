@@ -31,6 +31,7 @@ interface BlockchainSelectorProps {
   disabled?: boolean
 }
 
+/** Dropdown selector for choosing a blockchain network with search filtering and grouped options */
 const BlockchainSelector: React.FC<BlockchainSelectorProps> = ({
   value,
   onChange,

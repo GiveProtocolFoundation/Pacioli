@@ -89,6 +89,7 @@ const LogoUpload: React.FC<{
   </div>
 )
 
+/** Organization information form section with logo upload, name, tax ID, and address fields */
 const OrganizationInformationSection: React.FC<
   OrganizationInformationSectionProps
 > = ({ organizationSettings, onOrganizationChange, onLogoUpload }) => {
@@ -339,6 +340,7 @@ interface FiscalYearSectionProps {
   ) => void
 }
 
+/** Warning message advising users to consult an accountant before changing the fiscal year */
 const FiscalYearWarning: React.FC = () => (
   <div className="flex">
     <AlertCircle className="w-5 h-5 text-[#8b4e52] dark:text-[#a86e72] flex-shrink-0" />
@@ -351,6 +353,7 @@ const FiscalYearWarning: React.FC = () => (
   </div>
 )
 
+/** Select option groups for fiscal year end month, covering calendar and non-calendar year ends */
 const FiscalYearOptions: React.FC = () => (
   <>
     <optgroup label="Calendar Year End">
@@ -372,6 +375,7 @@ const FiscalYearOptions: React.FC = () => (
   </>
 )
 
+/** Fiscal year configuration section with warning banner and year-end selector */
 const FiscalYearSection: React.FC<FiscalYearSectionProps> = ({
   systemSettings,
   onSystemChange,
@@ -426,6 +430,7 @@ interface TimezoneSelectProps {
   onChange: (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => void
 }
 
+/** Timezone dropdown selector with UTC offset labels */
 const TimezoneSelect: React.FC<TimezoneSelectProps> = ({ value, onChange }) => (
   <div>
     <label
@@ -625,6 +630,7 @@ const TimezoneSelect: React.FC<TimezoneSelectProps> = ({ value, onChange }) => (
   </div>
 )
 
+/** General settings page with organization info, fiscal year, regional, and language configuration */
 const GeneralSettings: React.FC<GeneralSettingsProps> = ({
   userType = 'organization',
 }) => {

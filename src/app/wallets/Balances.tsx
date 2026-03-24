@@ -49,6 +49,179 @@ type TimePeriod =
   | 'this_year'
   | 'last_year'
 
+/** SVG linear gradient definitions for the stacked area chart, one per currency */
+const ChartGradients = ({
+  currencyColors,
+}: {
+  currencyColors: { [key: string]: string }
+}) => (
+  <>
+    {Object.keys(currencyColors).map(currency => (
+      <linearGradient
+        key={currency}
+        id={`color${currency}`}
+        x1="0"
+        y1="0"
+        x2="0"
+        y2="1"
+      >
+        <stop
+          offset="5%"
+          stopColor={currencyColors[currency]}
+          stopOpacity={0.8}
+        />
+        <stop
+          offset="95%"
+          stopColor={currencyColors[currency]}
+          stopOpacity={0.1}
+        />
+      </linearGradient>
+    ))}
+  </>
+)
+
+/** Stacked area chart showing wallet balance history over time by currency */
+const WalletBalanceChart = ({
+  chartData,
+  currencyColors,
+  formatYAxisTick,
+  formatCurrency,
+}: {
+  chartData: { date: string; [key: string]: string | number }[]
+  currencyColors: { [key: string]: string }
+  formatYAxisTick: (value: number) => string
+  formatCurrency: (value: number) => string
+}) => {
+  const tooltipFormatter = useCallback(
+    (value: number) => formatCurrency(value),
+    [formatCurrency]
+  )
+
+  const renderArea = useCallback(
+    (currency: string) => (
+      <Area
+        key={currency}
+        type="monotone"
+        dataKey={currency}
+        stackId="1"
+        stroke={currencyColors[currency]}
+        fillOpacity={1}
+        fill={`url(#color${currency})`}
+      />
+    ),
+    [currencyColors]
+  )
+
+  return (
+    <ResponsiveContainer width="100%" height={400}>
+      <AreaChart data={chartData}>
+        <defs>
+          <ChartGradients currencyColors={currencyColors} />
+        </defs>
+        <XAxis dataKey="date" stroke="#888888" />
+        <YAxis tickFormatter={formatYAxisTick} />
+        {Object.keys(currencyColors).map(currency => renderArea(currency))}
+        <Tooltip
+          formatter={tooltipFormatter}
+          contentStyle={{ backgroundColor: '#1F2937' }}
+          itemStyle={{ color: '#f9fafb' }}
+          labelStyle={{ color: '#e5e7eb' }}
+        />
+      </AreaChart>
+    </ResponsiveContainer>
+  )
+}
+
+interface PortfolioSummaryProps {
+  totalPortfolioValue: number
+  walletCount: number
+  formatCurrency: (value: number) => string
+}
+
+/** Portfolio summary card showing total value and wallet count */
+const PortfolioSummary: React.FC<PortfolioSummaryProps> = ({
+  totalPortfolioValue,
+  walletCount,
+  formatCurrency,
+}) => (
+  <div className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg shadow-sm border border-[rgba(201,169,97,0.15)] p-6 mb-8">
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="text-sm font-medium text-[#696557] dark:text-[#b8b3ac]">
+          Total Portfolio Value
+        </p>
+        <p className="text-3xl font-semibold text-[#1a1815] dark:text-[#f5f3f0] mt-2">
+          {formatCurrency(totalPortfolioValue)}
+        </p>
+      </div>
+      <div className="text-right">
+        <p className="text-sm font-medium text-[#696557] dark:text-[#b8b3ac]">
+          Active Wallets
+        </p>
+        <p className="text-2xl font-semibold text-[#1a1815] dark:text-[#f5f3f0] mt-2">
+          {walletCount}
+        </p>
+      </div>
+    </div>
+  </div>
+)
+
+interface BalanceHistorySectionProps {
+  selectedPeriod: TimePeriod
+  timePeriodOptions: { value: TimePeriod; label: string }[]
+  handlePeriodChange: (event: React.MouseEvent<HTMLButtonElement>) => void
+  chartData: ChartDataPoint[]
+  currencyColors: { [key: string]: string }
+  formatYAxisTick: (value: number) => string
+  formatCurrency: (value: number) => string
+}
+
+/** Balance history chart section with time period selector buttons and stacked area chart */
+const BalanceHistorySection: React.FC<BalanceHistorySectionProps> = ({
+  selectedPeriod,
+  timePeriodOptions,
+  handlePeriodChange,
+  chartData,
+  currencyColors,
+  formatYAxisTick,
+  formatCurrency,
+}) => (
+  <div className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg shadow-sm border border-[rgba(201,169,97,0.15)] mb-8">
+    <div className="px-6 py-4 border-b border-[rgba(201,169,97,0.15)]">
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <h2 className="text-lg font-semibold text-[#1a1815] dark:text-[#f5f3f0]">
+          Balance History
+        </h2>
+        <div className="flex flex-wrap gap-2">
+          {timePeriodOptions.map(option => (
+            <button
+              key={option.value}
+              data-period={option.value}
+              onClick={handlePeriodChange}
+              className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${
+                selectedPeriod === option.value
+                  ? 'bg-[#8b4e52] text-white'
+                  : 'bg-[#f3f1ed] dark:bg-[#1a1815] text-[#696557] dark:text-[#b8b3ac] hover:bg-[#ede8e0] dark:hover:bg-[#2a2620]'
+              }`}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+    <div className="p-6">
+      <WalletBalanceChart
+        chartData={chartData}
+        currencyColors={currencyColors}
+        formatYAxisTick={formatYAxisTick}
+        formatCurrency={formatCurrency}
+      />
+    </div>
+  </div>
+)
+
+/** Wallet balances page displaying portfolio value, balance history chart, and per-wallet breakdowns */
 const Balances: React.FC = () => {
   const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>('30_days')
   useTheme() // Hook called for potential side effects
@@ -276,87 +449,6 @@ const Balances: React.FC = () => {
     []
   )
 
-  const ChartGradients = ({
-    currencyColors,
-  }: {
-    currencyColors: { [key: string]: string }
-  }) => (
-    <>
-      {Object.keys(currencyColors).map(currency => (
-        <linearGradient
-          key={currency}
-          id={`color${currency}`}
-          x1="0"
-          y1="0"
-          x2="0"
-          y2="1"
-        >
-          <stop
-            offset="5%"
-            stopColor={currencyColors[currency]}
-            stopOpacity={0.8}
-          />
-          <stop
-            offset="95%"
-            stopColor={currencyColors[currency]}
-            stopOpacity={0.1}
-          />
-        </linearGradient>
-      ))}
-    </>
-  )
-
-  const WalletBalanceChart = ({
-    chartData,
-    currencyColors,
-    formatYAxisTick,
-    formatCurrency,
-  }: {
-    chartData: { date: string; [key: string]: string | number }[]
-    currencyColors: { [key: string]: string }
-    formatYAxisTick: (value: number) => string
-    formatCurrency: (value: number) => string
-  }) => {
-    const tooltipFormatter = useCallback(
-      (value: number) => formatCurrency(value),
-      [formatCurrency]
-    )
-
-    const renderArea = useCallback(
-      (currency: string) => (
-        <Area
-          key={currency}
-          type="monotone"
-          dataKey={currency}
-          stackId="1"
-          stroke={currencyColors[currency]}
-          fillOpacity={1}
-          fill={`url(#color${currency})`}
-        />
-      ),
-      [currencyColors]
-    )
-
-    return (
-      <ResponsiveContainer width="100%" height={400}>
-        <AreaChart data={chartData}>
-          <defs>
-            <ChartGradients currencyColors={currencyColors} />
-          </defs>
-          <XAxis dataKey="date" stroke="#888888" />
-          <YAxis tickFormatter={formatYAxisTick} />
-          {Object.keys(currencyColors).map(currency => renderArea(currency))}
-          <Tooltip
-            formatter={tooltipFormatter}
-            contentStyle={{ backgroundColor: '#1F2937' }}
-            itemStyle={{ color: '#f9fafb' }}
-            labelStyle={{ color: '#e5e7eb' }}
-          />
-        </AreaChart>
-      </ResponsiveContainer>
-    )
-  }
-
   return (
     <div className="min-h-screen ledger-background">
       {/* Header */}
@@ -388,61 +480,22 @@ const Balances: React.FC = () => {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Portfolio Summary */}
-        <div className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg shadow-sm border border-[rgba(201,169,97,0.15)] p-6 mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-[#696557] dark:text-[#b8b3ac]">
-                Total Portfolio Value
-              </p>
-              <p className="text-3xl font-semibold text-[#1a1815] dark:text-[#f5f3f0] mt-2">
-                {formatCurrency(totalPortfolioValue)}
-              </p>
-            </div>
-            <div className="text-right">
-              <p className="text-sm font-medium text-[#696557] dark:text-[#b8b3ac]">
-                Active Wallets
-              </p>
-              <p className="text-2xl font-semibold text-[#1a1815] dark:text-[#f5f3f0] mt-2">
-                {wallets.length}
-              </p>
-            </div>
-          </div>
-        </div>
+        <PortfolioSummary
+          totalPortfolioValue={totalPortfolioValue}
+          walletCount={wallets.length}
+          formatCurrency={formatCurrency}
+        />
 
         {/* Stacked Area Chart */}
-        <div className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg shadow-sm border border-[rgba(201,169,97,0.15)] mb-8">
-          <div className="px-6 py-4 border-b border-[rgba(201,169,97,0.15)]">
-            <div className="flex items-center justify-between flex-wrap gap-4">
-              <h2 className="text-lg font-semibold text-[#1a1815] dark:text-[#f5f3f0]">
-                Balance History
-              </h2>
-              <div className="flex flex-wrap gap-2">
-                {timePeriodOptions.map(option => (
-                  <button
-                    key={option.value}
-                    data-period={option.value}
-                    onClick={handlePeriodChange}
-                    className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${
-                      selectedPeriod === option.value
-                        ? 'bg-[#8b4e52] text-white'
-                        : 'bg-[#f3f1ed] dark:bg-[#1a1815] text-[#696557] dark:text-[#b8b3ac] hover:bg-[#ede8e0] dark:hover:bg-[#2a2620]'
-                    }`}
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-          <div className="p-6">
-            <WalletBalanceChart
-              chartData={chartData}
-              currencyColors={currencyColors}
-              formatYAxisTick={formatYAxisTick}
-              formatCurrency={formatCurrency}
-            />
-          </div>
-        </div>
+        <BalanceHistorySection
+          selectedPeriod={selectedPeriod}
+          timePeriodOptions={timePeriodOptions}
+          handlePeriodChange={handlePeriodChange}
+          chartData={chartData}
+          currencyColors={currencyColors}
+          formatYAxisTick={formatYAxisTick}
+          formatCurrency={formatCurrency}
+        />
       </main>
     </div>
   )

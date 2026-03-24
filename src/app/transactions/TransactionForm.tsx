@@ -29,6 +29,7 @@ import {
 import TokenSelector from '../../components/common/TokenSelector'
 import {
   TransactionCategory,
+  TransactionTypeDefinition,
   getAllCategories,
   getAllSubcategories,
   getTransactionTypesBySubcategory,
@@ -39,10 +40,403 @@ import {
   TrackedWallet,
 } from '../../services/database/storageService'
 import { ConnectedWallet } from '../../services/wallet/types'
+import { Entity } from '../../services/persistence/types'
 
 /** Transaction type code for transfers between own wallets */
 const TRANSFER_OWN_WALLETS_CODE = 'DSP_TRANSFER_OWN'
 
+/** Wallet option derived from connected or tracked wallets */
+interface WalletOption {
+  address: string
+  name: string
+  displayName: string
+  walletType: string
+  source: 'extension' | 'tracked'
+}
+
+/** Props for the CounterpartySelector sub-component */
+interface CounterpartySelectorProps {
+  isTransferBetweenOwnWallets: boolean
+  formData: TransactionFormData
+  selectedEntity: Entity | undefined
+  entitySearchQuery: string
+  showEntityDropdown: boolean
+  filteredEntities: Entity[]
+  entityClickHandlers: Record<string, () => void>
+  destinationWalletOptions: WalletOption[]
+  handleDestinationWalletChange: (e: React.ChangeEvent<HTMLSelectElement>) => void
+  handleClearEntity: () => void
+  handleEntitySearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  handleEntityInputFocus: () => void
+  handleEntityInputBlur: () => void
+}
+
+/**
+ * Renders either the destination wallet selector (for transfers between own wallets)
+ * or the entity/counterparty selector (for external transactions).
+ * Extracted from TransactionForm to reduce JSX nesting depth.
+ */
+const CounterpartySelector: React.FC<CounterpartySelectorProps> = ({
+  isTransferBetweenOwnWallets,
+  formData,
+  selectedEntity,
+  entitySearchQuery,
+  showEntityDropdown,
+  filteredEntities,
+  entityClickHandlers,
+  destinationWalletOptions,
+  handleDestinationWalletChange,
+  handleClearEntity,
+  handleEntitySearchChange,
+  handleEntityInputFocus,
+  handleEntityInputBlur,
+}) => {
+  if (isTransferBetweenOwnWallets) {
+    return (
+      <div className="p-4 bg-[#c9a961]/10 dark:bg-[#c9a961]/20 rounded-lg border border-[#c9a961]/30">
+        <label
+          htmlFor="txn-destination-wallet"
+          className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
+        >
+          <div className="flex items-center">
+            <ArrowRightLeft className="w-4 h-4 mr-2 text-[#8b4e52]" />
+            Destination Wallet
+          </div>
+        </label>
+        <p className="text-xs text-[#696557] dark:text-[#a39d94] mb-2">
+          Select the receiving wallet for this internal transfer
+        </p>
+        <select
+          id="txn-destination-wallet"
+          value={formData.destinationWallet}
+          onChange={handleDestinationWalletChange}
+          className="w-full px-4 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
+        >
+          <option value="">Select destination wallet...</option>
+          {destinationWalletOptions.map(wallet => (
+            <option key={wallet.address} value={wallet.address}>
+              {wallet.displayName} - {wallet.walletType}
+            </option>
+          ))}
+        </select>
+        {destinationWalletOptions.length === 0 && formData.wallet && (
+          <p className="mt-2 text-xs text-[#9d6b6b]">
+            No other wallets available. Add more wallets in the Wallet
+            Manager.
+          </p>
+        )}
+        {!formData.wallet && (
+          <p className="mt-2 text-xs text-[#9d6b6b]">
+            Please select a source wallet first.
+          </p>
+        )}
+      </div>
+    )
+  }
+
+  return (
+    /* Entity/Counterparty Selector (for external transactions) */
+    <div>
+      <label
+        htmlFor="txn-entity"
+        className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
+      >
+        <div className="flex items-center">
+          <Users className="w-4 h-4 mr-2" />
+          Counterparty (Optional)
+        </div>
+      </label>
+      <p className="text-xs text-gray-500 dark:text-[#a39d94] mb-2">
+        Link this transaction to a vendor, customer, or other entity
+      </p>
+
+      {selectedEntity ? (
+        <div className="flex items-center gap-2 p-3 bg-[#7a9b6f]/10 dark:bg-[#7a9b6f]/20 border border-[#7a9b6f]/30 dark:border-[#7a9b6f]/40 rounded-lg">
+          <div className="flex-1">
+            <div className="font-medium text-[#1a1815] dark:text-[#f5f3f0]">
+              {selectedEntity.display_name || selectedEntity.name}
+            </div>
+            <div className="text-xs text-gray-500 dark:text-[#a39d94]">
+              {selectedEntity.entity_type.charAt(0).toUpperCase() +
+                selectedEntity.entity_type.slice(1)}
+              {selectedEntity.category &&
+                ` · ${selectedEntity.category}`}
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={handleClearEntity}
+            className="p-1 text-[#a39d94] hover:text-[#696557] dark:hover:text-[#b8b3ac]"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      ) : (
+        <div className="relative">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#a39d94]" />
+            <input
+              id="txn-entity"
+              type="text"
+              value={entitySearchQuery}
+              onChange={handleEntitySearchChange}
+              onFocus={handleEntityInputFocus}
+              onBlur={handleEntityInputBlur}
+              placeholder="Search entities by name..."
+              className="w-full pl-16 pr-4 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
+            />
+          </div>
+
+          {showEntityDropdown && (
+            <div className="absolute z-10 w-full mt-1 bg-[#fafaf8] dark:bg-[#1a1815] border border-[rgba(201,169,97,0.15)] rounded-lg shadow-lg max-h-60 overflow-y-auto">
+              {filteredEntities.length > 0 ? (
+                filteredEntities.map(entity => (
+                  <button
+                    key={entity.id}
+                    type="button"
+                    onClick={entityClickHandlers[entity.id]}
+                    className="w-full px-4 py-2 text-left hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620] flex items-center justify-between"
+                  >
+                    <div>
+                      <div className="font-medium text-[#1a1815] dark:text-[#f5f3f0]">
+                        {entity.display_name || entity.name}
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-[#a39d94]">
+                        {entity.entity_type.charAt(0).toUpperCase() +
+                          entity.entity_type.slice(1)}
+                        {entity.category && ` · ${entity.category}`}
+                      </div>
+                    </div>
+                  </button>
+                ))
+              ) : (
+                <div className="px-4 py-3 text-center text-gray-500 dark:text-[#a39d94]">
+                  <p className="text-sm">No entities found</p>
+                  <a
+                    href="/entities"
+                    className="text-xs text-[#8b4e52] dark:text-[#a86e72] hover:underline inline-flex items-center gap-1 mt-1"
+                  >
+                    <Plus className="w-3 h-3" />
+                    Create new entity
+                  </a>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+/** Props for the TransactionClassificationSection sub-component */
+interface TransactionClassificationSectionProps {
+  formData: TransactionFormData
+  availableCategories: TransactionCategory[]
+  availableSubcategories: string[]
+  availableTransactionTypes: TransactionTypeDefinition[]
+  selectedTransactionType: TransactionTypeDefinition | undefined
+  handleCategoryChange: (e: React.ChangeEvent<HTMLSelectElement>) => void
+  handleTransactionSubcategoryChange: (e: React.ChangeEvent<HTMLSelectElement>) => void
+  handleTransactionTypeCodeChange: (e: React.ChangeEvent<HTMLSelectElement>) => void
+}
+
+/**
+ * Renders the "Transaction Classification" section with category, subcategory,
+ * and transaction type dropdowns, plus suggested accounts display.
+ * Extracted from TransactionForm to reduce JSX nesting depth.
+ */
+const TransactionClassificationSection: React.FC<TransactionClassificationSectionProps> = ({
+  formData,
+  availableCategories,
+  availableSubcategories,
+  availableTransactionTypes,
+  selectedTransactionType,
+  handleCategoryChange,
+  handleTransactionSubcategoryChange,
+  handleTransactionTypeCodeChange,
+}) => (
+  <div className="space-y-4 p-4 bg-[#c9a961]/10 dark:bg-[#c9a961]/20 rounded-lg border border-[#c9a961]/30 dark:border-[#c9a961]/40">
+    <h3 className="text-sm font-semibold text-[#8b4e52] dark:text-[#d4b87a] flex items-center">
+      <Tag className="w-4 h-4 mr-2" />
+      Transaction Classification
+    </h3>
+
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div>
+        <label
+          htmlFor="txn-category"
+          className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
+        >
+          Category
+        </label>
+        <select
+          id="txn-category"
+          value={formData.transactionCategory || ''}
+          onChange={handleCategoryChange}
+          className="w-full px-4 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
+        >
+          <option value="">Select category</option>
+          {availableCategories.map(cat => (
+            <option key={cat} value={cat}>
+              {cat}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div>
+        <label
+          htmlFor="txn-subcategory"
+          className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
+        >
+          Subcategory
+        </label>
+        <select
+          id="txn-subcategory"
+          value={formData.transactionSubcategory || ''}
+          onChange={handleTransactionSubcategoryChange}
+          disabled={!formData.transactionCategory}
+          className="w-full px-4 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961] disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <option value="">Select subcategory</option>
+          {availableSubcategories.map(subcat => (
+            <option key={subcat} value={subcat}>
+              {subcat}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div>
+        <label
+          htmlFor="txn-type"
+          className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
+        >
+          Transaction Type
+        </label>
+        <select
+          id="txn-type"
+          value={formData.transactionTypeCode || ''}
+          onChange={handleTransactionTypeCodeChange}
+          disabled={!formData.transactionSubcategory}
+          className="w-full px-4 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961] disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <option value="">Select transaction type</option>
+          {availableTransactionTypes.map(txnType => (
+            <option key={txnType.code} value={txnType.code}>
+              {txnType.transactionType}
+            </option>
+          ))}
+        </select>
+      </div>
+    </div>
+
+    {selectedTransactionType && (
+      <div className="mt-4 p-3 bg-[#fafaf8] dark:bg-[#1a1815] rounded-lg border border-[rgba(201,169,97,0.15)]">
+        <h4 className="text-xs font-semibold text-[#1a1815] dark:text-[#b8b3ac] mb-2">
+          Suggested Accounts
+        </h4>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+          <div>
+            <span className="font-medium text-[#7a9b6f] dark:text-[#8faf84]">
+              Debit:
+            </span>
+            <p className="text-[#1a1815] dark:text-[#f5f3f0] mt-1">
+              {selectedTransactionType.debitAccounts}
+            </p>
+          </div>
+          <div>
+            <span className="font-medium text-[#9d6b6b] dark:text-[#b88585]">
+              Credit:
+            </span>
+            <p className="text-[#1a1815] dark:text-[#f5f3f0] mt-1">
+              {selectedTransactionType.creditAccounts}
+            </p>
+          </div>
+        </div>
+      </div>
+    )}
+  </div>
+)
+
+/** Props for the AmountSection sub-component */
+interface AmountSectionProps {
+  formData: TransactionFormData
+  errors: Partial<Record<keyof TransactionFormData, string>>
+  selectedToken: Token | undefined
+  currencySettings: { primaryCurrency: string }
+  handleAmountInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  handleFiatValueChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+}
+
+/**
+ * Renders the amount and fiat value input grid.
+ * Extracted from TransactionForm to reduce JSX nesting depth.
+ */
+const AmountSection: React.FC<AmountSectionProps> = ({
+  formData,
+  errors,
+  selectedToken,
+  currencySettings,
+  handleAmountInputChange,
+  handleFiatValueChange,
+}) => (
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div>
+      <label
+        htmlFor="txn-amount"
+        className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
+      >
+        <div className="flex items-center">
+          <DollarSign className="w-4 h-4 mr-2" />
+          Amount
+        </div>
+      </label>
+      <input
+        id="txn-amount"
+        type="number"
+        step="0.000001"
+        value={formData.amount}
+        onChange={handleAmountInputChange}
+        placeholder="0.00"
+        className={`w-full px-4 py-2 border rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] ${
+          errors.amount
+            ? 'border-[#9d6b6b]'
+            : 'border-[rgba(201,169,97,0.15)]'
+        } focus:outline-none focus:ring-2 focus:ring-[#c9a961]`}
+      />
+      {errors.amount && (
+        <p className="mt-1 text-sm text-[#9d6b6b]">{errors.amount}</p>
+      )}
+      {selectedToken && (
+        <p className="mt-1 text-xs text-[#696557] dark:text-[#b8b3ac]">
+          {selectedToken.symbol} ({selectedToken.decimals} decimals)
+        </p>
+      )}
+    </div>
+
+    <div>
+      <label
+        htmlFor="txn-fiat-value"
+        className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
+      >
+        {currencySettings.primaryCurrency} Value
+      </label>
+      <input
+        id="txn-fiat-value"
+        type="number"
+        step="0.01"
+        value={formData.fiatValue}
+        onChange={handleFiatValueChange}
+        placeholder="0.00"
+        className="w-full px-4 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
+      />
+    </div>
+  </div>
+)
+
+/** Form for creating and editing crypto transactions with classification, entity linking, and wallet selection */
 const TransactionForm: React.FC = () => {
   const navigate = useNavigate()
   const { id } = useParams<{ id?: string }>()
@@ -123,13 +517,7 @@ const TransactionForm: React.FC = () => {
 
   // Build wallet options from BOTH connected wallets AND tracked wallets
   const walletOptions = useMemo(() => {
-    const options: Array<{
-      address: string
-      name: string
-      displayName: string
-      walletType: string
-      source: 'extension' | 'tracked'
-    }> = []
+    const options: WalletOption[] = []
 
     // Add wallets from browser extensions
     connectedWallets.forEach(wallet => {
@@ -646,243 +1034,32 @@ const TransactionForm: React.FC = () => {
               )}
             </div>
 
-            {/* Destination Wallet Selector (for transfers between own wallets) */}
-            {isTransferBetweenOwnWallets ? (
-              <div className="p-4 bg-[#c9a961]/10 dark:bg-[#c9a961]/20 rounded-lg border border-[#c9a961]/30">
-                <label
-                  htmlFor="txn-destination-wallet"
-                  className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
-                >
-                  <div className="flex items-center">
-                    <ArrowRightLeft className="w-4 h-4 mr-2 text-[#8b4e52]" />
-                    Destination Wallet
-                  </div>
-                </label>
-                <p className="text-xs text-[#696557] dark:text-[#a39d94] mb-2">
-                  Select the receiving wallet for this internal transfer
-                </p>
-                <select
-                  id="txn-destination-wallet"
-                  value={formData.destinationWallet}
-                  onChange={handleDestinationWalletChange}
-                  className="w-full px-4 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
-                >
-                  <option value="">Select destination wallet...</option>
-                  {destinationWalletOptions.map(wallet => (
-                    <option key={wallet.address} value={wallet.address}>
-                      {wallet.displayName} - {wallet.walletType}
-                    </option>
-                  ))}
-                </select>
-                {destinationWalletOptions.length === 0 && formData.wallet && (
-                  <p className="mt-2 text-xs text-[#9d6b6b]">
-                    No other wallets available. Add more wallets in the Wallet
-                    Manager.
-                  </p>
-                )}
-                {!formData.wallet && (
-                  <p className="mt-2 text-xs text-[#9d6b6b]">
-                    Please select a source wallet first.
-                  </p>
-                )}
-              </div>
-            ) : (
-              /* Entity/Counterparty Selector (for external transactions) */
-              <div>
-                <label
-                  htmlFor="txn-entity"
-                  className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
-                >
-                  <div className="flex items-center">
-                    <Users className="w-4 h-4 mr-2" />
-                    Counterparty (Optional)
-                  </div>
-                </label>
-                <p className="text-xs text-gray-500 dark:text-[#a39d94] mb-2">
-                  Link this transaction to a vendor, customer, or other entity
-                </p>
+            <CounterpartySelector
+              isTransferBetweenOwnWallets={isTransferBetweenOwnWallets}
+              formData={formData}
+              selectedEntity={selectedEntity}
+              entitySearchQuery={entitySearchQuery}
+              showEntityDropdown={showEntityDropdown}
+              filteredEntities={filteredEntities}
+              entityClickHandlers={entityClickHandlers}
+              destinationWalletOptions={destinationWalletOptions}
+              handleDestinationWalletChange={handleDestinationWalletChange}
+              handleClearEntity={handleClearEntity}
+              handleEntitySearchChange={handleEntitySearchChange}
+              handleEntityInputFocus={handleEntityInputFocus}
+              handleEntityInputBlur={handleEntityInputBlur}
+            />
 
-                {selectedEntity ? (
-                  <div className="flex items-center gap-2 p-3 bg-[#7a9b6f]/10 dark:bg-[#7a9b6f]/20 border border-[#7a9b6f]/30 dark:border-[#7a9b6f]/40 rounded-lg">
-                    <div className="flex-1">
-                      <div className="font-medium text-[#1a1815] dark:text-[#f5f3f0]">
-                        {selectedEntity.display_name || selectedEntity.name}
-                      </div>
-                      <div className="text-xs text-gray-500 dark:text-[#a39d94]">
-                        {selectedEntity.entity_type.charAt(0).toUpperCase() +
-                          selectedEntity.entity_type.slice(1)}
-                        {selectedEntity.category &&
-                          ` · ${selectedEntity.category}`}
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={handleClearEntity}
-                      className="p-1 text-[#a39d94] hover:text-[#696557] dark:hover:text-[#b8b3ac]"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                ) : (
-                  <div className="relative">
-                    <div className="relative">
-                      <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#a39d94]" />
-                      <input
-                        id="txn-entity"
-                        type="text"
-                        value={entitySearchQuery}
-                        onChange={handleEntitySearchChange}
-                        onFocus={handleEntityInputFocus}
-                        onBlur={handleEntityInputBlur}
-                        placeholder="Search entities by name..."
-                        className="w-full pl-4 pr-10 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
-                      />
-                    </div>
-
-                    {showEntityDropdown && (
-                      <div className="absolute z-10 w-full mt-1 bg-[#fafaf8] dark:bg-[#1a1815] border border-[rgba(201,169,97,0.15)] rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                        {filteredEntities.length > 0 ? (
-                          filteredEntities.map(entity => (
-                            <button
-                              key={entity.id}
-                              type="button"
-                              onClick={entityClickHandlers[entity.id]}
-                              className="w-full px-4 py-2 text-left hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620] flex items-center justify-between"
-                            >
-                              <div>
-                                <div className="font-medium text-[#1a1815] dark:text-[#f5f3f0]">
-                                  {entity.display_name || entity.name}
-                                </div>
-                                <div className="text-xs text-gray-500 dark:text-[#a39d94]">
-                                  {entity.entity_type.charAt(0).toUpperCase() +
-                                    entity.entity_type.slice(1)}
-                                  {entity.category && ` · ${entity.category}`}
-                                </div>
-                              </div>
-                            </button>
-                          ))
-                        ) : (
-                          <div className="px-4 py-3 text-center text-gray-500 dark:text-[#a39d94]">
-                            <p className="text-sm">No entities found</p>
-                            <a
-                              href="/entities"
-                              className="text-xs text-[#8b4e52] dark:text-[#a86e72] hover:underline inline-flex items-center gap-1 mt-1"
-                            >
-                              <Plus className="w-3 h-3" />
-                              Create new entity
-                            </a>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Comprehensive Transaction Type System */}
-            <div className="space-y-4 p-4 bg-[#c9a961]/10 dark:bg-[#c9a961]/20 rounded-lg border border-[#c9a961]/30 dark:border-[#c9a961]/40">
-              <h3 className="text-sm font-semibold text-[#8b4e52] dark:text-[#d4b87a] flex items-center">
-                <Tag className="w-4 h-4 mr-2" />
-                Transaction Classification
-              </h3>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label
-                    htmlFor="txn-category"
-                    className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
-                  >
-                    Category
-                  </label>
-                  <select
-                    id="txn-category"
-                    value={formData.transactionCategory || ''}
-                    onChange={handleCategoryChange}
-                    className="w-full px-4 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
-                  >
-                    <option value="">Select category</option>
-                    {availableCategories.map(cat => (
-                      <option key={cat} value={cat}>
-                        {cat}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="txn-subcategory"
-                    className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
-                  >
-                    Subcategory
-                  </label>
-                  <select
-                    id="txn-subcategory"
-                    value={formData.transactionSubcategory || ''}
-                    onChange={handleTransactionSubcategoryChange}
-                    disabled={!formData.transactionCategory}
-                    className="w-full px-4 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961] disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <option value="">Select subcategory</option>
-                    {availableSubcategories.map(subcat => (
-                      <option key={subcat} value={subcat}>
-                        {subcat}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="txn-type"
-                    className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
-                  >
-                    Transaction Type
-                  </label>
-                  <select
-                    id="txn-type"
-                    value={formData.transactionTypeCode || ''}
-                    onChange={handleTransactionTypeCodeChange}
-                    disabled={!formData.transactionSubcategory}
-                    className="w-full px-4 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961] disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <option value="">Select transaction type</option>
-                    {availableTransactionTypes.map(txnType => (
-                      <option key={txnType.code} value={txnType.code}>
-                        {txnType.transactionType}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {selectedTransactionType && (
-                <div className="mt-4 p-3 bg-[#fafaf8] dark:bg-[#1a1815] rounded-lg border border-[rgba(201,169,97,0.15)]">
-                  <h4 className="text-xs font-semibold text-[#1a1815] dark:text-[#b8b3ac] mb-2">
-                    Suggested Accounts
-                  </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-                    <div>
-                      <span className="font-medium text-[#7a9b6f] dark:text-[#8faf84]">
-                        Debit:
-                      </span>
-                      <p className="text-[#1a1815] dark:text-[#f5f3f0] mt-1">
-                        {selectedTransactionType.debitAccounts}
-                      </p>
-                    </div>
-                    <div>
-                      <span className="font-medium text-[#9d6b6b] dark:text-[#b88585]">
-                        Credit:
-                      </span>
-                      <p className="text-[#1a1815] dark:text-[#f5f3f0] mt-1">
-                        {selectedTransactionType.creditAccounts}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
+            <TransactionClassificationSection
+              formData={formData}
+              availableCategories={availableCategories}
+              availableSubcategories={availableSubcategories}
+              availableTransactionTypes={availableTransactionTypes}
+              selectedTransactionType={selectedTransactionType}
+              handleCategoryChange={handleCategoryChange}
+              handleTransactionSubcategoryChange={handleTransactionSubcategoryChange}
+              handleTransactionTypeCodeChange={handleTransactionTypeCodeChange}
+            />
 
             <div>
               <TokenSelector
@@ -917,58 +1094,14 @@ const TransactionForm: React.FC = () => {
               )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label
-                  htmlFor="txn-amount"
-                  className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
-                >
-                  <div className="flex items-center">
-                    <DollarSign className="w-4 h-4 mr-2" />
-                    Amount
-                  </div>
-                </label>
-                <input
-                  id="txn-amount"
-                  type="number"
-                  step="0.000001"
-                  value={formData.amount}
-                  onChange={handleAmountInputChange}
-                  placeholder="0.00"
-                  className={`w-full px-4 py-2 border rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] ${
-                    errors.amount
-                      ? 'border-[#9d6b6b]'
-                      : 'border-[rgba(201,169,97,0.15)]'
-                  } focus:outline-none focus:ring-2 focus:ring-[#c9a961]`}
-                />
-                {errors.amount && (
-                  <p className="mt-1 text-sm text-[#9d6b6b]">{errors.amount}</p>
-                )}
-                {selectedToken && (
-                  <p className="mt-1 text-xs text-[#696557] dark:text-[#b8b3ac]">
-                    {selectedToken.symbol} ({selectedToken.decimals} decimals)
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <label
-                  htmlFor="txn-fiat-value"
-                  className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
-                >
-                  {currencySettings.primaryCurrency} Value
-                </label>
-                <input
-                  id="txn-fiat-value"
-                  type="number"
-                  step="0.01"
-                  value={formData.fiatValue}
-                  onChange={handleFiatValueChange}
-                  placeholder="0.00"
-                  className="w-full px-4 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
-                />
-              </div>
-            </div>
+            <AmountSection
+              formData={formData}
+              errors={errors}
+              selectedToken={selectedToken}
+              currencySettings={currencySettings}
+              handleAmountInputChange={handleAmountInputChange}
+              handleFiatValueChange={handleFiatValueChange}
+            />
 
             <div>
               <label

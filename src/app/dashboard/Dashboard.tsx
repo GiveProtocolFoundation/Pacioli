@@ -17,6 +17,7 @@ import {
   FileText,
 } from 'lucide-react'
 import { useCurrency } from '../../contexts/CurrencyContext'
+import { DecimalSeparatorStandard } from '../../types/currency'
 import { useTheme } from '../../contexts/ThemeContext'
 import { formatCurrency } from '../../utils/currencyFormatter'
 import { getCryptoLogoPath, getCryptoBrandColor } from '../../utils/cryptoLogos'
@@ -40,6 +41,7 @@ interface AccountBalance {
   change24h: number
 }
 
+/** Reusable statistics card displaying a metric value, trend indicator, and icon */
 const StatsCard: React.FC<{
   title: string
   value: React.ReactNode
@@ -99,6 +101,228 @@ const portfolioSparkline = [
   50900, 51200, 50600, 51400, 51800, 51200, 51900, 50000,
 ]
 
+/** Card displaying a list of cryptocurrency account balances with logos, amounts, and 24h price changes */
+const AccountBalancesList: React.FC<{
+  accountBalances: AccountBalance[]
+  currencySettings: {
+    primaryCurrency: string
+    decimalPlaces: number
+    useThousandsSeparator: boolean
+    decimalSeparatorStandard: DecimalSeparatorStandard
+  }
+  theme: 'light' | 'dark'
+}> = ({ accountBalances, currencySettings, theme }) => (
+  <div className="ledger-card border border-[rgba(201,169,97,0.15)]">
+    <div className="px-6 py-4 border-b border-[rgba(201,169,97,0.15)]">
+      <h2>Account Balances</h2>
+    </div>
+    <div className="px-6">
+      <div>
+        {accountBalances.map(account => {
+          const logoPath = getCryptoLogoPath(account.crypto, theme)
+          const brandColor = getCryptoBrandColor(account.crypto)
+
+          return (
+            <div key={account.crypto} className="balance-list-item">
+              <div className="token-info">
+                <div
+                  className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0"
+                  style={{
+                    backgroundColor: logoPath
+                      ? 'transparent'
+                      : `${brandColor}20`,
+                  }}
+                >
+                  {logoPath ? (
+                    <img
+                      src={logoPath}
+                      alt={`${account.crypto} logo`}
+                      className="w-full h-full object-contain p-1"
+                    />
+                  ) : (
+                    <span
+                      className="text-sm font-semibold"
+                      style={{ color: brandColor }}
+                    >
+                      {account.crypto}
+                    </span>
+                  )}
+                </div>
+                <div>
+                  <p className="font-medium text-[#1a1815] dark:text-[#f5f3f0]">
+                    {account.crypto}
+                  </p>
+                  <p className="text-sm dashboard-muted-text dashboard-mono">
+                    {account.amount.toLocaleString('en-US', {
+                      minimumFractionDigits: 1,
+                      maximumFractionDigits: 1,
+                    })}{' '}
+                    {account.crypto}
+                  </p>
+                </div>
+              </div>
+              <div className="token-values">
+                <p className="font-semibold text-[#1a1815] dark:text-[#f5f3f0] dashboard-mono">
+                  {formatCurrency(
+                    account.usdValue,
+                    currencySettings.primaryCurrency,
+                    {
+                      decimalPlaces: currencySettings.decimalPlaces,
+                      useThousandsSeparator:
+                        currencySettings.useThousandsSeparator,
+                      decimalSeparatorStandard:
+                        currencySettings.decimalSeparatorStandard,
+                    }
+                  )}
+                </p>
+                <div
+                  className={`percentage-change ${account.change24h >= 0 ? 'change-positive' : 'change-negative'}`}
+                >
+                  {account.change24h >= 0 ? (
+                    <TrendingUp className="w-3 h-3" />
+                  ) : (
+                    <TrendingDown className="w-3 h-3" />
+                  )}
+                  <span>
+                    {account.change24h >= 0 ? '+' : ''}
+                    {account.change24h}%
+                  </span>
+                </div>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  </div>
+)
+
+/** Table displaying recent transactions with date, description, type badge, amount, value, and status */
+const RecentTransactionsTable: React.FC<{
+  recentTransactions: Transaction[]
+  currencySettings: {
+    primaryCurrency: string
+    decimalPlaces: number
+    useThousandsSeparator: boolean
+    decimalSeparatorStandard: DecimalSeparatorStandard
+  }
+  getTypeColor: (type: string) => string
+}> = ({ recentTransactions, currencySettings, getTypeColor }) => (
+  <div className="ledger-card border border-[rgba(201,169,97,0.15)] mt-10">
+    <div className="px-6 py-4 border-b border-[rgba(201,169,97,0.15)] flex items-center justify-between">
+      <h2>Recent Transactions</h2>
+      <button className="text-sm dashboard-link">
+        View All
+      </button>
+    </div>
+    <div className="ledger-table-wrapper">
+      <table className="ledger-table">
+        <thead className="ledger-table-header">
+          <tr>
+            <th className="ledger-table-cell-date">Date</th>
+            <th className="ledger-table-cell-text">Description</th>
+            <th className="ledger-table-cell-text">Type</th>
+            <th className="ledger-table-cell-number">Amount</th>
+            <th className="ledger-table-cell-number">Value</th>
+            <th className="ledger-table-cell-text">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {recentTransactions.map(tx => (
+            <tr key={tx.id} className="ledger-table-row">
+              <td className="ledger-table-cell-date whitespace-nowrap text-sm text-[#1a1815] dark:text-[#f5f3f0]">
+                {tx.date}
+              </td>
+              <td className="ledger-table-cell-text text-sm text-[#1a1815] dark:text-[#f5f3f0]">
+                {tx.description}
+              </td>
+              <td className="ledger-table-cell-text whitespace-nowrap">
+                <span
+                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getTypeColor(tx.type)}`}
+                >
+                  {tx.type.charAt(0).toUpperCase() + tx.type.slice(1)}
+                </span>
+              </td>
+              <td className="ledger-table-cell-number whitespace-nowrap text-sm dashboard-mono">
+                <span
+                  className={
+                    tx.amount >= 0
+                      ? 'change-positive'
+                      : 'text-[#1a1815] dark:text-[#f5f3f0]'
+                  }
+                >
+                  {tx.amount >= 0 ? '+' : ''}
+                  {tx.amount.toLocaleString()} {tx.crypto}
+                </span>
+              </td>
+              <td className="ledger-table-cell-number whitespace-nowrap text-sm text-[#1a1815] dark:text-[#f5f3f0] dashboard-mono">
+                {formatCurrency(
+                  Math.abs(tx.usdValue),
+                  currencySettings.primaryCurrency,
+                  {
+                    decimalPlaces: currencySettings.decimalPlaces,
+                    useThousandsSeparator:
+                      currencySettings.useThousandsSeparator,
+                    decimalSeparatorStandard:
+                      currencySettings.decimalSeparatorStandard,
+                  }
+                )}
+              </td>
+              <td className="ledger-table-cell-text whitespace-nowrap">
+                <span
+                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    tx.status === 'completed'
+                      ? 'badge-completed'
+                      : 'badge-pending'
+                  }`}
+                >
+                  {tx.status.charAt(0).toUpperCase() +
+                    tx.status.slice(1)}
+                </span>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+)
+
+/** Sidebar card with quick action buttons for common tasks like recording donations and generating reports */
+const QuickActionsCard: React.FC<{ onNewTransaction: () => void }> = ({ onNewTransaction }) => (
+  <div className="ledger-card border border-[rgba(201,169,97,0.15)]">
+    <div className="px-6 py-4 border-b border-[rgba(201,169,97,0.15)]">
+      <h2>Quick Actions</h2>
+    </div>
+    <div className="p-6 space-y-3">
+      <button
+        onClick={onNewTransaction}
+        className="btn-primary w-full justify-center"
+      >
+        <Plus className="btn-icon" />
+        New Transaction
+      </button>
+      <button className="btn-quick-action">
+        <Heart className="btn-icon" />
+        Record Donation
+      </button>
+      <button className="btn-quick-action">
+        <Minus className="btn-icon" />
+        Add Expense
+      </button>
+      <button className="btn-quick-action">
+        <Upload className="btn-icon" />
+        Import Transactions
+      </button>
+      <button className="btn-quick-action">
+        <FileText className="btn-icon" />
+        Generate Tax Report
+      </button>
+    </div>
+  </div>
+)
+
+/** Main dashboard page showing portfolio overview, account balances, recent transactions, and quick actions */
 const Dashboard: React.FC = () => {
   const navigate = useNavigate()
   const { settings: currencySettings } = useCurrency()
@@ -264,286 +488,67 @@ const Dashboard: React.FC = () => {
             changeLabel="vs last year"
             icon={<DollarSign />}
           />
-          {/* Program Expenses */}
-          <div className="ledger-card border border-[rgba(201,169,97,0.15)] p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="ledger-card-label">Program Expenses</p>
-                <p className="text-3xl font-bold text-[#1a1815] dark:text-[#f5f3f0] mt-2 dashboard-heading">
-                  {formatCurrency(8200, currencySettings.primaryCurrency, {
-                    decimalPlaces: currencySettings.decimalPlaces,
-                    useThousandsSeparator:
-                      currencySettings.useThousandsSeparator,
-                    decimalSeparatorStandard:
-                      currencySettings.decimalSeparatorStandard,
-                  })}
-                </p>
-                <div className="flex items-center mt-2">
-                  <ArrowDownRight className="w-4 h-4 change-negative mr-1" />
-                  <span className="text-sm change-negative">-5.2%</span>
-                  <span className="text-sm dashboard-muted-text ml-1">
-                    vs last year
-                  </span>
-                </div>
-              </div>
-              <div className="stat-icon-container">
-                <TrendingDown />
-              </div>
-            </div>
-          </div>
-
-          {/* Program Expenses (YTD) */}
-          <div className="ledger-card border border-[rgba(201,169,97,0.15)] p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="ledger-card-label">Program Expenses (YTD)</p>
-                <p className="text-3xl font-bold text-[#1a1815] dark:text-[#f5f3f0] mt-2 dashboard-heading">
-                  {formatCurrency(28250, currencySettings.primaryCurrency, {
-                    decimalPlaces: currencySettings.decimalPlaces,
-                    useThousandsSeparator:
-                      currencySettings.useThousandsSeparator,
-                    decimalSeparatorStandard:
-                      currencySettings.decimalSeparatorStandard,
-                  })}
-                </p>
-                <div className="flex items-center mt-2">
-                  <span className="text-sm font-medium dashboard-body-text">
-                    73.4%
-                  </span>
-                  <span className="text-sm dashboard-muted-text ml-1">
-                    of donations
-                  </span>
-                </div>
-              </div>
-              <div className="stat-icon-container">
-                <PieChart />
-              </div>
-            </div>
-          </div>
-
-          {/* Active Wallets */}
-          <div className="ledger-card border border-[rgba(201,169,97,0.15)] p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="ledger-card-label">Active Wallets</p>
-                <p className="text-3xl font-bold text-[#1a1815] dark:text-[#f5f3f0] mt-2 dashboard-heading">
-                  6
-                </p>
-                <div className="flex items-center mt-2">
-                  <span className="text-sm font-medium dashboard-body-text">
-                    4 blockchains
-                  </span>
-                </div>
-              </div>
-              <div className="stat-icon-container">
-                <BarChart3 />
-              </div>
-            </div>
-          </div>
+          <StatsCard
+            title="Program Expenses"
+            value={formatCurrency(8200, currencySettings.primaryCurrency, {
+              decimalPlaces: currencySettings.decimalPlaces,
+              useThousandsSeparator:
+                currencySettings.useThousandsSeparator,
+              decimalSeparatorStandard:
+                currencySettings.decimalSeparatorStandard,
+            })}
+            changeIcon={
+              <ArrowDownRight className="w-4 h-4 change-negative mr-1" />
+            }
+            changeColor="change-negative"
+            changeValue="-5.2%"
+            changeLabel="vs last year"
+            icon={<TrendingDown />}
+          />
+          <StatsCard
+            title="Program Expenses (YTD)"
+            value={formatCurrency(28250, currencySettings.primaryCurrency, {
+              decimalPlaces: currencySettings.decimalPlaces,
+              useThousandsSeparator:
+                currencySettings.useThousandsSeparator,
+              decimalSeparatorStandard:
+                currencySettings.decimalSeparatorStandard,
+            })}
+            changeIcon={null}
+            changeColor="dashboard-body-text"
+            changeValue="73.4%"
+            changeLabel="of donations"
+            icon={<PieChart />}
+          />
+          <StatsCard
+            title="Active Wallets"
+            value="6"
+            changeIcon={null}
+            changeColor="dashboard-body-text"
+            changeValue="4 blockchains"
+            icon={<BarChart3 />}
+          />
         </div>
 
         {/* Two Column Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Account Balances - Takes up 2/3 on large screens */}
           <div className="lg:col-span-2">
-            <div className="ledger-card border border-[rgba(201,169,97,0.15)]">
-              <div className="px-6 py-4 border-b border-[rgba(201,169,97,0.15)]">
-                <h2>Account Balances</h2>
-              </div>
-              <div className="px-6">
-                <div>
-                  {accountBalances.map(account => {
-                    const logoPath = getCryptoLogoPath(account.crypto, theme)
-                    const brandColor = getCryptoBrandColor(account.crypto)
-
-                    return (
-                      <div key={account.crypto} className="balance-list-item">
-                        <div className="token-info">
-                          <div
-                            className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0"
-                            style={{
-                              backgroundColor: logoPath
-                                ? 'transparent'
-                                : `${brandColor}20`,
-                            }}
-                          >
-                            {logoPath ? (
-                              <img
-                                src={logoPath}
-                                alt={`${account.crypto} logo`}
-                                className="w-full h-full object-contain p-1"
-                              />
-                            ) : (
-                              <span
-                                className="text-sm font-semibold"
-                                style={{ color: brandColor }}
-                              >
-                                {account.crypto}
-                              </span>
-                            )}
-                          </div>
-                          <div>
-                            <p className="font-medium text-[#1a1815] dark:text-[#f5f3f0]">
-                              {account.crypto}
-                            </p>
-                            <p className="text-sm dashboard-muted-text dashboard-mono">
-                              {account.amount.toLocaleString('en-US', {
-                                minimumFractionDigits: 1,
-                                maximumFractionDigits: 1,
-                              })}{' '}
-                              {account.crypto}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="token-values">
-                          <p className="font-semibold text-[#1a1815] dark:text-[#f5f3f0] dashboard-mono">
-                            {formatCurrency(
-                              account.usdValue,
-                              currencySettings.primaryCurrency,
-                              {
-                                decimalPlaces: currencySettings.decimalPlaces,
-                                useThousandsSeparator:
-                                  currencySettings.useThousandsSeparator,
-                                decimalSeparatorStandard:
-                                  currencySettings.decimalSeparatorStandard,
-                              }
-                            )}
-                          </p>
-                          <div
-                            className={`percentage-change ${account.change24h >= 0 ? 'change-positive' : 'change-negative'}`}
-                          >
-                            {account.change24h >= 0 ? (
-                              <TrendingUp className="w-3 h-3" />
-                            ) : (
-                              <TrendingDown className="w-3 h-3" />
-                            )}
-                            <span>
-                              {account.change24h >= 0 ? '+' : ''}
-                              {account.change24h}%
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-            </div>
-
-            {/* Recent Transactions */}
-            <div className="ledger-card border border-[rgba(201,169,97,0.15)] mt-10">
-              <div className="px-6 py-4 border-b border-[rgba(201,169,97,0.15)] flex items-center justify-between">
-                <h2>Recent Transactions</h2>
-                <button className="text-sm dashboard-link">
-                  View All
-                </button>
-              </div>
-              <div className="ledger-table-wrapper">
-                <table className="ledger-table">
-                  <thead className="ledger-table-header">
-                    <tr>
-                      <th className="ledger-table-cell-date">Date</th>
-                      <th className="ledger-table-cell-text">Description</th>
-                      <th className="ledger-table-cell-text">Type</th>
-                      <th className="ledger-table-cell-number">Amount</th>
-                      <th className="ledger-table-cell-number">Value</th>
-                      <th className="ledger-table-cell-text">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {recentTransactions.map(tx => (
-                      <tr key={tx.id} className="ledger-table-row">
-                        <td className="ledger-table-cell-date whitespace-nowrap text-sm text-[#1a1815] dark:text-[#f5f3f0]">
-                          {tx.date}
-                        </td>
-                        <td className="ledger-table-cell-text text-sm text-[#1a1815] dark:text-[#f5f3f0]">
-                          {tx.description}
-                        </td>
-                        <td className="ledger-table-cell-text whitespace-nowrap">
-                          <span
-                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getTypeColor(tx.type)}`}
-                          >
-                            {tx.type.charAt(0).toUpperCase() + tx.type.slice(1)}
-                          </span>
-                        </td>
-                        <td className="ledger-table-cell-number whitespace-nowrap text-sm dashboard-mono">
-                          <span
-                            className={
-                              tx.amount >= 0
-                                ? 'change-positive'
-                                : 'text-[#1a1815] dark:text-[#f5f3f0]'
-                            }
-                          >
-                            {tx.amount >= 0 ? '+' : ''}
-                            {tx.amount.toLocaleString()} {tx.crypto}
-                          </span>
-                        </td>
-                        <td className="ledger-table-cell-number whitespace-nowrap text-sm text-[#1a1815] dark:text-[#f5f3f0] dashboard-mono">
-                          {formatCurrency(
-                            Math.abs(tx.usdValue),
-                            currencySettings.primaryCurrency,
-                            {
-                              decimalPlaces: currencySettings.decimalPlaces,
-                              useThousandsSeparator:
-                                currencySettings.useThousandsSeparator,
-                              decimalSeparatorStandard:
-                                currencySettings.decimalSeparatorStandard,
-                            }
-                          )}
-                        </td>
-                        <td className="ledger-table-cell-text whitespace-nowrap">
-                          <span
-                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                              tx.status === 'completed'
-                                ? 'badge-completed'
-                                : 'badge-pending'
-                            }`}
-                          >
-                            {tx.status.charAt(0).toUpperCase() +
-                              tx.status.slice(1)}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+            <AccountBalancesList
+              accountBalances={accountBalances}
+              currencySettings={currencySettings}
+              theme={theme}
+            />
+            <RecentTransactionsTable
+              recentTransactions={recentTransactions}
+              currencySettings={currencySettings}
+              getTypeColor={getTypeColor}
+            />
           </div>
 
           {/* Quick Actions Sidebar - Takes up 1/3 on large screens */}
           <div className="space-y-6">
-            {/* Quick Actions */}
-            <div className="ledger-card border border-[rgba(201,169,97,0.15)]">
-              <div className="px-6 py-4 border-b border-[rgba(201,169,97,0.15)]">
-                <h2>Quick Actions</h2>
-              </div>
-              <div className="p-6 space-y-3">
-                <button
-                  onClick={handleNewTransaction}
-                  className="btn-primary w-full justify-center"
-                >
-                  <Plus className="btn-icon" />
-                  New Transaction
-                </button>
-                <button className="btn-quick-action">
-                  <Heart className="btn-icon" />
-                  Record Donation
-                </button>
-                <button className="btn-quick-action">
-                  <Minus className="btn-icon" />
-                  Add Expense
-                </button>
-                <button className="btn-quick-action">
-                  <Upload className="btn-icon" />
-                  Import Transactions
-                </button>
-                <button className="btn-quick-action">
-                  <FileText className="btn-icon" />
-                  Generate Tax Report
-                </button>
-              </div>
-            </div>
+            <QuickActionsCard onNewTransaction={handleNewTransaction} />
 
             {/* Compliance Status */}
             <div className="ledger-card border border-[rgba(201,169,97,0.15)]">

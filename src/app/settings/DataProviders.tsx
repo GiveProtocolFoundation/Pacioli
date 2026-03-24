@@ -146,6 +146,102 @@ const RateLimitBadge: React.FC<{
   </div>
 )
 
+/** Informational box explaining turbo mode and its benefits */
+const TurboInfoBox: React.FC = () => (
+  <div className="bg-[#c9a961]/10 dark:bg-[#c9a961]/20 border border-[#c9a961]/30 dark:border-[#c9a961]/40 rounded-lg p-4 mb-6">
+    <div className="flex items-start gap-3">
+      <Zap className="w-5 h-5 text-[#c9a961] flex-shrink-0 mt-0.5" />
+      <div>
+        <h3 className="font-medium text-[#1a1815] dark:text-[#f5f3f0] mb-1">
+          Batteries Included, Turbo Optional
+        </h3>
+        <p className="text-sm text-[#696557] dark:text-[#b8b3ac]">
+          Pacioli works out of the box with conservative rate limits. Add your free API keys
+          from block explorers to unlock 5x faster sync speeds. API keys are free to obtain
+          from each provider.
+        </p>
+        <div className="mt-3 flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-[#696557]" />
+            <span className="text-sm text-[#696557] dark:text-[#b8b3ac]">
+              Default: ~1 req/sec
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-[#c9a961]" />
+            <span className="text-sm text-[#696557] dark:text-[#b8b3ac]">
+              Turbo: ~5-10 req/sec
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+)
+
+interface ProviderApiKeyFormProps {
+  apiKey: string
+  showKey: boolean
+  isSaving: boolean
+  onApiKeyChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  onToggleShowKey: () => void
+  onSave: () => void
+  onCancel: () => void
+}
+
+/** API key editing form with input field, show/hide toggle, and save/cancel buttons */
+const ProviderApiKeyForm: React.FC<ProviderApiKeyFormProps> = ({
+  apiKey,
+  showKey,
+  isSaving,
+  onApiKeyChange,
+  onToggleShowKey,
+  onSave,
+  onCancel,
+}) => (
+  <div className="space-y-3">
+    <div className="relative">
+      <input
+        type={showKey ? 'text' : 'password'}
+        value={apiKey}
+        onChange={onApiKeyChange}
+        placeholder="Enter your API key"
+        className="w-full px-3 py-2 pr-10 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961] text-sm font-mono"
+        disabled={isSaving}
+      />
+      <button
+        type="button"
+        onClick={onToggleShowKey}
+        className="absolute right-2 top-1/2 -translate-y-1/2 text-[#696557] hover:text-[#1a1815] dark:text-[#b8b3ac] dark:hover:text-[#f5f3f0]"
+      >
+        {showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+      </button>
+    </div>
+    <div className="flex items-center gap-2">
+      <button
+        onClick={onSave}
+        disabled={isSaving || !apiKey.trim()}
+        className="px-3 py-1.5 text-sm font-medium text-white bg-[#8b4e52] rounded-lg hover:bg-[#7a4248] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+      >
+        {isSaving ? (
+          <Loader2 className="w-4 h-4 animate-spin" />
+        ) : (
+          <Check className="w-4 h-4" />
+        )}
+        Save
+      </button>
+      <button
+        onClick={onCancel}
+        disabled={isSaving}
+        className="px-3 py-1.5 text-sm font-medium text-[#696557] dark:text-[#b8b3ac] hover:text-[#1a1815] dark:hover:text-[#f5f3f0] flex items-center gap-1.5"
+      >
+        <X className="w-4 h-4" />
+        Cancel
+      </button>
+    </div>
+  </div>
+)
+
 interface ProviderCardProps {
   config: ProviderConfig
   status: ProviderStatus | undefined
@@ -153,6 +249,7 @@ interface ProviderCardProps {
   onDelete: (provider: string) => Promise<void>
 }
 
+/** Card component for a single data provider, showing status, rate limits, and API key management */
 const ProviderCard: React.FC<ProviderCardProps> = ({
   config,
   status,
@@ -275,51 +372,15 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
       )}
 
       {isEditing ? (
-        <div className="space-y-3">
-          <div className="relative">
-            <input
-              type={showKey ? 'text' : 'password'}
-              value={apiKey}
-              onChange={handleApiKeyChange}
-              placeholder="Enter your API key"
-              className="w-full px-3 py-2 pr-10 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961] text-sm font-mono"
-              disabled={isSaving}
-            />
-            <button
-              type="button"
-              onClick={toggleShowKey}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-[#696557] hover:text-[#1a1815] dark:text-[#b8b3ac] dark:hover:text-[#f5f3f0]"
-            >
-              {showKey ? (
-                <EyeOff className="w-4 h-4" />
-              ) : (
-                <Eye className="w-4 h-4" />
-              )}
-            </button>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleSave}
-              disabled={isSaving || !apiKey.trim()}
-              className="px-3 py-1.5 text-sm font-medium text-white bg-[#8b4e52] rounded-lg hover:bg-[#7a4248] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
-            >
-              {isSaving ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Check className="w-4 h-4" />
-              )}
-              Save
-            </button>
-            <button
-              onClick={handleCancel}
-              disabled={isSaving}
-              className="px-3 py-1.5 text-sm font-medium text-[#696557] dark:text-[#b8b3ac] hover:text-[#1a1815] dark:hover:text-[#f5f3f0] flex items-center gap-1.5"
-            >
-              <X className="w-4 h-4" />
-              Cancel
-            </button>
-          </div>
-        </div>
+        <ProviderApiKeyForm
+          apiKey={apiKey}
+          showKey={showKey}
+          isSaving={isSaving}
+          onApiKeyChange={handleApiKeyChange}
+          onToggleShowKey={toggleShowKey}
+          onSave={handleSave}
+          onCancel={handleCancel}
+        />
       ) : (
         <div className="flex items-center gap-2">
           {hasKey ? (
@@ -434,6 +495,7 @@ const DataProviders: React.FC = () => {
     [fetchStatuses]
   )
 
+  /** Finds the status object for a given provider by its ID */
   const getStatusForProvider = (
     providerId: string
   ): ProviderStatus | undefined => {
@@ -460,35 +522,7 @@ const DataProviders: React.FC = () => {
       </div>
 
       {/* Info Box */}
-      <div className="bg-[#c9a961]/10 dark:bg-[#c9a961]/20 border border-[#c9a961]/30 dark:border-[#c9a961]/40 rounded-lg p-4 mb-6">
-        <div className="flex items-start gap-3">
-          <Zap className="w-5 h-5 text-[#c9a961] flex-shrink-0 mt-0.5" />
-          <div>
-            <h3 className="font-medium text-[#1a1815] dark:text-[#f5f3f0] mb-1">
-              Batteries Included, Turbo Optional
-            </h3>
-            <p className="text-sm text-[#696557] dark:text-[#b8b3ac]">
-              Pacioli works out of the box with conservative rate limits. Add
-              your free API keys from block explorers to unlock 5x faster sync
-              speeds. API keys are free to obtain from each provider.
-            </p>
-            <div className="mt-3 flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-[#696557]" />
-                <span className="text-sm text-[#696557] dark:text-[#b8b3ac]">
-                  Default: ~1 req/sec
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-[#c9a961]" />
-                <span className="text-sm text-[#696557] dark:text-[#b8b3ac]">
-                  Turbo: ~5-10 req/sec
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <TurboInfoBox />
 
       {/* Stats */}
       {!isLoading && !error && (
