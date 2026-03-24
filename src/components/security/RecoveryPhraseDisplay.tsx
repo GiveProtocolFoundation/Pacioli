@@ -21,7 +21,10 @@ export const RecoveryPhraseDisplay: React.FC<RecoveryPhraseDisplayProps> = ({
   const [copied, setCopied] = useState(false)
   const [confirmed, setConfirmed] = useState(false)
 
-  const words = phrase.split(' ')
+  const numberedWords = phrase.split(' ').map((word, i) => ({
+    word,
+    position: i + 1,
+  }))
 
   const handleConfirmedChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -97,13 +100,13 @@ export const RecoveryPhraseDisplay: React.FC<RecoveryPhraseDisplayProps> = ({
       {/* Recovery Phrase Grid */}
       <div className="bg-[#f3f1ed] dark:bg-[#2a2620]/50 rounded-lg p-4">
         <div className="grid grid-cols-3 gap-2">
-          {words.map((word, index) => (
+          {numberedWords.map(({ word, position }) => (
             <div
-              key={`word-${word}-${index}`}
+              key={`word-${position}`}
               className="flex items-center gap-2 p-2 bg-[#fafaf8] dark:bg-[#1a1815] rounded border border-[rgba(201,169,97,0.15)]"
             >
               <span className="text-xs text-[#a39d94] dark:text-[#696557] w-5">
-                {index + 1}.
+                {position}.
               </span>
               <span className="font-mono text-sm text-[#1a1815] dark:text-[#f5f3f0]">
                 {word}

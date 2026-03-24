@@ -44,21 +44,6 @@ interface ProviderConfig {
 // localStorage key prefix for browser-mode API key storage
 const LS_KEY_PREFIX = 'pacioli_api_key_'
 
-// Browser-mode fallback: build ProviderStatus from localStorage
-function getLocalStorageStatuses(): ProviderStatus[] {
-  return PROVIDER_CONFIGS.map(config => {
-    const hasKey = Boolean(localStorage.getItem(`${LS_KEY_PREFIX}${config.id}`))
-    return {
-      provider: config.id,
-      name: config.name,
-      has_api_key: hasKey,
-      rate_limit: hasKey ? 5 : 1,
-      turbo_rate_limit: 5,
-      is_turbo_mode: hasKey,
-    }
-  })
-}
-
 // Provider metadata with documentation links
 const PROVIDER_CONFIGS: ProviderConfig[] = [
   {
@@ -108,6 +93,21 @@ const PROVIDER_CONFIGS: ProviderConfig[] = [
     chains: ['Polkadot', 'Kusama', 'Parachains'],
   },
 ]
+
+// Browser-mode fallback: build ProviderStatus from localStorage
+function getLocalStorageStatuses(): ProviderStatus[] {
+  return PROVIDER_CONFIGS.map(config => {
+    const hasKey = Boolean(localStorage.getItem(`${LS_KEY_PREFIX}${config.id}`))
+    return {
+      provider: config.id,
+      name: config.name,
+      has_api_key: hasKey,
+      rate_limit: hasKey ? 5 : 1,
+      turbo_rate_limit: 5,
+      is_turbo_mode: hasKey,
+    }
+  })
+}
 
 // =============================================================================
 // Components

@@ -223,7 +223,7 @@ impl MempoolTransaction {
                     .prevout
                     .as_ref()
                     .and_then(|p| p.scriptpubkey_address.clone()),
-                value: input.prevout.as_ref().map(|p| p.value).unwrap_or(0),
+                value: input.prevout.as_ref().map_or(0, |p| p.value),
                 prev_txid: input.txid.clone(),
                 prev_vout: input.vout,
             })
@@ -244,7 +244,7 @@ impl MempoolTransaction {
         let total_input: u64 = inputs.iter().map(|i| i.value).sum();
         let total_output: u64 = outputs.iter().map(|o| o.value).sum();
 
-        let is_coinbase = self.vin.first().map(|i| i.is_coinbase).unwrap_or(false);
+        let is_coinbase = self.vin.first().map_or(false, |i| i.is_coinbase);
 
         let confirmations = match (self.status.block_height, current_height) {
             (Some(block_height), Some(current)) if current >= block_height => {
