@@ -96,8 +96,7 @@ pub async fn delete_api_key(provider: String) -> SaveApiKeyResult {
 /// Retrieve an API key for a provider from the system keychain.
 #[tauri::command]
 pub async fn get_api_key(provider: String) -> Option<String> {
-    ApiProvider::from_str(&provider)
-        .and_then(|p| ApiKeyManager::get_api_key(p).ok().flatten())
+    ApiProvider::from_str(&provider).and_then(|p| ApiKeyManager::get_api_key(p).ok().flatten())
 }
 
 /// Check if an API key exists for a provider.
