@@ -177,11 +177,13 @@ body {
   line-height: var(--line-height-body);
   color: var(--color-text-primary-light);
   background-color: var(--color-bg-primary-light);
+  color-scheme: light;
 }
 
 .dark body {
   color: var(--color-text-primary-dark);
   background-color: var(--color-bg-primary-dark);
+  color-scheme: dark;
 }
 
 /* Page titles: Cormorant Garamond for elegant display */
@@ -1082,9 +1084,9 @@ select:focus {
 .dark input[type='datetime-local'],
 .dark textarea,
 .dark select {
-  background: var(--color-bg-tertiary-dark);
+  background: var(--color-bg-tertiary-dark) !important;
   border-color: var(--color-border-default);
-  color: var(--color-text-primary-dark);
+  color: var(--color-text-primary-dark) !important;
 }
 
 .dark input:focus,
