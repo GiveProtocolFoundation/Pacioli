@@ -18,6 +18,8 @@ import {
   Moon,
   Sun,
   Building2,
+  BookOpen,
+  Scale,
 } from 'lucide-react'
 import PacioliWhiteLogo from '../../assets/Pacioli_logo_white.svg'
 import PacioliBlackLogo from '../../assets/pacioli_logo_black.svg'
@@ -602,10 +604,28 @@ const Navigation: React.FC<NavigationProps> = ({
       icon: Receipt,
       badge: pendingCount > 0 ? pendingCount : undefined,
       subItems: [
-        { name: 'All Transactions', href: '/transactions?filter=all' },
-        { name: 'Revenue', href: '/transactions?filter=revenue' },
-        { name: 'Expense', href: '/transactions?filter=expense' },
-        { name: 'Transfers', href: '/transactions?filter=transfers' },
+        { name: 'All', href: '/transactions?filter=all' },
+        { name: 'Unclassified', href: '/transactions?filter=unclassified' },
+        { name: 'Classified', href: '/transactions?filter=classified' },
+      ],
+    },
+    {
+      name: 'Journal Entries',
+      href: '/journal-entries',
+      icon: BookOpen,
+      subItems: [
+        { name: 'All Entries', href: '/journal-entries?filter=all' },
+        { name: 'Drafts', href: '/journal-entries?filter=draft' },
+        { name: 'Posted', href: '/journal-entries?filter=posted' },
+      ],
+    },
+    {
+      name: 'Ledger',
+      href: '/chart-of-accounts',
+      icon: Scale,
+      subItems: [
+        { name: 'Chart of Accounts', href: '/chart-of-accounts' },
+        { name: 'Trial Balance', href: '/trial-balance' },
       ],
     },
     { name: 'Wallets', href: '/wallets', icon: Wallet },
@@ -615,10 +635,10 @@ const Navigation: React.FC<NavigationProps> = ({
       href: '/reports',
       icon: FileText,
       subItems: [
-        { name: 'Financial Reports', href: '/reports/financial' },
+        { name: 'Profit & Loss', href: '/reports/financial' },
+        { name: 'Balance Sheet', href: '/reports/balance-sheet' },
         { name: 'Tax Reports', href: '/reports/tax' },
         { name: 'Donor Reports', href: '/reports/donors' },
-        { name: 'Compliance', href: '/reports/compliance' },
       ],
     },
     { name: 'Analytics', href: '/analytics', icon: BarChart3 },
@@ -629,7 +649,6 @@ const Navigation: React.FC<NavigationProps> = ({
       icon: Settings,
       subItems: [
         { name: 'Currencies', href: '/settings/currencies' },
-        { name: 'Chart of Accounts', href: '/chart-of-accounts' },
         { name: 'General Settings', href: '/settings/general' },
         { name: 'Users & Permissions', href: '/settings/users' },
       ],
@@ -644,6 +663,30 @@ const Navigation: React.FC<NavigationProps> = ({
       href: '/transactions',
       icon: Receipt,
       badge: pendingCount > 0 ? pendingCount : undefined,
+      subItems: [
+        { name: 'All', href: '/transactions?filter=all' },
+        { name: 'Unclassified', href: '/transactions?filter=unclassified' },
+        { name: 'Classified', href: '/transactions?filter=classified' },
+      ],
+    },
+    {
+      name: 'Journal Entries',
+      href: '/journal-entries',
+      icon: BookOpen,
+      subItems: [
+        { name: 'All Entries', href: '/journal-entries?filter=all' },
+        { name: 'Drafts', href: '/journal-entries?filter=draft' },
+        { name: 'Posted', href: '/journal-entries?filter=posted' },
+      ],
+    },
+    {
+      name: 'Ledger',
+      href: '/chart-of-accounts',
+      icon: Scale,
+      subItems: [
+        { name: 'Chart of Accounts', href: '/chart-of-accounts' },
+        { name: 'Trial Balance', href: '/trial-balance' },
+      ],
     },
     { name: 'Wallets', href: '/wallets', icon: Wallet },
     { name: 'Entities', href: '/entities', icon: Building2 },
@@ -654,7 +697,6 @@ const Navigation: React.FC<NavigationProps> = ({
       icon: Settings,
       subItems: [
         { name: 'Currencies', href: '/settings/currencies' },
-        { name: 'Chart of Accounts', href: '/chart-of-accounts' },
         { name: 'General Settings', href: '/settings/general' },
       ],
     },

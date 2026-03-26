@@ -268,6 +268,24 @@ export interface CostBasisPreference {
 // VIEW TYPES (Materialized from Database Views)
 // =============================================================================
 
+// =============================================================================
+// CLASSIFICATION STATUS (multi_chain_transactions)
+// =============================================================================
+
+export type ClassificationStatus = 'unclassified' | 'classified' | 'ignored' | 'split'
+
+// =============================================================================
+// JOURNAL ENTRY WITH LINES (API response shape from Rust backend)
+// =============================================================================
+
+export interface JournalEntryWithLines extends JournalEntry {
+  lines: JournalEntryLine[]
+}
+
+// =============================================================================
+// ACCOUNTING VIEWS
+// =============================================================================
+
 export interface VTokenBalance {
   glAccountId: number
   accountNumber: string

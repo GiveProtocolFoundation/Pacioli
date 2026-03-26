@@ -17,3 +17,5 @@ pub mod prices;
 /// Provides functionality for wallet-based authentication, including
 /// signing in users through their wallets and verifying credentials.
 pub mod wallet_auth;
+/// Accounting module for chart of accounts, journal entries, ledger queries, and transaction classification.
+pub mod accounting;

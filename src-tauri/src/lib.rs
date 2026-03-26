@@ -417,7 +417,21 @@ pub fn run() {
             api::prices::get_crypto_prices,
             api::prices::get_historical_crypto_price,
             api::prices::get_batch_historical_prices,
-            api::prices::timestamp_to_coingecko_date
+            api::prices::timestamp_to_coingecko_date,
+            // Accounting commands
+            api::accounting::get_chart_of_accounts,
+            api::accounting::create_gl_account,
+            api::accounting::update_gl_account,
+            api::accounting::deactivate_gl_account,
+            api::accounting::get_journal_entries,
+            api::accounting::get_journal_entry,
+            api::accounting::create_journal_entry,
+            api::accounting::post_journal_entry,
+            api::accounting::void_journal_entry,
+            api::accounting::auto_classify_transaction,
+            api::accounting::update_transaction_classification,
+            api::accounting::get_account_balances,
+            api::accounting::get_trial_balance
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

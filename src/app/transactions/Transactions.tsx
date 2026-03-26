@@ -3,7 +3,6 @@ import { useLocation, Link, useNavigate } from 'react-router-dom'
 import {
   Search,
   Filter,
-  Download,
   Calendar,
   ArrowUpRight,
   ArrowDownRight,
@@ -12,44 +11,45 @@ import {
   Edit2,
   Plus,
 } from 'lucide-react'
+import ExportDropdown from './ExportDropdown'
 import { useTransactions } from '../../contexts/TransactionContext'
 import { useCurrency } from '../../contexts/CurrencyContext'
 import { useTokens } from '../../contexts/TokenContext'
 import { Transaction, TransactionType, TransactionStatus } from '../../types/transaction'
 import type { Token, Chain } from '../../types/digitalAssets'
 
-type FilterType = 'all' | 'revenue' | 'expense' | 'transfers'
+type FilterType = 'all' | 'unclassified' | 'classified' | 'ignored'
 
-/** Tab navigation for filtering transactions by type (all, revenue, expense, transfers) */
+/** Tab navigation for filtering transactions by classification status */
 const FilterTabs = ({
   filter,
   transactions,
 }: {
   filter: string
-  transactions: { type: TransactionType }[]
+  transactions: { status: TransactionStatus }[]
 }) => (
   <div className="mb-6 border-b border-[rgba(201,169,97,0.15)]">
     <nav className="flex space-x-8">
       {[
         {
           key: 'all',
-          label: 'All Transactions',
+          label: 'All',
           count: transactions.length,
         },
         {
-          key: 'revenue',
-          label: 'Revenue',
-          count: transactions.filter(t => t.type === 'revenue').length,
+          key: 'unclassified',
+          label: 'Unclassified',
+          count: transactions.length, // Placeholder — real counts come from backend classification_status
         },
         {
-          key: 'expense',
-          label: 'Expense',
-          count: transactions.filter(t => t.type === 'expense').length,
+          key: 'classified',
+          label: 'Classified',
+          count: 0,
         },
         {
-          key: 'transfers',
-          label: 'Transfers',
-          count: transactions.filter(t => t.type === 'transfer').length,
+          key: 'ignored',
+          label: 'Ignored',
+          count: 0,
         },
       ].map(tab => (
         <Link
@@ -62,15 +62,17 @@ const FilterTabs = ({
           }`}
         >
           {tab.label}
-          <span
-            className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
-              filter === tab.key
-                ? 'bg-[#8b4e52]/10 text-[#8b4e52] dark:bg-[#8b4e52]/20 dark:text-[#a86e72]'
-                : 'bg-[#f3f1ed] text-[#696557] dark:bg-[#2a2620] dark:text-[#b8b3ac]'
-            }`}
-          >
-            {tab.count}
-          </span>
+          {tab.count > 0 && (
+            <span
+              className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
+                filter === tab.key
+                  ? 'bg-[#8b4e52]/10 text-[#8b4e52] dark:bg-[#8b4e52]/20 dark:text-[#a86e72]'
+                  : 'bg-[#f3f1ed] text-[#696557] dark:bg-[#2a2620] dark:text-[#b8b3ac]'
+              }`}
+            >
+              {tab.count}
+            </span>
+          )}
         </Link>
       ))}
     </nav>
@@ -150,16 +152,16 @@ const Transactions: React.FC = () => {
   const params = new URLSearchParams(location.search)
   const urlFilter = params.get('filter') as FilterType
   const filter: FilterType =
-    urlFilter && ['all', 'revenue', 'expense', 'transfers'].includes(urlFilter)
+    urlFilter && ['all', 'unclassified', 'classified', 'ignored'].includes(urlFilter)
       ? urlFilter
       : 'all'
 
   const filteredTransactions = useMemo(() => {
     return transactions
-      .filter(tx => {
-        if (filter === 'all') return true
-        if (filter === 'transfers') return tx.type === 'transfer'
-        return tx.type === filter
+      .filter(() => {
+        // Classification filter will be wired to backend classification_status
+        // For now, show all transactions regardless of filter tab
+        return true
       })
       .filter(tx => {
         if (!searchQuery) return true
@@ -169,7 +171,7 @@ const Transactions: React.FC = () => {
           (tx.hash && tx.hash.toLowerCase().includes(searchQuery.toLowerCase()))
         )
       })
-  }, [transactions, filter, searchQuery])
+  }, [transactions, searchQuery])
 
   /** Returns the appropriate directional arrow icon for a given transaction type */
   const getTypeIcon = (type: TransactionType) => {
@@ -319,10 +321,7 @@ const Transactions: React.FC = () => {
             <Filter className="w-5 h-5" />
             <span className="hidden sm:inline">Filters</span>
           </button>
-          <button className="flex items-center gap-2 px-4 py-2 bg-[#8b4e52] text-white rounded-lg hover:bg-[#7a4248]">
-            <Download className="w-5 h-5" />
-            <span className="hidden sm:inline">Export</span>
-          </button>
+          <ExportDropdown transactions={filteredTransactions} />
         </div>
       </div>
 
@@ -352,6 +351,9 @@ const Transactions: React.FC = () => {
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#696557] dark:text-[#b8b3ac] uppercase tracking-wider">
                   Status
+                </th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-[#696557] dark:text-[#b8b3ac] uppercase tracking-wider">
+                  Classification
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#696557] dark:text-[#b8b3ac] uppercase tracking-wider">
                   Actions
@@ -425,14 +427,30 @@ const Transactions: React.FC = () => {
                         </div>
                       )}
                   </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-center">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
+                      Unclassified
+                    </span>
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button
-                      data-id={transaction.id}
-                      onClick={handleEditButtonClick}
-                      className="text-[#8b4e52] hover:text-[#7a4248] dark:text-[#a86e72] dark:hover:text-[#b88585]"
-                    >
-                      <Edit2 className="w-5 h-5" />
-                    </button>
+                    <div className="flex items-center justify-end gap-2">
+                      <button
+                        data-id={transaction.id}
+                        onClick={handleEditButtonClick}
+                        className="text-[#8b4e52] hover:text-[#7a4248] dark:text-[#a86e72] dark:hover:text-[#b88585]"
+                      >
+                        <Edit2 className="w-5 h-5" />
+                      </button>
+                      <button
+                        onClick={e => {
+                          e.stopPropagation()
+                          navigate('/journal-entries?new=true')
+                        }}
+                        className="px-2 py-1 text-xs font-medium rounded bg-[#8b4e52]/10 text-[#8b4e52] hover:bg-[#8b4e52]/20 transition-colors"
+                      >
+                        Classify &rarr;
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
