@@ -248,12 +248,13 @@ pub async fn create_gl_account(
     input: NewGlAccountInput,
 ) -> Result<GlAccount, String> {
     // Default normal_balance based on account_type
-    let normal_balance = input.normal_balance.unwrap_or_else(|| {
-        match input.account_type.as_str() {
-            "Asset" | "Expense" => "debit".to_string(),
-            _ => "credit".to_string(),
-        }
-    });
+    let normal_balance =
+        input
+            .normal_balance
+            .unwrap_or_else(|| match input.account_type.as_str() {
+                "Asset" | "Expense" => "debit".to_string(),
+                _ => "credit".to_string(),
+            });
 
     let result = sqlx::query(
         r#"
@@ -335,10 +336,7 @@ pub async fn update_gl_account(
 
 /// Deactivates a GL account (soft delete). Only editable accounts can be deactivated.
 #[tauri::command]
-pub async fn deactivate_gl_account(
-    state: State<'_, DatabaseState>,
-    id: i64,
-) -> Result<(), String> {
+pub async fn deactivate_gl_account(state: State<'_, DatabaseState>, id: i64) -> Result<(), String> {
     let account = sqlx::query_as::<_, GlAccount>("SELECT * FROM gl_accounts WHERE id = ?")
         .bind(id)
         .fetch_optional(&state.pool)
@@ -436,14 +434,12 @@ pub async fn get_journal_entry(
     state: State<'_, DatabaseState>,
     id: i64,
 ) -> Result<JournalEntryWithLines, String> {
-    let entry = sqlx::query_as::<_, JournalEntry>(
-        "SELECT * FROM journal_entries WHERE id = ?",
-    )
-    .bind(id)
-    .fetch_optional(&state.pool)
-    .await
-    .map_err(|e| e.to_string())?
-    .ok_or_else(|| "Journal entry not found".to_string())?;
+    let entry = sqlx::query_as::<_, JournalEntry>("SELECT * FROM journal_entries WHERE id = ?")
+        .bind(id)
+        .fetch_optional(&state.pool)
+        .await
+        .map_err(|e| e.to_string())?
+        .ok_or_else(|| "Journal entry not found".to_string())?;
 
     let lines = sqlx::query_as::<_, JournalEntryLine>(
         "SELECT * FROM journal_entry_lines WHERE journal_entry_id = ? ORDER BY line_number",
@@ -471,14 +467,17 @@ pub async fn create_journal_entry(
         if (line.debit_amount > 0.0 && line.credit_amount > 0.0)
             || (line.debit_amount == 0.0 && line.credit_amount == 0.0)
         {
-            return Err(
-                "Each line must have exactly one of debit or credit amount".to_string(),
-            );
+            return Err("Each line must have exactly one of debit or credit amount".to_string());
         }
     }
 
     let entry_date = NaiveDateTime::parse_from_str(&input.entry_date, "%Y-%m-%dT%H:%M:%S")
-        .or_else(|_| NaiveDateTime::parse_from_str(&format!("{}T00:00:00", &input.entry_date), "%Y-%m-%dT%H:%M:%S"))
+        .or_else(|_| {
+            NaiveDateTime::parse_from_str(
+                &format!("{}T00:00:00", &input.entry_date),
+                "%Y-%m-%dT%H:%M:%S",
+            )
+        })
         .map_err(|e| format!("Invalid date format: {e}"))?;
 
     // Generate entry number
@@ -544,14 +543,12 @@ pub async fn post_journal_entry(
     state: State<'_, DatabaseState>,
     id: i64,
 ) -> Result<JournalEntryWithLines, String> {
-    let entry = sqlx::query_as::<_, JournalEntry>(
-        "SELECT * FROM journal_entries WHERE id = ?",
-    )
-    .bind(id)
-    .fetch_optional(&state.pool)
-    .await
-    .map_err(|e| e.to_string())?
-    .ok_or_else(|| "Journal entry not found".to_string())?;
+    let entry = sqlx::query_as::<_, JournalEntry>("SELECT * FROM journal_entries WHERE id = ?")
+        .bind(id)
+        .fetch_optional(&state.pool)
+        .await
+        .map_err(|e| e.to_string())?
+        .ok_or_else(|| "Journal entry not found".to_string())?;
 
     if entry.is_posted {
         return Err("Journal entry is already posted".to_string());
@@ -593,14 +590,12 @@ pub async fn void_journal_entry(
     state: State<'_, DatabaseState>,
     id: i64,
 ) -> Result<JournalEntryWithLines, String> {
-    let entry = sqlx::query_as::<_, JournalEntry>(
-        "SELECT * FROM journal_entries WHERE id = ?",
-    )
-    .bind(id)
-    .fetch_optional(&state.pool)
-    .await
-    .map_err(|e| e.to_string())?
-    .ok_or_else(|| "Journal entry not found".to_string())?;
+    let entry = sqlx::query_as::<_, JournalEntry>("SELECT * FROM journal_entries WHERE id = ?")
+        .bind(id)
+        .fetch_optional(&state.pool)
+        .await
+        .map_err(|e| e.to_string())?
+        .ok_or_else(|| "Journal entry not found".to_string())?;
 
     if entry.is_reversed {
         return Err("Journal entry is already voided".to_string());
@@ -687,7 +682,11 @@ pub async fn auto_classify_transaction(
                     description: Some("Uncategorized income — review and reclassify".to_string()),
                 });
             }
-            format!("Transfer on {} ({})", tx.chain_id, &tx.hash[..8.min(tx.hash.len())])
+            format!(
+                "Transfer on {} ({})",
+                tx.chain_id,
+                &tx.hash[..8.min(tx.hash.len())]
+            )
         }
         _ => {
             // Default: if there's a fee, record it as an expense
@@ -707,7 +706,12 @@ pub async fn auto_classify_transaction(
                     description: Some("Fee paid from crypto assets".to_string()),
                 });
             }
-            format!("{} on {} ({})", tx.tx_type, tx.chain_id, &tx.hash[..8.min(tx.hash.len())])
+            format!(
+                "{} on {} ({})",
+                tx.tx_type,
+                tx.chain_id,
+                &tx.hash[..8.min(tx.hash.len())]
+            )
         }
     };
 
@@ -776,13 +780,12 @@ struct MultiChainTx {
 
 /// Resolves a GL account number to its database ID.
 async fn get_account_id_by_number(pool: &sqlx::SqlitePool, number: &str) -> Result<i64, String> {
-    let row: (i64,) = sqlx::query_as(
-        "SELECT id FROM gl_accounts WHERE account_number = ? AND is_active = 1",
-    )
-    .bind(number)
-    .fetch_one(pool)
-    .await
-    .map_err(|e| format!("GL account {number} not found: {e}"))?;
+    let row: (i64,) =
+        sqlx::query_as("SELECT id FROM gl_accounts WHERE account_number = ? AND is_active = 1")
+            .bind(number)
+            .fetch_one(pool)
+            .await
+            .map_err(|e| format!("GL account {number} not found: {e}"))?;
 
     Ok(row.0)
 }
@@ -800,17 +803,17 @@ pub async fn update_transaction_classification(
 ) -> Result<(), String> {
     let valid = ["unclassified", "classified", "ignored", "split"];
     if !valid.contains(&classification_status.as_str()) {
-        return Err(format!("Invalid classification status: {classification_status}"));
+        return Err(format!(
+            "Invalid classification status: {classification_status}"
+        ));
     }
 
-    sqlx::query(
-        "UPDATE multi_chain_transactions SET classification_status = ? WHERE id = ?",
-    )
-    .bind(&classification_status)
-    .bind(&transaction_id)
-    .execute(&state.pool)
-    .await
-    .map_err(|e| e.to_string())?;
+    sqlx::query("UPDATE multi_chain_transactions SET classification_status = ? WHERE id = ?")
+        .bind(&classification_status)
+        .bind(&transaction_id)
+        .execute(&state.pool)
+        .await
+        .map_err(|e| e.to_string())?;
 
     Ok(())
 }
@@ -824,12 +827,10 @@ pub async fn update_transaction_classification(
 pub async fn get_account_balances(
     state: State<'_, DatabaseState>,
 ) -> Result<Vec<AccountBalance>, String> {
-    sqlx::query_as::<_, AccountBalance>(
-        "SELECT * FROM v_account_balances ORDER BY account_number",
-    )
-    .fetch_all(&state.pool)
-    .await
-    .map_err(|e| e.to_string())
+    sqlx::query_as::<_, AccountBalance>("SELECT * FROM v_account_balances ORDER BY account_number")
+        .fetch_all(&state.pool)
+        .await
+        .map_err(|e| e.to_string())
 }
 
 /// Returns the trial balance from the v_trial_balance view.
@@ -837,12 +838,10 @@ pub async fn get_account_balances(
 pub async fn get_trial_balance(
     state: State<'_, DatabaseState>,
 ) -> Result<Vec<TrialBalanceRow>, String> {
-    sqlx::query_as::<_, TrialBalanceRow>(
-        "SELECT * FROM v_trial_balance ORDER BY account_number",
-    )
-    .fetch_all(&state.pool)
-    .await
-    .map_err(|e| e.to_string())
+    sqlx::query_as::<_, TrialBalanceRow>("SELECT * FROM v_trial_balance ORDER BY account_number")
+        .fetch_all(&state.pool)
+        .await
+        .map_err(|e| e.to_string())
 }
 
 /// Returns the count of unclassified multi-chain transactions.
@@ -862,9 +861,7 @@ pub async fn get_unclassified_transaction_count(
 
 /// Returns the count of draft (unposted, non-reversed) journal entries.
 #[tauri::command]
-pub async fn get_draft_journal_entry_count(
-    state: State<'_, DatabaseState>,
-) -> Result<i64, String> {
+pub async fn get_draft_journal_entry_count(state: State<'_, DatabaseState>) -> Result<i64, String> {
     let row: (i64,) = sqlx::query_as(
         "SELECT COUNT(*) FROM journal_entries WHERE is_posted = 0 AND is_reversed = 0",
     )
