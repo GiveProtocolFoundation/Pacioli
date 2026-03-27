@@ -86,6 +86,7 @@ const JournalEntries: React.FC = () => {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [expandedId, setExpandedId] = useState<number | null>(null)
+  const [actionError, setActionError] = useState<string | null>(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [editingEntry, setEditingEntry] = useState<
     JournalEntryWithLines | undefined
@@ -172,13 +173,15 @@ const JournalEntries: React.FC = () => {
 
   const handlePost = useCallback(
     async (id: number) => {
+      setActionError(null)
       try {
         await invoke('post_journal_entry', { id })
         fetchEntries()
         refreshCounts()
       } catch (err) {
+        const msg = typeof err === 'string' ? err : 'Failed to post entry'
         console.error('Failed to post entry:', err)
-        alert(typeof err === 'string' ? err : 'Failed to post entry')
+        setActionError(msg)
       }
     },
     [fetchEntries, refreshCounts]
@@ -245,6 +248,19 @@ const JournalEntries: React.FC = () => {
           </button>
         ))}
       </div>
+
+      {/* Action error banner */}
+      {actionError && (
+        <div className="mb-4 flex items-center justify-between p-3 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-sm">
+          <span>{actionError}</span>
+          <button
+            onClick={() => setActionError(null)}
+            className="ml-4 text-red-500 hover:text-red-700 dark:hover:text-red-200 font-medium"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
 
       {/* Search */}
       <div className="relative mb-4">
