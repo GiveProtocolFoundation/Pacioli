@@ -844,3 +844,33 @@ pub async fn get_trial_balance(
     .await
     .map_err(|e| e.to_string())
 }
+
+/// Returns the count of unclassified multi-chain transactions.
+#[tauri::command]
+pub async fn get_unclassified_transaction_count(
+    state: State<'_, DatabaseState>,
+) -> Result<i64, String> {
+    let row: (i64,) = sqlx::query_as(
+        "SELECT COUNT(*) FROM multi_chain_transactions WHERE classification_status = 'unclassified'",
+    )
+    .fetch_one(&state.pool)
+    .await
+    .map_err(|e| e.to_string())?;
+
+    Ok(row.0)
+}
+
+/// Returns the count of draft (unposted, non-reversed) journal entries.
+#[tauri::command]
+pub async fn get_draft_journal_entry_count(
+    state: State<'_, DatabaseState>,
+) -> Result<i64, String> {
+    let row: (i64,) = sqlx::query_as(
+        "SELECT COUNT(*) FROM journal_entries WHERE is_posted = 0 AND is_reversed = 0",
+    )
+    .fetch_one(&state.pool)
+    .await
+    .map_err(|e| e.to_string())?;
+
+    Ok(row.0)
+}

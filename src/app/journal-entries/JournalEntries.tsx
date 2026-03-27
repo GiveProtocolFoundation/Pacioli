@@ -11,6 +11,7 @@ import {
   ChevronDown,
   ChevronRight,
 } from 'lucide-react'
+import { useNavBadges } from '../../contexts/NavBadgeContext'
 import type {
   JournalEntryWithLines,
   GLAccount,
@@ -88,7 +89,8 @@ const JournalEntries: React.FC = () => {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [editingEntry, setEditingEntry] = useState<
     JournalEntryWithLines | undefined
-  >(undefined)
+  >()
+  const { refreshCounts } = useNavBadges()
 
   const accountMap = useMemo(() => {
     const m = new Map<number, GLAccount>()
@@ -165,19 +167,21 @@ const JournalEntries: React.FC = () => {
     setDrawerOpen(false)
     setEditingEntry(undefined)
     fetchEntries()
-  }, [fetchEntries])
+    refreshCounts()
+  }, [fetchEntries, refreshCounts])
 
   const handlePost = useCallback(
     async (id: number) => {
       try {
         await invoke('post_journal_entry', { id })
         fetchEntries()
+        refreshCounts()
       } catch (err) {
         console.error('Failed to post entry:', err)
         alert(typeof err === 'string' ? err : 'Failed to post entry')
       }
     },
-    [fetchEntries]
+    [fetchEntries, refreshCounts]
   )
 
   const handleVoid = useCallback(
@@ -185,11 +189,12 @@ const JournalEntries: React.FC = () => {
       try {
         await invoke('void_journal_entry', { id })
         fetchEntries()
+        refreshCounts()
       } catch (err) {
         console.error('Failed to void entry:', err)
       }
     },
-    [fetchEntries]
+    [fetchEntries, refreshCounts]
   )
 
   const tabs: { key: StatusFilter; label: string }[] = [
@@ -243,13 +248,13 @@ const JournalEntries: React.FC = () => {
 
       {/* Search */}
       <div className="relative mb-4">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#a39d94]" />
+        <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#a39d94]" />
         <input
           type="text"
           placeholder="Search entries..."
           value={searchQuery}
           onChange={e => setSearchQuery(e.target.value)}
-          className="w-full pl-10 pr-4 py-2 rounded-lg border border-[rgba(201,169,97,0.15)] bg-white dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] placeholder-[#a39d94] text-sm focus:outline-none focus:ring-1 focus:ring-[#c9a961]"
+          className="w-full pl-4 pr-10 py-2 rounded-lg border border-[rgba(201,169,97,0.15)] bg-white dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] placeholder-[#a39d94] text-sm focus:outline-none focus:ring-1 focus:ring-[#c9a961]"
         />
       </div>
 

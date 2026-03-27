@@ -29,10 +29,17 @@ import { useTransactions } from '../../contexts/TransactionContext'
 import { useAuth } from '../../contexts/AuthContext'
 import NotificationsPanel from '../notifications/NotificationsPanel'
 import { useUnreadCount } from '../../contexts/NotificationContext'
+import { useNavBadges } from '../../contexts/NavBadgeContext'
 
 interface NavigationProps {
   children: React.ReactNode
   userType?: 'individual' | 'organization'
+}
+
+interface SubItem {
+  name: string
+  href: string
+  badge?: number
 }
 
 interface NavItem {
@@ -40,11 +47,11 @@ interface NavItem {
   href: string
   icon: React.ElementType
   badge?: number
-  subItems?: { name: string; href: string }[]
+  subItems?: SubItem[]
 }
 
 const SubNavItems: React.FC<{
-  subItems: { name: string; href: string }[]
+  subItems: SubItem[]
   expandedItems: string[]
   location: ReturnType<typeof useLocation>
   onLinkClick?: () => void
@@ -57,13 +64,21 @@ const SubNavItems: React.FC<{
           <Link
             to={subItem.href}
             onClick={onLinkClick}
-            className={`block w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${
+            className={`flex items-center justify-between w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${
               isSubActive
                 ? 'text-[#7a4d50] dark:text-[#f5f3f0] bg-[rgba(139,78,82,0.1)] dark:bg-[rgba(139,78,82,0.15)] font-medium'
                 : 'text-[#4A4543] dark:text-[#b8b3ac] hover:bg-[rgba(201,169,97,0.05)] dark:hover:bg-[rgba(201,169,97,0.08)] dark:hover:text-[#b8b3ac] font-normal'
             }`}
           >
-            {subItem.name}
+            <span>{subItem.name}</span>
+            {subItem.badge != null && subItem.badge > 0 && (
+              <span
+                className="inline-flex items-center justify-center rounded-[10px] px-1.5 py-px text-[11px] font-medium leading-none"
+                style={{ backgroundColor: '#C9A84C', color: '#4A3800' }}
+              >
+                {subItem.badge}
+              </span>
+            )}
           </Link>
         </li>
       )
@@ -594,6 +609,7 @@ const Navigation: React.FC<NavigationProps> = ({
   }, [logout, navigate])
 
   const pendingCount = pendingApprovals.length
+  const { unclassifiedTransactions, draftJournalEntries } = useNavBadges()
 
   // Navigation items for organizations/charities
   const organizationNavItems: NavItem[] = [
@@ -605,8 +621,9 @@ const Navigation: React.FC<NavigationProps> = ({
       badge: pendingCount > 0 ? pendingCount : undefined,
       subItems: [
         { name: 'All', href: '/transactions?filter=all' },
-        { name: 'Unclassified', href: '/transactions?filter=unclassified' },
+        { name: 'Unclassified', href: '/transactions?filter=unclassified', badge: unclassifiedTransactions },
         { name: 'Classified', href: '/transactions?filter=classified' },
+        { name: 'Ignored', href: '/transactions?filter=ignored' },
       ],
     },
     {
@@ -615,7 +632,7 @@ const Navigation: React.FC<NavigationProps> = ({
       icon: BookOpen,
       subItems: [
         { name: 'All Entries', href: '/journal-entries?filter=all' },
-        { name: 'Drafts', href: '/journal-entries?filter=draft' },
+        { name: 'Drafts', href: '/journal-entries?filter=draft', badge: draftJournalEntries },
         { name: 'Posted', href: '/journal-entries?filter=posted' },
       ],
     },
@@ -626,6 +643,7 @@ const Navigation: React.FC<NavigationProps> = ({
       subItems: [
         { name: 'Chart of Accounts', href: '/chart-of-accounts' },
         { name: 'Trial Balance', href: '/trial-balance' },
+        { name: 'Reconciliation', href: '/ledger/reconciliation' },
       ],
     },
     { name: 'Wallets', href: '/wallets', icon: Wallet },
@@ -665,8 +683,9 @@ const Navigation: React.FC<NavigationProps> = ({
       badge: pendingCount > 0 ? pendingCount : undefined,
       subItems: [
         { name: 'All', href: '/transactions?filter=all' },
-        { name: 'Unclassified', href: '/transactions?filter=unclassified' },
+        { name: 'Unclassified', href: '/transactions?filter=unclassified', badge: unclassifiedTransactions },
         { name: 'Classified', href: '/transactions?filter=classified' },
+        { name: 'Ignored', href: '/transactions?filter=ignored' },
       ],
     },
     {
@@ -675,7 +694,7 @@ const Navigation: React.FC<NavigationProps> = ({
       icon: BookOpen,
       subItems: [
         { name: 'All Entries', href: '/journal-entries?filter=all' },
-        { name: 'Drafts', href: '/journal-entries?filter=draft' },
+        { name: 'Drafts', href: '/journal-entries?filter=draft', badge: draftJournalEntries },
         { name: 'Posted', href: '/journal-entries?filter=posted' },
       ],
     },
@@ -686,6 +705,7 @@ const Navigation: React.FC<NavigationProps> = ({
       subItems: [
         { name: 'Chart of Accounts', href: '/chart-of-accounts' },
         { name: 'Trial Balance', href: '/trial-balance' },
+        { name: 'Reconciliation', href: '/ledger/reconciliation' },
       ],
     },
     { name: 'Wallets', href: '/wallets', icon: Wallet },

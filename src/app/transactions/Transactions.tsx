@@ -16,6 +16,7 @@ import { useTransactions } from '../../contexts/TransactionContext'
 import { useCurrency } from '../../contexts/CurrencyContext'
 import { useTokens } from '../../contexts/TokenContext'
 import { Transaction, TransactionType, TransactionStatus } from '../../types/transaction'
+import type { ClassificationStatus } from '../../types/database'
 import type { Token, Chain } from '../../types/digitalAssets'
 
 type FilterType = 'all' | 'unclassified' | 'classified' | 'ignored'
@@ -26,7 +27,7 @@ const FilterTabs = ({
   transactions,
 }: {
   filter: string
-  transactions: { status: TransactionStatus }[]
+  transactions: { classificationStatus: ClassificationStatus }[]
 }) => (
   <div className="mb-6 border-b border-[rgba(201,169,97,0.15)]">
     <nav className="flex space-x-8">
@@ -39,17 +40,17 @@ const FilterTabs = ({
         {
           key: 'unclassified',
           label: 'Unclassified',
-          count: transactions.length, // Placeholder — real counts come from backend classification_status
+          count: transactions.filter(t => t.classificationStatus === 'unclassified').length,
         },
         {
           key: 'classified',
           label: 'Classified',
-          count: 0,
+          count: transactions.filter(t => t.classificationStatus === 'classified').length,
         },
         {
           key: 'ignored',
           label: 'Ignored',
-          count: 0,
+          count: transactions.filter(t => t.classificationStatus === 'ignored').length,
         },
       ].map(tab => (
         <Link
@@ -77,6 +78,28 @@ const FilterTabs = ({
       ))}
     </nav>
   </div>
+)
+
+const classificationStyles: Record<ClassificationStatus, string> = {
+  unclassified: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300',
+  classified: 'bg-[#7a9b6f]/10 text-[#7a9b6f] dark:bg-[#7a9b6f]/20 dark:text-[#8faf84]',
+  ignored: 'bg-[#696557]/10 text-[#696557] dark:bg-[#696557]/20 dark:text-[#b8b3ac]',
+  split: 'bg-[#c9a961]/10 text-[#c9a961] dark:bg-[#c9a961]/20 dark:text-[#c9a961]',
+}
+
+const classificationLabels: Record<ClassificationStatus, string> = {
+  unclassified: 'Unclassified',
+  classified: 'Classified',
+  ignored: 'Ignored',
+  split: 'Split',
+}
+
+const ClassificationBadge: React.FC<{ status: ClassificationStatus }> = ({ status }) => (
+  <span
+    className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${classificationStyles[status]}`}
+  >
+    {classificationLabels[status]}
+  </span>
 )
 
 interface TransactionAmountCellProps {
@@ -158,10 +181,9 @@ const Transactions: React.FC = () => {
 
   const filteredTransactions = useMemo(() => {
     return transactions
-      .filter(() => {
-        // Classification filter will be wired to backend classification_status
-        // For now, show all transactions regardless of filter tab
-        return true
+      .filter(tx => {
+        if (filter === 'all') return true
+        return tx.classificationStatus === filter
       })
       .filter(tx => {
         if (!searchQuery) return true
@@ -171,7 +193,7 @@ const Transactions: React.FC = () => {
           (tx.hash && tx.hash.toLowerCase().includes(searchQuery.toLowerCase()))
         )
       })
-  }, [transactions, searchQuery])
+  }, [transactions, filter, searchQuery])
 
   /** Returns the appropriate directional arrow icon for a given transaction type */
   const getTypeIcon = (type: TransactionType) => {
@@ -428,9 +450,7 @@ const Transactions: React.FC = () => {
                       )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center">
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
-                      Unclassified
-                    </span>
+                    <ClassificationBadge status={transaction.classificationStatus} />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex items-center justify-end gap-2">

@@ -431,7 +431,9 @@ pub fn run() {
             api::accounting::auto_classify_transaction,
             api::accounting::update_transaction_classification,
             api::accounting::get_account_balances,
-            api::accounting::get_trial_balance
+            api::accounting::get_trial_balance,
+            api::accounting::get_unclassified_transaction_count,
+            api::accounting::get_draft_journal_entry_count
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

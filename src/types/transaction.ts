@@ -1,3 +1,5 @@
+import type { ClassificationStatus } from './database'
+
 export type TransactionType = 'revenue' | 'expense' | 'transfer'
 export type TransactionStatus =
   | 'draft'
@@ -56,6 +58,7 @@ export interface TransactionFormData {
 export interface Transaction extends TransactionFormData {
   id: string
   status: TransactionStatus
+  classificationStatus: ClassificationStatus
   createdBy: string
   createdByName: string
   createdAt: string

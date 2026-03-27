@@ -59,6 +59,7 @@ export const TransactionProvider: React.FC<{
         ...formData,
         id: `txn_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         status: isTeamAccount ? 'pending_approval' : 'completed',
+        classificationStatus: 'unclassified',
         approvalStatus: isTeamAccount ? 'pending' : undefined,
         createdBy: 'current-user-id',
         createdByName: 'Current User',
