@@ -154,22 +154,24 @@ const JournalEntries: React.FC = () => {
     []
   )
 
+  const clearEditingEntry = useCallback(() => setEditingEntry(undefined), []) // skipcq: JS-W1042 — React setState requires explicit argument
+
   const handleNewEntry = useCallback(() => {
-    setEditingEntry(undefined)
+    clearEditingEntry()
     setDrawerOpen(true)
-  }, [])
+  }, [clearEditingEntry])
 
   const handleCloseDrawer = useCallback(() => {
     setDrawerOpen(false)
-    setEditingEntry(undefined)
-  }, [])
+    clearEditingEntry()
+  }, [clearEditingEntry])
 
   const handleSaved = useCallback(() => {
     setDrawerOpen(false)
-    setEditingEntry(undefined)
+    clearEditingEntry()
     fetchEntries()
     refreshCounts()
-  }, [fetchEntries, refreshCounts])
+  }, [clearEditingEntry, fetchEntries, refreshCounts])
 
   const handlePost = useCallback(
     async (id: number) => {

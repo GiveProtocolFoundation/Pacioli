@@ -7,6 +7,7 @@ import type {
 } from '../../types/database'
 
 interface LineInput {
+  id: string
   glAccountId: number | ''
   debitAmount: string
   creditAmount: string
@@ -21,7 +22,11 @@ interface JournalEntryDrawerProps {
   onSaved: () => void
 }
 
+let lineIdCounter = 0
+const nextLineId = () => `line-${++lineIdCounter}`
+
 const emptyLine = (): LineInput => ({
+  id: nextLineId(),
   glAccountId: '',
   debitAmount: '',
   creditAmount: '',
@@ -49,6 +54,7 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
   const [lines, setLines] = useState<LineInput[]>(
     entry
       ? entry.lines.map(l => ({
+          id: nextLineId(),
           glAccountId: l.glAccountId,
           debitAmount:
             (l.debitAmount as unknown as number) > 0
@@ -266,7 +272,7 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
             <div className="space-y-2">
               {lines.map((line, idx) => (
                 <div
-                  key={idx}
+                  key={line.id}
                   className="flex gap-2 items-start p-3 rounded-lg border border-[rgba(201,169,97,0.1)] bg-white dark:bg-[#141210]"
                 >
                   {/* Account selector */}

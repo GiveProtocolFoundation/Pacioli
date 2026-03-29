@@ -10,8 +10,7 @@ interface NavBadgeContextValue extends NavBadgeCounts {
   refreshCounts: () => void
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-function
-const noop = () => {}
+const noop = () => {} // skipcq: JS-0321 — intentional no-op default for createContext
 
 const NavBadgeContext = createContext<NavBadgeContextValue>({
   unclassifiedTransactions: 0,

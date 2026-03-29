@@ -50,6 +50,7 @@ interface AppContextType {
   resetApp: () => Promise<void>
 }
 
+// skipcq: JS-W1042 — React createContext requires explicit default argument
 const AppContext = createContext<AppContextType | undefined>(undefined)
 
 // Default session timeout in minutes
