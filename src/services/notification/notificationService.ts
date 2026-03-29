@@ -389,7 +389,7 @@ class NotificationService {
   /**
    * Check if a notification should be created based on preferences
    */
-  private shouldCreateNotification(
+  private shouldCreateNotification( // skipcq: JS-0105 — pure helper, no instance state needed
     input: CreateNotificationInput,
     preferences: NotificationPreferences
   ): boolean {

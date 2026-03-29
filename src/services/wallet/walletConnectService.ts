@@ -76,7 +76,7 @@ class WalletConnectService {
   /**
    * Check if WalletConnect is properly configured
    */
-  isConfigured(): boolean {
+  isConfigured(): boolean { // skipcq: JS-0105 — checks module-level constant
     return Boolean(PROJECT_ID)
   }
 
@@ -213,7 +213,7 @@ class WalletConnectService {
   }
 
   /** Parse WalletConnect namespace accounts into structured account objects */
-  private parseAccounts(
+  private parseAccounts( // skipcq: JS-0105 — pure helper, no instance state needed
     namespaces: Record<string, { accounts: string[] }>
   ): WalletConnectAccount[] {
     const accounts: WalletConnectAccount[] = []
@@ -406,7 +406,7 @@ class WalletConnectService {
   /**
    * Get chain display name from chain ID
    */
-  getChainName(chain: string): string {
+  getChainName(chain: string): string { // skipcq: JS-0105 — pure lookup, no instance state needed
     const chainNames: Record<string, string> = {
       'eip155:1': 'Ethereum',
       'eip155:137': 'Polygon',
