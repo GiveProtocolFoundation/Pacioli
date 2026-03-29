@@ -10,7 +10,8 @@ interface NavBadgeContextValue extends NavBadgeCounts {
   refreshCounts: () => void
 }
 
-const noop = () => {} // skipcq: JS-0321 — intentional no-op default for createContext
+/** Intentional no-op default for createContext. */
+const noop = () => {} // skipcq: JS-0321
 
 const NavBadgeContext = createContext<NavBadgeContextValue>({
   unclassifiedTransactions: 0,

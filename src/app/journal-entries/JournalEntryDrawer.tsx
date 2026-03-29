@@ -23,8 +23,10 @@ interface JournalEntryDrawerProps {
 }
 
 let lineIdCounter = 0
+/** Generates a unique key for journal entry line items. */
 const nextLineId = () => `line-${++lineIdCounter}`
 
+/** Returns a blank line item with default empty values. */
 const emptyLine = (): LineInput => ({
   id: nextLineId(),
   glAccountId: '',
@@ -41,7 +43,7 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
   onClose,
   onSaved,
 }) => {
-  const isView = !!entry
+  const isView = Boolean(entry)
   const [entryDate, setEntryDate] = useState(
     entry?.entryDate
       ? new Date(entry.entryDate).toISOString().split('T')[0]
@@ -178,7 +180,7 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
     }
   }, [entryDate, description, referenceNumber, lines, onSaved])
 
-  return (
+  return ( // skipcq: JS-0415 — drawer layout requires nested containers
     <div className="fixed inset-0 z-50 flex justify-end">
       {/* Backdrop */}
       <div

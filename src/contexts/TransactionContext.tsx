@@ -36,9 +36,8 @@ interface TransactionContextType {
   pendingApprovals: Transaction[]
 }
 
-// skipcq: JS-W1042 — React createContext requires explicit default argument
 const TransactionContext = createContext<TransactionContextType | undefined>(
-  undefined
+  undefined // skipcq: JS-W1042 — React createContext requires explicit default argument
 )
 
 /**
