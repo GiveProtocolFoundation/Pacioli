@@ -111,6 +111,7 @@ class IndexedDBAuthService implements AuthService {
   private db: IDBDatabase | null = null
   private initPromise: Promise<void> | null = null
 
+  /** Opens (or creates) the IndexedDB database and object stores. */
   private init(): Promise<void> {
     if (this.db) return Promise.resolve()
     if (this.initPromise) return this.initPromise
@@ -200,6 +201,7 @@ class IndexedDBAuthService implements AuthService {
     })
   }
 
+  /** Strips the password hash from a stored user, returning a safe AuthUser. */
   private static sanitizeUser(user: StoredUser): AuthUser {
     const { password_hash: _password_hash, ...authUser } = user
     return authUser
@@ -305,6 +307,7 @@ class IndexedDBAuthService implements AuthService {
     return this.createSession(updatedUser, credentials.device_name)
   }
 
+  /** Creates an authenticated session with access and refresh tokens. */
   private async createSession(
     user: StoredUser,
     deviceName?: string
@@ -362,6 +365,7 @@ class IndexedDBAuthService implements AuthService {
     }
   }
 
+  /** Deletes the session and its refresh tokens, then clears local storage. */
   async logout(sessionId: string): Promise<void> {
     try {
       // Delete session
@@ -385,6 +389,7 @@ class IndexedDBAuthService implements AuthService {
     clearTokens()
   }
 
+  /** Rotates the access token using the stored refresh token. */
   async refreshToken(): Promise<TokenRefreshResponse> {
     const refreshTokenValue = getRefreshToken()
     if (!refreshTokenValue) {
@@ -435,6 +440,7 @@ class IndexedDBAuthService implements AuthService {
     }
   }
 
+  /** Verifies an access token and returns session metadata if valid. */
   async verifyToken(token: string): Promise<TokenVerifyResponse> {
     const tokenHash = await hashPassword(token)
     const sessionStore = await this.getStore(STORES.SESSIONS, 'readonly')
@@ -478,6 +484,7 @@ class IndexedDBAuthService implements AuthService {
     return IndexedDBAuthService.sanitizeUser(user)
   }
 
+  /** Updates mutable user fields (display name, preferences, etc.). */
   async updateUser(token: string, input: UpdateUserInput): Promise<AuthUser> {
     const verified = await this.verifyToken(token)
     if (!verified.valid || !verified.user_id) {
@@ -503,6 +510,7 @@ class IndexedDBAuthService implements AuthService {
     return IndexedDBAuthService.sanitizeUser(updatedUser)
   }
 
+  /** Verifies the current password and replaces it with a new one. */
   async changePassword(
     token: string,
     input: ChangePasswordInput
@@ -564,6 +572,7 @@ class IndexedDBAuthService implements AuthService {
     }))
   }
 
+  /** Deletes a single session and its associated refresh tokens. */
   async revokeSession(token: string, sessionId: string): Promise<void> {
     const verified = await this.verifyToken(token)
     if (!verified.valid) {
@@ -584,6 +593,7 @@ class IndexedDBAuthService implements AuthService {
     }
   }
 
+  /** Revokes all sessions for the current user except the active one. */
   async revokeAllSessions(token: string): Promise<number> {
     const verified = await this.verifyToken(token)
     if (!verified.valid || !verified.user_id) {

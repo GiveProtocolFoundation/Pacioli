@@ -437,7 +437,7 @@ const AmountSection: React.FC<AmountSectionProps> = ({
 )
 
 /** Form for creating and editing crypto transactions with classification, entity linking, and wallet selection */
-const TransactionForm: React.FC = () => {
+const TransactionForm: React.FC = () => { // skipcq: JS-R1005 — form with many fields; sub-components already extracted
   const navigate = useNavigate()
   const { id } = useParams<{ id?: string }>()
   const { addTransaction, updateTransaction, getTransaction } =
