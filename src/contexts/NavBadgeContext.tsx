@@ -10,15 +10,19 @@ interface NavBadgeContextValue extends NavBadgeCounts {
   refreshCounts: () => void
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-function
+const noop = () => {}
+
 const NavBadgeContext = createContext<NavBadgeContextValue>({
   unclassifiedTransactions: 0,
   draftJournalEntries: 0,
-  refreshCounts: () => {},
+  refreshCounts: noop,
 })
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const useNavBadges = () => useContext(NavBadgeContext)
 
+/** Provider that fetches and exposes unclassified transaction and draft journal entry counts for nav badges. */
 export const NavBadgeProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
