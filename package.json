@@ -87,6 +87,7 @@
   "pnpm": {
     "overrides": {
       "handlebars": "^4.7.9",
+      "lodash": "^4.18.1",
       "serialize-javascript": "^7.0.5"
     }
   }
