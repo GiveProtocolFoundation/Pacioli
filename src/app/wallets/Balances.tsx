@@ -76,11 +76,11 @@ const DEFAULT_CURRENCY_COLORS: Record<string, string> = {
 /** Generate a deterministic color from a string */
 function hashColor(str: string): string {
   let hash = 0
-  for (let i = 0; i < str.length; i++) {
-    hash = str.charCodeAt(i) + ((hash << 5) - hash)
+  for (let index = 0; index < str.length; index++) {
+    hash = str.charCodeAt(index) + ((hash << 5) - hash)
   }
-  const h = Math.abs(hash) % 360
-  return `hsl(${h}, 65%, 50%)`
+  const hue = Math.abs(hash) % 360
+  return `hsl(${hue}, 65%, 50%)`
 }
 
 /** Get color for a currency symbol, using defaults or hash-based fallback */
@@ -499,6 +499,46 @@ function snapshotsToChartData(
   })
 }
 
+/** Page header with refresh and connect wallet buttons */
+const BalancesHeader: React.FC<{
+  hasWallets: boolean
+  isLoading: boolean
+  onRefresh: () => void
+  onConnectWallet: () => void
+}> = ({ hasWallets, isLoading, onRefresh, onConnectWallet }) => (
+  <header className="bg-[#fafaf8] dark:bg-[#0f0e0c] border-b border-[rgba(201,169,97,0.15)]">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1>Wallet Balances</h1>
+          <p className="text-sm text-[#696557] dark:text-[#b8b3ac] mt-1">
+            Track your cryptocurrency holdings across all wallets
+          </p>
+        </div>
+        <div className="flex items-center space-x-3">
+          {hasWallets && (
+            <button
+              onClick={onRefresh}
+              disabled={isLoading}
+              className="px-4 py-2 text-sm font-medium text-[#696557] dark:text-[#b8b3ac] bg-[#fafaf8] dark:bg-[#1a1815] border border-[rgba(201,169,97,0.15)] rounded-lg hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620] disabled:opacity-50 flex items-center"
+            >
+              <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+              Refresh
+            </button>
+          )}
+          <button
+            onClick={onConnectWallet}
+            className="px-4 py-2 text-sm font-medium text-white bg-[#8b4e52] rounded-lg hover:bg-[#7a4248] flex items-center"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Connect Wallet
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+)
+
 /** Wallet balances page displaying portfolio value, balance history chart, and per-wallet breakdowns */
 const Balances: React.FC = () => {
   const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>('30_days')
@@ -540,7 +580,7 @@ const Balances: React.FC = () => {
   // Save snapshot on successful fetch (throttled)
   useEffect(() => {
     if (walletBalances.length > 0) {
-      maybeSaveSnapshot(walletBalances).catch(() => {})
+      maybeSaveSnapshot(walletBalances).catch(() => undefined)
     }
   }, [walletBalances])
 
@@ -620,45 +660,19 @@ const Balances: React.FC = () => {
   }, [navigate])
 
   const handleRefresh = useCallback(() => {
-    refetch().catch(() => {})
+    refetch().catch(() => undefined)
   }, [refetch])
 
   const hasWallets = walletAddresses.length > 0
 
   return (
     <div className="min-h-screen ledger-background">
-      {/* Header */}
-      <header className="bg-[#fafaf8] dark:bg-[#0f0e0c] border-b border-[rgba(201,169,97,0.15)]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1>Wallet Balances</h1>
-              <p className="text-sm text-[#696557] dark:text-[#b8b3ac] mt-1">
-                Track your cryptocurrency holdings across all wallets
-              </p>
-            </div>
-            <div className="flex items-center space-x-3">
-              {hasWallets && (
-                <button
-                  onClick={handleRefresh}
-                  disabled={isLoading}
-                  className="px-4 py-2 text-sm font-medium text-[#696557] dark:text-[#b8b3ac] bg-[#fafaf8] dark:bg-[#1a1815] border border-[rgba(201,169,97,0.15)] rounded-lg hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620] disabled:opacity-50 flex items-center"
-                >
-                  <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-                  Refresh
-                </button>
-              )}
-              <button
-                onClick={handleConnectWallet}
-                className="px-4 py-2 text-sm font-medium text-white bg-[#8b4e52] rounded-lg hover:bg-[#7a4248] flex items-center"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Connect Wallet
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
+      <BalancesHeader
+        hasWallets={hasWallets}
+        isLoading={isLoading}
+        onRefresh={handleRefresh}
+        onConnectWallet={handleConnectWallet}
+      />
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

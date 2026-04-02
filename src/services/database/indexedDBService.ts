@@ -553,7 +553,7 @@ class IndexedDBService {
   /**
    * Get all items from a store
    */
-  private static async getAllFromStore<T>(store: IDBObjectStore): Promise<T[]> {
+  private static getAllFromStore<T>(store: IDBObjectStore): Promise<T[]> {
     return new Promise((resolve, reject) => {
       const request = store.getAll()
       request.onsuccess = () => resolve(request.result)
@@ -564,7 +564,7 @@ class IndexedDBService {
   /**
    * Get items from an index with a range
    */
-  private static async getFromIndex<T>(
+  private static getFromIndex<T>(
     index: IDBIndex,
     range?: IDBKeyRange
   ): Promise<T[]> {
@@ -620,7 +620,7 @@ class IndexedDBService {
   /**
    * Get the count of items in a store.
    */
-  private static async getStoreCount(
+  private static getStoreCount(
     db: IDBDatabase,
     storeName: string
   ): Promise<number> {
