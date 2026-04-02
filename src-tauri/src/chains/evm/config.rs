@@ -74,12 +74,22 @@ impl EvmChainConfig {
         }
     }
 
-    /// Gets the full RPC URL with the Alchemy API key from environment.
+    /// Gets the full RPC URL, appending the Alchemy API key for Alchemy-hosted endpoints.
+    /// Public RPC endpoints are returned as-is.
     pub fn get_rpc_url(&self) -> ConfigResult<String> {
+        if !self.rpc_url.contains("alchemy.com") {
+            return Ok(self.rpc_url.clone());
+        }
         let api_key = env::var(ENV_ALCHEMY_API_KEY)
             .map_err(|_| ConfigError::MissingEnvVar(ENV_ALCHEMY_API_KEY.to_string()))?;
 
         Ok(format!("{}/{}", self.rpc_url, api_key))
+    }
+
+    /// Returns a new config with a custom explorer API key environment variable.
+    pub fn with_explorer_key_env(mut self, env_var: impl Into<String>) -> Self {
+        self.explorer_api_key_env = env_var.into();
+        self
     }
 
     /// Gets the explorer API key from environment.
@@ -184,6 +194,39 @@ fn get_configs() -> &'static Vec<EvmChainConfig> {
                 false, // Standalone sidechain, like Polygon
                 3,     // ~3 second block time
             ),
+            // Moonbeam (Polkadot parachain, EVM-compatible)
+            EvmChainConfig::new(
+                1284,
+                "moonbeam",
+                "GLMR",
+                "https://rpc.api.moonbeam.network",
+                "https://api-moonbeam.moonscan.io/api",
+                false, // Parachain
+                12,    // ~12 second block time
+            )
+            .with_explorer_key_env("MOONSCAN_API_KEY"),
+            // Moonriver (Kusama parachain, EVM-compatible)
+            EvmChainConfig::new(
+                1285,
+                "moonriver",
+                "MOVR",
+                "https://rpc.api.moonriver.moonbeam.network",
+                "https://api-moonriver.moonscan.io/api",
+                false, // Parachain
+                12,    // ~12 second block time
+            )
+            .with_explorer_key_env("MOONSCAN_API_KEY"),
+            // Astar (Polkadot parachain, EVM-compatible)
+            EvmChainConfig::new(
+                592,
+                "astar",
+                "ASTR",
+                "https://evm.astar.network",
+                "https://astar.blockscout.com/api",
+                false, // Parachain
+                12,    // ~12 second block time
+            )
+            .with_explorer_key_env("BLOCKSCOUT_API_KEY"),
         ]
     })
 }
@@ -300,7 +343,7 @@ mod tests {
     #[test]
     fn test_get_all_chains() {
         let chains = get_all_chains();
-        assert_eq!(chains.len(), 6);
+        assert_eq!(chains.len(), 9);
 
         let chain_ids: Vec<u64> = chains.iter().map(|c| c.chain_id).collect();
         assert!(chain_ids.contains(&1)); // Ethereum
@@ -309,6 +352,9 @@ mod tests {
         assert!(chain_ids.contains(&10)); // Optimism
         assert!(chain_ids.contains(&137)); // Polygon
         assert!(chain_ids.contains(&56)); // BSC
+        assert!(chain_ids.contains(&1284)); // Moonbeam
+        assert!(chain_ids.contains(&1285)); // Moonriver
+        assert!(chain_ids.contains(&592)); // Astar
     }
 
     #[test]
@@ -328,7 +374,7 @@ mod tests {
         assert_eq!(l2s.len(), 3); // Arbitrum, Base, Optimism
 
         let l1s = get_l1_chains();
-        assert_eq!(l1s.len(), 3); // Ethereum, Polygon, BSC
+        assert_eq!(l1s.len(), 6); // Ethereum, Polygon, BSC, Moonbeam, Moonriver, Astar
     }
 
     #[test]

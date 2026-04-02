@@ -123,12 +123,14 @@ pub async fn chain_fetch_all_balances(
     let manager = state.read().await;
     let results = manager.get_all_balances(addresses).await;
 
-    // Collect successful results, return error if any fail
+    // Collect successful results, skip unsupported or failed chains
     let mut balances = Vec::new();
     for result in results {
         match result {
             Ok(balance) => balances.push(balance),
-            Err(e) => return Err(e.to_string()),
+            Err(e) => {
+                eprintln!("Failed to fetch balance: {e}");
+            }
         }
     }
 
