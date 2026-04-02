@@ -14,7 +14,7 @@ import type {
 import { DEFAULT_NOTIFICATION_PREFERENCES } from '../../types/notification'
 
 const DB_NAME = 'PacioliDB'
-const DB_VERSION = 3 // Bumped for notifications stores
+const DB_VERSION = 4 // Bumped for balance_snapshots store
 
 // Store names
 const STORES = {
@@ -25,7 +25,15 @@ const STORES = {
   WALLET_ALIASES: 'wallet_aliases',
   NOTIFICATIONS: 'notifications',
   NOTIFICATION_PREFERENCES: 'notification_preferences',
+  BALANCE_SNAPSHOTS: 'balance_snapshots',
 } as const
+
+export interface BalanceSnapshot {
+  id: string
+  timestamp: number
+  balances: Record<string, { amount: number; usdValue: number }>
+  totalUsdValue: number
+}
 
 export interface SyncStatus {
   network: string
@@ -185,6 +193,14 @@ class IndexedDBService {
           db.createObjectStore(STORES.NOTIFICATION_PREFERENCES, {
             keyPath: 'id',
           })
+        }
+
+        // Create balance snapshots store (added in v4)
+        if (!db.objectStoreNames.contains(STORES.BALANCE_SNAPSHOTS)) {
+          const snapshotStore = db.createObjectStore(STORES.BALANCE_SNAPSHOTS, {
+            keyPath: 'id',
+          })
+          snapshotStore.createIndex('timestamp', 'timestamp', { unique: false })
         }
         return null
       }
@@ -476,6 +492,60 @@ class IndexedDBService {
       value: T
     }>(store.get(key))
     return result?.value || null
+  }
+
+  // ==================== BALANCE SNAPSHOT OPERATIONS ====================
+
+  /**
+   * Save a balance snapshot
+   */
+  async saveBalanceSnapshot(snapshot: BalanceSnapshot): Promise<void> {
+    const db = await this.ensureDB()
+    const tx = db.transaction(STORES.BALANCE_SNAPSHOTS, 'readwrite')
+    const store = tx.objectStore(STORES.BALANCE_SNAPSHOTS)
+    await IndexedDBService.promisifyRequest(store.put(snapshot))
+  }
+
+  /**
+   * Get balance snapshots within a date range
+   */
+  async getBalanceSnapshots(from: number, to: number): Promise<BalanceSnapshot[]> {
+    const db = await this.ensureDB()
+    const tx = db.transaction(STORES.BALANCE_SNAPSHOTS, 'readonly')
+    const store = tx.objectStore(STORES.BALANCE_SNAPSHOTS)
+    const index = store.index('timestamp')
+    const range = IDBKeyRange.bound(from, to)
+    const results = await IndexedDBService.getFromIndex<BalanceSnapshot>(index, range)
+    return results.sort((a, b) => a.timestamp - b.timestamp)
+  }
+
+  /**
+   * Get the most recent balance snapshot
+   */
+  async getLatestBalanceSnapshot(): Promise<BalanceSnapshot | null> {
+    const db = await this.ensureDB()
+    const tx = db.transaction(STORES.BALANCE_SNAPSHOTS, 'readonly')
+    const store = tx.objectStore(STORES.BALANCE_SNAPSHOTS)
+    const index = store.index('timestamp')
+
+    return new Promise((resolve, reject) => {
+      const request = index.openCursor(null, 'prev')
+      request.onsuccess = () => {
+        const cursor = request.result
+        resolve(cursor ? cursor.value : null)
+      }
+      request.onerror = () => reject(request.error)
+    })
+  }
+
+  /**
+   * Clear all balance snapshots
+   */
+  async clearBalanceSnapshots(): Promise<void> {
+    const db = await this.ensureDB()
+    const tx = db.transaction(STORES.BALANCE_SNAPSHOTS, 'readwrite')
+    const store = tx.objectStore(STORES.BALANCE_SNAPSHOTS)
+    await IndexedDBService.promisifyRequest(store.clear())
   }
 
   // ==================== UTILITY METHODS ====================
