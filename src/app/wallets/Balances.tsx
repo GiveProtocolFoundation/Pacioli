@@ -499,6 +499,34 @@ function snapshotsToChartData(
   })
 }
 
+/** Header action buttons (refresh + connect wallet) */
+const HeaderActions: React.FC<{
+  hasWallets: boolean
+  isLoading: boolean
+  onRefresh: () => void
+  onConnectWallet: () => void
+}> = ({ hasWallets, isLoading, onRefresh, onConnectWallet }) => (
+  <div className="flex items-center space-x-3">
+    {hasWallets && (
+      <button
+        onClick={onRefresh}
+        disabled={isLoading}
+        className="px-4 py-2 text-sm font-medium text-[#696557] dark:text-[#b8b3ac] bg-[#fafaf8] dark:bg-[#1a1815] border border-[rgba(201,169,97,0.15)] rounded-lg hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620] disabled:opacity-50 flex items-center"
+      >
+        <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+        Refresh
+      </button>
+    )}
+    <button
+      onClick={onConnectWallet}
+      className="px-4 py-2 text-sm font-medium text-white bg-[#8b4e52] rounded-lg hover:bg-[#7a4248] flex items-center"
+    >
+      <Plus className="w-4 h-4 mr-2" />
+      Connect Wallet
+    </button>
+  </div>
+)
+
 /** Page header with refresh and connect wallet buttons */
 const BalancesHeader: React.FC<{
   hasWallets: boolean
@@ -515,25 +543,12 @@ const BalancesHeader: React.FC<{
             Track your cryptocurrency holdings across all wallets
           </p>
         </div>
-        <div className="flex items-center space-x-3">
-          {hasWallets && (
-            <button
-              onClick={onRefresh}
-              disabled={isLoading}
-              className="px-4 py-2 text-sm font-medium text-[#696557] dark:text-[#b8b3ac] bg-[#fafaf8] dark:bg-[#1a1815] border border-[rgba(201,169,97,0.15)] rounded-lg hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620] disabled:opacity-50 flex items-center"
-            >
-              <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-              Refresh
-            </button>
-          )}
-          <button
-            onClick={onConnectWallet}
-            className="px-4 py-2 text-sm font-medium text-white bg-[#8b4e52] rounded-lg hover:bg-[#7a4248] flex items-center"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Connect Wallet
-          </button>
-        </div>
+        <HeaderActions
+          hasWallets={hasWallets}
+          isLoading={isLoading}
+          onRefresh={onRefresh}
+          onConnectWallet={onConnectWallet}
+        />
       </div>
     </div>
   </header>

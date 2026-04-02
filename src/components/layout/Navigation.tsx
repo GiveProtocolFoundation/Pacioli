@@ -140,7 +140,7 @@ const NavItemList: React.FC<{
             {item.subItems ? (
               <button
                 onClick={onToggleExpanded(item.name)}
-                className={getButtonClass(!!isActive)}
+                className={getButtonClass(Boolean(isActive))}
               >
                 <div className="flex items-center">
                   <item.icon className="w-5 h-5 mr-3" />
@@ -165,7 +165,7 @@ const NavItemList: React.FC<{
               <Link
                 to={item.href}
                 onClick={onLinkClick}
-                className={getLinkClass(!!isActive)}
+                className={getLinkClass(Boolean(isActive))}
               >
                 <div className="flex items-center">
                   <item.icon className="w-5 h-5 mr-3" />

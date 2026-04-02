@@ -296,7 +296,7 @@ mod tests {
 
         assert_eq!(params["ownerAddress"], "TestOwner");
         assert_eq!(params["page"], 1);
-        assert_eq!(params["displayOptions"]["showFungible"], true);
+        assert!(params["displayOptions"]["showFungible"].as_bool().unwrap());
     }
 
     #[test]

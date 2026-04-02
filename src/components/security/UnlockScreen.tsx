@@ -4,7 +4,7 @@
  * Includes forgot password flow with recovery phrase
  */
 
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useRef, useEffect } from 'react'
 import { useApp } from '../../contexts/AppContext'
 import { useLanguage } from '../../contexts/LanguageContext'
 import { storage } from '../../services/storage'
@@ -21,6 +21,14 @@ export const UnlockScreen: React.FC<UnlockScreenProps> = ({ onUnlock }) => {
   const [view, setView] = useState<View>('unlock')
   const [password, setPassword] = useState('')
   const [localError, setLocalError] = useState<string | null>(null)
+  const passwordRef = useRef<HTMLInputElement>(null)
+
+  // Focus password field when unlock view is shown
+  useEffect(() => {
+    if (view === 'unlock') {
+      passwordRef.current?.focus()
+    }
+  }, [view])
 
   // Reset password state
   const [recoveryPhrase, setRecoveryPhrase] = useState('')
@@ -375,6 +383,7 @@ export const UnlockScreen: React.FC<UnlockScreenProps> = ({ onUnlock }) => {
                 {t.unlock.enterPassword}
               </label>
               <input
+                ref={passwordRef}
                 id="password"
                 type="password"
                 value={password}
