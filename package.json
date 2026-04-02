@@ -86,7 +86,8 @@
   },
   "pnpm": {
     "overrides": {
-      "handlebars": "^4.7.9"
+      "handlebars": "^4.7.9",
+      "serialize-javascript": "^7.0.5"
     }
   }
 }
