@@ -4,6 +4,7 @@
  * Used for instant historical transaction fetching (hybrid with RPC)
  */
 
+import { invoke } from '@tauri-apps/api/core'
 import type { NetworkType, SubstrateTransaction } from '../wallet/types'
 
 /** Map of network type to native token symbol */
@@ -111,6 +112,33 @@ class SubscanService {
     moonriver: { baseUrl: 'https://moonriver.api.subscan.io' },
     astar: { baseUrl: 'https://astar.api.subscan.io' },
     acala: { baseUrl: 'https://acala.api.subscan.io' },
+  }
+
+  // Retrieve API key: Tauri keychain → localStorage → env var
+  private static async getApiKey(): Promise<string | null> {
+    // Try Tauri keychain first (desktop app)
+    try {
+      const key = await invoke<string | null>('get_api_key', {
+        provider: 'subscan',
+      })
+      if (key) return key
+    } catch {
+      // Tauri not available — fall through to browser fallbacks
+    }
+
+    // Check localStorage (browser dev mode, set via DataProviders page)
+    const storedKey = localStorage.getItem('pacioli_api_key_subscan')
+    if (storedKey) return storedKey
+
+    // Check for build-time default (VITE_ env var)
+    if (
+      typeof import.meta !== 'undefined' &&
+      import.meta.env?.VITE_SUBSCAN_API_KEY
+    ) {
+      return import.meta.env.VITE_SUBSCAN_API_KEY
+    }
+
+    return null
   }
 
   /**
@@ -433,8 +461,10 @@ class SubscanService {
       'Content-Type': 'application/json',
     }
 
-    if (config.apiKey) {
-      headers['X-API-Key'] = config.apiKey
+    // Use config key if provided, otherwise try fallback chain
+    const apiKey = config.apiKey ?? (await SubscanService.getApiKey())
+    if (apiKey) {
+      headers['X-API-Key'] = apiKey
     }
 
     const response = await fetch(`${config.baseUrl}${endpoint}`, {

@@ -655,6 +655,7 @@ const WalletManager: React.FC = () => {
       // Fetch transactions using HYBRID approach (Subscan + RPC)
       // This is MUCH faster: ~2-3 seconds instead of minutes/hours
       // Note: RPC connection is now optional - if it fails, we still get Subscan data
+      let lastProgressMessage = ''
       const txs = await polkadotService.fetchTransactionHistoryHybrid(
         selectedNetwork,
         {
@@ -662,6 +663,9 @@ const WalletManager: React.FC = () => {
           limit: 100, // Increased limit since hybrid is much faster
           onProgress: progress => {
             setSyncProgress(progress)
+            if (progress.stage === 'complete') {
+              lastProgressMessage = progress.message
+            }
           },
         }
       )
@@ -709,18 +713,23 @@ const WalletManager: React.FC = () => {
       )
       setSyncStatus(newSyncStatus)
 
-      // Show success
+      // Show success — preserve service message (e.g. API key warning) when no transactions
+      const successMessage =
+        txs.length === 0 && lastProgressMessage
+          ? lastProgressMessage
+          : `Successfully synced ${txs.length} transaction${txs.length !== 1 ? 's' : ''}`
       setSyncProgress({
         stage: 'complete',
         currentBlock: 0,
         totalBlocks: 0,
         blocksScanned: 0,
         transactionsFound: txs.length,
-        message: `Successfully synced ${txs.length} transaction${txs.length !== 1 ? 's' : ''}`,
+        message: successMessage,
       })
 
-      // Clear progress after 3 seconds
-      setTimeout(() => setSyncProgress(null), 3000)
+      // Keep API key warnings visible longer
+      const clearDelay = txs.length === 0 && lastProgressMessage ? 8000 : 3000
+      setTimeout(() => setSyncProgress(null), clearDelay)
 
       // Clear timeout on success
       clearTimeout(syncTimeout)

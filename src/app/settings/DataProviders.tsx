@@ -44,6 +44,20 @@ interface ProviderConfig {
 // localStorage key prefix for browser-mode API key storage
 const LS_KEY_PREFIX = 'pacioli_api_key_'
 
+// Map provider IDs to their VITE_ env var names for default key detection
+const VITE_KEY_MAP: Record<string, string> = {
+  etherscan: 'VITE_ETHERSCAN_API_KEY',
+  subscan: 'VITE_SUBSCAN_API_KEY',
+}
+
+/** Check if a provider has a build-time default API key via VITE_ env var */
+function hasDefaultKey(providerId: string): boolean {
+  const envVar = VITE_KEY_MAP[providerId]
+  if (!envVar) return false
+  const val = import.meta.env?.[envVar]
+  return Boolean(val) && !val.startsWith('your_')
+}
+
 // Provider metadata with documentation links
 const PROVIDER_CONFIGS: ProviderConfig[] = [
   {
@@ -94,17 +108,19 @@ const PROVIDER_CONFIGS: ProviderConfig[] = [
   },
 ]
 
-// Browser-mode fallback: build ProviderStatus from localStorage
+// Browser-mode fallback: build ProviderStatus from localStorage + VITE_ defaults
 function getLocalStorageStatuses(): ProviderStatus[] {
   return PROVIDER_CONFIGS.map(config => {
-    const hasKey = Boolean(localStorage.getItem(`${LS_KEY_PREFIX}${config.id}`))
+    const hasUserKey = Boolean(localStorage.getItem(`${LS_KEY_PREFIX}${config.id}`))
+    const hasDefault = hasDefaultKey(config.id)
+    const hasAnyKey = hasUserKey || hasDefault
     return {
       provider: config.id,
       name: config.name,
-      has_api_key: hasKey,
-      rate_limit: hasKey ? 5 : 1,
+      has_api_key: hasAnyKey,
+      rate_limit: hasUserKey ? 5 : hasDefault ? 3 : 1,
       turbo_rate_limit: 5,
-      is_turbo_mode: hasKey,
+      is_turbo_mode: hasUserKey,
     }
   })
 }
@@ -113,18 +129,33 @@ function getLocalStorageStatuses(): ProviderStatus[] {
 // Components
 // =============================================================================
 
-const TurboModeIndicator: React.FC<{ isActive: boolean }> = ({ isActive }) => (
-  <div
-    className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
-      isActive
-        ? 'bg-[#c9a961]/20 text-[#c9a961] dark:bg-[#c9a961]/30 dark:text-[#dbc07a]'
-        : 'bg-[#696557]/10 text-[#696557] dark:bg-[#696557]/20 dark:text-[#b8b3ac]'
-    }`}
-  >
-    <Zap className={`w-3 h-3 mr-1 ${isActive ? 'fill-current' : ''}`} />
-    {isActive ? 'Turbo Mode' : 'Default Mode'}
-  </div>
-)
+type KeyMode = 'none' | 'default' | 'turbo'
+
+const TurboModeIndicator: React.FC<{ mode: KeyMode }> = ({ mode }) => {
+  const styles: Record<KeyMode, string> = {
+    none: 'bg-[#696557]/10 text-[#696557] dark:bg-[#696557]/20 dark:text-[#b8b3ac]',
+    default:
+      'bg-[#4a7c59]/15 text-[#4a7c59] dark:bg-[#6b9e7a]/20 dark:text-[#8faf84]',
+    turbo:
+      'bg-[#c9a961]/20 text-[#c9a961] dark:bg-[#c9a961]/30 dark:text-[#dbc07a]',
+  }
+  const labels: Record<KeyMode, string> = {
+    none: 'No Key',
+    default: 'App Default',
+    turbo: 'Turbo Mode',
+  }
+
+  return (
+    <div
+      className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${styles[mode]}`}
+    >
+      <Zap
+        className={`w-3 h-3 mr-1 ${mode === 'turbo' ? 'fill-current' : ''}`}
+      />
+      {labels[mode]}
+    </div>
+  )
+}
 
 /** Displays the current rate limit and potential turbo limit for a provider */
 const RateLimitBadge: React.FC<{
@@ -267,6 +298,8 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
   const isTurbo = status?.is_turbo_mode ?? false
   const rateLimit = status?.rate_limit ?? 1
   const turboLimit = status?.turbo_rate_limit ?? 5
+  const defaultAvailable = hasDefaultKey(config.id)
+  const keyMode: KeyMode = isTurbo ? 'turbo' : hasKey || defaultAvailable ? 'default' : 'none'
 
   const toggleShowKey = useCallback(() => {
     setShowKey(prev => !prev)
@@ -332,7 +365,7 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
             <h4 className="font-medium text-[#1a1815] dark:text-[#f5f3f0]">
               {config.name}
             </h4>
-            <TurboModeIndicator isActive={isTurbo} />
+            <TurboModeIndicator mode={keyMode} />
           </div>
           <p className="text-sm text-[#696557] dark:text-[#b8b3ac]">
             {config.description}
@@ -410,6 +443,19 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
                 Remove
               </button>
             </>
+          ) : defaultAvailable ? (
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-[#4a7c59] dark:text-[#8faf84]">
+                Using app default key
+              </span>
+              <button
+                onClick={startEditing}
+                className="px-3 py-1.5 text-sm font-medium text-[#c9a961] dark:text-[#dbc07a] border border-[#c9a961]/30 dark:border-[#c9a961]/40 rounded-lg hover:bg-[#c9a961]/10 dark:hover:bg-[#c9a961]/20 flex items-center gap-1.5"
+              >
+                <Zap className="w-4 h-4" />
+                Upgrade to Turbo
+              </button>
+            </div>
           ) : (
             <button
               onClick={startEditing}
@@ -503,6 +549,7 @@ const DataProviders: React.FC = () => {
   }
 
   const turboCount = providerStatuses.filter(s => s.is_turbo_mode).length
+  const configuredCount = providerStatuses.filter(s => s.has_api_key).length
   const totalProviders = PROVIDER_CONFIGS.length
 
   return (
@@ -529,11 +576,16 @@ const DataProviders: React.FC = () => {
         <div className="mb-6 flex items-center gap-4 text-sm">
           <span className="text-[#696557] dark:text-[#b8b3ac]">
             <span className="font-medium text-[#1a1815] dark:text-[#f5f3f0]">
-              {turboCount}
+              {configuredCount}
             </span>{' '}
-            of {totalProviders} providers in Turbo Mode
+            of {totalProviders} providers active
+            {turboCount > 0 && (
+              <span className="text-[#c9a961] dark:text-[#dbc07a]">
+                {' '}({turboCount} Turbo)
+              </span>
+            )}
           </span>
-          {turboCount === totalProviders && (
+          {configuredCount === totalProviders && (
             <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[#4a7c59]/20 text-[#4a7c59] dark:bg-[#6b9e7a]/20 dark:text-[#6b9e7a]">
               <Check className="w-3 h-3 mr-1" />
               All configured

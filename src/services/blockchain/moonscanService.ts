@@ -72,7 +72,7 @@ interface MoonscanResponse<T> {
 /**
  * Service for fetching EVM transaction history using Etherscan V2 API.
  */
-class MoonscanService {
+export class MoonscanService {
   // Etherscan V2 uses chain IDs instead of separate base URLs
   private readonly NETWORK_CONFIGS: Partial<
     Record<NetworkType, MoonscanConfig>
