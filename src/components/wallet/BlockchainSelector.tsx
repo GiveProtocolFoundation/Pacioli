@@ -31,6 +31,7 @@ interface BlockchainSelectorProps {
   disabled?: boolean
 }
 
+/** Dropdown selector for choosing a blockchain network with search filtering and grouped options */
 const BlockchainSelector: React.FC<BlockchainSelectorProps> = ({
   value,
   onChange,
@@ -167,6 +168,7 @@ const BlockchainSelector: React.FC<BlockchainSelectorProps> = ({
       {isOpen && (
         <div
           role="listbox"
+          tabIndex={-1}
           className="absolute z-50 w-full mt-1 bg-[#fafaf8] dark:bg-[#1a1815] border border-[rgba(201,169,97,0.15)] rounded-lg shadow-lg max-h-80 overflow-hidden"
           onKeyDown={handleKeyDown}
         >

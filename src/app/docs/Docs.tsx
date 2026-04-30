@@ -237,6 +237,7 @@ const SectionItems: React.FC<{
   </div>
 )
 
+/** Documentation browser with hierarchical sidebar navigation and content placeholder area */
 const Docs: React.FC = () => {
   const [expandedSections, setExpandedSections] = useState<string[]>([
     'getting-started',
@@ -246,7 +247,7 @@ const Docs: React.FC = () => {
 
   const handleSectionClick = useCallback(
     (e: React.MouseEvent<HTMLButtonElement>) => {
-      const sectionId = e.currentTarget.getAttribute('data-section-id')
+      const sectionId = e.currentTarget.dataset.sectionId
       if (sectionId) {
         setExpandedSections(prev =>
           prev.includes(sectionId)
@@ -260,9 +261,8 @@ const Docs: React.FC = () => {
 
   const handleItemClick = useCallback(
     (e: React.MouseEvent<HTMLButtonElement>) => {
-      const itemId = e.currentTarget.getAttribute('data-item-id')
-      const hasSubItems =
-        e.currentTarget.getAttribute('data-has-subitems') === 'true'
+      const itemId = e.currentTarget.dataset.itemId
+      const hasSubItems = e.currentTarget.dataset.hasSubitems === 'true'
       if (itemId) {
         if (hasSubItems) {
           setExpandedItems(prev =>
@@ -280,7 +280,7 @@ const Docs: React.FC = () => {
 
   const handleSelectDoc = useCallback(
     (e: React.MouseEvent<HTMLButtonElement>) => {
-      const docId = e.currentTarget.getAttribute('data-doc-id')
+      const docId = e.currentTarget.dataset.docId
       if (docId) {
         setSelectedDoc(docId)
       }
@@ -412,9 +412,9 @@ const Docs: React.FC = () => {
                   </div>
 
                   <div>
-                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mb-3"></div>
-                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full mb-2"></div>
-                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-4/5"></div>
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mb-3" />
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full mb-2" />
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-4/5" />
                   </div>
                 </div>
 

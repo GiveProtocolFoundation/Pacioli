@@ -3,7 +3,6 @@ import { useLocation, Link, useNavigate } from 'react-router-dom'
 import {
   Search,
   Filter,
-  Download,
   Calendar,
   ArrowUpRight,
   ArrowDownRight,
@@ -12,42 +11,46 @@ import {
   Edit2,
   Plus,
 } from 'lucide-react'
+import ExportDropdown from './ExportDropdown'
 import { useTransactions } from '../../contexts/TransactionContext'
 import { useCurrency } from '../../contexts/CurrencyContext'
 import { useTokens } from '../../contexts/TokenContext'
-import { TransactionType, TransactionStatus } from '../../types/transaction'
+import { Transaction, TransactionType, TransactionStatus } from '../../types/transaction'
+import type { ClassificationStatus } from '../../types/database'
+import type { Token, Chain } from '../../types/digitalAssets'
 
-type FilterType = 'all' | 'revenue' | 'expense' | 'transfers'
+type FilterType = 'all' | 'unclassified' | 'classified' | 'ignored'
 
+/** Tab navigation for filtering transactions by classification status */
 const FilterTabs = ({
   filter,
   transactions,
 }: {
   filter: string
-  transactions: { type: TransactionType }[]
+  transactions: { classificationStatus: ClassificationStatus }[]
 }) => (
   <div className="mb-6 border-b border-[rgba(201,169,97,0.15)]">
     <nav className="flex space-x-8">
       {[
         {
           key: 'all',
-          label: 'All Transactions',
+          label: 'All',
           count: transactions.length,
         },
         {
-          key: 'revenue',
-          label: 'Revenue',
-          count: transactions.filter(t => t.type === 'revenue').length,
+          key: 'unclassified',
+          label: 'Unclassified',
+          count: transactions.filter(t => t.classificationStatus === 'unclassified').length,
         },
         {
-          key: 'expense',
-          label: 'Expense',
-          count: transactions.filter(t => t.type === 'expense').length,
+          key: 'classified',
+          label: 'Classified',
+          count: transactions.filter(t => t.classificationStatus === 'classified').length,
         },
         {
-          key: 'transfers',
-          label: 'Transfers',
-          count: transactions.filter(t => t.type === 'transfer').length,
+          key: 'ignored',
+          label: 'Ignored',
+          count: transactions.filter(t => t.classificationStatus === 'ignored').length,
         },
       ].map(tab => (
         <Link
@@ -60,21 +63,107 @@ const FilterTabs = ({
           }`}
         >
           {tab.label}
-          <span
-            className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
-              filter === tab.key
-                ? 'bg-[#8b4e52]/10 text-[#8b4e52] dark:bg-[#8b4e52]/20 dark:text-[#a86e72]'
-                : 'bg-[#f3f1ed] text-[#696557] dark:bg-[#2a2620] dark:text-[#b8b3ac]'
-            }`}
-          >
-            {tab.count}
-          </span>
+          {tab.count > 0 && (
+            <span
+              className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
+                filter === tab.key
+                  ? 'bg-[#8b4e52]/10 text-[#8b4e52] dark:bg-[#8b4e52]/20 dark:text-[#a86e72]'
+                  : 'bg-[#f3f1ed] text-[#696557] dark:bg-[#2a2620] dark:text-[#b8b3ac]'
+              }`}
+            >
+              {tab.count}
+            </span>
+          )}
         </Link>
       ))}
     </nav>
   </div>
 )
 
+const classificationStyles: Record<ClassificationStatus, string> = {
+  unclassified: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300',
+  classified: 'bg-[#7a9b6f]/10 text-[#7a9b6f] dark:bg-[#7a9b6f]/20 dark:text-[#8faf84]',
+  ignored: 'bg-[#696557]/10 text-[#696557] dark:bg-[#696557]/20 dark:text-[#b8b3ac]',
+  split: 'bg-[#c9a961]/10 text-[#c9a961] dark:bg-[#c9a961]/20 dark:text-[#c9a961]',
+}
+
+const classificationLabels: Record<ClassificationStatus, string> = {
+  unclassified: 'Unclassified',
+  classified: 'Classified',
+  ignored: 'Ignored',
+  split: 'Split',
+}
+
+const ClassificationBadge: React.FC<{ status: ClassificationStatus }> = ({ status }) => (
+  <span
+    className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${classificationStyles[status]}`}
+  >
+    {classificationLabels[status]}
+  </span>
+)
+
+interface TransactionAmountCellProps {
+  transaction: Transaction
+  getToken: (id: string) => Token | undefined
+  getChain: (id: string) => Chain | undefined
+  currencySettings: { primaryCurrency: string }
+  handleImageError: (e: React.SyntheticEvent<HTMLImageElement>) => void
+}
+
+/** Renders the amount cell in a transaction table row, showing token icon, crypto amount, fiat value, and chain info */
+const TransactionAmountCell: React.FC<TransactionAmountCellProps> = ({
+  transaction,
+  getToken,
+  getChain,
+  currencySettings,
+  handleImageError,
+}) => {
+  const token = getToken(transaction.tokenId)
+  const chain = getChain(transaction.chainId)
+  return (
+    <>
+      <div className="flex items-center gap-2">
+        {token?.iconUrl && (
+          <img
+            src={token.iconUrl}
+            alt={token.symbol}
+            className="w-5 h-5 rounded-full"
+            onError={handleImageError}
+          />
+        )}
+        <div
+          className={`text-sm font-semibold ${
+            transaction.type === 'revenue'
+              ? 'text-[#7a9b6f]'
+              : transaction.type === 'expense'
+                ? 'text-[#9d6b6b]'
+                : 'text-[#c9a961]'
+          }`}
+        >
+          {transaction.type === 'revenue'
+            ? '+'
+            : transaction.type === 'expense'
+              ? '-'
+              : ''}
+          {transaction.amount}{' '}
+          {token?.symbol || transaction.crypto}
+        </div>
+      </div>
+      <div className="text-xs text-[#a39d94] dark:text-[#8b8580]">
+        {transaction.fiatCurrency ||
+          currencySettings.primaryCurrency}{' '}
+        {transaction.fiatValue.toLocaleString()}
+      </div>
+      {chain && (
+        <div className="text-xs text-[#a39d94] dark:text-[#8b8580]">
+          on {chain.chainName}
+        </div>
+      )}
+    </>
+  )
+}
+
+/** Transactions list page with search, filtering, and tabular display of all crypto transactions */
 const Transactions: React.FC = () => {
   const location = useLocation()
   const navigate = useNavigate()
@@ -86,7 +175,7 @@ const Transactions: React.FC = () => {
   const params = new URLSearchParams(location.search)
   const urlFilter = params.get('filter') as FilterType
   const filter: FilterType =
-    urlFilter && ['all', 'revenue', 'expense', 'transfers'].includes(urlFilter)
+    urlFilter && ['all', 'unclassified', 'classified', 'ignored'].includes(urlFilter)
       ? urlFilter
       : 'all'
 
@@ -94,8 +183,7 @@ const Transactions: React.FC = () => {
     return transactions
       .filter(tx => {
         if (filter === 'all') return true
-        if (filter === 'transfers') return tx.type === 'transfer'
-        return tx.type === filter
+        return tx.classificationStatus === filter
       })
       .filter(tx => {
         if (!searchQuery) return true
@@ -107,6 +195,7 @@ const Transactions: React.FC = () => {
       })
   }, [transactions, filter, searchQuery])
 
+  /** Returns the appropriate directional arrow icon for a given transaction type */
   const getTypeIcon = (type: TransactionType) => {
     switch (type) {
       case 'revenue':
@@ -120,6 +209,7 @@ const Transactions: React.FC = () => {
     }
   }
 
+  /** Returns Tailwind CSS color classes for styling a transaction type badge */
   const getTypeColor = (type: TransactionType) => {
     switch (type) {
       case 'revenue':
@@ -133,6 +223,7 @@ const Transactions: React.FC = () => {
     }
   }
 
+  /** Returns Tailwind CSS color classes for styling a transaction status badge */
   const getStatusColor = (status: TransactionStatus) => {
     switch (status) {
       case 'completed':
@@ -182,7 +273,7 @@ const Transactions: React.FC = () => {
 
   const handleRowClick = useCallback(
     (e: React.MouseEvent<HTMLTableRowElement>) => {
-      const id = e.currentTarget.getAttribute('data-id')
+      const id = e.currentTarget.dataset.id
       if (id) {
         navigate(`/transactions/edit/${id}`)
       }
@@ -193,7 +284,7 @@ const Transactions: React.FC = () => {
   const handleEditButtonClick = useCallback(
     (e: React.MouseEvent<HTMLButtonElement>) => {
       e.stopPropagation()
-      const id = e.currentTarget.getAttribute('data-id')
+      const id = e.currentTarget.dataset.id
       if (id) {
         navigate(`/transactions/edit/${id}`)
       }
@@ -252,10 +343,7 @@ const Transactions: React.FC = () => {
             <Filter className="w-5 h-5" />
             <span className="hidden sm:inline">Filters</span>
           </button>
-          <button className="flex items-center gap-2 px-4 py-2 bg-[#8b4e52] text-white rounded-lg hover:bg-[#7a4248]">
-            <Download className="w-5 h-5" />
-            <span className="hidden sm:inline">Export</span>
-          </button>
+          <ExportDropdown transactions={filteredTransactions} />
         </div>
       </div>
 
@@ -285,6 +373,9 @@ const Transactions: React.FC = () => {
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#696557] dark:text-[#b8b3ac] uppercase tracking-wider">
                   Status
+                </th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-[#696557] dark:text-[#b8b3ac] uppercase tracking-wider">
+                  Classification
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#696557] dark:text-[#b8b3ac] uppercase tracking-wider">
                   Actions
@@ -337,51 +428,13 @@ const Transactions: React.FC = () => {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    {(() => {
-                      const token = getToken(transaction.tokenId)
-                      const chain = getChain(transaction.chainId)
-                      return (
-                        <>
-                          <div className="flex items-center gap-2">
-                            {token?.iconUrl && (
-                              <img
-                                src={token.iconUrl}
-                                alt={token.symbol}
-                                className="w-5 h-5 rounded-full"
-                                onError={handleImageError}
-                              />
-                            )}
-                            <div
-                              className={`text-sm font-semibold ${
-                                transaction.type === 'revenue'
-                                  ? 'text-[#7a9b6f]'
-                                  : transaction.type === 'expense'
-                                    ? 'text-[#9d6b6b]'
-                                    : 'text-[#c9a961]'
-                              }`}
-                            >
-                              {transaction.type === 'revenue'
-                                ? '+'
-                                : transaction.type === 'expense'
-                                  ? '-'
-                                  : ''}
-                              {transaction.amount}{' '}
-                              {token?.symbol || transaction.crypto}
-                            </div>
-                          </div>
-                          <div className="text-xs text-[#a39d94] dark:text-[#8b8580]">
-                            {transaction.fiatCurrency ||
-                              currencySettings.primaryCurrency}{' '}
-                            {transaction.fiatValue.toLocaleString()}
-                          </div>
-                          {chain && (
-                            <div className="text-xs text-[#a39d94] dark:text-[#8b8580]">
-                              on {chain.chainName}
-                            </div>
-                          )}
-                        </>
-                      )
-                    })()}
+                    <TransactionAmountCell
+                      transaction={transaction}
+                      getToken={getToken}
+                      getChain={getChain}
+                      currencySettings={currencySettings}
+                      handleImageError={handleImageError}
+                    />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span
@@ -396,14 +449,28 @@ const Transactions: React.FC = () => {
                         </div>
                       )}
                   </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-center">
+                    <ClassificationBadge status={transaction.classificationStatus} />
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button
-                      data-id={transaction.id}
-                      onClick={handleEditButtonClick}
-                      className="text-[#8b4e52] hover:text-[#7a4248] dark:text-[#a86e72] dark:hover:text-[#b88585]"
-                    >
-                      <Edit2 className="w-5 h-5" />
-                    </button>
+                    <div className="flex items-center justify-end gap-2">
+                      <button
+                        data-id={transaction.id}
+                        onClick={handleEditButtonClick}
+                        className="text-[#8b4e52] hover:text-[#7a4248] dark:text-[#a86e72] dark:hover:text-[#b88585]"
+                      >
+                        <Edit2 className="w-5 h-5" />
+                      </button>
+                      <button
+                        onClick={e => {
+                          e.stopPropagation()
+                          navigate('/journal-entries?new=true')
+                        }}
+                        className="px-2 py-1 text-xs font-medium rounded bg-[#8b4e52]/10 text-[#8b4e52] hover:bg-[#8b4e52]/20 transition-colors"
+                      >
+                        Classify &rarr;
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

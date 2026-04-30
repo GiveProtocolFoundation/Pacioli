@@ -7,6 +7,7 @@ import { WalletAliasProvider } from './contexts/WalletAliasContext'
 import { NotificationProvider } from './contexts/NotificationContext'
 import { ProfileProvider } from './contexts/ProfileContext'
 import { EntityProvider } from './contexts/EntityContext'
+import { NavBadgeProvider } from './contexts/NavBadgeContext'
 import { AppProvider, useApp } from './contexts/AppContext'
 import { LanguageProvider } from './contexts/LanguageContext'
 import { UnlockScreen } from './components/security'
@@ -29,6 +30,18 @@ const Docs = React.lazy(() => import('./app/docs/Docs'))
 const WalletManager = React.lazy(() => import('./app/wallets/WalletManager'))
 const Entities = React.lazy(() => import('./app/entities/Entities'))
 const Team = React.lazy(() => import('./app/team/Team'))
+const JournalEntries = React.lazy(
+  () => import('./app/journal-entries/JournalEntries')
+)
+const ChartOfAccounts = React.lazy(
+  () => import('./app/ledger/ChartOfAccounts')
+)
+const TrialBalance = React.lazy(
+  () => import('./app/ledger/TrialBalance')
+)
+const Reconciliation = React.lazy(
+  () => import('./app/ledger/Reconciliation')
+)
 
 // Loading fallback component
 const LoadingFallback: React.FC = () => (
@@ -47,9 +60,11 @@ const DataProviders: React.FC<{ children: React.ReactNode }> = ({
   <TokenProvider>
     <WalletAliasProvider>
       <NotificationProvider>
-        <TransactionProvider userAccountType="organization">
-          {children}
-        </TransactionProvider>
+        <NavBadgeProvider>
+          <TransactionProvider userAccountType="organization">
+            {children}
+          </TransactionProvider>
+        </NavBadgeProvider>
       </NotificationProvider>
     </WalletAliasProvider>
   </TokenProvider>
@@ -149,7 +164,11 @@ const MainRoutes: React.FC = () => (
       <Route path="/docs" element={<Docs />} />
       <Route path="/support" element={<Support />} />
       <Route path="/profile" element={<Profile />} />
-      <Route path="/chart-of-accounts" element={<Settings />} />
+      <Route path="/journal-entries" element={<JournalEntries />} />
+      <Route path="/chart-of-accounts" element={<ChartOfAccounts />} />
+      <Route path="/trial-balance" element={<TrialBalance />} />
+      <Route path="/ledger/reconciliation" element={<Reconciliation />} />
+      <Route path="/reports/balance-sheet" element={<Reports />} />
     </Routes>
   </Navigation>
 )

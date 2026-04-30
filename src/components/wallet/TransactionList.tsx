@@ -34,6 +34,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
   const { addTransaction } = useTransactions()
   const [importing, setImporting] = useState(false)
   const [importSuccess, setImportSuccess] = useState(false)
+  const [importError, setImportError] = useState<string | null>(null)
   const [showPurgeConfirm, setShowPurgeConfirm] = useState(false)
 
   // Sort transactions by block number (newest first)
@@ -107,6 +108,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
   const importToLedger = useCallback(async () => {
     setImporting(true)
     setImportSuccess(false)
+    setImportError(null)
 
     try {
       for (const tx of sortedTransactions) {
@@ -152,7 +154,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
       setTimeout(() => setImportSuccess(false), 3000)
     } catch (err) {
       console.error('Failed to import transactions:', err)
-      alert('Failed to import transactions. See console for details.')
+      setImportError('Failed to import transactions. See console for details.')
     } finally {
       setImporting(false)
     }
@@ -445,6 +447,19 @@ export const TransactionList: React.FC<TransactionListProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Import error banner */}
+      {importError && (
+        <div className="mt-3 flex items-center justify-between p-3 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-sm">
+          <span>{importError}</span>
+          <button
+            onClick={() => setImportError(null)}
+            className="ml-4 text-red-500 hover:text-red-700 dark:hover:text-red-200 font-medium"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
 
       {/* Purge Confirmation Modal */}
       <PurgeConfirmationModal

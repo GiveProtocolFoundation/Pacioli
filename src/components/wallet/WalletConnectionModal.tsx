@@ -488,7 +488,7 @@ const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
                     <p className="text-sm text-[#696557] dark:text-[#b8b3ac]">
                       Select accounts to add to Pacioli:
                     </p>
-                    {wcSession.accounts.map(account => (
+                    {wcSession.accounts.map((account) => (
                       <div
                         key={`${account.chain}-${account.address}`}
                         className="p-3 bg-[#f3f1ed] dark:bg-[#1a1815] rounded-lg border border-[rgba(201,169,97,0.15)]"

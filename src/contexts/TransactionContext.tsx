@@ -37,7 +37,7 @@ interface TransactionContextType {
 }
 
 const TransactionContext = createContext<TransactionContextType | undefined>(
-  undefined
+  undefined // skipcq: JS-W1042 — React createContext requires explicit default argument
 )
 
 /**
@@ -54,11 +54,12 @@ export const TransactionProvider: React.FC<{
     userAccountType === 'sme' || userAccountType === 'not-for-profit'
 
   const addTransaction = useCallback(
-    async (formData: TransactionFormData): Promise<Transaction> => {
+    (formData: TransactionFormData): Promise<Transaction> => {
       const newTransaction: Transaction = {
         ...formData,
         id: `txn_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         status: isTeamAccount ? 'pending_approval' : 'completed',
+        classificationStatus: 'unclassified',
         approvalStatus: isTeamAccount ? 'pending' : undefined,
         createdBy: 'current-user-id',
         createdByName: 'Current User',
@@ -80,13 +81,13 @@ export const TransactionProvider: React.FC<{
         ).catch(console.error)
       }
 
-      return newTransaction
+      return Promise.resolve(newTransaction)
     },
     [isTeamAccount]
   )
 
   const updateTransaction = useCallback(
-    async (id: string, updates: Partial<Transaction>) => {
+    (id: string, updates: Partial<Transaction>): Promise<void> => {
       setTransactions(prev =>
         prev.map(txn =>
           txn.id === id
@@ -94,12 +95,14 @@ export const TransactionProvider: React.FC<{
             : txn
         )
       )
+      return Promise.resolve()
     },
     []
   )
 
-  const deleteTransaction = useCallback(async (id: string) => {
+  const deleteTransaction = useCallback((id: string): Promise<void> => {
     setTransactions(prev => prev.filter(txn => txn.id !== id))
+    return Promise.resolve()
   }, [])
 
   const getTransaction = useCallback(
@@ -110,7 +113,7 @@ export const TransactionProvider: React.FC<{
   )
 
   const approveTransaction = useCallback(
-    async (id: string, approverId: string, approverName: string) => {
+    (id: string, approverId: string, approverName: string): Promise<void> => {
       setTransactions(prev =>
         prev.map(txn =>
           txn.id === id
@@ -126,17 +129,18 @@ export const TransactionProvider: React.FC<{
             : txn
         )
       )
+      return Promise.resolve()
     },
     []
   )
 
   const rejectTransaction = useCallback(
-    async (
+    (
       id: string,
       approverId: string,
       approverName: string,
       reason: string
-    ) => {
+    ): Promise<void> => {
       setTransactions(prev =>
         prev.map(txn =>
           txn.id === id
@@ -153,6 +157,7 @@ export const TransactionProvider: React.FC<{
             : txn
         )
       )
+      return Promise.resolve()
     },
     []
   )

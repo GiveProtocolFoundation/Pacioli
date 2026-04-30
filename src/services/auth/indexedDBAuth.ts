@@ -111,6 +111,7 @@ class IndexedDBAuthService implements AuthService {
   private db: IDBDatabase | null = null
   private initPromise: Promise<void> | null = null
 
+  /** Opens (or creates) the IndexedDB database and object stores. */
   private init(): Promise<void> {
     if (this.db) return Promise.resolve()
     if (this.initPromise) return this.initPromise
@@ -200,6 +201,7 @@ class IndexedDBAuthService implements AuthService {
     })
   }
 
+  /** Strips the password hash from a stored user, returning a safe AuthUser. */
   private static sanitizeUser(user: StoredUser): AuthUser {
     const { password_hash: _password_hash, ...authUser } = user
     return authUser
@@ -305,6 +307,7 @@ class IndexedDBAuthService implements AuthService {
     return this.createSession(updatedUser, credentials.device_name)
   }
 
+  /** Creates an authenticated session with access and refresh tokens. */
   private async createSession(
     user: StoredUser,
     deviceName?: string
@@ -362,6 +365,7 @@ class IndexedDBAuthService implements AuthService {
     }
   }
 
+  /** Deletes the session and its refresh tokens, then clears local storage. */
   async logout(sessionId: string): Promise<void> {
     try {
       // Delete session
@@ -385,6 +389,7 @@ class IndexedDBAuthService implements AuthService {
     clearTokens()
   }
 
+  /** Rotates the access token using the stored refresh token. */
   async refreshToken(): Promise<TokenRefreshResponse> {
     const refreshTokenValue = getRefreshToken()
     if (!refreshTokenValue) {
@@ -435,6 +440,7 @@ class IndexedDBAuthService implements AuthService {
     }
   }
 
+  /** Verifies an access token and returns session metadata if valid. */
   async verifyToken(token: string): Promise<TokenVerifyResponse> {
     const tokenHash = await hashPassword(token)
     const sessionStore = await this.getStore(STORES.SESSIONS, 'readonly')
@@ -478,6 +484,7 @@ class IndexedDBAuthService implements AuthService {
     return IndexedDBAuthService.sanitizeUser(user)
   }
 
+  /** Updates mutable user fields (display name, preferences, etc.). */
   async updateUser(token: string, input: UpdateUserInput): Promise<AuthUser> {
     const verified = await this.verifyToken(token)
     if (!verified.valid || !verified.user_id) {
@@ -503,6 +510,7 @@ class IndexedDBAuthService implements AuthService {
     return IndexedDBAuthService.sanitizeUser(updatedUser)
   }
 
+  /** Verifies the current password and replaces it with a new one. */
   async changePassword(
     token: string,
     input: ChangePasswordInput
@@ -564,6 +572,7 @@ class IndexedDBAuthService implements AuthService {
     }))
   }
 
+  /** Deletes a single session and its associated refresh tokens. */
   async revokeSession(token: string, sessionId: string): Promise<void> {
     const verified = await this.verifyToken(token)
     if (!verified.valid) {
@@ -584,6 +593,7 @@ class IndexedDBAuthService implements AuthService {
     }
   }
 
+  /** Revokes all sessions for the current user except the active one. */
   async revokeAllSessions(token: string): Promise<number> {
     const verified = await this.verifyToken(token)
     if (!verified.valid || !verified.user_id) {
@@ -613,17 +623,17 @@ class IndexedDBAuthService implements AuthService {
   // Profile roles - stub implementations for browser mode
 
   /** Get user profiles (no-op in browser mode) */
-  getUserProfiles = (_token: string): Promise<ProfileWithRole[]> =>
+  getUserProfiles = (_token: string): Promise<ProfileWithRole[]> => // skipcq: JS-0105 — interface stub
     Promise.resolve([])
 
   /** Get profile users (no-op in browser mode) */
-  getProfileUsers = (
+  getProfileUsers = ( // skipcq: JS-0105 — interface stub
     _token: string,
     _profileId: string
   ): Promise<ProfileUser[]> => Promise.resolve([])
 
   /** Update user role (no-op in browser mode) */
-  updateUserRole = (
+  updateUserRole = ( // skipcq: JS-0105 — interface stub
     _token: string,
     _profileId: string,
     _userId: string,
@@ -631,7 +641,7 @@ class IndexedDBAuthService implements AuthService {
   ): Promise<void> => Promise.resolve()
 
   /** Remove user from profile (no-op in browser mode) */
-  removeUserFromProfile = (
+  removeUserFromProfile = ( // skipcq: JS-0105 — interface stub
     _token: string,
     _profileId: string,
     _userId: string
@@ -640,27 +650,27 @@ class IndexedDBAuthService implements AuthService {
   // Invitations - stub implementations for browser mode
 
   /** Create invitation (not supported in browser mode) */
-  createInvitation = (
+  createInvitation = ( // skipcq: JS-0105 — interface stub
     _token: string,
     _input: CreateInvitationInput
   ): Promise<Invitation> =>
     Promise.reject(new Error('Invitations not supported in browser mode'))
 
   /** Get profile invitations (no-op in browser mode) */
-  getProfileInvitations = (
+  getProfileInvitations = ( // skipcq: JS-0105 — interface stub
     _token: string,
     _profileId: string
   ): Promise<Invitation[]> => Promise.resolve([])
 
   /** Accept invitation (not supported in browser mode) */
-  acceptInvitation = (
+  acceptInvitation = ( // skipcq: JS-0105 — interface stub
     _invitationToken: string,
     _accessToken?: string
   ): Promise<AuthResponse> =>
     Promise.reject(new Error('Invitations not supported in browser mode'))
 
   /** Revoke invitation (no-op in browser mode) */
-  revokeInvitation = (_token: string, _invitationId: string): Promise<void> =>
+  revokeInvitation = (_token: string, _invitationId: string): Promise<void> => // skipcq: JS-0105 — interface stub
     Promise.resolve()
 
   // Email change - simplified for browser mode (direct update, no email verification)
@@ -719,15 +729,15 @@ class IndexedDBAuthService implements AuthService {
   }
 
   /** Verify email change (no-op in browser mode, email updated directly) */
-  verifyEmailChange = (_verificationToken: string): Promise<string> =>
+  verifyEmailChange = (_verificationToken: string): Promise<string> => // skipcq: JS-0105 — interface stub
     Promise.resolve('Email already updated (browser mode)')
 
   /** Cancel email change (no-op in browser mode) */
-  cancelEmailChange = (_cancellationToken: string): Promise<string> =>
+  cancelEmailChange = (_cancellationToken: string): Promise<string> => // skipcq: JS-0105 — interface stub
     Promise.resolve('No pending email change (browser mode)')
 
   /** Get email change status (no-op in browser mode) */
-  getEmailChangeStatus = (_token: string): Promise<EmailChangeStatus> =>
+  getEmailChangeStatus = (_token: string): Promise<EmailChangeStatus> => // skipcq: JS-0105 — interface stub
     Promise.resolve({ pending: false })
 }
 

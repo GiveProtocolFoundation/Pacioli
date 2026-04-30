@@ -200,9 +200,7 @@ impl ApiKeyManager {
 
     /// Check if an API key exists for a provider.
     pub fn has_api_key(provider: ApiProvider) -> bool {
-        Self::get_api_key(provider)
-            .map(|k| k.is_some())
-            .unwrap_or(false)
+        Self::get_api_key(provider).is_ok_and(|k| k.is_some())
     }
 
     /// Get all configured providers (those with API keys).

@@ -130,10 +130,7 @@ impl AuthState {
     /// Get the number of cached sessions (for monitoring)
     #[allow(dead_code)]
     pub fn cache_size(&self) -> usize {
-        self.session_cache
-            .read()
-            .map(|cache| cache.len())
-            .unwrap_or(0)
+        self.session_cache.read().map_or(0, |cache| cache.len())
     }
 }
 

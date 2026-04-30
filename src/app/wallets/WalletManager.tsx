@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useRef } from 'react'
+import React, { useState, useCallback, useEffect, useRef, memo } from 'react'
 import {
   RefreshCw,
   Wallet,
@@ -33,7 +33,6 @@ import {
 import { encodeAddress, decodeAddress } from '@polkadot/util-crypto'
 import { useWalletAliases } from '../../contexts/WalletAliasContext'
 import { useProfile } from '../../contexts/ProfileContext'
-import { memo } from 'react'
 
 /** Props for the TrackedWalletRow component */
 interface TrackedWalletRowProps {
@@ -135,6 +134,170 @@ const convertToNetworkFormat = (
   }
 }
 
+/** Props for the AddMenuDropdown component */
+interface AddMenuDropdownProps {
+  showAddMenu: boolean
+  onClose: () => void
+  onKeyDown: (e: React.KeyboardEvent<HTMLDivElement>) => void
+  onOpenPortfolioModal: () => void
+  onOpenConnectionModal: () => void
+}
+
+/**
+ * Dropdown menu that appears when clicking the "Add" button in the header.
+ * Includes a backdrop overlay and menu options for "Add Portfolio" and "Connect Wallet".
+ */
+const AddMenuDropdown: React.FC<AddMenuDropdownProps> = ({
+  showAddMenu,
+  onClose,
+  onKeyDown,
+  onOpenPortfolioModal,
+  onOpenConnectionModal,
+}) => {
+  if (!showAddMenu) {
+    return null
+  }
+
+  return (
+    <>
+      {/* Backdrop to close menu */}
+      <div
+        className="fixed inset-0 z-10"
+        role="presentation"
+        onClick={onClose}
+        onKeyDown={onKeyDown}
+      />
+      {/* Dropdown Menu */}
+      <div className="absolute right-0 mt-2 w-64 bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg shadow-lg border border-[rgba(201,169,97,0.15)] z-20 overflow-hidden">
+        <button
+          onClick={onOpenPortfolioModal}
+          className="w-full px-4 py-3 text-left hover:bg-[#f3f1ed] dark:hover:bg-[#1a1815] transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <Eye className="w-5 h-5 text-[#8b4e52]" />
+            <div>
+              <p className="font-medium text-[#1a1815] dark:text-[#f5f3f0]">
+                Add Portfolio
+              </p>
+              <p className="text-xs text-[#696557] dark:text-[#b8b3ac]">
+                Track any public address (read-only)
+              </p>
+            </div>
+          </div>
+        </button>
+        <div className="border-t border-[rgba(201,169,97,0.15)]" />
+        <button
+          onClick={onOpenConnectionModal}
+          className="w-full px-4 py-3 text-left hover:bg-[#f3f1ed] dark:hover:bg-[#1a1815] transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <Wallet className="w-5 h-5 text-[#8b4e52]" />
+            <div>
+              <p className="font-medium text-[#1a1815] dark:text-[#f5f3f0]">
+                Connect Wallet
+              </p>
+              <p className="text-xs text-[#696557] dark:text-[#b8b3ac]">
+                Browser extension or WalletConnect
+              </p>
+            </div>
+          </div>
+        </button>
+      </div>
+    </>
+  )
+}
+
+/** Props for the SyncProgressDisplay component */
+interface SyncProgressDisplayProps {
+  syncProgress: SyncProgress
+}
+
+/**
+ * Sync progress card shown during transaction syncing.
+ * Displays the current stage indicator, progress bar, block count stats,
+ * and transaction count.
+ */
+const SyncProgressDisplay: React.FC<SyncProgressDisplayProps> = ({
+  syncProgress,
+}) => {
+  return (
+    <div className="mt-4 p-4 bg-[#c9a961]/10 dark:bg-[#c9a961]/20 border-l-4 border-[#c9a961] rounded">
+      <div className="flex items-start mb-3">
+        {syncProgress.stage === 'complete' ? (
+          <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400 mr-3 flex-shrink-0" />
+        ) : (
+          <Loader className="w-5 h-5 text-[#8b4e52] dark:text-[#a86e72] mr-3 flex-shrink-0 animate-spin" />
+        )}
+        <div className="flex-1">
+          <p className="text-sm font-semibold text-[#8b4e52] dark:text-[#d4b87a] mb-1">
+            {syncProgress.stage === 'connecting' &&
+              'Connecting to Network'}
+            {syncProgress.stage === 'fetching' &&
+              'Fetching Transactions'}
+            {syncProgress.stage === 'processing' &&
+              'Processing Blocks'}
+            {syncProgress.stage === 'saving' &&
+              'Saving to Database'}
+            {syncProgress.stage === 'complete' && 'Sync Complete'}
+          </p>
+          <p className="text-sm text-[#8b4e52] dark:text-[#d4b87a]">
+            {syncProgress.message}
+          </p>
+        </div>
+      </div>
+
+      {/* Progress Details */}
+      {(syncProgress.stage === 'fetching' ||
+        syncProgress.stage === 'processing') && (
+        <div className="space-y-2">
+          {/* Progress Bar */}
+          <div className="w-full bg-[#c9a961]/30 dark:bg-[#c9a961]/50 rounded-full h-2 overflow-hidden">
+            <div
+              className="bg-[#8b4e52] dark:bg-[#a86e72] h-2 rounded-full transition-all duration-300"
+              style={{
+                width: `${Math.min(
+                  100,
+                  (syncProgress.blocksScanned /
+                    Math.max(syncProgress.totalBlocks, 1)) *
+                    100
+                )}%`,
+              }}
+            />
+          </div>
+
+          {/* Stats */}
+          <div className="flex justify-between text-xs text-[#8b4e52] dark:text-[#d4b87a]">
+            <span>
+              Blocks:{' '}
+              {syncProgress.blocksScanned.toLocaleString()} /{' '}
+              {syncProgress.totalBlocks.toLocaleString()}
+            </span>
+            <span>
+              {Math.round(
+                (syncProgress.blocksScanned /
+                  Math.max(syncProgress.totalBlocks, 1)) *
+                  100
+              )}
+              %
+            </span>
+          </div>
+
+          {/* Transaction Count */}
+          {syncProgress.transactionsFound > 0 && (
+            <p className="text-xs text-[#8b4e52] dark:text-[#d4b87a]">
+              Found{' '}
+              {syncProgress.transactionsFound.toLocaleString()}{' '}
+              transaction
+              {syncProgress.transactionsFound !== 1 ? 's' : ''}
+            </p>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+/** Wallet manager page for connecting wallets, syncing transactions, and managing tracked portfolios */
 const WalletManager: React.FC = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -278,6 +441,7 @@ const WalletManager: React.FC = () => {
     }
     initializationStartedRef.current = true
 
+    /** Initialize IndexedDB, run data migration if needed, and load saved wallets */
     const initializeDB = async () => {
       try {
         setMigrationStatus('Initializing database...')
@@ -338,6 +502,7 @@ const WalletManager: React.FC = () => {
     // Track if this effect is still current (for cleanup on race conditions)
     let isCurrent = true
 
+    /** Load transactions and sync status for the selected address and network */
     const loadData = async () => {
       if (!dbInitialized || !selectedAddress) {
         setSyncStatus(null)
@@ -490,6 +655,7 @@ const WalletManager: React.FC = () => {
       // Fetch transactions using HYBRID approach (Subscan + RPC)
       // This is MUCH faster: ~2-3 seconds instead of minutes/hours
       // Note: RPC connection is now optional - if it fails, we still get Subscan data
+      let lastProgressMessage = ''
       const txs = await polkadotService.fetchTransactionHistoryHybrid(
         selectedNetwork,
         {
@@ -497,6 +663,9 @@ const WalletManager: React.FC = () => {
           limit: 100, // Increased limit since hybrid is much faster
           onProgress: progress => {
             setSyncProgress(progress)
+            if (progress.stage === 'complete') {
+              lastProgressMessage = progress.message
+            }
           },
         }
       )
@@ -544,18 +713,23 @@ const WalletManager: React.FC = () => {
       )
       setSyncStatus(newSyncStatus)
 
-      // Show success
+      // Show success — preserve service message (e.g. API key warning) when no transactions
+      const successMessage =
+        txs.length === 0 && lastProgressMessage
+          ? lastProgressMessage
+          : `Successfully synced ${txs.length} transaction${txs.length !== 1 ? 's' : ''}`
       setSyncProgress({
         stage: 'complete',
         currentBlock: 0,
         totalBlocks: 0,
         blocksScanned: 0,
         transactionsFound: txs.length,
-        message: `Successfully synced ${txs.length} transaction${txs.length !== 1 ? 's' : ''}`,
+        message: successMessage,
       })
 
-      // Clear progress after 3 seconds
-      setTimeout(() => setSyncProgress(null), 3000)
+      // Keep API key warnings visible longer
+      const clearDelay = txs.length === 0 && lastProgressMessage ? 8000 : 3000
+      setTimeout(() => setSyncProgress(null), clearDelay)
 
       // Clear timeout on success
       clearTimeout(syncTimeout)
@@ -644,53 +818,13 @@ const WalletManager: React.FC = () => {
               />
             </button>
 
-            {showAddMenu && (
-              <>
-                {/* Backdrop to close menu */}
-                <div
-                  className="fixed inset-0 z-10"
-                  role="presentation"
-                  onClick={handleCloseAddMenu}
-                  onKeyDown={handleAddMenuKeyDown}
-                />
-                {/* Dropdown Menu */}
-                <div className="absolute right-0 mt-2 w-64 bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg shadow-lg border border-[rgba(201,169,97,0.15)] z-20 overflow-hidden">
-                  <button
-                    onClick={handleOpenPortfolioModal}
-                    className="w-full px-4 py-3 text-left hover:bg-[#f3f1ed] dark:hover:bg-[#1a1815] transition-colors"
-                  >
-                    <div className="flex items-center gap-3">
-                      <Eye className="w-5 h-5 text-[#8b4e52]" />
-                      <div>
-                        <p className="font-medium text-[#1a1815] dark:text-[#f5f3f0]">
-                          Add Portfolio
-                        </p>
-                        <p className="text-xs text-[#696557] dark:text-[#b8b3ac]">
-                          Track any public address (read-only)
-                        </p>
-                      </div>
-                    </div>
-                  </button>
-                  <div className="border-t border-[rgba(201,169,97,0.15)]" />
-                  <button
-                    onClick={handleOpenConnectionModal}
-                    className="w-full px-4 py-3 text-left hover:bg-[#f3f1ed] dark:hover:bg-[#1a1815] transition-colors"
-                  >
-                    <div className="flex items-center gap-3">
-                      <Wallet className="w-5 h-5 text-[#8b4e52]" />
-                      <div>
-                        <p className="font-medium text-[#1a1815] dark:text-[#f5f3f0]">
-                          Connect Wallet
-                        </p>
-                        <p className="text-xs text-[#696557] dark:text-[#b8b3ac]">
-                          Browser extension or WalletConnect
-                        </p>
-                      </div>
-                    </div>
-                  </button>
-                </div>
-              </>
-            )}
+            <AddMenuDropdown
+              showAddMenu={showAddMenu}
+              onClose={handleCloseAddMenu}
+              onKeyDown={handleAddMenuKeyDown}
+              onOpenPortfolioModal={handleOpenPortfolioModal}
+              onOpenConnectionModal={handleOpenConnectionModal}
+            />
           </div>
         </div>
         <p className="text-gray-600 dark:text-[#94a3b8]">
@@ -754,7 +888,7 @@ const WalletManager: React.FC = () => {
                     id="network-select"
                     value={selectedNetwork}
                     onChange={handleNetworkChange}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#c9a961] dark:focus:ring-[#c9a961] focus:border-transparent"
+                    className="w-full px-3 py-2 border border-[rgba(201,169,97,0.15)] dark:border-[rgba(201,169,97,0.25)] rounded bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:ring-2 focus:ring-[#c9a961] dark:focus:ring-[#c9a961] focus:border-transparent"
                   >
                     <option value={NetworkType.POLKADOT}>Polkadot</option>
                     <option value={NetworkType.KUSAMA}>Kusama</option>
@@ -777,7 +911,7 @@ const WalletManager: React.FC = () => {
                     id="address-select"
                     value={selectedAddress}
                     onChange={handleAddressChange}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#c9a961] dark:focus:ring-[#c9a961] focus:border-transparent"
+                    className="w-full px-3 py-2 border border-[rgba(201,169,97,0.15)] dark:border-[rgba(201,169,97,0.25)] rounded bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:ring-2 focus:ring-[#c9a961] dark:focus:ring-[#c9a961] focus:border-transparent"
                   >
                     <option value="">Select an address...</option>
                     {allAddresses.map(addr => (
@@ -830,79 +964,7 @@ const WalletManager: React.FC = () => {
 
                 {/* Sync Progress Display */}
                 {syncProgress && (
-                  <div className="mt-4 p-4 bg-[#c9a961]/10 dark:bg-[#c9a961]/20 border-l-4 border-[#c9a961] rounded">
-                    <div className="flex items-start mb-3">
-                      {syncProgress.stage === 'complete' ? (
-                        <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400 mr-3 flex-shrink-0" />
-                      ) : (
-                        <Loader className="w-5 h-5 text-[#8b4e52] dark:text-[#a86e72] mr-3 flex-shrink-0 animate-spin" />
-                      )}
-                      <div className="flex-1">
-                        <p className="text-sm font-semibold text-[#8b4e52] dark:text-[#d4b87a] mb-1">
-                          {syncProgress.stage === 'connecting' &&
-                            'Connecting to Network'}
-                          {syncProgress.stage === 'fetching' &&
-                            'Fetching Transactions'}
-                          {syncProgress.stage === 'processing' &&
-                            'Processing Blocks'}
-                          {syncProgress.stage === 'saving' &&
-                            'Saving to Database'}
-                          {syncProgress.stage === 'complete' && 'Sync Complete'}
-                        </p>
-                        <p className="text-sm text-[#8b4e52] dark:text-[#d4b87a]">
-                          {syncProgress.message}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Progress Details */}
-                    {(syncProgress.stage === 'fetching' ||
-                      syncProgress.stage === 'processing') && (
-                      <div className="space-y-2">
-                        {/* Progress Bar */}
-                        <div className="w-full bg-[#c9a961]/30 dark:bg-[#c9a961]/50 rounded-full h-2 overflow-hidden">
-                          <div
-                            className="bg-[#8b4e52] dark:bg-[#a86e72] h-2 rounded-full transition-all duration-300"
-                            style={{
-                              width: `${Math.min(
-                                100,
-                                (syncProgress.blocksScanned /
-                                  Math.max(syncProgress.totalBlocks, 1)) *
-                                  100
-                              )}%`,
-                            }}
-                          />
-                        </div>
-
-                        {/* Stats */}
-                        <div className="flex justify-between text-xs text-[#8b4e52] dark:text-[#d4b87a]">
-                          <span>
-                            Blocks:{' '}
-                            {syncProgress.blocksScanned.toLocaleString()} /{' '}
-                            {syncProgress.totalBlocks.toLocaleString()}
-                          </span>
-                          <span>
-                            {Math.round(
-                              (syncProgress.blocksScanned /
-                                Math.max(syncProgress.totalBlocks, 1)) *
-                                100
-                            )}
-                            %
-                          </span>
-                        </div>
-
-                        {/* Transaction Count */}
-                        {syncProgress.transactionsFound > 0 && (
-                          <p className="text-xs text-[#8b4e52] dark:text-[#d4b87a]">
-                            Found{' '}
-                            {syncProgress.transactionsFound.toLocaleString()}{' '}
-                            transaction
-                            {syncProgress.transactionsFound !== 1 ? 's' : ''}
-                          </p>
-                        )}
-                      </div>
-                    )}
-                  </div>
+                  <SyncProgressDisplay syncProgress={syncProgress} />
                 )}
 
                 {/* Sync Status (Last Sync Info) */}

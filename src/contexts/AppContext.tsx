@@ -50,11 +50,13 @@ interface AppContextType {
   resetApp: () => Promise<void>
 }
 
+// skipcq: JS-W1042 — React createContext requires explicit default argument
 const AppContext = createContext<AppContextType | undefined>(undefined)
 
 // Default session timeout in minutes
 const DEFAULT_SESSION_TIMEOUT = 15
 
+/** Provider that manages app lifecycle, security modes, and session state. */
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
@@ -86,7 +88,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
   // Check for session timeout (secure_plus mode only)
   const checkSessionTimeout = useCallback(() => {
     if (securityMode !== 'secure_plus' || appState !== 'Unlocked') {
-      return undefined
+      return
     }
 
     const now = Date.now()
@@ -126,6 +128,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
 
     const activityEvents = ['mousedown', 'keydown', 'touchstart', 'scroll']
 
+    /** Records user interaction to reset the session timeout. */
     const handleActivity = () => {
       recordActivity()
     }
@@ -381,6 +384,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
   )
 }
 
+/** Hook to access app context for lifecycle and security state. Must be used within an AppProvider. */
 export const useApp = () => {
   const context = useContext(AppContext)
   if (context === undefined) {

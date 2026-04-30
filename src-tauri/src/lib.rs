@@ -407,6 +407,7 @@ pub fn run() {
             // Fetcher commands (resilient API access)
             fetchers::commands::save_api_key,
             fetchers::commands::delete_api_key,
+            fetchers::commands::get_api_key,
             fetchers::commands::has_api_key,
             fetchers::commands::get_provider_status,
             fetchers::commands::get_all_provider_statuses,
@@ -416,7 +417,23 @@ pub fn run() {
             api::prices::get_crypto_prices,
             api::prices::get_historical_crypto_price,
             api::prices::get_batch_historical_prices,
-            api::prices::timestamp_to_coingecko_date
+            api::prices::timestamp_to_coingecko_date,
+            // Accounting commands
+            api::accounting::get_chart_of_accounts,
+            api::accounting::create_gl_account,
+            api::accounting::update_gl_account,
+            api::accounting::deactivate_gl_account,
+            api::accounting::get_journal_entries,
+            api::accounting::get_journal_entry,
+            api::accounting::create_journal_entry,
+            api::accounting::post_journal_entry,
+            api::accounting::void_journal_entry,
+            api::accounting::auto_classify_transaction,
+            api::accounting::update_transaction_classification,
+            api::accounting::get_account_balances,
+            api::accounting::get_trial_balance,
+            api::accounting::get_unclassified_transaction_count,
+            api::accounting::get_draft_journal_entry_count
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

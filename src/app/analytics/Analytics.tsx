@@ -33,18 +33,18 @@ const kpis: KPI[] = [
   {
     id: 'total-value',
     label: 'Total Portfolio Value',
-    value: '$2,847,392.45',
-    change: 12.5,
-    changeLabel: '+$316,428 (30d)',
+    value: '$50,000.00',
+    change: 2.8,
+    changeLabel: '+$1,365 (30d)',
     icon: DollarSign,
     trend: 'up',
   },
   {
     id: 'crypto-holdings',
     label: 'Crypto Holdings',
-    value: '$1,924,180.22',
-    change: 18.3,
-    changeLabel: '+$298,620 (30d)',
+    value: '$47,900.00',
+    change: 3.2,
+    changeLabel: '+$1,480 (30d)',
     icon: Coins,
     trend: 'up',
   },
@@ -60,9 +60,9 @@ const kpis: KPI[] = [
   {
     id: 'monthly-revenue',
     label: 'Monthly Revenue',
-    value: '$84,295.50',
+    value: '$4,850.00',
     change: -5.2,
-    changeLabel: '-$4,621 vs last month',
+    changeLabel: '-$266 vs last month',
     icon: TrendingUp,
     trend: 'down',
   },
@@ -70,24 +70,25 @@ const kpis: KPI[] = [
 
 // Mock chart data for visualization
 const portfolioData = [
-  { date: '10/01', value: 2500000 },
-  { date: '10/03', value: 2550000 },
-  { date: '10/05', value: 2480000 },
-  { date: '10/07', value: 2620000 },
-  { date: '10/09', value: 2700000 },
-  { date: '10/11', value: 2680000 },
-  { date: '10/13', value: 2750000 },
-  { date: '10/15', value: 2847392 },
+  { date: '10/01', value: 46500 },
+  { date: '10/03', value: 47400 },
+  { date: '10/05', value: 47100 },
+  { date: '10/07', value: 48100 },
+  { date: '10/09', value: 48700 },
+  { date: '10/11', value: 48500 },
+  { date: '10/13', value: 49200 },
+  { date: '10/15', value: 50000 },
 ]
 
 const assetAllocation = [
-  { name: 'DOT', value: 35, amount: 673163, color: '#E6007A' },
-  { name: 'BTC', value: 28, amount: 538770, color: '#F7931A' },
-  { name: 'GLMR', value: 18, amount: 346352, color: '#53CBC8' },
-  { name: 'ASTR', value: 12, amount: 230901, color: '#0081FF' },
-  { name: 'Others', value: 7, amount: 134993, color: '#8B5CF6' },
+  { name: 'DOT', value: 30, amount: 15000, color: '#E6007A' },
+  { name: 'GLMR', value: 24, amount: 12000, color: '#53CBC8' },
+  { name: 'KSM', value: 14, amount: 7200, color: '#000000' },
+  { name: 'ASTR', value: 14, amount: 7000, color: '#0081FF' },
+  { name: 'Others', value: 18, amount: 8800, color: '#8B5CF6' },
 ]
 
+/** Key performance indicator card displaying a metric with trend direction and change details */
 const KPICard: React.FC<{ kpi: KPI }> = ({ kpi }) => {
   const Icon = kpi.icon
   const TrendIcon = kpi.trend === 'up' ? ArrowUpRight : ArrowDownRight
@@ -119,6 +120,7 @@ const KPICard: React.FC<{ kpi: KPI }> = ({ kpi }) => {
   )
 }
 
+/** Dropdown menu for selecting an analytics time period with active state highlighting */
 const TimePeriodDropdown: React.FC<{
   timePeriods: { value: TimePeriod; label: string }[]
   current: TimePeriod
@@ -128,7 +130,7 @@ const TimePeriodDropdown: React.FC<{
 }> = ({ timePeriods, current, show, onToggle, onSelect }) => {
   const handleSelect = useCallback(
     (e: React.MouseEvent<HTMLButtonElement>) => {
-      const value = e.currentTarget.getAttribute('data-value') as TimePeriod
+      const value = e.currentTarget.dataset.value as TimePeriod
       onSelect(value)
     },
     [onSelect]
@@ -166,6 +168,274 @@ const TimePeriodDropdown: React.FC<{
   )
 }
 
+/** Portfolio performance SVG line chart with gradient area fill and data point markers */
+const PortfolioPerformanceChart: React.FC<{
+  portfolioData: { date: string; value: number }[]
+}> = ({ portfolioData }) => {
+  return (
+    <div className="lg:col-span-2 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center">
+          <Activity className="w-5 h-5 text-[#8b4e52] mr-2" />
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              Portfolio Performance
+            </h3>
+            <p className="text-xs text-gray-500 dark:text-[#94a3b8]">
+              Total value over time
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Mock Line Chart */}
+      <div className="h-64 relative">
+        <svg className="w-full h-full" viewBox="0 0 800 250">
+          {/* Grid lines */}
+          <g className="text-gray-200 dark:text-gray-700">
+            {[0, 1, 2, 3, 4].map(i => (
+              <line
+                key={`grid-${i}`}
+                x1="0"
+                y1={i * 50}
+                x2="800"
+                y2={i * 50}
+                stroke="currentColor"
+                strokeWidth="1"
+                strokeDasharray="4"
+              />
+            ))}
+          </g>
+
+          {/* Area fill */}
+          <defs>
+            <linearGradient
+              id="portfolioGradient"
+              x1="0"
+              x2="0"
+              y1="0"
+              y2="1"
+            >
+              <stop offset="0%" stopColor="#8b4e52" stopOpacity="0.3" />
+              <stop offset="100%" stopColor="#8b4e52" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+
+          {/* Chart line and area */}
+          <path
+            d="M 50,120 L 150,100 L 250,135 L 350,80 L 450,55 L 550,65 L 650,40 L 750,20"
+            fill="none"
+            stroke="#8b4e52"
+            strokeWidth="3"
+            strokeLinecap="round"
+          />
+          <path
+            d="M 50,120 L 150,100 L 250,135 L 350,80 L 450,55 L 550,65 L 650,40 L 750,20 L 750,250 L 50,250 Z"
+            fill="url(#portfolioGradient)"
+          />
+
+          {/* Data points */}
+          {portfolioData.map((point, i) => {
+            const x = 50 + i * 100
+            const y = 120 - i * 12 + (i % 2 === 0 ? 15 : 0)
+            return (
+              <circle
+                key={`point-${point.date}`}
+                cx={x}
+                cy={y}
+                r="4"
+                fill="#8b4e52"
+                className="hover:r-6 cursor-pointer"
+              />
+            )
+          })}
+
+          {/* X-axis labels */}
+          {portfolioData.map((point, i) => (
+            <text
+              key={`label-${point.date}`}
+              x={50 + i * 100}
+              y="245"
+              className="text-xs fill-current text-gray-500 dark:text-[#94a3b8]"
+              textAnchor="middle"
+            >
+              {point.date}
+            </text>
+          ))}
+        </svg>
+      </div>
+    </div>
+  )
+}
+
+/** Donut chart with color-coded legend showing asset allocation by cryptocurrency */
+const AssetAllocationChart: React.FC<{
+  assetAllocation: { name: string; value: number; amount: number; color: string }[]
+}> = ({ assetAllocation }) => {
+  return (
+    <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+      <div className="flex items-center mb-6">
+        <PieChart className="w-5 h-5 text-[#8b4e52] mr-2" />
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            Asset Allocation
+          </h3>
+          <p className="text-xs text-gray-500 dark:text-[#94a3b8]">
+            Holdings by cryptocurrency
+          </p>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-center mb-6">
+        {/* Mock Donut Chart */}
+        <svg width="200" height="200" viewBox="0 0 200 200">
+          <circle
+            cx="100"
+            cy="100"
+            r="80"
+            fill="none"
+            stroke="#E6007A"
+            strokeWidth="40"
+            strokeDasharray="151 503"
+            transform="rotate(-90 100 100)"
+          />
+          <circle
+            cx="100"
+            cy="100"
+            r="80"
+            fill="none"
+            stroke="#53CBC8"
+            strokeWidth="40"
+            strokeDasharray="121 503"
+            strokeDashoffset="-151"
+            transform="rotate(-90 100 100)"
+          />
+          <circle
+            cx="100"
+            cy="100"
+            r="80"
+            fill="none"
+            stroke="#000000"
+            strokeWidth="40"
+            strokeDasharray="70 503"
+            strokeDashoffset="-272"
+            transform="rotate(-90 100 100)"
+          />
+          <circle
+            cx="100"
+            cy="100"
+            r="80"
+            fill="none"
+            stroke="#0081FF"
+            strokeWidth="40"
+            strokeDasharray="70 503"
+            strokeDashoffset="-342"
+            transform="rotate(-90 100 100)"
+          />
+          <circle
+            cx="100"
+            cy="100"
+            r="80"
+            fill="none"
+            stroke="#8B5CF6"
+            strokeWidth="40"
+            strokeDasharray="91 503"
+            strokeDashoffset="-412"
+            transform="rotate(-90 100 100)"
+          />
+        </svg>
+      </div>
+
+      <div className="space-y-3">
+        {assetAllocation.map(asset => (
+          <div
+            key={asset.name}
+            className="flex items-center justify-between"
+          >
+            <div className="flex items-center">
+              <div
+                className="w-3 h-3 rounded-full mr-3"
+                style={{ backgroundColor: asset.color }}
+              />
+              <span className="text-sm font-medium text-gray-900 dark:text-white">
+                {asset.name}
+              </span>
+            </div>
+            <div className="text-right">
+              <div className="text-sm font-medium text-gray-900 dark:text-white">
+                {asset.value}%
+              </div>
+              <div className="text-xs text-gray-500 dark:text-[#94a3b8]">
+                ${asset.amount.toLocaleString()}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+/** Bar chart displaying daily transaction volume with weekly total summary */
+const TransactionVolumeChart: React.FC = () => {
+  return (
+    <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+      <div className="flex items-center mb-6">
+        <BarChart3 className="w-5 h-5 text-[#8b4e52] mr-2" />
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            Transaction Volume
+          </h3>
+          <p className="text-xs text-gray-500 dark:text-[#94a3b8]">
+            Daily transaction activity
+          </p>
+        </div>
+      </div>
+
+      {/* Mock Bar Chart */}
+      <div className="h-48 flex items-end justify-between gap-2">
+        {[65, 85, 45, 90, 70, 95, 80].map((height, i) => {
+          const dayName = [
+            'Mon',
+            'Tue',
+            'Wed',
+            'Thu',
+            'Fri',
+            'Sat',
+            'Sun',
+          ][i]
+          return (
+            <div
+              key={dayName}
+              className="flex-1 flex flex-col items-center"
+            >
+              <div
+                className="w-full bg-[#8b4e52] dark:bg-[#8b4e52] rounded-t hover:bg-[#8b4e52] dark:hover:bg-[#8b4e52] transition-colors cursor-pointer"
+                style={{ height: `${height}%` }}
+              />
+              <span className="text-xs text-gray-500 dark:text-[#94a3b8] mt-2">
+                {dayName}
+              </span>
+            </div>
+          )
+        })}
+      </div>
+
+      <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between text-sm">
+          <span className="text-gray-500 dark:text-[#94a3b8]">
+            Total this week
+          </span>
+          <span className="font-semibold text-gray-900 dark:text-white">
+            $2,850
+          </span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/** Analytics dashboard page with KPI cards, portfolio performance chart, and asset allocation */
 const Analytics: React.FC = () => {
   const [timePeriod, setTimePeriod] = useState<TimePeriod>('30d')
   const [showPeriodDropdown, setShowPeriodDropdown] = useState(false)
@@ -232,255 +502,13 @@ const Analytics: React.FC = () => {
         {/* Charts Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Portfolio Performance - Large Chart */}
-          <div className="lg:col-span-2 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center">
-                <Activity className="w-5 h-5 text-[#8b4e52] mr-2" />
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    Portfolio Performance
-                  </h3>
-                  <p className="text-xs text-gray-500 dark:text-[#94a3b8]">
-                    Total value over time
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Mock Line Chart */}
-            <div className="h-64 relative">
-              <svg className="w-full h-full" viewBox="0 0 800 250">
-                {/* Grid lines */}
-                <g className="text-gray-200 dark:text-gray-700">
-                  {[0, 1, 2, 3, 4].map(i => (
-                    <line
-                      key={`grid-${i}`}
-                      x1="0"
-                      y1={i * 50}
-                      x2="800"
-                      y2={i * 50}
-                      stroke="currentColor"
-                      strokeWidth="1"
-                      strokeDasharray="4"
-                    />
-                  ))}
-                </g>
-
-                {/* Area fill */}
-                <defs>
-                  <linearGradient
-                    id="portfolioGradient"
-                    x1="0"
-                    x2="0"
-                    y1="0"
-                    y2="1"
-                  >
-                    <stop offset="0%" stopColor="#8b4e52" stopOpacity="0.3" />
-                    <stop offset="100%" stopColor="#8b4e52" stopOpacity="0" />
-                  </linearGradient>
-                </defs>
-
-                {/* Chart line and area */}
-                <path
-                  d="M 50,120 L 150,100 L 250,135 L 350,80 L 450,55 L 550,65 L 650,40 L 750,20"
-                  fill="none"
-                  stroke="#8b4e52"
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                />
-                <path
-                  d="M 50,120 L 150,100 L 250,135 L 350,80 L 450,55 L 550,65 L 650,40 L 750,20 L 750,250 L 50,250 Z"
-                  fill="url(#portfolioGradient)"
-                />
-
-                {/* Data points */}
-                {portfolioData.map((point, i) => {
-                  const x = 50 + i * 100
-                  const y = 120 - i * 12 + (i % 2 === 0 ? 15 : 0)
-                  return (
-                    <circle
-                      key={`point-${point.date}`}
-                      cx={x}
-                      cy={y}
-                      r="4"
-                      fill="#8b4e52"
-                      className="hover:r-6 cursor-pointer"
-                    />
-                  )
-                })}
-
-                {/* X-axis labels */}
-                {portfolioData.map((point, i) => (
-                  <text
-                    key={`label-${point.date}`}
-                    x={50 + i * 100}
-                    y="245"
-                    className="text-xs fill-current text-gray-500 dark:text-[#94a3b8]"
-                    textAnchor="middle"
-                  >
-                    {point.date}
-                  </text>
-                ))}
-              </svg>
-            </div>
-          </div>
+          <PortfolioPerformanceChart portfolioData={portfolioData} />
 
           {/* Asset Allocation - Pie Chart */}
-          <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-            <div className="flex items-center mb-6">
-              <PieChart className="w-5 h-5 text-[#8b4e52] mr-2" />
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  Asset Allocation
-                </h3>
-                <p className="text-xs text-gray-500 dark:text-[#94a3b8]">
-                  Holdings by cryptocurrency
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-center mb-6">
-              {/* Mock Donut Chart */}
-              <svg width="200" height="200" viewBox="0 0 200 200">
-                <circle
-                  cx="100"
-                  cy="100"
-                  r="80"
-                  fill="none"
-                  stroke="#E6007A"
-                  strokeWidth="40"
-                  strokeDasharray="176 352"
-                  transform="rotate(-90 100 100)"
-                />
-                <circle
-                  cx="100"
-                  cy="100"
-                  r="80"
-                  fill="none"
-                  stroke="#F7931A"
-                  strokeWidth="40"
-                  strokeDasharray="140 352"
-                  strokeDashoffset="-176"
-                  transform="rotate(-90 100 100)"
-                />
-                <circle
-                  cx="100"
-                  cy="100"
-                  r="80"
-                  fill="none"
-                  stroke="#53CBC8"
-                  strokeWidth="40"
-                  strokeDasharray="90 352"
-                  strokeDashoffset="-316"
-                  transform="rotate(-90 100 100)"
-                />
-                <circle
-                  cx="100"
-                  cy="100"
-                  r="80"
-                  fill="none"
-                  stroke="#0081FF"
-                  strokeWidth="40"
-                  strokeDasharray="60 352"
-                  strokeDashoffset="-406"
-                  transform="rotate(-90 100 100)"
-                />
-                <circle
-                  cx="100"
-                  cy="100"
-                  r="80"
-                  fill="none"
-                  stroke="#8B5CF6"
-                  strokeWidth="40"
-                  strokeDasharray="35 352"
-                  strokeDashoffset="-466"
-                  transform="rotate(-90 100 100)"
-                />
-              </svg>
-            </div>
-
-            <div className="space-y-3">
-              {assetAllocation.map(asset => (
-                <div
-                  key={asset.name}
-                  className="flex items-center justify-between"
-                >
-                  <div className="flex items-center">
-                    <div
-                      className="w-3 h-3 rounded-full mr-3"
-                      style={{ backgroundColor: asset.color }}
-                    />
-                    <span className="text-sm font-medium text-gray-900 dark:text-white">
-                      {asset.name}
-                    </span>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-sm font-medium text-gray-900 dark:text-white">
-                      {asset.value}%
-                    </div>
-                    <div className="text-xs text-gray-500 dark:text-[#94a3b8]">
-                      ${asset.amount.toLocaleString()}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          <AssetAllocationChart assetAllocation={assetAllocation} />
 
           {/* Transaction Volume - Bar Chart */}
-          <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-            <div className="flex items-center mb-6">
-              <BarChart3 className="w-5 h-5 text-[#8b4e52] mr-2" />
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  Transaction Volume
-                </h3>
-                <p className="text-xs text-gray-500 dark:text-[#94a3b8]">
-                  Daily transaction activity
-                </p>
-              </div>
-            </div>
-
-            {/* Mock Bar Chart */}
-            <div className="h-48 flex items-end justify-between gap-2">
-              {[65, 85, 45, 90, 70, 95, 80].map((height, i) => {
-                const dayName = [
-                  'Mon',
-                  'Tue',
-                  'Wed',
-                  'Thu',
-                  'Fri',
-                  'Sat',
-                  'Sun',
-                ][i]
-                return (
-                  <div
-                    key={dayName}
-                    className="flex-1 flex flex-col items-center"
-                  >
-                    <div
-                      className="w-full bg-[#8b4e52] dark:bg-[#8b4e52] rounded-t hover:bg-[#8b4e52] dark:hover:bg-[#8b4e52] transition-colors cursor-pointer"
-                      style={{ height: `${height}%` }}
-                    />
-                    <span className="text-xs text-gray-500 dark:text-[#94a3b8] mt-2">
-                      {dayName}
-                    </span>
-                  </div>
-                )
-              })}
-            </div>
-
-            <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-500 dark:text-[#94a3b8]">
-                  Total this week
-                </span>
-                <span className="font-semibold text-gray-900 dark:text-white">
-                  $142,850
-                </span>
-              </div>
-            </div>
-          </div>
+          <TransactionVolumeChart />
 
           {/* Staking Rewards */}
           <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
@@ -510,7 +538,7 @@ const Analytics: React.FC = () => {
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-semibold text-green-600 dark:text-green-400">
-                    +$2,450.32
+                    +$125.50
                   </p>
                   <p className="text-xs text-gray-500 dark:text-[#94a3b8]">
                     This month
@@ -529,7 +557,7 @@ const Analytics: React.FC = () => {
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-semibold text-[#8b4e52] dark:text-[#a86e72]">
-                    +$1,820.18
+                    +$95.75
                   </p>
                   <p className="text-xs text-gray-500 dark:text-[#94a3b8]">
                     This month
@@ -548,7 +576,7 @@ const Analytics: React.FC = () => {
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-semibold text-purple-600 dark:text-purple-400">
-                    +$986.45
+                    +$48.20
                   </p>
                   <p className="text-xs text-gray-500 dark:text-[#94a3b8]">
                     This month
@@ -563,7 +591,7 @@ const Analytics: React.FC = () => {
                   Total Rewards
                 </span>
                 <span className="text-lg font-semibold text-gray-900 dark:text-white">
-                  $5,256.95
+                  $269.45
                 </span>
               </div>
             </div>

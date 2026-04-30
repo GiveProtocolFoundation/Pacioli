@@ -145,7 +145,7 @@ export const mockAuthService: AuthService = {
     // Check if email already exists
     for (const user of storage.users.values()) {
       if (user.email === input.email) {
-        throw new Error('Email already registered')
+        return Promise.reject(new Error('Email already registered'))
       }
     }
 
@@ -190,7 +190,7 @@ export const mockAuthService: AuthService = {
     }
 
     storeTokens(accessToken, refreshToken, expiresAt.toISOString())
-    return response
+    return Promise.resolve(response)
   },
 
   login(credentials: LoginCredentials): Promise<AuthResponse> {
@@ -205,7 +205,7 @@ export const mockAuthService: AuthService = {
     }
 
     if (!foundUser || foundUser.password !== credentials.password) {
-      throw new Error('Invalid email or password')
+      return Promise.reject(new Error('Invalid email or password'))
     }
 
     const now = new Date()
@@ -293,11 +293,8 @@ export const mockAuthService: AuthService = {
     )
   },
 
-  async changePassword(
-    _token: string,
-    _input: ChangePasswordInput
-  ): Promise<void> {
-    // No-op for mock
+  changePassword(_token: string, _input: ChangePasswordInput): Promise<void> {
+    return Promise.resolve()
   },
 
   getUserSessions(_token: string): Promise<Session[]> {
@@ -317,8 +314,8 @@ export const mockAuthService: AuthService = {
     ])
   },
 
-  async revokeSession(_token: string, _sessionId: string): Promise<void> {
-    // No-op for mock
+  revokeSession(_token: string, _sessionId: string): Promise<void> {
+    return Promise.resolve()
   },
 
   async revokeAllSessions(_token: string): Promise<number> {
@@ -349,21 +346,21 @@ export const mockAuthService: AuthService = {
     ])
   },
 
-  async updateUserRole(
+  updateUserRole(
     _token: string,
     _profileId: string,
     _userId: string,
     _role: UserRole
   ): Promise<void> {
-    // No-op for mock
+    return Promise.resolve()
   },
 
-  async removeUserFromProfile(
+  removeUserFromProfile(
     _token: string,
     _profileId: string,
     _userId: string
   ): Promise<void> {
-    // No-op for mock
+    return Promise.resolve()
   },
 
   createInvitation(
@@ -376,7 +373,7 @@ export const mockAuthService: AuthService = {
       profile_id: input.profile_id,
       email: input.email,
       role: input.role,
-      status: 'pending',
+      status: 'pending' as const,
       invited_by: 'mock_user_id',
       created_at: now.toISOString(),
       expires_at: new Date(
@@ -416,8 +413,8 @@ export const mockAuthService: AuthService = {
     })
   },
 
-  async revokeInvitation(_token: string, _invitationId: string): Promise<void> {
-    // No-op for mock
+  revokeInvitation(_token: string, _invitationId: string): Promise<void> {
+    return Promise.resolve()
   },
 
   requestEmailChange(

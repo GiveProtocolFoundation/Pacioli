@@ -6,6 +6,7 @@
 
 /* Import Google Fonts - Heritage Elegance Typography */
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@300;400;500;600;700&family=Lora:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter+Tight:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 @import 'tailwindcss';
 
@@ -25,6 +26,13 @@
   /* Sans-serif font - Inter for body and UI */
   --font-family-sans:
     'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Dashboard Soft UI - Heading font */
+  --font-family-heading: 'Playfair Display', Georgia, serif;
+  /* Dashboard Soft UI - UI font */
+  --font-family-ui: 'Inter Tight', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  /* Dashboard Soft UI - Monospace font */
+  --font-family-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
 
   /* Font weight scale */
   --font-weight-light: 300;
@@ -137,6 +145,22 @@
   --color-bg-card: #ffffff;
   --color-bg-main-dark: #0f0e0c;
   --color-bg-card-dark: #1a1815;
+
+  /* =============================================================================
+     SOFT UI PALETTE — Dashboard-scoped additive tokens
+     ============================================================================= */
+  --color-soft-background: #F9F8F6;
+  --color-soft-surface: #FFFFFF;
+  --color-soft-primary: #5D2A2C;
+  --color-soft-primary-hover: #4A2123;
+  --color-soft-secondary: #E5E1DA;
+  --color-soft-foreground: #4A4543;
+  --color-soft-success: #166534;
+  --color-soft-success-bg: rgba(22, 101, 52, 0.08);
+  --color-soft-warning: #92400E;
+  --color-soft-warning-bg: rgba(146, 64, 14, 0.08);
+  --color-soft-danger: #991B1B;
+  --color-soft-danger-bg: rgba(153, 27, 27, 0.08);
 }
 
 /* =============================================================================
@@ -153,11 +177,13 @@ body {
   line-height: var(--line-height-body);
   color: var(--color-text-primary-light);
   background-color: var(--color-bg-primary-light);
+  color-scheme: light;
 }
 
 .dark body {
   color: var(--color-text-primary-dark);
   background-color: var(--color-bg-primary-dark);
+  color-scheme: dark;
 }
 
 /* Page titles: Cormorant Garamond for elegant display */
@@ -1029,7 +1055,8 @@ input[type='password'],
 input[type='number'],
 input[type='date'],
 input[type='datetime-local'],
-textarea {
+textarea,
+select {
   border-radius: 14px;
   border: 1px solid var(--color-border-default);
   padding: 12px 16px;
@@ -1037,6 +1064,8 @@ textarea {
   transition: all 0.2s ease;
   background: var(--color-surface-light);
   color: var(--color-text-primary-light);
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 input:focus,
@@ -1053,10 +1082,11 @@ select:focus {
 .dark input[type='number'],
 .dark input[type='date'],
 .dark input[type='datetime-local'],
-.dark textarea {
-  background: var(--color-bg-tertiary-dark);
+.dark textarea,
+.dark select {
+  background: var(--color-bg-tertiary-dark) !important;
   border-color: var(--color-border-default);
-  color: var(--color-text-primary-dark);
+  color: var(--color-text-primary-dark) !important;
 }
 
 .dark input:focus,
@@ -1075,4 +1105,181 @@ textarea::placeholder {
 .dark input::placeholder,
 .dark textarea::placeholder {
   color: var(--color-text-muted-dark);
+}
+
+/* =============================================================================
+   DASHBOARD SOFT UI — Scoped utility classes
+   ============================================================================= */
+
+/* Hero card — enlarged stat card for portfolio total */
+.dashboard-hero-card {
+  background: var(--color-soft-surface);
+  border: 1px solid var(--color-soft-secondary);
+  border-radius: 16px;
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.04),
+    0 1px 4px rgba(0, 0, 0, 0.06);
+  padding: 32px;
+  position: relative;
+  overflow: hidden;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.dashboard-hero-card:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    0 12px 24px rgba(93, 42, 44, 0.08),
+    0 4px 8px rgba(0, 0, 0, 0.06);
+}
+
+.dark .dashboard-hero-card {
+  background: var(--color-bg-secondary-dark);
+  border-color: var(--color-border-default);
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.2),
+    0 1px 4px rgba(0, 0, 0, 0.15);
+}
+
+.dark .dashboard-hero-card:hover {
+  box-shadow:
+    0 12px 24px rgba(93, 42, 44, 0.15),
+    0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Heading font — Playfair Display */
+.dashboard-heading {
+  font-family: var(--font-family-heading);
+  letter-spacing: -0.02em;
+}
+
+/* Monospace font — JetBrains Mono with tabular nums */
+.dashboard-mono {
+  font-family: var(--font-family-mono);
+  font-feature-settings: 'tnum' 1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Dashboard body text — AAA on both light and dark backgrounds */
+.dashboard-body-text {
+  color: var(--color-soft-foreground); /* #4A4543 — 7.3:1 on #F9F8F6 */
+}
+
+.dark .dashboard-body-text {
+  color: var(--color-text-secondary-dark); /* #b8b3ac — 7.0:1 on #0f0e0c */
+}
+
+/* Dashboard muted text — AA on both (for secondary labels) */
+.dashboard-muted-text {
+  color: #696557; /* 4.9:1 on #FFFFFF — AA */
+}
+
+.dark .dashboard-muted-text {
+  color: var(--color-text-secondary-dark); /* #b8b3ac — AAA on dark */
+}
+
+/* Dashboard link — AAA-compliant deep burgundy */
+.dashboard-link {
+  color: var(--color-soft-primary); /* #5D2A2C — 9.6:1 on #FFFFFF */
+  font-weight: 500;
+  transition: opacity 0.2s ease;
+}
+
+.dashboard-link:hover {
+  opacity: 0.85;
+}
+
+.dark .dashboard-link {
+  color: #c08589; /* 5.4:1 on #0f0e0c — AA */
+}
+
+/* Change indicators — AAA-compliant bold green/red */
+.change-positive {
+  color: var(--color-soft-success);
+  font-weight: 700;
+}
+
+.dark .change-positive {
+  color: #4ade80;
+}
+
+.change-negative {
+  color: var(--color-soft-danger);
+  font-weight: 700;
+}
+
+.dark .change-negative {
+  color: #f87171;
+}
+
+/* Status pills — prominent compliance indicators */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.status-pill-success {
+  background: var(--color-soft-success-bg);
+  color: var(--color-soft-success);
+  border: 1px solid rgba(22, 101, 52, 0.15);
+}
+
+.dark .status-pill-success {
+  background: rgba(74, 222, 128, 0.1);
+  color: #4ade80;
+  border-color: rgba(74, 222, 128, 0.2);
+}
+
+.status-pill-warning {
+  background: var(--color-soft-warning-bg);
+  color: var(--color-soft-warning);
+  border: 1px solid rgba(146, 64, 14, 0.15);
+}
+
+.dark .status-pill-warning {
+  background: rgba(251, 191, 36, 0.1);
+  color: #fbbf24;
+  border-color: rgba(251, 191, 36, 0.2);
+}
+
+/* Alert toasts — left-border accent style */
+.alert-toast {
+  padding: 12px 16px;
+  border-radius: 8px;
+  border-left: 4px solid transparent;
+  background: var(--color-soft-surface);
+  border-color: var(--color-border-default);
+  border-top: 1px solid var(--color-border-subtle);
+  border-right: 1px solid var(--color-border-subtle);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.dark .alert-toast {
+  background: var(--color-bg-secondary-dark);
+  border-color: var(--color-border-default);
+  border-top-color: var(--color-border-subtle);
+  border-right-color: var(--color-border-subtle);
+  border-bottom-color: var(--color-border-subtle);
+}
+
+.alert-toast-warning {
+  border-left-color: var(--color-soft-warning);
+}
+
+.dark .alert-toast-warning {
+  border-left-color: #fbbf24;
+}
+
+.alert-toast-danger {
+  border-left-color: var(--color-soft-danger);
+}
+
+.dark .alert-toast-danger {
+  border-left-color: #f87171;
 }
