@@ -261,7 +261,7 @@ export const mockAuthService: AuthService = {
     })
   },
 
-  verifyToken(_token: string): Promise<TokenVerifyResponse> {
+  async verifyToken(_token: string): Promise<TokenVerifyResponse> {
     return Promise.resolve({
       valid: true,
       user_id: 'mock_user_id',
@@ -318,7 +318,7 @@ export const mockAuthService: AuthService = {
     return Promise.resolve()
   },
 
-  revokeAllSessions(_token: string): Promise<number> {
+  async revokeAllSessions(_token: string): Promise<number> {
     return Promise.resolve(1)
   },
 
@@ -437,6 +437,8 @@ export const mockAuthService: AuthService = {
   },
 
   getEmailChangeStatus(_token: string): Promise<EmailChangeStatus> {
-    return Promise.resolve({ pending: false })
+    return Promise.resolve({
+      pending: false,
+    })
   },
 }
