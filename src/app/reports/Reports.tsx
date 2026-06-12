@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   FileText,
   TrendingUp,
@@ -400,8 +401,14 @@ const ReportsHeader: React.FC = () => (
   </header>
 )
 
+/** Route map for reports with functional sub-pages */
+const reportRoutes: Record<string, string> = {
+  'cost-basis': '/reports/cost-basis',
+}
+
 /** Main reports page with search, category filtering, and recent run history */
 const Reports: React.FC = () => {
+  const navigate = useNavigate()
   const [selectedCategory, setSelectedCategory] = useState<
     ReportCategory | 'all'
   >('all')
@@ -564,6 +571,10 @@ const Reports: React.FC = () => {
                         <button
                           className="p-2 action-icon hover:bg-[#f3f1ed] dark:hover:bg-[#1a1815] rounded-lg transition-colors"
                           title="Run Report"
+                          onClick={() => {
+                            const route = reportRoutes[report.id]
+                            if (route) navigate(route)
+                          }}
                         >
                           <Play className="w-4 h-4" />
                         </button>
