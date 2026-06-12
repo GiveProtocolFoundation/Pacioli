@@ -11,6 +11,7 @@ const STORAGE_KEYS = {
   TRACKED_WALLETS: 'pacioli_tracked_wallets',
   TRANSACTIONS: 'pacioli_transactions',
   SYNC_STATUS: 'pacioli_sync_status',
+  REALTIME_SYNC_ENABLED: 'pacioli_realtime_sync_enabled',
 } as const
 
 /**
@@ -273,5 +274,31 @@ export const StorageService = {
    */
   clearTrackedWallets(): void {
     localStorage.removeItem(STORAGE_KEYS.TRACKED_WALLETS)
+  },
+
+  /**
+   * Get real-time sync enabled preference
+   */
+  getRealtimeSyncEnabled(): boolean {
+    try {
+      const val = localStorage.getItem(STORAGE_KEYS.REALTIME_SYNC_ENABLED)
+      return val === 'true'
+    } catch {
+      return false
+    }
+  },
+
+  /**
+   * Set real-time sync enabled preference
+   */
+  setRealtimeSyncEnabled(enabled: boolean): void {
+    try {
+      localStorage.setItem(
+        STORAGE_KEYS.REALTIME_SYNC_ENABLED,
+        String(enabled)
+      )
+    } catch (error) {
+      console.error('Error saving realtime sync preference:', error)
+    }
   },
 }
