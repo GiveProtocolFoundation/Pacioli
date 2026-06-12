@@ -21,6 +21,7 @@ export type {
   StoredTransaction,
   TransactionInput,
   PaginationOptions,
+  ChainSyncStatus,
   // Entity types
   Entity,
   EntityInput,

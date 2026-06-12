@@ -17,9 +17,10 @@ import AddPortfolioModal from '../../components/wallet/AddPortfolioModal'
 import { TransactionList } from '../../components/wallet/TransactionList'
 import {
   polkadotService,
+  correlateXcmTransactions,
   type SyncProgress,
 } from '../../services/blockchain/polkadotService'
-import { indexedDBService } from '../../services/database/indexedDBService'
+import { persistence } from '../../services/persistence'
 import { MigrationService } from '../../services/database/migrationService'
 import {
   StorageService,
@@ -29,6 +30,7 @@ import {
   NetworkType,
   type ConnectedWallet,
   type Transaction,
+  type SubstrateTransaction,
   ChainType,
 } from '../../services/wallet/types'
 import { encodeAddress, decodeAddress } from '@polkadot/util-crypto'
@@ -299,6 +301,46 @@ const SyncProgressDisplay: React.FC<SyncProgressDisplayProps> = ({
   )
 }
 
+/**
+ * Load transactions for all supported networks for the given raw address,
+ * run cross-chain XCM correlation across the merged set, and save the
+ * correlated transactions back to the persistence layer (upsert by id).
+ *
+ * This is intentionally called once per sync so correlation is persisted
+ * and survives page reloads without re-running.
+ */
+async function performCrossChainXcmCorrelation(rawAddress: string): Promise<void> {
+  const allNetworks = Object.values(NetworkType)
+
+  // Load transactions per network (ignore networks with no data)
+  const perNetwork: Array<{ net: NetworkType; addr: string; txs: Transaction[] }> = []
+  await Promise.all(
+    allNetworks.map(async net => {
+      const addr = convertToNetworkFormat(rawAddress, net)
+      try {
+        const txs = await persistence.getChainTransactions(net, addr)
+        if (txs.length > 0) perNetwork.push({ net, addr, txs })
+      } catch {
+        // Network has no synced data — skip silently
+      }
+    })
+  )
+
+  if (perNetwork.length < 2) return  // Need at least two chains to correlate
+
+  // Merge and correlate (mutates in place)
+  const merged = perNetwork.flatMap(({ txs }) => txs)
+  const substrateTxs = merged.filter((tx): tx is SubstrateTransaction => 'events' in tx)
+  correlateXcmTransactions(substrateTxs)
+
+  // Persist the updated xcmStatus / xcmLinkedTxId fields back
+  await Promise.all(
+    perNetwork.map(({ net, addr, txs }) =>
+      persistence.saveChainTransactions(net, addr, txs)
+    )
+  )
+}
+
 /** Wallet manager page for connecting wallets, syncing transactions, and managing tracked portfolios */
 const WalletManager: React.FC = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([])
@@ -346,9 +388,9 @@ const WalletManager: React.FC = () => {
       if (!dbInitialized) return
       try {
         const networkAddr = convertToNetworkFormat(addr, net)
-        const allTxs = await indexedDBService.getTransactionsFor(net, networkAddr)
+        const allTxs = await persistence.getChainTransactions(net, networkAddr)
         setTransactions(allTxs)
-        const newSyncStatus = await indexedDBService.loadSyncStatus(net, networkAddr)
+        const newSyncStatus = await persistence.loadChainSyncStatus(net, networkAddr)
         setSyncStatus(newSyncStatus)
       } catch (err) {
         console.error('Failed to reload after live update:', err)
@@ -473,7 +515,7 @@ const WalletManager: React.FC = () => {
   // Track if we've already initialized
   const initializationStartedRef = useRef(false)
 
-  // Initialize IndexedDB and run migration on mount
+  // Initialize transaction store and run migration on mount
   useEffect(() => {
     // Prevent double initialization in React Strict Mode
     if (initializationStartedRef.current) {
@@ -481,13 +523,13 @@ const WalletManager: React.FC = () => {
     }
     initializationStartedRef.current = true
 
-    /** Initialize IndexedDB, run data migration if needed, and load saved wallets */
+    /** Initialize persistence, run data migration if needed, and load saved wallets */
     const initializeDB = async () => {
       try {
         setMigrationStatus('Initializing database...')
 
-        // Initialize IndexedDB
-        await indexedDBService.init()
+        // Initialize transaction store
+        await persistence.initTransactionStore()
 
         // Check if migration is needed
         const hasMigrated = await MigrationService.hasMigrated()
@@ -510,8 +552,8 @@ const WalletManager: React.FC = () => {
         setDbInitialized(true)
         setMigrationStatus('')
 
-        // Load saved wallets from IndexedDB
-        const savedWallets = await indexedDBService.loadWallets()
+        // Load saved wallets from persistence
+        const savedWallets = await persistence.loadConnectedWallets()
         if (savedWallets.length > 0) {
           setConnectedWallets(savedWallets)
         }
@@ -558,15 +600,15 @@ const WalletManager: React.FC = () => {
         )
 
         // Load sync status
-        const status = await indexedDBService.loadSyncStatus(
+        const status = await persistence.loadChainSyncStatus(
           selectedNetwork,
           networkAddress
         )
         if (!isCurrent) return // Abort if effect was cleaned up
         setSyncStatus(status)
 
-        // Load saved transactions from IndexedDB
-        const savedTxs = await indexedDBService.getTransactionsFor(
+        // Load saved transactions from persistence
+        const savedTxs = await persistence.getChainTransactions(
           selectedNetwork,
           networkAddress
         )
@@ -597,11 +639,11 @@ const WalletManager: React.FC = () => {
     async (wallets: ConnectedWallet[]) => {
       setConnectedWallets(wallets)
 
-      // Save wallets to IndexedDB for persistence
+      // Save wallets to persistence layer
       try {
-        await indexedDBService.saveWallets(wallets)
+        await persistence.saveConnectedWallets(wallets)
       } catch (err) {
-        console.error('Failed to save wallets to IndexedDB:', err)
+        console.error('Failed to save wallets:', err)
       }
 
       // Also save wallets to profile persistence layer (if profile exists)
@@ -720,8 +762,8 @@ const WalletManager: React.FC = () => {
         message: `Saving ${txs.length} transaction${txs.length !== 1 ? 's' : ''} to database...`,
       })
 
-      // Save to IndexedDB using NETWORK-SPECIFIC ADDRESS
-      await indexedDBService.saveTransactions(
+      // Save to persistence using NETWORK-SPECIFIC ADDRESS
+      await persistence.saveChainTransactions(
         selectedNetwork,
         networkAddress,
         txs
@@ -730,7 +772,7 @@ const WalletManager: React.FC = () => {
       // Update sync status
       if (txs.length > 0) {
         const lastBlock = Math.max(...txs.map(tx => tx.blockNumber))
-        await indexedDBService.saveSyncStatus({
+        await persistence.saveChainSyncStatus({
           network: selectedNetwork,
           address: networkAddress,
           lastSyncedBlock: lastBlock,
@@ -739,15 +781,19 @@ const WalletManager: React.FC = () => {
         })
       }
 
-      // Reload from IndexedDB to get all transactions using NETWORK-SPECIFIC ADDRESS
-      const allTxs = await indexedDBService.getTransactionsFor(
+      // Cross-chain XCM correlation: merge all networks' transactions for this
+      // address, link send↔receive pairs, and save back the correlated state.
+      await performCrossChainXcmCorrelation(selectedAddress)
+
+      // Reload from persistence to get all transactions using NETWORK-SPECIFIC ADDRESS
+      const allTxs = await persistence.getChainTransactions(
         selectedNetwork,
         networkAddress
       )
       setTransactions(allTxs)
 
       // Update local sync status display
-      const newSyncStatus = await indexedDBService.loadSyncStatus(
+      const newSyncStatus = await persistence.loadChainSyncStatus(
         selectedNetwork,
         networkAddress
       )
@@ -800,10 +846,10 @@ const WalletManager: React.FC = () => {
     }
 
     try {
-      // Clear transactions from IndexedDB for this address/network
-      // Note: We can't selectively delete by address from IndexedDB easily,
+      // Clear transactions for this address/network
+      // Note: We can't selectively delete by address easily,
       // so we'll clear all transactions and let user re-sync if needed
-      await indexedDBService.clearTransactions()
+      await persistence.clearChainTransactions()
 
       // Clear local state
       setTransactions([])

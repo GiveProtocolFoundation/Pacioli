@@ -12,6 +12,7 @@ import type {
   StoredTransaction,
   TransactionInput,
   PaginationOptions,
+  ChainSyncStatus,
   Entity,
   EntityInput,
   EntityUpdate,
@@ -21,6 +22,17 @@ import type {
   AddressMatch,
   KnownAddress,
 } from './types'
+import type { Transaction, ConnectedWallet } from '../wallet/types'
+import { indexedDBService } from '../database/indexedDBService'
+
+/**
+ * Feature flag: when true, chain transaction operations route to SQLite
+ * via Tauri invoke. When false (default), they fall back to IndexedDB
+ * (preserving pre-convergence behavior for safe rollback).
+ */
+const USE_PERSISTENCE_TX_PATH =
+  typeof localStorage !== 'undefined' &&
+  localStorage.getItem('USE_PERSISTENCE_TX_PATH') === 'true'
 
 /**
  * Tauri persistence implementation using plain object
@@ -222,5 +234,134 @@ export const tauriPersistence: PersistenceService = {
       address,
       chain,
     })
+  },
+
+  // Chain Transaction Operations
+  initTransactionStore: async (): Promise<void> => {
+    if (!USE_PERSISTENCE_TX_PATH) {
+      await indexedDBService.init()
+    }
+    // SQLite auto-initializes via Tauri; no-op when flag is on
+  },
+
+  saveChainTransactions: async (
+    network: string,
+    address: string,
+    transactions: Transaction[]
+  ): Promise<void> => {
+    if (USE_PERSISTENCE_TX_PATH) {
+      // Serialize each transaction to JSON for SQLite raw_data storage
+      const serialized = transactions.map(tx => ({
+        id: tx.id,
+        hash: tx.hash,
+        block_number: tx.blockNumber,
+        timestamp: tx.timestamp instanceof Date ? Math.floor(tx.timestamp.getTime() / 1000) : 0,
+        from_address: tx.from,
+        to_address: tx.to,
+        value: tx.value,
+        fee: tx.fee,
+        status: tx.status,
+        tx_type: tx.type,
+        raw_data: JSON.stringify(tx),
+      }))
+      await invoke('save_chain_transactions', { network, address, transactions: serialized })
+      return
+    }
+    await indexedDBService.saveTransactions(network, address, transactions)
+  },
+
+  getChainTransactions: async (
+    network: string,
+    address: string
+  ): Promise<Transaction[]> => {
+    if (USE_PERSISTENCE_TX_PATH) {
+      const rows = await invoke<Array<{ raw_data: string }>>('get_chain_transactions', {
+        network,
+        address,
+      })
+      return rows.map(row => {
+        const tx = JSON.parse(row.raw_data) as Transaction
+        // Restore Date object from serialized string
+        if (typeof tx.timestamp === 'string') {
+          tx.timestamp = new Date(tx.timestamp)
+        }
+        return tx
+      })
+    }
+    return indexedDBService.getTransactionsFor(network, address)
+  },
+
+  loadChainSyncStatus: async (
+    network: string,
+    address: string
+  ): Promise<ChainSyncStatus | null> => {
+    if (USE_PERSISTENCE_TX_PATH) {
+      const result = await invoke<{
+        chain_id: string
+        address: string
+        last_block_synced: number
+        last_sync_timestamp: number | null
+        sync_state: string | null
+      } | null>('load_chain_sync_status', { network, address })
+      if (!result) return null
+      return {
+        network: result.chain_id,
+        address: result.address,
+        lastSyncedBlock: result.last_block_synced,
+        lastSyncTime: result.last_sync_timestamp
+          ? new Date(result.last_sync_timestamp * 1000)
+          : new Date(),
+        isSyncing: result.sync_state === 'syncing',
+      }
+    }
+    return indexedDBService.loadSyncStatus(network, address)
+  },
+
+  saveChainSyncStatus: async (status: ChainSyncStatus): Promise<void> => {
+    if (USE_PERSISTENCE_TX_PATH) {
+      await invoke('save_chain_sync_status', {
+        network: status.network,
+        address: status.address,
+        lastBlock: status.lastSyncedBlock,
+      })
+      return
+    }
+    await indexedDBService.saveSyncStatus(status)
+  },
+
+  clearChainTransactions: async (): Promise<void> => {
+    if (USE_PERSISTENCE_TX_PATH) {
+      await invoke('clear_chain_transactions')
+      return
+    }
+    await indexedDBService.clearTransactions()
+  },
+
+  // Connected Wallet Operations
+  saveConnectedWallets: async (wallets: ConnectedWallet[]): Promise<void> => {
+    if (USE_PERSISTENCE_TX_PATH) {
+      // Store as JSON in SQLite settings table
+      await invoke('set_setting', {
+        key: 'connected_wallets',
+        value: JSON.stringify(wallets),
+      })
+      return
+    }
+    await indexedDBService.saveWallets(wallets)
+  },
+
+  loadConnectedWallets: async (): Promise<ConnectedWallet[]> => {
+    if (USE_PERSISTENCE_TX_PATH) {
+      const json = await invoke<string | null>('get_setting', {
+        key: 'connected_wallets',
+      })
+      if (!json) return []
+      try {
+        return JSON.parse(json) as ConnectedWallet[]
+      } catch {
+        return []
+      }
+    }
+    return indexedDBService.loadWallets()
   },
 }

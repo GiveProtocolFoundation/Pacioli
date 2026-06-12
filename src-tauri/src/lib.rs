@@ -295,6 +295,12 @@ pub fn run() {
             api::persistence::set_setting,
             api::persistence::delete_setting,
             api::persistence::get_all_settings,
+            // Chain transaction commands (multi_chain_transactions)
+            api::persistence::save_chain_transactions,
+            api::persistence::get_chain_transactions,
+            api::persistence::load_chain_sync_status,
+            api::persistence::save_chain_sync_status,
+            api::persistence::clear_chain_transactions,
             // Entity commands
             api::entities::create_entity,
             api::entities::get_entities,
