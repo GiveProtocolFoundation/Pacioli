@@ -417,20 +417,29 @@ const MethodSelector: React.FC<{
   onChange: (method: CostBasisMethod) => void
 }> = ({ selected, onChange }) => (
   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-    {METHODS.map(m => (
-      <button
-        key={m.value}
-        onClick={() => onChange(m.value)}
-        className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors border ${
-          selected === m.value
-            ? 'bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 text-[#8b4e52] dark:text-[#a86e72] border-[#8b4e52]/30 dark:border-[#8b4e52]/40'
-            : 'bg-[#fafaf8] dark:bg-[#1a1815] text-[#696557] dark:text-[#b8b3ac] border-[rgba(201,169,97,0.15)] hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620]'
-        }`}
-      >
-        <div className="font-semibold">{m.label}</div>
-        <div className="text-xs opacity-75 mt-0.5">{m.description}</div>
-      </button>
-    ))}
+    {METHODS.map(m => {
+      const isDisabled = m.value === 'SpecificID'
+      return (
+        <button
+          key={m.value}
+          onClick={() => !isDisabled && onChange(m.value)}
+          disabled={isDisabled}
+          title={isDisabled ? 'Lot selection UI coming soon' : undefined}
+          className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors border ${
+            isDisabled
+              ? 'bg-[#fafaf8] dark:bg-[#1a1815] text-[#a39d94] dark:text-[#696557] border-[rgba(201,169,97,0.1)] cursor-not-allowed opacity-60'
+              : selected === m.value
+                ? 'bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 text-[#8b4e52] dark:text-[#a86e72] border-[#8b4e52]/30 dark:border-[#8b4e52]/40'
+                : 'bg-[#fafaf8] dark:bg-[#1a1815] text-[#696557] dark:text-[#b8b3ac] border-[rgba(201,169,97,0.15)] hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620]'
+          }`}
+        >
+          <div className="font-semibold">{m.label}</div>
+          <div className="text-xs opacity-75 mt-0.5">
+            {isDisabled ? 'Coming soon' : m.description}
+          </div>
+        </button>
+      )
+    })}
   </div>
 )
 
