@@ -7,9 +7,11 @@ import {
   X,
   Upload,
   AlertCircle,
+  Radio,
 } from 'lucide-react'
 import { useTheme } from '../../contexts/ThemeContext'
 import { useOrganization } from '../../contexts/OrganizationContext'
+import { StorageService } from '../../services/database/storageService'
 
 interface OrganizationSettings {
   name: string
@@ -630,6 +632,58 @@ const TimezoneSelect: React.FC<TimezoneSelectProps> = ({ value, onChange }) => (
   </div>
 )
 
+/** Blockchain sync settings section with real-time sync toggle */
+const BlockchainSyncSection: React.FC = () => {
+  const [enabled, setEnabled] = useState(() =>
+    StorageService.getRealtimeSyncEnabled()
+  )
+
+  const handleToggle = useCallback(() => {
+    setEnabled(prev => {
+      const next = !prev
+      StorageService.setRealtimeSyncEnabled(next)
+      return next
+    })
+  }, [])
+
+  return (
+    <div className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg shadow-sm border border-[rgba(201,169,97,0.15)] p-6">
+      <div className="flex items-center mb-4">
+        <Radio className="w-5 h-5 text-[#8b4e52] mr-2" />
+        <h3 className="text-lg font-semibold text-[#1a1815] dark:text-[#f5f3f0]">
+          Blockchain Sync
+        </h3>
+      </div>
+
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm font-medium text-[#1a1815] dark:text-[#f5f3f0]">
+            Real-time sync
+          </p>
+          <p className="text-xs text-[#696557] dark:text-[#b8b3ac] mt-0.5">
+            Automatically refresh transactions and balances when new blocks arrive on connected networks.
+          </p>
+        </div>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={enabled}
+          onClick={handleToggle}
+          className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#c9a961] focus:ring-offset-2 ${
+            enabled ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'
+          }`}
+        >
+          <span
+            className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+              enabled ? 'translate-x-5' : 'translate-x-0'
+            }`}
+          />
+        </button>
+      </div>
+    </div>
+  )
+}
+
 /** General settings page with organization info, fiscal year, regional, and language configuration */
 const GeneralSettings: React.FC<GeneralSettingsProps> = ({
   userType = 'organization',
@@ -791,6 +845,8 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({
             />
           </div>
         </div>
+
+        <BlockchainSyncSection />
 
         <div className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg shadow-sm border border-[rgba(201,169,97,0.15)] p-6">
           <h3 className="text-lg font-semibold text-[#1a1815] dark:text-[#f5f3f0] mb-4">

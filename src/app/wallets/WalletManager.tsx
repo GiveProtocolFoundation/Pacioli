@@ -9,6 +9,7 @@ import {
   Plus,
   Eye,
   ChevronDown,
+  Radio,
 } from 'lucide-react'
 import { WalletConnector } from '../../components/wallet/WalletConnector'
 import WalletConnectionModal from '../../components/wallet/WalletConnectionModal'
@@ -33,6 +34,7 @@ import {
 import { encodeAddress, decodeAddress } from '@polkadot/util-crypto'
 import { useWalletAliases } from '../../contexts/WalletAliasContext'
 import { useProfile } from '../../contexts/ProfileContext'
+import { useBlockSubscription } from '../../hooks/useBlockSubscription'
 
 /** Props for the TrackedWalletRow component */
 interface TrackedWalletRowProps {
@@ -320,11 +322,49 @@ const WalletManager: React.FC = () => {
   const [isPortfolioModalOpen, setIsPortfolioModalOpen] = useState(false)
   const [showAddMenu, setShowAddMenu] = useState(false)
   const [trackedWallets, setTrackedWallets] = useState<TrackedWallet[]>([])
+  const [realtimeSyncEnabled, setRealtimeSyncEnabled] = useState(() =>
+    StorageService.getRealtimeSyncEnabled()
+  )
 
   // Load tracked wallets on mount
   useEffect(() => {
     setTrackedWallets(StorageService.loadTrackedWallets())
   }, [])
+
+  // Toggle handler for real-time sync
+  const handleToggleRealtimeSync = useCallback(() => {
+    setRealtimeSyncEnabled(prev => {
+      const next = !prev
+      StorageService.setRealtimeSyncEnabled(next)
+      return next
+    })
+  }, [])
+
+  // Callback when block subscription detects new transactions
+  const handleLiveTransactionsUpdated = useCallback(
+    async (net: NetworkType, addr: string) => {
+      if (!dbInitialized) return
+      try {
+        const networkAddr = convertToNetworkFormat(addr, net)
+        const allTxs = await indexedDBService.getTransactionsFor(net, networkAddr)
+        setTransactions(allTxs)
+        const newSyncStatus = await indexedDBService.loadSyncStatus(net, networkAddr)
+        setSyncStatus(newSyncStatus)
+      } catch (err) {
+        console.error('Failed to reload after live update:', err)
+      }
+    },
+    [dbInitialized]
+  )
+
+  // Real-time block subscription
+  const blockSub = useBlockSubscription({
+    network: selectedNetwork,
+    address: selectedAddress,
+    enabled: realtimeSyncEnabled,
+    dbReady: dbInitialized,
+    onTransactionsUpdated: handleLiveTransactionsUpdated,
+  })
 
   // Handle adding a tracked wallet
   const handleAddTrackedWallet = useCallback(
@@ -944,6 +984,57 @@ const WalletManager: React.FC = () => {
                     </>
                   )}
                 </button>
+
+                {/* Real-time Sync Toggle & Live Indicator */}
+                <div className="mt-4 flex items-center justify-between">
+                  <label
+                    htmlFor="realtime-sync-toggle"
+                    className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer select-none"
+                  >
+                    <Radio className={`w-4 h-4 ${blockSub.isLive ? 'text-green-500' : 'text-gray-400'}`} />
+                    Real-time sync
+                  </label>
+                  <div className="flex items-center gap-3">
+                    {blockSub.isLive && (
+                      <span className="flex items-center gap-1.5 text-xs text-green-600 dark:text-green-400">
+                        <span className="relative flex h-2 w-2">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
+                        </span>
+                        Live{blockSub.latestBlock ? ` #${blockSub.latestBlock.toLocaleString()}` : ''}
+                      </span>
+                    )}
+                    {blockSub.isRefreshing && (
+                      <span className="text-xs text-[#8b4e52] dark:text-[#d4b87a]">
+                        <Loader className="w-3 h-3 inline animate-spin mr-1" />
+                        Refreshing…
+                      </span>
+                    )}
+                    <button
+                      id="realtime-sync-toggle"
+                      type="button"
+                      role="switch"
+                      aria-checked={realtimeSyncEnabled}
+                      onClick={handleToggleRealtimeSync}
+                      className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#c9a961] focus:ring-offset-2 ${
+                        realtimeSyncEnabled
+                          ? 'bg-green-500'
+                          : 'bg-gray-300 dark:bg-gray-600'
+                      }`}
+                    >
+                      <span
+                        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                          realtimeSyncEnabled ? 'translate-x-5' : 'translate-x-0'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                </div>
+                {blockSub.refreshError && (
+                  <p className="mt-1 text-xs text-red-500 dark:text-red-400">
+                    Live sync error: {blockSub.refreshError}
+                  </p>
+                )}
 
                 {/* Error Display */}
                 {error && (
