@@ -54,7 +54,10 @@ interface ReportData {
   totalShortTermGain: string
   totalLongTermGain: string
   remainingLots: CryptoLot[]
-  allMethodsComparison: Record<string, { FIFO: string; LIFO: string; HIFO: string }>
+  allMethodsComparison: Record<
+    string,
+    { FIFO: string; LIFO: string; HIFO: string }
+  >
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -81,7 +84,14 @@ export function buildLotsFromTransactions(
     if (!tx.value || parseFloat(tx.value) <= 0) continue
 
     // Incoming transactions: receive, deposit, transfer_in, reward, mint
-    const incomingTypes = ['receive', 'deposit', 'transfer_in', 'reward', 'mint', 'buy']
+    const incomingTypes = [
+      'receive',
+      'deposit',
+      'transfer_in',
+      'reward',
+      'mint',
+      'buy',
+    ]
     const isIncoming =
       tx.tx_type && incomingTypes.includes(tx.tx_type.toLowerCase())
 
@@ -90,7 +100,9 @@ export function buildLotsFromTransactions(
     const quantity = tx.value
     const acquisitionDate = tx.timestamp ?? tx.created_at
     // Use fee as a proxy for cost if available, else use value as self-referencing cost
-    const costPerUnit = tx.fee ? (parseFloat(tx.fee) / parseFloat(quantity)).toString() : '0'
+    const costPerUnit = tx.fee
+      ? (parseFloat(tx.fee) / parseFloat(quantity)).toString()
+      : '0'
     const acquisitionCost = tx.fee ?? '0'
 
     lots.push({
@@ -186,7 +198,10 @@ export function computeReport(
   let totalRealized = 0
   let totalShortTerm = 0
   let totalLongTerm = 0
-  const allMethodsMap: Record<string, { FIFO: string; LIFO: string; HIFO: string }> = {}
+  const allMethodsMap: Record<
+    string,
+    { FIFO: string; LIFO: string; HIFO: string }
+  > = {}
 
   for (const raw of rawDisposals) {
     // Date filter
@@ -267,9 +282,7 @@ export function computeReport(
     totalRealizedGain: totalRealized.toFixed(6),
     totalShortTermGain: totalShortTerm.toFixed(6),
     totalLongTermGain: totalLongTerm.toFixed(6),
-    remainingLots: currentLots.filter(
-      l => parseFloat(l.remainingQuantity) > 0
-    ),
+    remainingLots: currentLots.filter(l => parseFloat(l.remainingQuantity) > 0),
     allMethodsComparison: allMethodsMap,
   }
 }
@@ -315,7 +328,10 @@ function getTaxYearRange(year: number): { start: string; end: string } {
 
 // ─── Export Helpers ──────────────────────────────────────────────────────────
 
-export function exportReportCSV(data: ReportData, method: CostBasisMethod): string {
+export function exportReportCSV(
+  data: ReportData,
+  method: CostBasisMethod
+): string {
   const lines: string[] = []
   lines.push(
     'Date,Asset,Quantity,Proceeds,Cost Basis,Gain/Loss,Holding Period,Term'
@@ -355,7 +371,10 @@ export function exportReportCSV(data: ReportData, method: CostBasisMethod): stri
   return lines.join('\n')
 }
 
-export function exportReportJSON(data: ReportData, method: CostBasisMethod): string {
+export function exportReportJSON(
+  data: ReportData,
+  method: CostBasisMethod
+): string {
   return JSON.stringify(
     {
       method,
@@ -406,11 +425,19 @@ function downloadFile(content: string, filename: string, mimeType: string) {
 
 // ─── Sub-components ─────────────────────────────────────────────────────────
 
-const METHODS: { value: CostBasisMethod; label: string; description: string }[] = [
+const METHODS: {
+  value: CostBasisMethod
+  label: string
+  description: string
+}[] = [
   { value: 'FIFO', label: 'FIFO', description: 'First In, First Out' },
   { value: 'LIFO', label: 'LIFO', description: 'Last In, First Out' },
   { value: 'HIFO', label: 'HIFO', description: 'Highest In, First Out' },
-  { value: 'SpecificID', label: 'Specific ID', description: 'Specify lots manually' },
+  {
+    value: 'SpecificID',
+    label: 'Specific ID',
+    description: 'Specify lots manually',
+  },
 ]
 
 const MethodSelector: React.FC<{
@@ -663,10 +690,7 @@ const RemainingLotsTable: React.FC<{ lots: CryptoLot[] }> = ({ lots }) => (
         ))}
         {lots.length === 0 && (
           <tr>
-            <td
-              colSpan={5}
-              className="py-8 text-center text-sm text-[#a39d94]"
-            >
+            <td colSpan={5} className="py-8 text-center text-sm text-[#a39d94]">
               No remaining lots
             </td>
           </tr>
@@ -760,7 +784,15 @@ const CostBasisReport: React.FC = () => {
 
     const data = computeReport(lots, rawDisposals, method, start, end)
     setReportData(data)
-  }, [transactions, method, selectedAsset, taxYear, useDateRange, dateStart, dateEnd])
+  }, [
+    transactions,
+    method,
+    selectedAsset,
+    taxYear,
+    useDateRange,
+    dateStart,
+    dateEnd,
+  ])
 
   const handleExport = useCallback(
     (format: 'csv' | 'json') => {
@@ -785,15 +817,20 @@ const CostBasisReport: React.FC = () => {
       }
       setShowExportMenu(false)
     },
-    [reportData, method, selectedAsset, taxYear, useDateRange, dateStart, dateEnd]
+    [
+      reportData,
+      method,
+      selectedAsset,
+      taxYear,
+      useDateRange,
+      dateStart,
+      dateEnd,
+    ]
   )
 
-  const toggleDisposal = useCallback(
-    (id: string) => {
-      setExpandedDisposal(prev => (prev === id ? null : id))
-    },
-    []
-  )
+  const toggleDisposal = useCallback((id: string) => {
+    setExpandedDisposal(prev => (prev === id ? null : id))
+  }, [])
 
   // Lot validation warnings
   const validationWarnings = useMemo(() => {
@@ -878,10 +915,7 @@ const CostBasisReport: React.FC = () => {
                   Lot data warnings
                 </p>
                 {validationWarnings.map((w, i) => (
-                  <p
-                    key={i}
-                    className="text-xs text-[#b89968]/80 mt-1"
-                  >
+                  <p key={i} className="text-xs text-[#b89968]/80 mt-1">
                     {w}
                   </p>
                 ))}

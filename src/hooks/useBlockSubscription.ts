@@ -73,7 +73,9 @@ export function useBlockSubscription(
   const [latestBlock, setLatestBlock] = useState<number | null>(null)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [refreshError, setRefreshError] = useState<string | null>(null)
-  const [refreshProgress, setRefreshProgress] = useState<SyncProgress | null>(null)
+  const [refreshProgress, setRefreshProgress] = useState<SyncProgress | null>(
+    null
+  )
 
   // Refs for debounce and cleanup
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -110,17 +112,14 @@ export function useBlockSubscription(
           : undefined
 
         // Fetch only new transactions (limit 50 for incremental)
-        const txs = await polkadotService.fetchTransactionHistoryHybrid(
-          net,
-          {
-            address: networkAddr,
-            startBlock,
-            limit: 50,
-            onProgress: (p) => {
-              if (isMountedRef.current) setRefreshProgress(p)
-            },
-          }
-        )
+        const txs = await polkadotService.fetchTransactionHistoryHybrid(net, {
+          address: networkAddr,
+          startBlock,
+          limit: 50,
+          onProgress: p => {
+            if (isMountedRef.current) setRefreshProgress(p)
+          },
+        })
 
         if (!isMountedRef.current) return
 
@@ -129,7 +128,7 @@ export function useBlockSubscription(
           await indexedDBService.saveTransactions(net, networkAddr, txs)
 
           // Update sync status
-          const lastBlock = Math.max(...txs.map((tx) => tx.blockNumber))
+          const lastBlock = Math.max(...txs.map(tx => tx.blockNumber))
           await indexedDBService.saveSyncStatus({
             network: net,
             address: networkAddr,
@@ -148,7 +147,10 @@ export function useBlockSubscription(
         if (isMountedRef.current) {
           const msg = err instanceof Error ? err.message : 'Refresh failed'
           setRefreshError(msg)
-          console.error('[useBlockSubscription] incremental refresh error:', err)
+          console.error(
+            '[useBlockSubscription] incremental refresh error:',
+            err
+          )
         }
       } finally {
         if (isMountedRef.current) {
@@ -178,7 +180,7 @@ export function useBlockSubscription(
       try {
         const unsub = await polkadotService.subscribeNewBlocks(
           network,
-          (header) => {
+          header => {
             if (cancelled) return
 
             const blockNum = header.number.toNumber()
@@ -233,9 +235,7 @@ export function useBlockSubscription(
       if (unsubscribeRef.current) {
         unsubscribeRef.current()
         unsubscribeRef.current = null
-        console.warn(
-          `[useBlockSubscription] unsubscribed from ${network}`
-        )
+        console.warn(`[useBlockSubscription] unsubscribed from ${network}`)
       }
       setIsLive(false)
     }
