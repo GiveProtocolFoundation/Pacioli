@@ -271,13 +271,9 @@ const createMemoryStorage = (): StorageService => {
       settingsCount: settings.size,
     }),
 
-    previewImport: async () => {
-      throw new Error('Import not available in browser mode')
-    },
+    previewImport: () => Promise.reject(new Error('Import not available in browser mode')),
 
-    importData: async () => {
-      throw new Error('Import not available in browser mode')
-    },
+    importData: () => Promise.reject(new Error('Import not available in browser mode')),
   }
 }
 
