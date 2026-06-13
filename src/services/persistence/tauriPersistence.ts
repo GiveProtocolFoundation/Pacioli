@@ -250,12 +250,17 @@ export const tauriPersistence: PersistenceService = {
     transactions: Transaction[]
   ): Promise<void> => {
     if (USE_PERSISTENCE_TX_PATH) {
-      // Serialize each transaction to JSON for SQLite raw_data storage
+      // Serialize each transaction to JSON for SQLite raw_data storage.
+      // price_at_acquisition_usd is stored as a first-class column so the
+      // COALESCE upsert logic can preserve manually-entered prices on re-sync.
       const serialized = transactions.map(tx => ({
         id: tx.id,
         hash: tx.hash,
         block_number: tx.blockNumber,
-        timestamp: tx.timestamp instanceof Date ? Math.floor(tx.timestamp.getTime() / 1000) : 0,
+        timestamp:
+          tx.timestamp instanceof Date
+            ? Math.floor(tx.timestamp.getTime() / 1000)
+            : 0,
         from_address: tx.from,
         to_address: tx.to,
         value: tx.value,
@@ -263,8 +268,14 @@ export const tauriPersistence: PersistenceService = {
         status: tx.status,
         tx_type: tx.type,
         raw_data: JSON.stringify(tx),
+        price_at_acquisition_usd:
+          tx.pricePerUnitUsd != null ? tx.pricePerUnitUsd.toString() : null,
       }))
-      await invoke('save_chain_transactions', { network, address, transactions: serialized })
+      await invoke('save_chain_transactions', {
+        network,
+        address,
+        transactions: serialized,
+      })
       return
     }
     await indexedDBService.saveTransactions(network, address, transactions)
@@ -275,10 +286,13 @@ export const tauriPersistence: PersistenceService = {
     address: string
   ): Promise<Transaction[]> => {
     if (USE_PERSISTENCE_TX_PATH) {
-      const rows = await invoke<Array<{ raw_data: string }>>('get_chain_transactions', {
-        network,
-        address,
-      })
+      const rows = await invoke<Array<{ raw_data: string }>>(
+        'get_chain_transactions',
+        {
+          network,
+          address,
+        }
+      )
       return rows.map(row => {
         const tx = JSON.parse(row.raw_data) as Transaction
         // Restore Date object from serialized string

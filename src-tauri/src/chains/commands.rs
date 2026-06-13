@@ -169,7 +169,7 @@ pub async fn chain_fetch_all_transactions(
     }
 
     // Sort by timestamp descending
-    all_transactions.sort_by(|a, b| b.timestamp.cmp(&a.timestamp));
+    all_transactions.sort_by_key(|b| std::cmp::Reverse(b.timestamp));
 
     Ok(all_transactions)
 }

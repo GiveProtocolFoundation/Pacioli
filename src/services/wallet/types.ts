@@ -75,8 +75,12 @@ export interface TransactionBase {
   network: NetworkType
   /** Token symbol for the transaction (e.g., "DOT", "KSM") */
   tokenSymbol?: string
-  /** USD value at the time of the transaction */
+  /** Total USD value at the time of the transaction (price × quantity) */
   usdValue?: number
+  /** USD price per human-readable token unit at acquisition time (e.g., price per DOT, not per planck).
+   * Set by enrichTransactionsWithUsdValues; carried into TransactionInput.price_at_acquisition_usd
+   * for accurate cost-basis reporting in buildLotsFromTransactions. */
+  pricePerUnitUsd?: number
 }
 
 export interface SubstrateTransaction extends TransactionBase {
@@ -89,6 +93,14 @@ export interface SubstrateTransaction extends TransactionBase {
     data: unknown
   }>
   isSigned: boolean
+  /** XCM message hash / unique identifier for cross-chain correlation */
+  xcmCorrelationId?: string
+  /** ID of the paired send or receive transaction on the counterpart chain */
+  xcmLinkedTxId?: string
+  /** Whether this is the originating send or the destination receive */
+  xcmRole?: 'send' | 'receive'
+  /** Whether this XCM transfer has been matched with its counterpart */
+  xcmStatus?: 'matched' | 'pending'
 }
 
 export interface EVMTransaction extends TransactionBase {
