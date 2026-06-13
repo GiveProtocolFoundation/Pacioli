@@ -9,6 +9,7 @@ import {
   Plus,
   Eye,
   ChevronDown,
+  Radio,
 } from 'lucide-react'
 import { WalletConnector } from '../../components/wallet/WalletConnector'
 import WalletConnectionModal from '../../components/wallet/WalletConnectionModal'
@@ -16,9 +17,10 @@ import AddPortfolioModal from '../../components/wallet/AddPortfolioModal'
 import { TransactionList } from '../../components/wallet/TransactionList'
 import {
   polkadotService,
+  correlateXcmTransactions,
   type SyncProgress,
 } from '../../services/blockchain/polkadotService'
-import { indexedDBService } from '../../services/database/indexedDBService'
+import { persistence } from '../../services/persistence'
 import { MigrationService } from '../../services/database/migrationService'
 import {
   StorageService,
@@ -28,11 +30,13 @@ import {
   NetworkType,
   type ConnectedWallet,
   type Transaction,
+  type SubstrateTransaction,
   ChainType,
 } from '../../services/wallet/types'
 import { encodeAddress, decodeAddress } from '@polkadot/util-crypto'
 import { useWalletAliases } from '../../contexts/WalletAliasContext'
 import { useProfile } from '../../contexts/ProfileContext'
+import { useBlockSubscription } from '../../hooks/useBlockSubscription'
 
 /** Props for the TrackedWalletRow component */
 interface TrackedWalletRowProps {
@@ -297,6 +301,46 @@ const SyncProgressDisplay: React.FC<SyncProgressDisplayProps> = ({
   )
 }
 
+/**
+ * Load transactions for all supported networks for the given raw address,
+ * run cross-chain XCM correlation across the merged set, and save the
+ * correlated transactions back to the persistence layer (upsert by id).
+ *
+ * This is intentionally called once per sync so correlation is persisted
+ * and survives page reloads without re-running.
+ */
+async function performCrossChainXcmCorrelation(rawAddress: string): Promise<void> {
+  const allNetworks = Object.values(NetworkType)
+
+  // Load transactions per network (ignore networks with no data)
+  const perNetwork: Array<{ net: NetworkType; addr: string; txs: Transaction[] }> = []
+  await Promise.all(
+    allNetworks.map(async net => {
+      const addr = convertToNetworkFormat(rawAddress, net)
+      try {
+        const txs = await persistence.getChainTransactions(net, addr)
+        if (txs.length > 0) perNetwork.push({ net, addr, txs })
+      } catch {
+        // Network has no synced data — skip silently
+      }
+    })
+  )
+
+  if (perNetwork.length < 2) return  // Need at least two chains to correlate
+
+  // Merge and correlate (mutates in place)
+  const merged = perNetwork.flatMap(({ txs }) => txs)
+  const substrateTxs = merged.filter((tx): tx is SubstrateTransaction => 'events' in tx)
+  correlateXcmTransactions(substrateTxs)
+
+  // Persist the updated xcmStatus / xcmLinkedTxId fields back
+  await Promise.all(
+    perNetwork.map(({ net, addr, txs }) =>
+      persistence.saveChainTransactions(net, addr, txs)
+    )
+  )
+}
+
 /** Wallet manager page for connecting wallets, syncing transactions, and managing tracked portfolios */
 const WalletManager: React.FC = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([])
@@ -320,11 +364,49 @@ const WalletManager: React.FC = () => {
   const [isPortfolioModalOpen, setIsPortfolioModalOpen] = useState(false)
   const [showAddMenu, setShowAddMenu] = useState(false)
   const [trackedWallets, setTrackedWallets] = useState<TrackedWallet[]>([])
+  const [realtimeSyncEnabled, setRealtimeSyncEnabled] = useState(() =>
+    StorageService.getRealtimeSyncEnabled()
+  )
 
   // Load tracked wallets on mount
   useEffect(() => {
     setTrackedWallets(StorageService.loadTrackedWallets())
   }, [])
+
+  // Toggle handler for real-time sync
+  const handleToggleRealtimeSync = useCallback(() => {
+    setRealtimeSyncEnabled(prev => {
+      const next = !prev
+      StorageService.setRealtimeSyncEnabled(next)
+      return next
+    })
+  }, [])
+
+  // Callback when block subscription detects new transactions
+  const handleLiveTransactionsUpdated = useCallback(
+    async (net: NetworkType, addr: string) => {
+      if (!dbInitialized) return
+      try {
+        const networkAddr = convertToNetworkFormat(addr, net)
+        const allTxs = await persistence.getChainTransactions(net, networkAddr)
+        setTransactions(allTxs)
+        const newSyncStatus = await persistence.loadChainSyncStatus(net, networkAddr)
+        setSyncStatus(newSyncStatus)
+      } catch (err) {
+        console.error('Failed to reload after live update:', err)
+      }
+    },
+    [dbInitialized]
+  )
+
+  // Real-time block subscription
+  const blockSub = useBlockSubscription({
+    network: selectedNetwork,
+    address: selectedAddress,
+    enabled: realtimeSyncEnabled,
+    dbReady: dbInitialized,
+    onTransactionsUpdated: handleLiveTransactionsUpdated,
+  })
 
   // Handle adding a tracked wallet
   const handleAddTrackedWallet = useCallback(
@@ -433,7 +515,7 @@ const WalletManager: React.FC = () => {
   // Track if we've already initialized
   const initializationStartedRef = useRef(false)
 
-  // Initialize IndexedDB and run migration on mount
+  // Initialize transaction store and run migration on mount
   useEffect(() => {
     // Prevent double initialization in React Strict Mode
     if (initializationStartedRef.current) {
@@ -441,13 +523,13 @@ const WalletManager: React.FC = () => {
     }
     initializationStartedRef.current = true
 
-    /** Initialize IndexedDB, run data migration if needed, and load saved wallets */
+    /** Initialize persistence, run data migration if needed, and load saved wallets */
     const initializeDB = async () => {
       try {
         setMigrationStatus('Initializing database...')
 
-        // Initialize IndexedDB
-        await indexedDBService.init()
+        // Initialize transaction store
+        await persistence.initTransactionStore()
 
         // Check if migration is needed
         const hasMigrated = await MigrationService.hasMigrated()
@@ -470,8 +552,8 @@ const WalletManager: React.FC = () => {
         setDbInitialized(true)
         setMigrationStatus('')
 
-        // Load saved wallets from IndexedDB
-        const savedWallets = await indexedDBService.loadWallets()
+        // Load saved wallets from persistence
+        const savedWallets = await persistence.loadConnectedWallets()
         if (savedWallets.length > 0) {
           setConnectedWallets(savedWallets)
         }
@@ -518,15 +600,15 @@ const WalletManager: React.FC = () => {
         )
 
         // Load sync status
-        const status = await indexedDBService.loadSyncStatus(
+        const status = await persistence.loadChainSyncStatus(
           selectedNetwork,
           networkAddress
         )
         if (!isCurrent) return // Abort if effect was cleaned up
         setSyncStatus(status)
 
-        // Load saved transactions from IndexedDB
-        const savedTxs = await indexedDBService.getTransactionsFor(
+        // Load saved transactions from persistence
+        const savedTxs = await persistence.getChainTransactions(
           selectedNetwork,
           networkAddress
         )
@@ -557,11 +639,11 @@ const WalletManager: React.FC = () => {
     async (wallets: ConnectedWallet[]) => {
       setConnectedWallets(wallets)
 
-      // Save wallets to IndexedDB for persistence
+      // Save wallets to persistence layer
       try {
-        await indexedDBService.saveWallets(wallets)
+        await persistence.saveConnectedWallets(wallets)
       } catch (err) {
-        console.error('Failed to save wallets to IndexedDB:', err)
+        console.error('Failed to save wallets:', err)
       }
 
       // Also save wallets to profile persistence layer (if profile exists)
@@ -680,8 +762,8 @@ const WalletManager: React.FC = () => {
         message: `Saving ${txs.length} transaction${txs.length !== 1 ? 's' : ''} to database...`,
       })
 
-      // Save to IndexedDB using NETWORK-SPECIFIC ADDRESS
-      await indexedDBService.saveTransactions(
+      // Save to persistence using NETWORK-SPECIFIC ADDRESS
+      await persistence.saveChainTransactions(
         selectedNetwork,
         networkAddress,
         txs
@@ -690,7 +772,7 @@ const WalletManager: React.FC = () => {
       // Update sync status
       if (txs.length > 0) {
         const lastBlock = Math.max(...txs.map(tx => tx.blockNumber))
-        await indexedDBService.saveSyncStatus({
+        await persistence.saveChainSyncStatus({
           network: selectedNetwork,
           address: networkAddress,
           lastSyncedBlock: lastBlock,
@@ -699,15 +781,19 @@ const WalletManager: React.FC = () => {
         })
       }
 
-      // Reload from IndexedDB to get all transactions using NETWORK-SPECIFIC ADDRESS
-      const allTxs = await indexedDBService.getTransactionsFor(
+      // Cross-chain XCM correlation: merge all networks' transactions for this
+      // address, link send↔receive pairs, and save back the correlated state.
+      await performCrossChainXcmCorrelation(selectedAddress)
+
+      // Reload from persistence to get all transactions using NETWORK-SPECIFIC ADDRESS
+      const allTxs = await persistence.getChainTransactions(
         selectedNetwork,
         networkAddress
       )
       setTransactions(allTxs)
 
       // Update local sync status display
-      const newSyncStatus = await indexedDBService.loadSyncStatus(
+      const newSyncStatus = await persistence.loadChainSyncStatus(
         selectedNetwork,
         networkAddress
       )
@@ -760,10 +846,10 @@ const WalletManager: React.FC = () => {
     }
 
     try {
-      // Clear transactions from IndexedDB for this address/network
-      // Note: We can't selectively delete by address from IndexedDB easily,
+      // Clear transactions for this address/network
+      // Note: We can't selectively delete by address easily,
       // so we'll clear all transactions and let user re-sync if needed
-      await indexedDBService.clearTransactions()
+      await persistence.clearChainTransactions()
 
       // Clear local state
       setTransactions([])
@@ -944,6 +1030,57 @@ const WalletManager: React.FC = () => {
                     </>
                   )}
                 </button>
+
+                {/* Real-time Sync Toggle & Live Indicator */}
+                <div className="mt-4 flex items-center justify-between">
+                  <label
+                    htmlFor="realtime-sync-toggle"
+                    className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer select-none"
+                  >
+                    <Radio className={`w-4 h-4 ${blockSub.isLive ? 'text-green-500' : 'text-gray-400'}`} />
+                    Real-time sync
+                  </label>
+                  <div className="flex items-center gap-3">
+                    {blockSub.isLive && (
+                      <span className="flex items-center gap-1.5 text-xs text-green-600 dark:text-green-400">
+                        <span className="relative flex h-2 w-2">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
+                        </span>
+                        Live{blockSub.latestBlock ? ` #${blockSub.latestBlock.toLocaleString()}` : ''}
+                      </span>
+                    )}
+                    {blockSub.isRefreshing && (
+                      <span className="text-xs text-[#8b4e52] dark:text-[#d4b87a]">
+                        <Loader className="w-3 h-3 inline animate-spin mr-1" />
+                        Refreshing…
+                      </span>
+                    )}
+                    <button
+                      id="realtime-sync-toggle"
+                      type="button"
+                      role="switch"
+                      aria-checked={realtimeSyncEnabled}
+                      onClick={handleToggleRealtimeSync}
+                      className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#c9a961] focus:ring-offset-2 ${
+                        realtimeSyncEnabled
+                          ? 'bg-green-500'
+                          : 'bg-gray-300 dark:bg-gray-600'
+                      }`}
+                    >
+                      <span
+                        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                          realtimeSyncEnabled ? 'translate-x-5' : 'translate-x-0'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                </div>
+                {blockSub.refreshError && (
+                  <p className="mt-1 text-xs text-red-500 dark:text-red-400">
+                    Live sync error: {blockSub.refreshError}
+                  </p>
+                )}
 
                 {/* Error Display */}
                 {error && (
