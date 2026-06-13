@@ -26,8 +26,11 @@ export type {
 } from '../../types/storage'
 
 /**
- * In-memory fallback for non-Tauri environments (browser development)
+ * In-memory fallback for non-Tauri environments (browser development).
+ * Settings are backed by localStorage so they survive page reloads.
  */
+const SETTINGS_LS_PREFIX = 'pacioli_setting_'
+
 const createMemoryStorage = (): StorageService => {
   let appState: 'Uninitialized' | 'Locked' | 'Unlocked' = 'Uninitialized'
   let hasPasswordSet = false
@@ -37,6 +40,21 @@ const createMemoryStorage = (): StorageService => {
   const wallets: Map<string, import('../../types/storage').StorageWallet> =
     new Map()
   const settings: Map<string, string> = new Map()
+
+  // Hydrate settings from localStorage so they persist across page reloads
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const lsKey = localStorage.key(i)
+      if (lsKey?.startsWith(SETTINGS_LS_PREFIX)) {
+        settings.set(
+          lsKey.slice(SETTINGS_LS_PREFIX.length),
+          localStorage.getItem(lsKey)!
+        )
+      }
+    }
+  } catch {
+    // localStorage unavailable (e.g. SSR) — proceed with empty map
+  }
 
   return {
     ensureInitialized: async () => {
@@ -64,6 +82,16 @@ const createMemoryStorage = (): StorageService => {
       settings.clear()
       appState = 'Uninitialized'
       hasPasswordSet = false
+      try {
+        const keysToRemove: string[] = []
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i)
+          if (k?.startsWith(SETTINGS_LS_PREFIX)) keysToRemove.push(k)
+        }
+        keysToRemove.forEach(k => localStorage.removeItem(k))
+      } catch {
+        /* noop */
+      }
     },
 
     createProfile: async input => {
@@ -152,10 +180,20 @@ const createMemoryStorage = (): StorageService => {
 
     setSetting: async (key, value) => {
       settings.set(key, value)
+      try {
+        localStorage.setItem(SETTINGS_LS_PREFIX + key, value)
+      } catch {
+        /* noop */
+      }
     },
 
     deleteSetting: async key => {
       settings.delete(key)
+      try {
+        localStorage.removeItem(SETTINGS_LS_PREFIX + key)
+      } catch {
+        /* noop */
+      }
     },
 
     getAllSettings: async () =>
