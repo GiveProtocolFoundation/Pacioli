@@ -9,14 +9,21 @@
  */
 
 import { test, expect } from '@playwright/test'
-import { setupApp, mockBlockchainRpc, goToWalletManager, goToEntities } from './helpers'
+import {
+  setupApp,
+  mockBlockchainRpc,
+  goToWalletManager,
+  goToEntities,
+} from './helpers'
 
 test.describe('Wallet connection and entity selection', () => {
   test.beforeEach(async ({ page }) => {
     await setupApp(page)
   })
 
-  test('wallet manager page loads after first-launch setup', async ({ page }) => {
+  test('wallet manager page loads after first-launch setup', async ({
+    page,
+  }) => {
     await mockBlockchainRpc(page)
     await goToWalletManager(page)
     // Page heading should include "wallet" related text
@@ -25,21 +32,21 @@ test.describe('Wallet connection and entity selection', () => {
     ).toBeVisible({ timeout: 8_000 })
   })
 
-  test('can open add-wallet dropdown and see portfolio option', async ({ page }) => {
+  test('can open add-wallet dropdown and see portfolio option', async ({
+    page,
+  }) => {
     await mockBlockchainRpc(page)
     await goToWalletManager(page)
 
     // The page has a "+ Add" dropdown button
-    const addBtn = page
-      .getByRole('button', { name: /add/i })
-      .first()
+    const addBtn = page.getByRole('button', { name: /add/i }).first()
     await expect(addBtn).toBeVisible({ timeout: 8_000 })
     await addBtn.click()
 
     // The dropdown should show "Add Portfolio" option
-    await expect(
-      page.getByText(/add portfolio/i).first()
-    ).toBeVisible({ timeout: 5_000 })
+    await expect(page.getByText(/add portfolio/i).first()).toBeVisible({
+      timeout: 5_000,
+    })
   })
 
   test('wallet manager shows connect wallet section', async ({ page }) => {
@@ -73,9 +80,9 @@ test.describe('Wallet connection and entity selection', () => {
     await addBtn.click()
 
     // Modal appears with "New Entity" heading
-    await expect(
-      page.getByText(/new entity/i).first()
-    ).toBeVisible({ timeout: 5_000 })
+    await expect(page.getByText(/new entity/i).first()).toBeVisible({
+      timeout: 5_000,
+    })
 
     // Fill in entity name (label is "Name *")
     const nameInput = page.getByLabel(/^name/i).first()
@@ -87,6 +94,8 @@ test.describe('Wallet connection and entity selection', () => {
     await saveBtn.click({ force: true })
 
     // The entity should appear in the list
-    await expect(page.getByText('Give Foundation')).toBeVisible({ timeout: 8_000 })
+    await expect(page.getByText('Give Foundation')).toBeVisible({
+      timeout: 8_000,
+    })
   })
 })

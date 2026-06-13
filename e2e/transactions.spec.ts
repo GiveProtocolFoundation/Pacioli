@@ -23,19 +23,28 @@ test.describe('Transaction sync and list rendering', () => {
 
     // The filter bar shows "All", "Unclassified", "Classified", "Ignored"
     await expect(
-      page.getByRole('button', { name: /^all$/i }).or(
-        page.getByText(/^all$/i)
-      ).first()
+      page
+        .getByRole('button', { name: /^all$/i })
+        .or(page.getByText(/^all$/i))
+        .first()
     ).toBeVisible({ timeout: 8_000 })
   })
 
-  test('filter tabs for unclassified, classified, and ignored are visible', async ({ page }) => {
+  test('filter tabs for unclassified, classified, and ignored are visible', async ({
+    page,
+  }) => {
     await mockBlockchainRpc(page)
     await goToTransactions(page)
 
-    await expect(page.getByText(/unclassified/i).first()).toBeVisible({ timeout: 8_000 })
-    await expect(page.getByText(/classified/i).first()).toBeVisible({ timeout: 5_000 })
-    await expect(page.getByText(/ignored/i).first()).toBeVisible({ timeout: 5_000 })
+    await expect(page.getByText(/unclassified/i).first()).toBeVisible({
+      timeout: 8_000,
+    })
+    await expect(page.getByText(/classified/i).first()).toBeVisible({
+      timeout: 5_000,
+    })
+    await expect(page.getByText(/ignored/i).first()).toBeVisible({
+      timeout: 5_000,
+    })
   })
 
   test('clicking Add Transaction opens the form', async ({ page }) => {
@@ -59,22 +68,26 @@ test.describe('Transaction sync and list rendering', () => {
     ).toBeVisible({ timeout: 8_000 })
   })
 
-  test('can create a manual transaction and it appears in the list', async ({ page }) => {
+  test('can create a manual transaction and it appears in the list', async ({
+    page,
+  }) => {
     await mockBlockchainRpc(page)
     await page.goto('/transactions/new')
     await page.waitForLoadState('networkidle')
 
     // The form has: Date & Time, Wallet, Entity, Description, Classification fields
     // Fill in the Description field
-    const descInput = page.getByPlaceholder(/enter transaction description/i).first()
+    const descInput = page
+      .getByPlaceholder(/enter transaction description/i)
+      .first()
     if (await descInput.isVisible().catch(() => false)) {
       await descInput.fill('E2E test donation')
     }
 
     // Verify the form is rendered with expected sections
-    await expect(
-      page.getByText(/description/i).first()
-    ).toBeVisible({ timeout: 8_000 })
+    await expect(page.getByText(/description/i).first()).toBeVisible({
+      timeout: 8_000,
+    })
   })
 
   test('transaction list renders newest entries first', async ({ page }) => {
@@ -83,14 +96,24 @@ test.describe('Transaction sync and list rendering', () => {
 
     // We cannot guarantee test data order without seeding, but we can verify
     // that the list container exists and rows (if any) have date columns.
-    const list = page.locator('table, [role="table"], ul[class*="transaction"], [class*="transaction-list"]').first()
+    const list = page
+      .locator(
+        'table, [role="table"], ul[class*="transaction"], [class*="transaction-list"]'
+      )
+      .first()
     // If no transactions, the empty-state message should be shown
-    const emptyState = page.getByText(/no transactions|get started|add your first/i).first()
-    const hasContent = await list.isVisible().catch(() => false) || await emptyState.isVisible().catch(() => false)
+    const emptyState = page
+      .getByText(/no transactions|get started|add your first/i)
+      .first()
+    const hasContent =
+      (await list.isVisible().catch(() => false)) ||
+      (await emptyState.isVisible().catch(() => false))
     expect(hasContent).toBeTruthy()
   })
 
-  test('transactions page shows search and filter controls', async ({ page }) => {
+  test('transactions page shows search and filter controls', async ({
+    page,
+  }) => {
     await mockBlockchainRpc(page)
     await goToTransactions(page)
 

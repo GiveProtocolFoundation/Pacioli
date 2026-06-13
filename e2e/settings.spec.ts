@@ -22,12 +22,12 @@ test.describe('Settings — API keys and provider configuration', () => {
   test('settings page loads with sidebar sections', async ({ page }) => {
     await goToSettings(page)
 
-    await expect(
-      page.getByText(/general/i).first()
-    ).toBeVisible({ timeout: 8_000 })
-    await expect(
-      page.getByText(/data provider/i).first()
-    ).toBeVisible({ timeout: 5_000 })
+    await expect(page.getByText(/general/i).first()).toBeVisible({
+      timeout: 8_000,
+    })
+    await expect(page.getByText(/data provider/i).first()).toBeVisible({
+      timeout: 5_000,
+    })
   })
 
   test('data providers section renders provider list', async ({ page }) => {
@@ -36,9 +36,9 @@ test.describe('Settings — API keys and provider configuration', () => {
     await page.waitForLoadState('networkidle')
 
     // Should show provider cards (Etherscan, Polygonscan, etc.)
-    await expect(
-      page.getByText(/etherscan/i).first()
-    ).toBeVisible({ timeout: 8_000 })
+    await expect(page.getByText(/etherscan/i).first()).toBeVisible({
+      timeout: 8_000,
+    })
   })
 
   test('API key input is present and accepts a value', async ({ page }) => {
@@ -47,9 +47,7 @@ test.describe('Settings — API keys and provider configuration', () => {
     await page.waitForLoadState('networkidle')
 
     // Click the "Add API Key" button on the first provider card
-    const addKeyBtn = page
-      .getByRole('button', { name: /add api key/i })
-      .first()
+    const addKeyBtn = page.getByRole('button', { name: /add api key/i }).first()
     await expect(addKeyBtn).toBeVisible({ timeout: 8_000 })
     await addKeyBtn.click()
 
@@ -65,15 +63,15 @@ test.describe('Settings — API keys and provider configuration', () => {
     await expect(apiKeyInput).toHaveValue('TEST_API_KEY_12345')
   })
 
-  test('saving an API key persists to localStorage in browser mode', async ({ page }) => {
+  test('saving an API key persists to localStorage in browser mode', async ({
+    page,
+  }) => {
     // Navigate directly to data-providers sub-route
     await page.goto('/settings/data-providers')
     await page.waitForLoadState('networkidle')
 
     // Click "Add API Key" on the first provider (Etherscan)
-    const addKeyBtn = page
-      .getByRole('button', { name: /add api key/i })
-      .first()
+    const addKeyBtn = page.getByRole('button', { name: /add api key/i }).first()
     if (await addKeyBtn.isVisible().catch(() => false)) {
       await addKeyBtn.click()
 
@@ -102,7 +100,9 @@ test.describe('Settings — API keys and provider configuration', () => {
     }
   })
 
-  test('general settings section renders organization name field', async ({ page }) => {
+  test('general settings section renders organization name field', async ({
+    page,
+  }) => {
     await goToSettings(page)
 
     // Should show org name or system preferences
@@ -118,15 +118,17 @@ test.describe('Settings — API keys and provider configuration', () => {
     await page.goto('/settings/currencies')
     await page.waitForLoadState('networkidle')
 
-    await expect(
-      page.getByText(/currenc/i).first()
-    ).toBeVisible({ timeout: 8_000 })
+    await expect(page.getByText(/currenc/i).first()).toBeVisible({
+      timeout: 8_000,
+    })
   })
 
   // TODO(GIV-445): Unskip when real-time sync toggle feature lands.
   test.skip('real-time sync toggle persists state', async ({ page }) => {
     await goToSettings(page)
-    const syncToggle = page.getByRole('switch', { name: /real.?time sync/i }).first()
+    const syncToggle = page
+      .getByRole('switch', { name: /real.?time sync/i })
+      .first()
     await expect(syncToggle).toBeVisible({ timeout: 8_000 })
     await syncToggle.click()
     await expect(syncToggle).toBeChecked()

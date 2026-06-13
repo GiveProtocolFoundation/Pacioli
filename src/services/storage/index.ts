@@ -46,7 +46,10 @@ const createMemoryStorage = (): StorageService => {
     for (let i = 0; i < localStorage.length; i++) {
       const lsKey = localStorage.key(i)
       if (lsKey?.startsWith(SETTINGS_LS_PREFIX)) {
-        settings.set(lsKey.slice(SETTINGS_LS_PREFIX.length), localStorage.getItem(lsKey)!)
+        settings.set(
+          lsKey.slice(SETTINGS_LS_PREFIX.length),
+          localStorage.getItem(lsKey)!
+        )
       }
     }
   } catch {
@@ -86,7 +89,9 @@ const createMemoryStorage = (): StorageService => {
           if (k?.startsWith(SETTINGS_LS_PREFIX)) keysToRemove.push(k)
         }
         keysToRemove.forEach(k => localStorage.removeItem(k))
-      } catch { /* noop */ }
+      } catch {
+        /* noop */
+      }
     },
 
     createProfile: async input => {
@@ -175,12 +180,20 @@ const createMemoryStorage = (): StorageService => {
 
     setSetting: async (key, value) => {
       settings.set(key, value)
-      try { localStorage.setItem(SETTINGS_LS_PREFIX + key, value) } catch { /* noop */ }
+      try {
+        localStorage.setItem(SETTINGS_LS_PREFIX + key, value)
+      } catch {
+        /* noop */
+      }
     },
 
     deleteSetting: async key => {
       settings.delete(key)
-      try { localStorage.removeItem(SETTINGS_LS_PREFIX + key) } catch { /* noop */ }
+      try {
+        localStorage.removeItem(SETTINGS_LS_PREFIX + key)
+      } catch {
+        /* noop */
+      }
     },
 
     getAllSettings: async () =>
