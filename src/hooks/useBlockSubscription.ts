@@ -205,7 +205,7 @@ export function useBlockSubscription(
 
         unsubscribeRef.current = unsub
         setIsLive(true)
-        console.log(
+        console.warn(
           `[useBlockSubscription] subscribed to ${network} for ${address}`
         )
       } catch (err) {
@@ -233,7 +233,7 @@ export function useBlockSubscription(
       if (unsubscribeRef.current) {
         unsubscribeRef.current()
         unsubscribeRef.current = null
-        console.log(
+        console.warn(
           `[useBlockSubscription] unsubscribed from ${network}`
         )
       }

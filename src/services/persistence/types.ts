@@ -66,6 +66,8 @@ export interface StoredTransaction {
   xcm_linked_tx_id?: string | null
   xcm_role?: 'send' | 'receive' | null
   xcm_status?: 'matched' | 'pending' | null
+  /** USD price per token unit at the time of acquisition. Used for accurate cost basis. */
+  price_at_acquisition_usd?: string | null
 }
 
 export interface TransactionInput {
@@ -87,6 +89,8 @@ export interface TransactionInput {
   xcm_linked_tx_id?: string
   xcm_role?: 'send' | 'receive'
   xcm_status?: 'matched' | 'pending'
+  /** USD price per token unit at the time of acquisition. Used for accurate cost basis. */
+  price_at_acquisition_usd?: string
 }
 
 export interface PaginationOptions {

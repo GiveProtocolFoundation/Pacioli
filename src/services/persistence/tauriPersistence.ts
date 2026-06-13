@@ -250,7 +250,9 @@ export const tauriPersistence: PersistenceService = {
     transactions: Transaction[]
   ): Promise<void> => {
     if (USE_PERSISTENCE_TX_PATH) {
-      // Serialize each transaction to JSON for SQLite raw_data storage
+      // Serialize each transaction to JSON for SQLite raw_data storage.
+      // price_at_acquisition_usd is stored as a first-class column so the
+      // COALESCE upsert logic can preserve manually-entered prices on re-sync.
       const serialized = transactions.map(tx => ({
         id: tx.id,
         hash: tx.hash,
@@ -263,6 +265,9 @@ export const tauriPersistence: PersistenceService = {
         status: tx.status,
         tx_type: tx.type,
         raw_data: JSON.stringify(tx),
+        price_at_acquisition_usd: tx.pricePerUnitUsd != null
+          ? tx.pricePerUnitUsd.toString()
+          : null,
       }))
       await invoke('save_chain_transactions', { network, address, transactions: serialized })
       return

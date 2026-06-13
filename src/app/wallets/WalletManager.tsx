@@ -20,7 +20,7 @@ import {
   correlateXcmTransactions,
   type SyncProgress,
 } from '../../services/blockchain/polkadotService'
-import { persistence } from '../../services/persistence'
+import { persistence, type TransactionInput } from '../../services/persistence'
 import { MigrationService } from '../../services/database/migrationService'
 import {
   StorageService,
@@ -301,6 +301,75 @@ const SyncProgressDisplay: React.FC<SyncProgressDisplayProps> = ({
   )
 }
 
+/** Network decimals for planck→human-readable conversion (same as enrichTransactionsWithUsdValues). */
+const NETWORK_DECIMALS: Record<string, number> = {
+  polkadot: 10,
+  acala: 10,
+  kusama: 12,
+  moonbeam: 18,
+  moonriver: 18,
+  astar: 18,
+}
+
+/**
+ * Convert synced chain transactions to accounting TransactionInput objects.
+ *
+ * Key semantics:
+ * - `value` is converted from raw planck/wei to human-readable token units
+ *   so that `price_at_acquisition_usd * value` gives the correct USD acquisition cost.
+ * - `price_at_acquisition_usd` is set from `tx.pricePerUnitUsd` (price per human-readable unit)
+ *   populated by enrichTransactionsWithUsdValues during the sync phase.
+ */
+function buildAccountingInputs(
+  txs: Transaction[],
+  network: string
+): TransactionInput[] {
+  const decimals = NETWORK_DECIMALS[network] ?? 10
+  const divisor = BigInt(10 ** decimals)
+
+  return txs.map(tx => {
+    const substrateTx = tx as SubstrateTransaction
+
+    // Convert raw planck value to human-readable token amount
+    let humanValue: string | undefined
+    if (tx.value) {
+      try {
+        const planckBig = BigInt(tx.value)
+        const whole = planckBig / divisor
+        const frac = planckBig % divisor
+        const humanNum = Number(whole) + Number(frac) / Number(divisor)
+        humanValue = humanNum.toString()
+      } catch {
+        humanValue = tx.value // fallback: store as-is
+      }
+    }
+
+    return {
+      hash: tx.hash,
+      block_number: tx.blockNumber,
+      timestamp:
+        tx.timestamp instanceof Date
+          ? tx.timestamp.toISOString()
+          : new Date(tx.timestamp).toISOString(),
+      from_address: tx.from,
+      to_address: tx.to,
+      value: humanValue,
+      fee: tx.fee,
+      status: tx.status,
+      tx_type: tx.type,
+      token_symbol: tx.tokenSymbol,
+      chain: network,
+      raw_data: JSON.stringify(tx),
+      xcm_correlation_id: substrateTx.xcmCorrelationId,
+      xcm_linked_tx_id: substrateTx.xcmLinkedTxId,
+      xcm_role: substrateTx.xcmRole,
+      xcm_status: substrateTx.xcmStatus,
+      price_at_acquisition_usd:
+        tx.pricePerUnitUsd != null ? tx.pricePerUnitUsd.toString() : undefined,
+    }
+  })
+}
+
 /**
  * Load transactions for all supported networks for the given raw address,
  * run cross-chain XCM correlation across the merged set, and save the
@@ -510,7 +579,7 @@ const WalletManager: React.FC = () => {
   const { formatWalletDisplay } = useWalletAliases()
 
   // Profile context for persistence
-  const { currentProfile, addWallet } = useProfile()
+  const { currentProfile, wallets: profileWallets, addWallet } = useProfile()
 
   // Track if we've already initialized
   const initializationStartedRef = useRef(false)
@@ -769,6 +838,36 @@ const WalletManager: React.FC = () => {
         txs
       )
 
+      // Also write to the accounting persistence path so that cost-basis reporting
+      // can access price_at_acquisition_usd immediately after sync, without waiting
+      // for the full GIV-467 path-convergence work to land.
+      if (currentProfile && txs.length > 0) {
+        try {
+          // Find or create the accounting wallet for this address+chain
+          const existingWallet = profileWallets.find(
+            w => w.address === networkAddress && w.chain === selectedNetwork
+          )
+          const accountingWalletId = existingWallet
+            ? existingWallet.id
+            : (
+                await addWallet({
+                  address: networkAddress,
+                  chain: selectedNetwork,
+                  name: `${selectedNetwork} synced wallet`,
+                  wallet_type: 'synced',
+                })
+              ).id
+          const accountingInputs = buildAccountingInputs(txs, selectedNetwork)
+          await persistence.saveTransactions(accountingWalletId, accountingInputs)
+        } catch (accountingErr) {
+          // Non-fatal: chain store is always saved; accounting write is best-effort
+          console.warn(
+            '[WalletManager] Failed to write priced transactions to accounting store:',
+            accountingErr
+          )
+        }
+      }
+
       // Update sync status
       if (txs.length > 0) {
         const lastBlock = Math.max(...txs.map(tx => tx.blockNumber))
@@ -859,6 +958,41 @@ const WalletManager: React.FC = () => {
       setError('Failed to purge transaction data')
     }
   }, [selectedAddress, dbInitialized])
+
+  // Handle manual acquisition-price override from TransactionList
+  const handlePriceUpdate = useCallback(
+    async (txId: string, pricePerUnitUsd: string) => {
+      if (!currentProfile) return
+      try {
+        // Update the in-memory transaction object so the UI reflects the change immediately
+        setTransactions(prev =>
+          prev.map(tx =>
+            tx.id === txId
+              ? Object.assign(Object.create(Object.getPrototypeOf(tx)), tx, {
+                  pricePerUnitUsd: parseFloat(pricePerUnitUsd),
+                })
+              : tx
+          )
+        )
+        // Persist the override: find the accounting wallet and re-save just this transaction
+        const networkAddress = convertToNetworkFormat(selectedAddress, selectedNetwork)
+        const existingWallet = profileWallets.find(
+          w => w.address === networkAddress && w.chain === selectedNetwork
+        )
+        if (!existingWallet) return // accounting wallet not yet created; sync first
+        const targetTx = transactions.find(t => t.id === txId)
+        if (!targetTx) return
+        const updatedTx = Object.assign(Object.create(Object.getPrototypeOf(targetTx)), targetTx, {
+          pricePerUnitUsd: parseFloat(pricePerUnitUsd),
+        }) as typeof targetTx
+        const inputs = buildAccountingInputs([updatedTx], selectedNetwork)
+        await persistence.saveTransactions(existingWallet.id, inputs)
+      } catch (err) {
+        console.warn('[WalletManager] Failed to save price override:', err)
+      }
+    },
+    [currentProfile, profileWallets, selectedAddress, selectedNetwork, transactions]
+  )
 
   // Get all available addresses from connected wallets AND tracked wallets
   const allAddresses = [
@@ -1165,6 +1299,7 @@ const WalletManager: React.FC = () => {
               isLoading={isLoading}
               error={error}
               onPurge={handlePurgeData}
+              onPriceUpdate={currentProfile ? handlePriceUpdate : undefined}
             />
           </div>
         )}

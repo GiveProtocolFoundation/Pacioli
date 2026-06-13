@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 /**
  * Cost Basis Report
  * Surfaces FIFO/LIFO/HIFO/SpecID calculations from costBasisService
@@ -59,6 +60,29 @@ interface ReportData {
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 /**
+ * Filter stored transactions for balance and cost-basis accounting.
+ *
+ * Removes matched XCM receive legs to avoid double-counting cross-chain
+ * transfers. The paired send already represents the full economic event.
+ * Unmatched XCM receives (xcm_status='pending' or unannotated) are kept so
+ * they surface as pending items for review.
+ */
+export function filterStoredTransactionsForAccounting(
+  txs: StoredTransaction[]
+): StoredTransaction[] {
+  return txs.filter(tx => {
+    if (tx.tx_type !== 'xcm') return true
+    if (tx.xcm_role === 'send') return true
+    // Unmatched receive: keep as pending
+    if (tx.xcm_role === 'receive' && tx.xcm_status !== 'matched') return true
+    // No role annotation yet: keep conservatively (pre-GIV-447 data)
+    if (!tx.xcm_role) return true
+    // Matched receive: exclude — already captured by the send leg
+    return false
+  })
+}
+
+/**
  * Build CryptoLot objects from raw stored transactions.
  * Incoming transactions (receive/deposit) become acquisition lots.
  */
@@ -88,9 +112,16 @@ export function buildLotsFromTransactions(
 
     const quantity = tx.value
     const acquisitionDate = tx.timestamp ?? tx.created_at
-    // Use fee as a proxy for cost if available, else use value as self-referencing cost
-    const costPerUnit = tx.fee ? (parseFloat(tx.fee) / parseFloat(quantity)).toString() : '0'
-    const acquisitionCost = tx.fee ?? '0'
+    // Use price_at_acquisition_usd (USD per unit) when available for accurate cost basis.
+    // Fall back to fee/quantity proxy for legacy data that pre-dates this field.
+    const costPerUnit = tx.price_at_acquisition_usd
+      ? tx.price_at_acquisition_usd
+      : tx.fee
+        ? (parseFloat(tx.fee) / parseFloat(quantity)).toString()
+        : '0'
+    const acquisitionCost = tx.price_at_acquisition_usd
+      ? (parseFloat(tx.price_at_acquisition_usd) * parseFloat(quantity)).toString()
+      : tx.fee ?? '0'
 
     lots.push({
       lotId: tx.id,
@@ -180,7 +211,7 @@ export function computeReport(
   dateStart?: string,
   dateEnd?: string
 ): ReportData {
-  let currentLots = [...lots]
+  const currentLots = [...lots]
   const disposals: DisposalRecord[] = []
   let totalRealized = 0
   let totalShortTerm = 0
@@ -718,7 +749,7 @@ const CostBasisReport: React.FC = () => {
         const txs = await persistence.getAllTransactions(currentProfile.id, {
           limit: 10000,
         })
-        setTransactions(txs)
+        setTransactions(filterStoredTransactionsForAccounting(txs))
       } catch (err) {
         setError(
           err instanceof Error ? err.message : 'Failed to load transactions'
