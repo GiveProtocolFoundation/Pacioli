@@ -234,14 +234,10 @@ const SyncProgressDisplay: React.FC<SyncProgressDisplayProps> = ({
         )}
         <div className="flex-1">
           <p className="text-sm font-semibold text-[#8b4e52] dark:text-[#d4b87a] mb-1">
-            {syncProgress.stage === 'connecting' &&
-              'Connecting to Network'}
-            {syncProgress.stage === 'fetching' &&
-              'Fetching Transactions'}
-            {syncProgress.stage === 'processing' &&
-              'Processing Blocks'}
-            {syncProgress.stage === 'saving' &&
-              'Saving to Database'}
+            {syncProgress.stage === 'connecting' && 'Connecting to Network'}
+            {syncProgress.stage === 'fetching' && 'Fetching Transactions'}
+            {syncProgress.stage === 'processing' && 'Processing Blocks'}
+            {syncProgress.stage === 'saving' && 'Saving to Database'}
             {syncProgress.stage === 'complete' && 'Sync Complete'}
           </p>
           <p className="text-sm text-[#8b4e52] dark:text-[#d4b87a]">
@@ -272,8 +268,7 @@ const SyncProgressDisplay: React.FC<SyncProgressDisplayProps> = ({
           {/* Stats */}
           <div className="flex justify-between text-xs text-[#8b4e52] dark:text-[#d4b87a]">
             <span>
-              Blocks:{' '}
-              {syncProgress.blocksScanned.toLocaleString()} /{' '}
+              Blocks: {syncProgress.blocksScanned.toLocaleString()} /{' '}
               {syncProgress.totalBlocks.toLocaleString()}
             </span>
             <span>
@@ -289,8 +284,7 @@ const SyncProgressDisplay: React.FC<SyncProgressDisplayProps> = ({
           {/* Transaction Count */}
           {syncProgress.transactionsFound > 0 && (
             <p className="text-xs text-[#8b4e52] dark:text-[#d4b87a]">
-              Found{' '}
-              {syncProgress.transactionsFound.toLocaleString()}{' '}
+              Found {syncProgress.transactionsFound.toLocaleString()}{' '}
               transaction
               {syncProgress.transactionsFound !== 1 ? 's' : ''}
             </p>
@@ -378,11 +372,17 @@ function buildAccountingInputs(
  * This is intentionally called once per sync so correlation is persisted
  * and survives page reloads without re-running.
  */
-async function performCrossChainXcmCorrelation(rawAddress: string): Promise<void> {
+async function performCrossChainXcmCorrelation(
+  rawAddress: string
+): Promise<void> {
   const allNetworks = Object.values(NetworkType)
 
   // Load transactions per network (ignore networks with no data)
-  const perNetwork: Array<{ net: NetworkType; addr: string; txs: Transaction[] }> = []
+  const perNetwork: Array<{
+    net: NetworkType
+    addr: string
+    txs: Transaction[]
+  }> = []
   await Promise.all(
     allNetworks.map(async net => {
       const addr = convertToNetworkFormat(rawAddress, net)
@@ -395,11 +395,13 @@ async function performCrossChainXcmCorrelation(rawAddress: string): Promise<void
     })
   )
 
-  if (perNetwork.length < 2) return  // Need at least two chains to correlate
+  if (perNetwork.length < 2) return // Need at least two chains to correlate
 
   // Merge and correlate (mutates in place)
   const merged = perNetwork.flatMap(({ txs }) => txs)
-  const substrateTxs = merged.filter((tx): tx is SubstrateTransaction => 'events' in tx)
+  const substrateTxs = merged.filter(
+    (tx): tx is SubstrateTransaction => 'events' in tx
+  )
   correlateXcmTransactions(substrateTxs)
 
   // Persist the updated xcmStatus / xcmLinkedTxId fields back
@@ -459,7 +461,10 @@ const WalletManager: React.FC = () => {
         const networkAddr = convertToNetworkFormat(addr, net)
         const allTxs = await persistence.getChainTransactions(net, networkAddr)
         setTransactions(allTxs)
-        const newSyncStatus = await persistence.loadChainSyncStatus(net, networkAddr)
+        const newSyncStatus = await persistence.loadChainSyncStatus(
+          net,
+          networkAddr
+        )
         setSyncStatus(newSyncStatus)
       } catch (err) {
         console.error('Failed to reload after live update:', err)
@@ -858,7 +863,10 @@ const WalletManager: React.FC = () => {
                 })
               ).id
           const accountingInputs = buildAccountingInputs(txs, selectedNetwork)
-          await persistence.saveTransactions(accountingWalletId, accountingInputs)
+          await persistence.saveTransactions(
+            accountingWalletId,
+            accountingInputs
+          )
         } catch (accountingErr) {
           // Non-fatal: chain store is always saved; accounting write is best-effort
           console.warn(
@@ -975,23 +983,36 @@ const WalletManager: React.FC = () => {
           )
         )
         // Persist the override: find the accounting wallet and re-save just this transaction
-        const networkAddress = convertToNetworkFormat(selectedAddress, selectedNetwork)
+        const networkAddress = convertToNetworkFormat(
+          selectedAddress,
+          selectedNetwork
+        )
         const existingWallet = profileWallets.find(
           w => w.address === networkAddress && w.chain === selectedNetwork
         )
         if (!existingWallet) return // accounting wallet not yet created; sync first
         const targetTx = transactions.find(t => t.id === txId)
         if (!targetTx) return
-        const updatedTx = Object.assign(Object.create(Object.getPrototypeOf(targetTx)), targetTx, {
-          pricePerUnitUsd: parseFloat(pricePerUnitUsd),
-        }) as typeof targetTx
+        const updatedTx = Object.assign(
+          Object.create(Object.getPrototypeOf(targetTx)),
+          targetTx,
+          {
+            pricePerUnitUsd: parseFloat(pricePerUnitUsd),
+          }
+        ) as typeof targetTx
         const inputs = buildAccountingInputs([updatedTx], selectedNetwork)
         await persistence.saveTransactions(existingWallet.id, inputs)
       } catch (err) {
         console.warn('[WalletManager] Failed to save price override:', err)
       }
     },
-    [currentProfile, profileWallets, selectedAddress, selectedNetwork, transactions]
+    [
+      currentProfile,
+      profileWallets,
+      selectedAddress,
+      selectedNetwork,
+      transactions,
+    ]
   )
 
   // Get all available addresses from connected wallets AND tracked wallets
@@ -1171,7 +1192,9 @@ const WalletManager: React.FC = () => {
                     htmlFor="realtime-sync-toggle"
                     className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer select-none"
                   >
-                    <Radio className={`w-4 h-4 ${blockSub.isLive ? 'text-green-500' : 'text-gray-400'}`} />
+                    <Radio
+                      className={`w-4 h-4 ${blockSub.isLive ? 'text-green-500' : 'text-gray-400'}`}
+                    />
                     Real-time sync
                   </label>
                   <div className="flex items-center gap-3">
@@ -1181,7 +1204,10 @@ const WalletManager: React.FC = () => {
                           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
                           <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
                         </span>
-                        Live{blockSub.latestBlock ? ` #${blockSub.latestBlock.toLocaleString()}` : ''}
+                        Live
+                        {blockSub.latestBlock
+                          ? ` #${blockSub.latestBlock.toLocaleString()}`
+                          : ''}
                       </span>
                     )}
                     {blockSub.isRefreshing && (
@@ -1204,7 +1230,9 @@ const WalletManager: React.FC = () => {
                     >
                       <span
                         className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                          realtimeSyncEnabled ? 'translate-x-5' : 'translate-x-0'
+                          realtimeSyncEnabled
+                            ? 'translate-x-5'
+                            : 'translate-x-0'
                         }`}
                       />
                     </button>

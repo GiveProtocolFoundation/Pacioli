@@ -108,7 +108,12 @@ describe('CostBasisReport data wiring', () => {
     it('skips transactions with zero or missing value', () => {
       const txs = [
         makeTx({ id: 'z1', tx_type: 'receive', value: '0', token_symbol: 'X' }),
-        makeTx({ id: 'z2', tx_type: 'receive', value: null, token_symbol: 'X' }),
+        makeTx({
+          id: 'z2',
+          tx_type: 'receive',
+          value: null,
+          token_symbol: 'X',
+        }),
       ]
       expect(buildLotsFromTransactions(txs)).toHaveLength(0)
     })
@@ -161,16 +166,19 @@ describe('CostBasisReport data wiring', () => {
 
     it('sorts disposals chronologically', () => {
       const disposals = buildDisposalsFromTransactions(sampleTransactions)
-      expect(
-        new Date(disposals[0].date).getTime()
-      ).toBeLessThanOrEqual(new Date(disposals[1].date).getTime())
+      expect(new Date(disposals[0].date).getTime()).toBeLessThanOrEqual(
+        new Date(disposals[1].date).getTime()
+      )
     })
   })
 
   describe('computeReport', () => {
     it('computes FIFO report for DOT', () => {
       const lots = buildLotsFromTransactions(sampleTransactions, 'DOT')
-      const disposals = buildDisposalsFromTransactions(sampleTransactions, 'DOT')
+      const disposals = buildDisposalsFromTransactions(
+        sampleTransactions,
+        'DOT'
+      )
 
       const report = computeReport(lots, disposals, 'FIFO')
 
@@ -183,7 +191,10 @@ describe('CostBasisReport data wiring', () => {
 
     it('computes HIFO report using highest cost lot first', () => {
       const lots = buildLotsFromTransactions(sampleTransactions, 'DOT')
-      const disposals = buildDisposalsFromTransactions(sampleTransactions, 'DOT')
+      const disposals = buildDisposalsFromTransactions(
+        sampleTransactions,
+        'DOT'
+      )
 
       const report = computeReport(lots, disposals, 'HIFO')
 
@@ -195,7 +206,10 @@ describe('CostBasisReport data wiring', () => {
 
     it('updates remaining lots after disposal', () => {
       const lots = buildLotsFromTransactions(sampleTransactions, 'DOT')
-      const disposals = buildDisposalsFromTransactions(sampleTransactions, 'DOT')
+      const disposals = buildDisposalsFromTransactions(
+        sampleTransactions,
+        'DOT'
+      )
 
       const report = computeReport(lots, disposals, 'FIFO')
 
@@ -208,7 +222,10 @@ describe('CostBasisReport data wiring', () => {
 
     it('filters disposals by date range', () => {
       const lots = buildLotsFromTransactions(sampleTransactions, 'DOT')
-      const disposals = buildDisposalsFromTransactions(sampleTransactions, 'DOT')
+      const disposals = buildDisposalsFromTransactions(
+        sampleTransactions,
+        'DOT'
+      )
 
       // tx3 disposal is on 2025-06-10 — filter to only Q1
       const report = computeReport(
@@ -224,7 +241,10 @@ describe('CostBasisReport data wiring', () => {
 
     it('includes disposals within the date range', () => {
       const lots = buildLotsFromTransactions(sampleTransactions, 'DOT')
-      const disposals = buildDisposalsFromTransactions(sampleTransactions, 'DOT')
+      const disposals = buildDisposalsFromTransactions(
+        sampleTransactions,
+        'DOT'
+      )
 
       const report = computeReport(
         lots,
@@ -239,7 +259,10 @@ describe('CostBasisReport data wiring', () => {
 
     it('calculates gain/loss correctly', () => {
       const lots = buildLotsFromTransactions(sampleTransactions, 'DOT')
-      const disposals = buildDisposalsFromTransactions(sampleTransactions, 'DOT')
+      const disposals = buildDisposalsFromTransactions(
+        sampleTransactions,
+        'DOT'
+      )
 
       const report = computeReport(lots, disposals, 'FIFO')
 
@@ -251,7 +274,10 @@ describe('CostBasisReport data wiring', () => {
 
     it('computes holding period', () => {
       const lots = buildLotsFromTransactions(sampleTransactions, 'DOT')
-      const disposals = buildDisposalsFromTransactions(sampleTransactions, 'DOT')
+      const disposals = buildDisposalsFromTransactions(
+        sampleTransactions,
+        'DOT'
+      )
 
       const report = computeReport(lots, disposals, 'FIFO')
 
@@ -274,7 +300,10 @@ describe('CostBasisReport data wiring', () => {
   describe('export functions', () => {
     it('exportReportCSV produces valid CSV', () => {
       const lots = buildLotsFromTransactions(sampleTransactions, 'DOT')
-      const disposals = buildDisposalsFromTransactions(sampleTransactions, 'DOT')
+      const disposals = buildDisposalsFromTransactions(
+        sampleTransactions,
+        'DOT'
+      )
       const report = computeReport(lots, disposals, 'FIFO')
 
       const csv = exportReportCSV(report, 'FIFO')
@@ -287,7 +316,10 @@ describe('CostBasisReport data wiring', () => {
 
     it('exportReportJSON produces valid JSON', () => {
       const lots = buildLotsFromTransactions(sampleTransactions, 'DOT')
-      const disposals = buildDisposalsFromTransactions(sampleTransactions, 'DOT')
+      const disposals = buildDisposalsFromTransactions(
+        sampleTransactions,
+        'DOT'
+      )
       const report = computeReport(lots, disposals, 'LIFO')
 
       const json = exportReportJSON(report, 'LIFO')
@@ -302,7 +334,10 @@ describe('CostBasisReport data wiring', () => {
 
     it('export JSON matches on-screen values', () => {
       const lots = buildLotsFromTransactions(sampleTransactions, 'DOT')
-      const disposals = buildDisposalsFromTransactions(sampleTransactions, 'DOT')
+      const disposals = buildDisposalsFromTransactions(
+        sampleTransactions,
+        'DOT'
+      )
       const report = computeReport(lots, disposals, 'FIFO')
 
       const parsed = JSON.parse(exportReportJSON(report, 'FIFO'))
@@ -517,13 +552,33 @@ describe('filterStoredTransactionsForAccounting', () => {
 
   it('full mix: only matched receives are dropped', () => {
     const txs = [
-      makeStoredTx({ id: 'send', tx_type: 'xcm', xcm_role: 'send', xcm_status: 'matched' }),
-      makeStoredTx({ id: 'recv-matched', tx_type: 'xcm', xcm_role: 'receive', xcm_status: 'matched' }),
-      makeStoredTx({ id: 'recv-pending', tx_type: 'xcm', xcm_role: 'receive', xcm_status: 'pending' }),
+      makeStoredTx({
+        id: 'send',
+        tx_type: 'xcm',
+        xcm_role: 'send',
+        xcm_status: 'matched',
+      }),
+      makeStoredTx({
+        id: 'recv-matched',
+        tx_type: 'xcm',
+        xcm_role: 'receive',
+        xcm_status: 'matched',
+      }),
+      makeStoredTx({
+        id: 'recv-pending',
+        tx_type: 'xcm',
+        xcm_role: 'receive',
+        xcm_status: 'pending',
+      }),
       makeStoredTx({ id: 'legacy', tx_type: 'xcm' }),
       makeStoredTx({ id: 'transfer', tx_type: 'send' }),
     ]
     const result = filterStoredTransactionsForAccounting(txs)
-    expect(result.map(t => t.id)).toEqual(['send', 'recv-pending', 'legacy', 'transfer'])
+    expect(result.map(t => t.id)).toEqual([
+      'send',
+      'recv-pending',
+      'legacy',
+      'transfer',
+    ])
   })
 })

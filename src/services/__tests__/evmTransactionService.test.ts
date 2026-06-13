@@ -83,7 +83,9 @@ describe('evmTransactionService', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     // Clear cached providers so mocks are always fresh
-    ;(evmTransactionService as unknown as { providers: Map<string, unknown> }).providers.clear()
+    ;(
+      evmTransactionService as unknown as { providers: Map<string, unknown> }
+    ).providers.clear()
   })
 
   // =========================================================================
@@ -125,7 +127,9 @@ describe('evmTransactionService', () => {
       expect(txs.length).toBeGreaterThan(0)
 
       for (let i = 1; i < txs.length; i++) {
-        expect(txs[i - 1].blockNumber).toBeGreaterThanOrEqual(txs[i].blockNumber)
+        expect(txs[i - 1].blockNumber).toBeGreaterThanOrEqual(
+          txs[i].blockNumber
+        )
       }
 
       // Highest block should be first
@@ -183,7 +187,9 @@ describe('evmTransactionService', () => {
 
       // Still sorted descending
       for (let i = 1; i < txs.length; i++) {
-        expect(txs[i - 1].blockNumber).toBeGreaterThanOrEqual(txs[i].blockNumber)
+        expect(txs[i - 1].blockNumber).toBeGreaterThanOrEqual(
+          txs[i].blockNumber
+        )
       }
 
       vi.unstubAllGlobals()
@@ -207,10 +213,9 @@ describe('evmTransactionService', () => {
       }
 
       // Inject mock provider into the private providers map
-      ;(evmTransactionService as unknown as { providers: Map<string, unknown> }).providers.set(
-        'moonbeam',
-        mockProvider
-      )
+      ;(
+        evmTransactionService as unknown as { providers: Map<string, unknown> }
+      ).providers.set('moonbeam', mockProvider)
 
       const promiseAllSpy = vi.spyOn(Promise, 'all')
 

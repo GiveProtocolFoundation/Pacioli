@@ -186,7 +186,8 @@ export const TransactionList: React.FC<TransactionListProps> = ({
 
   // Open the inline price editor for a transaction
   const handleStartPriceEdit = useCallback((tx: Transaction) => {
-    const current = (tx as Transaction & { pricePerUnitUsd?: number }).pricePerUnitUsd
+    const current = (tx as Transaction & { pricePerUnitUsd?: number })
+      .pricePerUnitUsd
     setDraftPrice(current != null ? current.toString() : '')
     setEditingPriceId(tx.id)
   }, [])
@@ -513,7 +514,12 @@ export const TransactionList: React.FC<TransactionListProps> = ({
               <th className="ledger-table-cell-text text-left">From</th>
               <th className="ledger-table-cell-text text-left">To</th>
               <th className="ledger-table-cell-number text-right">Amount</th>
-              <th className="ledger-table-cell-number text-right" title="USD price per token unit at acquisition — used for cost-basis reporting">Acq. Price</th>
+              <th
+                className="ledger-table-cell-number text-right"
+                title="USD price per token unit at acquisition — used for cost-basis reporting"
+              >
+                Acq. Price
+              </th>
               <th className="ledger-table-cell-text text-left">Status</th>
               <th className="ledger-table-cell-actions text-right">Details</th>
             </tr>
@@ -522,7 +528,9 @@ export const TransactionList: React.FC<TransactionListProps> = ({
             {sortedTransactions.map(tx => {
               const isSubstrate = 'method' in tx
               const substrateTx = tx as SubstrateTransaction
-              const txWithPrice = tx as Transaction & { pricePerUnitUsd?: number }
+              const txWithPrice = tx as Transaction & {
+                pricePerUnitUsd?: number
+              }
               const isEditing = editingPriceId === tx.id
 
               return (

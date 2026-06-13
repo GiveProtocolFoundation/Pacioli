@@ -314,10 +314,7 @@ export interface PersistenceService {
     address: string,
     transactions: Transaction[]
   ): Promise<void>
-  getChainTransactions(
-    network: string,
-    address: string
-  ): Promise<Transaction[]>
+  getChainTransactions(network: string, address: string): Promise<Transaction[]>
   loadChainSyncStatus(
     network: string,
     address: string

@@ -124,9 +124,11 @@ function buildMockApi(
         getHeader: vi.fn().mockResolvedValue({
           number: { toNumber: () => currentBlockNumber },
         }),
-        getBlockHash: vi.fn().mockImplementation((blockNum: number) =>
-          Promise.resolve(`0xhash${blockNum}`)
-        ),
+        getBlockHash: vi
+          .fn()
+          .mockImplementation((blockNum: number) =>
+            Promise.resolve(`0xhash${blockNum}`)
+          ),
         getBlock: vi.fn().mockImplementation((hash: string) => {
           const n = parseBlockNum(hash)
           const spec = blockSpecs.get(n)
@@ -145,7 +147,9 @@ function buildMockApi(
             events: vi.fn().mockResolvedValue(spec?.events ?? []),
           },
           timestamp: {
-            now: vi.fn().mockResolvedValue({ toNumber: () => 1_700_000_000_000 }),
+            now: vi
+              .fn()
+              .mockResolvedValue({ toNumber: () => 1_700_000_000_000 }),
           },
         },
       })
@@ -158,22 +162,21 @@ function injectConnection(
   api: ReturnType<typeof buildMockApi>,
   network: NetworkType = NetworkType.POLKADOT
 ) {
-  ;(polkadotService as unknown as { connections: Map<NetworkType, unknown> }).connections.set(
-    network,
-    {
-      api,
-      network: {
-        name: 'Polkadot',
-        type: network,
-        chainType: 'substrate',
-        rpcEndpoint: 'wss://test',
-        wsEndpoint: 'wss://test',
-        decimals: 10,
-        symbol: 'DOT',
-      },
-      isConnected: true,
-    }
-  )
+  ;(
+    polkadotService as unknown as { connections: Map<NetworkType, unknown> }
+  ).connections.set(network, {
+    api,
+    network: {
+      name: 'Polkadot',
+      type: network,
+      chainType: 'substrate',
+      rpcEndpoint: 'wss://test',
+      wsEndpoint: 'wss://test',
+      decimals: 10,
+      symbol: 'DOT',
+    },
+    isConnected: true,
+  })
 }
 
 // ---------------------------------------------------------------------------
@@ -200,7 +203,9 @@ describe('polkadotService', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     // Clear any lingering injected connections between tests
-    ;(polkadotService as unknown as { connections: Map<string, unknown> }).connections.clear()
+    ;(
+      polkadotService as unknown as { connections: Map<string, unknown> }
+    ).connections.clear()
   })
 
   // =========================================================================
@@ -214,21 +219,42 @@ describe('polkadotService', () => {
         [
           3,
           {
-            extrinsics: [makeExtrinsic('balances', 'transferAllowDeath', TEST_ADDRESS, '0xhash3')],
+            extrinsics: [
+              makeExtrinsic(
+                'balances',
+                'transferAllowDeath',
+                TEST_ADDRESS,
+                '0xhash3'
+              ),
+            ],
             events: transferEvents(),
           },
         ],
         [
           2,
           {
-            extrinsics: [makeExtrinsic('balances', 'transferAllowDeath', TEST_ADDRESS, '0xhash2')],
+            extrinsics: [
+              makeExtrinsic(
+                'balances',
+                'transferAllowDeath',
+                TEST_ADDRESS,
+                '0xhash2'
+              ),
+            ],
             events: transferEvents(),
           },
         ],
         [
           1,
           {
-            extrinsics: [makeExtrinsic('balances', 'transferAllowDeath', TEST_ADDRESS, '0xhash1')],
+            extrinsics: [
+              makeExtrinsic(
+                'balances',
+                'transferAllowDeath',
+                TEST_ADDRESS,
+                '0xhash1'
+              ),
+            ],
             events: transferEvents(),
           },
         ],
@@ -244,7 +270,9 @@ describe('polkadotService', () => {
       expect(txs.length).toBeGreaterThan(0)
 
       for (let i = 1; i < txs.length; i++) {
-        expect(txs[i - 1].blockNumber).toBeGreaterThanOrEqual(txs[i].blockNumber)
+        expect(txs[i - 1].blockNumber).toBeGreaterThanOrEqual(
+          txs[i].blockNumber
+        )
       }
     })
   })
@@ -331,7 +359,9 @@ describe('polkadotService', () => {
       expect(txs.length).toBeGreaterThan(0)
 
       for (let i = 1; i < txs.length; i++) {
-        expect(txs[i - 1].blockNumber).toBeGreaterThanOrEqual(txs[i].blockNumber)
+        expect(txs[i - 1].blockNumber).toBeGreaterThanOrEqual(
+          txs[i].blockNumber
+        )
       }
     })
   })
@@ -342,7 +372,12 @@ describe('polkadotService', () => {
 
   describe('fetchTransactionHistory — fee extraction', () => {
     it('extracts actualFee from TransactionFeePaid event', async () => {
-      const extrinsic = makeExtrinsic('balances', 'transferAllowDeath', TEST_ADDRESS, '0xhash1')
+      const extrinsic = makeExtrinsic(
+        'balances',
+        'transferAllowDeath',
+        TEST_ADDRESS,
+        '0xhash1'
+      )
       const events = [
         makeEventRecord('system', 'ExtrinsicSuccess', {}, 0),
         makeEventRecord(
@@ -359,7 +394,9 @@ describe('polkadotService', () => {
         ),
       ]
 
-      const specs = new Map<number, BlockSpec>([[1, { extrinsics: [extrinsic], events }]])
+      const specs = new Map<number, BlockSpec>([
+        [1, { extrinsics: [extrinsic], events }],
+      ])
       injectConnection(buildMockApi(1, specs))
 
       const txs = await polkadotService.fetchTransactionHistory(
@@ -372,7 +409,12 @@ describe('polkadotService', () => {
     })
 
     it('returns fee "0" when TransactionFeePaid event is absent', async () => {
-      const extrinsic = makeExtrinsic('balances', 'transferAllowDeath', TEST_ADDRESS, '0xhash1')
+      const extrinsic = makeExtrinsic(
+        'balances',
+        'transferAllowDeath',
+        TEST_ADDRESS,
+        '0xhash1'
+      )
       // No TransactionFeePaid event
       const events = [
         makeEventRecord('system', 'ExtrinsicSuccess', {}, 0),
@@ -384,7 +426,9 @@ describe('polkadotService', () => {
         ),
       ]
 
-      const specs = new Map<number, BlockSpec>([[1, { extrinsics: [extrinsic], events }]])
+      const specs = new Map<number, BlockSpec>([
+        [1, { extrinsics: [extrinsic], events }],
+      ])
       injectConnection(buildMockApi(1, specs))
 
       const txs = await polkadotService.fetchTransactionHistory(
@@ -404,7 +448,12 @@ describe('polkadotService', () => {
   describe('fetchTransactionHistory — staking rewards', () => {
     it('returns type=staking, from="Staking Rewards", and correct amount for staking.Rewarded event', async () => {
       // Unsigned extrinsic — staking payout called by a third party
-      const extrinsic = makeExtrinsic('staking', 'payoutStakers', null, '0xhash1')
+      const extrinsic = makeExtrinsic(
+        'staking',
+        'payoutStakers',
+        null,
+        '0xhash1'
+      )
       const events = [
         makeEventRecord('system', 'ExtrinsicSuccess', {}, 0),
         makeEventRecord(
@@ -415,7 +464,9 @@ describe('polkadotService', () => {
         ),
       ]
 
-      const specs = new Map<number, BlockSpec>([[1, { extrinsics: [extrinsic], events }]])
+      const specs = new Map<number, BlockSpec>([
+        [1, { extrinsics: [extrinsic], events }],
+      ])
       injectConnection(buildMockApi(1, specs))
 
       const txs = await polkadotService.fetchTransactionHistory(
@@ -446,10 +497,12 @@ describe('polkadotService', () => {
 
       injectConnection(buildMockApi(25, specs))
 
-      await polkadotService.fetchTransactionHistory(
-        NetworkType.POLKADOT,
-        { address: TEST_ADDRESS, startBlock: 1, endBlock: 25, limit: 100 }
-      )
+      await polkadotService.fetchTransactionHistory(NetworkType.POLKADOT, {
+        address: TEST_ADDRESS,
+        startBlock: 1,
+        endBlock: 25,
+        limit: 100,
+      })
 
       // Promise.all must have been called at least once
       expect(promiseAllSpy).toHaveBeenCalled()

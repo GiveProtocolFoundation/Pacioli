@@ -58,7 +58,12 @@ describe('extractXcmMessageId', () => {
         {
           section: 'polkadotXcm',
           method: 'Sent',
-          data: { origin: {}, destination: {}, message: [], messageId: MSG_ID_A },
+          data: {
+            origin: {},
+            destination: {},
+            message: [],
+            messageId: MSG_ID_A,
+          },
         },
       ],
     })
@@ -72,7 +77,12 @@ describe('extractXcmMessageId', () => {
         {
           section: 'xcmPallet',
           method: 'Sent',
-          data: { origin: {}, destination: {}, message: [], message_id: MSG_ID_A },
+          data: {
+            origin: {},
+            destination: {},
+            message: [],
+            message_id: MSG_ID_A,
+          },
         },
       ],
     })
@@ -176,9 +186,7 @@ describe('getXcmRole', () => {
     const tx = makeXcmTx({
       id: 'tx1',
       isSigned: false,
-      events: [
-        { section: 'dmpQueue', method: 'ExecutedDownward', data: {} },
-      ],
+      events: [{ section: 'dmpQueue', method: 'ExecutedDownward', data: {} }],
     })
     expect(getXcmRole(tx)).toBe('receive')
   })
