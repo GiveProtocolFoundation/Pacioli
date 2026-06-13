@@ -22,6 +22,10 @@ import { ChainType } from '../wallet/types'
 import { subscanService } from './subscanService'
 import { moonscanService, MoonscanService } from './moonscanService'
 import { batchCalculateUsdValues, getCoinGeckoId } from './priceService'
+import {
+  annotateXcmTransactions,
+  correlateXcmTransactions,
+} from './xcmCorrelationService'
 
 /** Map of network type to native token symbol */
 const NETWORK_TOKEN_SYMBOLS: Record<NetworkType, string> = {
@@ -538,6 +542,11 @@ class PolkadotService {
 
         const final = deduplicated.slice(0, limit)
 
+        // Annotate Subscan XCM transactions and correlate within this single-chain fetch.
+        // Cross-chain correlation happens when the caller merges multiple networks.
+        annotateXcmTransactions(final)
+        correlateXcmTransactions(final)
+
         // Still enrich with USD values
         await PolkadotService.enrichTransactionsWithUsdValues(
           final,
@@ -635,6 +644,12 @@ class PolkadotService {
 
       // Limit results
       const final = deduplicated.slice(0, limit)
+
+      // Annotate Subscan-sourced XCM transactions and correlate within this single-chain
+      // result set. Cross-chain correlation (relay↔parachain) is performed by the caller
+      // after merging transaction lists from multiple networks.
+      annotateXcmTransactions(final)
+      correlateXcmTransactions(final)
 
       // PHASE 4: Enrich with USD values
       await PolkadotService.enrichTransactionsWithUsdValues(
@@ -831,6 +846,10 @@ class PolkadotService {
           transactions.push(transaction)
         }
       })
+
+      // Annotate any XCM transactions with message IDs / role from on-chain events.
+      // (Correlation across chains happens at the call site after all networks are merged.)
+      annotateXcmTransactions(transactions)
     } catch (error) {
       console.error(`Error fetching block ${blockNum}:`, error)
       // Continue with other blocks even if one fails
@@ -970,11 +989,17 @@ class PolkadotService {
       // Batch fetch USD values
       const usdValues = await batchCalculateUsdValues(priceRequests)
 
-      // Apply USD values to transactions
+      // Apply USD values to transactions and compute per-unit price for cost basis
       for (let i = 0; i < transactions.length; i++) {
         const usdValue = usdValues[i]
         if (usdValue !== null && !isNaN(usdValue)) {
           transactions[i].usdValue = Math.round(usdValue * 100) / 100 // Round to 2 decimal places
+          // Derive price per token unit (e.g., per DOT, not per planck).
+          // priceRequests[i].amount is already in human-readable form.
+          const amount = priceRequests[i].amount
+          if (amount > 0) {
+            transactions[i].pricePerUnitUsd = usdValue / amount
+          }
         }
       }
 
@@ -1037,3 +1062,10 @@ class PolkadotService {
 }
 
 export const polkadotService = new PolkadotService()
+
+// Re-export the correlation helpers so callers can run cross-chain correlation
+// after merging transaction lists from multiple networks.
+export {
+  correlateXcmTransactions,
+  filterForAccounting,
+} from './xcmCorrelationService'

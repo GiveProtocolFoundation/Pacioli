@@ -79,6 +79,8 @@ pub struct StoredTransaction {
     pub raw_data: Option<String>,
     /// The timestamp when the transaction was stored.
     pub created_at: DateTime<Utc>,
+    /// USD price per token unit at acquisition time (for accurate cost basis).
+    pub price_at_acquisition_usd: Option<String>,
 }
 
 /// Input data for creating or updating a wallet in the system.
@@ -125,6 +127,8 @@ pub struct TransactionInput {
     pub chain: String,
     /// The optional raw data of the transaction.
     pub raw_data: Option<String>,
+    /// USD price per token unit at acquisition time (for accurate cost basis).
+    pub price_at_acquisition_usd: Option<String>,
 }
 
 // ============================================================================
@@ -353,14 +357,16 @@ pub async fn save_transactions(
             r#"
             INSERT INTO transactions (
                 id, wallet_id, hash, block_number, timestamp, from_address, to_address,
-                value, fee, status, tx_type, token_symbol, token_decimals, chain, raw_data, created_at
+                value, fee, status, tx_type, token_symbol, token_decimals, chain, raw_data,
+                created_at, price_at_acquisition_usd
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(wallet_id, hash) DO UPDATE SET
                 block_number = excluded.block_number,
                 timestamp = excluded.timestamp,
                 status = excluded.status,
-                raw_data = excluded.raw_data
+                raw_data = excluded.raw_data,
+                price_at_acquisition_usd = COALESCE(excluded.price_at_acquisition_usd, price_at_acquisition_usd)
             "#,
         )
         .bind(&id)
@@ -379,6 +385,7 @@ pub async fn save_transactions(
         .bind(&tx.chain)
         .bind(&tx.raw_data)
         .bind(now)
+        .bind(&tx.price_at_acquisition_usd)
         .execute(&state.pool)
         .await;
 
@@ -537,4 +544,212 @@ pub async fn get_all_settings(
         .map_err(|e| e.to_string())?;
 
     Ok(settings)
+}
+
+// ============================================================================
+// Chain Transaction Commands (multi_chain_transactions table)
+// ============================================================================
+
+/// Input for chain-level transaction saving. The frontend serializes the full
+/// Transaction object into raw_data so it can be reconstructed on read.
+#[derive(Debug, Clone, Deserialize)]
+pub struct ChainTransactionInput {
+    #[allow(dead_code)]
+    pub id: String,
+    pub hash: String,
+    pub block_number: Option<i64>,
+    pub timestamp: i64,
+    pub from_address: String,
+    pub to_address: Option<String>,
+    pub value: String,
+    pub fee: Option<String>,
+    pub status: String,
+    pub tx_type: String,
+    pub raw_data: String,
+}
+
+/// Row type for reading chain transactions back.
+#[derive(Debug, Clone, Serialize, FromRow)]
+pub struct ChainTransactionRow {
+    pub id: String,
+    pub chain_id: String,
+    pub hash: String,
+    pub from_address: String,
+    pub to_address: Option<String>,
+    pub value: String,
+    pub fee: Option<String>,
+    pub timestamp: i64,
+    pub block_number: Option<i64>,
+    pub tx_type: String,
+    pub status: String,
+    pub raw_data: Option<String>,
+}
+
+/// Row type for sync status.
+#[derive(Debug, Clone, Serialize, FromRow)]
+pub struct ChainSyncStatusRow {
+    pub chain_id: String,
+    pub address: String,
+    pub last_block_synced: i64,
+    pub last_sync_timestamp: Option<i64>,
+    pub sync_state: Option<String>,
+}
+
+/// Saves chain transactions into multi_chain_transactions with upsert semantics.
+/// The full frontend Transaction object is preserved in raw_data for lossless round-trips.
+#[tauri::command]
+pub async fn save_chain_transactions(
+    state: State<'_, DatabaseState>,
+    network: String,
+    address: String,
+    transactions: Vec<ChainTransactionInput>,
+) -> Result<usize, String> {
+    let _ = &address; // address captured for context; chain_id from network
+    let mut saved = 0;
+
+    for tx in &transactions {
+        let composite_id = format!("{}_{}", network, tx.hash);
+
+        let result = sqlx::query(
+            r#"
+            INSERT INTO multi_chain_transactions (
+                id, chain_id, hash, from_address, to_address,
+                value, fee, timestamp, block_number, tx_type,
+                status, raw_data
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(chain_id, hash) DO UPDATE SET
+                from_address = excluded.from_address,
+                to_address = excluded.to_address,
+                value = excluded.value,
+                fee = excluded.fee,
+                timestamp = excluded.timestamp,
+                block_number = excluded.block_number,
+                tx_type = excluded.tx_type,
+                status = excluded.status,
+                raw_data = excluded.raw_data
+            "#,
+        )
+        .bind(&composite_id)
+        .bind(&network)
+        .bind(&tx.hash)
+        .bind(&tx.from_address)
+        .bind(&tx.to_address)
+        .bind(&tx.value)
+        .bind(&tx.fee)
+        .bind(tx.timestamp)
+        .bind(tx.block_number)
+        .bind(&tx.tx_type)
+        .bind(&tx.status)
+        .bind(&tx.raw_data)
+        .execute(&state.pool)
+        .await;
+
+        if result.is_ok() {
+            saved += 1;
+        }
+    }
+
+    Ok(saved)
+}
+
+/// Retrieves chain transactions for a network+address pair.
+/// Returns rows with raw_data so the frontend can deserialize the full Transaction objects.
+#[tauri::command]
+pub async fn get_chain_transactions(
+    state: State<'_, DatabaseState>,
+    network: String,
+    address: String,
+) -> Result<Vec<ChainTransactionRow>, String> {
+    let rows = sqlx::query_as::<_, ChainTransactionRow>(
+        r#"
+        SELECT id, chain_id, hash, from_address, to_address, value, fee,
+               timestamp, block_number, tx_type, status, raw_data
+        FROM multi_chain_transactions
+        WHERE chain_id = ?
+        AND (from_address = ? OR to_address = ?
+             OR LOWER(from_address) = LOWER(?) OR LOWER(to_address) = LOWER(?))
+        ORDER BY timestamp DESC
+        "#,
+    )
+    .bind(&network)
+    .bind(&address)
+    .bind(&address)
+    .bind(&address)
+    .bind(&address)
+    .fetch_all(&state.pool)
+    .await
+    .map_err(|e| e.to_string())?;
+
+    Ok(rows)
+}
+
+/// Loads the sync status for a network+address pair.
+#[tauri::command]
+pub async fn load_chain_sync_status(
+    state: State<'_, DatabaseState>,
+    network: String,
+    address: String,
+) -> Result<Option<ChainSyncStatusRow>, String> {
+    let row = sqlx::query_as::<_, ChainSyncStatusRow>(
+        r#"
+        SELECT chain_id, address, last_block_synced, last_sync_timestamp, sync_state
+        FROM address_sync_status
+        WHERE chain_id = ?
+        AND (address = ? OR LOWER(address) = LOWER(?))
+        "#,
+    )
+    .bind(&network)
+    .bind(&address)
+    .bind(&address)
+    .fetch_optional(&state.pool)
+    .await
+    .map_err(|e| e.to_string())?;
+
+    Ok(row)
+}
+
+/// Saves/updates the sync status for a network+address pair.
+#[tauri::command]
+pub async fn save_chain_sync_status(
+    state: State<'_, DatabaseState>,
+    network: String,
+    address: String,
+    last_block: i64,
+) -> Result<(), String> {
+    let now = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_secs() as i64;
+
+    sqlx::query(
+        r#"
+        INSERT INTO address_sync_status (chain_id, address, last_block_synced, last_sync_timestamp, sync_state)
+        VALUES (?, ?, ?, ?, 'idle')
+        ON CONFLICT(chain_id, address) DO UPDATE SET
+            last_block_synced = excluded.last_block_synced,
+            last_sync_timestamp = excluded.last_sync_timestamp,
+            sync_state = 'idle',
+            error_message = NULL
+        "#,
+    )
+    .bind(&network)
+    .bind(&address)
+    .bind(last_block)
+    .bind(now)
+    .execute(&state.pool)
+    .await
+    .map_err(|e| e.to_string())?;
+
+    Ok(())
+}
+
+/// Clears all chain transactions from multi_chain_transactions.
+#[tauri::command]
+pub async fn clear_chain_transactions(state: State<'_, DatabaseState>) -> Result<u64, String> {
+    let result = sqlx::query("DELETE FROM multi_chain_transactions")
+        .execute(&state.pool)
+        .await
+        .map_err(|e| e.to_string())?;
+
+    Ok(result.rows_affected())
 }

@@ -12,6 +12,7 @@ import type {
   StoredTransaction,
   TransactionInput,
   PaginationOptions,
+  ChainSyncStatus,
   Entity,
   EntityInput,
   EntityUpdate,
@@ -23,6 +24,8 @@ import type {
   EntityType,
   TaxDocumentationStatus,
 } from './types'
+import type { Transaction, ConnectedWallet } from '../wallet/types'
+import { indexedDBService } from '../database/indexedDBService'
 
 const DB_NAME = 'PacioliPersistenceDB'
 const DB_VERSION = 2 // Bumped for entity support
@@ -383,6 +386,11 @@ class IndexedDBPersistenceService implements PersistenceService {
         chain: txInput.chain,
         raw_data: txInput.raw_data ?? null,
         created_at: now,
+        xcm_correlation_id: txInput.xcm_correlation_id ?? null,
+        xcm_linked_tx_id: txInput.xcm_linked_tx_id ?? null,
+        xcm_role: txInput.xcm_role ?? null,
+        xcm_status: txInput.xcm_status ?? null,
+        price_at_acquisition_usd: txInput.price_at_acquisition_usd ?? null,
       }
 
       try {
@@ -963,6 +971,56 @@ class IndexedDBPersistenceService implements PersistenceService {
     })
 
     return entity
+  }
+
+  // ============================================================================
+  // Chain Transaction Operations (delegates to indexedDBService)
+  // ============================================================================
+
+  async initTransactionStore(): Promise<void> {
+    await indexedDBService.init()
+  }
+
+  async saveChainTransactions(
+    network: string,
+    address: string,
+    transactions: Transaction[]
+  ): Promise<void> {
+    await indexedDBService.saveTransactions(network, address, transactions)
+  }
+
+  async getChainTransactions(
+    network: string,
+    address: string
+  ): Promise<Transaction[]> {
+    return indexedDBService.getTransactionsFor(network, address)
+  }
+
+  async loadChainSyncStatus(
+    network: string,
+    address: string
+  ): Promise<ChainSyncStatus | null> {
+    return indexedDBService.loadSyncStatus(network, address)
+  }
+
+  async saveChainSyncStatus(status: ChainSyncStatus): Promise<void> {
+    await indexedDBService.saveSyncStatus(status)
+  }
+
+  async clearChainTransactions(): Promise<void> {
+    await indexedDBService.clearTransactions()
+  }
+
+  // ============================================================================
+  // Connected Wallet Operations (delegates to indexedDBService)
+  // ============================================================================
+
+  async saveConnectedWallets(wallets: ConnectedWallet[]): Promise<void> {
+    await indexedDBService.saveWallets(wallets)
+  }
+
+  async loadConnectedWallets(): Promise<ConnectedWallet[]> {
+    return indexedDBService.loadWallets()
   }
 }
 

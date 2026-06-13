@@ -3,6 +3,20 @@
  * TypeScript types matching the Rust backend types
  */
 
+import type { Transaction, ConnectedWallet } from '../wallet/types'
+
+/**
+ * Sync status for a chain/address pair.
+ * Used by chain-level transaction operations.
+ */
+export interface ChainSyncStatus {
+  network: string
+  address: string
+  lastSyncedBlock: number
+  lastSyncTime: Date
+  isSyncing: boolean
+}
+
 export interface Profile {
   id: string
   name: string
@@ -47,6 +61,13 @@ export interface StoredTransaction {
   chain: string
   raw_data?: string | null
   created_at: string
+  /** XCM cross-chain correlation fields */
+  xcm_correlation_id?: string | null
+  xcm_linked_tx_id?: string | null
+  xcm_role?: 'send' | 'receive' | null
+  xcm_status?: 'matched' | 'pending' | null
+  /** USD price per token unit at the time of acquisition. Used for accurate cost basis. */
+  price_at_acquisition_usd?: string | null
 }
 
 export interface TransactionInput {
@@ -63,6 +84,13 @@ export interface TransactionInput {
   token_decimals?: number
   chain: string
   raw_data?: string
+  /** XCM cross-chain correlation fields */
+  xcm_correlation_id?: string
+  xcm_linked_tx_id?: string
+  xcm_role?: 'send' | 'receive'
+  xcm_status?: 'matched' | 'pending'
+  /** USD price per token unit at the time of acquisition. Used for accurate cost basis. */
+  price_at_acquisition_usd?: string
 }
 
 export interface PaginationOptions {
@@ -278,6 +306,25 @@ export interface PersistenceService {
   addEntityAddress(address: EntityAddressInput): Promise<EntityAddress>
   getEntityAddresses(entityId: string): Promise<EntityAddress[]>
   deleteEntityAddress(id: string): Promise<void>
+
+  // Chain transaction operations (network+address based, for WalletManager sync)
+  initTransactionStore(): Promise<void>
+  saveChainTransactions(
+    network: string,
+    address: string,
+    transactions: Transaction[]
+  ): Promise<void>
+  getChainTransactions(network: string, address: string): Promise<Transaction[]>
+  loadChainSyncStatus(
+    network: string,
+    address: string
+  ): Promise<ChainSyncStatus | null>
+  saveChainSyncStatus(status: ChainSyncStatus): Promise<void>
+  clearChainTransactions(): Promise<void>
+
+  // Connected wallet operations (browser wallet extension state)
+  saveConnectedWallets(wallets: ConnectedWallet[]): Promise<void>
+  loadConnectedWallets(): Promise<ConnectedWallet[]>
 
   // Address detection operations
   lookupAddress(

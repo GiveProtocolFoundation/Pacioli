@@ -15,7 +15,8 @@
     "type-check": "tsc --noEmit",
     "format": "prettier --write 'src/**/*.{ts,tsx,css}'",
     "format:check": "prettier --check 'src/**/*.{ts,tsx,css}'",
-    "test": "vitest"
+    "test": "vitest",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@ant-design/icons": "^6.0.2",

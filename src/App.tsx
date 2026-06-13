@@ -29,6 +29,9 @@ const Profile = React.lazy(() => import('./app/profile/Profile'))
 const Docs = React.lazy(() => import('./app/docs/Docs'))
 const WalletManager = React.lazy(() => import('./app/wallets/WalletManager'))
 const Entities = React.lazy(() => import('./app/entities/Entities'))
+const CostBasisReport = React.lazy(
+  () => import('./app/reports/CostBasisReport')
+)
 const Team = React.lazy(() => import('./app/team/Team'))
 const JournalEntries = React.lazy(
   () => import('./app/journal-entries/JournalEntries')
@@ -151,6 +154,7 @@ const MainRoutes: React.FC = () => (
       <Route path="/entities" element={<Entities />} />
       <Route path="/team" element={<Team />} />
       <Route path="/reports" element={<Reports />} />
+      <Route path="/reports/cost-basis" element={<CostBasisReport />} />
       <Route path="/reports/financial" element={<Reports />} />
       <Route path="/reports/tax" element={<Reports />} />
       <Route path="/reports/donors" element={<Reports />} />

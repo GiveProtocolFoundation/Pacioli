@@ -385,7 +385,7 @@ impl EvmAdapter {
         }
 
         // Sort by timestamp descending
-        transactions.sort_by(|a, b| b.timestamp.cmp(&a.timestamp));
+        transactions.sort_by_key(|b| std::cmp::Reverse(b.timestamp));
 
         Ok(transactions)
     }
