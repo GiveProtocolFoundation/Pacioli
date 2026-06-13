@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 /**
  * Cost Basis Report
  * Surfaces FIFO/LIFO/HIFO/SpecID calculations from costBasisService
@@ -180,7 +181,7 @@ export function computeReport(
   dateStart?: string,
   dateEnd?: string
 ): ReportData {
-  let currentLots = [...lots]
+  const currentLots = [...lots]
   const disposals: DisposalRecord[] = []
   let totalRealized = 0
   let totalShortTerm = 0
