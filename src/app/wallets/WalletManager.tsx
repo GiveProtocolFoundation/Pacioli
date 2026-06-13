@@ -944,9 +944,9 @@ const WalletManager: React.FC = () => {
     } finally {
       setIsLoading(false)
     }
-  // currentProfile/profileWallets/addWallet are stable context refs; omitting them
-  // avoids re-creating the sync callback on every profile update.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // currentProfile/profileWallets/addWallet are stable context refs; omitting them
+    // avoids re-creating the sync callback on every profile update.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedAddress, selectedNetwork, dbInitialized])
 
   // Purge wallet transaction data
