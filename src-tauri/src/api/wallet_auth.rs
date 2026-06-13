@@ -212,6 +212,7 @@ pub async fn verify_wallet_signature(
     let pool = &db.pool;
 
     // Fetch and validate challenge
+    #[allow(clippy::type_complexity)]
     let challenge: Option<(String, String, String, String, Option<DateTime<Utc>>)> =
         sqlx::query_as(
             r#"

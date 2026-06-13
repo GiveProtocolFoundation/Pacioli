@@ -18,6 +18,7 @@ export default tseslint.config(
       'ignition/**',
       'contracts/**',
       'scripts/**',
+      'e2e/**',
     ],
   },
   js.configs.recommended,

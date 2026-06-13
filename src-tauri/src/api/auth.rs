@@ -567,6 +567,7 @@ pub async fn login(
     let email = credentials.email.to_lowercase();
 
     // Find user
+    #[allow(clippy::type_complexity)]
     let user_row: Option<(String, String, String, i32, Option<DateTime<Utc>>, i32)> =
         sqlx::query_as(
             r#"

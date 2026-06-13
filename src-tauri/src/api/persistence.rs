@@ -79,6 +79,8 @@ pub struct StoredTransaction {
     pub raw_data: Option<String>,
     /// The timestamp when the transaction was stored.
     pub created_at: DateTime<Utc>,
+    /// USD price per token unit at acquisition time (for accurate cost basis).
+    pub price_at_acquisition_usd: Option<String>,
 }
 
 /// Input data for creating or updating a wallet in the system.
@@ -125,6 +127,8 @@ pub struct TransactionInput {
     pub chain: String,
     /// The optional raw data of the transaction.
     pub raw_data: Option<String>,
+    /// USD price per token unit at acquisition time (for accurate cost basis).
+    pub price_at_acquisition_usd: Option<String>,
 }
 
 // ============================================================================
@@ -353,14 +357,16 @@ pub async fn save_transactions(
             r#"
             INSERT INTO transactions (
                 id, wallet_id, hash, block_number, timestamp, from_address, to_address,
-                value, fee, status, tx_type, token_symbol, token_decimals, chain, raw_data, created_at
+                value, fee, status, tx_type, token_symbol, token_decimals, chain, raw_data,
+                created_at, price_at_acquisition_usd
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(wallet_id, hash) DO UPDATE SET
                 block_number = excluded.block_number,
                 timestamp = excluded.timestamp,
                 status = excluded.status,
-                raw_data = excluded.raw_data
+                raw_data = excluded.raw_data,
+                price_at_acquisition_usd = COALESCE(excluded.price_at_acquisition_usd, price_at_acquisition_usd)
             "#,
         )
         .bind(&id)
@@ -379,6 +385,7 @@ pub async fn save_transactions(
         .bind(&tx.chain)
         .bind(&tx.raw_data)
         .bind(now)
+        .bind(&tx.price_at_acquisition_usd)
         .execute(&state.pool)
         .await;
 
@@ -738,9 +745,7 @@ pub async fn save_chain_sync_status(
 
 /// Clears all chain transactions from multi_chain_transactions.
 #[tauri::command]
-pub async fn clear_chain_transactions(
-    state: State<'_, DatabaseState>,
-) -> Result<u64, String> {
+pub async fn clear_chain_transactions(state: State<'_, DatabaseState>) -> Result<u64, String> {
     let result = sqlx::query("DELETE FROM multi_chain_transactions")
         .execute(&state.pool)
         .await

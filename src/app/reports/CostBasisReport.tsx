@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 /**
  * Cost Basis Report
  * Surfaces FIFO/LIFO/HIFO/SpecID calculations from costBasisService
@@ -53,10 +54,36 @@ interface ReportData {
   totalShortTermGain: string
   totalLongTermGain: string
   remainingLots: CryptoLot[]
-  allMethodsComparison: Record<string, { FIFO: string; LIFO: string; HIFO: string }>
+  allMethodsComparison: Record<
+    string,
+    { FIFO: string; LIFO: string; HIFO: string }
+  >
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
+
+/**
+ * Filter stored transactions for balance and cost-basis accounting.
+ *
+ * Removes matched XCM receive legs to avoid double-counting cross-chain
+ * transfers. The paired send already represents the full economic event.
+ * Unmatched XCM receives (xcm_status='pending' or unannotated) are kept so
+ * they surface as pending items for review.
+ */
+export function filterStoredTransactionsForAccounting(
+  txs: StoredTransaction[]
+): StoredTransaction[] {
+  return txs.filter(tx => {
+    if (tx.tx_type !== 'xcm') return true
+    if (tx.xcm_role === 'send') return true
+    // Unmatched receive: keep as pending
+    if (tx.xcm_role === 'receive' && tx.xcm_status !== 'matched') return true
+    // No role annotation yet: keep conservatively (pre-GIV-447 data)
+    if (!tx.xcm_role) return true
+    // Matched receive: exclude — already captured by the send leg
+    return false
+  })
+}
 
 /**
  * Build CryptoLot objects from raw stored transactions.
@@ -80,7 +107,14 @@ export function buildLotsFromTransactions(
     if (!tx.value || parseFloat(tx.value) <= 0) continue
 
     // Incoming transactions: receive, deposit, transfer_in, reward, mint
-    const incomingTypes = ['receive', 'deposit', 'transfer_in', 'reward', 'mint', 'buy']
+    const incomingTypes = [
+      'receive',
+      'deposit',
+      'transfer_in',
+      'reward',
+      'mint',
+      'buy',
+    ]
     const isIncoming =
       tx.tx_type && incomingTypes.includes(tx.tx_type.toLowerCase())
 
@@ -88,9 +122,18 @@ export function buildLotsFromTransactions(
 
     const quantity = tx.value
     const acquisitionDate = tx.timestamp ?? tx.created_at
-    // Use fee as a proxy for cost if available, else use value as self-referencing cost
-    const costPerUnit = tx.fee ? (parseFloat(tx.fee) / parseFloat(quantity)).toString() : '0'
-    const acquisitionCost = tx.fee ?? '0'
+    // Use price_at_acquisition_usd (USD per unit) when available for accurate cost basis.
+    // Fall back to fee/quantity proxy for legacy data that pre-dates this field.
+    const costPerUnit = tx.price_at_acquisition_usd
+      ? tx.price_at_acquisition_usd
+      : tx.fee
+        ? (parseFloat(tx.fee) / parseFloat(quantity)).toString()
+        : '0'
+    const acquisitionCost = tx.price_at_acquisition_usd
+      ? (
+          parseFloat(tx.price_at_acquisition_usd) * parseFloat(quantity)
+        ).toString()
+      : (tx.fee ?? '0')
 
     lots.push({
       lotId: tx.id,
@@ -180,12 +223,15 @@ export function computeReport(
   dateStart?: string,
   dateEnd?: string
 ): ReportData {
-  let currentLots = [...lots]
+  const currentLots = [...lots]
   const disposals: DisposalRecord[] = []
   let totalRealized = 0
   let totalShortTerm = 0
   let totalLongTerm = 0
-  const allMethodsMap: Record<string, { FIFO: string; LIFO: string; HIFO: string }> = {}
+  const allMethodsMap: Record<
+    string,
+    { FIFO: string; LIFO: string; HIFO: string }
+  > = {}
 
   for (const raw of rawDisposals) {
     // Date filter
@@ -266,9 +312,7 @@ export function computeReport(
     totalRealizedGain: totalRealized.toFixed(6),
     totalShortTermGain: totalShortTerm.toFixed(6),
     totalLongTermGain: totalLongTerm.toFixed(6),
-    remainingLots: currentLots.filter(
-      l => parseFloat(l.remainingQuantity) > 0
-    ),
+    remainingLots: currentLots.filter(l => parseFloat(l.remainingQuantity) > 0),
     allMethodsComparison: allMethodsMap,
   }
 }
@@ -314,7 +358,10 @@ function getTaxYearRange(year: number): { start: string; end: string } {
 
 // ─── Export Helpers ──────────────────────────────────────────────────────────
 
-export function exportReportCSV(data: ReportData, method: CostBasisMethod): string {
+export function exportReportCSV(
+  data: ReportData,
+  method: CostBasisMethod
+): string {
   const lines: string[] = []
   lines.push(
     'Date,Asset,Quantity,Proceeds,Cost Basis,Gain/Loss,Holding Period,Term'
@@ -354,7 +401,10 @@ export function exportReportCSV(data: ReportData, method: CostBasisMethod): stri
   return lines.join('\n')
 }
 
-export function exportReportJSON(data: ReportData, method: CostBasisMethod): string {
+export function exportReportJSON(
+  data: ReportData,
+  method: CostBasisMethod
+): string {
   return JSON.stringify(
     {
       method,
@@ -405,11 +455,19 @@ function downloadFile(content: string, filename: string, mimeType: string) {
 
 // ─── Sub-components ─────────────────────────────────────────────────────────
 
-const METHODS: { value: CostBasisMethod; label: string; description: string }[] = [
+const METHODS: {
+  value: CostBasisMethod
+  label: string
+  description: string
+}[] = [
   { value: 'FIFO', label: 'FIFO', description: 'First In, First Out' },
   { value: 'LIFO', label: 'LIFO', description: 'Last In, First Out' },
   { value: 'HIFO', label: 'HIFO', description: 'Highest In, First Out' },
-  { value: 'SpecificID', label: 'Specific ID', description: 'Specify lots manually' },
+  {
+    value: 'SpecificID',
+    label: 'Specific ID',
+    description: 'Specify lots manually',
+  },
 ]
 
 const MethodSelector: React.FC<{
@@ -662,10 +720,7 @@ const RemainingLotsTable: React.FC<{ lots: CryptoLot[] }> = ({ lots }) => (
         ))}
         {lots.length === 0 && (
           <tr>
-            <td
-              colSpan={5}
-              className="py-8 text-center text-sm text-[#a39d94]"
-            >
+            <td colSpan={5} className="py-8 text-center text-sm text-[#a39d94]">
               No remaining lots
             </td>
           </tr>
@@ -718,7 +773,7 @@ const CostBasisReport: React.FC = () => {
         const txs = await persistence.getAllTransactions(currentProfile.id, {
           limit: 10000,
         })
-        setTransactions(txs)
+        setTransactions(filterStoredTransactionsForAccounting(txs))
       } catch (err) {
         setError(
           err instanceof Error ? err.message : 'Failed to load transactions'
@@ -759,7 +814,15 @@ const CostBasisReport: React.FC = () => {
 
     const data = computeReport(lots, rawDisposals, method, start, end)
     setReportData(data)
-  }, [transactions, method, selectedAsset, taxYear, useDateRange, dateStart, dateEnd])
+  }, [
+    transactions,
+    method,
+    selectedAsset,
+    taxYear,
+    useDateRange,
+    dateStart,
+    dateEnd,
+  ])
 
   const handleExport = useCallback(
     (format: 'csv' | 'json') => {
@@ -784,15 +847,20 @@ const CostBasisReport: React.FC = () => {
       }
       setShowExportMenu(false)
     },
-    [reportData, method, selectedAsset, taxYear, useDateRange, dateStart, dateEnd]
+    [
+      reportData,
+      method,
+      selectedAsset,
+      taxYear,
+      useDateRange,
+      dateStart,
+      dateEnd,
+    ]
   )
 
-  const toggleDisposal = useCallback(
-    (id: string) => {
-      setExpandedDisposal(prev => (prev === id ? null : id))
-    },
-    []
-  )
+  const toggleDisposal = useCallback((id: string) => {
+    setExpandedDisposal(prev => (prev === id ? null : id))
+  }, [])
 
   // Lot validation warnings
   const validationWarnings = useMemo(() => {
@@ -877,10 +945,7 @@ const CostBasisReport: React.FC = () => {
                   Lot data warnings
                 </p>
                 {validationWarnings.map((w, i) => (
-                  <p
-                    key={i}
-                    className="text-xs text-[#b89968]/80 mt-1"
-                  >
+                  <p key={i} className="text-xs text-[#b89968]/80 mt-1">
                     {w}
                   </p>
                 ))}

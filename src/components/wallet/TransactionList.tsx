@@ -9,6 +9,8 @@ import {
   Upload,
   CheckCircle,
   Trash2,
+  Pencil,
+  X,
 } from 'lucide-react'
 import { formatBalance } from '@polkadot/util'
 import type {
@@ -23,6 +25,8 @@ interface TransactionListProps {
   isLoading?: boolean
   error?: string | null
   onPurge?: () => void
+  /** Called when the user manually sets or overrides the acquisition price for a transaction. */
+  onPriceUpdate?: (txId: string, pricePerUnitUsd: string) => void
 }
 
 export const TransactionList: React.FC<TransactionListProps> = ({
@@ -30,12 +34,16 @@ export const TransactionList: React.FC<TransactionListProps> = ({
   isLoading,
   error,
   onPurge,
+  onPriceUpdate,
 }) => {
   const { addTransaction } = useTransactions()
   const [importing, setImporting] = useState(false)
   const [importSuccess, setImportSuccess] = useState(false)
   const [importError, setImportError] = useState<string | null>(null)
   const [showPurgeConfirm, setShowPurgeConfirm] = useState(false)
+  // Inline acquisition-price editing state: maps txId → draft price string
+  const [editingPriceId, setEditingPriceId] = useState<string | null>(null)
+  const [draftPrice, setDraftPrice] = useState<string>('')
 
   // Sort transactions by block number (newest first)
   const sortedTransactions = useMemo(() => {
@@ -175,6 +183,33 @@ export const TransactionList: React.FC<TransactionListProps> = ({
   const handleHidePurgeConfirm = useCallback(() => {
     setShowPurgeConfirm(false)
   }, [])
+
+  // Open the inline price editor for a transaction
+  const handleStartPriceEdit = useCallback((tx: Transaction) => {
+    const current = (tx as Transaction & { pricePerUnitUsd?: number })
+      .pricePerUnitUsd
+    setDraftPrice(current != null ? current.toString() : '')
+    setEditingPriceId(tx.id)
+  }, [])
+
+  // Cancel without saving
+  const handleCancelPriceEdit = useCallback(() => {
+    setEditingPriceId(null)
+    setDraftPrice('')
+  }, [])
+
+  // Commit the price override
+  const handleCommitPriceEdit = useCallback(
+    (txId: string) => {
+      const trimmed = draftPrice.trim()
+      if (trimmed !== '' && !isNaN(parseFloat(trimmed)) && onPriceUpdate) {
+        onPriceUpdate(txId, trimmed)
+      }
+      setEditingPriceId(null)
+      setDraftPrice('')
+    },
+    [draftPrice, onPriceUpdate]
+  )
 
   // Export transactions to CSV
   const exportToCSV = useCallback(() => {
@@ -479,6 +514,12 @@ export const TransactionList: React.FC<TransactionListProps> = ({
               <th className="ledger-table-cell-text text-left">From</th>
               <th className="ledger-table-cell-text text-left">To</th>
               <th className="ledger-table-cell-number text-right">Amount</th>
+              <th
+                className="ledger-table-cell-number text-right"
+                title="USD price per token unit at acquisition — used for cost-basis reporting"
+              >
+                Acq. Price
+              </th>
               <th className="ledger-table-cell-text text-left">Status</th>
               <th className="ledger-table-cell-actions text-right">Details</th>
             </tr>
@@ -487,6 +528,10 @@ export const TransactionList: React.FC<TransactionListProps> = ({
             {sortedTransactions.map(tx => {
               const isSubstrate = 'method' in tx
               const substrateTx = tx as SubstrateTransaction
+              const txWithPrice = tx as Transaction & {
+                pricePerUnitUsd?: number
+              }
+              const isEditing = editingPriceId === tx.id
 
               return (
                 <tr key={tx.id} className="ledger-table-row">
@@ -529,6 +574,59 @@ export const TransactionList: React.FC<TransactionListProps> = ({
                     <span className="text-[#1a1815] dark:text-[#f5f3f0]">
                       {formatAmount(tx)}
                     </span>
+                  </td>
+
+                  {/* Acquisition Price (USD per token unit) */}
+                  <td className="ledger-table-cell-number text-right whitespace-nowrap">
+                    {isEditing ? (
+                      <span className="inline-flex items-center gap-1">
+                        <input
+                          type="number"
+                          step="any"
+                          min="0"
+                          value={draftPrice}
+                          onChange={e => setDraftPrice(e.target.value)}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter') handleCommitPriceEdit(tx.id)
+                            if (e.key === 'Escape') handleCancelPriceEdit()
+                          }}
+                          className="w-24 text-xs border border-[#c9a961] rounded px-1 py-0.5 bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0]"
+                          autoFocus
+                          placeholder="e.g. 6.50"
+                        />
+                        <button
+                          onClick={() => handleCommitPriceEdit(tx.id)}
+                          className="text-[#7a9b6f] dark:text-[#8faf84] hover:opacity-80"
+                          title="Save price"
+                        >
+                          <CheckCircle className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={handleCancelPriceEdit}
+                          className="text-[#9d6b6b] dark:text-[#b88585] hover:opacity-80"
+                          title="Cancel"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 group">
+                        <span className="text-xs tabular-nums text-[#696557] dark:text-[#b8b3ac]">
+                          {txWithPrice.pricePerUnitUsd != null
+                            ? `$${txWithPrice.pricePerUnitUsd.toFixed(4)}`
+                            : '—'}
+                        </span>
+                        {onPriceUpdate && (
+                          <button
+                            onClick={() => handleStartPriceEdit(tx)}
+                            className="opacity-0 group-hover:opacity-100 transition-opacity text-[#8b4e52] dark:text-[#a86e72] hover:opacity-80"
+                            title="Set acquisition price for cost-basis"
+                          >
+                            <Pencil className="w-3 h-3" />
+                          </button>
+                        )}
+                      </span>
+                    )}
                   </td>
 
                   {/* Status */}

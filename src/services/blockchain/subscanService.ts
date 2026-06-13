@@ -101,6 +101,31 @@ interface SubscanResponse<T> {
 }
 
 /**
+ * Subset of the Subscan XCM message object returned by /api/scan/xcm/messages.
+ * Only the fields we actually use are typed; the rest are left as unknown.
+ */
+export interface SubscanXcmMessage {
+  /** Subscan-internal unique identifier for this XCM message */
+  unique_id: string
+  /** Block number on the originating chain */
+  origin_block_num: number
+  /** Block number on the destination chain (undefined if still in-flight) */
+  destination_block_num?: number
+  /** Account that originated the transfer */
+  origin_account_id: string
+  /** Account that received the transfer (undefined if still in-flight) */
+  destination_account_id?: string
+  /** Human-readable amount */
+  amount: string
+  /** Asset symbol (undefined for native token) */
+  asset_symbol?: string
+  /** 0 = pending, 1 = success, 2 = fail */
+  status: number
+  /** XCM message hash / ID */
+  message_hash?: string
+}
+
+/**
  * Service for fetching blockchain transaction data from Subscan API.
  * Provides fast transaction retrieval using Subscan's indexed blockchain data.
  */
@@ -774,6 +799,42 @@ class SubscanService {
     if (module === 'identity') return 'other'
     if (module === 'utility') return 'transfer'
     return 'other'
+  }
+
+  /**
+   * Look up an XCM message on Subscan by message hash / ID.
+   *
+   * Used to find the destination-chain receipt when the receive transaction is
+   * not yet in the user's local history (e.g. a parachain they haven't synced).
+   *
+   * Returns `null` on any error or when not found — callers should treat this
+   * as "receive not yet visible" and leave the send as xcmStatus='pending'.
+   */
+  async fetchXcmMessage(
+    network: NetworkType,
+    messageId: string
+  ): Promise<SubscanXcmMessage | null> {
+    const config = this.NETWORK_CONFIGS[network]
+    if (!config) return null
+
+    try {
+      // Subscan XCM message list endpoint accepts message_hash as a filter.
+      const response = await SubscanService.makeRequest<
+        SubscanResponse<SubscanXcmMessage>
+      >(config, '/api/scan/xcm/messages', {
+        row: 1,
+        page: 0,
+        message_hash: messageId,
+      })
+
+      if (response.code === 0 && response.data.list?.length) {
+        return response.data.list[0]
+      }
+      return null
+    } catch {
+      // Non-critical — gracefully degrade to 'pending' status.
+      return null
+    }
   }
 
   /**

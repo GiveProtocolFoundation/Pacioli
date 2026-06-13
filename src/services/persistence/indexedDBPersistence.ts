@@ -390,6 +390,7 @@ class IndexedDBPersistenceService implements PersistenceService {
         xcm_linked_tx_id: txInput.xcm_linked_tx_id ?? null,
         xcm_role: txInput.xcm_role ?? null,
         xcm_status: txInput.xcm_status ?? null,
+        price_at_acquisition_usd: txInput.price_at_acquisition_usd ?? null,
       }
 
       try {

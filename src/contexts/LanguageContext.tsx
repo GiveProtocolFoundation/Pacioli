@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 /**
  * Language Context
  * Provides internationalization support throughout the app

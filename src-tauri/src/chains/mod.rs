@@ -354,6 +354,7 @@ pub trait ChainAdapter: Send + Sync {
 /// It maintains a registry of adapters and lazily initializes them when first requested.
 pub struct ChainManager {
     /// Registered adapters (chain_id -> adapter)
+    #[allow(clippy::type_complexity)]
     adapters: RwLock<HashMap<String, Arc<RwLock<Box<dyn ChainAdapter>>>>>,
     /// Explorer API keys for various chains
     explorer_api_keys: RwLock<HashMap<String, String>>,
