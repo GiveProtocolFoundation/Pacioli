@@ -54,12 +54,14 @@ pub struct BatchHistoricalPriceResponse {
 pub async fn get_crypto_price(
     coin_id: String,
     vs_currency: Option<String>,
+    api_key: Option<String>,
+    base_url: Option<String>,
 ) -> Result<PriceResponse, String> {
     let currency = vs_currency.unwrap_or_else(|| "usd".to_string());
 
-    // Load API key from environment if available
-    let api_key = std::env::var(ENV_COINGECKO_API_KEY).ok();
-    let client = CoinGeckoClient::new(api_key);
+    // Use passed api_key, fall back to environment variable
+    let resolved_key = api_key.or_else(|| std::env::var(ENV_COINGECKO_API_KEY).ok());
+    let client = CoinGeckoClient::with_base_url(resolved_key, base_url);
 
     let price = client
         .get_price(&coin_id, &currency)
@@ -82,11 +84,13 @@ pub async fn get_crypto_price(
 pub async fn get_crypto_prices(
     coin_ids: Vec<String>,
     vs_currency: Option<String>,
+    api_key: Option<String>,
+    base_url: Option<String>,
 ) -> Result<HashMap<String, String>, String> {
     let currency = vs_currency.unwrap_or_else(|| "usd".to_string());
 
-    let api_key = std::env::var(ENV_COINGECKO_API_KEY).ok();
-    let client = CoinGeckoClient::new(api_key);
+    let resolved_key = api_key.or_else(|| std::env::var(ENV_COINGECKO_API_KEY).ok());
+    let client = CoinGeckoClient::with_base_url(resolved_key, base_url);
 
     let ids: Vec<&str> = coin_ids.iter().map(|s| s.as_str()).collect();
     let prices = client
@@ -108,11 +112,13 @@ pub async fn get_historical_crypto_price(
     coin_id: String,
     date: String,
     vs_currency: Option<String>,
+    api_key: Option<String>,
+    base_url: Option<String>,
 ) -> Result<HistoricalPriceResponse, String> {
     let currency = vs_currency.unwrap_or_else(|| "usd".to_string());
 
-    let api_key = std::env::var(ENV_COINGECKO_API_KEY).ok();
-    let client = CoinGeckoClient::new(api_key);
+    let resolved_key = api_key.or_else(|| std::env::var(ENV_COINGECKO_API_KEY).ok());
+    let client = CoinGeckoClient::with_base_url(resolved_key, base_url);
 
     let price = client
         .get_historical_price(&coin_id, &date, &currency)
@@ -142,11 +148,13 @@ pub async fn get_batch_historical_prices(
     coin_ids: Vec<String>,
     date: String,
     vs_currency: Option<String>,
+    api_key: Option<String>,
+    base_url: Option<String>,
 ) -> Result<BatchHistoricalPriceResponse, String> {
     let currency = vs_currency.unwrap_or_else(|| "usd".to_string());
 
-    let api_key = std::env::var(ENV_COINGECKO_API_KEY).ok();
-    let client = CoinGeckoClient::new(api_key);
+    let resolved_key = api_key.or_else(|| std::env::var(ENV_COINGECKO_API_KEY).ok());
+    let client = CoinGeckoClient::with_base_url(resolved_key, base_url);
 
     let mut prices: HashMap<String, Result<String, String>> = HashMap::new();
 

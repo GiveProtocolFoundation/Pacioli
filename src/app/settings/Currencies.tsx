@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import {
   Save,
   X,
@@ -15,6 +15,8 @@ import {
 } from '../../types/currency'
 import { FIAT_CURRENCIES, CRYPTO_CURRENCIES } from '../../constants'
 import { useCurrency } from '../../contexts/CurrencyContext'
+import { persistence } from '../../services/persistence'
+import { clearPriceFeedConfigCache } from '../../services/blockchain/priceService'
 
 interface CurrencySettings {
   primaryCurrency: string
@@ -28,6 +30,8 @@ interface CurrencySettings {
   cacheExchangeRates: boolean
   coingeckoApiKey?: string
   fixerApiKey?: string
+  priceFeedProvider?: string
+  priceFeedBaseUrl?: string
 }
 
 interface ChangeActionsProps {
@@ -123,10 +127,37 @@ const Currencies: React.FC = () => {
     ...contextSettings,
     coingeckoApiKey: '',
     fixerApiKey: '',
+    priceFeedProvider: 'coingecko',
+    priceFeedBaseUrl: '',
   }))
 
   const [showApiKeys, setShowApiKeys] = useState(false)
   const [hasChanges, setHasChanges] = useState(false)
+
+  // Load persisted price-feed settings on mount
+  useEffect(() => {
+    let cancelled = false
+    const load = async () => {
+      try {
+        const [apiKey, provider, baseUrl] = await Promise.all([
+          persistence.getSetting('price_feed_api_key'),
+          persistence.getSetting('price_feed_provider'),
+          persistence.getSetting('price_feed_base_url'),
+        ])
+        if (cancelled) return
+        setLocalSettings(prev => ({
+          ...prev,
+          coingeckoApiKey: apiKey ?? '',
+          priceFeedProvider: provider ?? 'coingecko',
+          priceFeedBaseUrl: baseUrl ?? '',
+        }))
+      } catch {
+        // Persistence unavailable on first run — keep defaults
+      }
+    }
+    load()
+    return () => { cancelled = true }
+  }, [])
 
   const handleChange = useCallback(
     <K extends keyof CurrencySettings>(key: K, value: CurrencySettings[K]) => {
@@ -147,24 +178,82 @@ const Currencies: React.FC = () => {
     })
   }, [])
 
-  const handleSave = useCallback(() => {
-    // Update context with new settings (excluding API keys for now)
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { coingeckoApiKey, fixerApiKey, ...settingsToSave } = localSettings
+  const handleSave = useCallback(async () => {
+    const {
+      coingeckoApiKey,
+      fixerApiKey: _fixerApiKey,
+      priceFeedProvider,
+      priceFeedBaseUrl,
+      ...settingsToSave
+    } = localSettings
     updateContextSettings(settingsToSave)
 
-    // API keys backend persistence via Tauri command not yet implemented
+    // Persist price-feed settings
+    try {
+      const ops: Promise<void>[] = []
+      if (coingeckoApiKey) {
+        ops.push(persistence.setSetting('price_feed_api_key', coingeckoApiKey))
+      } else {
+        ops.push(persistence.deleteSetting('price_feed_api_key'))
+      }
+      if (priceFeedProvider && priceFeedProvider !== 'coingecko') {
+        ops.push(
+          persistence.setSetting('price_feed_provider', priceFeedProvider)
+        )
+      } else {
+        ops.push(persistence.deleteSetting('price_feed_provider'))
+      }
+      if (priceFeedBaseUrl) {
+        ops.push(
+          persistence.setSetting('price_feed_base_url', priceFeedBaseUrl)
+        )
+      } else {
+        ops.push(persistence.deleteSetting('price_feed_base_url'))
+      }
+      await Promise.all(ops)
+      clearPriceFeedConfigCache()
+    } catch (err) {
+      console.error('[Currencies] Failed to persist price-feed settings:', err)
+    }
+
     setHasChanges(false)
   }, [localSettings, updateContextSettings])
 
   const handleReset = useCallback(() => {
-    // Reset to context settings
+    // Reset to context settings — reload persisted values
     setLocalSettings({
       ...contextSettings,
       coingeckoApiKey: '',
       fixerApiKey: '',
+      priceFeedProvider: 'coingecko',
+      priceFeedBaseUrl: '',
     })
     setHasChanges(false)
+    // Re-load persisted values
+    persistence
+      .getSetting('price_feed_api_key')
+      .then(key =>
+        setLocalSettings(prev => ({ ...prev, coingeckoApiKey: key ?? '' }))
+      )
+      .catch(() => {})
+    persistence
+      .getSetting('price_feed_provider')
+      .then(p =>
+        setLocalSettings(prev => ({
+          ...prev,
+          priceFeedProvider: p ?? 'coingecko',
+        }))
+      )
+      .catch(() => {})
+    persistence
+      .getSetting('price_feed_base_url')
+      .then(url =>
+        setLocalSettings(prev => ({
+          ...prev,
+          priceFeedBaseUrl: url ?? '',
+        }))
+      )
+      .catch(() => {})
   }, [contextSettings])
 
   // Format number based on decimal separator standard
@@ -281,6 +370,20 @@ const Currencies: React.FC = () => {
   const handleFixerKeyChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       handleChange('fixerApiKey', e.target.value)
+    },
+    [handleChange]
+  )
+
+  const handleProviderChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      handleChange('priceFeedProvider', e.target.value)
+    },
+    [handleChange]
+  )
+
+  const handleBaseUrlChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      handleChange('priceFeedBaseUrl', e.target.value)
     },
     [handleChange]
   )
@@ -626,6 +729,49 @@ const Currencies: React.FC = () => {
               Configure API keys for external exchange rate providers. These are
               optional but recommended for production use.
             </p>
+
+            <div className="space-y-4 mb-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label
+                    htmlFor="price-feed-provider"
+                    className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
+                  >
+                    Price Feed Provider
+                  </label>
+                  <select
+                    id="price-feed-provider"
+                    value={localSettings.priceFeedProvider || 'coingecko'}
+                    onChange={handleProviderChange}
+                    className="select-input w-full px-3 pr-8 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
+                  >
+                    <option value="coingecko">CoinGecko</option>
+                  </select>
+                  <p className="text-xs text-[#696557] dark:text-[#b8b3ac] mt-1">
+                    Select the provider for cryptocurrency price data.
+                  </p>
+                </div>
+                <div>
+                  <label
+                    htmlFor="price-feed-base-url"
+                    className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
+                  >
+                    Custom Base URL (optional)
+                  </label>
+                  <input
+                    id="price-feed-base-url"
+                    type="text"
+                    value={localSettings.priceFeedBaseUrl || ''}
+                    onChange={handleBaseUrlChange}
+                    placeholder="e.g. https://pro-api.coingecko.com/api/v3"
+                    className="w-full px-3 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
+                  />
+                  <p className="text-xs text-[#696557] dark:text-[#b8b3ac] mt-1">
+                    Override the API endpoint for self-hosted or compatible oracles.
+                  </p>
+                </div>
+              </div>
+            </div>
 
             {showApiKeys && (
               <div className="space-y-4">

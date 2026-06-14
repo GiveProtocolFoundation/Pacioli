@@ -36,6 +36,18 @@ impl CoinGeckoClient {
         Self { api_key, base_url }
     }
 
+    /// Create a new CoinGecko client with a custom base URL.
+    /// Falls back to the default URL selection (pro vs free) if base_url is None.
+    pub fn with_base_url(api_key: Option<String>, base_url: Option<String>) -> Self {
+        match base_url {
+            Some(url) => Self {
+                api_key,
+                base_url: url,
+            },
+            None => Self::new(api_key),
+        }
+    }
+
     /// Get current price for a cryptocurrency
     ///
     /// # Arguments
