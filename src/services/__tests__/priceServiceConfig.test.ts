@@ -89,7 +89,11 @@ describe('priceService config read-through', () => {
       if (key === 'price_feed_base_url') return 'https://pro.example.com/v3'
       return null
     })
-    mockInvoke.mockResolvedValue({ coin_id: 'polkadot', price: '7.50', currency: 'usd' })
+    mockInvoke.mockResolvedValue({
+      coin_id: 'polkadot',
+      price: '7.50',
+      currency: 'usd',
+    })
 
     const price = await getCurrentPrice('polkadot', 'usd')
 
@@ -104,7 +108,11 @@ describe('priceService config read-through', () => {
 
   it('getCurrentPrice omits apiKey/baseUrl when settings are empty', async () => {
     mockGetSetting.mockResolvedValue(null)
-    mockInvoke.mockResolvedValue({ coin_id: 'polkadot', price: '6.25', currency: 'usd' })
+    mockInvoke.mockResolvedValue({
+      coin_id: 'polkadot',
+      price: '6.25',
+      currency: 'usd',
+    })
 
     await getCurrentPrice('polkadot', 'usd')
 

@@ -156,7 +156,9 @@ const Currencies: React.FC = () => {
       }
     }
     load()
-    return () => { cancelled = true }
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   const handleChange = useCallback(
@@ -767,7 +769,8 @@ const Currencies: React.FC = () => {
                     className="w-full px-3 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
                   />
                   <p className="text-xs text-[#696557] dark:text-[#b8b3ac] mt-1">
-                    Override the API endpoint for self-hosted or compatible oracles.
+                    Override the API endpoint for self-hosted or compatible
+                    oracles.
                   </p>
                 </div>
               </div>
