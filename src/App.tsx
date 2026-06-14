@@ -1,5 +1,11 @@
 import React, { Suspense } from 'react'
-import { BrowserRouter, HashRouter, Routes, Route, Navigate } from 'react-router-dom'
+import {
+  BrowserRouter,
+  HashRouter,
+  Routes,
+  Route,
+  Navigate,
+} from 'react-router-dom'
 import Navigation from './components/layout/Navigation'
 import { isTauriAvailable } from './utils/tauri'
 import { TransactionProvider } from './contexts/TransactionContext'
@@ -37,15 +43,9 @@ const Team = React.lazy(() => import('./app/team/Team'))
 const JournalEntries = React.lazy(
   () => import('./app/journal-entries/JournalEntries')
 )
-const ChartOfAccounts = React.lazy(
-  () => import('./app/ledger/ChartOfAccounts')
-)
-const TrialBalance = React.lazy(
-  () => import('./app/ledger/TrialBalance')
-)
-const Reconciliation = React.lazy(
-  () => import('./app/ledger/Reconciliation')
-)
+const ChartOfAccounts = React.lazy(() => import('./app/ledger/ChartOfAccounts'))
+const TrialBalance = React.lazy(() => import('./app/ledger/TrialBalance'))
+const Reconciliation = React.lazy(() => import('./app/ledger/Reconciliation'))
 
 // Loading fallback component
 const LoadingFallback: React.FC = () => (
