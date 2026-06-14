@@ -1,6 +1,7 @@
 import React, { Suspense } from 'react'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, HashRouter, Routes, Route, Navigate } from 'react-router-dom'
 import Navigation from './components/layout/Navigation'
+import { isTauriAvailable } from './utils/tauri'
 import { TransactionProvider } from './contexts/TransactionContext'
 import { TokenProvider } from './contexts/TokenContext'
 import { WalletAliasProvider } from './contexts/WalletAliasContext'
@@ -177,11 +178,13 @@ const MainRoutes: React.FC = () => (
   </Navigation>
 )
 
+const Router = isTauriAvailable() ? HashRouter : BrowserRouter
+
 /**
  * Root application component with routing and provider hierarchy.
  */
 const App: React.FC = () => (
-  <BrowserRouter>
+  <Router>
     <LanguageProvider>
       <AppProvider>
         <AppWrapper>
@@ -209,7 +212,7 @@ const App: React.FC = () => (
         </AppWrapper>
       </AppProvider>
     </LanguageProvider>
-  </BrowserRouter>
+  </Router>
 )
 
 export default App
