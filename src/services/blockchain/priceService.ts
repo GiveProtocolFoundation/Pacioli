@@ -7,6 +7,7 @@
 
 import { invoke } from '@tauri-apps/api/core'
 import { isTauriAvailable } from '../../utils/tauri'
+import { persistence } from '../persistence'
 
 /** Response from single price lookup */
 export interface PriceResponse {
@@ -79,6 +80,49 @@ const NETWORK_NATIVE_TOKENS: Record<string, string> = {
   solana: 'solana',
 }
 
+/** Cached price feed settings to avoid reading persistence on every call */
+let cachedPriceFeedConfig: {
+  apiKey: string | null
+  baseUrl: string | null
+  loadedAt: number
+} | null = null
+
+const SETTINGS_CACHE_TTL_MS = 60_000 // re-read settings every 60s
+
+/**
+ * Load price-feed configuration from persistence (API key + base URL).
+ * Results are cached for 60 seconds.
+ */
+export async function loadPriceFeedConfig(): Promise<{
+  apiKey: string | null
+  baseUrl: string | null
+}> {
+  const now = Date.now()
+  if (
+    cachedPriceFeedConfig &&
+    now - cachedPriceFeedConfig.loadedAt < SETTINGS_CACHE_TTL_MS
+  ) {
+    return cachedPriceFeedConfig
+  }
+
+  try {
+    const [apiKey, baseUrl] = await Promise.all([
+      persistence.getSetting('price_feed_api_key'),
+      persistence.getSetting('price_feed_base_url'),
+    ])
+    cachedPriceFeedConfig = { apiKey, baseUrl, loadedAt: now }
+    return { apiKey, baseUrl }
+  } catch {
+    // If persistence fails (e.g. first run), fall back to no overrides
+    return { apiKey: null, baseUrl: null }
+  }
+}
+
+/** Clear the cached price-feed config (e.g. after settings save) */
+export function clearPriceFeedConfigCache(): void {
+  cachedPriceFeedConfig = null
+}
+
 /**
  * Get CoinGecko ID for a token symbol
  */
@@ -119,9 +163,12 @@ export async function getCurrentPrice(
   }
 
   try {
+    const config = await loadPriceFeedConfig()
     const response = await invoke<PriceResponse>('get_crypto_price', {
       coinId,
       vsCurrency,
+      apiKey: config.apiKey ?? undefined,
+      baseUrl: config.baseUrl ?? undefined,
     })
     return parseFloat(response.price)
   } catch (error) {
@@ -143,9 +190,12 @@ export async function getCurrentPrices(
   }
 
   try {
+    const config = await loadPriceFeedConfig()
     const response = await invoke<Record<string, string>>('get_crypto_prices', {
       coinIds,
       vsCurrency,
+      apiKey: config.apiKey ?? undefined,
+      baseUrl: config.baseUrl ?? undefined,
     })
     const result: Record<string, number> = {}
     for (const [coinId, price] of Object.entries(response)) {
@@ -175,12 +225,15 @@ export async function getHistoricalPrice(
 
   try {
     const dateStr = toCoinGeckoDate(date)
+    const config = await loadPriceFeedConfig()
     const response = await invoke<HistoricalPriceResponse>(
       'get_historical_crypto_price',
       {
         coinId,
         date: dateStr,
         vsCurrency,
+        apiKey: config.apiKey ?? undefined,
+        baseUrl: config.baseUrl ?? undefined,
       }
     )
     return parseFloat(response.price)
@@ -211,12 +264,15 @@ export async function getBatchHistoricalPrices(
 
   try {
     const dateStr = toCoinGeckoDate(date)
+    const config = await loadPriceFeedConfig()
     const response = await invoke<BatchHistoricalPriceResponse>(
       'get_batch_historical_prices',
       {
         coinIds,
         date: dateStr,
         vsCurrency,
+        apiKey: config.apiKey ?? undefined,
+        baseUrl: config.baseUrl ?? undefined,
       }
     )
 
@@ -343,4 +399,6 @@ export const priceService = {
   getBatchHistoricalPrices,
   calculateUsdValue,
   batchCalculateUsdValues,
+  loadPriceFeedConfig,
+  clearPriceFeedConfigCache,
 }
