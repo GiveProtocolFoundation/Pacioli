@@ -1347,24 +1347,12 @@ html { scroll-behavior: smooth; }
   margin: 0 0 18px;
 }
 
-/* ---------- Ledger card ----------
-   The signature surface that frames financial data — ink-3 -> ink-2 gradient,
-   rule border, a subtle drop shadow, monospace tabular alignment.            */
-.ledger-card {
-  background: linear-gradient(180deg, var(--color-ink-3), var(--color-ink-2));
-  border: 1px solid var(--color-rule);
-  border-radius: 10px;
-  padding: 22px 24px 20px;
-  box-shadow: 0 24px 60px -30px rgba(0, 0, 0, 0.8);
-}
-
-/* Light-mode ledger card — parchment surface with mint rule */
-.light .ledger-card,
-:not(.dark) .ledger-card {
-  background: linear-gradient(180deg, #FFFFFF, var(--color-bg-secondary-light));
-  box-shadow: 0 18px 40px -28px rgba(12, 20, 27, 0.18);
-}
-
+/* ---------- Ledger card sub-elements ----------
+   The base .ledger-card background/border is defined earlier in this file
+   (see the rule near the existing card-hover block) and already adapts to
+   dark/light via the `.dark` html class — do NOT redefine the base background
+   here, since the `:not(.dark)` selector would match the body in dark mode
+   and clobber the dark surface with a white gradient.                       */
 .ledger-card__head {
   display: flex;
   align-items: baseline;
@@ -1374,10 +1362,9 @@ html { scroll-behavior: smooth; }
 .ledger-card__title {
   font-family: var(--font-family-display);
   font-size: 17px;
-  color: var(--color-text-primary-dark);
+  color: var(--color-text-primary-light);
 }
 .dark .ledger-card__title { color: var(--color-text-primary-dark); }
-:not(.dark) .ledger-card__title { color: var(--color-text-primary-light); }
 
 .ledger-card__date {
   font-family: var(--font-family-mono);
@@ -1403,10 +1390,10 @@ html { scroll-behavior: smooth; }
   border-bottom: 1px solid var(--color-rule);
 }
 .ledger-card table.je th:first-child { text-align: left; }
-.ledger-card table.je td { padding: 9px 0; color: var(--color-parchment-dim); text-align: right; }
-.ledger-card table.je td:first-child { text-align: left; color: var(--color-parchment); }
-:not(.dark) .ledger-card table.je td { color: var(--color-text-secondary-light); }
-:not(.dark) .ledger-card table.je td:first-child { color: var(--color-text-primary-light); }
+.ledger-card table.je td { padding: 9px 0; color: var(--color-text-secondary-light); text-align: right; }
+.ledger-card table.je td:first-child { text-align: left; color: var(--color-text-primary-light); }
+.dark .ledger-card table.je td { color: var(--color-parchment-dim); }
+.dark .ledger-card table.je td:first-child { color: var(--color-parchment); }
 .ledger-card table.je td.indent { padding-left: 18px; }
 .ledger-card table.je tr.total td {
   border-top: 1px solid var(--color-rule);
@@ -1447,8 +1434,8 @@ html { scroll-behavior: smooth; }
   cursor: pointer;
   border: 1px solid var(--color-rule);
   background: transparent;
-  color: var(--color-text-primary-dark);
+  color: var(--color-text-primary-light);
   transition: border-color .18s ease, color .18s ease;
 }
-:not(.dark) .btn-ghost { color: var(--color-text-primary-light); }
+.dark .btn-ghost { color: var(--color-text-primary-dark); }
 .btn-ghost:hover { border-color: var(--color-mint-dim); }
