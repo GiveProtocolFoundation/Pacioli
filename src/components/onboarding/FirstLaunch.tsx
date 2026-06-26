@@ -48,10 +48,10 @@ const StepHeader: React.FC<StepHeaderProps> = ({
     >
       {icon}
     </div>
-    <h1 className="text-2xl font-bold text-[#1a1815] dark:text-[#f5f3f0] mb-2">
+    <h1 className="text-2xl font-bold text-[#11202B] dark:text-[#EAF3F2] mb-2">
       {title}
     </h1>
-    <p className="text-[#696557] dark:text-[#b8b3ac]">{description}</p>
+    <p className="text-[#294050] dark:text-[#9FB4BE]">{description}</p>
   </div>
 )
 
@@ -80,7 +80,7 @@ const StepNavigation: React.FC<StepNavigationProps> = ({
       <button
         onClick={onBack}
         disabled={isSubmitting}
-        className="flex-1 py-3 px-4 border border-[rgba(201,169,97,0.15)] text-[#1a1815] dark:text-[#b8b3ac] font-medium rounded-lg hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620] transition-colors disabled:opacity-50"
+        className="flex-1 py-3 px-4 border border-[rgba(95,227,192,0.15)] text-[#11202B] dark:text-[#9FB4BE] font-medium rounded-lg hover:bg-[#EAF3F2] dark:hover:bg-[#16242F] transition-colors disabled:opacity-50"
       >
         {backLabel}
       </button>
@@ -88,7 +88,7 @@ const StepNavigation: React.FC<StepNavigationProps> = ({
     <button
       onClick={onContinue}
       disabled={isSubmitting || continueDisabled}
-      className={`${onBack ? 'flex-1' : 'w-full'} py-3 px-4 bg-[#8b4e52] hover:bg-[#7a4248] text-white font-medium rounded-lg transition-colors disabled:opacity-50`}
+      className={`${onBack ? 'flex-1' : 'w-full'} py-3 px-4 bg-[#294050] hover:bg-[#1E2F3C] text-white font-medium rounded-lg transition-colors disabled:opacity-50`}
     >
       {continueLabel}
     </button>
@@ -105,8 +105,8 @@ interface ErrorMessageProps {
 const ErrorMessage: React.FC<ErrorMessageProps> = ({ error }) => {
   if (!error) return null
   return (
-    <div className="mb-4 p-3 bg-[#9d6b6b]/10 dark:bg-[#9d6b6b]/20 border border-[#9d6b6b]/30 dark:border-[#9d6b6b]/40 rounded-lg">
-      <p className="text-sm text-[#9d6b6b] dark:text-[#b88585]">{error}</p>
+    <div className="mb-4 p-3 bg-[#E8836F]/10 dark:bg-[#E8836F]/20 border border-[#E8836F]/30 dark:border-[#E8836F]/40 rounded-lg">
+      <p className="text-sm text-[#E8836F] dark:text-[#F09988]">{error}</p>
     </div>
   )
 }
@@ -138,23 +138,23 @@ const LanguageButton: React.FC<LanguageButtonProps> = ({
       onClick={handleClick}
       className={`w-full px-4 py-3 rounded-lg border-2 transition-all text-left flex items-center justify-between ${
         isSelected
-          ? 'border-[#8b4e52] bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20'
-          : 'border-[rgba(201,169,97,0.15)] hover:border-[rgba(201,169,97,0.3)]'
+          ? 'border-[#294050] bg-[#294050]/10 dark:bg-[#294050]/20'
+          : 'border-[rgba(95,227,192,0.15)] hover:border-[rgba(95,227,192,0.3)]'
       }`}
     >
       <div>
-        <span className="font-medium text-[#1a1815] dark:text-[#f5f3f0]">
+        <span className="font-medium text-[#11202B] dark:text-[#EAF3F2]">
           {lang.nativeName}
         </span>
         {lang.code !== 'en' && lang.nativeName !== lang.name && (
-          <span className="ml-2 text-sm text-[#a39d94] dark:text-[#8b8580]">
+          <span className="ml-2 text-sm text-[#647D8B] dark:text-[#647D8B]">
             ({lang.name})
           </span>
         )}
       </div>
       {isSelected && (
         <svg
-          className="w-5 h-5 text-[#8b4e52]"
+          className="w-5 h-5 text-[#294050]"
           fill="currentColor"
           viewBox="0 0 20 20"
         >
@@ -196,8 +196,8 @@ const SecurityModeButton: React.FC<SecurityModeButtonProps> = ({
       onClick={handleClick}
       className={`w-full p-4 rounded-lg border-2 transition-all text-left ${
         isSelected
-          ? 'border-[#8b4e52] bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20'
-          : 'border-[rgba(201,169,97,0.15)] hover:border-[rgba(201,169,97,0.3)]'
+          ? 'border-[#294050] bg-[#294050]/10 dark:bg-[#294050]/20'
+          : 'border-[rgba(95,227,192,0.15)] hover:border-[rgba(95,227,192,0.3)]'
       }`}
     >
       <div className="flex items-start">
@@ -205,8 +205,8 @@ const SecurityModeButton: React.FC<SecurityModeButtonProps> = ({
           <div
             className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
               isSelected
-                ? 'border-[#8b4e52] bg-[#8b4e52]'
-                : 'border-[rgba(201,169,97,0.3)] dark:border-[rgba(201,169,97,0.4)]'
+                ? 'border-[#294050] bg-[#294050]'
+                : 'border-[rgba(95,227,192,0.3)] dark:border-[rgba(95,227,192,0.4)]'
             }`}
           >
             {isSelected && (
@@ -225,10 +225,10 @@ const SecurityModeButton: React.FC<SecurityModeButtonProps> = ({
           </div>
         </div>
         <div className="ml-3">
-          <h3 className="font-medium text-[#1a1815] dark:text-[#f5f3f0]">
+          <h3 className="font-medium text-[#11202B] dark:text-[#EAF3F2]">
             {title}
           </h3>
-          <p className="text-sm text-[#a39d94] dark:text-[#8b8580] mt-1">
+          <p className="text-sm text-[#647D8B] dark:text-[#647D8B] mt-1">
             {description}
           </p>
         </div>
@@ -262,8 +262,8 @@ const TimeoutButton: React.FC<TimeoutButtonProps> = ({
       onClick={handleClick}
       className={`flex-1 py-2 px-3 rounded-lg border transition-colors text-sm ${
         isSelected
-          ? 'border-[#8b4e52] bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 text-[#8b4e52] dark:text-[#a86e72]'
-          : 'border-[rgba(201,169,97,0.15)] text-[#1a1815] dark:text-[#b8b3ac] hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620]'
+          ? 'border-[#294050] bg-[#294050]/10 dark:bg-[#294050]/20 text-[#294050] dark:text-[#F09988]'
+          : 'border-[rgba(95,227,192,0.15)] text-[#11202B] dark:text-[#9FB4BE] hover:bg-[#EAF3F2] dark:hover:bg-[#16242F]'
       }`}
     >
       {label}
@@ -304,7 +304,7 @@ const LanguageStep: React.FC<LanguageStepProps> = ({
     <StepHeader
       icon={
         <svg
-          className="w-8 h-8 text-[#8b4e52] dark:text-[#a86e72]"
+          className="w-8 h-8 text-[#294050] dark:text-[#F09988]"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -317,7 +317,7 @@ const LanguageStep: React.FC<LanguageStepProps> = ({
           />
         </svg>
       }
-      iconBgClass="bg-[#8b4e52]/20 dark:bg-[#8b4e52]/30"
+      iconBgClass="bg-[#294050]/20 dark:bg-[#294050]/30"
       title={t.firstLaunch.welcome}
       description={t.firstLaunch.selectLanguageDesc}
     />
@@ -463,7 +463,7 @@ const PasswordStep: React.FC<PasswordStepProps> = ({
     <StepHeader
       icon={
         <svg
-          className="w-8 h-8 text-[#c9a961] dark:text-[#d4b87a]"
+          className="w-8 h-8 text-[#5FE3C0] dark:text-[#9CF1DC]"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -476,41 +476,41 @@ const PasswordStep: React.FC<PasswordStepProps> = ({
           />
         </svg>
       }
-      iconBgClass="bg-[#c9a961]/20 dark:bg-[#c9a961]/30"
+      iconBgClass="bg-[#5FE3C0]/20 dark:bg-[#5FE3C0]/30"
       title={t.firstLaunch.setPassword}
       description={t.firstLaunch.setPasswordDesc}
     />
     <div className="space-y-4 mb-6">
       <div>
-        <label className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-1">
+        <label className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] mb-1">
           {t.firstLaunch.setPassword}
         </label>
         <input
           type="password"
           value={password}
           onChange={onPasswordChange}
-          className="w-full px-4 py-3 border border-[rgba(201,169,97,0.15)] rounded-lg focus:ring-2 focus:ring-[#c9a961] focus:border-[#c9a961] dark:bg-[#2a2620] dark:text-[#f5f3f0]"
+          className="w-full px-4 py-3 border border-[rgba(95,227,192,0.15)] rounded-lg focus:ring-2 focus:ring-[#5FE3C0] focus:border-[#5FE3C0] dark:bg-[#16242F] dark:text-[#EAF3F2]"
           placeholder="••••••••"
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-1">
+        <label className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] mb-1">
           {t.firstLaunch.confirmPassword}
         </label>
         <input
           type="password"
           value={confirmPassword}
           onChange={onConfirmPasswordChange}
-          className="w-full px-4 py-3 border border-[rgba(201,169,97,0.15)] rounded-lg focus:ring-2 focus:ring-[#c9a961] focus:border-[#c9a961] dark:bg-[#2a2620] dark:text-[#f5f3f0]"
+          className="w-full px-4 py-3 border border-[rgba(95,227,192,0.15)] rounded-lg focus:ring-2 focus:ring-[#5FE3C0] focus:border-[#5FE3C0] dark:bg-[#16242F] dark:text-[#EAF3F2]"
           placeholder="••••••••"
         />
       </div>
       {securityMode === 'secure_plus' && (
         <div>
-          <label className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-1">
+          <label className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] mb-1">
             {t.firstLaunch.sessionTimeout}
           </label>
-          <p className="text-xs text-[#a39d94] dark:text-[#8b8580] mb-2">
+          <p className="text-xs text-[#647D8B] dark:text-[#647D8B] mb-2">
             {t.firstLaunch.sessionTimeoutDesc}
           </p>
           <div className="flex gap-2">
@@ -601,10 +601,10 @@ const CompleteStep: React.FC<CompleteStepProps> = ({
         title={t.firstLaunch.setupComplete}
         description={t.firstLaunch.setupCompleteDesc}
       />
-      <div className="bg-[#f3f1ed] dark:bg-[#2a2620]/50 rounded-lg p-4 mb-8">
+      <div className="bg-[#EAF3F2] dark:bg-[#16242F]/50 rounded-lg p-4 mb-8">
         <div className="flex items-center gap-3 mb-3">
           <svg
-            className="w-5 h-5 text-[#a39d94]"
+            className="w-5 h-5 text-[#647D8B]"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -616,13 +616,13 @@ const CompleteStep: React.FC<CompleteStepProps> = ({
               d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"
             />
           </svg>
-          <span className="text-[#1a1815] dark:text-[#b8b3ac]">
+          <span className="text-[#11202B] dark:text-[#9FB4BE]">
             {languages.find(l => l.code === selectedLanguage)?.nativeName}
           </span>
         </div>
         <div className="flex items-center gap-3">
           <svg
-            className="w-5 h-5 text-[#a39d94]"
+            className="w-5 h-5 text-[#647D8B]"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -634,7 +634,7 @@ const CompleteStep: React.FC<CompleteStepProps> = ({
               d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
             />
           </svg>
-          <span className="text-[#1a1815] dark:text-[#b8b3ac]">
+          <span className="text-[#11202B] dark:text-[#9FB4BE]">
             {getSecurityModeLabel()}
           </span>
         </div>
@@ -833,8 +833,8 @@ export const FirstLaunch: React.FC<FirstLaunchProps> = ({ onComplete }) => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#fafaf8] to-[#ede8e0] dark:from-[#0f0e0c] dark:to-[#1a1815] flex items-center justify-center p-4">
-      <div className="bg-[#fafaf8] dark:bg-[#1a1815] rounded-2xl shadow-xl max-w-lg w-full p-8">
+    <div className="min-h-screen bg-gradient-to-br from-[#F7FAFA] to-[#D9E5E4] dark:from-[#0C141B] dark:to-[#11202B] flex items-center justify-center p-4">
+      <div className="bg-[#F7FAFA] dark:bg-[#11202B] rounded-2xl shadow-xl max-w-lg w-full p-8">
         {renderStep()}
       </div>
     </div>

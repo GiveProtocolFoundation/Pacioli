@@ -6,8 +6,10 @@ import {
   Route,
   Navigate,
 } from 'react-router-dom'
+import { ConfigProvider, theme as antdTheme } from 'antd'
 import Navigation from './components/layout/Navigation'
 import { isTauriAvailable } from './utils/tauri'
+import { useTheme } from './contexts/ThemeContext'
 import { TransactionProvider } from './contexts/TransactionContext'
 import { TokenProvider } from './contexts/TokenContext'
 import { WalletAliasProvider } from './contexts/WalletAliasContext'
@@ -49,10 +51,10 @@ const Reconciliation = React.lazy(() => import('./app/ledger/Reconciliation'))
 
 // Loading fallback component
 const LoadingFallback: React.FC = () => (
-  <div className="min-h-screen bg-[#fafaf8] dark:bg-[#0f0e0c] flex items-center justify-center">
+  <div className="min-h-screen bg-[#F7FAFA] dark:bg-[#0C141B] flex items-center justify-center">
     <div className="text-center">
-      <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#8b4e52] dark:border-[#a86e72]" />
-      <p className="mt-4 text-[#696557] dark:text-[#b8b3ac]">Loading...</p>
+      <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#294050] dark:border-[#F09988]" />
+      <p className="mt-4 text-[#294050] dark:text-[#9FB4BE]">Loading...</p>
     </div>
   </div>
 )
@@ -109,16 +111,16 @@ const AppWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Show error if initialization failed
   if (error && appState === 'Uninitialized') {
     return (
-      <div className="min-h-screen bg-[#fafaf8] dark:bg-[#0f0e0c] flex items-center justify-center">
+      <div className="min-h-screen bg-[#F7FAFA] dark:bg-[#0C141B] flex items-center justify-center">
         <div className="text-center max-w-md px-4">
           <div className="text-red-500 text-4xl mb-4">⚠️</div>
-          <h1 className="text-xl font-semibold text-[#1a1815] dark:text-[#f5f3f0] mb-2">
+          <h1 className="text-xl font-semibold text-[#11202B] dark:text-[#EAF3F2] mb-2">
             Initialization Failed
           </h1>
-          <p className="text-[#696557] dark:text-[#b8b3ac] mb-4">{error}</p>
+          <p className="text-[#294050] dark:text-[#9FB4BE] mb-4">{error}</p>
           <button
             onClick={handleRetry}
-            className="px-4 py-2 bg-[#8b4e52] text-white rounded-md hover:bg-[#7a4248]"
+            className="px-4 py-2 bg-[#294050] text-white rounded-md hover:bg-[#1E2F3C]"
           >
             Retry
           </button>
@@ -181,6 +183,44 @@ const MainRoutes: React.FC = () => (
 const Router = isTauriAvailable() ? HashRouter : BrowserRouter
 
 /**
+ * Wraps Ant Design's ConfigProvider with brand tokens, switching the antd
+ * algorithm between light/dark based on the app ThemeContext.
+ */
+const BrandedAntdProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  const { theme } = useTheme()
+  const isDark = theme === 'dark'
+  return (
+    <ConfigProvider
+      theme={{
+        algorithm: isDark ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
+        token: {
+          colorPrimary: '#5FE3C0',
+          colorInfo: '#5FE3C0',
+          colorSuccess: isDark ? '#5FE3C0' : '#2E9A82',
+          colorWarning: isDark ? '#E8B36F' : '#B07A2F',
+          colorError: isDark ? '#E8836F' : '#B0533F',
+          colorTextBase: isDark ? '#EAF3F2' : '#0C141B',
+          colorBgBase: isDark ? '#0C141B' : '#F7FAFA',
+          colorBgContainer: isDark ? '#11202B' : '#FFFFFF',
+          colorBgElevated: isDark ? '#16242F' : '#FFFFFF',
+          colorBorder: isDark
+            ? 'rgba(150,180,196,0.18)'
+            : 'rgba(150,180,196,0.28)',
+          colorBorderSecondary: 'rgba(150,180,196,0.12)',
+          fontFamily:
+            "'Geist', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+          borderRadius: 6,
+        },
+      }}
+    >
+      {children}
+    </ConfigProvider>
+  )
+}
+
+/**
  * Root application component with routing and provider hierarchy.
  */
 const App: React.FC = () => (
@@ -189,6 +229,7 @@ const App: React.FC = () => (
       <AppProvider>
         <AppWrapper>
           <AppProviders>
+            <BrandedAntdProvider>
             <Suspense fallback={<LoadingFallback />}>
               <Routes>
                 {/* Onboarding for first-time setup */}
@@ -208,6 +249,7 @@ const App: React.FC = () => (
                 <Route path="/*" element={<MainRoutes />} />
               </Routes>
             </Suspense>
+            </BrandedAntdProvider>
           </AppProviders>
         </AppWrapper>
       </AppProvider>

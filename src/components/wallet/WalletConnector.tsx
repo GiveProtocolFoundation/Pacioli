@@ -66,7 +66,7 @@ const AccountRow = memo(function AccountRow({
   }, [onStartEdit, account.address])
 
   return (
-    <div className="flex items-center gap-2 p-2 bg-[#f3f1ed] dark:bg-[#1a1815] rounded-lg">
+    <div className="flex items-center gap-2 p-2 bg-[#EAF3F2] dark:bg-[#11202B] rounded-lg">
       {isEditing ? (
         // Editing mode
         <div className="flex-1 flex items-center gap-2">
@@ -76,7 +76,7 @@ const AccountRow = memo(function AccountRow({
             onChange={onAliasInputChange}
             onKeyDown={handleKeyDown}
             placeholder="Enter alias..."
-            className="flex-1 px-2 py-1 text-sm border border-[rgba(201,169,97,0.15)] rounded bg-[#fafaf8] dark:bg-[#2a2620] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
+            className="flex-1 px-2 py-1 text-sm border border-[rgba(95,227,192,0.15)] rounded bg-[#F7FAFA] dark:bg-[#16242F] text-[#11202B] dark:text-[#EAF3F2] focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]"
           />
           <button
             onClick={handleSave}
@@ -87,7 +87,7 @@ const AccountRow = memo(function AccountRow({
           </button>
           <button
             onClick={onCancel}
-            className="p-1 text-[#a39d94] hover:text-[#696557] dark:hover:text-[#b8b3ac] hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620] rounded"
+            className="p-1 text-[#647D8B] hover:text-[#294050] dark:hover:text-[#9FB4BE] hover:bg-[#EAF3F2] dark:hover:bg-[#16242F] rounded"
             title="Cancel"
           >
             <X className="w-4 h-4" />
@@ -98,20 +98,20 @@ const AccountRow = memo(function AccountRow({
         <>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <span className="font-medium text-sm text-[#1a1815] dark:text-[#f5f3f0]">
+              <span className="font-medium text-sm text-[#11202B] dark:text-[#EAF3F2]">
                 {displayName}
               </span>
               {currentAlias && account.name && (
-                <span className="text-xs text-[#a39d94]">({account.name})</span>
+                <span className="text-xs text-[#647D8B]">({account.name})</span>
               )}
             </div>
-            <div className="text-xs text-[#696557] dark:text-[#b8b3ac] font-mono truncate">
+            <div className="text-xs text-[#294050] dark:text-[#9FB4BE] font-mono truncate">
               {account.address.slice(0, 10)}...{account.address.slice(-8)}
             </div>
           </div>
           <button
             onClick={handleStartEdit}
-            className="p-1.5 text-[#a39d94] hover:text-[#8b4e52] dark:hover:text-[#a86e72] hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620] rounded transition-colors"
+            className="p-1.5 text-[#647D8B] hover:text-[#294050] dark:hover:text-[#F09988] hover:bg-[#EAF3F2] dark:hover:bg-[#16242F] rounded transition-colors"
             title="Edit alias"
           >
             <Pencil className="w-3.5 h-3.5" />
@@ -242,23 +242,23 @@ const AccountList = memo(function AccountList({
 
 /** Info panel displayed in desktop app mode explaining wallet connection alternatives */
 const DesktopModeInfoPanel: React.FC = () => (
-  <div className="flex items-start p-4 bg-[#c9a961]/10 rounded-lg border border-[#c9a961]/20 mb-4">
-    <Info className="w-5 h-5 text-[#c9a961] mr-3 flex-shrink-0 mt-0.5" />
+  <div className="flex items-start p-4 bg-[#5FE3C0]/10 rounded-lg border border-[#5FE3C0]/20 mb-4">
+    <Info className="w-5 h-5 text-[#5FE3C0] mr-3 flex-shrink-0 mt-0.5" />
     <div>
-      <p className="text-sm text-[#1a1815] dark:text-[#f5f3f0] font-medium mb-1">
+      <p className="text-sm text-[#11202B] dark:text-[#EAF3F2] font-medium mb-1">
         Desktop App Mode
       </p>
-      <p className="text-sm text-[#696557] dark:text-[#b8b3ac]">
+      <p className="text-sm text-[#294050] dark:text-[#9FB4BE]">
         Browser wallet extensions are not available in the desktop app. Use the
         &quot;Add&quot; button above to:
       </p>
-      <ul className="mt-2 space-y-1 text-sm text-[#696557] dark:text-[#b8b3ac]">
+      <ul className="mt-2 space-y-1 text-sm text-[#294050] dark:text-[#9FB4BE]">
         <li className="flex items-center">
-          <span className="w-1.5 h-1.5 bg-[#8b4e52] rounded-full mr-2" />
+          <span className="w-1.5 h-1.5 bg-[#294050] rounded-full mr-2" />
           <strong>Add Portfolio</strong> - Track any public address (read-only)
         </li>
         <li className="flex items-center">
-          <span className="w-1.5 h-1.5 bg-[#8b4e52] rounded-full mr-2" />
+          <span className="w-1.5 h-1.5 bg-[#294050] rounded-full mr-2" />
           <strong>Connect Wallet</strong> - Use WalletConnect with your mobile
           wallet
         </li>
@@ -483,10 +483,10 @@ export const WalletConnector: React.FC<WalletConnectorProps> = ({
 
   if (!walletStatus) {
     return (
-      <div className="ledger-card ledger-card-financial border border-[rgba(201,169,97,0.15)] p-6">
+      <div className="ledger-card ledger-card-financial border border-[rgba(95,227,192,0.15)] p-6">
         <div className="flex items-center justify-center py-8">
-          <Loader className="w-6 h-6 animate-spin text-[#8b4e52] dark:text-[#a86e72]" />
-          <span className="ml-3 text-[#696557] dark:text-[#b8b3ac]">
+          <Loader className="w-6 h-6 animate-spin text-[#294050] dark:text-[#F09988]" />
+          <span className="ml-3 text-[#294050] dark:text-[#9FB4BE]">
             Detecting wallets...
           </span>
         </div>
@@ -498,33 +498,33 @@ export const WalletConnector: React.FC<WalletConnectorProps> = ({
   // Show informational message instead
   if (isInTauri) {
     return (
-      <div className="ledger-card ledger-card-financial border border-[rgba(201,169,97,0.15)] p-6">
+      <div className="ledger-card ledger-card-financial border border-[rgba(95,227,192,0.15)] p-6">
         <div className="flex items-center mb-4">
-          <Wallet className="w-6 h-6 text-[#8b4e52] dark:text-[#a86e72] mr-3" />
-          <h2 className="text-xl font-semibold text-[#1a1815] dark:text-[#f5f3f0]">
+          <Wallet className="w-6 h-6 text-[#294050] dark:text-[#F09988] mr-3" />
+          <h2 className="text-xl font-semibold text-[#11202B] dark:text-[#EAF3F2]">
             Connect Wallet
           </h2>
         </div>
         <DesktopModeInfoPanel />
         {connectedWallets.length > 0 && (
-          <div className="ledger-card ledger-card-donation border border-[rgba(201,169,97,0.15)] p-4">
-            <h3 className="font-semibold text-[#1a1815] dark:text-[#f5f3f0] mb-3">
+          <div className="ledger-card ledger-card-donation border border-[rgba(95,227,192,0.15)] p-4">
+            <h3 className="font-semibold text-[#11202B] dark:text-[#EAF3F2] mb-3">
               Connected Accounts Summary
             </h3>
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span className="text-[#696557] dark:text-[#b8b3ac]">
+                <span className="text-[#294050] dark:text-[#9FB4BE]">
                   Total Wallets:
                 </span>
-                <span className="font-semibold text-[#1a1815] dark:text-[#f5f3f0]">
+                <span className="font-semibold text-[#11202B] dark:text-[#EAF3F2]">
                   {connectedWallets.length}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-[#696557] dark:text-[#b8b3ac]">
+                <span className="text-[#294050] dark:text-[#9FB4BE]">
                   Total Accounts:
                 </span>
-                <span className="font-semibold text-[#1a1815] dark:text-[#f5f3f0]">
+                <span className="font-semibold text-[#11202B] dark:text-[#EAF3F2]">
                   {connectedWallets.reduce(
                     (sum, w) => sum + w.accounts.length,
                     0
@@ -541,14 +541,14 @@ export const WalletConnector: React.FC<WalletConnectorProps> = ({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="ledger-card ledger-card-financial border border-[rgba(201,169,97,0.15)] p-6">
+      <div className="ledger-card ledger-card-financial border border-[rgba(95,227,192,0.15)] p-6">
         <div className="flex items-center mb-4">
-          <Wallet className="w-6 h-6 text-[#8b4e52] dark:text-[#a86e72] mr-3" />
-          <h2 className="text-xl font-semibold text-[#1a1815] dark:text-[#f5f3f0]">
+          <Wallet className="w-6 h-6 text-[#294050] dark:text-[#F09988] mr-3" />
+          <h2 className="text-xl font-semibold text-[#11202B] dark:text-[#EAF3F2]">
             Connect Wallet
           </h2>
         </div>
-        <p className="text-sm text-[#696557] dark:text-[#b8b3ac]">
+        <p className="text-sm text-[#294050] dark:text-[#9FB4BE]">
           Connect your Polkadot or Ethereum wallet to import transaction
           history. Pacioli only requests read-only access.
         </p>
@@ -577,12 +577,12 @@ export const WalletConnector: React.FC<WalletConnectorProps> = ({
           return (
             <div
               key={walletType}
-              className="ledger-card border border-[rgba(201,169,97,0.15)] p-4 hover:border-[#8b4e52] dark:hover:border-[#a86e72] transition-colors"
+              className="ledger-card border border-[rgba(95,227,192,0.15)] p-4 hover:border-[#294050] dark:hover:border-[#F09988] transition-colors"
             >
               <div className="flex items-center justify-between">
                 <div className="flex-1">
                   <div className="flex items-center">
-                    <h3 className="font-semibold text-[#1a1815] dark:text-[#f5f3f0]">
+                    <h3 className="font-semibold text-[#11202B] dark:text-[#EAF3F2]">
                       {info.name}
                     </h3>
                     {connected && (
@@ -592,7 +592,7 @@ export const WalletConnector: React.FC<WalletConnectorProps> = ({
                       </span>
                     )}
                   </div>
-                  <p className="text-sm text-[#696557] dark:text-[#b8b3ac] mt-1">
+                  <p className="text-sm text-[#294050] dark:text-[#9FB4BE] mt-1">
                     {info.description}
                   </p>
 
@@ -633,24 +633,24 @@ export const WalletConnector: React.FC<WalletConnectorProps> = ({
 
       {/* Connected Wallets Summary */}
       {connectedWallets.length > 0 && (
-        <div className="ledger-card ledger-card-donation border border-[rgba(201,169,97,0.15)] p-6">
-          <h3 className="font-semibold text-[#1a1815] dark:text-[#f5f3f0] mb-3">
+        <div className="ledger-card ledger-card-donation border border-[rgba(95,227,192,0.15)] p-6">
+          <h3 className="font-semibold text-[#11202B] dark:text-[#EAF3F2] mb-3">
             Connected Accounts Summary
           </h3>
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
-              <span className="text-[#696557] dark:text-[#b8b3ac]">
+              <span className="text-[#294050] dark:text-[#9FB4BE]">
                 Total Wallets:
               </span>
-              <span className="font-semibold text-[#1a1815] dark:text-[#f5f3f0]">
+              <span className="font-semibold text-[#11202B] dark:text-[#EAF3F2]">
                 {connectedWallets.length}
               </span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-[#696557] dark:text-[#b8b3ac]">
+              <span className="text-[#294050] dark:text-[#9FB4BE]">
                 Total Accounts:
               </span>
-              <span className="font-semibold text-[#1a1815] dark:text-[#f5f3f0]">
+              <span className="font-semibold text-[#11202B] dark:text-[#EAF3F2]">
                 {connectedWallets.reduce(
                   (sum, w) => sum + w.accounts.length,
                   0

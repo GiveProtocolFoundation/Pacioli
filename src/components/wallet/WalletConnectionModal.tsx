@@ -249,32 +249,32 @@ const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
       />
 
       {/* Modal */}
-      <div className="relative bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg shadow-xl w-full max-w-xl max-h-[90vh] overflow-hidden">
+      <div className="relative bg-[#F7FAFA] dark:bg-[#0C141B] rounded-lg shadow-xl w-full max-w-xl max-h-[90vh] overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[rgba(201,169,97,0.15)]">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[rgba(95,227,192,0.15)]">
           <div className="flex items-center">
-            <Wallet className="w-5 h-5 mr-2 text-[#8b4e52]" />
-            <h2 className="text-lg font-semibold text-[#1a1815] dark:text-[#f5f3f0]">
+            <Wallet className="w-5 h-5 mr-2 text-[#294050]" />
+            <h2 className="text-lg font-semibold text-[#11202B] dark:text-[#EAF3F2]">
               Add Wallet
             </h2>
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-[#a39d94] hover:text-[#696557] dark:hover:text-[#b8b3ac] rounded-lg hover:bg-[#f3f1ed] dark:hover:bg-[#1a1815]"
+            className="p-2 text-[#647D8B] hover:text-[#294050] dark:hover:text-[#9FB4BE] rounded-lg hover:bg-[#EAF3F2] dark:hover:bg-[#11202B]"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-[rgba(201,169,97,0.15)]">
+        <div className="flex border-b border-[rgba(95,227,192,0.15)]">
           <button
             data-tab="add"
             onClick={handleTabChange}
             className={`flex-1 px-4 py-3 text-sm font-medium flex items-center justify-center gap-2 ${
               activeTab === 'add'
-                ? 'text-[#8b4e52] border-b-2 border-[#8b4e52] bg-[#8b4e52]/5'
-                : 'text-[#696557] dark:text-[#b8b3ac] hover:text-[#1a1815] dark:hover:text-[#f5f3f0]'
+                ? 'text-[#294050] border-b-2 border-[#294050] bg-[#294050]/5'
+                : 'text-[#294050] dark:text-[#9FB4BE] hover:text-[#11202B] dark:hover:text-[#EAF3F2]'
             }`}
           >
             <Plus className="w-4 h-4" />
@@ -285,8 +285,8 @@ const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
             onClick={handleTabChange}
             className={`flex-1 px-4 py-3 text-sm font-medium flex items-center justify-center gap-2 ${
               activeTab === 'walletconnect'
-                ? 'text-[#8b4e52] border-b-2 border-[#8b4e52] bg-[#8b4e52]/5'
-                : 'text-[#696557] dark:text-[#b8b3ac] hover:text-[#1a1815] dark:hover:text-[#f5f3f0]'
+                ? 'text-[#294050] border-b-2 border-[#294050] bg-[#294050]/5'
+                : 'text-[#294050] dark:text-[#9FB4BE] hover:text-[#11202B] dark:hover:text-[#EAF3F2]'
             }`}
           >
             <QrCode className="w-4 h-4" />
@@ -297,8 +297,8 @@ const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
             onClick={handleTabChange}
             className={`flex-1 px-4 py-3 text-sm font-medium flex items-center justify-center gap-2 ${
               activeTab === 'manage'
-                ? 'text-[#8b4e52] border-b-2 border-[#8b4e52] bg-[#8b4e52]/5'
-                : 'text-[#696557] dark:text-[#b8b3ac] hover:text-[#1a1815] dark:hover:text-[#f5f3f0]'
+                ? 'text-[#294050] border-b-2 border-[#294050] bg-[#294050]/5'
+                : 'text-[#294050] dark:text-[#9FB4BE] hover:text-[#11202B] dark:hover:text-[#EAF3F2]'
             }`}
           >
             <Settings className="w-4 h-4" />
@@ -321,7 +321,7 @@ const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
               <div>
                 <label
                   htmlFor="wallet-address"
-                  className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
+                  className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] mb-2"
                 >
                   Wallet Address
                 </label>
@@ -336,14 +336,14 @@ const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
                       : 'Select a blockchain first'
                   }
                   disabled={!selectedBlockchain}
-                  className={`w-full px-4 py-2.5 border rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] font-mono text-sm ${
+                  className={`w-full px-4 py-2.5 border rounded-lg bg-[#F7FAFA] dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] font-mono text-sm ${
                     addressError
-                      ? 'border-[#9d6b6b]'
-                      : 'border-[rgba(201,169,97,0.15)]'
-                  } focus:outline-none focus:ring-2 focus:ring-[#c9a961] disabled:opacity-50 disabled:cursor-not-allowed`}
+                      ? 'border-[#E8836F]'
+                      : 'border-[rgba(95,227,192,0.15)]'
+                  } focus:outline-none focus:ring-2 focus:ring-[#5FE3C0] disabled:opacity-50 disabled:cursor-not-allowed`}
                 />
                 {addressError && (
-                  <p className="mt-1.5 text-sm text-[#9d6b6b] flex items-center">
+                  <p className="mt-1.5 text-sm text-[#E8836F] flex items-center">
                     <AlertCircle className="w-4 h-4 mr-1" />
                     {addressError}
                   </p>
@@ -354,7 +354,7 @@ const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
               <div>
                 <label
                   htmlFor="wallet-label"
-                  className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
+                  className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] mb-2"
                 >
                   Label (Optional)
                 </label>
@@ -365,21 +365,21 @@ const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
                   onChange={handleLabelChange}
                   placeholder="e.g., Main Trading Wallet"
                   maxLength={50}
-                  className="w-full px-4 py-2.5 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
+                  className="w-full px-4 py-2.5 border border-[rgba(95,227,192,0.15)] rounded-lg bg-[#F7FAFA] dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]"
                 />
               </div>
 
               {/* Verification Info for Desktop App */}
               {isAddressValid && (
-                <div className="p-4 bg-[#f3f1ed] dark:bg-[#1a1815] rounded-lg border border-[rgba(201,169,97,0.15)]">
+                <div className="p-4 bg-[#EAF3F2] dark:bg-[#11202B] rounded-lg border border-[rgba(95,227,192,0.15)]">
                   <div className="flex items-center justify-between mb-3">
-                    <h4 className="text-sm font-medium text-[#1a1815] dark:text-[#f5f3f0] flex items-center">
-                      <Shield className="w-4 h-4 mr-2 text-[#c9a961]" />
+                    <h4 className="text-sm font-medium text-[#11202B] dark:text-[#EAF3F2] flex items-center">
+                      <Shield className="w-4 h-4 mr-2 text-[#5FE3C0]" />
                       About Verification
                     </h4>
                     <button
                       onClick={handleToggleHelp}
-                      className="text-xs text-[#8b4e52] hover:underline flex items-center gap-1"
+                      className="text-xs text-[#294050] hover:underline flex items-center gap-1"
                     >
                       <HelpCircle className="w-3 h-3" />
                       Why verify?
@@ -387,7 +387,7 @@ const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
                   </div>
 
                   {showHelp && (
-                    <div className="mb-3 p-3 bg-[#c9a961]/10 rounded-lg text-xs text-[#696557] dark:text-[#b8b3ac]">
+                    <div className="mb-3 p-3 bg-[#5FE3C0]/10 rounded-lg text-xs text-[#294050] dark:text-[#9FB4BE]">
                       <p className="mb-2">
                         {getVerificationExplanation().description}
                       </p>
@@ -398,10 +398,10 @@ const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
                   )}
 
                   <div className="text-center py-3">
-                    <p className="text-sm text-[#696557] dark:text-[#b8b3ac] mb-2">
+                    <p className="text-sm text-[#294050] dark:text-[#9FB4BE] mb-2">
                       Want to verify ownership?
                     </p>
-                    <p className="text-xs text-[#c9a961]">
+                    <p className="text-xs text-[#5FE3C0]">
                       Use the WalletConnect tab to connect your mobile wallet
                       and automatically verify.
                     </p>
@@ -414,13 +414,13 @@ const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
                 <button
                   onClick={handleAddWithoutVerification}
                   disabled={!isAddressValid}
-                  className="flex-1 px-4 py-2.5 border border-[rgba(201,169,97,0.15)] text-[#696557] dark:text-[#b8b3ac] rounded-lg font-medium hover:bg-[#f3f1ed] dark:hover:bg-[#1a1815] disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 px-4 py-2.5 border border-[rgba(95,227,192,0.15)] text-[#294050] dark:text-[#9FB4BE] rounded-lg font-medium hover:bg-[#EAF3F2] dark:hover:bg-[#11202B] disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Add Without Verification
                 </button>
               </div>
 
-              <p className="text-xs text-center text-[#a39d94]">
+              <p className="text-xs text-center text-[#647D8B]">
                 Unverified wallets can still import transactions but won&apos;t
                 have ownership proof.
               </p>
@@ -433,31 +433,31 @@ const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
               {!isWcConfigured ? (
                 // Not configured
                 <div className="text-center py-8">
-                  <AlertCircle className="w-16 h-16 mx-auto text-[#c9a961] mb-4" />
-                  <h3 className="text-lg font-semibold text-[#1a1815] dark:text-[#f5f3f0] mb-2">
+                  <AlertCircle className="w-16 h-16 mx-auto text-[#5FE3C0] mb-4" />
+                  <h3 className="text-lg font-semibold text-[#11202B] dark:text-[#EAF3F2] mb-2">
                     Configuration Required
                   </h3>
-                  <p className="text-sm text-[#696557] dark:text-[#b8b3ac] mb-4 max-w-md mx-auto">
+                  <p className="text-sm text-[#294050] dark:text-[#9FB4BE] mb-4 max-w-md mx-auto">
                     WalletConnect requires a project ID to function.
                   </p>
-                  <div className="p-4 bg-[#f3f1ed] dark:bg-[#1a1815] rounded-lg text-left max-w-md mx-auto">
-                    <p className="text-xs text-[#696557] dark:text-[#b8b3ac] mb-2">
+                  <div className="p-4 bg-[#EAF3F2] dark:bg-[#11202B] rounded-lg text-left max-w-md mx-auto">
+                    <p className="text-xs text-[#294050] dark:text-[#9FB4BE] mb-2">
                       1. Register at{' '}
                       <a
                         href="https://cloud.walletconnect.com"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-[#8b4e52] hover:underline"
+                        className="text-[#294050] hover:underline"
                       >
                         cloud.walletconnect.com
                       </a>
                     </p>
-                    <p className="text-xs text-[#696557] dark:text-[#b8b3ac] mb-2">
+                    <p className="text-xs text-[#294050] dark:text-[#9FB4BE] mb-2">
                       2. Create a new project and copy your Project ID
                     </p>
-                    <p className="text-xs text-[#696557] dark:text-[#b8b3ac]">
+                    <p className="text-xs text-[#294050] dark:text-[#9FB4BE]">
                       3. Set{' '}
-                      <code className="px-1 py-0.5 bg-[#1a1815]/10 dark:bg-white/10 rounded">
+                      <code className="px-1 py-0.5 bg-[#11202B]/10 dark:bg-white/10 rounded">
                         VITE_WALLETCONNECT_PROJECT_ID
                       </code>{' '}
                       in your environment
@@ -470,13 +470,13 @@ const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center">
                       <CheckCircle className="w-5 h-5 text-[#7a9b6f] mr-2" />
-                      <span className="text-sm font-medium text-[#1a1815] dark:text-[#f5f3f0]">
+                      <span className="text-sm font-medium text-[#11202B] dark:text-[#EAF3F2]">
                         Connected to {wcSession.peerMetadata?.name || 'Wallet'}
                       </span>
                     </div>
                     <button
                       onClick={handleWalletConnectDisconnect}
-                      className="text-xs text-[#9d6b6b] hover:text-[#8b4e52] flex items-center gap-1"
+                      className="text-xs text-[#E8836F] hover:text-[#294050] flex items-center gap-1"
                     >
                       <Unlink className="w-3 h-3" />
                       Disconnect
@@ -485,20 +485,20 @@ const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
 
                   {/* Connected Accounts */}
                   <div className="space-y-3">
-                    <p className="text-sm text-[#696557] dark:text-[#b8b3ac]">
+                    <p className="text-sm text-[#294050] dark:text-[#9FB4BE]">
                       Select accounts to add to Pacioli:
                     </p>
                     {wcSession.accounts.map((account) => (
                       <div
                         key={`${account.chain}-${account.address}`}
-                        className="p-3 bg-[#f3f1ed] dark:bg-[#1a1815] rounded-lg border border-[rgba(201,169,97,0.15)]"
+                        className="p-3 bg-[#EAF3F2] dark:bg-[#11202B] rounded-lg border border-[rgba(95,227,192,0.15)]"
                       >
                         <div className="flex items-center justify-between">
                           <div className="flex-1 min-w-0">
-                            <p className="text-xs text-[#8b4e52] mb-1">
+                            <p className="text-xs text-[#294050] mb-1">
                               {walletConnectService.getChainName(account.chain)}
                             </p>
-                            <p className="text-sm font-mono text-[#1a1815] dark:text-[#f5f3f0] truncate">
+                            <p className="text-sm font-mono text-[#11202B] dark:text-[#EAF3F2] truncate">
                               {account.address}
                             </p>
                           </div>
@@ -512,7 +512,7 @@ const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
                               data-address={account.address}
                               data-chain={account.chain}
                               onClick={handleAddWcAccountClick}
-                              className="ml-3 px-3 py-1.5 bg-[#8b4e52] text-white text-xs rounded-lg hover:bg-[#7a4248] flex items-center gap-1"
+                              className="ml-3 px-3 py-1.5 bg-[#294050] text-white text-xs rounded-lg hover:bg-[#1E2F3C] flex items-center gap-1"
                             >
                               <Plus className="w-3 h-3" />
                               Add
@@ -530,18 +530,18 @@ const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
               ) : (
                 // Disconnected or connecting
                 <div className="text-center py-8">
-                  <Smartphone className="w-16 h-16 mx-auto text-[#8b4e52] mb-4" />
-                  <h3 className="text-lg font-semibold text-[#1a1815] dark:text-[#f5f3f0] mb-2">
+                  <Smartphone className="w-16 h-16 mx-auto text-[#294050] mb-4" />
+                  <h3 className="text-lg font-semibold text-[#11202B] dark:text-[#EAF3F2] mb-2">
                     Connect Mobile Wallet
                   </h3>
-                  <p className="text-sm text-[#696557] dark:text-[#b8b3ac] mb-6 max-w-md mx-auto">
+                  <p className="text-sm text-[#294050] dark:text-[#9FB4BE] mb-6 max-w-md mx-auto">
                     Scan a QR code with your mobile wallet to connect and verify
                     ownership.
                   </p>
 
                   {wcError && (
-                    <div className="mb-4 p-3 bg-[#9d6b6b]/10 rounded-lg">
-                      <p className="text-sm text-[#9d6b6b] flex items-center justify-center">
+                    <div className="mb-4 p-3 bg-[#E8836F]/10 rounded-lg">
+                      <p className="text-sm text-[#E8836F] flex items-center justify-center">
                         <AlertCircle className="w-4 h-4 mr-2" />
                         {wcError}
                       </p>
@@ -551,7 +551,7 @@ const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
                   <button
                     onClick={handleWalletConnectConnect}
                     disabled={wcState === 'connecting'}
-                    className="px-6 py-3 bg-[#8b4e52] text-white rounded-lg font-medium hover:bg-[#7a4248] disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2"
+                    className="px-6 py-3 bg-[#294050] text-white rounded-lg font-medium hover:bg-[#1E2F3C] disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2"
                   >
                     {wcState === 'connecting' ? (
                       <>
@@ -566,11 +566,11 @@ const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
                     )}
                   </button>
 
-                  <div className="mt-6 p-4 bg-[#f3f1ed] dark:bg-[#1a1815] rounded-lg text-left">
-                    <p className="text-xs font-medium text-[#1a1815] dark:text-[#f5f3f0] mb-2">
+                  <div className="mt-6 p-4 bg-[#EAF3F2] dark:bg-[#11202B] rounded-lg text-left">
+                    <p className="text-xs font-medium text-[#11202B] dark:text-[#EAF3F2] mb-2">
                       Supported Wallets:
                     </p>
-                    <p className="text-xs text-[#696557] dark:text-[#b8b3ac]">
+                    <p className="text-xs text-[#294050] dark:text-[#9FB4BE]">
                       MetaMask, Rainbow, Trust Wallet, Coinbase Wallet, Nova
                       Wallet, and many more WalletConnect-compatible wallets.
                     </p>
@@ -583,15 +583,15 @@ const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
           {/* Manage Wallets Tab */}
           {activeTab === 'manage' && (
             <div className="text-center py-8">
-              <Settings className="w-16 h-16 mx-auto text-[#a39d94] mb-4" />
-              <h3 className="text-lg font-semibold text-[#1a1815] dark:text-[#f5f3f0] mb-2">
+              <Settings className="w-16 h-16 mx-auto text-[#647D8B] mb-4" />
+              <h3 className="text-lg font-semibold text-[#11202B] dark:text-[#EAF3F2] mb-2">
                 Manage Your Wallets
               </h3>
-              <p className="text-sm text-[#696557] dark:text-[#b8b3ac] mb-4">
+              <p className="text-sm text-[#294050] dark:text-[#9FB4BE] mb-4">
                 View and manage your tracked wallets from the Wallet Manager
                 page.
               </p>
-              <p className="text-xs text-[#a39d94]">
+              <p className="text-xs text-[#647D8B]">
                 Close this modal to see your tracked wallets in the main panel.
               </p>
             </div>

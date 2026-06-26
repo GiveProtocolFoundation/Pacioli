@@ -32,17 +32,17 @@ interface SelectStepProps {
  */
 const SelectStepContent: React.FC<SelectStepProps> = ({ onSelectFile }) => (
   <>
-    <p className="text-sm text-[#696557] dark:text-[#b8b3ac] mb-4">
+    <p className="text-sm text-[#294050] dark:text-[#9FB4BE] mb-4">
       Select a Pacioli export file (.json) to import.
     </p>
     <button
       type="button"
       onClick={onSelectFile}
-      className="w-full py-8 border-2 border-dashed border-[rgba(201,169,97,0.15)] rounded-lg hover:border-[#8b4e52] dark:hover:border-[#a86e72] transition-colors"
+      className="w-full py-8 border-2 border-dashed border-[rgba(95,227,192,0.15)] rounded-lg hover:border-[#294050] dark:hover:border-[#F09988] transition-colors"
     >
       <div className="text-center">
         <svg
-          className="mx-auto h-12 w-12 text-[#a39d94]"
+          className="mx-auto h-12 w-12 text-[#647D8B]"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -54,7 +54,7 @@ const SelectStepContent: React.FC<SelectStepProps> = ({ onSelectFile }) => (
             d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
           />
         </svg>
-        <p className="mt-2 text-sm text-[#696557] dark:text-[#b8b3ac]">
+        <p className="mt-2 text-sm text-[#294050] dark:text-[#9FB4BE]">
           Click to select a file
         </p>
       </div>
@@ -77,11 +77,11 @@ const PasswordStepContent: React.FC<PasswordStepProps> = ({
   onPasswordChange,
 }) => (
   <>
-    <p className="text-sm text-[#696557] dark:text-[#b8b3ac] mb-4">
+    <p className="text-sm text-[#294050] dark:text-[#9FB4BE] mb-4">
       This export is encrypted. Enter the password to continue.
     </p>
-    <div className="mb-4 p-3 bg-[#f3f1ed] dark:bg-[#2a2620] rounded-md">
-      <p className="text-sm text-[#1a1815] dark:text-[#b8b3ac]">
+    <div className="mb-4 p-3 bg-[#EAF3F2] dark:bg-[#16242F] rounded-md">
+      <p className="text-sm text-[#11202B] dark:text-[#9FB4BE]">
         <strong>Export date:</strong>{' '}
         {new Date(preview.exported_at).toLocaleDateString()}
       </p>
@@ -89,7 +89,7 @@ const PasswordStepContent: React.FC<PasswordStepProps> = ({
     <div className="mb-4">
       <label
         htmlFor="import-password"
-        className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac]"
+        className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE]"
       >
         Password
       </label>
@@ -98,7 +98,7 @@ const PasswordStepContent: React.FC<PasswordStepProps> = ({
         type="password"
         value={password}
         onChange={onPasswordChange}
-        className="mt-1 block w-full px-3 py-2 border border-[rgba(201,169,97,0.15)] rounded-md shadow-sm focus:outline-none focus:ring-[#c9a961] focus:border-[#c9a961] dark:bg-[#2a2620] dark:text-[#f5f3f0] sm:text-sm"
+        className="mt-1 block w-full px-3 py-2 border border-[rgba(95,227,192,0.15)] rounded-md shadow-sm focus:outline-none focus:ring-[#5FE3C0] focus:border-[#5FE3C0] dark:bg-[#16242F] dark:text-[#EAF3F2] sm:text-sm"
         placeholder="Enter export password"
       />
     </div>
@@ -114,21 +114,21 @@ interface PreviewStepProps {
  */
 const PreviewStepContent: React.FC<PreviewStepProps> = ({ preview }) => (
   <>
-    <p className="text-sm text-[#696557] dark:text-[#b8b3ac] mb-4">
+    <p className="text-sm text-[#294050] dark:text-[#9FB4BE] mb-4">
       Review the data to be imported.
     </p>
-    <div className="mb-4 p-3 bg-[#f3f1ed] dark:bg-[#2a2620] rounded-md">
-      <p className="text-sm text-[#1a1815] dark:text-[#b8b3ac]">
+    <div className="mb-4 p-3 bg-[#EAF3F2] dark:bg-[#16242F] rounded-md">
+      <p className="text-sm text-[#11202B] dark:text-[#9FB4BE]">
         <strong>Export version:</strong> {preview.version}
       </p>
-      <p className="text-sm text-[#1a1815] dark:text-[#b8b3ac]">
+      <p className="text-sm text-[#11202B] dark:text-[#9FB4BE]">
         <strong>Export date:</strong>{' '}
         {new Date(preview.exported_at).toLocaleDateString()}
       </p>
-      <p className="text-sm text-[#1a1815] dark:text-[#b8b3ac] mt-2">
+      <p className="text-sm text-[#11202B] dark:text-[#9FB4BE] mt-2">
         <strong>Data to import:</strong>
       </p>
-      <ul className="mt-1 text-sm text-[#696557] dark:text-[#b8b3ac]">
+      <ul className="mt-1 text-sm text-[#294050] dark:text-[#9FB4BE]">
         <li>• {preview.profile_count} profile(s)</li>
         <li>• {preview.wallet_count} wallet(s)</li>
         <li>• {preview.transaction_count} transaction(s)</li>
@@ -148,8 +148,8 @@ const PreviewStepContent: React.FC<PreviewStepProps> = ({ preview }) => (
  */
 const ImportingStepContent: React.FC = () => (
   <div className="py-8 text-center">
-    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#8b4e52] mx-auto" />
-    <p className="mt-4 text-sm text-[#696557] dark:text-[#b8b3ac]">
+    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#294050] mx-auto" />
+    <p className="mt-4 text-sm text-[#294050] dark:text-[#9FB4BE]">
       Importing data...
     </p>
   </div>
@@ -178,12 +178,12 @@ const CompleteStepContent: React.FC<CompleteStepProps> = ({ result }) => (
           d="M5 13l4 4L19 7"
         />
       </svg>
-      <p className="mt-2 text-lg font-medium text-[#1a1815] dark:text-[#f5f3f0]">
+      <p className="mt-2 text-lg font-medium text-[#11202B] dark:text-[#EAF3F2]">
         Import Complete
       </p>
     </div>
-    <div className="mb-4 p-3 bg-[#f3f1ed] dark:bg-[#2a2620] rounded-md">
-      <ul className="text-sm text-[#696557] dark:text-[#b8b3ac]">
+    <div className="mb-4 p-3 bg-[#EAF3F2] dark:bg-[#16242F] rounded-md">
+      <ul className="text-sm text-[#294050] dark:text-[#9FB4BE]">
         <li>• {result.profiles_imported} profile(s) imported</li>
         <li>• {result.wallets_imported} wallet(s) imported</li>
         <li>• {result.transactions_imported} transaction(s) imported</li>
@@ -250,7 +250,7 @@ const DialogActions: React.FC<DialogActionsProps> = ({
     <button
       type="button"
       onClick={onClose}
-      className="px-4 py-2 text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620] rounded-md"
+      className="px-4 py-2 text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] hover:bg-[#EAF3F2] dark:hover:bg-[#16242F] rounded-md"
     >
       {step === 'complete' ? 'Close' : 'Cancel'}
     </button>
@@ -259,7 +259,7 @@ const DialogActions: React.FC<DialogActionsProps> = ({
         type="button"
         onClick={onImport}
         disabled={step === 'password' && !password}
-        className="px-4 py-2 text-sm font-medium text-white bg-[#8b4e52] hover:bg-[#7a4248] rounded-md disabled:opacity-50"
+        className="px-4 py-2 text-sm font-medium text-white bg-[#294050] hover:bg-[#1E2F3C] rounded-md disabled:opacity-50"
       >
         Import
       </button>
@@ -396,13 +396,13 @@ export const ImportDialog: React.FC<ImportDialogProps> = ({
           onClose={handleClose}
           onKeyDown={handleBackdropKeyDown}
         />
-        <div className="relative bg-[#fafaf8] dark:bg-[#1a1815] rounded-lg shadow-xl max-w-md w-full p-6">
-          <h2 className="text-lg font-semibold text-[#1a1815] dark:text-[#f5f3f0] mb-2">
+        <div className="relative bg-[#F7FAFA] dark:bg-[#11202B] rounded-lg shadow-xl max-w-md w-full p-6">
+          <h2 className="text-lg font-semibold text-[#11202B] dark:text-[#EAF3F2] mb-2">
             Import Data
           </h2>
           {renderStepContent()}
           {error && (
-            <div className="mt-4 text-sm text-[#9d6b6b] dark:text-[#b88585]">
+            <div className="mt-4 text-sm text-[#E8836F] dark:text-[#F09988]">
               {error}
             </div>
           )}

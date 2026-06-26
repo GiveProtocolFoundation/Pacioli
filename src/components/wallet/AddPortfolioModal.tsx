@@ -433,18 +433,18 @@ const AddPortfolioModal: React.FC<AddPortfolioModalProps> = ({
       />
 
       {/* Modal */}
-      <div className="relative bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg shadow-xl w-full max-w-lg max-h-[90vh] overflow-hidden">
+      <div className="relative bg-[#F7FAFA] dark:bg-[#0C141B] rounded-lg shadow-xl w-full max-w-lg max-h-[90vh] overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[rgba(201,169,97,0.15)]">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[rgba(95,227,192,0.15)]">
           <div className="flex items-center">
-            <Eye className="w-5 h-5 mr-2 text-[#8b4e52]" />
-            <h2 className="text-lg font-semibold text-[#1a1815] dark:text-[#f5f3f0]">
+            <Eye className="w-5 h-5 mr-2 text-[#294050]" />
+            <h2 className="text-lg font-semibold text-[#11202B] dark:text-[#EAF3F2]">
               Add Portfolio
             </h2>
           </div>
           <button
             onClick={handleClose}
-            className="p-2 text-[#a39d94] hover:text-[#696557] dark:hover:text-[#b8b3ac] rounded-lg hover:bg-[#f3f1ed] dark:hover:bg-[#1a1815]"
+            className="p-2 text-[#647D8B] hover:text-[#294050] dark:hover:text-[#9FB4BE] rounded-lg hover:bg-[#EAF3F2] dark:hover:bg-[#11202B]"
           >
             <X className="w-5 h-5" />
           </button>
@@ -454,14 +454,14 @@ const AddPortfolioModal: React.FC<AddPortfolioModalProps> = ({
         <div className="p-6 max-h-[calc(90vh-140px)] overflow-y-auto">
           <div className="space-y-6">
             {/* Observer Mode Banner */}
-            <div className="p-3 bg-[#c9a961]/10 dark:bg-[#c9a961]/5 rounded-lg border border-[#c9a961]/20">
+            <div className="p-3 bg-[#5FE3C0]/10 dark:bg-[#5FE3C0]/5 rounded-lg border border-[#5FE3C0]/20">
               <div className="flex items-start gap-2">
-                <Eye className="w-4 h-4 text-[#c9a961] mt-0.5 flex-shrink-0" />
+                <Eye className="w-4 h-4 text-[#5FE3C0] mt-0.5 flex-shrink-0" />
                 <div>
-                  <p className="text-sm font-medium text-[#1a1815] dark:text-[#f5f3f0]">
+                  <p className="text-sm font-medium text-[#11202B] dark:text-[#EAF3F2]">
                     Read-Only Mode
                   </p>
-                  <p className="text-xs text-[#696557] dark:text-[#b8b3ac] mt-0.5">
+                  <p className="text-xs text-[#294050] dark:text-[#9FB4BE] mt-0.5">
                     Pacioli observes blockchain data. No private keys or wallet
                     connections required.
                   </p>
@@ -471,7 +471,7 @@ const AddPortfolioModal: React.FC<AddPortfolioModalProps> = ({
 
             {/* Ecosystem Selection */}
             <div>
-              <span className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-3">
+              <span className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] mb-3">
                 Select Ecosystem
               </span>
               <div className="grid gap-3">
@@ -483,24 +483,24 @@ const AddPortfolioModal: React.FC<AddPortfolioModalProps> = ({
                     onClick={handleEcosystemClick}
                     className={`w-full p-4 rounded-lg border text-left transition-colors ${
                       selectedEcosystem === ecosystem.id
-                        ? 'border-[#8b4e52] bg-[#8b4e52]/5 dark:bg-[#8b4e52]/10'
-                        : 'border-[rgba(201,169,97,0.15)] hover:border-[#c9a961] hover:bg-[#f3f1ed] dark:hover:bg-[#1a1815]'
+                        ? 'border-[#294050] bg-[#294050]/5 dark:bg-[#294050]/10'
+                        : 'border-[rgba(95,227,192,0.15)] hover:border-[#5FE3C0] hover:bg-[#EAF3F2] dark:hover:bg-[#11202B]'
                     }`}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         {ecosystem.icon}
                         <div>
-                          <p className="font-medium text-[#1a1815] dark:text-[#f5f3f0]">
+                          <p className="font-medium text-[#11202B] dark:text-[#EAF3F2]">
                             {ecosystem.label}
                           </p>
-                          <p className="text-xs text-[#696557] dark:text-[#b8b3ac]">
+                          <p className="text-xs text-[#294050] dark:text-[#9FB4BE]">
                             {ecosystem.description}
                           </p>
                         </div>
                       </div>
                       {selectedEcosystem === ecosystem.id && (
-                        <CheckCircle className="w-5 h-5 text-[#8b4e52]" />
+                        <CheckCircle className="w-5 h-5 text-[#294050]" />
                       )}
                     </div>
                   </button>
@@ -513,13 +513,13 @@ const AddPortfolioModal: React.FC<AddPortfolioModalProps> = ({
               <>
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <label className="text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac]">
+                    <label className="text-sm font-medium text-[#11202B] dark:text-[#9FB4BE]">
                       {ecosystemConfig.inputLabel}
                     </label>
                     {selectedEcosystem === 'bitcoin' && (
                       <button
                         onClick={handleToggleHelp}
-                        className="text-xs text-[#8b4e52] hover:underline flex items-center gap-1"
+                        className="text-xs text-[#294050] hover:underline flex items-center gap-1"
                       >
                         <HelpCircle className="w-3 h-3" />
                         What&apos;s xPub?
@@ -528,7 +528,7 @@ const AddPortfolioModal: React.FC<AddPortfolioModalProps> = ({
                   </div>
 
                   {showHelp && selectedEcosystem === 'bitcoin' && (
-                    <div className="mb-3 p-3 bg-[#f3f1ed] dark:bg-[#1a1815] rounded-lg text-xs text-[#696557] dark:text-[#b8b3ac]">
+                    <div className="mb-3 p-3 bg-[#EAF3F2] dark:bg-[#11202B] rounded-lg text-xs text-[#294050] dark:text-[#9FB4BE]">
                       <p className="mb-2">
                         <strong>xPub (Extended Public Key)</strong> allows
                         Pacioli to derive all addresses from your HD wallet
@@ -547,20 +547,20 @@ const AddPortfolioModal: React.FC<AddPortfolioModalProps> = ({
                     value={address}
                     onChange={handleAddressChange}
                     placeholder={ecosystemConfig.inputPlaceholder}
-                    className={`w-full px-4 py-2.5 border rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] font-mono text-sm ${
+                    className={`w-full px-4 py-2.5 border rounded-lg bg-[#F7FAFA] dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] font-mono text-sm ${
                       addressError
-                        ? 'border-[#9d6b6b]'
-                        : 'border-[rgba(201,169,97,0.15)]'
-                    } focus:outline-none focus:ring-2 focus:ring-[#c9a961]`}
+                        ? 'border-[#E8836F]'
+                        : 'border-[rgba(95,227,192,0.15)]'
+                    } focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]`}
                   />
                   {addressError && (
-                    <p className="mt-1.5 text-sm text-[#9d6b6b] flex items-center">
+                    <p className="mt-1.5 text-sm text-[#E8836F] flex items-center">
                       <AlertCircle className="w-4 h-4 mr-1" />
                       {addressError}
                     </p>
                   )}
                   {isValidatingXpub && looksLikeXpub && (
-                    <p className="mt-1.5 text-sm text-[#696557] flex items-center">
+                    <p className="mt-1.5 text-sm text-[#294050] flex items-center">
                       <Loader className="w-4 h-4 mr-1 animate-spin" />
                       Validating xPub...
                     </p>
@@ -572,7 +572,7 @@ const AddPortfolioModal: React.FC<AddPortfolioModalProps> = ({
                         Valid {xpubInfo.is_testnet ? 'testnet ' : ''}xPub
                         detected
                       </p>
-                      <p className="ml-5 text-xs text-[#696557] dark:text-[#b8b3ac]">
+                      <p className="ml-5 text-xs text-[#294050] dark:text-[#9FB4BE]">
                         {getXpubPrefixDescription(address.slice(0, 4))}
                       </p>
                     </div>
@@ -583,11 +583,11 @@ const AddPortfolioModal: React.FC<AddPortfolioModalProps> = ({
                 {selectedEcosystem === 'ethereum' &&
                   address &&
                   !addressError && (
-                    <div className="p-4 bg-[#f3f1ed] dark:bg-[#1a1815] rounded-lg border border-[rgba(201,169,97,0.15)]">
+                    <div className="p-4 bg-[#EAF3F2] dark:bg-[#11202B] rounded-lg border border-[rgba(95,227,192,0.15)]">
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-2">
-                          <Zap className="w-4 h-4 text-[#c9a961]" />
-                          <span className="text-sm font-medium text-[#1a1815] dark:text-[#f5f3f0]">
+                          <Zap className="w-4 h-4 text-[#5FE3C0]" />
+                          <span className="text-sm font-medium text-[#11202B] dark:text-[#EAF3F2]">
                             Track on L2 Networks
                           </span>
                         </div>
@@ -601,7 +601,7 @@ const AddPortfolioModal: React.FC<AddPortfolioModalProps> = ({
                             onChange={handleTrackOnL2sChange}
                             className="sr-only peer"
                           />
-                          <div className="w-9 h-5 bg-[#a39d94] peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#c9a961] rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#8b4e52]" />
+                          <div className="w-9 h-5 bg-[#647D8B] peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#5FE3C0] rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#294050]" />
                         </label>
                       </div>
 
@@ -610,20 +610,20 @@ const AddPortfolioModal: React.FC<AddPortfolioModalProps> = ({
                           {L2_CHAINS.map(chain => (
                             <label
                               key={chain.id}
-                              className="flex items-center gap-2 p-2 rounded-lg cursor-pointer hover:bg-[#fafaf8] dark:hover:bg-[#0f0e0c]"
+                              className="flex items-center gap-2 p-2 rounded-lg cursor-pointer hover:bg-[#F7FAFA] dark:hover:bg-[#0C141B]"
                             >
                               <input
                                 type="checkbox"
                                 checked={selectedL2s.has(chain.id)}
                                 data-chain={chain.id}
                                 onChange={handleL2ChainToggle}
-                                className="w-4 h-4 text-[#8b4e52] border-[rgba(201,169,97,0.3)] rounded focus:ring-[#c9a961]"
+                                className="w-4 h-4 text-[#294050] border-[rgba(95,227,192,0.3)] rounded focus:ring-[#5FE3C0]"
                               />
                               <span
                                 className="w-2.5 h-2.5 rounded-full"
                                 style={{ backgroundColor: chain.color }}
                               />
-                              <span className="text-sm text-[#1a1815] dark:text-[#f5f3f0]">
+                              <span className="text-sm text-[#11202B] dark:text-[#EAF3F2]">
                                 {chain.label}
                               </span>
                             </label>
@@ -631,7 +631,7 @@ const AddPortfolioModal: React.FC<AddPortfolioModalProps> = ({
                         </div>
                       )}
 
-                      <p className="mt-3 text-xs text-[#696557] dark:text-[#b8b3ac]">
+                      <p className="mt-3 text-xs text-[#294050] dark:text-[#9FB4BE]">
                         Same address works across all EVM chains. We&apos;ll
                         fetch transactions from each selected network.
                       </p>
@@ -642,10 +642,10 @@ const AddPortfolioModal: React.FC<AddPortfolioModalProps> = ({
                 {selectedEcosystem === 'polkadot' &&
                   address &&
                   !addressError && (
-                    <div className="p-4 bg-[#f3f1ed] dark:bg-[#1a1815] rounded-lg border border-[rgba(201,169,97,0.15)]">
+                    <div className="p-4 bg-[#EAF3F2] dark:bg-[#11202B] rounded-lg border border-[rgba(95,227,192,0.15)]">
                       <div className="flex items-center gap-2 mb-3">
                         <Wallet className="w-4 h-4 text-[#E6007A]" />
-                        <span className="text-sm font-medium text-[#1a1815] dark:text-[#f5f3f0]">
+                        <span className="text-sm font-medium text-[#11202B] dark:text-[#EAF3F2]">
                           Track on Networks
                         </span>
                       </div>
@@ -654,27 +654,27 @@ const AddPortfolioModal: React.FC<AddPortfolioModalProps> = ({
                         {POLKADOT_CHAINS.map(chain => (
                           <label
                             key={chain.id}
-                            className="flex items-center gap-2 p-2 rounded-lg cursor-pointer hover:bg-[#fafaf8] dark:hover:bg-[#0f0e0c]"
+                            className="flex items-center gap-2 p-2 rounded-lg cursor-pointer hover:bg-[#F7FAFA] dark:hover:bg-[#0C141B]"
                           >
                             <input
                               type="checkbox"
                               checked={selectedPolkadotChains.has(chain.id)}
                               data-chain={chain.id}
                               onChange={handlePolkadotChainToggle}
-                              className="w-4 h-4 text-[#8b4e52] border-[rgba(201,169,97,0.3)] rounded focus:ring-[#c9a961]"
+                              className="w-4 h-4 text-[#294050] border-[rgba(95,227,192,0.3)] rounded focus:ring-[#5FE3C0]"
                             />
                             <span
                               className="w-2.5 h-2.5 rounded-full"
                               style={{ backgroundColor: chain.color }}
                             />
-                            <span className="text-sm text-[#1a1815] dark:text-[#f5f3f0]">
+                            <span className="text-sm text-[#11202B] dark:text-[#EAF3F2]">
                               {chain.label}
                             </span>
                           </label>
                         ))}
                       </div>
 
-                      <p className="mt-3 text-xs text-[#696557] dark:text-[#b8b3ac]">
+                      <p className="mt-3 text-xs text-[#294050] dark:text-[#9FB4BE]">
                         SS58 addresses are automatically converted for each
                         network.
                       </p>
@@ -685,7 +685,7 @@ const AddPortfolioModal: React.FC<AddPortfolioModalProps> = ({
                 <div>
                   <label
                     htmlFor="portfolio-label"
-                    className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
+                    className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] mb-2"
                   >
                     Label (Optional)
                   </label>
@@ -696,7 +696,7 @@ const AddPortfolioModal: React.FC<AddPortfolioModalProps> = ({
                     onChange={handleLabelChange}
                     placeholder="e.g., Main Portfolio, Cold Storage"
                     maxLength={50}
-                    className="w-full px-4 py-2.5 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
+                    className="w-full px-4 py-2.5 border border-[rgba(95,227,192,0.15)] rounded-lg bg-[#F7FAFA] dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]"
                   />
                 </div>
               </>
@@ -706,13 +706,13 @@ const AddPortfolioModal: React.FC<AddPortfolioModalProps> = ({
             <button
               onClick={handleSubmit}
               disabled={!isFormValid}
-              className="w-full px-4 py-3 bg-[#8b4e52] text-white rounded-lg font-medium hover:bg-[#7a4248] disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+              className="w-full px-4 py-3 bg-[#294050] text-white rounded-lg font-medium hover:bg-[#1E2F3C] disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
             >
               <Eye className="w-4 h-4" />
               Add Portfolio
             </button>
 
-            <p className="text-xs text-center text-[#a39d94]">
+            <p className="text-xs text-center text-[#647D8B]">
               Transaction history will be fetched automatically using public
               blockchain data.
             </p>

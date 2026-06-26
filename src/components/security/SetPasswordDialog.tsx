@@ -179,11 +179,11 @@ export const SetPasswordDialog: React.FC<SetPasswordDialogProps> = ({
           onKeyDown={handleBackdropKeyDown}
         />
 
-        <div className="relative bg-[#fafaf8] dark:bg-[#1a1815] rounded-lg shadow-xl max-w-md w-full p-6">
-          <h2 className="text-lg font-semibold text-[#1a1815] dark:text-[#f5f3f0] mb-2">
+        <div className="relative bg-[#F7FAFA] dark:bg-[#11202B] rounded-lg shadow-xl max-w-md w-full p-6">
+          <h2 className="text-lg font-semibold text-[#11202B] dark:text-[#EAF3F2] mb-2">
             {getTitle()}
           </h2>
-          <p className="text-sm text-[#696557] dark:text-[#b8b3ac] mb-4">
+          <p className="text-sm text-[#294050] dark:text-[#9FB4BE] mb-4">
             {getDescription()}
           </p>
 
@@ -192,7 +192,7 @@ export const SetPasswordDialog: React.FC<SetPasswordDialogProps> = ({
               <div>
                 <label
                   htmlFor="current-password"
-                  className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac]"
+                  className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE]"
                 >
                   Current Password
                 </label>
@@ -202,7 +202,7 @@ export const SetPasswordDialog: React.FC<SetPasswordDialogProps> = ({
                   value={currentPassword}
                   onChange={handleCurrentPasswordChange}
                   disabled={isSubmitting}
-                  className="mt-1 block w-full px-3 py-2 border border-[rgba(201,169,97,0.15)] rounded-md shadow-sm focus:outline-none focus:ring-[#c9a961] focus:border-[#c9a961] dark:bg-[#2a2620] dark:text-[#f5f3f0] sm:text-sm"
+                  className="mt-1 block w-full px-3 py-2 border border-[rgba(95,227,192,0.15)] rounded-md shadow-sm focus:outline-none focus:ring-[#5FE3C0] focus:border-[#5FE3C0] dark:bg-[#16242F] dark:text-[#EAF3F2] sm:text-sm"
                 />
               </div>
             )}
@@ -212,7 +212,7 @@ export const SetPasswordDialog: React.FC<SetPasswordDialogProps> = ({
                 <div>
                   <label
                     htmlFor="new-password"
-                    className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac]"
+                    className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE]"
                   >
                     {mode === 'set' ? 'Password' : 'New Password'}
                   </label>
@@ -222,14 +222,14 @@ export const SetPasswordDialog: React.FC<SetPasswordDialogProps> = ({
                     value={newPassword}
                     onChange={handleNewPasswordChange}
                     disabled={isSubmitting}
-                    className="mt-1 block w-full px-3 py-2 border border-[rgba(201,169,97,0.15)] rounded-md shadow-sm focus:outline-none focus:ring-[#c9a961] focus:border-[#c9a961] dark:bg-[#2a2620] dark:text-[#f5f3f0] sm:text-sm"
+                    className="mt-1 block w-full px-3 py-2 border border-[rgba(95,227,192,0.15)] rounded-md shadow-sm focus:outline-none focus:ring-[#5FE3C0] focus:border-[#5FE3C0] dark:bg-[#16242F] dark:text-[#EAF3F2] sm:text-sm"
                   />
                 </div>
 
                 <div>
                   <label
                     htmlFor="confirm-password"
-                    className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac]"
+                    className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE]"
                   >
                     Confirm Password
                   </label>
@@ -239,14 +239,14 @@ export const SetPasswordDialog: React.FC<SetPasswordDialogProps> = ({
                     value={confirmPassword}
                     onChange={handleConfirmPasswordChange}
                     disabled={isSubmitting}
-                    className="mt-1 block w-full px-3 py-2 border border-[rgba(201,169,97,0.15)] rounded-md shadow-sm focus:outline-none focus:ring-[#c9a961] focus:border-[#c9a961] dark:bg-[#2a2620] dark:text-[#f5f3f0] sm:text-sm"
+                    className="mt-1 block w-full px-3 py-2 border border-[rgba(95,227,192,0.15)] rounded-md shadow-sm focus:outline-none focus:ring-[#5FE3C0] focus:border-[#5FE3C0] dark:bg-[#16242F] dark:text-[#EAF3F2] sm:text-sm"
                   />
                 </div>
               </>
             )}
 
             {error && (
-              <div className="text-sm text-[#9d6b6b] dark:text-[#b88585]">
+              <div className="text-sm text-[#E8836F] dark:text-[#F09988]">
                 {error}
               </div>
             )}
@@ -256,7 +256,7 @@ export const SetPasswordDialog: React.FC<SetPasswordDialogProps> = ({
                 type="button"
                 onClick={onClose}
                 disabled={isSubmitting}
-                className="px-4 py-2 text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620] rounded-md"
+                className="px-4 py-2 text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] hover:bg-[#EAF3F2] dark:hover:bg-[#16242F] rounded-md"
               >
                 Cancel
               </button>
@@ -265,8 +265,8 @@ export const SetPasswordDialog: React.FC<SetPasswordDialogProps> = ({
                 disabled={isSubmitting}
                 className={`px-4 py-2 text-sm font-medium text-white rounded-md ${
                   mode === 'remove'
-                    ? 'bg-[#9d6b6b] hover:bg-[#8b5c5c]'
-                    : 'bg-[#8b4e52] hover:bg-[#7a4248]'
+                    ? 'bg-[#E8836F] hover:bg-[#C56A57]'
+                    : 'bg-[#294050] hover:bg-[#1E2F3C]'
                 } disabled:opacity-50`}
               >
                 {isSubmitting

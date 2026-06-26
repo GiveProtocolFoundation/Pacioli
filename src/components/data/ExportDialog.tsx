@@ -130,21 +130,21 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({
           aria-label="Close dialog"
         />
 
-        <div className="relative bg-[#fafaf8] dark:bg-[#1a1815] rounded-lg shadow-xl max-w-md w-full p-6">
-          <h2 className="text-lg font-semibold text-[#1a1815] dark:text-[#f5f3f0] mb-2">
+        <div className="relative bg-[#F7FAFA] dark:bg-[#11202B] rounded-lg shadow-xl max-w-md w-full p-6">
+          <h2 className="text-lg font-semibold text-[#11202B] dark:text-[#EAF3F2] mb-2">
             Export Data
           </h2>
-          <p className="text-sm text-[#696557] dark:text-[#b8b3ac] mb-4">
+          <p className="text-sm text-[#294050] dark:text-[#9FB4BE] mb-4">
             Export all your data to a JSON file. You can optionally encrypt the
             export with a password.
           </p>
 
           {stats && (
-            <div className="mb-4 p-3 bg-[#f3f1ed] dark:bg-[#2a2620] rounded-md">
-              <p className="text-sm text-[#1a1815] dark:text-[#b8b3ac]">
+            <div className="mb-4 p-3 bg-[#EAF3F2] dark:bg-[#16242F] rounded-md">
+              <p className="text-sm text-[#11202B] dark:text-[#9FB4BE]">
                 <strong>Data to export:</strong>
               </p>
-              <ul className="mt-1 text-sm text-[#696557] dark:text-[#b8b3ac]">
+              <ul className="mt-1 text-sm text-[#294050] dark:text-[#9FB4BE]">
                 <li>• {stats.profileCount} profile(s)</li>
                 <li>• {stats.walletCount} wallet(s)</li>
                 <li>• {stats.settingsCount} setting(s)</li>
@@ -158,9 +158,9 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({
                 type="checkbox"
                 checked={usePassword}
                 onChange={handleUsePasswordChange}
-                className="rounded border-[rgba(201,169,97,0.3)] text-[#8b4e52] focus:ring-[#c9a961]"
+                className="rounded border-[rgba(95,227,192,0.3)] text-[#294050] focus:ring-[#5FE3C0]"
               />
-              <span className="text-sm text-[#1a1815] dark:text-[#b8b3ac]">
+              <span className="text-sm text-[#11202B] dark:text-[#9FB4BE]">
                 Encrypt export with password
               </span>
             </label>
@@ -170,7 +170,7 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({
                 <div>
                   <label
                     htmlFor="export-password"
-                    className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac]"
+                    className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE]"
                   >
                     Password
                   </label>
@@ -180,7 +180,7 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({
                     value={password}
                     onChange={handlePasswordChange}
                     disabled={isExporting}
-                    className="mt-1 block w-full px-3 py-2 border border-[rgba(201,169,97,0.15)] rounded-md shadow-sm focus:outline-none focus:ring-[#c9a961] focus:border-[#c9a961] dark:bg-[#2a2620] dark:text-[#f5f3f0] sm:text-sm"
+                    className="mt-1 block w-full px-3 py-2 border border-[rgba(95,227,192,0.15)] rounded-md shadow-sm focus:outline-none focus:ring-[#5FE3C0] focus:border-[#5FE3C0] dark:bg-[#16242F] dark:text-[#EAF3F2] sm:text-sm"
                     placeholder="Enter password for encryption"
                   />
                 </div>
@@ -188,7 +188,7 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({
                 <div>
                   <label
                     htmlFor="export-confirm-password"
-                    className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac]"
+                    className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE]"
                   >
                     Confirm Password
                   </label>
@@ -198,7 +198,7 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({
                     value={confirmPassword}
                     onChange={handleConfirmPasswordChange}
                     disabled={isExporting}
-                    className="mt-1 block w-full px-3 py-2 border border-[rgba(201,169,97,0.15)] rounded-md shadow-sm focus:outline-none focus:ring-[#c9a961] focus:border-[#c9a961] dark:bg-[#2a2620] dark:text-[#f5f3f0] sm:text-sm"
+                    className="mt-1 block w-full px-3 py-2 border border-[rgba(95,227,192,0.15)] rounded-md shadow-sm focus:outline-none focus:ring-[#5FE3C0] focus:border-[#5FE3C0] dark:bg-[#16242F] dark:text-[#EAF3F2] sm:text-sm"
                     placeholder="Confirm password"
                   />
                 </div>
@@ -206,7 +206,7 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({
             )}
 
             {error && (
-              <div className="text-sm text-[#9d6b6b] dark:text-[#b88585]">
+              <div className="text-sm text-[#E8836F] dark:text-[#F09988]">
                 {error}
               </div>
             )}
@@ -216,7 +216,7 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({
                 type="button"
                 onClick={onClose}
                 disabled={isExporting}
-                className="px-4 py-2 text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620] rounded-md"
+                className="px-4 py-2 text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] hover:bg-[#EAF3F2] dark:hover:bg-[#16242F] rounded-md"
               >
                 Cancel
               </button>
@@ -224,7 +224,7 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({
                 type="button"
                 onClick={handleExport}
                 disabled={isExporting}
-                className="px-4 py-2 text-sm font-medium text-white bg-[#8b4e52] hover:bg-[#7a4248] rounded-md disabled:opacity-50"
+                className="px-4 py-2 text-sm font-medium text-white bg-[#294050] hover:bg-[#1E2F3C] rounded-md disabled:opacity-50"
               >
                 {isExporting ? 'Exporting...' : 'Export'}
               </button>

@@ -134,13 +134,13 @@ const NotificationActions: React.FC<{
       </button>
       <button
         onClick={handleDismiss}
-        className="p-1.5 text-[#9d6b6b] dark:text-[#b88585] hover:bg-[#9d6b6b]/10 dark:hover:bg-[#9d6b6b]/20 rounded"
+        className="p-1.5 text-[#E8836F] dark:text-[#F09988] hover:bg-[#E8836F]/10 dark:hover:bg-[#E8836F]/20 rounded"
         title="Dismiss"
       >
         <X className="w-4 h-4" />
       </button>
       {notification.entityRef && (
-        <button className="text-xs text-[#8b4e52] dark:text-[#a86e72] hover:underline flex items-center">
+        <button className="text-xs text-[#294050] dark:text-[#F09988] hover:underline flex items-center">
           View
           <ArrowRight className="w-3 h-3 ml-1" />
         </button>
@@ -161,23 +161,23 @@ const NotificationBody: React.FC<{
   <div className="flex-1 min-w-0">
     <div className="flex items-start justify-between">
       <div className="flex-1">
-        <p className="text-sm font-medium text-[#1a1815] dark:text-[#f5f3f0]">
+        <p className="text-sm font-medium text-[#11202B] dark:text-[#EAF3F2]">
           {notification.title}
           {!notification.read && (
-            <span className="inline-block w-2 h-2 bg-[#8b4e52] rounded-full ml-2" />
+            <span className="inline-block w-2 h-2 bg-[#294050] rounded-full ml-2" />
           )}
         </p>
-        <p className="text-xs text-[#696557] dark:text-[#b8b3ac] mt-1">
+        <p className="text-xs text-[#294050] dark:text-[#9FB4BE] mt-1">
           {notification.message}
         </p>
       </div>
     </div>
     <div className="flex items-center justify-between mt-2">
       <div className="flex items-center space-x-2">
-        <span className="text-xs text-[#a39d94] dark:text-[#696557]">
+        <span className="text-xs text-[#647D8B] dark:text-[#294050]">
           {formatTimestamp(notification.createdAt)}
         </span>
-        <span className="text-xs px-1.5 py-0.5 rounded bg-[#ede8e0] dark:bg-[#1a1815] text-[#696557] dark:text-[#b8b3ac]">
+        <span className="text-xs px-1.5 py-0.5 rounded bg-[#D9E5E4] dark:bg-[#11202B] text-[#294050] dark:text-[#9FB4BE]">
           {getNotificationClassLabel(notification.class)}
         </span>
       </div>
@@ -224,8 +224,8 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
 
   return (
     <div
-      className={`p-4 hover:bg-[#c9a961]/5 dark:hover:bg-[#c9a961]/10 transition-colors cursor-pointer ${
-        !notification.read ? 'bg-[#8b4e52]/5 dark:bg-[#8b4e52]/10' : ''
+      className={`p-4 hover:bg-[#5FE3C0]/5 dark:hover:bg-[#5FE3C0]/10 transition-colors cursor-pointer ${
+        !notification.read ? 'bg-[#294050]/5 dark:bg-[#294050]/10' : ''
       }`}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
@@ -279,12 +279,12 @@ const FilterTabs: React.FC<{
   const getButtonClass = (isActive: boolean) =>
     `px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
       isActive
-        ? 'bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 text-[#8b4e52] dark:text-[#a86e72]'
-        : 'bg-[#ede8e0] dark:bg-[#1a1815] text-[#696557] dark:text-[#b8b3ac] hover:bg-[#e5dfd4] dark:hover:bg-[#2a2620]'
+        ? 'bg-[#294050]/10 dark:bg-[#294050]/20 text-[#294050] dark:text-[#F09988]'
+        : 'bg-[#D9E5E4] dark:bg-[#11202B] text-[#294050] dark:text-[#9FB4BE] hover:bg-[#e5dfd4] dark:hover:bg-[#16242F]'
     }`
 
   return (
-    <div className="flex items-center space-x-2 p-4 border-b border-[rgba(201,169,97,0.15)] overflow-x-auto">
+    <div className="flex items-center space-x-2 p-4 border-b border-[rgba(95,227,192,0.15)] overflow-x-auto">
       <button onClick={onAll} className={getButtonClass(filter === 'all')}>
         All
       </button>
@@ -340,12 +340,12 @@ const PanelHeader: React.FC<PanelHeaderProps> = ({
   onMarkAllAsRead,
   onClose,
 }) => (
-  <div className="flex items-center justify-between p-4 border-b border-[rgba(201,169,97,0.15)]">
+  <div className="flex items-center justify-between p-4 border-b border-[rgba(95,227,192,0.15)]">
     <div>
-      <h2 className="text-lg font-semibold text-[#1a1815] dark:text-[#f5f3f0]">
+      <h2 className="text-lg font-semibold text-[#11202B] dark:text-[#EAF3F2]">
         Notifications
       </h2>
-      <p className="text-xs text-[#696557] dark:text-[#94a3b8] mt-0.5">
+      <p className="text-xs text-[#294050] dark:text-[#9FB4BE] mt-0.5">
         {unreadCount} unread{' '}
         {actionRequiredCount > 0 && `• ${actionRequiredCount} require action`}
       </p>
@@ -353,7 +353,7 @@ const PanelHeader: React.FC<PanelHeaderProps> = ({
     <div className="flex items-center space-x-2">
       <button
         onClick={onRefresh}
-        className="p-2 text-[#a39d94] hover:text-[#696557] dark:hover:text-[#b8b3ac] rounded-lg hover:bg-[#ede8e0] dark:hover:bg-[#1a1815]"
+        className="p-2 text-[#647D8B] hover:text-[#294050] dark:hover:text-[#9FB4BE] rounded-lg hover:bg-[#D9E5E4] dark:hover:bg-[#11202B]"
         title="Refresh"
       >
         <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
@@ -361,14 +361,14 @@ const PanelHeader: React.FC<PanelHeaderProps> = ({
       {unreadCount > 0 && (
         <button
           onClick={onMarkAllAsRead}
-          className="text-xs text-[#8b4e52] dark:text-[#a86e72] hover:underline"
+          className="text-xs text-[#294050] dark:text-[#F09988] hover:underline"
         >
           Mark all read
         </button>
       )}
       <button
         onClick={onClose}
-        className="p-2 text-[#a39d94] hover:text-[#696557] dark:hover:text-[#b8b3ac] rounded-lg hover:bg-[#ede8e0] dark:hover:bg-[#1a1815]"
+        className="p-2 text-[#647D8B] hover:text-[#294050] dark:hover:text-[#9FB4BE] rounded-lg hover:bg-[#D9E5E4] dark:hover:bg-[#11202B]"
       >
         <X className="w-5 h-5" />
       </button>
@@ -381,8 +381,8 @@ const PanelHeader: React.FC<PanelHeaderProps> = ({
  */
 const LoadingState: React.FC = () => (
   <div className="flex flex-col items-center justify-center h-full p-8 text-center">
-    <Loader2 className="w-12 h-12 text-[#a39d94] mb-3 animate-spin" />
-    <p className="text-sm font-medium text-[#1a1815] dark:text-[#f5f3f0]">
+    <Loader2 className="w-12 h-12 text-[#647D8B] mb-3 animate-spin" />
+    <p className="text-sm font-medium text-[#11202B] dark:text-[#EAF3F2]">
       Loading notifications...
     </p>
   </div>
@@ -393,11 +393,11 @@ const LoadingState: React.FC = () => (
  */
 const EmptyState: React.FC = () => (
   <div className="flex flex-col items-center justify-center h-full p-8 text-center">
-    <CheckCircle className="w-12 h-12 text-[#a39d94] mb-3" />
-    <p className="text-sm font-medium text-[#1a1815] dark:text-[#f5f3f0]">
+    <CheckCircle className="w-12 h-12 text-[#647D8B] mb-3" />
+    <p className="text-sm font-medium text-[#11202B] dark:text-[#EAF3F2]">
       All caught up!
     </p>
-    <p className="text-xs text-[#696557] dark:text-[#94a3b8] mt-1">
+    <p className="text-xs text-[#294050] dark:text-[#9FB4BE] mt-1">
       No notifications to show
     </p>
   </div>
@@ -423,7 +423,7 @@ const NotificationList: React.FC<NotificationListProps> = ({
   formatTimestamp,
   getSeverityStyles,
 }) => (
-  <div className="divide-y divide-[rgba(201,169,97,0.15)]">
+  <div className="divide-y divide-[rgba(95,227,192,0.15)]">
     {notifications.map(notification => (
       <NotificationItem
         key={notification.id}
@@ -443,8 +443,8 @@ const NotificationList: React.FC<NotificationListProps> = ({
  * Panel footer with view all link.
  */
 const PanelFooter: React.FC = () => (
-  <div className="border-t border-[rgba(201,169,97,0.15)] p-4">
-    <button className="w-full text-sm text-[#8b4e52] dark:text-[#a86e72] hover:underline">
+  <div className="border-t border-[rgba(95,227,192,0.15)] p-4">
+    <button className="w-full text-sm text-[#294050] dark:text-[#F09988] hover:underline">
       View all notifications
     </button>
   </div>
@@ -538,12 +538,12 @@ const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
 
   const getSeverityStyles = useCallback((severity: NotificationSeverity) => {
     const styles = {
-      info: 'bg-[#c9a961]/20 dark:bg-[#c9a961]/30 text-[#8b4e52] dark:text-[#a86e72]',
+      info: 'bg-[#5FE3C0]/20 dark:bg-[#5FE3C0]/30 text-[#294050] dark:text-[#F09988]',
       warning:
         'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400',
       success:
         'bg-green-100 dark:bg-green-900/30 text-[#7a9b6f] dark:text-[#8faf84]',
-      error: 'bg-red-100 dark:bg-red-900/30 text-[#9d6b6b] dark:text-[#b88585]',
+      error: 'bg-red-100 dark:bg-red-900/30 text-[#E8836F] dark:text-[#F09988]',
     }
     return styles[severity]
   }, [])
@@ -599,7 +599,7 @@ const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
   return (
     <>
       <PanelBackdrop onClose={onClose} onKeyDown={handleBackdropKeyDown} />
-      <div className="fixed right-0 top-0 h-full w-full sm:w-[480px] bg-[#fafaf8] dark:bg-[#0f0e0c] shadow-xl z-50 overflow-hidden flex flex-col">
+      <div className="fixed right-0 top-0 h-full w-full sm:w-[480px] bg-[#F7FAFA] dark:bg-[#0C141B] shadow-xl z-50 overflow-hidden flex flex-col">
         <PanelHeader
           unreadCount={stats.unread}
           actionRequiredCount={stats.actionRequired}

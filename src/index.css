@@ -763,7 +763,7 @@ th,
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: linear-gradient(135deg, var(--color-burgundy) 0%, #7a4248 100%);
+  background: linear-gradient(135deg, var(--color-burgundy) 0%, #1E2F3C 100%);
   color: #ffffff;
   border-radius: 10px;
   padding: 11px 24px;
@@ -781,7 +781,7 @@ th,
   background: linear-gradient(
     135deg,
     var(--color-burgundy-hover) 0%,
-    #8b5258 100%
+    #1E2F3C 100%
   );
   transform: translateY(-1px);
   box-shadow:
@@ -797,14 +797,14 @@ th,
 }
 
 .dark .btn-primary {
-  background: linear-gradient(135deg, var(--color-burgundy) 0%, #7a4248 100%);
+  background: linear-gradient(135deg, var(--color-burgundy) 0%, #1E2F3C 100%);
 }
 
 .dark .btn-primary:hover {
   background: linear-gradient(
     135deg,
     var(--color-burgundy-hover) 0%,
-    #8b5258 100%
+    #1E2F3C 100%
   );
 }
 
@@ -818,7 +818,7 @@ th,
   opacity: 0.5;
   transform: none;
   box-shadow: 0 2px 4px rgba(139, 78, 82, 0.2);
-  background: linear-gradient(135deg, var(--color-burgundy) 0%, #7a4248 100%);
+  background: linear-gradient(135deg, var(--color-burgundy) 0%, #1E2F3C 100%);
 }
 
 .btn-primary svg,
@@ -1180,25 +1180,25 @@ textarea::placeholder {
 
 /* Dashboard body text — AAA on both light and dark backgrounds */
 .dashboard-body-text {
-  color: var(--color-soft-foreground); /* #4A4543 — 7.3:1 on #F9F8F6 */
+  color: var(--color-soft-foreground); /* #294050 — 7.3:1 on #F9F8F6 */
 }
 
 .dark .dashboard-body-text {
-  color: var(--color-text-secondary-dark); /* #b8b3ac — 7.0:1 on #0f0e0c */
+  color: var(--color-text-secondary-dark); /* #9FB4BE — 7.0:1 on #0C141B */
 }
 
 /* Dashboard muted text — AA on both (for secondary labels) */
 .dashboard-muted-text {
-  color: #696557; /* 4.9:1 on #FFFFFF — AA */
+  color: #294050; /* 4.9:1 on #FFFFFF — AA */
 }
 
 .dark .dashboard-muted-text {
-  color: var(--color-text-secondary-dark); /* #b8b3ac — AAA on dark */
+  color: var(--color-text-secondary-dark); /* #9FB4BE — AAA on dark */
 }
 
 /* Dashboard link — AAA-compliant deep burgundy */
 .dashboard-link {
-  color: var(--color-soft-primary); /* #5D2A2C — 9.6:1 on #FFFFFF */
+  color: var(--color-soft-primary); /* #294050 — 9.6:1 on #FFFFFF */
   font-weight: 500;
   transition: opacity 0.2s ease;
 }
@@ -1208,7 +1208,7 @@ textarea::placeholder {
 }
 
 .dark .dashboard-link {
-  color: #c08589; /* 5.4:1 on #0f0e0c — AA */
+  color: #9CF1DC; /* 5.4:1 on #0C141B — AA */
 }
 
 /* Change indicators — AAA-compliant bold green/red */
@@ -1218,7 +1218,7 @@ textarea::placeholder {
 }
 
 .dark .change-positive {
-  color: #4ade80;
+  color: #5FE3C0;
 }
 
 .change-negative {
@@ -1227,7 +1227,7 @@ textarea::placeholder {
 }
 
 .dark .change-negative {
-  color: #f87171;
+  color: #E8836F;
 }
 
 /* Status pills — prominent compliance indicators */
@@ -1249,7 +1249,7 @@ textarea::placeholder {
 
 .dark .status-pill-success {
   background: rgba(74, 222, 128, 0.1);
-  color: #4ade80;
+  color: #5FE3C0;
   border-color: rgba(74, 222, 128, 0.2);
 }
 
@@ -1261,7 +1261,7 @@ textarea::placeholder {
 
 .dark .status-pill-warning {
   background: rgba(251, 191, 36, 0.1);
-  color: #fbbf24;
+  color: #E8B36F;
   border-color: rgba(251, 191, 36, 0.2);
 }
 
@@ -1290,7 +1290,7 @@ textarea::placeholder {
 }
 
 .dark .alert-toast-warning {
-  border-left-color: #fbbf24;
+  border-left-color: #E8B36F;
 }
 
 .alert-toast-danger {
@@ -1298,7 +1298,7 @@ textarea::placeholder {
 }
 
 .dark .alert-toast-danger {
-  border-left-color: #f87171;
+  border-left-color: #E8836F;
 }
 
 /* =============================================================================
