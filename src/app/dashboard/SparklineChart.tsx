@@ -9,7 +9,7 @@ interface SparklineChartProps {
 
 const SparklineChart: React.FC<SparklineChartProps> = ({
   data,
-  color = '#166534',
+  color = '#2E9A82',
   height = 48,
 }) => {
   const chartData = data.map((value, index) => ({ index, value }))

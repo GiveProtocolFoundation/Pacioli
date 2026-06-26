@@ -71,7 +71,7 @@ const StatsCard: React.FC<{
         <div>
           <p className="ledger-card-label">{title}</p>
           <p
-            className={`font-bold text-[#1a1815] dark:text-[#f5f3f0] mt-2 dashboard-heading ${isHero ? 'text-4xl' : 'text-3xl'}`}
+            className={`font-bold text-[#11202B] dark:text-[#EAF3F2] mt-2 dashboard-heading ${isHero ? 'text-4xl' : 'text-3xl'}`}
           >
             {value}
           </p>
@@ -112,8 +112,8 @@ const AccountBalancesList: React.FC<{
   }
   theme: 'light' | 'dark'
 }> = ({ accountBalances, currencySettings, theme }) => (
-  <div className="ledger-card border border-[rgba(201,169,97,0.15)]">
-    <div className="px-6 py-4 border-b border-[rgba(201,169,97,0.15)]">
+  <div className="ledger-card border border-[rgba(95,227,192,0.15)]">
+    <div className="px-6 py-4 border-b border-[rgba(95,227,192,0.15)]">
       <h2>Account Balances</h2>
     </div>
     <div className="px-6">
@@ -149,7 +149,7 @@ const AccountBalancesList: React.FC<{
                   )}
                 </div>
                 <div>
-                  <p className="font-medium text-[#1a1815] dark:text-[#f5f3f0]">
+                  <p className="font-medium text-[#11202B] dark:text-[#EAF3F2]">
                     {account.crypto}
                   </p>
                   <p className="text-sm dashboard-muted-text dashboard-mono">
@@ -162,7 +162,7 @@ const AccountBalancesList: React.FC<{
                 </div>
               </div>
               <div className="token-values">
-                <p className="font-semibold text-[#1a1815] dark:text-[#f5f3f0] dashboard-mono">
+                <p className="font-semibold text-[#11202B] dark:text-[#EAF3F2] dashboard-mono">
                   {formatCurrency(
                     account.usdValue,
                     currencySettings.primaryCurrency,
@@ -208,8 +208,8 @@ const RecentTransactionsTable: React.FC<{
   }
   getTypeColor: (type: string) => string
 }> = ({ recentTransactions, currencySettings, getTypeColor }) => (
-  <div className="ledger-card border border-[rgba(201,169,97,0.15)] mt-10">
-    <div className="px-6 py-4 border-b border-[rgba(201,169,97,0.15)] flex items-center justify-between">
+  <div className="ledger-card border border-[rgba(95,227,192,0.15)] mt-10">
+    <div className="px-6 py-4 border-b border-[rgba(95,227,192,0.15)] flex items-center justify-between">
       <h2>Recent Transactions</h2>
       <button className="text-sm dashboard-link">
         View All
@@ -230,10 +230,10 @@ const RecentTransactionsTable: React.FC<{
         <tbody>
           {recentTransactions.map(tx => (
             <tr key={tx.id} className="ledger-table-row">
-              <td className="ledger-table-cell-date whitespace-nowrap text-sm text-[#1a1815] dark:text-[#f5f3f0]">
+              <td className="ledger-table-cell-date whitespace-nowrap text-sm text-[#11202B] dark:text-[#EAF3F2]">
                 {tx.date}
               </td>
-              <td className="ledger-table-cell-text text-sm text-[#1a1815] dark:text-[#f5f3f0]">
+              <td className="ledger-table-cell-text text-sm text-[#11202B] dark:text-[#EAF3F2]">
                 {tx.description}
               </td>
               <td className="ledger-table-cell-text whitespace-nowrap">
@@ -248,14 +248,14 @@ const RecentTransactionsTable: React.FC<{
                   className={
                     tx.amount >= 0
                       ? 'change-positive'
-                      : 'text-[#1a1815] dark:text-[#f5f3f0]'
+                      : 'text-[#11202B] dark:text-[#EAF3F2]'
                   }
                 >
                   {tx.amount >= 0 ? '+' : ''}
                   {tx.amount.toLocaleString()} {tx.crypto}
                 </span>
               </td>
-              <td className="ledger-table-cell-number whitespace-nowrap text-sm text-[#1a1815] dark:text-[#f5f3f0] dashboard-mono">
+              <td className="ledger-table-cell-number whitespace-nowrap text-sm text-[#11202B] dark:text-[#EAF3F2] dashboard-mono">
                 {formatCurrency(
                   Math.abs(tx.usdValue),
                   currencySettings.primaryCurrency,
@@ -290,8 +290,8 @@ const RecentTransactionsTable: React.FC<{
 
 /** Sidebar card with quick action buttons for common tasks like recording donations and generating reports */
 const QuickActionsCard: React.FC<{ onNewTransaction: () => void }> = ({ onNewTransaction }) => (
-  <div className="ledger-card border border-[rgba(201,169,97,0.15)]">
-    <div className="px-6 py-4 border-b border-[rgba(201,169,97,0.15)]">
+  <div className="ledger-card border border-[rgba(95,227,192,0.15)]">
+    <div className="px-6 py-4 border-b border-[rgba(95,227,192,0.15)]">
       <h2>Quick Actions</h2>
     </div>
     <div className="p-6 space-y-3">
@@ -403,22 +403,22 @@ const Dashboard: React.FC = () => {
   const getTypeColor = (type: string) => {
     switch (type) {
       case 'donation':
-        return 'change-positive bg-[#166534]/8'
+        return 'change-positive bg-[#2E9A82]/8'
       case 'expense':
-        return 'change-negative bg-[#991B1B]/8'
+        return 'change-negative bg-[#B0533F]/8'
       case 'exchange':
-        return 'text-[#5D2A2C] dark:text-[#c08589] bg-[#5D2A2C]/8'
+        return 'text-[#294050] dark:text-[#9CF1DC] bg-[#294050]/8'
       case 'transfer':
-        return 'text-[#6B5D2E] dark:text-[#d4b87a] bg-[#c9a961]/10'
+        return 'text-[#6B5D2E] dark:text-[#9CF1DC] bg-[#5FE3C0]/10'
       default:
-        return 'dashboard-body-text bg-[#fafaf8] dark:bg-[#1a1815]'
+        return 'dashboard-body-text bg-[#F7FAFA] dark:bg-[#11202B]'
     }
   }
 
   return (
     <div className="min-h-screen ledger-background">
       {/* Header */}
-      <header className="bg-[#fafaf8] dark:bg-[#0f0e0c] border-b border-[rgba(201,169,97,0.15)]">
+      <header className="bg-[#F7FAFA] dark:bg-[#0C141B] border-b border-[rgba(95,227,192,0.15)]">
         <div className="max-w-7xl mx-auto px-10 py-10">
           <div className="flex items-center justify-between">
             <div>
@@ -551,8 +551,8 @@ const Dashboard: React.FC = () => {
             <QuickActionsCard onNewTransaction={handleNewTransaction} />
 
             {/* Compliance Status */}
-            <div className="ledger-card border border-[rgba(201,169,97,0.15)]">
-              <div className="px-6 py-4 border-b border-[rgba(201,169,97,0.15)]">
+            <div className="ledger-card border border-[rgba(95,227,192,0.15)]">
+              <div className="px-6 py-4 border-b border-[rgba(95,227,192,0.15)]">
                 <h2>Compliance Status</h2>
               </div>
               <div className="p-6 space-y-4">
@@ -582,14 +582,14 @@ const Dashboard: React.FC = () => {
             </div>
 
             {/* Alerts */}
-            <div className="ledger-card border border-[rgba(201,169,97,0.15)]">
-              <div className="px-6 py-4 border-b border-[rgba(201,169,97,0.15)]">
+            <div className="ledger-card border border-[rgba(95,227,192,0.15)]">
+              <div className="px-6 py-4 border-b border-[rgba(95,227,192,0.15)]">
                 <h2>Alerts</h2>
               </div>
               <div className="p-6">
                 <div className="space-y-3">
                   <div className="alert-toast alert-toast-warning">
-                    <p className="text-sm font-medium text-soft-warning dark:text-[#fbbf24]">
+                    <p className="text-sm font-medium text-soft-warning dark:text-[#E8B36F]">
                       Pending Approval
                     </p>
                     <p className="text-xs dashboard-body-text mt-1">
@@ -597,7 +597,7 @@ const Dashboard: React.FC = () => {
                     </p>
                   </div>
                   <div className="alert-toast alert-toast-danger">
-                    <p className="text-sm font-medium text-soft-danger dark:text-[#f87171]">
+                    <p className="text-sm font-medium text-soft-danger dark:text-[#E8836F]">
                       Price Alert
                     </p>
                     <p className="text-xs dashboard-body-text mt-1">

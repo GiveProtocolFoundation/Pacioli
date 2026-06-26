@@ -485,10 +485,10 @@ const MethodSelector: React.FC<{
           title={isDisabled ? 'Lot selection UI coming soon' : undefined}
           className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors border ${
             isDisabled
-              ? 'bg-[#fafaf8] dark:bg-[#1a1815] text-[#a39d94] dark:text-[#696557] border-[rgba(201,169,97,0.1)] cursor-not-allowed opacity-60'
+              ? 'bg-[#F7FAFA] dark:bg-[#11202B] text-[#647D8B] dark:text-[#294050] border-[rgba(95,227,192,0.1)] cursor-not-allowed opacity-60'
               : selected === m.value
-                ? 'bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 text-[#8b4e52] dark:text-[#a86e72] border-[#8b4e52]/30 dark:border-[#8b4e52]/40'
-                : 'bg-[#fafaf8] dark:bg-[#1a1815] text-[#696557] dark:text-[#b8b3ac] border-[rgba(201,169,97,0.15)] hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620]'
+                ? 'bg-[#294050]/10 dark:bg-[#294050]/20 text-[#294050] dark:text-[#F09988] border-[#294050]/30 dark:border-[#294050]/40'
+                : 'bg-[#F7FAFA] dark:bg-[#11202B] text-[#294050] dark:text-[#9FB4BE] border-[rgba(95,227,192,0.15)] hover:bg-[#EAF3F2] dark:hover:bg-[#16242F]'
           }`}
         >
           <div className="font-semibold">{m.label}</div>
@@ -507,17 +507,17 @@ const SummaryCard: React.FC<{
   isPositive?: boolean
   Icon: React.ElementType
 }> = ({ label, value, isPositive, Icon }) => (
-  <div className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg border border-[rgba(201,169,97,0.15)] p-4">
+  <div className="bg-[#F7FAFA] dark:bg-[#0C141B] rounded-lg border border-[rgba(95,227,192,0.15)] p-4">
     <div className="flex items-center justify-between">
       <div>
-        <p className="text-sm text-[#696557] dark:text-[#b8b3ac]">{label}</p>
+        <p className="text-sm text-[#294050] dark:text-[#9FB4BE]">{label}</p>
         <p
           className={`text-xl font-semibold mt-1 font-[Lora] tabular-nums ${
             isPositive === undefined
-              ? 'text-[#1a1815] dark:text-[#f5f3f0]'
+              ? 'text-[#11202B] dark:text-[#EAF3F2]'
               : isPositive
-                ? 'text-[#7a9b6f]'
-                : 'text-[#9d6b6b]'
+                ? 'text-[#5FE3C0]'
+                : 'text-[#E8836F]'
           }`}
         >
           {value}
@@ -538,26 +538,26 @@ const DisposalTable: React.FC<{
   <div className="overflow-x-auto">
     <table className="w-full text-sm">
       <thead>
-        <tr className="border-b border-[rgba(201,169,97,0.15)]">
-          <th className="text-left py-3 px-3 text-xs font-semibold text-[#696557] dark:text-[#b8b3ac] uppercase tracking-wider">
+        <tr className="border-b border-[rgba(95,227,192,0.15)]">
+          <th className="text-left py-3 px-3 text-xs font-semibold text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
             Date
           </th>
-          <th className="text-left py-3 px-3 text-xs font-semibold text-[#696557] dark:text-[#b8b3ac] uppercase tracking-wider">
+          <th className="text-left py-3 px-3 text-xs font-semibold text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
             Asset
           </th>
-          <th className="text-right py-3 px-3 text-xs font-semibold text-[#696557] dark:text-[#b8b3ac] uppercase tracking-wider">
+          <th className="text-right py-3 px-3 text-xs font-semibold text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
             Quantity
           </th>
-          <th className="text-right py-3 px-3 text-xs font-semibold text-[#696557] dark:text-[#b8b3ac] uppercase tracking-wider">
+          <th className="text-right py-3 px-3 text-xs font-semibold text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
             Cost Basis
           </th>
-          <th className="text-right py-3 px-3 text-xs font-semibold text-[#696557] dark:text-[#b8b3ac] uppercase tracking-wider">
+          <th className="text-right py-3 px-3 text-xs font-semibold text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
             Proceeds
           </th>
-          <th className="text-right py-3 px-3 text-xs font-semibold text-[#696557] dark:text-[#b8b3ac] uppercase tracking-wider">
+          <th className="text-right py-3 px-3 text-xs font-semibold text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
             Gain/Loss
           </th>
-          <th className="text-center py-3 px-3 text-xs font-semibold text-[#696557] dark:text-[#b8b3ac] uppercase tracking-wider">
+          <th className="text-center py-3 px-3 text-xs font-semibold text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
             Term
           </th>
           <th className="py-3 px-3"></th>
@@ -567,27 +567,27 @@ const DisposalTable: React.FC<{
         {disposals.map(d => (
           <React.Fragment key={d.id}>
             <tr
-              className="border-b border-[rgba(201,169,97,0.1)] hover:bg-[rgba(201,169,97,0.03)] dark:hover:bg-[rgba(201,169,97,0.05)] cursor-pointer transition-colors"
+              className="border-b border-[rgba(95,227,192,0.1)] hover:bg-[rgba(95,227,192,0.03)] dark:hover:bg-[rgba(95,227,192,0.05)] cursor-pointer transition-colors"
               onClick={() => onToggle(d.id)}
             >
-              <td className="py-3 px-3 text-[#1a1815] dark:text-[#f5f3f0]">
+              <td className="py-3 px-3 text-[#11202B] dark:text-[#EAF3F2]">
                 {formatDate(d.date)}
               </td>
-              <td className="py-3 px-3 font-medium text-[#1a1815] dark:text-[#f5f3f0]">
+              <td className="py-3 px-3 font-medium text-[#11202B] dark:text-[#EAF3F2]">
                 {d.assetSymbol}
               </td>
-              <td className="py-3 px-3 text-right font-[Lora] tabular-nums text-[#1a1815] dark:text-[#f5f3f0]">
+              <td className="py-3 px-3 text-right font-[Lora] tabular-nums text-[#11202B] dark:text-[#EAF3F2]">
                 {formatNumber(d.quantity)}
               </td>
-              <td className="py-3 px-3 text-right font-[Lora] tabular-nums text-[#1a1815] dark:text-[#f5f3f0]">
+              <td className="py-3 px-3 text-right font-[Lora] tabular-nums text-[#11202B] dark:text-[#EAF3F2]">
                 {formatNumber(d.result.totalCostBasis)}
               </td>
-              <td className="py-3 px-3 text-right font-[Lora] tabular-nums text-[#1a1815] dark:text-[#f5f3f0]">
+              <td className="py-3 px-3 text-right font-[Lora] tabular-nums text-[#11202B] dark:text-[#EAF3F2]">
                 {formatNumber(d.proceeds)}
               </td>
               <td
                 className={`py-3 px-3 text-right font-[Lora] tabular-nums font-medium ${
-                  d.gainLoss.isGain ? 'text-[#7a9b6f]' : 'text-[#9d6b6b]'
+                  d.gainLoss.isGain ? 'text-[#5FE3C0]' : 'text-[#E8836F]'
                 }`}
               >
                 {d.gainLoss.isGain ? '+' : ''}
@@ -597,8 +597,8 @@ const DisposalTable: React.FC<{
                 <span
                   className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
                     d.holdingPeriod.isLongTerm
-                      ? 'bg-[#7a9b6f]/10 text-[#7a9b6f]'
-                      : 'bg-[#b89968]/10 text-[#b89968]'
+                      ? 'bg-[#5FE3C0]/10 text-[#5FE3C0]'
+                      : 'bg-[#E8B36F]/10 text-[#E8B36F]'
                   }`}
                 >
                   {d.holdingPeriod.isLongTerm ? 'Long' : 'Short'}
@@ -606,9 +606,9 @@ const DisposalTable: React.FC<{
               </td>
               <td className="py-3 px-3 text-center">
                 {expandedId === d.id ? (
-                  <ChevronUp className="w-4 h-4 text-[#696557]" />
+                  <ChevronUp className="w-4 h-4 text-[#294050]" />
                 ) : (
-                  <ChevronDown className="w-4 h-4 text-[#696557]" />
+                  <ChevronDown className="w-4 h-4 text-[#294050]" />
                 )}
               </td>
             </tr>
@@ -616,21 +616,21 @@ const DisposalTable: React.FC<{
               <tr>
                 <td
                   colSpan={8}
-                  className="bg-[#f3f1ed]/50 dark:bg-[#1a1815]/50 px-6 py-4"
+                  className="bg-[#EAF3F2]/50 dark:bg-[#11202B]/50 px-6 py-4"
                 >
-                  <div className="text-xs font-semibold text-[#696557] dark:text-[#b8b3ac] uppercase tracking-wider mb-2">
+                  <div className="text-xs font-semibold text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider mb-2">
                     Lot Allocations
                   </div>
                   <table className="w-full text-xs">
                     <thead>
-                      <tr className="border-b border-[rgba(201,169,97,0.1)]">
-                        <th className="text-left py-1.5 px-2 text-[#a39d94]">
+                      <tr className="border-b border-[rgba(95,227,192,0.1)]">
+                        <th className="text-left py-1.5 px-2 text-[#647D8B]">
                           Lot ID
                         </th>
-                        <th className="text-right py-1.5 px-2 text-[#a39d94]">
+                        <th className="text-right py-1.5 px-2 text-[#647D8B]">
                           Qty Used
                         </th>
-                        <th className="text-right py-1.5 px-2 text-[#a39d94]">
+                        <th className="text-right py-1.5 px-2 text-[#647D8B]">
                           Cost Basis
                         </th>
                       </tr>
@@ -639,22 +639,22 @@ const DisposalTable: React.FC<{
                       {d.result.lotsUsed.map(lu => (
                         <tr
                           key={lu.lotId}
-                          className="border-b border-[rgba(201,169,97,0.05)]"
+                          className="border-b border-[rgba(95,227,192,0.05)]"
                         >
-                          <td className="py-1.5 px-2 font-mono text-[#1a1815] dark:text-[#f5f3f0]">
+                          <td className="py-1.5 px-2 font-mono text-[#11202B] dark:text-[#EAF3F2]">
                             {lu.lotId.substring(0, 12)}...
                           </td>
-                          <td className="py-1.5 px-2 text-right font-[Lora] tabular-nums text-[#1a1815] dark:text-[#f5f3f0]">
+                          <td className="py-1.5 px-2 text-right font-[Lora] tabular-nums text-[#11202B] dark:text-[#EAF3F2]">
                             {formatNumber(lu.quantityUsed)}
                           </td>
-                          <td className="py-1.5 px-2 text-right font-[Lora] tabular-nums text-[#1a1815] dark:text-[#f5f3f0]">
+                          <td className="py-1.5 px-2 text-right font-[Lora] tabular-nums text-[#11202B] dark:text-[#EAF3F2]">
                             {formatNumber(lu.costBasis)}
                           </td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
-                  <p className="mt-2 text-xs text-[#a39d94]">
+                  <p className="mt-2 text-xs text-[#647D8B]">
                     Holding period: {d.holdingPeriod.days} days | Avg cost/unit:{' '}
                     {formatNumber(d.result.averageCostPerUnit)}
                   </p>
@@ -672,20 +672,20 @@ const RemainingLotsTable: React.FC<{ lots: CryptoLot[] }> = ({ lots }) => (
   <div className="overflow-x-auto">
     <table className="w-full text-sm">
       <thead>
-        <tr className="border-b border-[rgba(201,169,97,0.15)]">
-          <th className="text-left py-3 px-3 text-xs font-semibold text-[#696557] dark:text-[#b8b3ac] uppercase tracking-wider">
+        <tr className="border-b border-[rgba(95,227,192,0.15)]">
+          <th className="text-left py-3 px-3 text-xs font-semibold text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
             Lot ID
           </th>
-          <th className="text-left py-3 px-3 text-xs font-semibold text-[#696557] dark:text-[#b8b3ac] uppercase tracking-wider">
+          <th className="text-left py-3 px-3 text-xs font-semibold text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
             Acquired
           </th>
-          <th className="text-right py-3 px-3 text-xs font-semibold text-[#696557] dark:text-[#b8b3ac] uppercase tracking-wider">
+          <th className="text-right py-3 px-3 text-xs font-semibold text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
             Remaining Qty
           </th>
-          <th className="text-right py-3 px-3 text-xs font-semibold text-[#696557] dark:text-[#b8b3ac] uppercase tracking-wider">
+          <th className="text-right py-3 px-3 text-xs font-semibold text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
             Cost/Unit
           </th>
-          <th className="text-right py-3 px-3 text-xs font-semibold text-[#696557] dark:text-[#b8b3ac] uppercase tracking-wider">
+          <th className="text-right py-3 px-3 text-xs font-semibold text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
             Total Cost
           </th>
         </tr>
@@ -694,21 +694,21 @@ const RemainingLotsTable: React.FC<{ lots: CryptoLot[] }> = ({ lots }) => (
         {lots.map(lot => (
           <tr
             key={lot.lotId}
-            className="border-b border-[rgba(201,169,97,0.1)] hover:bg-[rgba(201,169,97,0.03)] dark:hover:bg-[rgba(201,169,97,0.05)] transition-colors"
+            className="border-b border-[rgba(95,227,192,0.1)] hover:bg-[rgba(95,227,192,0.03)] dark:hover:bg-[rgba(95,227,192,0.05)] transition-colors"
           >
-            <td className="py-3 px-3 font-mono text-xs text-[#1a1815] dark:text-[#f5f3f0]">
+            <td className="py-3 px-3 font-mono text-xs text-[#11202B] dark:text-[#EAF3F2]">
               {lot.lotId.substring(0, 12)}...
             </td>
-            <td className="py-3 px-3 text-[#1a1815] dark:text-[#f5f3f0]">
+            <td className="py-3 px-3 text-[#11202B] dark:text-[#EAF3F2]">
               {formatDate(lot.acquisitionDate)}
             </td>
-            <td className="py-3 px-3 text-right font-[Lora] tabular-nums text-[#1a1815] dark:text-[#f5f3f0]">
+            <td className="py-3 px-3 text-right font-[Lora] tabular-nums text-[#11202B] dark:text-[#EAF3F2]">
               {formatNumber(lot.remainingQuantity)}
             </td>
-            <td className="py-3 px-3 text-right font-[Lora] tabular-nums text-[#1a1815] dark:text-[#f5f3f0]">
+            <td className="py-3 px-3 text-right font-[Lora] tabular-nums text-[#11202B] dark:text-[#EAF3F2]">
               {formatNumber(lot.costPerUnit)}
             </td>
-            <td className="py-3 px-3 text-right font-[Lora] tabular-nums text-[#1a1815] dark:text-[#f5f3f0]">
+            <td className="py-3 px-3 text-right font-[Lora] tabular-nums text-[#11202B] dark:text-[#EAF3F2]">
               {formatNumber(
                 (
                   parseFloat(lot.remainingQuantity) *
@@ -720,7 +720,7 @@ const RemainingLotsTable: React.FC<{ lots: CryptoLot[] }> = ({ lots }) => (
         ))}
         {lots.length === 0 && (
           <tr>
-            <td colSpan={5} className="py-8 text-center text-sm text-[#a39d94]">
+            <td colSpan={5} className="py-8 text-center text-sm text-[#647D8B]">
               No remaining lots
             </td>
           </tr>
@@ -885,21 +885,21 @@ const CostBasisReport: React.FC = () => {
   return (
     <div className="min-h-screen ledger-background">
       {/* Header */}
-      <header className="bg-[#fafaf8] dark:bg-[#0f0e0c] border-b border-[rgba(201,169,97,0.15)]">
+      <header className="bg-[#F7FAFA] dark:bg-[#0C141B] border-b border-[rgba(95,227,192,0.15)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <button
                 onClick={() => navigate('/reports')}
-                className="p-2 mr-3 text-[#696557] dark:text-[#b8b3ac] hover:bg-[#f3f1ed] dark:hover:bg-[#1a1815] rounded-lg transition-colors"
+                className="p-2 mr-3 text-[#294050] dark:text-[#9FB4BE] hover:bg-[#EAF3F2] dark:hover:bg-[#11202B] rounded-lg transition-colors"
               >
                 <ArrowLeft className="w-5 h-5" />
               </button>
               <div>
-                <h1 className="text-lg font-semibold text-[#1a1815] dark:text-[#f5f3f0] font-[Playfair_Display]">
+                <h1 className="text-lg font-semibold text-[#11202B] dark:text-[#EAF3F2] font-[Playfair_Display]">
                   Cost Basis Report
                 </h1>
-                <p className="text-sm text-[#696557] dark:text-[#b8b3ac]">
+                <p className="text-sm text-[#294050] dark:text-[#9FB4BE]">
                   Realized gains/losses by cost basis method
                 </p>
               </div>
@@ -908,22 +908,22 @@ const CostBasisReport: React.FC = () => {
               <button
                 onClick={() => setShowExportMenu(prev => !prev)}
                 disabled={!reportData || reportData.disposals.length === 0}
-                className="px-4 py-2 text-sm font-medium text-white bg-[#8b4e52] rounded-lg hover:bg-[#7a4248] disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                className="px-4 py-2 text-sm font-medium text-white bg-[#294050] rounded-lg hover:bg-[#1E2F3C] disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
               >
                 <Download className="w-4 h-4 mr-2" />
                 Export
               </button>
               {showExportMenu && (
-                <div className="absolute right-0 mt-1 w-36 bg-[#fafaf8] dark:bg-[#1a1815] border border-[rgba(201,169,97,0.15)] rounded-lg shadow-lg z-10">
+                <div className="absolute right-0 mt-1 w-36 bg-[#F7FAFA] dark:bg-[#11202B] border border-[rgba(95,227,192,0.15)] rounded-lg shadow-lg z-10">
                   <button
                     onClick={() => handleExport('csv')}
-                    className="w-full px-4 py-2 text-sm text-left text-[#1a1815] dark:text-[#f5f3f0] hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620] rounded-t-lg"
+                    className="w-full px-4 py-2 text-sm text-left text-[#11202B] dark:text-[#EAF3F2] hover:bg-[#EAF3F2] dark:hover:bg-[#16242F] rounded-t-lg"
                   >
                     Export CSV
                   </button>
                   <button
                     onClick={() => handleExport('json')}
-                    className="w-full px-4 py-2 text-sm text-left text-[#1a1815] dark:text-[#f5f3f0] hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620] rounded-b-lg"
+                    className="w-full px-4 py-2 text-sm text-left text-[#11202B] dark:text-[#EAF3F2] hover:bg-[#EAF3F2] dark:hover:bg-[#16242F] rounded-b-lg"
                   >
                     Export JSON
                   </button>
@@ -937,15 +937,15 @@ const CostBasisReport: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Validation warnings */}
         {validationWarnings && (
-          <div className="mb-6 bg-[#b89968]/10 dark:bg-[#b89968]/5 border border-[#b89968]/30 rounded-lg p-4">
+          <div className="mb-6 bg-[#E8B36F]/10 dark:bg-[#E8B36F]/5 border border-[#E8B36F]/30 rounded-lg p-4">
             <div className="flex items-start">
-              <AlertCircle className="w-5 h-5 text-[#b89968] mr-3 mt-0.5 flex-shrink-0" />
+              <AlertCircle className="w-5 h-5 text-[#E8B36F] mr-3 mt-0.5 flex-shrink-0" />
               <div>
-                <p className="text-sm font-medium text-[#b89968]">
+                <p className="text-sm font-medium text-[#E8B36F]">
                   Lot data warnings
                 </p>
                 {validationWarnings.map((w, i) => (
-                  <p key={i} className="text-xs text-[#b89968]/80 mt-1">
+                  <p key={i} className="text-xs text-[#E8B36F]/80 mt-1">
                     {w}
                   </p>
                 ))}
@@ -955,17 +955,17 @@ const CostBasisReport: React.FC = () => {
         )}
 
         {/* Filters */}
-        <div className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg border border-[rgba(201,169,97,0.15)] p-6 mb-6">
+        <div className="bg-[#F7FAFA] dark:bg-[#0C141B] rounded-lg border border-[rgba(95,227,192,0.15)] p-6 mb-6">
           <div className="flex items-center mb-4">
-            <Filter className="w-4 h-4 text-[#696557] dark:text-[#b8b3ac] mr-2" />
-            <h2 className="text-sm font-semibold text-[#1a1815] dark:text-[#f5f3f0]">
+            <Filter className="w-4 h-4 text-[#294050] dark:text-[#9FB4BE] mr-2" />
+            <h2 className="text-sm font-semibold text-[#11202B] dark:text-[#EAF3F2]">
               Report Parameters
             </h2>
           </div>
 
           {/* Method selector */}
           <div className="mb-4">
-            <label className="block text-xs font-medium text-[#696557] dark:text-[#b8b3ac] uppercase tracking-wider mb-2">
+            <label className="block text-xs font-medium text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider mb-2">
               Cost Basis Method
             </label>
             <MethodSelector selected={method} onChange={setMethod} />
@@ -974,13 +974,13 @@ const CostBasisReport: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {/* Asset selector */}
             <div>
-              <label className="block text-xs font-medium text-[#696557] dark:text-[#b8b3ac] uppercase tracking-wider mb-2">
+              <label className="block text-xs font-medium text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider mb-2">
                 Asset
               </label>
               <select
                 value={selectedAsset}
                 onChange={e => setSelectedAsset(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border border-[rgba(201,169,97,0.15)] bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] text-sm focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
+                className="w-full px-3 py-2 rounded-lg border border-[rgba(95,227,192,0.15)] bg-[#F7FAFA] dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] text-sm focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]"
               >
                 <option value="all">All Assets</option>
                 {assets.map(a => (
@@ -993,7 +993,7 @@ const CostBasisReport: React.FC = () => {
 
             {/* Tax year / date range toggle */}
             <div>
-              <label className="block text-xs font-medium text-[#696557] dark:text-[#b8b3ac] uppercase tracking-wider mb-2">
+              <label className="block text-xs font-medium text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider mb-2">
                 Period
               </label>
               {!useDateRange ? (
@@ -1001,7 +1001,7 @@ const CostBasisReport: React.FC = () => {
                   <select
                     value={taxYear}
                     onChange={e => setTaxYear(parseInt(e.target.value))}
-                    className="flex-1 px-3 py-2 rounded-lg border border-[rgba(201,169,97,0.15)] bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] text-sm focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
+                    className="flex-1 px-3 py-2 rounded-lg border border-[rgba(95,227,192,0.15)] bg-[#F7FAFA] dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] text-sm focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]"
                   >
                     {yearOptions.map(y => (
                       <option key={y} value={y}>
@@ -1011,7 +1011,7 @@ const CostBasisReport: React.FC = () => {
                   </select>
                   <button
                     onClick={() => setUseDateRange(true)}
-                    className="px-3 py-2 text-xs text-[#696557] dark:text-[#b8b3ac] border border-[rgba(201,169,97,0.15)] rounded-lg hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620]"
+                    className="px-3 py-2 text-xs text-[#294050] dark:text-[#9FB4BE] border border-[rgba(95,227,192,0.15)] rounded-lg hover:bg-[#EAF3F2] dark:hover:bg-[#16242F]"
                     title="Use custom date range"
                   >
                     Custom
@@ -1023,18 +1023,18 @@ const CostBasisReport: React.FC = () => {
                     type="date"
                     value={dateStart}
                     onChange={e => setDateStart(e.target.value)}
-                    className="flex-1 px-3 py-2 rounded-lg border border-[rgba(201,169,97,0.15)] bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] text-sm focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
+                    className="flex-1 px-3 py-2 rounded-lg border border-[rgba(95,227,192,0.15)] bg-[#F7FAFA] dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] text-sm focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]"
                   />
-                  <span className="text-[#a39d94] text-xs">to</span>
+                  <span className="text-[#647D8B] text-xs">to</span>
                   <input
                     type="date"
                     value={dateEnd}
                     onChange={e => setDateEnd(e.target.value)}
-                    className="flex-1 px-3 py-2 rounded-lg border border-[rgba(201,169,97,0.15)] bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] text-sm focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
+                    className="flex-1 px-3 py-2 rounded-lg border border-[rgba(95,227,192,0.15)] bg-[#F7FAFA] dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] text-sm focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]"
                   />
                   <button
                     onClick={() => setUseDateRange(false)}
-                    className="px-3 py-2 text-xs text-[#696557] dark:text-[#b8b3ac] border border-[rgba(201,169,97,0.15)] rounded-lg hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620]"
+                    className="px-3 py-2 text-xs text-[#294050] dark:text-[#9FB4BE] border border-[rgba(95,227,192,0.15)] rounded-lg hover:bg-[#EAF3F2] dark:hover:bg-[#16242F]"
                     title="Use tax year"
                   >
                     Year
@@ -1045,10 +1045,10 @@ const CostBasisReport: React.FC = () => {
 
             {/* Weighted average display */}
             <div>
-              <label className="block text-xs font-medium text-[#696557] dark:text-[#b8b3ac] uppercase tracking-wider mb-2">
+              <label className="block text-xs font-medium text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider mb-2">
                 Weighted Avg Cost/Unit
               </label>
-              <div className="px-3 py-2 rounded-lg border border-[rgba(201,169,97,0.15)] bg-[#f3f1ed] dark:bg-[#2a2620] text-[#1a1815] dark:text-[#f5f3f0] text-sm font-[Lora] tabular-nums">
+              <div className="px-3 py-2 rounded-lg border border-[rgba(95,227,192,0.15)] bg-[#EAF3F2] dark:bg-[#16242F] text-[#11202B] dark:text-[#EAF3F2] text-sm font-[Lora] tabular-nums">
                 {formatNumber(weightedAvg)}
               </div>
             </div>
@@ -1058,27 +1058,27 @@ const CostBasisReport: React.FC = () => {
         {/* Loading / Error / Empty states */}
         {loading && (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-8 h-8 text-[#8b4e52] animate-spin" />
-            <span className="ml-3 text-[#696557] dark:text-[#b8b3ac]">
+            <Loader2 className="w-8 h-8 text-[#294050] animate-spin" />
+            <span className="ml-3 text-[#294050] dark:text-[#9FB4BE]">
               Loading transactions...
             </span>
           </div>
         )}
 
         {error && (
-          <div className="bg-[#9d6b6b]/10 border border-[#9d6b6b]/30 rounded-lg p-6 text-center">
-            <AlertCircle className="mx-auto w-8 h-8 text-[#9d6b6b] mb-2" />
-            <p className="text-sm text-[#9d6b6b]">{error}</p>
+          <div className="bg-[#E8836F]/10 border border-[#E8836F]/30 rounded-lg p-6 text-center">
+            <AlertCircle className="mx-auto w-8 h-8 text-[#E8836F] mb-2" />
+            <p className="text-sm text-[#E8836F]">{error}</p>
           </div>
         )}
 
         {!loading && !error && transactions.length === 0 && (
-          <div className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg border border-[rgba(201,169,97,0.15)] p-12 text-center">
-            <FileText className="mx-auto h-12 w-12 text-[#a39d94]" />
-            <h3 className="mt-2 text-sm font-medium text-[#1a1815] dark:text-[#f5f3f0]">
+          <div className="bg-[#F7FAFA] dark:bg-[#0C141B] rounded-lg border border-[rgba(95,227,192,0.15)] p-12 text-center">
+            <FileText className="mx-auto h-12 w-12 text-[#647D8B]" />
+            <h3 className="mt-2 text-sm font-medium text-[#11202B] dark:text-[#EAF3F2]">
               No transaction data
             </h3>
-            <p className="mt-1 text-sm text-[#696557] dark:text-[#b8b3ac]">
+            <p className="mt-1 text-sm text-[#294050] dark:text-[#9FB4BE]">
               Add wallets and sync transactions to generate cost basis reports.
             </p>
           </div>
@@ -1119,8 +1119,8 @@ const CostBasisReport: React.FC = () => {
                 onClick={() => setActiveTab('disposals')}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors border ${
                   activeTab === 'disposals'
-                    ? 'bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 text-[#8b4e52] dark:text-[#a86e72] border-[#8b4e52]/30'
-                    : 'bg-[#fafaf8] dark:bg-[#0f0e0c] text-[#696557] dark:text-[#b8b3ac] border-[rgba(201,169,97,0.15)] hover:bg-[#f3f1ed] dark:hover:bg-[#1a1815]'
+                    ? 'bg-[#294050]/10 dark:bg-[#294050]/20 text-[#294050] dark:text-[#F09988] border-[#294050]/30'
+                    : 'bg-[#F7FAFA] dark:bg-[#0C141B] text-[#294050] dark:text-[#9FB4BE] border-[rgba(95,227,192,0.15)] hover:bg-[#EAF3F2] dark:hover:bg-[#11202B]'
                 }`}
               >
                 Realized Gains/Losses ({reportData.disposals.length})
@@ -1129,8 +1129,8 @@ const CostBasisReport: React.FC = () => {
                 onClick={() => setActiveTab('holdings')}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors border ${
                   activeTab === 'holdings'
-                    ? 'bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 text-[#8b4e52] dark:text-[#a86e72] border-[#8b4e52]/30'
-                    : 'bg-[#fafaf8] dark:bg-[#0f0e0c] text-[#696557] dark:text-[#b8b3ac] border-[rgba(201,169,97,0.15)] hover:bg-[#f3f1ed] dark:hover:bg-[#1a1815]'
+                    ? 'bg-[#294050]/10 dark:bg-[#294050]/20 text-[#294050] dark:text-[#F09988] border-[#294050]/30'
+                    : 'bg-[#F7FAFA] dark:bg-[#0C141B] text-[#294050] dark:text-[#9FB4BE] border-[rgba(95,227,192,0.15)] hover:bg-[#EAF3F2] dark:hover:bg-[#11202B]'
                 }`}
               >
                 Remaining Holdings ({reportData.remainingLots.length})
@@ -1138,7 +1138,7 @@ const CostBasisReport: React.FC = () => {
             </div>
 
             {/* Data tables */}
-            <div className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg border border-[rgba(201,169,97,0.15)]">
+            <div className="bg-[#F7FAFA] dark:bg-[#0C141B] rounded-lg border border-[rgba(95,227,192,0.15)]">
               {activeTab === 'disposals' ? (
                 reportData.disposals.length > 0 ? (
                   <DisposalTable
@@ -1148,11 +1148,11 @@ const CostBasisReport: React.FC = () => {
                   />
                 ) : (
                   <div className="p-12 text-center">
-                    <Calculator className="mx-auto h-12 w-12 text-[#a39d94]" />
-                    <h3 className="mt-2 text-sm font-medium text-[#1a1815] dark:text-[#f5f3f0]">
+                    <Calculator className="mx-auto h-12 w-12 text-[#647D8B]" />
+                    <h3 className="mt-2 text-sm font-medium text-[#11202B] dark:text-[#EAF3F2]">
                       No disposals in this period
                     </h3>
-                    <p className="mt-1 text-sm text-[#696557] dark:text-[#b8b3ac]">
+                    <p className="mt-1 text-sm text-[#294050] dark:text-[#9FB4BE]">
                       No outgoing transactions found for the selected filters.
                     </p>
                   </div>

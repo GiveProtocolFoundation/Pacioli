@@ -262,13 +262,13 @@ const SearchInput: React.FC<{
   onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void
 }> = ({ searchQuery, onSearchChange }) => (
   <div className="relative flex-1">
-    <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#a39d94]" />
+    <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#647D8B]" />
     <input
       type="text"
       placeholder="Search reports..."
       value={searchQuery}
       onChange={onSearchChange}
-      className="w-full pl-4 pr-10 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
+      className="w-full pl-4 pr-10 py-2 border border-[rgba(95,227,192,0.15)] rounded-lg bg-[#F7FAFA] dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]"
     />
   </div>
 )
@@ -287,8 +287,8 @@ const FavoritesToggle: React.FC<{
     onClick={onToggle}
     className={`px-4 py-2 rounded-lg border flex items-center justify-center transition-colors ${
       showFavoritesOnly
-        ? 'border-[#c9a961] bg-[#c9a961]/10 dark:bg-[#c9a961]/20 text-[#b89968] dark:text-[#c9a961]'
-        : 'border-[rgba(201,169,97,0.15)] text-[#696557] dark:text-[#b8b3ac] hover:bg-[#f3f1ed] dark:hover:bg-[#1a1815]'
+        ? 'border-[#5FE3C0] bg-[#5FE3C0]/10 dark:bg-[#5FE3C0]/20 text-[#E8B36F] dark:text-[#5FE3C0]'
+        : 'border-[rgba(95,227,192,0.15)] text-[#294050] dark:text-[#9FB4BE] hover:bg-[#EAF3F2] dark:hover:bg-[#11202B]'
     }`}
   >
     <Star className="w-4 h-4 mr-2" />
@@ -302,11 +302,11 @@ const StatCard: React.FC<{
   value: number
   Icon: React.ElementType
 }> = ({ label, value, Icon }) => (
-  <div className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg border border-[rgba(201,169,97,0.15)] p-4">
+  <div className="bg-[#F7FAFA] dark:bg-[#0C141B] rounded-lg border border-[rgba(95,227,192,0.15)] p-4">
     <div className="flex items-center justify-between">
       <div>
-        <p className="text-sm text-[#696557] dark:text-[#b8b3ac]">{label}</p>
-        <p className="text-2xl font-semibold text-[#1a1815] dark:text-[#f5f3f0] mt-1 stat-value">
+        <p className="text-sm text-[#294050] dark:text-[#9FB4BE]">{label}</p>
+        <p className="text-2xl font-semibold text-[#11202B] dark:text-[#EAF3F2] mt-1 stat-value">
           {value}
         </p>
       </div>
@@ -323,15 +323,15 @@ const RecentRunItem: React.FC<{
   getStatusBadge: (status: RecentRun['status']) => React.ReactNode
   formatDate: (dateString: string) => string
 }> = ({ run, getStatusBadge, formatDate }) => (
-  <div className="pb-3 border-b border-[rgba(201,169,97,0.15)] last:border-0 last:pb-0">
+  <div className="pb-3 border-b border-[rgba(95,227,192,0.15)] last:border-0 last:pb-0">
     <div className="flex items-start justify-between mb-1">
-      <p className="text-sm font-medium text-[#1a1815] dark:text-[#f5f3f0]">
+      <p className="text-sm font-medium text-[#11202B] dark:text-[#EAF3F2]">
         {run.reportName}
       </p>
       {getStatusBadge(run.status)}
     </div>
-    <p className="text-xs text-[#696557] dark:text-[#b8b3ac]">By {run.ranBy}</p>
-    <p className="text-xs text-[#a39d94] dark:text-[#696557] mt-1">
+    <p className="text-xs text-[#294050] dark:text-[#9FB4BE]">By {run.ranBy}</p>
+    <p className="text-xs text-[#647D8B] dark:text-[#294050] mt-1">
       {formatDate(run.ranAt)}
     </p>
     {run.status === 'completed' && (
@@ -362,18 +362,18 @@ const ReportInfo = ({
     </div>
     <div className="ml-4 flex-1">
       <div className="flex items-center">
-        <h3 className="text-sm font-semibold text-[#1a1815] dark:text-[#f5f3f0]">
+        <h3 className="text-sm font-semibold text-[#11202B] dark:text-[#EAF3F2]">
           {report.name}
         </h3>
         {report.favorite && (
           <Star className="w-4 h-4 ml-2 favorite-star active" />
         )}
       </div>
-      <p className="text-xs text-[#696557] dark:text-[#b8b3ac] mt-1">
+      <p className="text-xs text-[#294050] dark:text-[#9FB4BE] mt-1">
         {report.description}
       </p>
       {report.lastRun && (
-        <p className="text-xs text-[#a39d94] dark:text-[#696557] mt-2">
+        <p className="text-xs text-[#647D8B] dark:text-[#294050] mt-2">
           Last run: {formatDate(report.lastRun)}
         </p>
       )}
@@ -383,16 +383,16 @@ const ReportInfo = ({
 
 /** Page header with title and custom report button */
 const ReportsHeader: React.FC = () => (
-  <header className="bg-[#fafaf8] dark:bg-[#0f0e0c] border-b border-[rgba(201,169,97,0.15)]">
+  <header className="bg-[#F7FAFA] dark:bg-[#0C141B] border-b border-[rgba(95,227,192,0.15)]">
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1>Reports</h1>
-          <p className="text-sm text-[#696557] dark:text-[#b8b3ac] mt-1">
+          <p className="text-sm text-[#294050] dark:text-[#9FB4BE] mt-1">
             Financial and cryptocurrency reporting
           </p>
         </div>
-        <button className="px-4 py-2 text-sm font-medium text-white bg-[#8b4e52] rounded-lg hover:bg-[#7a4248] flex items-center justify-center">
+        <button className="px-4 py-2 text-sm font-medium text-white bg-[#294050] rounded-lg hover:bg-[#1E2F3C] flex items-center justify-center">
           <Plus className="w-4 h-4 mr-2" />
           Custom Report
         </button>
@@ -444,11 +444,11 @@ const Reports: React.FC = () => {
   const getStatusBadge = useCallback((status: RecentRun['status']) => {
     const styles = {
       completed:
-        'bg-[#7a9b6f]/10 dark:bg-[#7a9b6f]/20 text-[#7a9b6f] dark:text-[#8faf84]',
+        'bg-[#5FE3C0]/10 dark:bg-[#5FE3C0]/20 text-[#5FE3C0] dark:text-[#9CF1DC]',
       processing:
-        'bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 text-[#8b4e52] dark:text-[#a86e72]',
+        'bg-[#294050]/10 dark:bg-[#294050]/20 text-[#294050] dark:text-[#F09988]',
       failed:
-        'bg-[#9d6b6b]/10 dark:bg-[#9d6b6b]/20 text-[#9d6b6b] dark:text-[#b88585]',
+        'bg-[#E8836F]/10 dark:bg-[#E8836F]/20 text-[#E8836F] dark:text-[#F09988]',
     }
 
     return (
@@ -511,7 +511,7 @@ const Reports: React.FC = () => {
             </div>
 
             {/* Search and Filters */}
-            <div className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg border border-[rgba(201,169,97,0.15)] p-4">
+            <div className="bg-[#F7FAFA] dark:bg-[#0C141B] rounded-lg border border-[rgba(95,227,192,0.15)] p-4">
               <div className="flex flex-col sm:flex-row gap-4">
                 <SearchInput
                   searchQuery={searchQuery}
@@ -530,8 +530,8 @@ const Reports: React.FC = () => {
                 onClick={handleCategoryAll}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   selectedCategory === 'all'
-                    ? 'bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 text-[#8b4e52] dark:text-[#a86e72] border border-[#8b4e52]/30 dark:border-[#8b4e52]/40'
-                    : 'bg-[#fafaf8] dark:bg-[#0f0e0c] text-[#696557] dark:text-[#b8b3ac] border border-[rgba(201,169,97,0.15)] hover:bg-[#f3f1ed] dark:hover:bg-[#1a1815]'
+                    ? 'bg-[#294050]/10 dark:bg-[#294050]/20 text-[#294050] dark:text-[#F09988] border border-[#294050]/30 dark:border-[#294050]/40'
+                    : 'bg-[#F7FAFA] dark:bg-[#0C141B] text-[#294050] dark:text-[#9FB4BE] border border-[rgba(95,227,192,0.15)] hover:bg-[#EAF3F2] dark:hover:bg-[#11202B]'
                 }`}
               >
                 All Reports
@@ -545,8 +545,8 @@ const Reports: React.FC = () => {
                     onClick={handleClick}
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center ${
                       selectedCategory === category.id
-                        ? 'bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 text-[#8b4e52] dark:text-[#a86e72] border border-[#8b4e52]/30 dark:border-[#8b4e52]/40'
-                        : 'bg-[#fafaf8] dark:bg-[#0f0e0c] text-[#696557] dark:text-[#b8b3ac] border border-[rgba(201,169,97,0.15)] hover:bg-[#f3f1ed] dark:hover:bg-[#1a1815]'
+                        ? 'bg-[#294050]/10 dark:bg-[#294050]/20 text-[#294050] dark:text-[#F09988] border border-[#294050]/30 dark:border-[#294050]/40'
+                        : 'bg-[#F7FAFA] dark:bg-[#0C141B] text-[#294050] dark:text-[#9FB4BE] border border-[rgba(95,227,192,0.15)] hover:bg-[#EAF3F2] dark:hover:bg-[#11202B]'
                     }`}
                   >
                     <Icon className="w-4 h-4 mr-2" />
@@ -563,13 +563,13 @@ const Reports: React.FC = () => {
                 return (
                   <div
                     key={report.id}
-                    className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg border border-[rgba(201,169,97,0.15)] p-4 hover:border-[rgba(201,169,97,0.3)] transition-colors"
+                    className="bg-[#F7FAFA] dark:bg-[#0C141B] rounded-lg border border-[rgba(95,227,192,0.15)] p-4 hover:border-[rgba(95,227,192,0.3)] transition-colors"
                   >
                     <div className="flex items-start justify-between">
                       <ReportInfo report={report} Icon={Icon} />
                       <div className="flex items-center space-x-2 ml-4">
                         <button
-                          className="p-2 action-icon hover:bg-[#f3f1ed] dark:hover:bg-[#1a1815] rounded-lg transition-colors"
+                          className="p-2 action-icon hover:bg-[#EAF3F2] dark:hover:bg-[#11202B] rounded-lg transition-colors"
                           title="Run Report"
                           onClick={() => {
                             const route = reportRoutes[report.id]
@@ -579,13 +579,13 @@ const Reports: React.FC = () => {
                           <Play className="w-4 h-4" />
                         </button>
                         <button
-                          className="p-2 action-icon hover:bg-[#f3f1ed] dark:hover:bg-[#1a1815] rounded-lg transition-colors"
+                          className="p-2 action-icon hover:bg-[#EAF3F2] dark:hover:bg-[#11202B] rounded-lg transition-colors"
                           title="Download"
                         >
                           <Download className="w-4 h-4" />
                         </button>
                         <button
-                          className="p-2 action-icon hover:bg-[#f3f1ed] dark:hover:bg-[#1a1815] rounded-lg transition-colors"
+                          className="p-2 action-icon hover:bg-[#EAF3F2] dark:hover:bg-[#11202B] rounded-lg transition-colors"
                           title="Schedule"
                         >
                           <Clock className="w-4 h-4" />
@@ -597,12 +597,12 @@ const Reports: React.FC = () => {
               })}
 
               {filteredReports.length === 0 && (
-                <div className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg border border-[rgba(201,169,97,0.15)] p-12 text-center">
-                  <FileText className="mx-auto h-12 w-12 text-[#a39d94]" />
-                  <h3 className="mt-2 text-sm font-medium text-[#1a1815] dark:text-[#f5f3f0]">
+                <div className="bg-[#F7FAFA] dark:bg-[#0C141B] rounded-lg border border-[rgba(95,227,192,0.15)] p-12 text-center">
+                  <FileText className="mx-auto h-12 w-12 text-[#647D8B]" />
+                  <h3 className="mt-2 text-sm font-medium text-[#11202B] dark:text-[#EAF3F2]">
                     No reports found
                   </h3>
-                  <p className="mt-1 text-sm text-[#696557] dark:text-[#b8b3ac]">
+                  <p className="mt-1 text-sm text-[#294050] dark:text-[#9FB4BE]">
                     Try adjusting your search or filters.
                   </p>
                 </div>
@@ -613,8 +613,8 @@ const Reports: React.FC = () => {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Recent Runs */}
-            <div className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg border border-[rgba(201,169,97,0.15)] p-6">
-              <h3 className="text-sm font-semibold text-[#1a1815] dark:text-[#f5f3f0] mb-4">
+            <div className="bg-[#F7FAFA] dark:bg-[#0C141B] rounded-lg border border-[rgba(95,227,192,0.15)] p-6">
+              <h3 className="text-sm font-semibold text-[#11202B] dark:text-[#EAF3F2] mb-4">
                 Recent Runs
               </h3>
               <div className="space-y-3">
@@ -630,26 +630,26 @@ const Reports: React.FC = () => {
             </div>
 
             {/* Quick Actions */}
-            <div className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg border border-[rgba(201,169,97,0.15)] p-6">
-              <h3 className="text-sm font-semibold text-[#1a1815] dark:text-[#f5f3f0] mb-4">
+            <div className="bg-[#F7FAFA] dark:bg-[#0C141B] rounded-lg border border-[rgba(95,227,192,0.15)] p-6">
+              <h3 className="text-sm font-semibold text-[#11202B] dark:text-[#EAF3F2] mb-4">
                 Quick Actions
               </h3>
               <div className="space-y-2">
-                <button className="w-full px-4 py-2 text-sm font-medium text-[#696557] dark:text-[#b8b3ac] bg-[#fafaf8] dark:bg-[#1a1815] border border-[rgba(201,169,97,0.15)] rounded-lg hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620] flex items-center justify-between">
+                <button className="w-full px-4 py-2 text-sm font-medium text-[#294050] dark:text-[#9FB4BE] bg-[#F7FAFA] dark:bg-[#11202B] border border-[rgba(95,227,192,0.15)] rounded-lg hover:bg-[#EAF3F2] dark:hover:bg-[#16242F] flex items-center justify-between">
                   <span className="flex items-center">
                     <Calendar className="w-4 h-4 mr-2" />
                     Schedule Reports
                   </span>
                   <ChevronRight className="w-4 h-4" />
                 </button>
-                <button className="w-full px-4 py-2 text-sm font-medium text-[#696557] dark:text-[#b8b3ac] bg-[#fafaf8] dark:bg-[#1a1815] border border-[rgba(201,169,97,0.15)] rounded-lg hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620] flex items-center justify-between">
+                <button className="w-full px-4 py-2 text-sm font-medium text-[#294050] dark:text-[#9FB4BE] bg-[#F7FAFA] dark:bg-[#11202B] border border-[rgba(95,227,192,0.15)] rounded-lg hover:bg-[#EAF3F2] dark:hover:bg-[#16242F] flex items-center justify-between">
                   <span className="flex items-center">
                     <Settings className="w-4 h-4 mr-2" />
                     Report Templates
                   </span>
                   <ChevronRight className="w-4 h-4" />
                 </button>
-                <button className="w-full px-4 py-2 text-sm font-medium text-[#696557] dark:text-[#b8b3ac] bg-[#fafaf8] dark:bg-[#1a1815] border border-[rgba(201,169,97,0.15)] rounded-lg hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620] flex items-center justify-between">
+                <button className="w-full px-4 py-2 text-sm font-medium text-[#294050] dark:text-[#9FB4BE] bg-[#F7FAFA] dark:bg-[#11202B] border border-[rgba(95,227,192,0.15)] rounded-lg hover:bg-[#EAF3F2] dark:hover:bg-[#16242F] flex items-center justify-between">
                   <span className="flex items-center">
                     <Download className="w-4 h-4 mr-2" />
                     Export Settings
@@ -660,14 +660,14 @@ const Reports: React.FC = () => {
             </div>
 
             {/* Report Builder CTA */}
-            <div className="bg-gradient-to-br from-[#8b4e52] to-[#7a4248] rounded-lg p-6 text-white">
+            <div className="bg-gradient-to-br from-[#294050] to-[#1E2F3C] rounded-lg p-6 text-white">
               <h3 className="text-sm font-semibold mb-2">
                 Custom Report Builder
               </h3>
               <p className="text-xs opacity-90 mb-4">
                 Create custom reports with advanced filters and calculations
               </p>
-              <button className="w-full px-4 py-2 text-sm font-medium bg-white text-[#8b4e52] rounded-lg hover:bg-[#f3f1ed] flex items-center justify-center">
+              <button className="w-full px-4 py-2 text-sm font-medium bg-white text-[#294050] rounded-lg hover:bg-[#EAF3F2] flex items-center justify-center">
                 <Plus className="w-4 h-4 mr-2" />
                 Build Custom Report
               </button>

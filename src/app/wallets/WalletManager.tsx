@@ -71,7 +71,7 @@ const TrackedWalletRow = memo(function TrackedWalletRow({
         <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
           {wallet.address}
         </p>
-        <p className="text-xs text-[#8b4e52] dark:text-[#a86e72]">
+        <p className="text-xs text-[#294050] dark:text-[#F09988]">
           {wallet.blockchain}
         </p>
       </div>
@@ -172,35 +172,35 @@ const AddMenuDropdown: React.FC<AddMenuDropdownProps> = ({
         onKeyDown={onKeyDown}
       />
       {/* Dropdown Menu */}
-      <div className="absolute right-0 mt-2 w-64 bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg shadow-lg border border-[rgba(201,169,97,0.15)] z-20 overflow-hidden">
+      <div className="absolute right-0 mt-2 w-64 bg-[#F7FAFA] dark:bg-[#0C141B] rounded-lg shadow-lg border border-[rgba(95,227,192,0.15)] z-20 overflow-hidden">
         <button
           onClick={onOpenPortfolioModal}
-          className="w-full px-4 py-3 text-left hover:bg-[#f3f1ed] dark:hover:bg-[#1a1815] transition-colors"
+          className="w-full px-4 py-3 text-left hover:bg-[#EAF3F2] dark:hover:bg-[#11202B] transition-colors"
         >
           <div className="flex items-center gap-3">
-            <Eye className="w-5 h-5 text-[#8b4e52]" />
+            <Eye className="w-5 h-5 text-[#294050]" />
             <div>
-              <p className="font-medium text-[#1a1815] dark:text-[#f5f3f0]">
+              <p className="font-medium text-[#11202B] dark:text-[#EAF3F2]">
                 Add Portfolio
               </p>
-              <p className="text-xs text-[#696557] dark:text-[#b8b3ac]">
+              <p className="text-xs text-[#294050] dark:text-[#9FB4BE]">
                 Track any public address (read-only)
               </p>
             </div>
           </div>
         </button>
-        <div className="border-t border-[rgba(201,169,97,0.15)]" />
+        <div className="border-t border-[rgba(95,227,192,0.15)]" />
         <button
           onClick={onOpenConnectionModal}
-          className="w-full px-4 py-3 text-left hover:bg-[#f3f1ed] dark:hover:bg-[#1a1815] transition-colors"
+          className="w-full px-4 py-3 text-left hover:bg-[#EAF3F2] dark:hover:bg-[#11202B] transition-colors"
         >
           <div className="flex items-center gap-3">
-            <Wallet className="w-5 h-5 text-[#8b4e52]" />
+            <Wallet className="w-5 h-5 text-[#294050]" />
             <div>
-              <p className="font-medium text-[#1a1815] dark:text-[#f5f3f0]">
+              <p className="font-medium text-[#11202B] dark:text-[#EAF3F2]">
                 Connect Wallet
               </p>
-              <p className="text-xs text-[#696557] dark:text-[#b8b3ac]">
+              <p className="text-xs text-[#294050] dark:text-[#9FB4BE]">
                 Browser extension or WalletConnect
               </p>
             </div>
@@ -225,22 +225,22 @@ const SyncProgressDisplay: React.FC<SyncProgressDisplayProps> = ({
   syncProgress,
 }) => {
   return (
-    <div className="mt-4 p-4 bg-[#c9a961]/10 dark:bg-[#c9a961]/20 border-l-4 border-[#c9a961] rounded">
+    <div className="mt-4 p-4 bg-[#5FE3C0]/10 dark:bg-[#5FE3C0]/20 border-l-4 border-[#5FE3C0] rounded">
       <div className="flex items-start mb-3">
         {syncProgress.stage === 'complete' ? (
           <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400 mr-3 flex-shrink-0" />
         ) : (
-          <Loader className="w-5 h-5 text-[#8b4e52] dark:text-[#a86e72] mr-3 flex-shrink-0 animate-spin" />
+          <Loader className="w-5 h-5 text-[#294050] dark:text-[#F09988] mr-3 flex-shrink-0 animate-spin" />
         )}
         <div className="flex-1">
-          <p className="text-sm font-semibold text-[#8b4e52] dark:text-[#d4b87a] mb-1">
+          <p className="text-sm font-semibold text-[#294050] dark:text-[#9CF1DC] mb-1">
             {syncProgress.stage === 'connecting' && 'Connecting to Network'}
             {syncProgress.stage === 'fetching' && 'Fetching Transactions'}
             {syncProgress.stage === 'processing' && 'Processing Blocks'}
             {syncProgress.stage === 'saving' && 'Saving to Database'}
             {syncProgress.stage === 'complete' && 'Sync Complete'}
           </p>
-          <p className="text-sm text-[#8b4e52] dark:text-[#d4b87a]">
+          <p className="text-sm text-[#294050] dark:text-[#9CF1DC]">
             {syncProgress.message}
           </p>
         </div>
@@ -251,9 +251,9 @@ const SyncProgressDisplay: React.FC<SyncProgressDisplayProps> = ({
         syncProgress.stage === 'processing') && (
         <div className="space-y-2">
           {/* Progress Bar */}
-          <div className="w-full bg-[#c9a961]/30 dark:bg-[#c9a961]/50 rounded-full h-2 overflow-hidden">
+          <div className="w-full bg-[#5FE3C0]/30 dark:bg-[#5FE3C0]/50 rounded-full h-2 overflow-hidden">
             <div
-              className="bg-[#8b4e52] dark:bg-[#a86e72] h-2 rounded-full transition-all duration-300"
+              className="bg-[#294050] dark:bg-[#F09988] h-2 rounded-full transition-all duration-300"
               style={{
                 width: `${Math.min(
                   100,
@@ -266,7 +266,7 @@ const SyncProgressDisplay: React.FC<SyncProgressDisplayProps> = ({
           </div>
 
           {/* Stats */}
-          <div className="flex justify-between text-xs text-[#8b4e52] dark:text-[#d4b87a]">
+          <div className="flex justify-between text-xs text-[#294050] dark:text-[#9CF1DC]">
             <span>
               Blocks: {syncProgress.blocksScanned.toLocaleString()} /{' '}
               {syncProgress.totalBlocks.toLocaleString()}
@@ -283,7 +283,7 @@ const SyncProgressDisplay: React.FC<SyncProgressDisplayProps> = ({
 
           {/* Transaction Count */}
           {syncProgress.transactionsFound > 0 && (
-            <p className="text-xs text-[#8b4e52] dark:text-[#d4b87a]">
+            <p className="text-xs text-[#294050] dark:text-[#9CF1DC]">
               Found {syncProgress.transactionsFound.toLocaleString()}{' '}
               transaction
               {syncProgress.transactionsFound !== 1 ? 's' : ''}
@@ -1044,7 +1044,7 @@ const WalletManager: React.FC = () => {
       <div className="max-w-7xl mx-auto mb-8">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center">
-            <Wallet className="w-8 h-8 text-[#8b4e52] dark:text-[#a86e72] mr-3" />
+            <Wallet className="w-8 h-8 text-[#294050] dark:text-[#F09988] mr-3" />
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
               Wallet Manager
             </h1>
@@ -1053,7 +1053,7 @@ const WalletManager: React.FC = () => {
           <div className="relative">
             <button
               onClick={handleToggleAddMenu}
-              className="flex items-center gap-2 px-4 py-2 bg-[#8b4e52] text-white rounded-lg font-medium hover:bg-[#7a4248] transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-[#294050] text-white rounded-lg font-medium hover:bg-[#1E2F3C] transition-colors"
             >
               <Plus className="w-5 h-5" />
               Add
@@ -1071,15 +1071,15 @@ const WalletManager: React.FC = () => {
             />
           </div>
         </div>
-        <p className="text-gray-600 dark:text-[#94a3b8]">
+        <p className="text-gray-600 dark:text-[#9FB4BE]">
           Connect your wallets and import transaction history for accounting
         </p>
 
         {/* Migration Status Indicator */}
         {migrationStatus && (
-          <div className="mt-4 p-3 bg-[#c9a961]/10 dark:bg-[#c9a961]/20 border-l-4 border-[#c9a961] rounded flex items-center">
-            <Database className="w-5 h-5 text-[#8b4e52] dark:text-[#a86e72] mr-3 flex-shrink-0" />
-            <p className="text-sm text-[#8b4e52] dark:text-[#d4b87a]">
+          <div className="mt-4 p-3 bg-[#5FE3C0]/10 dark:bg-[#5FE3C0]/20 border-l-4 border-[#5FE3C0] rounded flex items-center">
+            <Database className="w-5 h-5 text-[#294050] dark:text-[#F09988] mr-3 flex-shrink-0" />
+            <p className="text-sm text-[#294050] dark:text-[#9CF1DC]">
               {migrationStatus}
             </p>
           </div>
@@ -1132,7 +1132,7 @@ const WalletManager: React.FC = () => {
                     id="network-select"
                     value={selectedNetwork}
                     onChange={handleNetworkChange}
-                    className="w-full px-3 py-2 border border-[rgba(201,169,97,0.15)] dark:border-[rgba(201,169,97,0.25)] rounded bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:ring-2 focus:ring-[#c9a961] dark:focus:ring-[#c9a961] focus:border-transparent"
+                    className="w-full px-3 py-2 border border-[rgba(95,227,192,0.15)] dark:border-[rgba(95,227,192,0.25)] rounded bg-[#F7FAFA] dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] focus:ring-2 focus:ring-[#5FE3C0] dark:focus:ring-[#5FE3C0] focus:border-transparent"
                   >
                     <option value={NetworkType.POLKADOT}>Polkadot</option>
                     <option value={NetworkType.KUSAMA}>Kusama</option>
@@ -1155,7 +1155,7 @@ const WalletManager: React.FC = () => {
                     id="address-select"
                     value={selectedAddress}
                     onChange={handleAddressChange}
-                    className="w-full px-3 py-2 border border-[rgba(201,169,97,0.15)] dark:border-[rgba(201,169,97,0.25)] rounded bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:ring-2 focus:ring-[#c9a961] dark:focus:ring-[#c9a961] focus:border-transparent"
+                    className="w-full px-3 py-2 border border-[rgba(95,227,192,0.15)] dark:border-[rgba(95,227,192,0.25)] rounded bg-[#F7FAFA] dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] focus:ring-2 focus:ring-[#5FE3C0] dark:focus:ring-[#5FE3C0] focus:border-transparent"
                   >
                     <option value="">Select an address...</option>
                     {allAddresses.map(addr => (
@@ -1214,7 +1214,7 @@ const WalletManager: React.FC = () => {
                       </span>
                     )}
                     {blockSub.isRefreshing && (
-                      <span className="text-xs text-[#8b4e52] dark:text-[#d4b87a]">
+                      <span className="text-xs text-[#294050] dark:text-[#9CF1DC]">
                         <Loader className="w-3 h-3 inline animate-spin mr-1" />
                         Refreshing…
                       </span>
@@ -1225,7 +1225,7 @@ const WalletManager: React.FC = () => {
                       role="switch"
                       aria-checked={realtimeSyncEnabled}
                       onClick={handleToggleRealtimeSync}
-                      className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#c9a961] focus:ring-offset-2 ${
+                      className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#5FE3C0] focus:ring-offset-2 ${
                         realtimeSyncEnabled
                           ? 'bg-green-500'
                           : 'bg-gray-300 dark:bg-gray-600'
@@ -1271,12 +1271,12 @@ const WalletManager: React.FC = () => {
 
                 {/* Sync Status (Last Sync Info) */}
                 {selectedAddress && syncStatus && !syncProgress && !error && (
-                  <div className="mt-4 p-3 bg-[#059669]/10 dark:bg-[#10b981]/10 border-l-4 border-[#059669] dark:border-[#10b981] rounded">
+                  <div className="mt-4 p-3 bg-[#2E9A82]/10 dark:bg-[#5FE3C0]/10 border-l-4 border-[#2E9A82] dark:border-[#5FE3C0] rounded">
                     <p className="text-sm text-gray-700 dark:text-gray-300">
                       Last synced:{' '}
                       {new Date(syncStatus.lastSyncTime).toLocaleString()}
                     </p>
-                    <p className="text-xs text-gray-600 dark:text-[#94a3b8] mt-1">
+                    <p className="text-xs text-gray-600 dark:text-[#9FB4BE] mt-1">
                       Block #{syncStatus.lastSyncedBlock.toLocaleString()}
                     </p>
                   </div>
@@ -1290,28 +1290,28 @@ const WalletManager: React.FC = () => {
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
                   Getting Started
                 </h3>
-                <ol className="space-y-2 text-sm text-gray-600 dark:text-[#94a3b8]">
+                <ol className="space-y-2 text-sm text-gray-600 dark:text-[#9FB4BE]">
                   <li className="flex items-start">
-                    <span className="font-semibold text-[#8b4e52] dark:text-[#a86e72] mr-2">
+                    <span className="font-semibold text-[#294050] dark:text-[#F09988] mr-2">
                       1.
                     </span>
                     Click the &quot;Add&quot; button above to add a wallet
                   </li>
                   <li className="flex items-start">
-                    <span className="font-semibold text-[#8b4e52] dark:text-[#a86e72] mr-2">
+                    <span className="font-semibold text-[#294050] dark:text-[#F09988] mr-2">
                       2.
                     </span>
                     Choose &quot;Add Portfolio&quot; to track any public
                     address, or &quot;Connect Wallet&quot; for WalletConnect
                   </li>
                   <li className="flex items-start">
-                    <span className="font-semibold text-[#8b4e52] dark:text-[#a86e72] mr-2">
+                    <span className="font-semibold text-[#294050] dark:text-[#F09988] mr-2">
                       3.
                     </span>
                     Select an address and network
                   </li>
                   <li className="flex items-start">
-                    <span className="font-semibold text-[#8b4e52] dark:text-[#a86e72] mr-2">
+                    <span className="font-semibold text-[#294050] dark:text-[#F09988] mr-2">
                       4.
                     </span>
                     Click &quot;Sync Transactions&quot; to import your history
