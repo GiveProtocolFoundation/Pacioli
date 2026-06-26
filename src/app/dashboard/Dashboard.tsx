@@ -403,15 +403,15 @@ const Dashboard: React.FC = () => {
   const getTypeColor = (type: string) => {
     switch (type) {
       case 'donation':
-        return 'change-positive bg-[#2E9A82]/8'
+        return 'badge-donation'
       case 'expense':
-        return 'change-negative bg-[#B0533F]/8'
+        return 'badge-expense'
       case 'exchange':
-        return 'text-[#294050] dark:text-[#9CF1DC] bg-[#294050]/8'
+        return 'badge-exchange'
       case 'transfer':
-        return 'text-[#6B5D2E] dark:text-[#9CF1DC] bg-[#5FE3C0]/10'
+        return 'badge-transfer'
       default:
-        return 'dashboard-body-text bg-[#F7FAFA] dark:bg-[#11202B]'
+        return 'badge-info'
     }
   }
 

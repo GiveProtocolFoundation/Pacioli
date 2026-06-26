@@ -209,35 +209,36 @@ const Transactions: React.FC = () => {
     }
   }
 
-  /** Returns Tailwind CSS color classes for styling a transaction type badge */
+  /** Returns the unified brand badge class for a transaction type */
   const getTypeColor = (type: TransactionType) => {
     switch (type) {
       case 'revenue':
-        return 'text-[#5FE3C0] bg-[#5FE3C0]/10 dark:bg-[#5FE3C0]/20'
+        return 'badge-revenue'
       case 'expense':
-        return 'text-[#E8836F] bg-[#E8836F]/10 dark:bg-[#E8836F]/20'
+        return 'badge-expense'
       case 'transfer':
-        return 'text-[#5FE3C0] bg-[#5FE3C0]/10 dark:bg-[#5FE3C0]/20'
+        return 'badge-transfer'
       default:
-        return 'text-[#294050] bg-[#EAF3F2] dark:bg-[#16242F]'
+        return 'badge-neutral'
     }
   }
 
-  /** Returns Tailwind CSS color classes for styling a transaction status badge */
+  /** Returns the unified brand badge class for a transaction status */
   const getStatusColor = (status: TransactionStatus) => {
     switch (status) {
       case 'completed':
       case 'approved':
-        return 'text-[#5FE3C0] bg-[#5FE3C0]/10 dark:bg-[#5FE3C0]/20 dark:text-[#9CF1DC]'
+        return 'badge-approved'
       case 'pending_approval':
-        return 'text-[#E8B36F] bg-[#E8B36F]/10 dark:bg-[#E8B36F]/20 dark:text-[#5FE3C0]'
+        return 'badge-pending-approval'
       case 'draft':
-        return 'text-[#294050] bg-[#EAF3F2] dark:bg-[#16242F] dark:text-[#9FB4BE]'
+        return 'badge-draft'
       case 'rejected':
+        return 'badge-rejected'
       case 'failed':
-        return 'text-[#E8836F] bg-[#E8836F]/10 dark:bg-[#E8836F]/20 dark:text-[#F09988]'
+        return 'badge-failed'
       default:
-        return 'text-[#294050] bg-[#EAF3F2] dark:bg-[#16242F] dark:text-[#9FB4BE]'
+        return 'badge-neutral'
     }
   }
 
