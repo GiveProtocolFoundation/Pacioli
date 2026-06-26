@@ -188,15 +188,15 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
         onClick={onClose}
       />
       {/* Drawer panel */}
-      <div className="relative w-full max-w-2xl bg-[#fafaf8] dark:bg-[#1a1815] shadow-xl flex flex-col overflow-hidden">
+      <div className="relative w-full max-w-2xl bg-[#F7FAFA] dark:bg-[#11202B] shadow-xl flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[rgba(201,169,97,0.15)]">
-          <h2 className="text-lg font-bold text-[#1a1815] dark:text-[#f5f3f0]">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[rgba(95,227,192,0.15)]">
+          <h2 className="text-lg font-bold text-[#11202B] dark:text-[#EAF3F2]">
             {isView ? 'Journal Entry' : 'New Journal Entry'}
           </h2>
           <button
             onClick={onClose}
-            className="p-1 rounded-lg text-[#696557] hover:text-[#1a1815] dark:hover:text-[#f5f3f0] transition-colors"
+            className="p-1 rounded-lg text-[#294050] hover:text-[#11202B] dark:hover:text-[#EAF3F2] transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -212,7 +212,7 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
 
           {/* Date */}
           <div>
-            <label className="block text-sm font-medium text-[#696557] dark:text-[#b8b3ac] mb-1">
+            <label className="block text-sm font-medium text-[#294050] dark:text-[#9FB4BE] mb-1">
               Entry Date
             </label>
             <input
@@ -220,13 +220,13 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
               value={entryDate}
               onChange={e => setEntryDate(e.target.value)}
               disabled={isView}
-              className="w-full px-3 py-2 rounded-lg border border-[rgba(201,169,97,0.15)] bg-white dark:bg-[#141210] text-[#1a1815] dark:text-[#f5f3f0] text-sm disabled:opacity-60"
+              className="w-full px-3 py-2 rounded-lg border border-[rgba(95,227,192,0.15)] bg-white dark:bg-[#0C141B] text-[#11202B] dark:text-[#EAF3F2] text-sm disabled:opacity-60"
             />
           </div>
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-medium text-[#696557] dark:text-[#b8b3ac] mb-1">
+            <label className="block text-sm font-medium text-[#294050] dark:text-[#9FB4BE] mb-1">
               Description
             </label>
             <input
@@ -235,13 +235,13 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
               onChange={e => setDescription(e.target.value)}
               disabled={isView}
               placeholder="e.g. Staking reward on Polkadot"
-              className="w-full px-3 py-2 rounded-lg border border-[rgba(201,169,97,0.15)] bg-white dark:bg-[#141210] text-[#1a1815] dark:text-[#f5f3f0] text-sm placeholder-[#a39d94] disabled:opacity-60"
+              className="w-full px-3 py-2 rounded-lg border border-[rgba(95,227,192,0.15)] bg-white dark:bg-[#0C141B] text-[#11202B] dark:text-[#EAF3F2] text-sm placeholder-[#647D8B] disabled:opacity-60"
             />
           </div>
 
           {/* Reference */}
           <div>
-            <label className="block text-sm font-medium text-[#696557] dark:text-[#b8b3ac] mb-1">
+            <label className="block text-sm font-medium text-[#294050] dark:text-[#9FB4BE] mb-1">
               Reference
             </label>
             <input
@@ -250,20 +250,20 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
               onChange={e => setReferenceNumber(e.target.value)}
               disabled={isView}
               placeholder="Transaction hash or reference"
-              className="w-full px-3 py-2 rounded-lg border border-[rgba(201,169,97,0.15)] bg-white dark:bg-[#141210] text-[#1a1815] dark:text-[#f5f3f0] text-sm font-mono placeholder-[#a39d94] disabled:opacity-60"
+              className="w-full px-3 py-2 rounded-lg border border-[rgba(95,227,192,0.15)] bg-white dark:bg-[#0C141B] text-[#11202B] dark:text-[#EAF3F2] text-sm font-mono placeholder-[#647D8B] disabled:opacity-60"
             />
           </div>
 
           {/* Line items */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <label className="text-sm font-medium text-[#696557] dark:text-[#b8b3ac]">
+              <label className="text-sm font-medium text-[#294050] dark:text-[#9FB4BE]">
                 Line Items
               </label>
               {!isView && (
                 <button
                   onClick={handleAddLine}
-                  className="flex items-center gap-1 text-xs text-[#8b4e52] hover:text-[#7a4248] transition-colors"
+                  className="flex items-center gap-1 text-xs text-[#294050] hover:text-[#1E2F3C] transition-colors"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   Add Line
@@ -275,7 +275,7 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
               {lines.map((line, idx) => (
                 <div
                   key={line.id}
-                  className="flex gap-2 items-start p-3 rounded-lg border border-[rgba(201,169,97,0.1)] bg-white dark:bg-[#141210]"
+                  className="flex gap-2 items-start p-3 rounded-lg border border-[rgba(95,227,192,0.1)] bg-white dark:bg-[#0C141B]"
                 >
                   {/* Account selector */}
                   <div className="flex-1 min-w-0">
@@ -289,7 +289,7 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
                         )
                       }
                       disabled={isView}
-                      className="w-full px-2 py-1.5 rounded border border-[rgba(201,169,97,0.15)] bg-white dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] text-sm disabled:opacity-60"
+                      className="w-full px-2 py-1.5 rounded border border-[rgba(95,227,192,0.15)] bg-white dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] text-sm disabled:opacity-60"
                     >
                       <option value="">Select account...</option>
                       {accounts.map(a => (
@@ -306,13 +306,13 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
                       }
                       disabled={isView}
                       placeholder="Memo"
-                      className="w-full mt-1 px-2 py-1 rounded border border-[rgba(201,169,97,0.1)] bg-transparent text-[#696557] dark:text-[#b8b3ac] text-xs placeholder-[#a39d94] disabled:opacity-60"
+                      className="w-full mt-1 px-2 py-1 rounded border border-[rgba(95,227,192,0.1)] bg-transparent text-[#294050] dark:text-[#9FB4BE] text-xs placeholder-[#647D8B] disabled:opacity-60"
                     />
                   </div>
 
                   {/* Debit */}
                   <div className="w-24">
-                    <label className="block text-[10px] text-[#696557] dark:text-[#b8b3ac] mb-0.5 uppercase">
+                    <label className="block text-[10px] text-[#294050] dark:text-[#9FB4BE] mb-0.5 uppercase">
                       Debit
                     </label>
                     <input
@@ -324,13 +324,13 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
                         handleLineChange(idx, 'debitAmount', e.target.value)
                       }
                       disabled={isView}
-                      className="w-full px-2 py-1.5 rounded border border-[rgba(201,169,97,0.15)] bg-white dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] text-sm text-right font-mono disabled:opacity-60"
+                      className="w-full px-2 py-1.5 rounded border border-[rgba(95,227,192,0.15)] bg-white dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] text-sm text-right font-mono disabled:opacity-60"
                     />
                   </div>
 
                   {/* Credit */}
                   <div className="w-24">
-                    <label className="block text-[10px] text-[#696557] dark:text-[#b8b3ac] mb-0.5 uppercase">
+                    <label className="block text-[10px] text-[#294050] dark:text-[#9FB4BE] mb-0.5 uppercase">
                       Credit
                     </label>
                     <input
@@ -342,7 +342,7 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
                         handleLineChange(idx, 'creditAmount', e.target.value)
                       }
                       disabled={isView}
-                      className="w-full px-2 py-1.5 rounded border border-[rgba(201,169,97,0.15)] bg-white dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] text-sm text-right font-mono disabled:opacity-60"
+                      className="w-full px-2 py-1.5 rounded border border-[rgba(95,227,192,0.15)] bg-white dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] text-sm text-right font-mono disabled:opacity-60"
                     />
                   </div>
 
@@ -350,7 +350,7 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
                   {!isView && lines.length > 2 && (
                     <button
                       onClick={() => handleRemoveLine(idx)}
-                      className="mt-4 p-1 text-[#a39d94] hover:text-red-500 transition-colors"
+                      className="mt-4 p-1 text-[#647D8B] hover:text-red-500 transition-colors"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -364,20 +364,20 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
           <div
             className={`flex items-center justify-between p-3 rounded-lg border ${
               isBalanced
-                ? 'border-[#c9a961] bg-[#c9a961]/5'
+                ? 'border-[#5FE3C0] bg-[#5FE3C0]/5'
                 : 'border-amber-300 bg-amber-50 dark:border-amber-700 dark:bg-amber-900/10'
             }`}
           >
             <div className="flex gap-8 text-sm">
-              <span className="text-[#696557] dark:text-[#b8b3ac]">
+              <span className="text-[#294050] dark:text-[#9FB4BE]">
                 Debits:{' '}
-                <span className="font-mono font-medium text-[#1a1815] dark:text-[#f5f3f0]">
+                <span className="font-mono font-medium text-[#11202B] dark:text-[#EAF3F2]">
                   {totalDebits.toFixed(2)}
                 </span>
               </span>
-              <span className="text-[#696557] dark:text-[#b8b3ac]">
+              <span className="text-[#294050] dark:text-[#9FB4BE]">
                 Credits:{' '}
-                <span className="font-mono font-medium text-[#1a1815] dark:text-[#f5f3f0]">
+                <span className="font-mono font-medium text-[#11202B] dark:text-[#EAF3F2]">
                   {totalCredits.toFixed(2)}
                 </span>
               </span>
@@ -385,7 +385,7 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
             <span
               className={`text-sm font-medium ${
                 isBalanced
-                  ? 'text-[#c9a961]'
+                  ? 'text-[#5FE3C0]'
                   : 'text-amber-600 dark:text-amber-400'
               }`}
             >
@@ -398,24 +398,24 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
 
         {/* Footer buttons */}
         {!isView && (
-          <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-[rgba(201,169,97,0.15)]">
+          <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-[rgba(95,227,192,0.15)]">
             <button
               onClick={onClose}
-              className="px-4 py-2 text-sm rounded-lg border border-[rgba(201,169,97,0.15)] text-[#696557] dark:text-[#b8b3ac] hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620] transition-colors"
+              className="px-4 py-2 text-sm rounded-lg border border-[rgba(95,227,192,0.15)] text-[#294050] dark:text-[#9FB4BE] hover:bg-[#EAF3F2] dark:hover:bg-[#16242F] transition-colors"
             >
               Cancel
             </button>
             <button
               onClick={handleSaveDraft}
               disabled={saving || lines.filter(l => l.glAccountId !== '').length < 2}
-              className="px-4 py-2 text-sm rounded-lg border border-[#8b4e52] text-[#8b4e52] hover:bg-[#8b4e52]/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 text-sm rounded-lg border border-[#294050] text-[#294050] hover:bg-[#294050]/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Save Draft
             </button>
             <button
               onClick={handlePostEntry}
               disabled={saving || !isBalanced}
-              className="px-4 py-2 text-sm rounded-lg bg-[#8b4e52] text-white hover:bg-[#7a4248] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 text-sm rounded-lg bg-[#294050] text-white hover:bg-[#1E2F3C] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Post Entry
             </button>

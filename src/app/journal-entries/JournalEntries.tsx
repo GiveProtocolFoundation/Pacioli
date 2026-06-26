@@ -218,16 +218,16 @@ const JournalEntries: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-[#1a1815] dark:text-[#f5f3f0]">
+          <h1 className="text-2xl font-bold text-[#11202B] dark:text-[#EAF3F2]">
             Journal Entries
           </h1>
-          <p className="text-sm text-[#696557] dark:text-[#b8b3ac] mt-1">
+          <p className="text-sm text-[#294050] dark:text-[#9FB4BE] mt-1">
             Double-entry bookkeeping records
           </p>
         </div>
         <button
           onClick={handleNewEntry}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#8b4e52] text-white hover:bg-[#7a4248] transition-colors"
+          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#294050] text-white hover:bg-[#1E2F3C] transition-colors"
         >
           <Plus className="w-5 h-5" />
           <span>New Journal Entry</span>
@@ -235,15 +235,15 @@ const JournalEntries: React.FC = () => {
       </div>
 
       {/* Tab bar */}
-      <div className="flex gap-1 mb-4 border-b border-[rgba(201,169,97,0.15)]">
+      <div className="flex gap-1 mb-4 border-b border-[rgba(95,227,192,0.15)]">
         {tabs.map(tab => (
           <button
             key={tab.key}
             onClick={() => handleTabChange(tab.key)}
             className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px ${
               filterParam === tab.key
-                ? 'border-[#8b4e52] text-[#8b4e52] dark:text-[#c9a961]'
-                : 'border-transparent text-[#696557] dark:text-[#b8b3ac] hover:text-[#1a1815] dark:hover:text-[#f5f3f0]'
+                ? 'border-[#294050] text-[#294050] dark:text-[#5FE3C0]'
+                : 'border-transparent text-[#294050] dark:text-[#9FB4BE] hover:text-[#11202B] dark:hover:text-[#EAF3F2]'
             }`}
           >
             {tab.label}
@@ -266,64 +266,64 @@ const JournalEntries: React.FC = () => {
 
       {/* Search */}
       <div className="relative mb-4">
-        <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#a39d94]" />
+        <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#647D8B]" />
         <input
           type="text"
           placeholder="Search entries..."
           value={searchQuery}
           onChange={e => setSearchQuery(e.target.value)}
-          className="w-full pl-4 pr-10 py-2 rounded-lg border border-[rgba(201,169,97,0.15)] bg-white dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] placeholder-[#a39d94] text-sm focus:outline-none focus:ring-1 focus:ring-[#c9a961]"
+          className="w-full pl-4 pr-10 py-2 rounded-lg border border-[rgba(95,227,192,0.15)] bg-white dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] placeholder-[#647D8B] text-sm focus:outline-none focus:ring-1 focus:ring-[#5FE3C0]"
         />
       </div>
 
       {/* Table */}
       {loading ? (
         <div className="flex items-center justify-center py-16">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#8b4e52]" />
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#294050]" />
         </div>
       ) : filteredEntries.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <BookOpen className="w-12 h-12 text-[#a39d94] mb-4" />
-          <h3 className="text-lg font-medium text-[#1a1815] dark:text-[#f5f3f0]">
+          <BookOpen className="w-12 h-12 text-[#647D8B] mb-4" />
+          <h3 className="text-lg font-medium text-[#11202B] dark:text-[#EAF3F2]">
             No journal entries
           </h3>
-          <p className="text-sm text-[#696557] dark:text-[#b8b3ac] mt-1">
+          <p className="text-sm text-[#294050] dark:text-[#9FB4BE] mt-1">
             Create your first entry or classify a transaction.
           </p>
         </div>
       ) : (
-        <div className="border border-[rgba(201,169,97,0.15)] rounded-lg overflow-hidden">
+        <div className="border border-[rgba(95,227,192,0.15)] rounded-lg overflow-hidden">
           <table className="min-w-full">
             <thead>
-              <tr className="bg-[#f3f1ed] dark:bg-[#2a2620]">
+              <tr className="bg-[#EAF3F2] dark:bg-[#16242F]">
                 <th className="w-8 px-4 py-3" />
-                <th className="px-4 py-3 text-left text-xs font-semibold text-[#696557] dark:text-[#b8b3ac] uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-semibold text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
                   Date
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-[#696557] dark:text-[#b8b3ac] uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-semibold text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
                   Entry #
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-[#696557] dark:text-[#b8b3ac] uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-semibold text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
                   Description
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-[#696557] dark:text-[#b8b3ac] uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-semibold text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
                   Reference
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-semibold text-[#696557] dark:text-[#b8b3ac] uppercase tracking-wider">
+                <th className="px-4 py-3 text-right text-xs font-semibold text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
                   Debits
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-semibold text-[#696557] dark:text-[#b8b3ac] uppercase tracking-wider">
+                <th className="px-4 py-3 text-right text-xs font-semibold text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
                   Credits
                 </th>
-                <th className="px-4 py-3 text-center text-xs font-semibold text-[#696557] dark:text-[#b8b3ac] uppercase tracking-wider">
+                <th className="px-4 py-3 text-center text-xs font-semibold text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-semibold text-[#696557] dark:text-[#b8b3ac] uppercase tracking-wider">
+                <th className="px-4 py-3 text-right text-xs font-semibold text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[rgba(201,169,97,0.1)]">
+            <tbody className="divide-y divide-[rgba(95,227,192,0.1)]">
               {filteredEntries.map(entry => {
                 const status = getEntryStatus(entry)
                 const totalDebits = entry.lines.reduce(
@@ -344,35 +344,35 @@ const JournalEntries: React.FC = () => {
                 return (
                   <React.Fragment key={entry.id}>
                     <tr
-                      className="bg-white dark:bg-[#1a1815] hover:bg-[#f3f1ed]/50 dark:hover:bg-[#2a2620]/50 cursor-pointer transition-colors"
+                      className="bg-white dark:bg-[#11202B] hover:bg-[#EAF3F2]/50 dark:hover:bg-[#16242F]/50 cursor-pointer transition-colors"
                       onClick={() => handleToggleExpand(entry.id)}
                     >
                       <td className="px-4 py-3">
                         {isExpanded ? (
-                          <ChevronDown className="w-4 h-4 text-[#696557]" />
+                          <ChevronDown className="w-4 h-4 text-[#294050]" />
                         ) : (
-                          <ChevronRight className="w-4 h-4 text-[#696557]" />
+                          <ChevronRight className="w-4 h-4 text-[#294050]" />
                         )}
                       </td>
-                      <td className="px-4 py-3 text-sm text-[#1a1815] dark:text-[#f5f3f0] whitespace-nowrap">
+                      <td className="px-4 py-3 text-sm text-[#11202B] dark:text-[#EAF3F2] whitespace-nowrap">
                         {formatDate(entry.entryDate)}
                       </td>
-                      <td className="px-4 py-3 text-sm font-mono text-[#696557] dark:text-[#b8b3ac]">
+                      <td className="px-4 py-3 text-sm font-mono text-[#294050] dark:text-[#9FB4BE]">
                         {entry.entryNumber ?? '—'}
                       </td>
-                      <td className="px-4 py-3 text-sm text-[#1a1815] dark:text-[#f5f3f0] max-w-xs truncate">
+                      <td className="px-4 py-3 text-sm text-[#11202B] dark:text-[#EAF3F2] max-w-xs truncate">
                         {entry.description ?? '—'}
                       </td>
                       <td
-                        className="px-4 py-3 text-sm font-mono text-[#696557] dark:text-[#b8b3ac]"
+                        className="px-4 py-3 text-sm font-mono text-[#294050] dark:text-[#9FB4BE]"
                         title={entry.referenceNumber ?? undefined}
                       >
                         {refDisplay}
                       </td>
-                      <td className="px-4 py-3 text-sm text-right font-mono text-[#1a1815] dark:text-[#f5f3f0]">
+                      <td className="px-4 py-3 text-sm text-right font-mono text-[#11202B] dark:text-[#EAF3F2]">
                         {totalDebits.toFixed(2)}
                       </td>
-                      <td className="px-4 py-3 text-sm text-right font-mono text-[#1a1815] dark:text-[#f5f3f0]">
+                      <td className="px-4 py-3 text-sm text-right font-mono text-[#11202B] dark:text-[#EAF3F2]">
                         {totalCredits.toFixed(2)}
                       </td>
                       <td className="px-4 py-3 text-center">
@@ -404,11 +404,11 @@ const JournalEntries: React.FC = () => {
                     </tr>
                     {/* Expanded line items */}
                     {isExpanded && entry.lines.length > 0 && (
-                      <tr className="bg-[#fafaf8] dark:bg-[#141210]">
+                      <tr className="bg-[#F7FAFA] dark:bg-[#0C141B]">
                         <td colSpan={9} className="px-8 py-3">
                           <table className="w-full text-sm">
                             <thead>
-                              <tr className="text-xs uppercase text-[#696557] dark:text-[#b8b3ac]">
+                              <tr className="text-xs uppercase text-[#294050] dark:text-[#9FB4BE]">
                                 <th className="text-left py-1 pr-4">Account</th>
                                 <th className="text-right py-1 px-4 w-32">
                                   Debit
@@ -423,22 +423,22 @@ const JournalEntries: React.FC = () => {
                               {entry.lines.map(line => (
                                 <tr
                                   key={line.id}
-                                  className="border-t border-[rgba(201,169,97,0.08)]"
+                                  className="border-t border-[rgba(95,227,192,0.08)]"
                                 >
-                                  <td className="py-1.5 pr-4 text-[#1a1815] dark:text-[#f5f3f0]">
+                                  <td className="py-1.5 pr-4 text-[#11202B] dark:text-[#EAF3F2]">
                                     {resolveAccountName(line.glAccountId)}
                                   </td>
-                                  <td className="py-1.5 px-4 text-right font-mono text-[#1a1815] dark:text-[#f5f3f0]">
+                                  <td className="py-1.5 px-4 text-right font-mono text-[#11202B] dark:text-[#EAF3F2]">
                                     {(line.debitAmount as unknown as number) > 0
                                       ? (line.debitAmount as unknown as number).toFixed(2)
                                       : ''}
                                   </td>
-                                  <td className="py-1.5 px-4 text-right font-mono text-[#1a1815] dark:text-[#f5f3f0]">
+                                  <td className="py-1.5 px-4 text-right font-mono text-[#11202B] dark:text-[#EAF3F2]">
                                     {(line.creditAmount as unknown as number) > 0
                                       ? (line.creditAmount as unknown as number).toFixed(2)
                                       : ''}
                                   </td>
-                                  <td className="py-1.5 pl-4 text-[#696557] dark:text-[#b8b3ac]">
+                                  <td className="py-1.5 pl-4 text-[#294050] dark:text-[#9FB4BE]">
                                     {line.description ?? ''}
                                   </td>
                                 </tr>

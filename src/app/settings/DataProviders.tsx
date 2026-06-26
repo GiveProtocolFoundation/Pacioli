@@ -133,11 +133,11 @@ type KeyMode = 'none' | 'default' | 'turbo'
 
 const TurboModeIndicator: React.FC<{ mode: KeyMode }> = ({ mode }) => {
   const styles: Record<KeyMode, string> = {
-    none: 'bg-[#696557]/10 text-[#696557] dark:bg-[#696557]/20 dark:text-[#b8b3ac]',
+    none: 'bg-[#294050]/10 text-[#294050] dark:bg-[#294050]/20 dark:text-[#9FB4BE]',
     default:
-      'bg-[#4a7c59]/15 text-[#4a7c59] dark:bg-[#6b9e7a]/20 dark:text-[#8faf84]',
+      'bg-[#2E9A82]/15 text-[#2E9A82] dark:bg-[#5FE3C0]/20 dark:text-[#5FE3C0]',
     turbo:
-      'bg-[#c9a961]/20 text-[#c9a961] dark:bg-[#c9a961]/30 dark:text-[#dbc07a]',
+      'bg-[#5FE3C0]/20 text-[#5FE3C0] dark:bg-[#5FE3C0]/30 dark:text-[#9CF1DC]',
   }
   const labels: Record<KeyMode, string> = {
     none: 'No Key',
@@ -163,12 +163,12 @@ const RateLimitBadge: React.FC<{
   turboLimit: number
   isTurbo: boolean
 }> = ({ rateLimit, turboLimit, isTurbo }) => (
-  <div className="flex items-center gap-2 text-xs text-[#696557] dark:text-[#b8b3ac]">
+  <div className="flex items-center gap-2 text-xs text-[#294050] dark:text-[#9FB4BE]">
     <Gauge className="w-3.5 h-3.5" />
     <span>
       {rateLimit} req/sec
       {!isTurbo && (
-        <span className="text-[#a39d94] dark:text-[#8b8580]">
+        <span className="text-[#647D8B] dark:text-[#647D8B]">
           {' '}
           (up to {turboLimit} with key)
         </span>
@@ -179,28 +179,28 @@ const RateLimitBadge: React.FC<{
 
 /** Informational box explaining turbo mode and its benefits */
 const TurboInfoBox: React.FC = () => (
-  <div className="bg-[#c9a961]/10 dark:bg-[#c9a961]/20 border border-[#c9a961]/30 dark:border-[#c9a961]/40 rounded-lg p-4 mb-6">
+  <div className="bg-[#5FE3C0]/10 dark:bg-[#5FE3C0]/20 border border-[#5FE3C0]/30 dark:border-[#5FE3C0]/40 rounded-lg p-4 mb-6">
     <div className="flex items-start gap-3">
-      <Zap className="w-5 h-5 text-[#c9a961] flex-shrink-0 mt-0.5" />
+      <Zap className="w-5 h-5 text-[#5FE3C0] flex-shrink-0 mt-0.5" />
       <div>
-        <h3 className="font-medium text-[#1a1815] dark:text-[#f5f3f0] mb-1">
+        <h3 className="font-medium text-[#11202B] dark:text-[#EAF3F2] mb-1">
           Batteries Included, Turbo Optional
         </h3>
-        <p className="text-sm text-[#696557] dark:text-[#b8b3ac]">
+        <p className="text-sm text-[#294050] dark:text-[#9FB4BE]">
           Pacioli works out of the box with conservative rate limits. Add your free API keys
           from block explorers to unlock 5x faster sync speeds. API keys are free to obtain
           from each provider.
         </p>
         <div className="mt-3 flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-[#696557]" />
-            <span className="text-sm text-[#696557] dark:text-[#b8b3ac]">
+            <div className="w-2 h-2 rounded-full bg-[#294050]" />
+            <span className="text-sm text-[#294050] dark:text-[#9FB4BE]">
               Default: ~1 req/sec
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-[#c9a961]" />
-            <span className="text-sm text-[#696557] dark:text-[#b8b3ac]">
+            <div className="w-2 h-2 rounded-full bg-[#5FE3C0]" />
+            <span className="text-sm text-[#294050] dark:text-[#9FB4BE]">
               Turbo: ~5-10 req/sec
             </span>
           </div>
@@ -237,13 +237,13 @@ const ProviderApiKeyForm: React.FC<ProviderApiKeyFormProps> = ({
         value={apiKey}
         onChange={onApiKeyChange}
         placeholder="Enter your API key"
-        className="w-full px-3 py-2 pr-10 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961] text-sm font-mono"
+        className="w-full px-3 py-2 pr-10 border border-[rgba(95,227,192,0.15)] rounded-lg bg-[#F7FAFA] dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] focus:outline-none focus:ring-2 focus:ring-[#5FE3C0] text-sm font-mono"
         disabled={isSaving}
       />
       <button
         type="button"
         onClick={onToggleShowKey}
-        className="absolute right-2 top-1/2 -translate-y-1/2 text-[#696557] hover:text-[#1a1815] dark:text-[#b8b3ac] dark:hover:text-[#f5f3f0]"
+        className="absolute right-2 top-1/2 -translate-y-1/2 text-[#294050] hover:text-[#11202B] dark:text-[#9FB4BE] dark:hover:text-[#EAF3F2]"
       >
         {showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
       </button>
@@ -252,7 +252,7 @@ const ProviderApiKeyForm: React.FC<ProviderApiKeyFormProps> = ({
       <button
         onClick={onSave}
         disabled={isSaving || !apiKey.trim()}
-        className="px-3 py-1.5 text-sm font-medium text-white bg-[#8b4e52] rounded-lg hover:bg-[#7a4248] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+        className="px-3 py-1.5 text-sm font-medium text-white bg-[#294050] rounded-lg hover:bg-[#1E2F3C] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
       >
         {isSaving ? (
           <Loader2 className="w-4 h-4 animate-spin" />
@@ -264,7 +264,7 @@ const ProviderApiKeyForm: React.FC<ProviderApiKeyFormProps> = ({
       <button
         onClick={onCancel}
         disabled={isSaving}
-        className="px-3 py-1.5 text-sm font-medium text-[#696557] dark:text-[#b8b3ac] hover:text-[#1a1815] dark:hover:text-[#f5f3f0] flex items-center gap-1.5"
+        className="px-3 py-1.5 text-sm font-medium text-[#294050] dark:text-[#9FB4BE] hover:text-[#11202B] dark:hover:text-[#EAF3F2] flex items-center gap-1.5"
       >
         <X className="w-4 h-4" />
         Cancel
@@ -358,16 +358,16 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
   }, [])
 
   return (
-    <div className="border border-[rgba(201,169,97,0.15)] rounded-lg p-4 hover:border-[rgba(201,169,97,0.3)] transition-colors">
+    <div className="border border-[rgba(95,227,192,0.15)] rounded-lg p-4 hover:border-[rgba(95,227,192,0.3)] transition-colors">
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
-            <h4 className="font-medium text-[#1a1815] dark:text-[#f5f3f0]">
+            <h4 className="font-medium text-[#11202B] dark:text-[#EAF3F2]">
               {config.name}
             </h4>
             <TurboModeIndicator mode={keyMode} />
           </div>
-          <p className="text-sm text-[#696557] dark:text-[#b8b3ac]">
+          <p className="text-sm text-[#294050] dark:text-[#9FB4BE]">
             {config.description}
           </p>
           <div className="flex items-center gap-4 mt-2">
@@ -376,7 +376,7 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
               turboLimit={turboLimit}
               isTurbo={isTurbo}
             />
-            <div className="flex items-center gap-1 text-xs text-[#a39d94] dark:text-[#8b8580]">
+            <div className="flex items-center gap-1 text-xs text-[#647D8B] dark:text-[#647D8B]">
               {config.chains.map((chain, i) => (
                 <span key={chain}>
                   {chain}
@@ -390,7 +390,7 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
           href={config.docsUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-[#8b4e52] hover:text-[#7a4248] dark:text-[#a86e72] dark:hover:text-[#c08589] p-1"
+          className="text-[#294050] hover:text-[#1E2F3C] dark:text-[#F09988] dark:hover:text-[#9CF1DC] p-1"
           title="Get free API key"
         >
           <ExternalLink className="w-4 h-4" />
@@ -398,7 +398,7 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
       </div>
 
       {error && (
-        <div className="flex items-center gap-2 text-sm text-[#8b4e52] dark:text-[#a86e72] mb-3 p-2 bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 rounded">
+        <div className="flex items-center gap-2 text-sm text-[#294050] dark:text-[#F09988] mb-3 p-2 bg-[#294050]/10 dark:bg-[#294050]/20 rounded">
           <AlertCircle className="w-4 h-4 flex-shrink-0" />
           {error}
         </div>
@@ -418,7 +418,7 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
         <div className="flex items-center gap-2">
           {hasKey ? (
             <>
-              <div className="flex items-center gap-1.5 text-sm text-[#4a7c59] dark:text-[#6b9e7a]">
+              <div className="flex items-center gap-1.5 text-sm text-[#2E9A82] dark:text-[#5FE3C0]">
                 <Check className="w-4 h-4" />
                 <span>
                   {showSaveSuccess ? 'API key saved successfully!' : 'API key configured'}
@@ -426,14 +426,14 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
               </div>
               <button
                 onClick={startEditing}
-                className="px-3 py-1.5 text-sm font-medium text-[#696557] dark:text-[#b8b3ac] hover:text-[#1a1815] dark:hover:text-[#f5f3f0] border border-[rgba(201,169,97,0.15)] rounded-lg hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620]"
+                className="px-3 py-1.5 text-sm font-medium text-[#294050] dark:text-[#9FB4BE] hover:text-[#11202B] dark:hover:text-[#EAF3F2] border border-[rgba(95,227,192,0.15)] rounded-lg hover:bg-[#EAF3F2] dark:hover:bg-[#16242F]"
               >
                 Update
               </button>
               <button
                 onClick={handleDelete}
                 disabled={isSaving}
-                className="px-3 py-1.5 text-sm font-medium text-[#8b4e52] dark:text-[#a86e72] hover:text-[#7a4248] dark:hover:text-[#c08589] flex items-center gap-1"
+                className="px-3 py-1.5 text-sm font-medium text-[#294050] dark:text-[#F09988] hover:text-[#1E2F3C] dark:hover:text-[#9CF1DC] flex items-center gap-1"
               >
                 {isSaving ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -445,12 +445,12 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
             </>
           ) : defaultAvailable ? (
             <div className="flex items-center gap-3">
-              <span className="text-sm text-[#4a7c59] dark:text-[#8faf84]">
+              <span className="text-sm text-[#2E9A82] dark:text-[#5FE3C0]">
                 Using app default key
               </span>
               <button
                 onClick={startEditing}
-                className="px-3 py-1.5 text-sm font-medium text-[#c9a961] dark:text-[#dbc07a] border border-[#c9a961]/30 dark:border-[#c9a961]/40 rounded-lg hover:bg-[#c9a961]/10 dark:hover:bg-[#c9a961]/20 flex items-center gap-1.5"
+                className="px-3 py-1.5 text-sm font-medium text-[#5FE3C0] dark:text-[#9CF1DC] border border-[#5FE3C0]/30 dark:border-[#5FE3C0]/40 rounded-lg hover:bg-[#5FE3C0]/10 dark:hover:bg-[#5FE3C0]/20 flex items-center gap-1.5"
               >
                 <Zap className="w-4 h-4" />
                 Upgrade to Turbo
@@ -459,7 +459,7 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
           ) : (
             <button
               onClick={startEditing}
-              className="px-3 py-1.5 text-sm font-medium text-[#8b4e52] dark:text-[#a86e72] border border-[#8b4e52]/30 dark:border-[#8b4e52]/40 rounded-lg hover:bg-[#8b4e52]/10 dark:hover:bg-[#8b4e52]/20 flex items-center gap-1.5"
+              className="px-3 py-1.5 text-sm font-medium text-[#294050] dark:text-[#F09988] border border-[#294050]/30 dark:border-[#294050]/40 rounded-lg hover:bg-[#294050]/10 dark:hover:bg-[#294050]/20 flex items-center gap-1.5"
             >
               <Key className="w-4 h-4" />
               Add API Key
@@ -557,12 +557,12 @@ const DataProviders: React.FC = () => {
       {/* Header */}
       <div className="mb-6">
         <div className="flex items-center gap-2 mb-2">
-          <Key className="w-5 h-5 text-[#8b4e52]" />
-          <h2 className="text-xl font-semibold text-[#1a1815] dark:text-[#f5f3f0]">
+          <Key className="w-5 h-5 text-[#294050]" />
+          <h2 className="text-xl font-semibold text-[#11202B] dark:text-[#EAF3F2]">
             Data Providers & API Keys
           </h2>
         </div>
-        <p className="text-sm text-[#696557] dark:text-[#b8b3ac]">
+        <p className="text-sm text-[#294050] dark:text-[#9FB4BE]">
           Configure API keys to unlock faster sync speeds. All keys are stored
           securely in your system keychain.
         </p>
@@ -574,19 +574,19 @@ const DataProviders: React.FC = () => {
       {/* Stats */}
       {!isLoading && !error && (
         <div className="mb-6 flex items-center gap-4 text-sm">
-          <span className="text-[#696557] dark:text-[#b8b3ac]">
-            <span className="font-medium text-[#1a1815] dark:text-[#f5f3f0]">
+          <span className="text-[#294050] dark:text-[#9FB4BE]">
+            <span className="font-medium text-[#11202B] dark:text-[#EAF3F2]">
               {configuredCount}
             </span>{' '}
             of {totalProviders} providers active
             {turboCount > 0 && (
-              <span className="text-[#c9a961] dark:text-[#dbc07a]">
+              <span className="text-[#5FE3C0] dark:text-[#9CF1DC]">
                 {' '}({turboCount} Turbo)
               </span>
             )}
           </span>
           {configuredCount === totalProviders && (
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[#4a7c59]/20 text-[#4a7c59] dark:bg-[#6b9e7a]/20 dark:text-[#6b9e7a]">
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[#2E9A82]/20 text-[#2E9A82] dark:bg-[#5FE3C0]/20 dark:text-[#5FE3C0]">
               <Check className="w-3 h-3 mr-1" />
               All configured
             </span>
@@ -597,13 +597,13 @@ const DataProviders: React.FC = () => {
       {/* Provider List */}
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-6 h-6 animate-spin text-[#8b4e52]" />
-          <span className="ml-2 text-[#696557] dark:text-[#b8b3ac]">
+          <Loader2 className="w-6 h-6 animate-spin text-[#294050]" />
+          <span className="ml-2 text-[#294050] dark:text-[#9FB4BE]">
             Loading providers...
           </span>
         </div>
       ) : error ? (
-        <div className="flex items-center justify-center py-12 text-[#8b4e52] dark:text-[#a86e72]">
+        <div className="flex items-center justify-center py-12 text-[#294050] dark:text-[#F09988]">
           <AlertCircle className="w-5 h-5 mr-2" />
           {error}
         </div>
@@ -622,11 +622,11 @@ const DataProviders: React.FC = () => {
       )}
 
       {/* Security Note */}
-      <div className="mt-6 p-4 bg-[#f3f1ed] dark:bg-[#1a1815] rounded-lg border border-[rgba(201,169,97,0.15)]">
-        <h4 className="text-sm font-medium text-[#1a1815] dark:text-[#f5f3f0] mb-1">
+      <div className="mt-6 p-4 bg-[#EAF3F2] dark:bg-[#11202B] rounded-lg border border-[rgba(95,227,192,0.15)]">
+        <h4 className="text-sm font-medium text-[#11202B] dark:text-[#EAF3F2] mb-1">
           Security Note
         </h4>
-        <p className="text-xs text-[#696557] dark:text-[#b8b3ac]">
+        <p className="text-xs text-[#294050] dark:text-[#9FB4BE]">
           {isTauriAvailable()
             ? "API keys are stored in your operating system's secure keychain (Keychain on macOS, Credential Manager on Windows, Secret Service on Linux). Keys are never transmitted to Pacioli servers."
             : 'Running in browser mode. API keys are stored in localStorage for development. Use the desktop app (pnpm tauri:dev) for secure OS keychain storage.'}

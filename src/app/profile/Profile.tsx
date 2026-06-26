@@ -62,14 +62,14 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({
   showPhone = true,
 }) => (
   <>
-    <h3 className="text-lg font-semibold text-[#1a1815] dark:text-[#f5f3f0] mb-4">
+    <h3 className="text-lg font-semibold text-[#11202B] dark:text-[#EAF3F2] mb-4">
       Personal Information
     </h3>
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div>
         <label
           htmlFor="firstName"
-          className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
+          className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] mb-2"
         >
           First Name
         </label>
@@ -78,13 +78,13 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({
           type="text"
           value={profile.firstName}
           onChange={createProfileInputHandler('firstName')}
-          className="w-full px-3 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
+          className="w-full px-3 py-2 border border-[rgba(95,227,192,0.15)] rounded-lg bg-[#F7FAFA] dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]"
         />
       </div>
       <div>
         <label
           htmlFor="lastName"
-          className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
+          className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] mb-2"
         >
           Last Name
         </label>
@@ -93,25 +93,25 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({
           type="text"
           value={profile.lastName}
           onChange={createProfileInputHandler('lastName')}
-          className="w-full px-3 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
+          className="w-full px-3 py-2 border border-[rgba(95,227,192,0.15)] rounded-lg bg-[#F7FAFA] dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]"
         />
       </div>
       {showPhone && (
         <div>
           <label
             htmlFor="phone"
-            className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
+            className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] mb-2"
           >
             Phone Number
           </label>
           <div className="relative">
-            <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#a39d94]" />
+            <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#647D8B]" />
             <input
               id="phone"
               type="tel"
               value={profile.phone}
               onChange={createProfileInputHandler('phone')}
-              className="w-full pl-10 pr-3 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
+              className="w-full pl-10 pr-3 py-2 border border-[rgba(95,227,192,0.15)] rounded-lg bg-[#F7FAFA] dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]"
             />
           </div>
         </div>
@@ -132,80 +132,80 @@ const WorkInfo: React.FC<WorkInfoProps> = ({
   createProfileInputHandler,
 }) => (
   <>
-    <h3 className="text-lg font-semibold text-[#1a1815] dark:text-[#f5f3f0] mb-4">
+    <h3 className="text-lg font-semibold text-[#11202B] dark:text-[#EAF3F2] mb-4">
       Work Information
     </h3>
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div className="md:col-span-2">
         <label
           htmlFor="company"
-          className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
+          className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] mb-2"
         >
           Company
         </label>
         <div className="relative">
-          <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#a39d94]" />
+          <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#647D8B]" />
           <input
             id="company"
             type="text"
             value={profile.company}
             onChange={createProfileInputHandler('company')}
             placeholder="Your company or organization"
-            className="w-full pl-10 pr-3 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
+            className="w-full pl-10 pr-3 py-2 border border-[rgba(95,227,192,0.15)] rounded-lg bg-[#F7FAFA] dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]"
           />
         </div>
       </div>
       <div>
         <label
           htmlFor="jobTitle"
-          className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
+          className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] mb-2"
         >
           Job Title
         </label>
         <div className="relative">
-          <Briefcase className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#a39d94]" />
+          <Briefcase className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#647D8B]" />
           <input
             id="jobTitle"
             type="text"
             value={profile.jobTitle}
             onChange={createProfileInputHandler('jobTitle')}
-            className="w-full pl-10 pr-3 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
+            className="w-full pl-10 pr-3 py-2 border border-[rgba(95,227,192,0.15)] rounded-lg bg-[#F7FAFA] dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]"
           />
         </div>
       </div>
       <div>
         <label
           htmlFor="department"
-          className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
+          className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] mb-2"
         >
           Department
         </label>
         <div className="relative">
-          <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#a39d94]" />
+          <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#647D8B]" />
           <input
             id="department"
             type="text"
             value={profile.department}
             onChange={createProfileInputHandler('department')}
-            className="w-full pl-10 pr-3 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
+            className="w-full pl-10 pr-3 py-2 border border-[rgba(95,227,192,0.15)] rounded-lg bg-[#F7FAFA] dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]"
           />
         </div>
       </div>
       <div className="md:col-span-2">
         <label
           htmlFor="location"
-          className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
+          className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] mb-2"
         >
           Location
         </label>
         <div className="relative">
-          <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#a39d94]" />
+          <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#647D8B]" />
           <input
             id="location"
             type="text"
             value={profile.location}
             onChange={createProfileInputHandler('location')}
-            className="w-full pl-10 pr-3 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
+            className="w-full pl-10 pr-3 py-2 border border-[rgba(95,227,192,0.15)] rounded-lg bg-[#F7FAFA] dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]"
           />
         </div>
       </div>
@@ -403,8 +403,8 @@ const Profile: React.FC = () => { // skipcq: JS-R1005 — multi-tab settings for
   // Show loading state while auth is initializing
   if (authLoading && !user) {
     return (
-      <div className="min-h-screen bg-[#fafaf8] dark:bg-[#0f0e0c] flex items-center justify-center">
-        <div className="flex items-center gap-3 text-gray-500 dark:text-[#a39d94]">
+      <div className="min-h-screen bg-[#F7FAFA] dark:bg-[#0C141B] flex items-center justify-center">
+        <div className="flex items-center gap-3 text-gray-500 dark:text-[#647D8B]">
           <Loader2 className="w-6 h-6 animate-spin" />
           <span>Loading profile...</span>
         </div>
@@ -413,23 +413,23 @@ const Profile: React.FC = () => { // skipcq: JS-R1005 — multi-tab settings for
   }
 
   return (
-    <div className="min-h-screen bg-[#fafaf8] dark:bg-[#0f0e0c]">
+    <div className="min-h-screen bg-[#F7FAFA] dark:bg-[#0C141B]">
       {/* Header */}
-      <header className="bg-[#fafaf8] dark:bg-[#0f0e0c] border-b border-[rgba(201,169,97,0.15)]">
+      <header className="bg-[#F7FAFA] dark:bg-[#0C141B] border-b border-[rgba(95,227,192,0.15)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div>
               <h1>Your Profile</h1>
-              <p className="text-sm text-[#696557] dark:text-[#b8b3ac] mt-1">
+              <p className="text-sm text-[#294050] dark:text-[#9FB4BE] mt-1">
                 Manage your personal information and preferences
               </p>
             </div>
             <div className="flex items-center space-x-3">
               {/* Error message */}
               {(saveError || authError) && (
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#9d6b6b]/10 dark:bg-[#b88585]/10 border border-[#9d6b6b]/20 dark:border-[#b88585]/20">
-                  <X className="w-4 h-4 text-[#9d6b6b] dark:text-[#b88585]" />
-                  <span className="text-sm font-medium text-[#9d6b6b] dark:text-[#b88585]">
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#E8836F]/10 dark:bg-[#F09988]/10 border border-[#E8836F]/20 dark:border-[#F09988]/20">
+                  <X className="w-4 h-4 text-[#E8836F] dark:text-[#F09988]" />
+                  <span className="text-sm font-medium text-[#E8836F] dark:text-[#F09988]">
                     {saveError || authError}
                   </span>
                 </div>
@@ -438,7 +438,7 @@ const Profile: React.FC = () => { // skipcq: JS-R1005 — multi-tab settings for
                 <button
                   onClick={handleCancel}
                   disabled={isSaving}
-                  className="px-4 py-2 text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] bg-[#fafaf8] dark:bg-[#1a1815] border border-[rgba(201,169,97,0.15)] rounded-lg hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620] flex items-center disabled:opacity-50"
+                  className="px-4 py-2 text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] bg-[#F7FAFA] dark:bg-[#11202B] border border-[rgba(95,227,192,0.15)] rounded-lg hover:bg-[#EAF3F2] dark:hover:bg-[#16242F] flex items-center disabled:opacity-50"
                 >
                   <X className="w-4 h-4 mr-2" />
                   Cancel
@@ -450,8 +450,8 @@ const Profile: React.FC = () => { // skipcq: JS-R1005 — multi-tab settings for
                   disabled={isSaving || saveSuccess}
                   className={`px-4 py-2 text-sm font-medium text-white rounded-lg flex items-center transition-colors duration-200 ${
                     saveSuccess
-                      ? 'bg-[#7a9b6f] dark:bg-[#6a8b5f]'
-                      : 'bg-[#8b4e52] hover:bg-[#7a4248] disabled:opacity-50'
+                      ? 'bg-[#2E9A82] dark:bg-[#2E9A82]'
+                      : 'bg-[#294050] hover:bg-[#1E2F3C] disabled:opacity-50'
                   }`}
                 >
                   {isSaving ? (
@@ -477,7 +477,7 @@ const Profile: React.FC = () => { // skipcq: JS-R1005 — multi-tab settings for
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Sidebar */}
           <div className="lg:col-span-1">
-            <div className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg border border-[rgba(201,169,97,0.15)] p-6">
+            <div className="bg-[#F7FAFA] dark:bg-[#0C141B] rounded-lg border border-[rgba(95,227,192,0.15)] p-6">
               {/* Avatar */}
               <div className="flex flex-col items-center mb-6">
                 <div className="relative">
@@ -485,14 +485,14 @@ const Profile: React.FC = () => { // skipcq: JS-R1005 — multi-tab settings for
                     <img
                       src={profile.avatar}
                       alt="Profile"
-                      className="w-24 h-24 rounded-full object-cover border-4 border-[rgba(201,169,97,0.15)]"
+                      className="w-24 h-24 rounded-full object-cover border-4 border-[rgba(95,227,192,0.15)]"
                     />
                   ) : (
-                    <div className="w-24 h-24 rounded-full bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 flex items-center justify-center border-4 border-[rgba(201,169,97,0.15)]">
-                      <User className="w-12 h-12 text-[#8b4e52] dark:text-[#a86e72]" />
+                    <div className="w-24 h-24 rounded-full bg-[#294050]/10 dark:bg-[#294050]/20 flex items-center justify-center border-4 border-[rgba(95,227,192,0.15)]">
+                      <User className="w-12 h-12 text-[#294050] dark:text-[#F09988]" />
                     </div>
                   )}
-                  <label className="absolute bottom-0 right-0 w-8 h-8 bg-[#8b4e52] rounded-full flex items-center justify-center cursor-pointer hover:bg-[#7a4248] transition-colors">
+                  <label className="absolute bottom-0 right-0 w-8 h-8 bg-[#294050] rounded-full flex items-center justify-center cursor-pointer hover:bg-[#1E2F3C] transition-colors">
                     <Camera className="w-4 h-4 text-white" />
                     <input
                       type="file"
@@ -502,12 +502,12 @@ const Profile: React.FC = () => { // skipcq: JS-R1005 — multi-tab settings for
                     />
                   </label>
                 </div>
-                <h3 className="text-lg font-semibold text-[#1a1815] dark:text-[#f5f3f0] mt-4">
+                <h3 className="text-lg font-semibold text-[#11202B] dark:text-[#EAF3F2] mt-4">
                   {profile.firstName || profile.lastName
                     ? `${profile.firstName} ${profile.lastName}`.trim()
                     : user?.display_name || 'User'}
                 </h3>
-                <p className="text-sm text-[#696557] dark:text-[#b8b3ac]">
+                <p className="text-sm text-[#294050] dark:text-[#9FB4BE]">
                   {profile.jobTitle || profile.email}
                 </p>
               </div>
@@ -518,8 +518,8 @@ const Profile: React.FC = () => { // skipcq: JS-R1005 — multi-tab settings for
                   onClick={handleTabProfile}
                   className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
                     activeTab === 'profile'
-                      ? 'bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 text-[#8b4e52] dark:text-[#a86e72]'
-                      : 'text-[#1a1815] dark:text-[#b8b3ac] hover:bg-[#f3f1ed] dark:hover:bg-[#1a1815]'
+                      ? 'bg-[#294050]/10 dark:bg-[#294050]/20 text-[#294050] dark:text-[#F09988]'
+                      : 'text-[#11202B] dark:text-[#9FB4BE] hover:bg-[#EAF3F2] dark:hover:bg-[#11202B]'
                   }`}
                 >
                   <User className="w-4 h-4 mr-3" />
@@ -530,8 +530,8 @@ const Profile: React.FC = () => { // skipcq: JS-R1005 — multi-tab settings for
                     onClick={handleTabSecurity}
                     className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
                       activeTab === 'security'
-                        ? 'bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 text-[#8b4e52] dark:text-[#a86e72]'
-                        : 'text-[#1a1815] dark:text-[#b8b3ac] hover:bg-[#f3f1ed] dark:hover:bg-[#1a1815]'
+                        ? 'bg-[#294050]/10 dark:bg-[#294050]/20 text-[#294050] dark:text-[#F09988]'
+                        : 'text-[#11202B] dark:text-[#9FB4BE] hover:bg-[#EAF3F2] dark:hover:bg-[#11202B]'
                     }`}
                   >
                     <Shield className="w-4 h-4 mr-3" />
@@ -542,8 +542,8 @@ const Profile: React.FC = () => { // skipcq: JS-R1005 — multi-tab settings for
                   onClick={handleTabPreferences}
                   className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
                     activeTab === 'preferences'
-                      ? 'bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 text-[#8b4e52] dark:text-[#a86e72]'
-                      : 'text-[#1a1815] dark:text-[#b8b3ac] hover:bg-[#f3f1ed] dark:hover:bg-[#1a1815]'
+                      ? 'bg-[#294050]/10 dark:bg-[#294050]/20 text-[#294050] dark:text-[#F09988]'
+                      : 'text-[#11202B] dark:text-[#9FB4BE] hover:bg-[#EAF3F2] dark:hover:bg-[#11202B]'
                   }`}
                 >
                   <Bell className="w-4 h-4 mr-3" />
@@ -555,7 +555,7 @@ const Profile: React.FC = () => { // skipcq: JS-R1005 — multi-tab settings for
 
           {/* Main Content */}
           <div className="lg:col-span-3">
-            <div className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg border border-[rgba(201,169,97,0.15)] p-6">
+            <div className="bg-[#F7FAFA] dark:bg-[#0C141B] rounded-lg border border-[rgba(95,227,192,0.15)] p-6">
               {activeTab === 'profile' && (
                 <div className="space-y-6">
                   <div>
@@ -566,7 +566,7 @@ const Profile: React.FC = () => { // skipcq: JS-R1005 — multi-tab settings for
                     />
                   </div>
                   {isBusinessAccount && (
-                    <div className="border-t border-[rgba(201,169,97,0.15)] pt-6">
+                    <div className="border-t border-[rgba(95,227,192,0.15)] pt-6">
                       <WorkInfo
                         profile={profile}
                         createProfileInputHandler={createProfileInputHandler}
@@ -579,19 +579,19 @@ const Profile: React.FC = () => { // skipcq: JS-R1005 — multi-tab settings for
               {activeTab === 'security' && securityMode !== 'easy' && (
                 <div className="space-y-6">
                   <div>
-                    <h3 className="text-lg font-semibold text-[#1a1815] dark:text-[#f5f3f0] mb-4">
+                    <h3 className="text-lg font-semibold text-[#11202B] dark:text-[#EAF3F2] mb-4">
                       Security Settings
                     </h3>
 
                     {/* Two-Factor Authentication */}
-                    <div className="flex items-center justify-between py-4 border-b border-[rgba(201,169,97,0.15)]">
+                    <div className="flex items-center justify-between py-4 border-b border-[rgba(95,227,192,0.15)]">
                       <div className="flex items-start">
-                        <Shield className="w-5 h-5 text-[#8b4e52] dark:text-[#a86e72] mr-3 mt-0.5" />
+                        <Shield className="w-5 h-5 text-[#294050] dark:text-[#F09988] mr-3 mt-0.5" />
                         <div>
-                          <p className="text-sm font-medium text-[#1a1815] dark:text-[#f5f3f0]">
+                          <p className="text-sm font-medium text-[#11202B] dark:text-[#EAF3F2]">
                             Two-Factor Authentication
                           </p>
-                          <p className="text-xs text-[#696557] dark:text-[#b8b3ac] mt-1">
+                          <p className="text-xs text-[#294050] dark:text-[#9FB4BE] mt-1">
                             Add an extra layer of security to your account
                           </p>
                         </div>
@@ -608,19 +608,19 @@ const Profile: React.FC = () => { // skipcq: JS-R1005 — multi-tab settings for
                           )}
                           className="sr-only peer"
                         />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#c9a961]/50 dark:peer-focus:ring-[#c9a961]/30 rounded-full peer dark:bg-[#2a2620] peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-[#8b4e52]" />
+                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#5FE3C0]/50 dark:peer-focus:ring-[#5FE3C0]/30 rounded-full peer dark:bg-[#16242F] peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-[#294050]" />
                       </label>
                     </div>
 
                     {/* Login Alerts */}
-                    <div className="flex items-center justify-between py-4 border-b border-[rgba(201,169,97,0.15)]">
+                    <div className="flex items-center justify-between py-4 border-b border-[rgba(95,227,192,0.15)]">
                       <div className="flex items-start">
-                        <Bell className="w-5 h-5 text-[#8b4e52] dark:text-[#a86e72] mr-3 mt-0.5" />
+                        <Bell className="w-5 h-5 text-[#294050] dark:text-[#F09988] mr-3 mt-0.5" />
                         <div>
-                          <p className="text-sm font-medium text-[#1a1815] dark:text-[#f5f3f0]">
+                          <p className="text-sm font-medium text-[#11202B] dark:text-[#EAF3F2]">
                             Login Alerts
                           </p>
-                          <p className="text-xs text-[#696557] dark:text-[#b8b3ac] mt-1">
+                          <p className="text-xs text-[#294050] dark:text-[#9FB4BE] mt-1">
                             Get notified of new sign-ins to your account
                           </p>
                         </div>
@@ -635,25 +635,25 @@ const Profile: React.FC = () => { // skipcq: JS-R1005 — multi-tab settings for
                           onChange={createSecurityToggleHandler('loginAlerts')}
                           className="sr-only peer"
                         />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#c9a961]/50 dark:peer-focus:ring-[#c9a961]/30 rounded-full peer dark:bg-[#2a2620] peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-[#8b4e52]" />
+                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#5FE3C0]/50 dark:peer-focus:ring-[#5FE3C0]/30 rounded-full peer dark:bg-[#16242F] peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-[#294050]" />
                       </label>
                     </div>
 
                     {/* Change Password */}
                     <div className="pt-4">
-                      <button className="w-full flex items-center justify-between px-4 py-3 bg-[#f3f1ed] dark:bg-[#1a1815] rounded-lg hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620] transition-colors">
+                      <button className="w-full flex items-center justify-between px-4 py-3 bg-[#EAF3F2] dark:bg-[#11202B] rounded-lg hover:bg-[#EAF3F2] dark:hover:bg-[#16242F] transition-colors">
                         <div className="flex items-center">
-                          <Lock className="w-5 h-5 text-[#696557] dark:text-[#b8b3ac] mr-3" />
+                          <Lock className="w-5 h-5 text-[#294050] dark:text-[#9FB4BE] mr-3" />
                           <div className="text-left">
-                            <p className="text-sm font-medium text-[#1a1815] dark:text-[#f5f3f0]">
+                            <p className="text-sm font-medium text-[#11202B] dark:text-[#EAF3F2]">
                               Change Password
                             </p>
-                            <p className="text-xs text-[#696557] dark:text-[#b8b3ac]">
+                            <p className="text-xs text-[#294050] dark:text-[#9FB4BE]">
                               Last changed 30 days ago
                             </p>
                           </div>
                         </div>
-                        <Key className="w-5 h-5 text-[#a39d94]" />
+                        <Key className="w-5 h-5 text-[#647D8B]" />
                       </button>
                     </div>
                   </div>
@@ -663,24 +663,24 @@ const Profile: React.FC = () => { // skipcq: JS-R1005 — multi-tab settings for
               {activeTab === 'preferences' && (
                 <div className="space-y-6">
                   <div>
-                    <h3 className="text-lg font-semibold text-[#1a1815] dark:text-[#f5f3f0] mb-4">
+                    <h3 className="text-lg font-semibold text-[#11202B] dark:text-[#EAF3F2] mb-4">
                       Regional Preferences
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label
                           htmlFor="timezone"
-                          className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
+                          className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] mb-2"
                         >
                           Timezone
                         </label>
                         <div className="relative">
-                          <Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#a39d94]" />
+                          <Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#647D8B]" />
                           <select
                             id="timezone"
                             value={profile.timezone}
                             onChange={createProfileInputHandler('timezone')}
-                            className="select-input w-full pl-10 pr-8 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
+                            className="select-input w-full pl-10 pr-8 py-2 border border-[rgba(95,227,192,0.15)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]"
                           >
                             <optgroup label="Universal">
                               <option value="UTC">UTC</option>
@@ -825,7 +825,7 @@ const Profile: React.FC = () => { // skipcq: JS-R1005 — multi-tab settings for
                       <div>
                         <label
                           htmlFor="language"
-                          className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
+                          className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] mb-2"
                         >
                           Language
                         </label>
@@ -833,7 +833,7 @@ const Profile: React.FC = () => { // skipcq: JS-R1005 — multi-tab settings for
                           id="language"
                           value={profile.language}
                           onChange={createProfileInputHandler('language')}
-                          className="select-input w-full px-3 pr-8 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
+                          className="select-input w-full px-3 pr-8 py-2 border border-[rgba(95,227,192,0.15)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]"
                         >
                           <option value="en">English</option>
                           <option value="es">Español</option>
@@ -844,17 +844,17 @@ const Profile: React.FC = () => { // skipcq: JS-R1005 — multi-tab settings for
                       <div>
                         <label
                           htmlFor="dateFormat"
-                          className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
+                          className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] mb-2"
                         >
                           Date Format
                         </label>
                         <div className="relative">
-                          <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#a39d94]" />
+                          <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#647D8B]" />
                           <select
                             id="dateFormat"
                             value={profile.dateFormat}
                             onChange={createProfileInputHandler('dateFormat')}
-                            className="select-input w-full pl-10 pr-8 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
+                            className="select-input w-full pl-10 pr-8 py-2 border border-[rgba(95,227,192,0.15)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]"
                           >
                             <option value="MM/DD/YYYY">MM/DD/YYYY (US)</option>
                             <option value="DD/MM/YYYY">DD/MM/YYYY (EU)</option>
@@ -865,17 +865,17 @@ const Profile: React.FC = () => { // skipcq: JS-R1005 — multi-tab settings for
                     </div>
                   </div>
 
-                  <div className="border-t border-[rgba(201,169,97,0.15)] pt-6">
-                    <h3 className="text-lg font-semibold text-[#1a1815] dark:text-[#f5f3f0] mb-4">
+                  <div className="border-t border-[rgba(95,227,192,0.15)] pt-6">
+                    <h3 className="text-lg font-semibold text-[#11202B] dark:text-[#EAF3F2] mb-4">
                       Notification Preferences
                     </h3>
 
-                    <div className="flex items-center justify-between py-4 border-b border-[rgba(201,169,97,0.15)]">
+                    <div className="flex items-center justify-between py-4 border-b border-[rgba(95,227,192,0.15)]">
                       <div>
-                        <p className="text-sm font-medium text-[#1a1815] dark:text-[#f5f3f0]">
+                        <p className="text-sm font-medium text-[#11202B] dark:text-[#EAF3F2]">
                           Email Notifications
                         </p>
-                        <p className="text-xs text-[#696557] dark:text-[#b8b3ac] mt-1">
+                        <p className="text-xs text-[#294050] dark:text-[#9FB4BE] mt-1">
                           Receive notifications via email
                         </p>
                       </div>
@@ -891,7 +891,7 @@ const Profile: React.FC = () => { // skipcq: JS-R1005 — multi-tab settings for
                           )}
                           className="sr-only peer"
                         />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#c9a961]/50 dark:peer-focus:ring-[#c9a961]/30 rounded-full peer dark:bg-[#2a2620] peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-[#8b4e52]" />
+                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#5FE3C0]/50 dark:peer-focus:ring-[#5FE3C0]/30 rounded-full peer dark:bg-[#16242F] peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-[#294050]" />
                       </label>
                     </div>
 
@@ -903,16 +903,16 @@ const Profile: React.FC = () => { // skipcq: JS-R1005 — multi-tab settings for
                         opacity: security.emailNotifications ? 1 : 0,
                       }}
                     >
-                      <div className="py-4 px-4 my-2 rounded-lg bg-[#f3f1ed]/60 dark:bg-[#1a1815]/80 border border-[rgba(201,169,97,0.12)]">
+                      <div className="py-4 px-4 my-2 rounded-lg bg-[#EAF3F2]/60 dark:bg-[#11202B]/80 border border-[rgba(95,227,192,0.12)]">
                         <div className="flex items-center gap-2 mb-3">
-                          <ShieldCheck className="w-4 h-4 text-[#7a9b6f] dark:text-[#8faf84]" />
-                          <span className="text-xs text-[#696557] dark:text-[#b8b3ac]">
+                          <ShieldCheck className="w-4 h-4 text-[#2E9A82] dark:text-[#5FE3C0]" />
+                          <span className="text-xs text-[#294050] dark:text-[#9FB4BE]">
                             Used only for account-related alerts and messages
                           </span>
                         </div>
                         <label
                           htmlFor="notificationEmail"
-                          className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
+                          className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] mb-2"
                         >
                           Notification Email
                         </label>
@@ -923,21 +923,21 @@ const Profile: React.FC = () => { // skipcq: JS-R1005 — multi-tab settings for
                             value={security.notificationEmail}
                             onChange={handleNotificationEmailChange}
                             placeholder="you@example.com"
-                            className="w-full pl-3 pr-16 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#0f0e0c] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
+                            className="w-full pl-3 pr-16 py-2 border border-[rgba(95,227,192,0.15)] rounded-lg bg-[#F7FAFA] dark:bg-[#0C141B] text-[#11202B] dark:text-[#EAF3F2] focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]"
                           />
                           <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-1.5">
                             {security.notificationEmail &&
                               (isValidEmail(security.notificationEmail) ? (
-                                <CheckCircle2 className="w-5 h-5 text-[#7a9b6f] dark:text-[#8faf84]" />
+                                <CheckCircle2 className="w-5 h-5 text-[#2E9A82] dark:text-[#5FE3C0]" />
                               ) : (
-                                <X className="w-5 h-5 text-[#9d6b6b] dark:text-[#b88585]" />
+                                <X className="w-5 h-5 text-[#E8836F] dark:text-[#F09988]" />
                               ))}
-                            <Mail className="w-5 h-5 text-[#a39d94]" />
+                            <Mail className="w-5 h-5 text-[#647D8B]" />
                           </div>
                         </div>
                         {security.notificationEmail &&
                           !isValidEmail(security.notificationEmail) && (
-                            <p className="text-xs text-[#9d6b6b] dark:text-[#b88585] mt-1.5">
+                            <p className="text-xs text-[#E8836F] dark:text-[#F09988] mt-1.5">
                               Please enter a valid email address
                             </p>
                           )}
@@ -946,10 +946,10 @@ const Profile: React.FC = () => { // skipcq: JS-R1005 — multi-tab settings for
 
                     <div className="flex items-center justify-between py-4">
                       <div>
-                        <p className="text-sm font-medium text-[#1a1815] dark:text-[#f5f3f0]">
+                        <p className="text-sm font-medium text-[#11202B] dark:text-[#EAF3F2]">
                           SMS Notifications
                         </p>
-                        <p className="text-xs text-[#696557] dark:text-[#b8b3ac] mt-1">
+                        <p className="text-xs text-[#294050] dark:text-[#9FB4BE] mt-1">
                           Receive notifications via SMS
                         </p>
                       </div>
@@ -965,7 +965,7 @@ const Profile: React.FC = () => { // skipcq: JS-R1005 — multi-tab settings for
                           )}
                           className="sr-only peer"
                         />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#c9a961]/50 dark:peer-focus:ring-[#c9a961]/30 rounded-full peer dark:bg-[#2a2620] peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-[#8b4e52]" />
+                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#5FE3C0]/50 dark:peer-focus:ring-[#5FE3C0]/30 rounded-full peer dark:bg-[#16242F] peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-[#294050]" />
                       </label>
                     </div>
                   </div>

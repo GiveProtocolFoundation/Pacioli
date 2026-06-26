@@ -12,7 +12,7 @@ const getRoleBadgeColor = (role: string): string => {
     case 'system-admin':
       return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400'
     case 'approver':
-      return 'bg-[#c9a961]/20 text-[#c9a961] dark:bg-[#c9a961]/30 dark:text-[#d4b87a]'
+      return 'bg-[#5FE3C0]/20 text-[#5FE3C0] dark:bg-[#5FE3C0]/30 dark:text-[#9CF1DC]'
     case 'preparer':
       return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
     default:
@@ -48,8 +48,8 @@ const TeamMemberCard: React.FC<TeamMemberCardProps> = ({ member }) => {
       <div className="flex items-start gap-4">
         {/* Avatar */}
         <div className="flex-shrink-0">
-          <div className="w-14 h-14 rounded-full bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 flex items-center justify-center">
-            <span className="text-lg font-semibold text-[#8b4e52] dark:text-[#a86e72]">
+          <div className="w-14 h-14 rounded-full bg-[#294050]/10 dark:bg-[#294050]/20 flex items-center justify-center">
+            <span className="text-lg font-semibold text-[#294050] dark:text-[#F09988]">
               {getInitials(member.display_name || member.email)}
             </span>
           </div>
@@ -159,7 +159,7 @@ const Team: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <h1>Team Directory</h1>
-              <p className="text-sm text-gray-500 dark:text-[#94a3b8] mt-1">
+              <p className="text-sm text-gray-500 dark:text-[#9FB4BE] mt-1">
                 View your organization&apos;s team members
               </p>
             </div>
@@ -197,7 +197,7 @@ const Team: React.FC = () => {
             </p>
             <Link
               to="/settings/users"
-              className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-[#8b4e52] rounded-lg hover:bg-[#7a4248] transition-colors"
+              className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-[#294050] rounded-lg hover:bg-[#1E2F3C] transition-colors"
             >
               <Users className="w-4 h-4 mr-2" />
               Invite Team Members

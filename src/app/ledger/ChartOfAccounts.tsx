@@ -41,27 +41,27 @@ const AccountGroup: React.FC<AccountGroupProps> = ({
     accountTypeColors[typeName] ?? 'text-gray-700 bg-gray-50'
 
   return (
-    <div className="border border-[rgba(201,169,97,0.15)] rounded-lg overflow-hidden">
+    <div className="border border-[rgba(95,227,192,0.15)] rounded-lg overflow-hidden">
       <button
         onClick={onToggle}
-        className="w-full flex items-center justify-between px-5 py-3 bg-[#f3f1ed] dark:bg-[#2a2620] hover:bg-[#ede8e0] dark:hover:bg-[#332e28] transition-colors"
+        className="w-full flex items-center justify-between px-5 py-3 bg-[#EAF3F2] dark:bg-[#16242F] hover:bg-[#D9E5E4] dark:hover:bg-[#16242F] transition-colors"
       >
         <div className="flex items-center gap-3">
           {expanded ? (
-            <ChevronDown className="w-4 h-4 text-[#696557]" />
+            <ChevronDown className="w-4 h-4 text-[#294050]" />
           ) : (
-            <ChevronRight className="w-4 h-4 text-[#696557]" />
+            <ChevronRight className="w-4 h-4 text-[#294050]" />
           )}
           <span
             className={`inline-flex px-2 py-0.5 rounded text-xs font-semibold ${colorClass}`}
           >
             {typeName}
           </span>
-          <span className="text-sm font-medium text-[#1a1815] dark:text-[#f5f3f0]">
+          <span className="text-sm font-medium text-[#11202B] dark:text-[#EAF3F2]">
             {typeName === 'Income' ? 'Revenue' : `${typeName}s`}
           </span>
         </div>
-        <span className="text-xs text-[#696557] dark:text-[#b8b3ac]">
+        <span className="text-xs text-[#294050] dark:text-[#9FB4BE]">
           {accounts.length} account{accounts.length !== 1 ? 's' : ''}
         </span>
       </button>
@@ -69,44 +69,44 @@ const AccountGroup: React.FC<AccountGroupProps> = ({
       {expanded && (
         <table className="min-w-full">
           <thead>
-            <tr className="bg-[#fafaf8] dark:bg-[#1a1815]">
-              <th className="px-5 py-2 text-left text-xs font-semibold text-[#696557] dark:text-[#b8b3ac] uppercase tracking-wider w-28">
+            <tr className="bg-[#F7FAFA] dark:bg-[#11202B]">
+              <th className="px-5 py-2 text-left text-xs font-semibold text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider w-28">
                 Number
               </th>
-              <th className="px-5 py-2 text-left text-xs font-semibold text-[#696557] dark:text-[#b8b3ac] uppercase tracking-wider">
+              <th className="px-5 py-2 text-left text-xs font-semibold text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
                 Name
               </th>
-              <th className="px-5 py-2 text-left text-xs font-semibold text-[#696557] dark:text-[#b8b3ac] uppercase tracking-wider">
+              <th className="px-5 py-2 text-left text-xs font-semibold text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
                 Normal Balance
               </th>
-              <th className="px-5 py-2 text-left text-xs font-semibold text-[#696557] dark:text-[#b8b3ac] uppercase tracking-wider">
+              <th className="px-5 py-2 text-left text-xs font-semibold text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
                 Description
               </th>
-              <th className="px-5 py-2 text-center text-xs font-semibold text-[#696557] dark:text-[#b8b3ac] uppercase tracking-wider w-20">
+              <th className="px-5 py-2 text-center text-xs font-semibold text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider w-20">
                 System
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-[rgba(201,169,97,0.08)]">
+          <tbody className="divide-y divide-[rgba(95,227,192,0.08)]">
             {accounts.map(acct => (
               <tr
                 key={acct.id}
-                className="bg-white dark:bg-[#1a1815] hover:bg-[#f3f1ed]/50 dark:hover:bg-[#2a2620]/50 transition-colors"
+                className="bg-white dark:bg-[#11202B] hover:bg-[#EAF3F2]/50 dark:hover:bg-[#16242F]/50 transition-colors"
               >
-                <td className="px-5 py-2.5 text-sm font-mono text-[#8b4e52] dark:text-[#c9a961] font-medium">
+                <td className="px-5 py-2.5 text-sm font-mono text-[#294050] dark:text-[#5FE3C0] font-medium">
                   {acct.accountNumber}
                 </td>
-                <td className="px-5 py-2.5 text-sm text-[#1a1815] dark:text-[#f5f3f0]">
+                <td className="px-5 py-2.5 text-sm text-[#11202B] dark:text-[#EAF3F2]">
                   {acct.parentAccountId ? (
                     <span className="ml-4">{acct.accountName}</span>
                   ) : (
                     <span className="font-medium">{acct.accountName}</span>
                   )}
                 </td>
-                <td className="px-5 py-2.5 text-sm text-[#696557] dark:text-[#b8b3ac] capitalize">
+                <td className="px-5 py-2.5 text-sm text-[#294050] dark:text-[#9FB4BE] capitalize">
                   {acct.normalBalance ?? '—'}
                 </td>
-                <td className="px-5 py-2.5 text-sm text-[#696557] dark:text-[#b8b3ac] max-w-xs truncate">
+                <td className="px-5 py-2.5 text-sm text-[#294050] dark:text-[#9FB4BE] max-w-xs truncate">
                   {acct.description ?? '—'}
                 </td>
                 <td className="px-5 py-2.5 text-center">
@@ -177,7 +177,7 @@ const AddAccountForm: React.FC<AddAccountFormProps> = ({
   ])
 
   return (
-    <div className="p-4 border border-[rgba(201,169,97,0.15)] rounded-lg bg-white dark:bg-[#1a1815] space-y-3">
+    <div className="p-4 border border-[rgba(95,227,192,0.15)] rounded-lg bg-white dark:bg-[#11202B] space-y-3">
       {error && (
         <div className="p-2 rounded bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-sm">
           {error}
@@ -185,7 +185,7 @@ const AddAccountForm: React.FC<AddAccountFormProps> = ({
       )}
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs text-[#696557] dark:text-[#b8b3ac] mb-1">
+          <label className="block text-xs text-[#294050] dark:text-[#9FB4BE] mb-1">
             Account Number
           </label>
           <input
@@ -193,11 +193,11 @@ const AddAccountForm: React.FC<AddAccountFormProps> = ({
             value={accountNumber}
             onChange={e => setAccountNumber(e.target.value)}
             placeholder="e.g. 1250"
-            className="w-full px-3 py-1.5 rounded border border-[rgba(201,169,97,0.15)] bg-white dark:bg-[#141210] text-sm text-[#1a1815] dark:text-[#f5f3f0] placeholder-[#a39d94]"
+            className="w-full px-3 py-1.5 rounded border border-[rgba(95,227,192,0.15)] bg-white dark:bg-[#0C141B] text-sm text-[#11202B] dark:text-[#EAF3F2] placeholder-[#647D8B]"
           />
         </div>
         <div>
-          <label className="block text-xs text-[#696557] dark:text-[#b8b3ac] mb-1">
+          <label className="block text-xs text-[#294050] dark:text-[#9FB4BE] mb-1">
             Account Name
           </label>
           <input
@@ -205,19 +205,19 @@ const AddAccountForm: React.FC<AddAccountFormProps> = ({
             value={accountName}
             onChange={e => setAccountName(e.target.value)}
             placeholder="e.g. BTC Holdings"
-            className="w-full px-3 py-1.5 rounded border border-[rgba(201,169,97,0.15)] bg-white dark:bg-[#141210] text-sm text-[#1a1815] dark:text-[#f5f3f0] placeholder-[#a39d94]"
+            className="w-full px-3 py-1.5 rounded border border-[rgba(95,227,192,0.15)] bg-white dark:bg-[#0C141B] text-sm text-[#11202B] dark:text-[#EAF3F2] placeholder-[#647D8B]"
           />
         </div>
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs text-[#696557] dark:text-[#b8b3ac] mb-1">
+          <label className="block text-xs text-[#294050] dark:text-[#9FB4BE] mb-1">
             Account Type
           </label>
           <select
             value={accountType}
             onChange={e => setAccountType(e.target.value)}
-            className="w-full px-3 py-1.5 rounded border border-[rgba(201,169,97,0.15)] bg-white dark:bg-[#141210] text-sm text-[#1a1815] dark:text-[#f5f3f0]"
+            className="w-full px-3 py-1.5 rounded border border-[rgba(95,227,192,0.15)] bg-white dark:bg-[#0C141B] text-sm text-[#11202B] dark:text-[#EAF3F2]"
           >
             {accountTypeOrder.map(t => (
               <option key={t} value={t}>
@@ -227,7 +227,7 @@ const AddAccountForm: React.FC<AddAccountFormProps> = ({
           </select>
         </div>
         <div>
-          <label className="block text-xs text-[#696557] dark:text-[#b8b3ac] mb-1">
+          <label className="block text-xs text-[#294050] dark:text-[#9FB4BE] mb-1">
             Parent Account
           </label>
           <select
@@ -237,7 +237,7 @@ const AddAccountForm: React.FC<AddAccountFormProps> = ({
                 e.target.value ? parseInt(e.target.value) : ''
               )
             }
-            className="w-full px-3 py-1.5 rounded border border-[rgba(201,169,97,0.15)] bg-white dark:bg-[#141210] text-sm text-[#1a1815] dark:text-[#f5f3f0]"
+            className="w-full px-3 py-1.5 rounded border border-[rgba(95,227,192,0.15)] bg-white dark:bg-[#0C141B] text-sm text-[#11202B] dark:text-[#EAF3F2]"
           >
             <option value="">None (top-level)</option>
             {accounts
@@ -251,7 +251,7 @@ const AddAccountForm: React.FC<AddAccountFormProps> = ({
         </div>
       </div>
       <div>
-        <label className="block text-xs text-[#696557] dark:text-[#b8b3ac] mb-1">
+        <label className="block text-xs text-[#294050] dark:text-[#9FB4BE] mb-1">
           Description
         </label>
         <input
@@ -259,20 +259,20 @@ const AddAccountForm: React.FC<AddAccountFormProps> = ({
           value={description}
           onChange={e => setDescription(e.target.value)}
           placeholder="Optional description"
-          className="w-full px-3 py-1.5 rounded border border-[rgba(201,169,97,0.15)] bg-white dark:bg-[#141210] text-sm text-[#1a1815] dark:text-[#f5f3f0] placeholder-[#a39d94]"
+          className="w-full px-3 py-1.5 rounded border border-[rgba(95,227,192,0.15)] bg-white dark:bg-[#0C141B] text-sm text-[#11202B] dark:text-[#EAF3F2] placeholder-[#647D8B]"
         />
       </div>
       <div className="flex justify-end gap-2">
         <button
           onClick={onClose}
-          className="px-3 py-1.5 text-sm rounded border border-[rgba(201,169,97,0.15)] text-[#696557] hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620] transition-colors"
+          className="px-3 py-1.5 text-sm rounded border border-[rgba(95,227,192,0.15)] text-[#294050] hover:bg-[#EAF3F2] dark:hover:bg-[#16242F] transition-colors"
         >
           Cancel
         </button>
         <button
           onClick={handleSave}
           disabled={saving || !accountNumber || !accountName}
-          className="px-3 py-1.5 text-sm rounded bg-[#8b4e52] text-white hover:bg-[#7a4248] transition-colors disabled:opacity-50"
+          className="px-3 py-1.5 text-sm rounded bg-[#294050] text-white hover:bg-[#1E2F3C] transition-colors disabled:opacity-50"
         >
           {saving ? 'Saving...' : 'Save'}
         </button>
@@ -346,16 +346,16 @@ const ChartOfAccounts: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-[#1a1815] dark:text-[#f5f3f0]">
+          <h1 className="text-2xl font-bold text-[#11202B] dark:text-[#EAF3F2]">
             Chart of Accounts
           </h1>
-          <p className="text-sm text-[#696557] dark:text-[#b8b3ac] mt-1">
+          <p className="text-sm text-[#294050] dark:text-[#9FB4BE] mt-1">
             General ledger accounts organized by type
           </p>
         </div>
         <button
           onClick={() => setShowAddForm(prev => !prev)}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#8b4e52] text-white hover:bg-[#7a4248] transition-colors"
+          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#294050] text-white hover:bg-[#1E2F3C] transition-colors"
         >
           <Plus className="w-5 h-5" />
           <span>Add Account</span>
@@ -375,28 +375,28 @@ const ChartOfAccounts: React.FC = () => {
 
       {/* Search */}
       <div className="relative mb-4">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#a39d94]" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#647D8B]" />
         <input
           type="text"
           placeholder="Search accounts..."
           value={searchQuery}
           onChange={e => setSearchQuery(e.target.value)}
-          className="w-full pl-10 pr-4 py-2 rounded-lg border border-[rgba(201,169,97,0.15)] bg-white dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] placeholder-[#a39d94] text-sm focus:outline-none focus:ring-1 focus:ring-[#c9a961]"
+          className="w-full pl-10 pr-4 py-2 rounded-lg border border-[rgba(95,227,192,0.15)] bg-white dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] placeholder-[#647D8B] text-sm focus:outline-none focus:ring-1 focus:ring-[#5FE3C0]"
         />
       </div>
 
       {/* Account groups */}
       {loading ? (
         <div className="flex items-center justify-center py-16">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#8b4e52]" />
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#294050]" />
         </div>
       ) : accounts.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <Scale className="w-12 h-12 text-[#a39d94] mb-4" />
-          <h3 className="text-lg font-medium text-[#1a1815] dark:text-[#f5f3f0]">
+          <Scale className="w-12 h-12 text-[#647D8B] mb-4" />
+          <h3 className="text-lg font-medium text-[#11202B] dark:text-[#EAF3F2]">
             No accounts yet
           </h3>
-          <p className="text-sm text-[#696557] dark:text-[#b8b3ac] mt-1">
+          <p className="text-sm text-[#294050] dark:text-[#9FB4BE] mt-1">
             Accounts will be seeded when the database initializes.
           </p>
         </div>
