@@ -114,6 +114,7 @@ const AccountBalancesList: React.FC<{
 }> = ({ accountBalances, currencySettings, theme }) => (
   <div className="ledger-card border border-[rgba(95,227,192,0.15)]">
     <div className="px-6 py-4 border-b border-[rgba(95,227,192,0.15)]">
+      <p className="eyebrow">Assets</p>
       <h2>Account Balances</h2>
     </div>
     <div className="px-6">
@@ -210,7 +211,10 @@ const RecentTransactionsTable: React.FC<{
 }> = ({ recentTransactions, currencySettings, getTypeColor }) => (
   <div className="ledger-card border border-[rgba(95,227,192,0.15)] mt-10">
     <div className="px-6 py-4 border-b border-[rgba(95,227,192,0.15)] flex items-center justify-between">
-      <h2>Recent Transactions</h2>
+      <div>
+        <p className="eyebrow">Activity</p>
+        <h2>Recent Transactions</h2>
+      </div>
       <button className="text-sm dashboard-link">
         View All
       </button>
@@ -292,6 +296,7 @@ const RecentTransactionsTable: React.FC<{
 const QuickActionsCard: React.FC<{ onNewTransaction: () => void }> = ({ onNewTransaction }) => (
   <div className="ledger-card border border-[rgba(95,227,192,0.15)]">
     <div className="px-6 py-4 border-b border-[rgba(95,227,192,0.15)]">
+      <p className="eyebrow">Workspace</p>
       <h2>Quick Actions</h2>
     </div>
     <div className="p-6 space-y-3">
@@ -422,6 +427,7 @@ const Dashboard: React.FC = () => {
         <div className="max-w-7xl mx-auto px-10 py-10">
           <div className="flex items-center justify-between">
             <div>
+              <p className="eyebrow">Overview</p>
               <h1>Dashboard</h1>
               <p className="text-sm dashboard-body-text mt-1">
                 Welcome back! Here&apos;s your crypto portfolio overview.
@@ -553,6 +559,7 @@ const Dashboard: React.FC = () => {
             {/* Compliance Status */}
             <div className="ledger-card border border-[rgba(95,227,192,0.15)]">
               <div className="px-6 py-4 border-b border-[rgba(95,227,192,0.15)]">
+                <p className="eyebrow">Compliance</p>
                 <h2>Compliance Status</h2>
               </div>
               <div className="p-6 space-y-4">
@@ -584,6 +591,7 @@ const Dashboard: React.FC = () => {
             {/* Alerts */}
             <div className="ledger-card border border-[rgba(95,227,192,0.15)]">
               <div className="px-6 py-4 border-b border-[rgba(95,227,192,0.15)]">
+                <p className="eyebrow">Notifications</p>
                 <h2>Alerts</h2>
               </div>
               <div className="p-6">

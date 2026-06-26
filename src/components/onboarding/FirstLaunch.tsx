@@ -369,7 +369,7 @@ const SecurityStep: React.FC<SecurityStepProps> = ({
     <StepHeader
       icon={
         <svg
-          className="w-8 h-8 text-[#7a9b6f] dark:text-[#8faf84]"
+          className="w-8 h-8 text-[#2E9A82] dark:text-[#8faf84]"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -382,7 +382,7 @@ const SecurityStep: React.FC<SecurityStepProps> = ({
           />
         </svg>
       }
-      iconBgClass="bg-[#7a9b6f]/20 dark:bg-[#7a9b6f]/30"
+      iconBgClass="bg-[#2E9A82]/20 dark:bg-[#2E9A82]/30"
       title={t.firstLaunch.securitySetup}
       description={t.firstLaunch.securitySetupDesc}
     />
@@ -584,7 +584,7 @@ const CompleteStep: React.FC<CompleteStepProps> = ({
       <StepHeader
         icon={
           <svg
-            className="w-8 h-8 text-[#7a9b6f] dark:text-[#8faf84]"
+            className="w-8 h-8 text-[#2E9A82] dark:text-[#8faf84]"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -597,7 +597,7 @@ const CompleteStep: React.FC<CompleteStepProps> = ({
             />
           </svg>
         }
-        iconBgClass="bg-[#7a9b6f]/20 dark:bg-[#7a9b6f]/30"
+        iconBgClass="bg-[#2E9A82]/20 dark:bg-[#2E9A82]/30"
         title={t.firstLaunch.setupComplete}
         description={t.firstLaunch.setupCompleteDesc}
       />

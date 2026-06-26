@@ -24,7 +24,7 @@ const ProgressStep: React.FC<ProgressStepProps> = ({
 }) => {
   const getStepClassName = () => {
     if (isActive) return 'bg-[#8b4e52] text-white'
-    if (isCompleted) return 'bg-[#7a9b6f] text-white'
+    if (isCompleted) return 'bg-[#2E9A82] text-white'
     return 'bg-gray-200 text-gray-600'
   }
 

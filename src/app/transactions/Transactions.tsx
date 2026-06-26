@@ -305,6 +305,7 @@ const Transactions: React.FC = () => {
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
         <div>
+          <p className="eyebrow">Activity</p>
           <h1>Transactions</h1>
           <p className="text-[#294050] dark:text-[#9FB4BE] mt-1">
             View and manage all your crypto transactions
