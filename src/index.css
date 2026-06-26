@@ -434,59 +434,82 @@ th,
    STATUS BADGES - Heritage Elegance semantic colors
    ============================================================================= */
 
-.badge-completed {
-  background: rgba(122, 155, 111, 0.15);
+/* =============================================================================
+   STATUS + TYPE BADGES
+   Single rule across the app:
+     light mode = dark/contrast variant (--color-*-light-mode / --color-soft-*)
+     dark  mode = bright accent (--color-success / --color-warning / --color-error)
+   so the same semantic color reads with the same weight in both themes.
+
+   Border-radius is intentionally NOT set here — callers apply rounded-full
+   for pills or rounded-lg for icon tiles, and these classes only carry
+   background + foreground.
+   ============================================================================= */
+
+/* Success family — completed, approved, on-track, donation, revenue */
+.badge-completed,
+.badge-on-track,
+.badge-approved,
+.badge-donation,
+.badge-revenue {
+  background: rgba(46, 154, 130, 0.12);
+  color: var(--color-soft-success);
+}
+.dark .badge-completed,
+.dark .badge-on-track,
+.dark .badge-approved,
+.dark .badge-donation,
+.dark .badge-revenue {
+  background: rgba(95, 227, 192, 0.18);
   color: var(--color-success);
-  border-radius: 8px;
 }
 
-.dark .badge-completed {
-  background: rgba(122, 155, 111, 0.2);
-  color: var(--color-success);
+/* Warning family — pending, due-soon, transfer */
+.badge-pending,
+.badge-pending-approval,
+.badge-due-soon,
+.badge-transfer {
+  background: rgba(176, 122, 47, 0.12);
+  color: var(--color-warning-light-mode);
 }
-
-.badge-on-track {
-  background: rgba(122, 155, 111, 0.15);
-  color: var(--color-success);
-  border-radius: 8px;
-}
-
-.dark .badge-on-track {
-  background: rgba(122, 155, 111, 0.2);
-  color: var(--color-success);
-}
-
-.badge-due-soon {
-  background: rgba(184, 153, 104, 0.15);
-  color: var(--color-warning);
-  border-radius: 8px;
-}
-
-.dark .badge-due-soon {
-  background: rgba(184, 153, 104, 0.2);
+.dark .badge-pending,
+.dark .badge-pending-approval,
+.dark .badge-due-soon,
+.dark .badge-transfer {
+  background: rgba(232, 179, 111, 0.18);
   color: var(--color-warning);
 }
 
-.badge-pending {
-  background: rgba(184, 153, 104, 0.15);
-  color: var(--color-warning);
-  border-radius: 8px;
+/* Error family — error, rejected, failed, expense */
+.badge-error,
+.badge-rejected,
+.badge-failed,
+.badge-expense {
+  background: rgba(176, 83, 63, 0.12);
+  color: var(--color-error-light-mode);
 }
-
-.dark .badge-pending {
-  background: rgba(184, 153, 104, 0.2);
-  color: var(--color-warning);
-}
-
-.badge-error {
-  background: rgba(157, 107, 107, 0.15);
+.dark .badge-error,
+.dark .badge-rejected,
+.dark .badge-failed,
+.dark .badge-expense {
+  background: rgba(232, 131, 111, 0.18);
   color: var(--color-error);
-  border-radius: 8px;
 }
 
-.dark .badge-error {
-  background: rgba(157, 107, 107, 0.2);
-  color: var(--color-error);
+/* Neutral family — exchange, info, draft, default */
+.badge-exchange,
+.badge-info,
+.badge-draft,
+.badge-neutral {
+  background: rgba(41, 64, 80, 0.10);
+  color: var(--color-burgundy);
+}
+.dark .badge-exchange,
+.dark .badge-info,
+.dark .badge-draft,
+.dark .badge-neutral {
+  background: rgba(150, 180, 196, 0.15);
+  color: var(--color-parchment-dim);
 }
 
 /* =============================================================================
