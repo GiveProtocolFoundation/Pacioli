@@ -30,7 +30,7 @@ const TokenButton = memo(function TokenButton({
     <button
       onClick={handleClick}
       className={`w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center ${
-        isSelected ? 'bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20' : ''
+        isSelected ? 'bg-[#294050]/10 dark:bg-[#294050]/20' : ''
       }`}
     >
       {token.iconUrl && (
@@ -46,11 +46,11 @@ const TokenButton = memo(function TokenButton({
           {token.symbol}
         </span>
         {token.contractAddress && (
-          <span className="ml-2 px-1.5 py-0.5 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-[#94a3b8] rounded">
+          <span className="ml-2 px-1.5 py-0.5 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-[#9FB4BE] rounded">
             {token.tokenStandard}
           </span>
         )}
-        <div className="text-sm text-gray-500 dark:text-[#94a3b8]">
+        <div className="text-sm text-gray-500 dark:text-[#9FB4BE]">
           {token.name}
         </div>
       </div>
@@ -157,7 +157,7 @@ const TokenSelector: React.FC<TokenSelectorProps> = ({
         onClick={handleToggle}
         className={`w-full px-4 py-2 text-left border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white ${
           error ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-        } focus:outline-none focus:ring-2 focus:ring-[#c9a961]`}
+        } focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]`}
       >
         {selectedToken && selectedChain ? (
           <div className="flex items-center">
@@ -171,11 +171,11 @@ const TokenSelector: React.FC<TokenSelectorProps> = ({
             )}
             <span className="font-medium">{selectedToken.symbol}</span>
             <span className="mx-2 text-gray-400">-</span>
-            <span className="text-gray-600 dark:text-[#94a3b8]">
+            <span className="text-gray-600 dark:text-[#9FB4BE]">
               {selectedToken.name}
             </span>
             <span className="mx-2 text-gray-400">on</span>
-            <span className="text-gray-600 dark:text-[#94a3b8]">
+            <span className="text-gray-600 dark:text-[#9FB4BE]">
               {selectedChain.chainName}
             </span>
           </div>
@@ -196,7 +196,7 @@ const TokenSelector: React.FC<TokenSelectorProps> = ({
                 value={searchQuery}
                 onChange={handleSearchChange}
                 placeholder="Search tokens..."
-                className="w-full pl-4 pr-16 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
+                className="w-full pl-4 pr-16 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]"
               />
               {searchQuery && (
                 <button
@@ -216,7 +216,7 @@ const TokenSelector: React.FC<TokenSelectorProps> = ({
 
               return (
                 <div key={chainId}>
-                  <div className="px-4 py-2 bg-gray-50 dark:bg-gray-700 text-xs font-semibold text-gray-500 dark:text-[#94a3b8] uppercase tracking-wider sticky top-0">
+                  <div className="px-4 py-2 bg-gray-50 dark:bg-gray-700 text-xs font-semibold text-gray-500 dark:text-[#9FB4BE] uppercase tracking-wider sticky top-0">
                     {chain.chainName}
                   </div>
                   {chainTokens.map(token => (
@@ -232,7 +232,7 @@ const TokenSelector: React.FC<TokenSelectorProps> = ({
             })}
 
             {filteredTokens.length === 0 && (
-              <div className="px-4 py-8 text-center text-gray-500 dark:text-[#94a3b8]">
+              <div className="px-4 py-8 text-center text-gray-500 dark:text-[#9FB4BE]">
                 No tokens found
               </div>
             )}

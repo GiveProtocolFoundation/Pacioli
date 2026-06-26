@@ -47,9 +47,9 @@ export const RecoveryPhraseDisplay: React.FC<RecoveryPhraseDisplayProps> = ({
     <div className="space-y-6">
       {/* Header */}
       <div className="text-center">
-        <div className="w-16 h-16 bg-[#c9a961]/20 dark:bg-[#c9a961]/30 rounded-full flex items-center justify-center mx-auto mb-4">
+        <div className="w-16 h-16 bg-[#5FE3C0]/20 dark:bg-[#5FE3C0]/30 rounded-full flex items-center justify-center mx-auto mb-4">
           <svg
-            className="w-8 h-8 text-[#c9a961] dark:text-[#d4b87a]"
+            className="w-8 h-8 text-[#5FE3C0] dark:text-[#9CF1DC]"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -62,19 +62,19 @@ export const RecoveryPhraseDisplay: React.FC<RecoveryPhraseDisplayProps> = ({
             />
           </svg>
         </div>
-        <h2 className="text-2xl font-bold text-[#1a1815] dark:text-[#f5f3f0] mb-2">
+        <h2 className="text-2xl font-bold text-[#11202B] dark:text-[#EAF3F2] mb-2">
           {t.recovery.title}
         </h2>
-        <p className="text-[#696557] dark:text-[#b8b3ac]">
+        <p className="text-[#294050] dark:text-[#9FB4BE]">
           {t.recovery.subtitle}
         </p>
       </div>
 
       {/* Warning */}
-      <div className="p-4 bg-[#b89968]/10 dark:bg-[#b89968]/20 border border-[#b89968]/30 dark:border-[#b89968]/40 rounded-lg">
+      <div className="p-4 bg-[#E8B36F]/10 dark:bg-[#E8B36F]/20 border border-[#E8B36F]/30 dark:border-[#E8B36F]/40 rounded-lg">
         <div className="flex items-start gap-3">
           <svg
-            className="w-5 h-5 text-[#b89968] flex-shrink-0 mt-0.5"
+            className="w-5 h-5 text-[#E8B36F] flex-shrink-0 mt-0.5"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -87,10 +87,10 @@ export const RecoveryPhraseDisplay: React.FC<RecoveryPhraseDisplayProps> = ({
             />
           </svg>
           <div>
-            <h3 className="font-medium text-[#b89968] dark:text-[#d4b87a]">
+            <h3 className="font-medium text-[#E8B36F] dark:text-[#9CF1DC]">
               {t.recovery.warning}
             </h3>
-            <p className="text-sm text-[#b89968] dark:text-[#c9a961] mt-1">
+            <p className="text-sm text-[#E8B36F] dark:text-[#5FE3C0] mt-1">
               {t.recovery.warningDesc}
             </p>
           </div>
@@ -98,17 +98,17 @@ export const RecoveryPhraseDisplay: React.FC<RecoveryPhraseDisplayProps> = ({
       </div>
 
       {/* Recovery Phrase Grid */}
-      <div className="bg-[#f3f1ed] dark:bg-[#2a2620]/50 rounded-lg p-4">
+      <div className="bg-[#EAF3F2] dark:bg-[#16242F]/50 rounded-lg p-4">
         <div className="grid grid-cols-3 gap-2">
           {numberedWords.map(({ word, position }) => (
             <div
               key={`word-${position}`}
-              className="flex items-center gap-2 p-2 bg-[#fafaf8] dark:bg-[#1a1815] rounded border border-[rgba(201,169,97,0.15)]"
+              className="flex items-center gap-2 p-2 bg-[#F7FAFA] dark:bg-[#11202B] rounded border border-[rgba(95,227,192,0.15)]"
             >
-              <span className="text-xs text-[#a39d94] dark:text-[#696557] w-5">
+              <span className="text-xs text-[#647D8B] dark:text-[#294050] w-5">
                 {position}.
               </span>
-              <span className="font-mono text-sm text-[#1a1815] dark:text-[#f5f3f0]">
+              <span className="font-mono text-sm text-[#11202B] dark:text-[#EAF3F2]">
                 {word}
               </span>
             </div>
@@ -119,7 +119,7 @@ export const RecoveryPhraseDisplay: React.FC<RecoveryPhraseDisplayProps> = ({
         <button
           type="button"
           onClick={handleCopy}
-          className="mt-4 w-full flex items-center justify-center gap-2 py-2 px-4 text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] bg-[#fafaf8] dark:bg-[#1a1815] border border-[rgba(201,169,97,0.15)] rounded-lg hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620] transition-colors"
+          className="mt-4 w-full flex items-center justify-center gap-2 py-2 px-4 text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] bg-[#F7FAFA] dark:bg-[#11202B] border border-[rgba(95,227,192,0.15)] rounded-lg hover:bg-[#EAF3F2] dark:hover:bg-[#16242F] transition-colors"
         >
           {copied ? (
             <>
@@ -165,9 +165,9 @@ export const RecoveryPhraseDisplay: React.FC<RecoveryPhraseDisplayProps> = ({
           type="checkbox"
           checked={confirmed}
           onChange={handleConfirmedChange}
-          className="mt-1 w-4 h-4 text-[#8b4e52] border-[rgba(201,169,97,0.3)] rounded focus:ring-[#c9a961]"
+          className="mt-1 w-4 h-4 text-[#294050] border-[rgba(95,227,192,0.3)] rounded focus:ring-[#5FE3C0]"
         />
-        <span className="text-sm text-[#1a1815] dark:text-[#b8b3ac]">
+        <span className="text-sm text-[#11202B] dark:text-[#9FB4BE]">
           {t.recovery.confirmCheckbox}
         </span>
       </label>
@@ -178,7 +178,7 @@ export const RecoveryPhraseDisplay: React.FC<RecoveryPhraseDisplayProps> = ({
           <button
             type="button"
             onClick={onBack}
-            className="flex-1 py-3 px-4 border border-[rgba(201,169,97,0.15)] text-[#1a1815] dark:text-[#b8b3ac] font-medium rounded-lg hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620] transition-colors"
+            className="flex-1 py-3 px-4 border border-[rgba(95,227,192,0.15)] text-[#11202B] dark:text-[#9FB4BE] font-medium rounded-lg hover:bg-[#EAF3F2] dark:hover:bg-[#16242F] transition-colors"
           >
             {t.common.back}
           </button>
@@ -187,7 +187,7 @@ export const RecoveryPhraseDisplay: React.FC<RecoveryPhraseDisplayProps> = ({
           type="button"
           onClick={onConfirm}
           disabled={!confirmed}
-          className="flex-1 py-3 px-4 bg-[#8b4e52] hover:bg-[#7a4248] text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex-1 py-3 px-4 bg-[#294050] hover:bg-[#1E2F3C] text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {t.common.continue}
         </button>

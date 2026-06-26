@@ -306,15 +306,15 @@ export const TransactionList: React.FC<TransactionListProps> = ({
   const getTypeBadgeColor = (type: string) => {
     switch (type) {
       case 'transfer':
-        return 'bg-[#8b4e52]/10 text-[#8b4e52] dark:bg-[#a86e72]/20 dark:text-[#a86e72]'
+        return 'bg-[#294050]/10 text-[#294050] dark:bg-[#F09988]/20 dark:text-[#F09988]'
       case 'staking':
-        return 'bg-[#c9a961]/10 text-[#c9a961] dark:bg-[#d4b87a]/10 dark:text-[#d4b87a]'
+        return 'bg-[#5FE3C0]/10 text-[#5FE3C0] dark:bg-[#9CF1DC]/10 dark:text-[#9CF1DC]'
       case 'xcm':
         return 'bg-[#8b7355]/10 text-[#8b7355] dark:bg-[#a38a6f]/10 dark:text-[#a38a6f]'
       case 'governance':
         return 'bg-[#7a9b6f]/10 text-[#7a9b6f] dark:bg-[#8faf84]/20 dark:text-[#8faf84]'
       default:
-        return 'bg-[#f3f1ed] text-[#696557] dark:bg-[#2a2620] dark:text-[#b8b3ac]'
+        return 'bg-[#EAF3F2] text-[#294050] dark:bg-[#16242F] dark:text-[#9FB4BE]'
     }
   }
 
@@ -346,16 +346,16 @@ export const TransactionList: React.FC<TransactionListProps> = ({
     if (!show) return null
     return (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-        <div className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg shadow-xl p-6 max-w-md mx-4">
+        <div className="bg-[#F7FAFA] dark:bg-[#0C141B] rounded-lg shadow-xl p-6 max-w-md mx-4">
           <div className="flex items-start mb-4">
             <div className="flex-shrink-0">
-              <AlertCircle className="w-6 h-6 text-[#9d6b6b] dark:text-[#b88585]" />
+              <AlertCircle className="w-6 h-6 text-[#E8836F] dark:text-[#F09988]" />
             </div>
             <div className="ml-3">
-              <h3 className="text-lg font-semibold text-[#1a1815] dark:text-[#f5f3f0] mb-2">
+              <h3 className="text-lg font-semibold text-[#11202B] dark:text-[#EAF3F2] mb-2">
                 Purge Transaction Data?
               </h3>
-              <p className="text-sm text-[#696557] dark:text-[#b8b3ac]">
+              <p className="text-sm text-[#294050] dark:text-[#9FB4BE]">
                 This will permanently delete all {transactionsCount} wallet
                 transactions from IndexedDB. This action cannot be undone. You
                 can re-sync from the blockchain anytime.
@@ -365,13 +365,13 @@ export const TransactionList: React.FC<TransactionListProps> = ({
           <div className="flex justify-end gap-3 mt-6">
             <button
               onClick={onCancel}
-              className="px-4 py-2 text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] bg-[#f3f1ed] dark:bg-[#1a1815] rounded hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620] transition-colors"
+              className="px-4 py-2 text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] bg-[#EAF3F2] dark:bg-[#11202B] rounded hover:bg-[#EAF3F2] dark:hover:bg-[#16242F] transition-colors"
             >
               Cancel
             </button>
             <button
               onClick={onPurge}
-              className="px-4 py-2 text-sm font-medium text-white bg-[#9d6b6b] dark:bg-[#8b5c5c] rounded hover:bg-[#8b5c5c] dark:hover:bg-[#7a4f4f] transition-colors"
+              className="px-4 py-2 text-sm font-medium text-white bg-[#E8836F] dark:bg-[#C56A57] rounded hover:bg-[#C56A57] dark:hover:bg-[#7a4f4f] transition-colors"
             >
               Yes, Purge Data
             </button>
@@ -383,10 +383,10 @@ export const TransactionList: React.FC<TransactionListProps> = ({
 
   if (isLoading) {
     return (
-      <div className="ledger-card ledger-card-financial border border-[rgba(201,169,97,0.15)] p-6">
+      <div className="ledger-card ledger-card-financial border border-[rgba(95,227,192,0.15)] p-6">
         <div className="flex items-center justify-center py-12">
-          <Loader className="w-6 h-6 animate-spin text-[#8b4e52] dark:text-[#a86e72]" />
-          <span className="ml-3 text-[#696557] dark:text-[#b8b3ac]">
+          <Loader className="w-6 h-6 animate-spin text-[#294050] dark:text-[#F09988]" />
+          <span className="ml-3 text-[#294050] dark:text-[#9FB4BE]">
             Loading transaction history...
           </span>
         </div>
@@ -396,14 +396,14 @@ export const TransactionList: React.FC<TransactionListProps> = ({
 
   if (error) {
     return (
-      <div className="ledger-card ledger-card-expense border border-[rgba(201,169,97,0.15)] p-6">
+      <div className="ledger-card ledger-card-expense border border-[rgba(95,227,192,0.15)] p-6">
         <div className="flex items-start">
           <AlertCircle className="w-5 h-5 text-[#dc2626] dark:text-[#ef4444] mr-3 flex-shrink-0 mt-0.5" />
           <div>
             <h3 className="font-semibold text-[#dc2626] dark:text-[#ef4444]">
               Error Loading Transactions
             </h3>
-            <p className="text-sm text-[#696557] dark:text-[#b8b3ac] mt-1">
+            <p className="text-sm text-[#294050] dark:text-[#9FB4BE] mt-1">
               {error}
             </p>
           </div>
@@ -414,13 +414,13 @@ export const TransactionList: React.FC<TransactionListProps> = ({
 
   if (transactions.length === 0) {
     return (
-      <div className="ledger-card ledger-card-wallet border border-[rgba(201,169,97,0.15)] p-6">
+      <div className="ledger-card ledger-card-wallet border border-[rgba(95,227,192,0.15)] p-6">
         <div className="text-center py-12">
-          <AlertCircle className="w-12 h-12 text-[#a39d94] mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-[#1a1815] dark:text-[#f5f3f0] mb-2">
+          <AlertCircle className="w-12 h-12 text-[#647D8B] mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-[#11202B] dark:text-[#EAF3F2] mb-2">
             No Transactions Found
           </h3>
-          <p className="text-sm text-[#696557] dark:text-[#b8b3ac]">
+          <p className="text-sm text-[#294050] dark:text-[#9FB4BE]">
             Connect a wallet and sync to view transaction history
           </p>
         </div>
@@ -429,15 +429,15 @@ export const TransactionList: React.FC<TransactionListProps> = ({
   }
 
   return (
-    <div className="ledger-card ledger-card-financial border border-[rgba(201,169,97,0.15)]">
+    <div className="ledger-card ledger-card-financial border border-[rgba(95,227,192,0.15)]">
       {/* Header */}
-      <div className="px-6 py-4 border-b border-[rgba(201,169,97,0.15)]">
+      <div className="px-6 py-4 border-b border-[rgba(95,227,192,0.15)]">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-semibold text-[#1a1815] dark:text-[#f5f3f0]">
+            <h3 className="text-lg font-semibold text-[#11202B] dark:text-[#EAF3F2]">
               Transaction History
             </h3>
-            <p className="text-sm text-[#696557] dark:text-[#b8b3ac] mt-1">
+            <p className="text-sm text-[#294050] dark:text-[#9FB4BE] mt-1">
               {transactions.length} transaction
               {transactions.length !== 1 ? 's' : ''} found
             </p>
@@ -445,7 +445,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
           <div className="flex items-center gap-3">
             <button
               onClick={exportToCSV}
-              className="text-sm text-[#8b4e52] dark:text-[#a86e72] hover:opacity-90 font-medium transition-opacity inline-flex items-center gap-1.5"
+              className="text-sm text-[#294050] dark:text-[#F09988] hover:opacity-90 font-medium transition-opacity inline-flex items-center gap-1.5"
             >
               <Download className="w-4 h-4" />
               Export CSV
@@ -453,7 +453,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
             <button
               onClick={importToLedger}
               disabled={importing || importSuccess}
-              className="text-sm px-3 py-1.5 bg-[#8b4e52] dark:bg-[#a86e72] text-white hover:opacity-90 font-medium transition-opacity inline-flex items-center gap-1.5 rounded disabled:opacity-50"
+              className="text-sm px-3 py-1.5 bg-[#294050] dark:bg-[#F09988] text-white hover:opacity-90 font-medium transition-opacity inline-flex items-center gap-1.5 rounded disabled:opacity-50"
             >
               {importing ? (
                 <>
@@ -474,7 +474,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
             </button>
             <button
               onClick={handleShowPurgeConfirm}
-              className="text-sm px-3 py-1.5 bg-[#9d6b6b] dark:bg-[#8b5c5c] text-white hover:opacity-90 font-medium transition-opacity inline-flex items-center gap-1.5 rounded"
+              className="text-sm px-3 py-1.5 bg-[#E8836F] dark:bg-[#C56A57] text-white hover:opacity-90 font-medium transition-opacity inline-flex items-center gap-1.5 rounded"
             >
               <Trash2 className="w-4 h-4" />
               Purge Data
@@ -536,7 +536,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
               return (
                 <tr key={tx.id} className="ledger-table-row">
                   {/* Timestamp */}
-                  <td className="ledger-table-cell-text whitespace-nowrap text-sm text-[#696557] dark:text-[#b8b3ac]">
+                  <td className="ledger-table-cell-text whitespace-nowrap text-sm text-[#294050] dark:text-[#9FB4BE]">
                     {formatTimestamp(tx.timestamp)}
                   </td>
 
@@ -565,13 +565,13 @@ export const TransactionList: React.FC<TransactionListProps> = ({
                         {formatAddress(tx.to)}
                       </code>
                     ) : (
-                      <span className="text-[#a39d94]">—</span>
+                      <span className="text-[#647D8B]">—</span>
                     )}
                   </td>
 
                   {/* Amount */}
                   <td className="ledger-table-cell-number whitespace-nowrap text-sm font-semibold tabular-nums text-right">
-                    <span className="text-[#1a1815] dark:text-[#f5f3f0]">
+                    <span className="text-[#11202B] dark:text-[#EAF3F2]">
                       {formatAmount(tx)}
                     </span>
                   </td>
@@ -590,7 +590,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
                             if (e.key === 'Enter') handleCommitPriceEdit(tx.id)
                             if (e.key === 'Escape') handleCancelPriceEdit()
                           }}
-                          className="w-24 text-xs border border-[#c9a961] rounded px-1 py-0.5 bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0]"
+                          className="w-24 text-xs border border-[#5FE3C0] rounded px-1 py-0.5 bg-[#F7FAFA] dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2]"
                           autoFocus
                           placeholder="e.g. 6.50"
                         />
@@ -603,7 +603,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
                         </button>
                         <button
                           onClick={handleCancelPriceEdit}
-                          className="text-[#9d6b6b] dark:text-[#b88585] hover:opacity-80"
+                          className="text-[#E8836F] dark:text-[#F09988] hover:opacity-80"
                           title="Cancel"
                         >
                           <X className="w-3.5 h-3.5" />
@@ -611,7 +611,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
                       </span>
                     ) : (
                       <span className="inline-flex items-center gap-1 group">
-                        <span className="text-xs tabular-nums text-[#696557] dark:text-[#b8b3ac]">
+                        <span className="text-xs tabular-nums text-[#294050] dark:text-[#9FB4BE]">
                           {txWithPrice.pricePerUnitUsd != null
                             ? `$${txWithPrice.pricePerUnitUsd.toFixed(4)}`
                             : '—'}
@@ -619,7 +619,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
                         {onPriceUpdate && (
                           <button
                             onClick={() => handleStartPriceEdit(tx)}
-                            className="opacity-0 group-hover:opacity-100 transition-opacity text-[#8b4e52] dark:text-[#a86e72] hover:opacity-80"
+                            className="opacity-0 group-hover:opacity-100 transition-opacity text-[#294050] dark:text-[#F09988] hover:opacity-80"
                             title="Set acquisition price for cost-basis"
                           >
                             <Pencil className="w-3 h-3" />
@@ -655,7 +655,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
                       href={getExplorerUrl(tx)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-[#8b4e52] dark:text-[#a86e72] hover:opacity-80 transition-opacity inline-flex items-center justify-end"
+                      className="text-[#294050] dark:text-[#F09988] hover:opacity-80 transition-opacity inline-flex items-center justify-end"
                       title="View on Subscan explorer"
                     >
                       <ExternalLink className="w-4 h-4" />
@@ -670,12 +670,12 @@ export const TransactionList: React.FC<TransactionListProps> = ({
 
       {/* Footer */}
       {transactions.length > 10 && (
-        <div className="px-6 py-4 border-t border-[rgba(201,169,97,0.15)] flex items-center justify-between">
-          <p className="text-sm text-[#696557] dark:text-[#b8b3ac]">
+        <div className="px-6 py-4 border-t border-[rgba(95,227,192,0.15)] flex items-center justify-between">
+          <p className="text-sm text-[#294050] dark:text-[#9FB4BE]">
             Showing {Math.min(10, transactions.length)} of {transactions.length}{' '}
             transactions
           </p>
-          <button className="text-sm text-[#8b4e52] dark:text-[#a86e72] hover:opacity-90 font-medium">
+          <button className="text-sm text-[#294050] dark:text-[#F09988] hover:opacity-90 font-medium">
             Load More
           </button>
         </div>

@@ -165,9 +165,9 @@ export const UnlockScreen: React.FC<UnlockScreenProps> = ({ onUnlock }) => {
   // Reset password success view
   if (resetSuccess) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#fafaf8] to-[#ede8e0] dark:from-[#0f0e0c] dark:to-[#1a1815] px-4">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#F7FAFA] to-[#D9E5E4] dark:from-[#0C141B] dark:to-[#11202B] px-4">
         <div className="max-w-md w-full">
-          <div className="bg-[#fafaf8] dark:bg-[#1a1815] rounded-2xl shadow-xl p-8">
+          <div className="bg-[#F7FAFA] dark:bg-[#11202B] rounded-2xl shadow-xl p-8">
             <div className="text-center">
               <div className="w-16 h-16 bg-[#7a9b6f]/20 dark:bg-[#7a9b6f]/30 rounded-full flex items-center justify-center mx-auto mb-4">
                 <svg
@@ -184,10 +184,10 @@ export const UnlockScreen: React.FC<UnlockScreenProps> = ({ onUnlock }) => {
                   />
                 </svg>
               </div>
-              <h1 className="text-2xl font-bold text-[#1a1815] dark:text-[#f5f3f0] mb-2">
+              <h1 className="text-2xl font-bold text-[#11202B] dark:text-[#EAF3F2] mb-2">
                 {t.recovery.resetSuccess}
               </h1>
-              <p className="text-[#696557] dark:text-[#b8b3ac]">
+              <p className="text-[#294050] dark:text-[#9FB4BE]">
                 {t.common.loading}
               </p>
             </div>
@@ -200,13 +200,13 @@ export const UnlockScreen: React.FC<UnlockScreenProps> = ({ onUnlock }) => {
   // Reset password form
   if (view === 'reset') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#fafaf8] to-[#ede8e0] dark:from-[#0f0e0c] dark:to-[#1a1815] px-4">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#F7FAFA] to-[#D9E5E4] dark:from-[#0C141B] dark:to-[#11202B] px-4">
         <div className="max-w-md w-full">
-          <div className="bg-[#fafaf8] dark:bg-[#1a1815] rounded-2xl shadow-xl p-8">
+          <div className="bg-[#F7FAFA] dark:bg-[#11202B] rounded-2xl shadow-xl p-8">
             <div className="text-center mb-8">
-              <div className="w-16 h-16 bg-[#c9a961]/20 dark:bg-[#c9a961]/30 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 bg-[#5FE3C0]/20 dark:bg-[#5FE3C0]/30 rounded-full flex items-center justify-center mx-auto mb-4">
                 <svg
-                  className="w-8 h-8 text-[#c9a961] dark:text-[#d4b87a]"
+                  className="w-8 h-8 text-[#5FE3C0] dark:text-[#9CF1DC]"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -219,10 +219,10 @@ export const UnlockScreen: React.FC<UnlockScreenProps> = ({ onUnlock }) => {
                   />
                 </svg>
               </div>
-              <h1 className="text-2xl font-bold text-[#1a1815] dark:text-[#f5f3f0]">
+              <h1 className="text-2xl font-bold text-[#11202B] dark:text-[#EAF3F2]">
                 {t.recovery.resetTitle}
               </h1>
-              <p className="mt-2 text-sm text-[#696557] dark:text-[#b8b3ac]">
+              <p className="mt-2 text-sm text-[#294050] dark:text-[#9FB4BE]">
                 {t.recovery.resetSubtitle}
               </p>
             </div>
@@ -232,7 +232,7 @@ export const UnlockScreen: React.FC<UnlockScreenProps> = ({ onUnlock }) => {
               <div>
                 <label
                   htmlFor="recoveryPhrase"
-                  className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-1"
+                  className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] mb-1"
                 >
                   {t.recovery.enterPhrase}
                 </label>
@@ -242,7 +242,7 @@ export const UnlockScreen: React.FC<UnlockScreenProps> = ({ onUnlock }) => {
                   onChange={handleRecoveryPhraseChange}
                   disabled={isResetting}
                   rows={3}
-                  className="w-full px-4 py-3 border border-[rgba(201,169,97,0.15)] rounded-lg focus:ring-2 focus:ring-[#c9a961] focus:border-[#c9a961] dark:bg-[#2a2620] dark:text-[#f5f3f0] font-mono text-sm"
+                  className="w-full px-4 py-3 border border-[rgba(95,227,192,0.15)] rounded-lg focus:ring-2 focus:ring-[#5FE3C0] focus:border-[#5FE3C0] dark:bg-[#16242F] dark:text-[#EAF3F2] font-mono text-sm"
                   placeholder={t.recovery.phrasePlaceholder}
                 />
               </div>
@@ -251,7 +251,7 @@ export const UnlockScreen: React.FC<UnlockScreenProps> = ({ onUnlock }) => {
               <div>
                 <label
                   htmlFor="newPassword"
-                  className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-1"
+                  className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] mb-1"
                 >
                   {t.recovery.newPassword}
                 </label>
@@ -261,7 +261,7 @@ export const UnlockScreen: React.FC<UnlockScreenProps> = ({ onUnlock }) => {
                   value={newPassword}
                   onChange={handleNewPasswordChange}
                   disabled={isResetting}
-                  className="w-full px-4 py-3 border border-[rgba(201,169,97,0.15)] rounded-lg focus:ring-2 focus:ring-[#c9a961] focus:border-[#c9a961] dark:bg-[#2a2620] dark:text-[#f5f3f0]"
+                  className="w-full px-4 py-3 border border-[rgba(95,227,192,0.15)] rounded-lg focus:ring-2 focus:ring-[#5FE3C0] focus:border-[#5FE3C0] dark:bg-[#16242F] dark:text-[#EAF3F2]"
                   placeholder="••••••••"
                 />
               </div>
@@ -270,7 +270,7 @@ export const UnlockScreen: React.FC<UnlockScreenProps> = ({ onUnlock }) => {
               <div>
                 <label
                   htmlFor="confirmNewPassword"
-                  className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-1"
+                  className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] mb-1"
                 >
                   {t.recovery.confirmNewPassword}
                 </label>
@@ -280,14 +280,14 @@ export const UnlockScreen: React.FC<UnlockScreenProps> = ({ onUnlock }) => {
                   value={confirmNewPassword}
                   onChange={handleConfirmNewPasswordChange}
                   disabled={isResetting}
-                  className="w-full px-4 py-3 border border-[rgba(201,169,97,0.15)] rounded-lg focus:ring-2 focus:ring-[#c9a961] focus:border-[#c9a961] dark:bg-[#2a2620] dark:text-[#f5f3f0]"
+                  className="w-full px-4 py-3 border border-[rgba(95,227,192,0.15)] rounded-lg focus:ring-2 focus:ring-[#5FE3C0] focus:border-[#5FE3C0] dark:bg-[#16242F] dark:text-[#EAF3F2]"
                   placeholder="••••••••"
                 />
               </div>
 
               {localError && (
-                <div className="p-3 bg-[#9d6b6b]/10 dark:bg-[#9d6b6b]/20 border border-[#9d6b6b]/30 dark:border-[#9d6b6b]/40 rounded-lg">
-                  <p className="text-sm text-[#9d6b6b] dark:text-[#b88585]">
+                <div className="p-3 bg-[#E8836F]/10 dark:bg-[#E8836F]/20 border border-[#E8836F]/30 dark:border-[#E8836F]/40 rounded-lg">
+                  <p className="text-sm text-[#E8836F] dark:text-[#F09988]">
                     {localError}
                   </p>
                 </div>
@@ -296,7 +296,7 @@ export const UnlockScreen: React.FC<UnlockScreenProps> = ({ onUnlock }) => {
               <button
                 type="submit"
                 disabled={isResetting}
-                className="w-full py-3 px-4 bg-[#8b4e52] hover:bg-[#7a4248] text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full py-3 px-4 bg-[#294050] hover:bg-[#1E2F3C] text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isResetting ? t.common.loading : t.recovery.resetButton}
               </button>
@@ -305,7 +305,7 @@ export const UnlockScreen: React.FC<UnlockScreenProps> = ({ onUnlock }) => {
                 type="button"
                 onClick={handleBackToUnlock}
                 disabled={isResetting}
-                className="w-full py-3 px-4 border border-[rgba(201,169,97,0.15)] text-[#1a1815] dark:text-[#b8b3ac] font-medium rounded-lg hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620] transition-colors disabled:opacity-50"
+                className="w-full py-3 px-4 border border-[rgba(95,227,192,0.15)] text-[#11202B] dark:text-[#9FB4BE] font-medium rounded-lg hover:bg-[#EAF3F2] dark:hover:bg-[#16242F] transition-colors disabled:opacity-50"
               >
                 {t.recovery.backToLogin}
               </button>
@@ -318,15 +318,15 @@ export const UnlockScreen: React.FC<UnlockScreenProps> = ({ onUnlock }) => {
 
   // Unlock form (default view)
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#fafaf8] to-[#ede8e0] dark:from-[#0f0e0c] dark:to-[#1a1815] px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#F7FAFA] to-[#D9E5E4] dark:from-[#0C141B] dark:to-[#11202B] px-4">
       <div className="max-w-md w-full">
-        <div className="bg-[#fafaf8] dark:bg-[#1a1815] rounded-2xl shadow-xl p-8">
+        <div className="bg-[#F7FAFA] dark:bg-[#11202B] rounded-2xl shadow-xl p-8">
           {/* Session expired banner */}
           {sessionExpired && (
-            <div className="mb-6 p-4 bg-[#b89968]/10 dark:bg-[#b89968]/20 border border-[#b89968]/30 dark:border-[#b89968]/40 rounded-lg">
+            <div className="mb-6 p-4 bg-[#E8B36F]/10 dark:bg-[#E8B36F]/20 border border-[#E8B36F]/30 dark:border-[#E8B36F]/40 rounded-lg">
               <div className="flex items-start gap-3">
                 <svg
-                  className="w-5 h-5 text-[#b89968] flex-shrink-0 mt-0.5"
+                  className="w-5 h-5 text-[#E8B36F] flex-shrink-0 mt-0.5"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -339,10 +339,10 @@ export const UnlockScreen: React.FC<UnlockScreenProps> = ({ onUnlock }) => {
                   />
                 </svg>
                 <div>
-                  <h3 className="font-medium text-[#b89968] dark:text-[#d4b87a]">
+                  <h3 className="font-medium text-[#E8B36F] dark:text-[#9CF1DC]">
                     {t.unlock.sessionExpired}
                   </h3>
-                  <p className="text-sm text-[#b89968] dark:text-[#c9a961] mt-1">
+                  <p className="text-sm text-[#E8B36F] dark:text-[#5FE3C0] mt-1">
                     {t.unlock.sessionExpiredDesc}
                   </p>
                 </div>
@@ -351,9 +351,9 @@ export const UnlockScreen: React.FC<UnlockScreenProps> = ({ onUnlock }) => {
           )}
 
           <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-[#8b4e52]/20 dark:bg-[#8b4e52]/30 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 bg-[#294050]/20 dark:bg-[#294050]/30 rounded-full flex items-center justify-center mx-auto mb-4">
               <svg
-                className="w-8 h-8 text-[#8b4e52] dark:text-[#a86e72]"
+                className="w-8 h-8 text-[#294050] dark:text-[#F09988]"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -366,10 +366,10 @@ export const UnlockScreen: React.FC<UnlockScreenProps> = ({ onUnlock }) => {
                 />
               </svg>
             </div>
-            <h1 className="text-2xl font-bold text-[#1a1815] dark:text-[#f5f3f0]">
+            <h1 className="text-2xl font-bold text-[#11202B] dark:text-[#EAF3F2]">
               {t.unlock.title}
             </h1>
-            <p className="mt-2 text-sm text-[#696557] dark:text-[#b8b3ac]">
+            <p className="mt-2 text-sm text-[#294050] dark:text-[#9FB4BE]">
               {t.unlock.subtitle}
             </p>
           </div>
@@ -378,7 +378,7 @@ export const UnlockScreen: React.FC<UnlockScreenProps> = ({ onUnlock }) => {
             <div>
               <label
                 htmlFor="password"
-                className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-1"
+                className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] mb-1"
               >
                 {t.unlock.enterPassword}
               </label>
@@ -389,14 +389,14 @@ export const UnlockScreen: React.FC<UnlockScreenProps> = ({ onUnlock }) => {
                 value={password}
                 onChange={handlePasswordChange}
                 disabled={isUnlocking}
-                className="w-full px-4 py-3 border border-[rgba(201,169,97,0.15)] rounded-lg focus:ring-2 focus:ring-[#c9a961] focus:border-[#c9a961] dark:bg-[#2a2620] dark:text-[#f5f3f0]"
+                className="w-full px-4 py-3 border border-[rgba(95,227,192,0.15)] rounded-lg focus:ring-2 focus:ring-[#5FE3C0] focus:border-[#5FE3C0] dark:bg-[#16242F] dark:text-[#EAF3F2]"
                 placeholder="••••••••"
               />
             </div>
 
             {displayError && (
-              <div className="p-3 bg-[#9d6b6b]/10 dark:bg-[#9d6b6b]/20 border border-[#9d6b6b]/30 dark:border-[#9d6b6b]/40 rounded-lg">
-                <p className="text-sm text-[#9d6b6b] dark:text-[#b88585]">
+              <div className="p-3 bg-[#E8836F]/10 dark:bg-[#E8836F]/20 border border-[#E8836F]/30 dark:border-[#E8836F]/40 rounded-lg">
+                <p className="text-sm text-[#E8836F] dark:text-[#F09988]">
                   {displayError}
                 </p>
               </div>
@@ -405,7 +405,7 @@ export const UnlockScreen: React.FC<UnlockScreenProps> = ({ onUnlock }) => {
             <button
               type="submit"
               disabled={isUnlocking}
-              className="w-full py-3 px-4 bg-[#8b4e52] hover:bg-[#7a4248] text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3 px-4 bg-[#294050] hover:bg-[#1E2F3C] text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isUnlocking ? t.common.loading : t.unlock.unlock}
             </button>
@@ -415,7 +415,7 @@ export const UnlockScreen: React.FC<UnlockScreenProps> = ({ onUnlock }) => {
               <button
                 type="button"
                 onClick={handleForgotPassword}
-                className="text-sm text-[#8b4e52] dark:text-[#a86e72] hover:underline"
+                className="text-sm text-[#294050] dark:text-[#F09988] hover:underline"
               >
                 {t.unlock.forgotPassword}
               </button>

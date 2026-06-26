@@ -125,7 +125,7 @@ const BlockchainSelector: React.FC<BlockchainSelectorProps> = ({
     <div ref={dropdownRef} className="relative">
       <label
         htmlFor="blockchain-network"
-        className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
+        className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] mb-2"
       >
         Blockchain Network
       </label>
@@ -136,11 +136,11 @@ const BlockchainSelector: React.FC<BlockchainSelectorProps> = ({
         type="button"
         onClick={handleToggle}
         disabled={disabled}
-        className={`w-full px-4 py-2 border rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-left flex items-center justify-between ${
+        className={`w-full px-4 py-2 border rounded-lg bg-[#F7FAFA] dark:bg-[#11202B] text-left flex items-center justify-between ${
           error
-            ? 'border-[#9d6b6b]'
-            : 'border-[rgba(201,169,97,0.15)] focus:ring-2 focus:ring-[#c9a961]'
-        } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:border-[#c9a961]'} focus:outline-none`}
+            ? 'border-[#E8836F]'
+            : 'border-[rgba(95,227,192,0.15)] focus:ring-2 focus:ring-[#5FE3C0]'
+        } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:border-[#5FE3C0]'} focus:outline-none`}
       >
         <span className="flex items-center">
           {value ? (
@@ -149,40 +149,40 @@ const BlockchainSelector: React.FC<BlockchainSelectorProps> = ({
                 className="w-3 h-3 rounded-full mr-2"
                 style={{ backgroundColor: CHAIN_COLORS[value] }}
               />
-              <span className="text-[#1a1815] dark:text-[#f5f3f0]">
+              <span className="text-[#11202B] dark:text-[#EAF3F2]">
                 {getBlockchainDisplayName(value)}
               </span>
             </>
           ) : (
-            <span className="text-[#a39d94]">Select a blockchain network</span>
+            <span className="text-[#647D8B]">Select a blockchain network</span>
           )}
         </span>
         <ChevronDown
-          className={`w-5 h-5 text-[#a39d94] transition-transform ${isOpen ? 'rotate-180' : ''}`}
+          className={`w-5 h-5 text-[#647D8B] transition-transform ${isOpen ? 'rotate-180' : ''}`}
         />
       </button>
 
-      {error && <p className="mt-1 text-sm text-[#9d6b6b]">{error}</p>}
+      {error && <p className="mt-1 text-sm text-[#E8836F]">{error}</p>}
 
       {/* Dropdown */}
       {isOpen && (
         <div
           role="listbox"
           tabIndex={-1}
-          className="absolute z-50 w-full mt-1 bg-[#fafaf8] dark:bg-[#1a1815] border border-[rgba(201,169,97,0.15)] rounded-lg shadow-lg max-h-80 overflow-hidden"
+          className="absolute z-50 w-full mt-1 bg-[#F7FAFA] dark:bg-[#11202B] border border-[rgba(95,227,192,0.15)] rounded-lg shadow-lg max-h-80 overflow-hidden"
           onKeyDown={handleKeyDown}
         >
           {/* Search Input */}
-          <div className="p-2 border-b border-[rgba(201,169,97,0.15)]">
+          <div className="p-2 border-b border-[rgba(95,227,192,0.15)]">
             <div className="relative">
-              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#a39d94]" />
+              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#647D8B]" />
               <input
                 ref={searchInputRef}
                 type="text"
                 value={searchQuery}
                 onChange={handleSearchChange}
                 placeholder="Search networks..."
-                className="w-full pl-4 pr-10 py-2 text-sm border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#0f0e0c] text-[#1a1815] dark:text-[#f5f3f0] placeholder-[#a39d94] focus:outline-none focus:ring-1 focus:ring-[#c9a961]"
+                className="w-full pl-4 pr-10 py-2 text-sm border border-[rgba(95,227,192,0.15)] rounded-lg bg-[#F7FAFA] dark:bg-[#0C141B] text-[#11202B] dark:text-[#EAF3F2] placeholder-[#647D8B] focus:outline-none focus:ring-1 focus:ring-[#5FE3C0]"
               />
             </div>
           </div>
@@ -191,7 +191,7 @@ const BlockchainSelector: React.FC<BlockchainSelectorProps> = ({
           <div className="max-h-60 overflow-y-auto">
             {Object.entries(filteredGroups).map(([group, chains]) => (
               <div key={group}>
-                <div className="px-4 py-2 text-xs font-semibold text-[#696557] dark:text-[#8b8580] bg-[#f3f1ed] dark:bg-[#0f0e0c] uppercase tracking-wider">
+                <div className="px-4 py-2 text-xs font-semibold text-[#294050] dark:text-[#647D8B] bg-[#EAF3F2] dark:bg-[#0C141B] uppercase tracking-wider">
                   {group}
                 </div>
                 {chains.map(chain => (
@@ -200,9 +200,9 @@ const BlockchainSelector: React.FC<BlockchainSelectorProps> = ({
                     type="button"
                     data-chain={chain}
                     onClick={handleChainClick}
-                    className={`w-full px-4 py-2 text-left flex items-center justify-between hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620] ${
+                    className={`w-full px-4 py-2 text-left flex items-center justify-between hover:bg-[#EAF3F2] dark:hover:bg-[#16242F] ${
                       value === chain
-                        ? 'bg-[#c9a961]/10 dark:bg-[#c9a961]/20'
+                        ? 'bg-[#5FE3C0]/10 dark:bg-[#5FE3C0]/20'
                         : ''
                     }`}
                   >
@@ -211,7 +211,7 @@ const BlockchainSelector: React.FC<BlockchainSelectorProps> = ({
                         className="w-3 h-3 rounded-full mr-3"
                         style={{ backgroundColor: CHAIN_COLORS[chain] }}
                       />
-                      <span className="text-[#1a1815] dark:text-[#f5f3f0]">
+                      <span className="text-[#11202B] dark:text-[#EAF3F2]">
                         {getBlockchainDisplayName(chain)}
                       </span>
                     </span>
@@ -224,7 +224,7 @@ const BlockchainSelector: React.FC<BlockchainSelectorProps> = ({
             ))}
 
             {Object.keys(filteredGroups).length === 0 && (
-              <div className="px-4 py-8 text-center text-[#a39d94]">
+              <div className="px-4 py-8 text-center text-[#647D8B]">
                 No networks found matching &quot;{searchQuery}&quot;
               </div>
             )}

@@ -26,7 +26,7 @@ export const GridSelectionButton: React.FC<GridSelectionButtonProps> = ({
       onClick={onClick}
       className={`w-full p-6 rounded-xl border-2 text-left transition-all duration-200 ${
         isSelected
-          ? 'border-[#8b4e52] bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20'
+          ? 'border-[#294050] bg-[#294050]/10 dark:bg-[#294050]/20'
           : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 bg-white dark:bg-gray-800'
       }`}
     >
@@ -34,14 +34,14 @@ export const GridSelectionButton: React.FC<GridSelectionButtonProps> = ({
         <div
           className={`p-3 rounded-lg ${
             isSelected
-              ? 'bg-[#8b4e52]/20 dark:bg-[#8b4e52]/30'
+              ? 'bg-[#294050]/20 dark:bg-[#294050]/30'
               : 'bg-gray-100 dark:bg-gray-700'
           }`}
         >
           <Icon
             className={`w-6 h-6 ${
               isSelected
-                ? 'text-[#8b4e52] dark:text-[#a86e72]'
+                ? 'text-[#294050] dark:text-[#F09988]'
                 : 'text-gray-600 dark:text-gray-400'
             }`}
           />
@@ -50,7 +50,7 @@ export const GridSelectionButton: React.FC<GridSelectionButtonProps> = ({
           <h3
             className={`font-semibold ${
               isSelected
-                ? 'text-[#8b4e52] dark:text-[#d4b87a]'
+                ? 'text-[#294050] dark:text-[#9CF1DC]'
                 : 'text-gray-900 dark:text-white'
             }`}
           >
@@ -67,7 +67,7 @@ export const GridSelectionButton: React.FC<GridSelectionButtonProps> = ({
         </div>
         {isSelected && (
           <div className="flex-shrink-0">
-            <div className="w-6 h-6 rounded-full bg-[#8b4e52] flex items-center justify-center">
+            <div className="w-6 h-6 rounded-full bg-[#294050] flex items-center justify-center">
               <svg
                 className="w-4 h-4 text-white"
                 fill="none"

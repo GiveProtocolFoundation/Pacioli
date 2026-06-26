@@ -66,15 +66,15 @@ const SubNavItems: React.FC<{
             onClick={onLinkClick}
             className={`flex items-center justify-between w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${
               isSubActive
-                ? 'text-[#7a4d50] dark:text-[#f5f3f0] bg-[rgba(139,78,82,0.1)] dark:bg-[rgba(139,78,82,0.15)] font-medium'
-                : 'text-[#4A4543] dark:text-[#b8b3ac] hover:bg-[rgba(201,169,97,0.05)] dark:hover:bg-[rgba(201,169,97,0.08)] dark:hover:text-[#b8b3ac] font-normal'
+                ? 'text-[#294050] dark:text-[#EAF3F2] bg-[rgba(41,64,80,0.1)] dark:bg-[rgba(41,64,80,0.15)] font-medium'
+                : 'text-[#294050] dark:text-[#9FB4BE] hover:bg-[rgba(95,227,192,0.05)] dark:hover:bg-[rgba(95,227,192,0.08)] dark:hover:text-[#9FB4BE] font-normal'
             }`}
           >
             <span>{subItem.name}</span>
             {subItem.badge != null && subItem.badge > 0 && (
               <span
                 className="inline-flex items-center justify-center rounded-[10px] px-1.5 py-px text-[11px] font-medium leading-none"
-                style={{ backgroundColor: '#C9A84C', color: '#4A3800' }}
+                style={{ backgroundColor: '#5FE3C0', color: '#0C141B' }}
               >
                 {subItem.badge}
               </span>
@@ -101,11 +101,11 @@ const NavItemList: React.FC<{
       ? 'w-full flex items-center justify-between px-3 py-2.5 text-sm rounded-lg transition-colors'
       : 'w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg transition-colors'
     const active = isDesktop
-      ? 'bg-[rgba(139,78,82,0.1)] dark:bg-[rgba(139,78,82,0.15)] text-[#7a4d50] dark:text-[#f5f3f0] font-semibold border-l-[3px] border-[#7a4d50] dark:border-[#8b4e52] -ml-0.5'
-      : 'bg-[rgba(139,78,82,0.1)] text-[#7a4d50] dark:text-[#8b4e52]'
+      ? 'bg-[rgba(41,64,80,0.1)] dark:bg-[rgba(41,64,80,0.15)] text-[#294050] dark:text-[#EAF3F2] font-semibold border-l-[3px] border-[#294050] dark:border-[#294050] -ml-0.5'
+      : 'bg-[rgba(41,64,80,0.1)] text-[#294050] dark:text-[#294050]'
     const inactive = isDesktop
-      ? 'text-[#4A4543] dark:text-[#b8b3ac] hover:bg-[rgba(201,169,97,0.05)] dark:hover:bg-[rgba(201,169,97,0.08)] dark:hover:text-[#b8b3ac] font-medium'
-      : 'text-[#4A4543] dark:text-[#b8b3ac] hover:bg-[rgba(201,169,97,0.05)]'
+      ? 'text-[#294050] dark:text-[#9FB4BE] hover:bg-[rgba(95,227,192,0.05)] dark:hover:bg-[rgba(95,227,192,0.08)] dark:hover:text-[#9FB4BE] font-medium'
+      : 'text-[#294050] dark:text-[#9FB4BE] hover:bg-[rgba(95,227,192,0.05)]'
     return `${base} ${isActive ? active : inactive}`
   }
 
@@ -114,17 +114,17 @@ const NavItemList: React.FC<{
       ? 'w-full flex items-center justify-between px-3 py-2.5 text-sm rounded-lg transition-colors'
       : 'w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg transition-colors'
     const active = isDesktop
-      ? 'bg-[rgba(139,78,82,0.1)] dark:bg-[rgba(139,78,82,0.15)] text-[#7a4d50] dark:text-[#f5f3f0] font-semibold border-l-[3px] border-[#7a4d50] dark:border-[#8b4e52] -ml-0.5'
-      : 'bg-[rgba(139,78,82,0.1)] text-[#7a4d50] dark:text-[#8b4e52]'
+      ? 'bg-[rgba(41,64,80,0.1)] dark:bg-[rgba(41,64,80,0.15)] text-[#294050] dark:text-[#EAF3F2] font-semibold border-l-[3px] border-[#294050] dark:border-[#294050] -ml-0.5'
+      : 'bg-[rgba(41,64,80,0.1)] text-[#294050] dark:text-[#294050]'
     const inactive = isDesktop
-      ? 'text-[#4A4543] dark:text-[#b8b3ac] hover:bg-[rgba(201,169,97,0.05)] dark:hover:bg-[rgba(201,169,97,0.08)] dark:hover:text-[#b8b3ac] font-medium'
-      : 'text-[#4A4543] dark:text-[#b8b3ac] hover:bg-[rgba(201,169,97,0.05)]'
+      ? 'text-[#294050] dark:text-[#9FB4BE] hover:bg-[rgba(95,227,192,0.05)] dark:hover:bg-[rgba(95,227,192,0.08)] dark:hover:text-[#9FB4BE] font-medium'
+      : 'text-[#294050] dark:text-[#9FB4BE] hover:bg-[rgba(95,227,192,0.05)]'
     return `${base} ${isActive ? active : inactive}`
   }
 
   const badgeClass = isDesktop
-    ? 'inline-flex items-center justify-center w-5 h-5 text-xs font-medium text-white bg-[#9d6b6b] dark:bg-[#9d6b6b] rounded-full'
-    : 'inline-flex items-center justify-center w-5 h-5 text-xs font-medium text-white bg-[#9d6b6b] rounded-full'
+    ? 'inline-flex items-center justify-center w-5 h-5 text-xs font-medium text-white bg-[#E8836F] dark:bg-[#E8836F] rounded-full'
+    : 'inline-flex items-center justify-center w-5 h-5 text-xs font-medium text-white bg-[#E8836F] rounded-full'
 
   return (
     <ul className="space-y-1">
@@ -215,14 +215,14 @@ const UserAvatar: React.FC<{
       <img
         src={imgSrc}
         alt="User"
-        className={`${sizeClass} rounded-full object-cover border-2 border-[rgba(201,169,97,0.15)] dark:border-[rgba(201,169,97,0.15)]`}
+        className={`${sizeClass} rounded-full object-cover border-2 border-[rgba(95,227,192,0.15)] dark:border-[rgba(95,227,192,0.15)]`}
       />
     )
   }
 
   return (
-    <div className={`${sizeClass} bg-[#ede8e0] dark:bg-[#2a2620] rounded-full flex items-center justify-center`}>
-      <User className="w-5 h-5 text-[#696557] dark:text-[#b8b3ac]" />
+    <div className={`${sizeClass} bg-[#D9E5E4] dark:bg-[#16242F] rounded-full flex items-center justify-center`}>
+      <User className="w-5 h-5 text-[#294050] dark:text-[#9FB4BE]" />
     </div>
   )
 }
@@ -232,40 +232,40 @@ const UserMenuDropdown: React.FC<{
   userEmail: string
   onLogout: () => void
 }> = ({ displayName, userEmail, onLogout }) => (
-  <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-[#1a1815] rounded-lg shadow-lg border border-[rgba(201,169,97,0.15)] dark:border-[rgba(201,169,97,0.15)] py-1">
-    <div className="px-4 py-3 border-b border-[rgba(201,169,97,0.1)] dark:border-[rgba(201,169,97,0.1)]">
-      <p className="text-sm font-medium text-[#1a1815] dark:text-[#f5f3f0]">
+  <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-[#11202B] rounded-lg shadow-lg border border-[rgba(95,227,192,0.15)] dark:border-[rgba(95,227,192,0.15)] py-1">
+    <div className="px-4 py-3 border-b border-[rgba(95,227,192,0.1)] dark:border-[rgba(95,227,192,0.1)]">
+      <p className="text-sm font-medium text-[#11202B] dark:text-[#EAF3F2]">
         {displayName}
       </p>
-      <p className="text-xs text-[#a39d94] dark:text-[#8b8580] mt-1">
+      <p className="text-xs text-[#647D8B] dark:text-[#647D8B] mt-1">
         {userEmail}
       </p>
     </div>
     <Link
       to="/profile"
-      className="w-full px-4 py-2 text-sm text-left text-[#696557] dark:text-[#b8b3ac] hover:bg-[rgba(201,169,97,0.05)] dark:hover:bg-[rgba(201,169,97,0.08)] flex items-center"
+      className="w-full px-4 py-2 text-sm text-left text-[#294050] dark:text-[#9FB4BE] hover:bg-[rgba(95,227,192,0.05)] dark:hover:bg-[rgba(95,227,192,0.08)] flex items-center"
     >
       <User className="w-4 h-4 mr-3" />
       Your Profile
     </Link>
     <Link
       to="/settings"
-      className="w-full px-4 py-2 text-sm text-left text-[#696557] dark:text-[#b8b3ac] hover:bg-[rgba(201,169,97,0.05)] dark:hover:bg-[rgba(201,169,97,0.08)] flex items-center"
+      className="w-full px-4 py-2 text-sm text-left text-[#294050] dark:text-[#9FB4BE] hover:bg-[rgba(95,227,192,0.05)] dark:hover:bg-[rgba(95,227,192,0.08)] flex items-center"
     >
       <Settings className="w-4 h-4 mr-3" />
       Settings
     </Link>
     <Link
       to="/support"
-      className="w-full px-4 py-2 text-sm text-left text-[#696557] dark:text-[#b8b3ac] hover:bg-[rgba(201,169,97,0.05)] dark:hover:bg-[rgba(201,169,97,0.08)] flex items-center"
+      className="w-full px-4 py-2 text-sm text-left text-[#294050] dark:text-[#9FB4BE] hover:bg-[rgba(95,227,192,0.05)] dark:hover:bg-[rgba(95,227,192,0.08)] flex items-center"
     >
       <HelpCircle className="w-4 h-4 mr-3" />
       Help & Support
     </Link>
-    <div className="border-t border-[rgba(201,169,97,0.1)] dark:border-[rgba(201,169,97,0.1)] mt-1" />
+    <div className="border-t border-[rgba(95,227,192,0.1)] dark:border-[rgba(95,227,192,0.1)] mt-1" />
     <button
       onClick={onLogout}
-      className="w-full px-4 py-2 text-sm text-left text-[#9d6b6b] dark:text-[#9d6b6b] hover:bg-[rgba(201,169,97,0.05)] dark:hover:bg-[rgba(201,169,97,0.08)] flex items-center"
+      className="w-full px-4 py-2 text-sm text-left text-[#E8836F] dark:text-[#E8836F] hover:bg-[rgba(95,227,192,0.05)] dark:hover:bg-[rgba(95,227,192,0.08)] flex items-center"
     >
       <LogOut className="w-4 h-4 mr-3" />
       Sign Out
@@ -296,9 +296,9 @@ const DesktopSidebar: React.FC<{
   displayName,
   userEmail,
 }) => (
-  <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 ledger-sidebar border-r border-[rgba(201,169,97,0.1)] dark:border-[rgba(201,169,97,0.1)]">
+  <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 ledger-sidebar border-r border-[rgba(95,227,192,0.1)] dark:border-[rgba(95,227,192,0.1)]">
     {/* Logo */}
-    <div className="flex items-center h-16 px-3 border-b border-[rgba(201,169,97,0.1)] dark:border-[rgba(201,169,97,0.1)]">
+    <div className="flex items-center h-16 px-3 border-b border-[rgba(95,227,192,0.1)] dark:border-[rgba(95,227,192,0.1)]">
       <div className="flex items-center px-3">
         <img
           src={theme === 'dark' ? PacioliBlackLogo : PacioliWhiteLogo}
@@ -307,12 +307,12 @@ const DesktopSidebar: React.FC<{
         />
         <div className="ml-3 flex flex-col">
           <span
-            className="brand-wordmark text-[#1a1815] dark:text-[#f5f3f0]"
+            className="brand-wordmark text-[#11202B] dark:text-[#EAF3F2]"
             style={{ fontSize: '24px' }}
           >
             Pacioli
           </span>
-          <span className="brand-tagline text-xs text-[#a39d94] dark:text-[#8b8580]">
+          <span className="brand-tagline text-xs text-[#647D8B] dark:text-[#647D8B]">
             Books & Ledgers
           </span>
         </div>
@@ -331,7 +331,7 @@ const DesktopSidebar: React.FC<{
     </nav>
 
     {/* User section at bottom */}
-    <div className="border-t border-[rgba(201,169,97,0.1)] dark:border-[rgba(201,169,97,0.1)] p-4">
+    <div className="border-t border-[rgba(95,227,192,0.1)] dark:border-[rgba(95,227,192,0.1)] p-4">
       <div className="flex items-center">
         <UserAvatar
           userAvatar={userAvatar}
@@ -340,10 +340,10 @@ const DesktopSidebar: React.FC<{
           size="lg"
         />
         <div className="ml-3 flex-1">
-          <p className="text-sm font-medium text-[#1a1815] dark:text-[#f5f3f0]">
+          <p className="text-sm font-medium text-[#11202B] dark:text-[#EAF3F2]">
             {displayName}
           </p>
-          <p className="text-xs text-[#a39d94] dark:text-[#8b8580]">
+          <p className="text-xs text-[#647D8B] dark:text-[#647D8B]">
             {userEmail ||
               (userType === 'organization' ? 'Admin' : 'Personal Account')}
           </p>
@@ -383,7 +383,7 @@ const MobileSidebar: React.FC<{
   <div className="fixed inset-0 z-50 lg:hidden">
     {/* Backdrop */}
     <div
-      className="fixed inset-0 bg-[#1a1815] bg-opacity-75"
+      className="fixed inset-0 bg-[#11202B] bg-opacity-75"
       onClick={onClose}
       onKeyDown={onBackdropKeyDown}
       role="button"
@@ -394,7 +394,7 @@ const MobileSidebar: React.FC<{
     {/* Sidebar panel */}
     <aside className="fixed inset-y-0 left-0 w-64 ledger-sidebar flex flex-col">
       {/* Logo and close button */}
-      <div className="flex items-center justify-between h-16 px-3 border-b border-[rgba(201,169,97,0.1)] dark:border-[rgba(201,169,97,0.1)]">
+      <div className="flex items-center justify-between h-16 px-3 border-b border-[rgba(95,227,192,0.1)] dark:border-[rgba(95,227,192,0.1)]">
         <div className="flex items-center px-3">
           <img
             src={theme === 'dark' ? PacioliBlackLogo : PacioliWhiteLogo}
@@ -403,19 +403,19 @@ const MobileSidebar: React.FC<{
           />
           <div className="ml-3 flex flex-col">
             <span
-              className="brand-wordmark text-[#1a1815] dark:text-[#f5f3f0]"
+              className="brand-wordmark text-[#11202B] dark:text-[#EAF3F2]"
               style={{ fontSize: '24px' }}
             >
               Pacioli
             </span>
-            <span className="brand-tagline text-xs text-[#a39d94] dark:text-[#8b8580]">
+            <span className="brand-tagline text-xs text-[#647D8B] dark:text-[#647D8B]">
               Books & Ledgers
             </span>
           </div>
         </div>
         <button
           onClick={onClose}
-          className="text-[#a39d94] hover:text-[#696557] dark:hover:text-[#b8b3ac]"
+          className="text-[#647D8B] hover:text-[#294050] dark:hover:text-[#9FB4BE]"
         >
           <X className="w-6 h-6" />
         </button>
@@ -434,7 +434,7 @@ const MobileSidebar: React.FC<{
       </nav>
 
       {/* User section */}
-      <div className="border-t border-[rgba(201,169,97,0.1)] dark:border-[rgba(201,169,97,0.1)] p-4">
+      <div className="border-t border-[rgba(95,227,192,0.1)] dark:border-[rgba(95,227,192,0.1)] p-4">
         <div className="flex items-center">
           <UserAvatar
             userAvatar={userAvatar}
@@ -443,10 +443,10 @@ const MobileSidebar: React.FC<{
             size="lg"
           />
           <div className="ml-3 flex-1">
-            <p className="text-sm font-medium text-[#1a1815] dark:text-[#f5f3f0]">
+            <p className="text-sm font-medium text-[#11202B] dark:text-[#EAF3F2]">
               {displayName}
             </p>
-            <p className="text-xs text-[#a39d94] dark:text-[#8b8580]">
+            <p className="text-xs text-[#647D8B] dark:text-[#647D8B]">
               {userEmail ||
                 (userType === 'organization'
                   ? 'Admin'
@@ -489,7 +489,7 @@ const TopBar: React.FC<{
       {/* Mobile menu button */}
       <button
         onClick={onOpenSidebar}
-        className="lg:hidden p-2 text-[#a39d94] hover:text-[#696557] dark:hover:text-[#b8b3ac]"
+        className="lg:hidden p-2 text-[#647D8B] hover:text-[#294050] dark:hover:text-[#9FB4BE]"
       >
         <Menu className="w-6 h-6" />
       </button>
@@ -500,7 +500,7 @@ const TopBar: React.FC<{
           <input
             type="text"
             placeholder="Search transactions, wallets, or reports..."
-            className="ledger-search w-full pl-4 pr-4 py-2 text-[#1a1815] dark:text-[#f5f3f0] placeholder-[#a39d94] dark:placeholder-[#8b8580]"
+            className="ledger-search w-full pl-4 pr-4 py-2 text-[#11202B] dark:text-[#EAF3F2] placeholder-[#647D8B] dark:placeholder-[#647D8B]"
           />
         </div>
       </div>
@@ -510,11 +510,11 @@ const TopBar: React.FC<{
         {/* Notifications */}
         <button
           onClick={onOpenNotifications}
-          className="relative p-2 text-[#a39d94] hover:text-[#696557] dark:hover:text-[#b8b3ac]"
+          className="relative p-2 text-[#647D8B] hover:text-[#294050] dark:hover:text-[#9FB4BE]"
         >
           <Bell className="w-6 h-6" />
           {unreadNotificationCount > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center bg-[#8b4e52] dark:bg-[#8b4e52] rounded-full text-white text-xs font-medium px-1">
+            <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center bg-[#294050] dark:bg-[#294050] rounded-full text-white text-xs font-medium px-1">
               {unreadNotificationCount > 99
                 ? '99+'
                 : unreadNotificationCount}
@@ -523,7 +523,7 @@ const TopBar: React.FC<{
         </button>
 
         {/* Help */}
-        <button className="p-2 text-[#a39d94] hover:text-[#696557] dark:hover:text-[#b8b3ac]">
+        <button className="p-2 text-[#647D8B] hover:text-[#294050] dark:hover:text-[#9FB4BE]">
           <HelpCircle className="w-6 h-6" />
         </button>
 
@@ -531,7 +531,7 @@ const TopBar: React.FC<{
         <button
           type="button"
           onClick={onToggleTheme}
-          className="p-2 text-[#a39d94] hover:text-[#696557] dark:hover:text-[#b8b3ac] transition-colors"
+          className="p-2 text-[#647D8B] hover:text-[#294050] dark:hover:text-[#9FB4BE] transition-colors"
           aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
         >
           {theme === 'light' ? (
@@ -545,13 +545,13 @@ const TopBar: React.FC<{
         <div className="relative">
           <button
             onClick={onToggleUserMenu}
-            className="flex items-center space-x-2 p-2 rounded-lg hover:bg-[rgba(201,169,97,0.05)] dark:hover:bg-[rgba(201,169,97,0.08)]"
+            className="flex items-center space-x-2 p-2 rounded-lg hover:bg-[rgba(95,227,192,0.05)] dark:hover:bg-[rgba(95,227,192,0.08)]"
           >
             <UserAvatar
               userAvatar={userAvatar}
               size="sm"
             />
-            <ChevronDown className="w-4 h-4 text-[#696557] dark:text-[#b8b3ac] hidden sm:block" />
+            <ChevronDown className="w-4 h-4 text-[#294050] dark:text-[#9FB4BE] hidden sm:block" />
           </button>
 
           {/* User dropdown menu */}
@@ -769,7 +769,7 @@ const Navigation: React.FC<NavigationProps> = ({
   )
 
   return (
-    <div className="flex h-screen bg-[#fafaf8] dark:bg-[#0f0e0c]">
+    <div className="flex h-screen bg-[#F7FAFA] dark:bg-[#0C141B]">
       <DesktopSidebar
         theme={theme}
         navItems={navItems}
