@@ -261,13 +261,13 @@ const WalletBalanceChart = ({
         <defs>
           <ChartGradients currencyColors={currencyColors} />
         </defs>
-        <XAxis dataKey="date" stroke="#888888" />
+        <XAxis dataKey="date" stroke="#647D8B" />
         <YAxis tickFormatter={formatYAxisTick} />
         {Object.keys(currencyColors).map(currency => renderArea(currency))}
         <Tooltip
           formatter={tooltipFormatter}
-          contentStyle={{ backgroundColor: '#1F2937' }}
-          itemStyle={{ color: '#f9fafb' }}
+          contentStyle={{ backgroundColor: '#11202B' }}
+          itemStyle={{ color: '#F7FAFA' }}
           labelStyle={{ color: '#e5e7eb' }}
         />
       </AreaChart>
@@ -289,25 +289,25 @@ const PortfolioSummary: React.FC<PortfolioSummaryProps> = ({
   formatCurrency,
   isLoading,
 }) => (
-  <div className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg shadow-sm border border-[rgba(201,169,97,0.15)] p-6 mb-8">
+  <div className="bg-[#F7FAFA] dark:bg-[#0C141B] rounded-lg shadow-sm border border-[rgba(95,227,192,0.15)] p-6 mb-8">
     <div className="flex items-center justify-between">
       <div>
-        <p className="text-sm font-medium text-[#696557] dark:text-[#b8b3ac]">
+        <p className="text-sm font-medium text-[#294050] dark:text-[#9FB4BE]">
           Total Portfolio Value
         </p>
         {isLoading ? (
-          <div className="h-9 w-48 bg-[#f3f1ed] dark:bg-[#1a1815] rounded animate-pulse mt-2" />
+          <div className="h-9 w-48 bg-[#EAF3F2] dark:bg-[#11202B] rounded animate-pulse mt-2" />
         ) : (
-          <p className="text-3xl font-semibold text-[#1a1815] dark:text-[#f5f3f0] mt-2">
+          <p className="text-3xl font-semibold text-[#11202B] dark:text-[#EAF3F2] mt-2">
             {formatCurrency(totalPortfolioValue)}
           </p>
         )}
       </div>
       <div className="text-right">
-        <p className="text-sm font-medium text-[#696557] dark:text-[#b8b3ac]">
+        <p className="text-sm font-medium text-[#294050] dark:text-[#9FB4BE]">
           Active Wallets
         </p>
-        <p className="text-2xl font-semibold text-[#1a1815] dark:text-[#f5f3f0] mt-2">
+        <p className="text-2xl font-semibold text-[#11202B] dark:text-[#EAF3F2] mt-2">
           {walletCount}
         </p>
       </div>
@@ -337,10 +337,10 @@ const BalanceHistorySection: React.FC<BalanceHistorySectionProps> = ({
   formatCurrency,
   hasEnoughData,
 }) => (
-  <div className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg shadow-sm border border-[rgba(201,169,97,0.15)] mb-8">
-    <div className="px-6 py-4 border-b border-[rgba(201,169,97,0.15)]">
+  <div className="bg-[#F7FAFA] dark:bg-[#0C141B] rounded-lg shadow-sm border border-[rgba(95,227,192,0.15)] mb-8">
+    <div className="px-6 py-4 border-b border-[rgba(95,227,192,0.15)]">
       <div className="flex items-center justify-between flex-wrap gap-4">
-        <h2 className="text-lg font-semibold text-[#1a1815] dark:text-[#f5f3f0]">
+        <h2 className="text-lg font-semibold text-[#11202B] dark:text-[#EAF3F2]">
           Balance History
         </h2>
         <div className="flex flex-wrap gap-2">
@@ -351,8 +351,8 @@ const BalanceHistorySection: React.FC<BalanceHistorySectionProps> = ({
               onClick={handlePeriodChange}
               className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${
                 selectedPeriod === option.value
-                  ? 'bg-[#8b4e52] text-white'
-                  : 'bg-[#f3f1ed] dark:bg-[#1a1815] text-[#696557] dark:text-[#b8b3ac] hover:bg-[#ede8e0] dark:hover:bg-[#2a2620]'
+                  ? 'bg-[#294050] text-white'
+                  : 'bg-[#EAF3F2] dark:bg-[#11202B] text-[#294050] dark:text-[#9FB4BE] hover:bg-[#D9E5E4] dark:hover:bg-[#16242F]'
               }`}
             >
               {option.label}
@@ -371,10 +371,10 @@ const BalanceHistorySection: React.FC<BalanceHistorySectionProps> = ({
         />
       ) : (
         <div className="flex flex-col items-center justify-center h-64 text-center">
-          <p className="text-[#696557] dark:text-[#b8b3ac] text-lg font-medium">
+          <p className="text-[#294050] dark:text-[#9FB4BE] text-lg font-medium">
             Insufficient History
           </p>
-          <p className="text-[#696557] dark:text-[#b8b3ac] text-sm mt-2 max-w-md">
+          <p className="text-[#294050] dark:text-[#9FB4BE] text-sm mt-2 max-w-md">
             Balance snapshots are recorded each time you visit this page (at most once per hour).
             The chart will populate as data accumulates over time.
           </p>
@@ -386,15 +386,15 @@ const BalanceHistorySection: React.FC<BalanceHistorySectionProps> = ({
 
 /** Loading skeleton for a wallet card */
 const WalletCardSkeleton: React.FC = () => (
-  <div className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg shadow-sm border border-[rgba(201,169,97,0.15)] p-5 animate-pulse">
+  <div className="bg-[#F7FAFA] dark:bg-[#0C141B] rounded-lg shadow-sm border border-[rgba(95,227,192,0.15)] p-5 animate-pulse">
     <div className="flex items-center justify-between mb-4">
-      <div className="h-5 w-40 bg-[#f3f1ed] dark:bg-[#1a1815] rounded" />
-      <div className="h-4 w-20 bg-[#f3f1ed] dark:bg-[#1a1815] rounded" />
+      <div className="h-5 w-40 bg-[#EAF3F2] dark:bg-[#11202B] rounded" />
+      <div className="h-4 w-20 bg-[#EAF3F2] dark:bg-[#11202B] rounded" />
     </div>
-    <div className="h-4 w-32 bg-[#f3f1ed] dark:bg-[#1a1815] rounded mb-3" />
+    <div className="h-4 w-32 bg-[#EAF3F2] dark:bg-[#11202B] rounded mb-3" />
     <div className="space-y-2">
-      <div className="h-4 w-full bg-[#f3f1ed] dark:bg-[#1a1815] rounded" />
-      <div className="h-4 w-3/4 bg-[#f3f1ed] dark:bg-[#1a1815] rounded" />
+      <div className="h-4 w-full bg-[#EAF3F2] dark:bg-[#11202B] rounded" />
+      <div className="h-4 w-3/4 bg-[#EAF3F2] dark:bg-[#11202B] rounded" />
     </div>
   </div>
 )
@@ -404,16 +404,16 @@ const WalletCard: React.FC<{
   wallet: WalletBalance
   formatCurrency: (value: number) => string
 }> = ({ wallet, formatCurrency }) => (
-  <div className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg shadow-sm border border-[rgba(201,169,97,0.15)] p-5">
+  <div className="bg-[#F7FAFA] dark:bg-[#0C141B] rounded-lg shadow-sm border border-[rgba(95,227,192,0.15)] p-5">
     <div className="flex items-center justify-between mb-1">
-      <h3 className="text-base font-semibold text-[#1a1815] dark:text-[#f5f3f0] truncate mr-2">
+      <h3 className="text-base font-semibold text-[#11202B] dark:text-[#EAF3F2] truncate mr-2">
         {wallet.name}
       </h3>
-      <span className="text-xs font-medium px-2 py-0.5 rounded bg-[#f3f1ed] dark:bg-[#1a1815] text-[#696557] dark:text-[#b8b3ac] whitespace-nowrap">
+      <span className="text-xs font-medium px-2 py-0.5 rounded bg-[#EAF3F2] dark:bg-[#11202B] text-[#294050] dark:text-[#9FB4BE] whitespace-nowrap">
         {wallet.blockchain}
       </span>
     </div>
-    <p className="text-xs text-[#696557] dark:text-[#b8b3ac] font-mono mb-3">
+    <p className="text-xs text-[#294050] dark:text-[#9FB4BE] font-mono mb-3">
       {truncateAddress(wallet.address)}
     </p>
     <div className="space-y-2">
@@ -424,19 +424,19 @@ const WalletCard: React.FC<{
               className="w-2.5 h-2.5 rounded-full inline-block"
               style={{ backgroundColor: getCurrencyColor(symbol) }}
             />
-            <span className="text-sm text-[#1a1815] dark:text-[#f5f3f0]">
+            <span className="text-sm text-[#11202B] dark:text-[#EAF3F2]">
               {data.amount.toLocaleString(undefined, { maximumFractionDigits: 4 })} {symbol}
             </span>
           </div>
-          <span className="text-sm font-medium text-[#696557] dark:text-[#b8b3ac]">
+          <span className="text-sm font-medium text-[#294050] dark:text-[#9FB4BE]">
             {formatCurrency(data.usdValue)}
           </span>
         </div>
       ))}
     </div>
-    <div className="mt-3 pt-3 border-t border-[rgba(201,169,97,0.1)] flex justify-between">
-      <span className="text-sm font-medium text-[#696557] dark:text-[#b8b3ac]">Total</span>
-      <span className="text-sm font-semibold text-[#1a1815] dark:text-[#f5f3f0]">
+    <div className="mt-3 pt-3 border-t border-[rgba(95,227,192,0.1)] flex justify-between">
+      <span className="text-sm font-medium text-[#294050] dark:text-[#9FB4BE]">Total</span>
+      <span className="text-sm font-semibold text-[#11202B] dark:text-[#EAF3F2]">
         {formatCurrency(wallet.totalUsdValue)}
       </span>
     </div>
@@ -511,7 +511,7 @@ const HeaderActions: React.FC<{
       <button
         onClick={onRefresh}
         disabled={isLoading}
-        className="px-4 py-2 text-sm font-medium text-[#696557] dark:text-[#b8b3ac] bg-[#fafaf8] dark:bg-[#1a1815] border border-[rgba(201,169,97,0.15)] rounded-lg hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620] disabled:opacity-50 flex items-center"
+        className="px-4 py-2 text-sm font-medium text-[#294050] dark:text-[#9FB4BE] bg-[#F7FAFA] dark:bg-[#11202B] border border-[rgba(95,227,192,0.15)] rounded-lg hover:bg-[#EAF3F2] dark:hover:bg-[#16242F] disabled:opacity-50 flex items-center"
       >
         <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
         Refresh
@@ -519,7 +519,7 @@ const HeaderActions: React.FC<{
     )}
     <button
       onClick={onConnectWallet}
-      className="px-4 py-2 text-sm font-medium text-white bg-[#8b4e52] rounded-lg hover:bg-[#7a4248] flex items-center"
+      className="px-4 py-2 text-sm font-medium text-white bg-[#294050] rounded-lg hover:bg-[#1E2F3C] flex items-center"
     >
       <Plus className="w-4 h-4 mr-2" />
       Connect Wallet
@@ -534,12 +534,12 @@ const BalancesHeader: React.FC<{
   onRefresh: () => void
   onConnectWallet: () => void
 }> = ({ hasWallets, isLoading, onRefresh, onConnectWallet }) => (
-  <header className="bg-[#fafaf8] dark:bg-[#0f0e0c] border-b border-[rgba(201,169,97,0.15)]">
+  <header className="bg-[#F7FAFA] dark:bg-[#0C141B] border-b border-[rgba(95,227,192,0.15)]">
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
       <div className="flex items-center justify-between">
         <div>
           <h1>Wallet Balances</h1>
-          <p className="text-sm text-[#696557] dark:text-[#b8b3ac] mt-1">
+          <p className="text-sm text-[#294050] dark:text-[#9FB4BE] mt-1">
             Track your cryptocurrency holdings across all wallets
           </p>
         </div>
@@ -708,17 +708,17 @@ const Balances: React.FC = () => {
 
         {/* Empty state — no wallets at all */}
         {!hasWallets && !isLoading && (
-          <div className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg shadow-sm border border-[rgba(201,169,97,0.15)] p-12 text-center mb-8">
-            <Wallet className="w-12 h-12 text-[#b8b3ac] dark:text-[#696557] mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-[#1a1815] dark:text-[#f5f3f0] mb-2">
+          <div className="bg-[#F7FAFA] dark:bg-[#0C141B] rounded-lg shadow-sm border border-[rgba(95,227,192,0.15)] p-12 text-center mb-8">
+            <Wallet className="w-12 h-12 text-[#9FB4BE] dark:text-[#294050] mx-auto mb-4" />
+            <h2 className="text-xl font-semibold text-[#11202B] dark:text-[#EAF3F2] mb-2">
               No Wallets Connected
             </h2>
-            <p className="text-[#696557] dark:text-[#b8b3ac] mb-6 max-w-md mx-auto">
+            <p className="text-[#294050] dark:text-[#9FB4BE] mb-6 max-w-md mx-auto">
               Connect a wallet or add a tracked address to start monitoring your portfolio balances.
             </p>
             <button
               onClick={handleConnectWallet}
-              className="px-6 py-3 text-sm font-medium text-white bg-[#8b4e52] rounded-lg hover:bg-[#7a4248] inline-flex items-center"
+              className="px-6 py-3 text-sm font-medium text-white bg-[#294050] rounded-lg hover:bg-[#1E2F3C] inline-flex items-center"
             >
               <Plus className="w-4 h-4 mr-2" />
               Connect Wallet
@@ -751,7 +751,7 @@ const Balances: React.FC = () => {
 
             {/* Per-Wallet Breakdown */}
             <div className="mb-8">
-              <h2 className="text-lg font-semibold text-[#1a1815] dark:text-[#f5f3f0] mb-4">
+              <h2 className="text-lg font-semibold text-[#11202B] dark:text-[#EAF3F2] mb-4">
                 Wallet Breakdown
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -772,7 +772,7 @@ const Balances: React.FC = () => {
                 )}
               </div>
               {!isLoading && walletBalances.length === 0 && hasWallets && (
-                <p className="text-center text-[#696557] dark:text-[#b8b3ac] py-8">
+                <p className="text-center text-[#294050] dark:text-[#9FB4BE] py-8">
                   Connect wallets to see balances
                 </p>
               )}

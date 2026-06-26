@@ -51,8 +51,8 @@ const ExportDropdown: React.FC<ExportDropdownProps> = ({ transactions }) => {
         disabled={disabled}
         className={`flex items-center gap-2 px-4 py-2 rounded-lg ${
           disabled
-            ? 'bg-[#8b4e52]/50 text-white/50 cursor-not-allowed'
-            : 'bg-[#8b4e52] text-white hover:bg-[#7a4248]'
+            ? 'bg-[#294050]/50 text-white/50 cursor-not-allowed'
+            : 'bg-[#294050] text-white hover:bg-[#1E2F3C]'
         }`}
       >
         <Download className="w-5 h-5" />
@@ -60,20 +60,20 @@ const ExportDropdown: React.FC<ExportDropdownProps> = ({ transactions }) => {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-48 rounded-lg border border-[rgba(201,169,97,0.15)] bg-[#fafaf8] dark:bg-[#1a1815] shadow-lg z-50">
+        <div className="absolute right-0 mt-2 w-48 rounded-lg border border-[rgba(95,227,192,0.15)] bg-[#F7FAFA] dark:bg-[#11202B] shadow-lg z-50">
           <div className="py-1">
             <button
               onClick={handleExportCSV}
-              className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-[#1a1815] dark:text-[#f5f3f0] hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620] transition-colors"
+              className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-[#11202B] dark:text-[#EAF3F2] hover:bg-[#EAF3F2] dark:hover:bg-[#16242F] transition-colors"
             >
-              <FileSpreadsheet className="w-4 h-4 text-[#7a9b6f]" />
+              <FileSpreadsheet className="w-4 h-4 text-[#5FE3C0]" />
               Export as CSV
             </button>
             <button
               onClick={handleExportPDF}
-              className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-[#1a1815] dark:text-[#f5f3f0] hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620] transition-colors"
+              className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-[#11202B] dark:text-[#EAF3F2] hover:bg-[#EAF3F2] dark:hover:bg-[#16242F] transition-colors"
             >
-              <FileText className="w-4 h-4 text-[#8b4e52]" />
+              <FileText className="w-4 h-4 text-[#294050]" />
               Export as PDF
             </button>
           </div>

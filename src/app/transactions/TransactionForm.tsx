@@ -93,24 +93,24 @@ const CounterpartySelector: React.FC<CounterpartySelectorProps> = ({
 }) => {
   if (isTransferBetweenOwnWallets) {
     return (
-      <div className="p-4 bg-[#c9a961]/10 dark:bg-[#c9a961]/20 rounded-lg border border-[#c9a961]/30">
+      <div className="p-4 bg-[#5FE3C0]/10 dark:bg-[#5FE3C0]/20 rounded-lg border border-[#5FE3C0]/30">
         <label
           htmlFor="txn-destination-wallet"
-          className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
+          className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] mb-2"
         >
           <div className="flex items-center">
-            <ArrowRightLeft className="w-4 h-4 mr-2 text-[#8b4e52]" />
+            <ArrowRightLeft className="w-4 h-4 mr-2 text-[#294050]" />
             Destination Wallet
           </div>
         </label>
-        <p className="text-xs text-[#696557] dark:text-[#a39d94] mb-2">
+        <p className="text-xs text-[#294050] dark:text-[#647D8B] mb-2">
           Select the receiving wallet for this internal transfer
         </p>
         <select
           id="txn-destination-wallet"
           value={formData.destinationWallet}
           onChange={handleDestinationWalletChange}
-          className="w-full px-4 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
+          className="w-full px-4 py-2 border border-[rgba(95,227,192,0.15)] rounded-lg bg-[#F7FAFA] dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]"
         >
           <option value="">Select destination wallet...</option>
           {destinationWalletOptions.map(wallet => (
@@ -120,13 +120,13 @@ const CounterpartySelector: React.FC<CounterpartySelectorProps> = ({
           ))}
         </select>
         {destinationWalletOptions.length === 0 && formData.wallet && (
-          <p className="mt-2 text-xs text-[#9d6b6b]">
+          <p className="mt-2 text-xs text-[#E8836F]">
             No other wallets available. Add more wallets in the Wallet
             Manager.
           </p>
         )}
         {!formData.wallet && (
-          <p className="mt-2 text-xs text-[#9d6b6b]">
+          <p className="mt-2 text-xs text-[#E8836F]">
             Please select a source wallet first.
           </p>
         )}
@@ -139,24 +139,24 @@ const CounterpartySelector: React.FC<CounterpartySelectorProps> = ({
     <div>
       <label
         htmlFor="txn-entity"
-        className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
+        className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] mb-2"
       >
         <div className="flex items-center">
           <Users className="w-4 h-4 mr-2" />
           Counterparty (Optional)
         </div>
       </label>
-      <p className="text-xs text-gray-500 dark:text-[#a39d94] mb-2">
+      <p className="text-xs text-gray-500 dark:text-[#647D8B] mb-2">
         Link this transaction to a vendor, customer, or other entity
       </p>
 
       {selectedEntity ? (
-        <div className="flex items-center gap-2 p-3 bg-[#7a9b6f]/10 dark:bg-[#7a9b6f]/20 border border-[#7a9b6f]/30 dark:border-[#7a9b6f]/40 rounded-lg">
+        <div className="flex items-center gap-2 p-3 bg-[#5FE3C0]/10 dark:bg-[#5FE3C0]/20 border border-[#5FE3C0]/30 dark:border-[#5FE3C0]/40 rounded-lg">
           <div className="flex-1">
-            <div className="font-medium text-[#1a1815] dark:text-[#f5f3f0]">
+            <div className="font-medium text-[#11202B] dark:text-[#EAF3F2]">
               {selectedEntity.display_name || selectedEntity.name}
             </div>
-            <div className="text-xs text-gray-500 dark:text-[#a39d94]">
+            <div className="text-xs text-gray-500 dark:text-[#647D8B]">
               {selectedEntity.entity_type.charAt(0).toUpperCase() +
                 selectedEntity.entity_type.slice(1)}
               {selectedEntity.category &&
@@ -166,7 +166,7 @@ const CounterpartySelector: React.FC<CounterpartySelectorProps> = ({
           <button
             type="button"
             onClick={handleClearEntity}
-            className="p-1 text-[#a39d94] hover:text-[#696557] dark:hover:text-[#b8b3ac]"
+            className="p-1 text-[#647D8B] hover:text-[#294050] dark:hover:text-[#9FB4BE]"
           >
             <X className="w-4 h-4" />
           </button>
@@ -174,7 +174,7 @@ const CounterpartySelector: React.FC<CounterpartySelectorProps> = ({
       ) : (
         <div className="relative">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#a39d94]" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#647D8B]" />
             <input
               id="txn-entity"
               type="text"
@@ -183,25 +183,25 @@ const CounterpartySelector: React.FC<CounterpartySelectorProps> = ({
               onFocus={handleEntityInputFocus}
               onBlur={handleEntityInputBlur}
               placeholder="Search entities by name..."
-              className="w-full pl-16 pr-4 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
+              className="w-full pl-16 pr-4 py-2 border border-[rgba(95,227,192,0.15)] rounded-lg bg-[#F7FAFA] dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]"
             />
           </div>
 
           {showEntityDropdown && (
-            <div className="absolute z-10 w-full mt-1 bg-[#fafaf8] dark:bg-[#1a1815] border border-[rgba(201,169,97,0.15)] rounded-lg shadow-lg max-h-60 overflow-y-auto">
+            <div className="absolute z-10 w-full mt-1 bg-[#F7FAFA] dark:bg-[#11202B] border border-[rgba(95,227,192,0.15)] rounded-lg shadow-lg max-h-60 overflow-y-auto">
               {filteredEntities.length > 0 ? (
                 filteredEntities.map(entity => (
                   <button
                     key={entity.id}
                     type="button"
                     onClick={entityClickHandlers[entity.id]}
-                    className="w-full px-4 py-2 text-left hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620] flex items-center justify-between"
+                    className="w-full px-4 py-2 text-left hover:bg-[#EAF3F2] dark:hover:bg-[#16242F] flex items-center justify-between"
                   >
                     <div>
-                      <div className="font-medium text-[#1a1815] dark:text-[#f5f3f0]">
+                      <div className="font-medium text-[#11202B] dark:text-[#EAF3F2]">
                         {entity.display_name || entity.name}
                       </div>
-                      <div className="text-xs text-gray-500 dark:text-[#a39d94]">
+                      <div className="text-xs text-gray-500 dark:text-[#647D8B]">
                         {entity.entity_type.charAt(0).toUpperCase() +
                           entity.entity_type.slice(1)}
                         {entity.category && ` · ${entity.category}`}
@@ -210,11 +210,11 @@ const CounterpartySelector: React.FC<CounterpartySelectorProps> = ({
                   </button>
                 ))
               ) : (
-                <div className="px-4 py-3 text-center text-gray-500 dark:text-[#a39d94]">
+                <div className="px-4 py-3 text-center text-gray-500 dark:text-[#647D8B]">
                   <p className="text-sm">No entities found</p>
                   <a
                     href="/entities"
-                    className="text-xs text-[#8b4e52] dark:text-[#a86e72] hover:underline inline-flex items-center gap-1 mt-1"
+                    className="text-xs text-[#294050] dark:text-[#F09988] hover:underline inline-flex items-center gap-1 mt-1"
                   >
                     <Plus className="w-3 h-3" />
                     Create new entity
@@ -256,8 +256,8 @@ const TransactionClassificationSection: React.FC<TransactionClassificationSectio
   handleTransactionSubcategoryChange,
   handleTransactionTypeCodeChange,
 }) => (
-  <div className="space-y-4 p-4 bg-[#c9a961]/10 dark:bg-[#c9a961]/20 rounded-lg border border-[#c9a961]/30 dark:border-[#c9a961]/40">
-    <h3 className="text-sm font-semibold text-[#8b4e52] dark:text-[#d4b87a] flex items-center">
+  <div className="space-y-4 p-4 bg-[#5FE3C0]/10 dark:bg-[#5FE3C0]/20 rounded-lg border border-[#5FE3C0]/30 dark:border-[#5FE3C0]/40">
+    <h3 className="text-sm font-semibold text-[#294050] dark:text-[#9CF1DC] flex items-center">
       <Tag className="w-4 h-4 mr-2" />
       Transaction Classification
     </h3>
@@ -266,7 +266,7 @@ const TransactionClassificationSection: React.FC<TransactionClassificationSectio
       <div>
         <label
           htmlFor="txn-category"
-          className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
+          className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] mb-2"
         >
           Category
         </label>
@@ -274,7 +274,7 @@ const TransactionClassificationSection: React.FC<TransactionClassificationSectio
           id="txn-category"
           value={formData.transactionCategory || ''}
           onChange={handleCategoryChange}
-          className="w-full px-4 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
+          className="w-full px-4 py-2 border border-[rgba(95,227,192,0.15)] rounded-lg bg-[#F7FAFA] dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]"
         >
           <option value="">Select category</option>
           {availableCategories.map(cat => (
@@ -288,7 +288,7 @@ const TransactionClassificationSection: React.FC<TransactionClassificationSectio
       <div>
         <label
           htmlFor="txn-subcategory"
-          className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
+          className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] mb-2"
         >
           Subcategory
         </label>
@@ -297,7 +297,7 @@ const TransactionClassificationSection: React.FC<TransactionClassificationSectio
           value={formData.transactionSubcategory || ''}
           onChange={handleTransactionSubcategoryChange}
           disabled={!formData.transactionCategory}
-          className="w-full px-4 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961] disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full px-4 py-2 border border-[rgba(95,227,192,0.15)] rounded-lg bg-[#F7FAFA] dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] focus:outline-none focus:ring-2 focus:ring-[#5FE3C0] disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <option value="">Select subcategory</option>
           {availableSubcategories.map(subcat => (
@@ -311,7 +311,7 @@ const TransactionClassificationSection: React.FC<TransactionClassificationSectio
       <div>
         <label
           htmlFor="txn-type"
-          className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
+          className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] mb-2"
         >
           Transaction Type
         </label>
@@ -320,7 +320,7 @@ const TransactionClassificationSection: React.FC<TransactionClassificationSectio
           value={formData.transactionTypeCode || ''}
           onChange={handleTransactionTypeCodeChange}
           disabled={!formData.transactionSubcategory}
-          className="w-full px-4 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961] disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full px-4 py-2 border border-[rgba(95,227,192,0.15)] rounded-lg bg-[#F7FAFA] dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] focus:outline-none focus:ring-2 focus:ring-[#5FE3C0] disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <option value="">Select transaction type</option>
           {availableTransactionTypes.map(txnType => (
@@ -333,24 +333,24 @@ const TransactionClassificationSection: React.FC<TransactionClassificationSectio
     </div>
 
     {selectedTransactionType && (
-      <div className="mt-4 p-3 bg-[#fafaf8] dark:bg-[#1a1815] rounded-lg border border-[rgba(201,169,97,0.15)]">
-        <h4 className="text-xs font-semibold text-[#1a1815] dark:text-[#b8b3ac] mb-2">
+      <div className="mt-4 p-3 bg-[#F7FAFA] dark:bg-[#11202B] rounded-lg border border-[rgba(95,227,192,0.15)]">
+        <h4 className="text-xs font-semibold text-[#11202B] dark:text-[#9FB4BE] mb-2">
           Suggested Accounts
         </h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
           <div>
-            <span className="font-medium text-[#7a9b6f] dark:text-[#8faf84]">
+            <span className="font-medium text-[#5FE3C0] dark:text-[#9CF1DC]">
               Debit:
             </span>
-            <p className="text-[#1a1815] dark:text-[#f5f3f0] mt-1">
+            <p className="text-[#11202B] dark:text-[#EAF3F2] mt-1">
               {selectedTransactionType.debitAccounts}
             </p>
           </div>
           <div>
-            <span className="font-medium text-[#9d6b6b] dark:text-[#b88585]">
+            <span className="font-medium text-[#E8836F] dark:text-[#F09988]">
               Credit:
             </span>
-            <p className="text-[#1a1815] dark:text-[#f5f3f0] mt-1">
+            <p className="text-[#11202B] dark:text-[#EAF3F2] mt-1">
               {selectedTransactionType.creditAccounts}
             </p>
           </div>
@@ -386,7 +386,7 @@ const AmountSection: React.FC<AmountSectionProps> = ({
     <div>
       <label
         htmlFor="txn-amount"
-        className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
+        className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] mb-2"
       >
         <div className="flex items-center">
           <DollarSign className="w-4 h-4 mr-2" />
@@ -400,17 +400,17 @@ const AmountSection: React.FC<AmountSectionProps> = ({
         value={formData.amount}
         onChange={handleAmountInputChange}
         placeholder="0.00"
-        className={`w-full px-4 py-2 border rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] ${
+        className={`w-full px-4 py-2 border rounded-lg bg-[#F7FAFA] dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] ${
           errors.amount
-            ? 'border-[#9d6b6b]'
-            : 'border-[rgba(201,169,97,0.15)]'
-        } focus:outline-none focus:ring-2 focus:ring-[#c9a961]`}
+            ? 'border-[#E8836F]'
+            : 'border-[rgba(95,227,192,0.15)]'
+        } focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]`}
       />
       {errors.amount && (
-        <p className="mt-1 text-sm text-[#9d6b6b]">{errors.amount}</p>
+        <p className="mt-1 text-sm text-[#E8836F]">{errors.amount}</p>
       )}
       {selectedToken && (
-        <p className="mt-1 text-xs text-[#696557] dark:text-[#b8b3ac]">
+        <p className="mt-1 text-xs text-[#294050] dark:text-[#9FB4BE]">
           {selectedToken.symbol} ({selectedToken.decimals} decimals)
         </p>
       )}
@@ -419,7 +419,7 @@ const AmountSection: React.FC<AmountSectionProps> = ({
     <div>
       <label
         htmlFor="txn-fiat-value"
-        className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
+        className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] mb-2"
       >
         {currencySettings.primaryCurrency} Value
       </label>
@@ -430,7 +430,7 @@ const AmountSection: React.FC<AmountSectionProps> = ({
         value={formData.fiatValue}
         onChange={handleFiatValueChange}
         placeholder="0.00"
-        className="w-full px-4 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
+        className="w-full px-4 py-2 border border-[rgba(95,227,192,0.15)] rounded-lg bg-[#F7FAFA] dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]"
       />
     </div>
   </div>
@@ -798,7 +798,7 @@ const TransactionForm: React.FC = () => { // skipcq: JS-R1005 — form with many
     <div>
       <label
         htmlFor="txn-entity"
-        className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
+        className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] mb-2"
       >
         <div className="flex items-center">
           <Users className="w-4 h-4 mr-2" />
@@ -813,41 +813,41 @@ const TransactionForm: React.FC = () => { // skipcq: JS-R1005 — form with many
           onChange={handleEntitySearchChange}
           onFocus={handleEntityInputFocus}
           onBlur={handleEntityInputBlur}
-          className={`w-full px-4 py-2 border rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] ${
+          className={`w-full px-4 py-2 border rounded-lg bg-[#F7FAFA] dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] ${
             errors.entityId
-              ? 'border-[#9d6b6b]'
-              : 'border-[rgba(201,169,97,0.15)]'
-          } focus:outline-none focus:ring-2 focus:ring-[#c9a961]`}
+              ? 'border-[#E8836F]'
+              : 'border-[rgba(95,227,192,0.15)]'
+          } focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]`}
           placeholder="Search entity"
         />
         {entitySearchQuery && (
           <button
             type="button"
             onClick={handleClearEntity}
-            className="absolute right-2 top-2 text-[#a39d94] hover:text-[#696557] dark:hover:text-[#b8b3ac]"
+            className="absolute right-2 top-2 text-[#647D8B] hover:text-[#294050] dark:hover:text-[#9FB4BE]"
           >
             <X className="w-4 h-4" />
           </button>
         )}
         {showEntityDropdown && (
-          <ul className="absolute z-10 mt-1 w-full bg-[#fafaf8] dark:bg-[#1a1815] border border-[rgba(201,169,97,0.15)] rounded-md shadow-lg max-h-60 overflow-auto">
+          <ul className="absolute z-10 mt-1 w-full bg-[#F7FAFA] dark:bg-[#11202B] border border-[rgba(95,227,192,0.15)] rounded-md shadow-lg max-h-60 overflow-auto">
             {filteredEntities.map(entity => (
               <li key={entity.id}>
                 <button
                   type="button"
                   onClick={entityClickHandlers[entity.id]}
-                  className="w-full text-left px-4 py-2 hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620] cursor-pointer"
+                  className="w-full text-left px-4 py-2 hover:bg-[#EAF3F2] dark:hover:bg-[#16242F] cursor-pointer"
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-[#1a1815] dark:text-[#f5f3f0]">
+                      <p className="text-sm text-[#11202B] dark:text-[#EAF3F2]">
                         {entity.display_name || entity.name}
                       </p>
-                      <p className="text-xs text-[#696557] dark:text-[#b8b3ac]">
+                      <p className="text-xs text-[#294050] dark:text-[#9FB4BE]">
                         {entity.name}
                       </p>
                     </div>
-                    <X className="w-4 h-4 text-[#a39d94]" />
+                    <X className="w-4 h-4 text-[#647D8B]" />
                   </div>
                 </button>
               </li>
@@ -856,7 +856,7 @@ const TransactionForm: React.FC = () => { // skipcq: JS-R1005 — form with many
         )}
       </div>
       {errors.entityId && (
-        <p className="mt-1 text-sm text-[#9d6b6b]">{errors.entityId}</p>
+        <p className="mt-1 text-sm text-[#E8836F]">{errors.entityId}</p>
       )}
     </div>
   )
@@ -914,14 +914,14 @@ const TransactionForm: React.FC = () => { // skipcq: JS-R1005 — form with many
   }, [navigate])
 
   return (
-    <div className="min-h-screen bg-[#fafaf8] dark:bg-[#0f0e0c] p-6">
+    <div className="min-h-screen bg-[#F7FAFA] dark:bg-[#0C141B] p-6">
       <div className="max-w-4xl mx-auto">
-        <div className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg shadow-sm border border-[rgba(201,169,97,0.15)]">
-          <div className="px-6 py-4 border-b border-[rgba(201,169,97,0.15)]">
+        <div className="bg-[#F7FAFA] dark:bg-[#0C141B] rounded-lg shadow-sm border border-[rgba(95,227,192,0.15)]">
+          <div className="px-6 py-4 border-b border-[rgba(95,227,192,0.15)]">
             <div className="flex items-center justify-between">
               <div>
                 <h1>{isEditMode ? 'Edit Transaction' : 'New Transaction'}</h1>
-                <p className="text-sm text-[#696557] dark:text-[#b8b3ac] mt-1">
+                <p className="text-sm text-[#294050] dark:text-[#9FB4BE] mt-1">
                   {isEditMode
                     ? 'Update transaction details below'
                     : 'Enter all transaction details below'}
@@ -929,7 +929,7 @@ const TransactionForm: React.FC = () => { // skipcq: JS-R1005 — form with many
               </div>
               <button
                 onClick={handleCancel}
-                className="p-2 text-[#a39d94] hover:text-[#696557] dark:hover:text-[#b8b3ac]"
+                className="p-2 text-[#647D8B] hover:text-[#294050] dark:hover:text-[#9FB4BE]"
               >
                 <X className="w-6 h-6" />
               </button>
@@ -941,7 +941,7 @@ const TransactionForm: React.FC = () => { // skipcq: JS-R1005 — form with many
               <div>
                 <label
                   htmlFor="txn-date"
-                  className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
+                  className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] mb-2"
                 >
                   <div className="flex items-center">
                     <Calendar className="w-4 h-4 mr-2" />
@@ -960,14 +960,14 @@ const TransactionForm: React.FC = () => { // skipcq: JS-R1005 — form with many
                   placeholder="Select date and time"
                 />
                 {errors.date && (
-                  <p className="mt-1 text-sm text-[#9d6b6b]">{errors.date}</p>
+                  <p className="mt-1 text-sm text-[#E8836F]">{errors.date}</p>
                 )}
               </div>
 
               <div>
                 <label
                   htmlFor="txn-wallet"
-                  className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
+                  className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] mb-2"
                 >
                   <div className="flex items-center">
                     <WalletIcon className="w-4 h-4 mr-2" />
@@ -978,11 +978,11 @@ const TransactionForm: React.FC = () => { // skipcq: JS-R1005 — form with many
                   id="txn-wallet"
                   value={formData.wallet}
                   onChange={handleWalletChange}
-                  className={`w-full px-4 py-2 border rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] ${
+                  className={`w-full px-4 py-2 border rounded-lg bg-[#F7FAFA] dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] ${
                     errors.wallet
-                      ? 'border-[#9d6b6b]'
-                      : 'border-[rgba(201,169,97,0.15)]'
-                  } focus:outline-none focus:ring-2 focus:ring-[#c9a961]`}
+                      ? 'border-[#E8836F]'
+                      : 'border-[rgba(95,227,192,0.15)]'
+                  } focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]`}
                 >
                   <option value="">Select wallet</option>
                   {walletOptions.length > 0 ? (
@@ -998,7 +998,7 @@ const TransactionForm: React.FC = () => { // skipcq: JS-R1005 — form with many
                   )}
                 </select>
                 {errors.wallet && (
-                  <p className="mt-1 text-sm text-[#9d6b6b]">{errors.wallet}</p>
+                  <p className="mt-1 text-sm text-[#E8836F]">{errors.wallet}</p>
                 )}
               </div>
             </div>
@@ -1008,7 +1008,7 @@ const TransactionForm: React.FC = () => { // skipcq: JS-R1005 — form with many
             <div>
               <label
                 htmlFor="txn-description"
-                className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
+                className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] mb-2"
               >
                 <div className="flex items-center">
                   <FileText className="w-4 h-4 mr-2" />
@@ -1021,14 +1021,14 @@ const TransactionForm: React.FC = () => { // skipcq: JS-R1005 — form with many
                 value={formData.description}
                 onChange={handleDescriptionChange}
                 placeholder="Enter transaction description"
-                className={`w-full px-4 py-2 border rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] ${
+                className={`w-full px-4 py-2 border rounded-lg bg-[#F7FAFA] dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] ${
                   errors.description
-                    ? 'border-[#9d6b6b]'
-                    : 'border-[rgba(201,169,97,0.15)]'
-                } focus:outline-none focus:ring-2 focus:ring-[#c9a961]`}
+                    ? 'border-[#E8836F]'
+                    : 'border-[rgba(95,227,192,0.15)]'
+                } focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]`}
               />
               {errors.description && (
-                <p className="mt-1 text-sm text-[#9d6b6b]">
+                <p className="mt-1 text-sm text-[#E8836F]">
                   {errors.description}
                 </p>
               )}
@@ -1070,8 +1070,8 @@ const TransactionForm: React.FC = () => { // skipcq: JS-R1005 — form with many
                 error={errors.tokenId}
               />
               {selectedToken && (
-                <div className="mt-2 p-3 bg-[#c9a961]/10 dark:bg-[#c9a961]/20 rounded-lg">
-                  <div className="text-xs text-[#8b4e52] dark:text-[#d4b87a]">
+                <div className="mt-2 p-3 bg-[#5FE3C0]/10 dark:bg-[#5FE3C0]/20 rounded-lg">
+                  <div className="text-xs text-[#294050] dark:text-[#9CF1DC]">
                     <div>
                       <strong>Asset Type:</strong>{' '}
                       {
@@ -1106,7 +1106,7 @@ const TransactionForm: React.FC = () => { // skipcq: JS-R1005 — form with many
             <div>
               <label
                 htmlFor="txn-hash"
-                className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
+                className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] mb-2"
               >
                 Transaction Hash (Optional)
               </label>
@@ -1116,7 +1116,7 @@ const TransactionForm: React.FC = () => { // skipcq: JS-R1005 — form with many
                 value={formData.hash}
                 onChange={handleHashChange}
                 placeholder="0x..."
-                className="w-full px-4 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
+                className="w-full px-4 py-2 border border-[rgba(95,227,192,0.15)] rounded-lg bg-[#F7FAFA] dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]"
               />
             </div>
 
@@ -1124,7 +1124,7 @@ const TransactionForm: React.FC = () => { // skipcq: JS-R1005 — form with many
               <div>
                 <label
                   htmlFor="txn-account-code"
-                  className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
+                  className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] mb-2"
                 >
                   Account Code (Optional)
                 </label>
@@ -1134,14 +1134,14 @@ const TransactionForm: React.FC = () => { // skipcq: JS-R1005 — form with many
                   value={formData.accountCode}
                   onChange={handleAccountCodeChange}
                   placeholder="e.g., 1000"
-                  className="w-full px-4 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
+                  className="w-full px-4 py-2 border border-[rgba(95,227,192,0.15)] rounded-lg bg-[#F7FAFA] dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]"
                 />
               </div>
 
               <div>
                 <label
                   htmlFor="txn-account-name"
-                  className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
+                  className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] mb-2"
                 >
                   Account Name (Optional)
                 </label>
@@ -1151,7 +1151,7 @@ const TransactionForm: React.FC = () => { // skipcq: JS-R1005 — form with many
                   value={formData.accountName}
                   onChange={handleAccountNameChange}
                   placeholder="e.g., Cash"
-                  className="w-full px-4 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
+                  className="w-full px-4 py-2 border border-[rgba(95,227,192,0.15)] rounded-lg bg-[#F7FAFA] dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]"
                 />
               </div>
             </div>
@@ -1159,7 +1159,7 @@ const TransactionForm: React.FC = () => { // skipcq: JS-R1005 — form with many
             <div>
               <label
                 htmlFor="txn-memo"
-                className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
+                className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] mb-2"
               >
                 Memo / Notes (Optional)
               </label>
@@ -1169,22 +1169,22 @@ const TransactionForm: React.FC = () => { // skipcq: JS-R1005 — form with many
                 onChange={handleMemoChange}
                 placeholder="Additional notes or comments about this transaction"
                 rows={3}
-                className="w-full px-4 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
+                className="w-full px-4 py-2 border border-[rgba(95,227,192,0.15)] rounded-lg bg-[#F7FAFA] dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]"
               />
             </div>
 
-            <div className="flex justify-end space-x-3 pt-6 border-t border-[rgba(201,169,97,0.15)]">
+            <div className="flex justify-end space-x-3 pt-6 border-t border-[rgba(95,227,192,0.15)]">
               <button
                 type="button"
                 onClick={handleCancel}
-                className="px-6 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg text-[#1a1815] dark:text-[#b8b3ac] hover:bg-[#f3f1ed] dark:hover:bg-[#1a1815]"
+                className="px-6 py-2 border border-[rgba(95,227,192,0.15)] rounded-lg text-[#11202B] dark:text-[#9FB4BE] hover:bg-[#EAF3F2] dark:hover:bg-[#11202B]"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isSaving}
-                className="flex items-center px-6 py-2 bg-[#8b4e52] text-white rounded-lg hover:bg-[#7a4248] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center px-6 py-2 bg-[#294050] text-white rounded-lg hover:bg-[#1E2F3C] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Save className="w-4 h-4 mr-2" />
                 {isSaving
