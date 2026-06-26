@@ -100,11 +100,11 @@ interface SettingsProps {
 }
 
 const SettingsHeader: React.FC = () => (
-  <header className="bg-[#fafaf8] dark:bg-[#0f0e0c] border-b border-[rgba(201,169,97,0.15)]">
+  <header className="bg-[#F7FAFA] dark:bg-[#0C141B] border-b border-[rgba(95,227,192,0.15)]">
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
       <div>
         <h1>Settings</h1>
-        <p className="text-sm text-[#696557] dark:text-[#b8b3ac] mt-1">
+        <p className="text-sm text-[#294050] dark:text-[#9FB4BE] mt-1">
           Manage your organization settings and preferences
         </p>
       </div>
@@ -127,7 +127,7 @@ const SidebarNavigation: React.FC<{
 
   return (
     <aside className="lg:w-80 flex-shrink-0">
-      <div className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg border border-[rgba(201,169,97,0.15)] p-3">
+      <div className="bg-[#F7FAFA] dark:bg-[#0C141B] rounded-lg border border-[rgba(95,227,192,0.15)] p-3">
         <nav className="space-y-1">
           {items.map(item => {
             const Icon = item.icon
@@ -141,38 +141,38 @@ const SidebarNavigation: React.FC<{
                 disabled={item.comingSoon}
                 className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
                   isActive
-                    ? 'bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 text-[#8b4e52] dark:text-[#a86e72]'
+                    ? 'bg-[#294050]/10 dark:bg-[#294050]/20 text-[#294050] dark:text-[#F09988]'
                     : item.comingSoon
-                      ? 'text-[#a39d94] dark:text-[#696557] cursor-not-allowed'
-                      : 'text-[#1a1815] dark:text-[#f5f3f0] hover:bg-[#f3f1ed] dark:hover:bg-[#1a1815]'
+                      ? 'text-[#647D8B] dark:text-[#294050] cursor-not-allowed'
+                      : 'text-[#11202B] dark:text-[#EAF3F2] hover:bg-[#EAF3F2] dark:hover:bg-[#11202B]'
                 }`}
               >
                 <div className="flex items-center flex-1 text-left">
                   <Icon
                     className={`w-5 h-5 mr-3 flex-shrink-0 ${
                       isActive
-                        ? 'text-[#8b4e52] dark:text-[#a86e72]'
+                        ? 'text-[#294050] dark:text-[#F09988]'
                         : item.comingSoon
-                          ? 'text-[#a39d94] dark:text-[#696557]'
-                          : 'text-[#696557] dark:text-[#b8b3ac]'
+                          ? 'text-[#647D8B] dark:text-[#294050]'
+                          : 'text-[#294050] dark:text-[#9FB4BE]'
                     }`}
                   />
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <span>{item.label}</span>
                       {item.comingSoon && (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-[#f3f1ed] dark:bg-[#2a2620] text-[#696557] dark:text-[#b8b3ac]">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-[#EAF3F2] dark:bg-[#16242F] text-[#294050] dark:text-[#9FB4BE]">
                           Soon
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-[#a39d94] dark:text-[#8b8580] mt-0.5 truncate">
+                    <p className="text-xs text-[#647D8B] dark:text-[#647D8B] mt-0.5 truncate">
                       {item.description}
                     </p>
                   </div>
                 </div>
                 {isActive && !item.comingSoon && (
-                  <ChevronRight className="w-4 h-4 text-[#8b4e52] dark:text-[#a86e72] flex-shrink-0 ml-2" />
+                  <ChevronRight className="w-4 h-4 text-[#294050] dark:text-[#F09988] flex-shrink-0 ml-2" />
                 )}
               </button>
             )
@@ -180,10 +180,10 @@ const SidebarNavigation: React.FC<{
         </nav>
       </div>
 
-      <div className="lg:hidden mt-4 p-3 bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 rounded-lg border border-[#8b4e52]/30 dark:border-[#8b4e52]/40">
+      <div className="lg:hidden mt-4 p-3 bg-[#294050]/10 dark:bg-[#294050]/20 rounded-lg border border-[#294050]/30 dark:border-[#294050]/40">
         <div className="flex items-center text-sm">
-          <SettingsIcon className="w-4 h-4 text-[#8b4e52] dark:text-[#a86e72] mr-2" />
-          <span className="text-[#8b4e52] dark:text-[#a86e72] font-medium">
+          <SettingsIcon className="w-4 h-4 text-[#294050] dark:text-[#F09988] mr-2" />
+          <span className="text-[#294050] dark:text-[#F09988] font-medium">
             {items.find(item => item.id === activeSection)?.label}
           </span>
         </div>
@@ -247,7 +247,7 @@ const Settings: React.FC<SettingsProps> = ({ userType = 'organization' }) => {
 
           {/* Content Area */}
           <main className="flex-1 min-w-0">
-            <div className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg shadow-sm border border-[rgba(201,169,97,0.15)] overflow-hidden">
+            <div className="bg-[#F7FAFA] dark:bg-[#0C141B] rounded-lg shadow-sm border border-[rgba(95,227,192,0.15)] overflow-hidden">
               {ActiveComponent ? (
                 activeSection === 'general' ? (
                   <GeneralSettings userType={userType} />
@@ -256,11 +256,11 @@ const Settings: React.FC<SettingsProps> = ({ userType = 'organization' }) => {
                 )
               ) : (
                 <div className="p-12 text-center">
-                  <SettingsIcon className="mx-auto h-12 w-12 text-[#a39d94]" />
-                  <h3 className="mt-2 text-sm font-medium text-[#1a1815] dark:text-[#f5f3f0]">
+                  <SettingsIcon className="mx-auto h-12 w-12 text-[#647D8B]" />
+                  <h3 className="mt-2 text-sm font-medium text-[#11202B] dark:text-[#EAF3F2]">
                     Coming Soon
                   </h3>
-                  <p className="mt-1 text-sm text-[#696557] dark:text-[#b8b3ac]">
+                  <p className="mt-1 text-sm text-[#294050] dark:text-[#9FB4BE]">
                     This feature is under development.
                   </p>
                 </div>

@@ -383,7 +383,7 @@ const InviteUserModal: React.FC<{
             id="inviteEmail"
             type="email"
             placeholder="user@example.org"
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]"
           />
         </div>
 
@@ -396,7 +396,7 @@ const InviteUserModal: React.FC<{
           </label>
           <select
             id="inviteRole"
-            className="select-input w-full px-3 pr-8 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
+            className="select-input w-full px-3 pr-8 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]"
           >
             {roles.map(role => (
               <option key={role.id} value={role.id}>
@@ -406,10 +406,10 @@ const InviteUserModal: React.FC<{
           </select>
         </div>
 
-        <div className="bg-[#c9a961]/10 dark:bg-[#c9a961]/20 border border-[#c9a961]/30 dark:border-[#c9a961]/40 rounded-lg p-3">
+        <div className="bg-[#5FE3C0]/10 dark:bg-[#5FE3C0]/20 border border-[#5FE3C0]/30 dark:border-[#5FE3C0]/40 rounded-lg p-3">
           <div className="flex">
-            <AlertCircle className="w-5 h-5 text-[#8b4e52] dark:text-[#a86e72] flex-shrink-0" />
-            <p className="ml-3 text-xs text-[#8b4e52] dark:text-[#a86e72]">
+            <AlertCircle className="w-5 h-5 text-[#294050] dark:text-[#F09988] flex-shrink-0" />
+            <p className="ml-3 text-xs text-[#294050] dark:text-[#F09988]">
               An invitation email will be sent to the user with instructions to
               set up their account.
             </p>
@@ -425,7 +425,7 @@ const InviteUserModal: React.FC<{
           </button>
           <button
             onClick={handleSend}
-            className="flex-1 px-4 py-2 text-sm font-medium text-white bg-[#8b4e52] rounded-lg hover:bg-[#7a4248] flex items-center justify-center"
+            className="flex-1 px-4 py-2 text-sm font-medium text-white bg-[#294050] rounded-lg hover:bg-[#1E2F3C] flex items-center justify-center"
           >
             <Mail className="w-4 h-4 mr-2" />
             Send Invite
@@ -456,13 +456,13 @@ const UsersTable: React.FC<UsersTableProps> = ({
           placeholder="Search users..."
           value={searchQuery}
           onChange={handleSearchChange}
-          className="w-full pl-4 pr-10 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
+          className="w-full pl-4 pr-10 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]"
         />
       </div>
       <select
         value={statusFilter}
         onChange={handleStatusFilterChange}
-        className="select-input px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
+        className="select-input px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]"
       >
         <option value="all">All Status</option>
         <option value="active">Active</option>
@@ -477,22 +477,22 @@ const UsersTable: React.FC<UsersTableProps> = ({
         <table className="w-full">
           <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#94a3b8] uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#9FB4BE] uppercase tracking-wider">
                 User
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#94a3b8] uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#9FB4BE] uppercase tracking-wider">
                 Role
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#94a3b8] uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#9FB4BE] uppercase tracking-wider">
                 Status
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#94a3b8] uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#9FB4BE] uppercase tracking-wider">
                 Last Login
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#94a3b8] uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#9FB4BE] uppercase tracking-wider">
                 2FA
               </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-[#94a3b8] uppercase tracking-wider">
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-[#9FB4BE] uppercase tracking-wider">
                 Actions
               </th>
             </tr>
@@ -505,8 +505,8 @@ const UsersTable: React.FC<UsersTableProps> = ({
               >
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
-                    <div className="w-10 h-10 rounded-full bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 flex items-center justify-center">
-                      <span className="text-sm font-medium text-[#8b4e52] dark:text-[#a86e72]">
+                    <div className="w-10 h-10 rounded-full bg-[#294050]/10 dark:bg-[#294050]/20 flex items-center justify-center">
+                      <span className="text-sm font-medium text-[#294050] dark:text-[#F09988]">
                         {user.name
                           .split(' ')
                           .map(n => n[0])
@@ -517,7 +517,7 @@ const UsersTable: React.FC<UsersTableProps> = ({
                       <div className="text-sm font-medium text-gray-900 dark:text-white">
                         {user.name}
                       </div>
-                      <div className="text-sm text-gray-500 dark:text-[#94a3b8]">
+                      <div className="text-sm text-gray-500 dark:text-[#9FB4BE]">
                         {user.email}
                       </div>
                     </div>
@@ -527,14 +527,14 @@ const UsersTable: React.FC<UsersTableProps> = ({
                   <div className="text-sm text-gray-900 dark:text-white">
                     {user.role.name}
                   </div>
-                  <div className="text-xs text-gray-500 dark:text-[#94a3b8]">
+                  <div className="text-xs text-gray-500 dark:text-[#9FB4BE]">
                     {user.role.description}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   {getStatusBadge(user.status)}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-[#94a3b8]">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-[#9FB4BE]">
                   {formatLastLogin(user.lastLogin)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
@@ -565,7 +565,7 @@ const UsersTable: React.FC<UsersTableProps> = ({
           <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">
             No users found
           </h3>
-          <p className="mt-1 text-sm text-gray-500 dark:text-[#94a3b8]">
+          <p className="mt-1 text-sm text-gray-500 dark:text-[#9FB4BE]">
             Try adjusting your search or filters.
           </p>
         </div>
@@ -586,8 +586,8 @@ const RolesView: React.FC<RolesViewProps> = ({ roles, users }) => (
         >
           <div className="flex items-start justify-between mb-4">
             <div className="flex items-center">
-              <div className="w-10 h-10 rounded-lg bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 flex items-center justify-center">
-                <Shield className="w-5 h-5 text-[#8b4e52] dark:text-[#a86e72]" />
+              <div className="w-10 h-10 rounded-lg bg-[#294050]/10 dark:bg-[#294050]/20 flex items-center justify-center">
+                <Shield className="w-5 h-5 text-[#294050] dark:text-[#F09988]" />
               </div>
               <div className="ml-3">
                 <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
@@ -605,7 +605,7 @@ const RolesView: React.FC<RolesViewProps> = ({ roles, users }) => (
             </button>
           </div>
 
-          <p className="text-sm text-gray-500 dark:text-[#94a3b8] mb-4">
+          <p className="text-sm text-gray-500 dark:text-[#9FB4BE] mb-4">
             {role.description}
           </p>
 
@@ -615,12 +615,12 @@ const RolesView: React.FC<RolesViewProps> = ({ roles, users }) => (
                 Module
               </span>
               <div className="flex items-center space-x-2">
-                <span className="text-gray-500 dark:text-[#94a3b8]">View</span>
-                <span className="text-gray-500 dark:text-[#94a3b8]">
+                <span className="text-gray-500 dark:text-[#9FB4BE]">View</span>
+                <span className="text-gray-500 dark:text-[#9FB4BE]">
                   Create
                 </span>
-                <span className="text-gray-500 dark:text-[#94a3b8]">Edit</span>
-                <span className="text-gray-500 dark:text-[#94a3b8]">
+                <span className="text-gray-500 dark:text-[#9FB4BE]">Edit</span>
+                <span className="text-gray-500 dark:text-[#9FB4BE]">
                   Delete
                 </span>
               </div>
@@ -670,12 +670,12 @@ const RolesView: React.FC<RolesViewProps> = ({ roles, users }) => (
           </div>
 
           <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-            <div className="flex items-center justify-between text-xs text-gray-500 dark:text-[#94a3b8]">
+            <div className="flex items-center justify-between text-xs text-gray-500 dark:text-[#9FB4BE]">
               <span>
                 {users.filter(u => u.role.id === role.id).length} users assigned
               </span>
               {!role.isCustom && (
-                <span className="text-[#8b4e52] dark:text-[#a86e72] hover:underline cursor-pointer">
+                <span className="text-[#294050] dark:text-[#F09988] hover:underline cursor-pointer">
                   View details
                 </span>
               )}
@@ -685,14 +685,14 @@ const RolesView: React.FC<RolesViewProps> = ({ roles, users }) => (
       ))}
 
       {/* Create Custom Role Card */}
-      <button className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 hover:border-[#8b4e52] dark:hover:border-[#a86e72] hover:bg-[#8b4e52]/5 dark:hover:bg-[#8b4e52]/10 transition-colors flex flex-col items-center justify-center text-center min-h-[300px]">
+      <button className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 hover:border-[#294050] dark:hover:border-[#F09988] hover:bg-[#294050]/5 dark:hover:bg-[#294050]/10 transition-colors flex flex-col items-center justify-center text-center min-h-[300px]">
         <div className="w-12 h-12 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-3">
           <Shield className="w-6 h-6 text-gray-400" />
         </div>
         <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-1">
           Create Custom Role
         </h3>
-        <p className="text-xs text-gray-500 dark:text-[#94a3b8]">
+        <p className="text-xs text-gray-500 dark:text-[#9FB4BE]">
           Define custom permissions for specific needs
         </p>
       </button>
@@ -700,7 +700,7 @@ const RolesView: React.FC<RolesViewProps> = ({ roles, users }) => (
     {/* Security Settings */}
     <div className="mt-8 border border-gray-200 dark:border-gray-700 rounded-lg p-6 bg-white dark:bg-gray-900">
       <div className="flex items-center mb-4">
-        <Lock className="w-5 h-5 text-[#8b4e52] mr-2" />
+        <Lock className="w-5 h-5 text-[#294050] mr-2" />
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
           Security Settings
         </h3>
@@ -712,7 +712,7 @@ const RolesView: React.FC<RolesViewProps> = ({ roles, users }) => (
             <div className="text-sm font-medium text-gray-900 dark:text-white">
               Require Two-Factor Authentication
             </div>
-            <div className="text-xs text-gray-500 dark:text-[#94a3b8]">
+            <div className="text-xs text-gray-500 dark:text-[#9FB4BE]">
               Force all users to enable 2FA for enhanced security
             </div>
           </div>
@@ -721,7 +721,7 @@ const RolesView: React.FC<RolesViewProps> = ({ roles, users }) => (
             className="relative inline-flex items-center cursor-pointer"
           >
             <input type="checkbox" className="sr-only peer" />
-            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#c9a961]/30 dark:peer-focus:ring-[#c9a961]/50 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-[#8b4e52]" />
+            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#5FE3C0]/30 dark:peer-focus:ring-[#5FE3C0]/50 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-[#294050]" />
           </label>
         </div>
 
@@ -730,11 +730,11 @@ const RolesView: React.FC<RolesViewProps> = ({ roles, users }) => (
             <div className="text-sm font-medium text-gray-900 dark:text-white">
               Session Timeout
             </div>
-            <div className="text-xs text-gray-500 dark:text-[#94a3b8]">
+            <div className="text-xs text-gray-500 dark:text-[#9FB4BE]">
               Automatically log out inactive users
             </div>
           </div>
-          <select className="select-input px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#c9a961]">
+          <select className="select-input px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]">
             <option>15 minutes</option>
             <option>30 minutes</option>
             <option>1 hour</option>
@@ -748,11 +748,11 @@ const RolesView: React.FC<RolesViewProps> = ({ roles, users }) => (
             <div className="text-sm font-medium text-gray-900 dark:text-white">
               IP Whitelisting
             </div>
-            <div className="text-xs text-gray-500 dark:text-[#94a3b8]">
+            <div className="text-xs text-gray-500 dark:text-[#9FB4BE]">
               Restrict access to specific IP addresses
             </div>
           </div>
-          <button className="px-3 py-1.5 text-sm font-medium text-[#8b4e52] dark:text-[#a86e72] hover:bg-[#8b4e52]/5 dark:hover:bg-[#8b4e52]/10 rounded-lg transition-colors">
+          <button className="px-3 py-1.5 text-sm font-medium text-[#294050] dark:text-[#F09988] hover:bg-[#294050]/5 dark:hover:bg-[#294050]/10 rounded-lg transition-colors">
             Configure
           </button>
         </div>
@@ -784,7 +784,7 @@ const UsersPermissions: React.FC = () => {
       active:
         'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 border-green-200 dark:border-green-800',
       inactive:
-        'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-[#94a3b8] border-gray-200 dark:border-gray-700',
+        'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-[#9FB4BE] border-gray-200 dark:border-gray-700',
       pending:
         'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400 border-yellow-200 dark:border-yellow-800',
     }
@@ -854,13 +854,13 @@ const UsersPermissions: React.FC = () => {
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
             Users & Permissions
           </h2>
-          <p className="text-sm text-gray-500 dark:text-[#94a3b8] mt-1">
+          <p className="text-sm text-gray-500 dark:text-[#9FB4BE] mt-1">
             Manage user access and role-based permissions
           </p>
         </div>
         <button
           onClick={handleOpenInviteModal}
-          className="px-4 py-2 text-sm font-medium text-white bg-[#8b4e52] rounded-lg hover:bg-[#7a4248] flex items-center justify-center"
+          className="px-4 py-2 text-sm font-medium text-white bg-[#294050] rounded-lg hover:bg-[#1E2F3C] flex items-center justify-center"
         >
           <UserPlus className="w-4 h-4 mr-2" />
           Invite User
@@ -874,7 +874,7 @@ const UsersPermissions: React.FC = () => {
             onClick={handleViewModeUsers}
             className={`px-4 py-2 text-sm font-medium rounded-md transition-colors flex items-center ${
               viewMode === 'users'
-                ? 'bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 text-[#8b4e52] dark:text-[#a86e72]'
+                ? 'bg-[#294050]/10 dark:bg-[#294050]/20 text-[#294050] dark:text-[#F09988]'
                 : 'text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
             }`}
           >
@@ -885,7 +885,7 @@ const UsersPermissions: React.FC = () => {
             onClick={handleViewModeRoles}
             className={`px-4 py-2 text-sm font-medium rounded-md transition-colors flex items-center ${
               viewMode === 'roles'
-                ? 'bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 text-[#8b4e52] dark:text-[#a86e72]'
+                ? 'bg-[#294050]/10 dark:bg-[#294050]/20 text-[#294050] dark:text-[#F09988]'
                 : 'text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
             }`}
           >

@@ -50,14 +50,14 @@ const ChangeActions: React.FC<ChangeActionsProps> = ({
     <div className="flex items-center space-x-3">
       <button
         onClick={onReset}
-        className="px-4 py-2 text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] bg-[#fafaf8] dark:bg-[#1a1815] border border-[rgba(201,169,97,0.15)] rounded-lg hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620] flex items-center"
+        className="px-4 py-2 text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] bg-[#F7FAFA] dark:bg-[#11202B] border border-[rgba(95,227,192,0.15)] rounded-lg hover:bg-[#EAF3F2] dark:hover:bg-[#16242F] flex items-center"
       >
         <X className="w-4 h-4 mr-2" />
         Cancel
       </button>
       <button
         onClick={onSave}
-        className="px-4 py-2 text-sm font-medium text-white bg-[#8b4e52] rounded-lg hover:bg-[#7a4248] flex items-center"
+        className="px-4 py-2 text-sm font-medium text-white bg-[#294050] rounded-lg hover:bg-[#1E2F3C] flex items-center"
       >
         <Save className="w-4 h-4 mr-2" />
         Save Changes
@@ -75,14 +75,14 @@ const PrimaryCurrencySection: React.FC<PrimaryCurrencySectionProps> = ({
   value,
   onChange,
 }) => (
-  <div className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg shadow-sm border border-[rgba(201,169,97,0.15)] p-6">
+  <div className="bg-[#F7FAFA] dark:bg-[#0C141B] rounded-lg shadow-sm border border-[rgba(95,227,192,0.15)] p-6">
     <div className="flex items-center mb-4">
-      <DollarSign className="w-5 h-5 text-[#8b4e52] mr-2" />
-      <h2 className="text-lg font-semibold text-[#1a1815] dark:text-[#f5f3f0]">
+      <DollarSign className="w-5 h-5 text-[#294050] mr-2" />
+      <h2 className="text-lg font-semibold text-[#11202B] dark:text-[#EAF3F2]">
         Primary Reporting Currency
       </h2>
     </div>
-    <p className="text-sm text-[#696557] dark:text-[#b8b3ac] mb-4">
+    <p className="text-sm text-[#294050] dark:text-[#9FB4BE] mb-4">
       Your primary currency is used for all financial reports and statements.
       Transactions in other currencies will be automatically converted.
     </p>
@@ -90,7 +90,7 @@ const PrimaryCurrencySection: React.FC<PrimaryCurrencySectionProps> = ({
       <div>
         <label
           htmlFor="primary-currency"
-          className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
+          className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] mb-2"
         >
           Select Primary Currency
         </label>
@@ -98,7 +98,7 @@ const PrimaryCurrencySection: React.FC<PrimaryCurrencySectionProps> = ({
           id="primary-currency"
           value={value}
           onChange={onChange}
-          className="select-input w-full px-3 pr-8 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
+          className="select-input w-full px-3 pr-8 py-2 border border-[rgba(95,227,192,0.15)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]"
         >
           <optgroup label="Fiat Currencies">
             {FIAT_CURRENCIES.map(currency => (
@@ -391,14 +391,14 @@ const Currencies: React.FC = () => {
   )
 
   return (
-    <div className="min-h-screen bg-[#fafaf8] dark:bg-[#0f0e0c]">
+    <div className="min-h-screen bg-[#F7FAFA] dark:bg-[#0C141B]">
       {/* Header */}
-      <header className="bg-[#fafaf8] dark:bg-[#0f0e0c] border-b border-[rgba(201,169,97,0.15)]">
+      <header className="bg-[#F7FAFA] dark:bg-[#0C141B] border-b border-[rgba(95,227,192,0.15)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div>
               <h1>Currency Settings</h1>
-              <p className="text-sm text-[#696557] dark:text-[#b8b3ac] mt-1">
+              <p className="text-sm text-[#294050] dark:text-[#9FB4BE] mt-1">
                 Configure your currency preferences and conversion settings
               </p>
             </div>
@@ -421,21 +421,21 @@ const Currencies: React.FC = () => {
           />
 
           {/* Additional Reporting Currencies */}
-          <div className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg shadow-sm border border-[rgba(201,169,97,0.15)] p-6">
+          <div className="bg-[#F7FAFA] dark:bg-[#0C141B] rounded-lg shadow-sm border border-[rgba(95,227,192,0.15)] p-6">
             <div className="flex items-center mb-4">
-              <TrendingUp className="w-5 h-5 text-[#8b4e52] mr-2" />
-              <h2 className="text-lg font-semibold text-[#1a1815] dark:text-[#f5f3f0]">
+              <TrendingUp className="w-5 h-5 text-[#294050] mr-2" />
+              <h2 className="text-lg font-semibold text-[#11202B] dark:text-[#EAF3F2]">
                 Additional Reporting Currencies
               </h2>
             </div>
-            <p className="text-sm text-[#696557] dark:text-[#b8b3ac] mb-4">
+            <p className="text-sm text-[#294050] dark:text-[#9FB4BE] mb-4">
               Select additional currencies to include in your reports. Values
               will be converted automatically based on current exchange rates.
             </p>
 
             <div className="space-y-4">
               <div>
-                <h3 className="text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-3">
+                <h3 className="text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] mb-3">
                   Fiat Currencies
                 </h3>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
@@ -450,8 +450,8 @@ const Currencies: React.FC = () => {
                         localSettings.reportingCurrencies.includes(
                           currency.value
                         )
-                          ? 'bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 border-[#8b4e52] dark:border-[#a86e72] text-[#8b4e52] dark:text-[#a86e72]'
-                          : 'bg-[#fafaf8] dark:bg-[#1a1815] border-[rgba(201,169,97,0.15)] text-[#1a1815] dark:text-[#b8b3ac] hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620]'
+                          ? 'bg-[#294050]/10 dark:bg-[#294050]/20 border-[#294050] dark:border-[#F09988] text-[#294050] dark:text-[#F09988]'
+                          : 'bg-[#F7FAFA] dark:bg-[#11202B] border-[rgba(95,227,192,0.15)] text-[#11202B] dark:text-[#9FB4BE] hover:bg-[#EAF3F2] dark:hover:bg-[#16242F]'
                       }`}
                     >
                       {currency.value}
@@ -461,7 +461,7 @@ const Currencies: React.FC = () => {
               </div>
 
               <div>
-                <h3 className="text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-3">
+                <h3 className="text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] mb-3">
                   Cryptocurrencies
                 </h3>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
@@ -476,8 +476,8 @@ const Currencies: React.FC = () => {
                         localSettings.reportingCurrencies.includes(
                           currency.value
                         )
-                          ? 'bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 border-[#8b4e52] dark:border-[#a86e72] text-[#8b4e52] dark:text-[#a86e72]'
-                          : 'bg-[#fafaf8] dark:bg-[#1a1815] border-[rgba(201,169,97,0.15)] text-[#1a1815] dark:text-[#b8b3ac] hover:bg-[#f3f1ed] dark:hover:bg-[#2a2620]'
+                          ? 'bg-[#294050]/10 dark:bg-[#294050]/20 border-[#294050] dark:border-[#F09988] text-[#294050] dark:text-[#F09988]'
+                          : 'bg-[#F7FAFA] dark:bg-[#11202B] border-[rgba(95,227,192,0.15)] text-[#11202B] dark:text-[#9FB4BE] hover:bg-[#EAF3F2] dark:hover:bg-[#16242F]'
                       }`}
                     >
                       {currency.value}
@@ -487,8 +487,8 @@ const Currencies: React.FC = () => {
               </div>
 
               {localSettings.reportingCurrencies.length > 0 && (
-                <div className="mt-4 p-3 bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 rounded-lg">
-                  <p className="text-sm text-[#8b4e52] dark:text-[#a86e72]">
+                <div className="mt-4 p-3 bg-[#294050]/10 dark:bg-[#294050]/20 rounded-lg">
+                  <p className="text-sm text-[#294050] dark:text-[#F09988]">
                     <strong>Selected:</strong>{' '}
                     {localSettings.reportingCurrencies.join(', ')}
                   </p>
@@ -498,17 +498,17 @@ const Currencies: React.FC = () => {
           </div>
 
           {/* Conversion Settings */}
-          <div className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg shadow-sm border border-[rgba(201,169,97,0.15)] p-6">
+          <div className="bg-[#F7FAFA] dark:bg-[#0C141B] rounded-lg shadow-sm border border-[rgba(95,227,192,0.15)] p-6">
             <div className="flex items-center mb-4">
-              <SettingsIcon className="w-5 h-5 text-[#8b4e52] mr-2" />
-              <h2 className="text-lg font-semibold text-[#1a1815] dark:text-[#f5f3f0]">
+              <SettingsIcon className="w-5 h-5 text-[#294050] mr-2" />
+              <h2 className="text-lg font-semibold text-[#11202B] dark:text-[#EAF3F2]">
                 Conversion Settings
               </h2>
             </div>
 
             <div className="space-y-4">
               <div>
-                <div className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2">
+                <div className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] mb-2">
                   Conversion Method
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -517,14 +517,14 @@ const Currencies: React.FC = () => {
                     onClick={handleConversionMethodChange}
                     className={`p-4 rounded-lg border-2 transition-colors ${
                       localSettings.conversionMethod === 'spot'
-                        ? 'border-[#8b4e52] dark:border-[#a86e72] bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20'
-                        : 'border-[rgba(201,169,97,0.15)] hover:border-[rgba(201,169,97,0.15)] dark:hover:border-gray-600 bg-[#fafaf8] dark:bg-[#1a1815]'
+                        ? 'border-[#294050] dark:border-[#F09988] bg-[#294050]/10 dark:bg-[#294050]/20'
+                        : 'border-[rgba(95,227,192,0.15)] hover:border-[rgba(95,227,192,0.15)] dark:hover:border-gray-600 bg-[#F7FAFA] dark:bg-[#11202B]'
                     }`}
                   >
-                    <div className="font-medium text-[#1a1815] dark:text-[#f5f3f0] mb-1">
+                    <div className="font-medium text-[#11202B] dark:text-[#EAF3F2] mb-1">
                       Spot Rate
                     </div>
-                    <div className="text-xs text-[#696557] dark:text-[#b8b3ac]">
+                    <div className="text-xs text-[#294050] dark:text-[#9FB4BE]">
                       Use current exchange rate for all conversions
                     </div>
                   </button>
@@ -533,14 +533,14 @@ const Currencies: React.FC = () => {
                     onClick={handleConversionMethodChange}
                     className={`p-4 rounded-lg border-2 transition-colors ${
                       localSettings.conversionMethod === 'historical'
-                        ? 'border-[#8b4e52] dark:border-[#a86e72] bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20'
-                        : 'border-[rgba(201,169,97,0.15)] hover:border-[rgba(201,169,97,0.15)] dark:hover:border-gray-600 bg-[#fafaf8] dark:bg-[#1a1815]'
+                        ? 'border-[#294050] dark:border-[#F09988] bg-[#294050]/10 dark:bg-[#294050]/20'
+                        : 'border-[rgba(95,227,192,0.15)] hover:border-[rgba(95,227,192,0.15)] dark:hover:border-gray-600 bg-[#F7FAFA] dark:bg-[#11202B]'
                     }`}
                   >
-                    <div className="font-medium text-[#1a1815] dark:text-[#f5f3f0] mb-1">
+                    <div className="font-medium text-[#11202B] dark:text-[#EAF3F2] mb-1">
                       Historical Rate
                     </div>
-                    <div className="text-xs text-[#696557] dark:text-[#b8b3ac]">
+                    <div className="text-xs text-[#294050] dark:text-[#9FB4BE]">
                       Use rate at transaction time (recommended)
                     </div>
                   </button>
@@ -549,14 +549,14 @@ const Currencies: React.FC = () => {
                     onClick={handleConversionMethodChange}
                     className={`p-4 rounded-lg border-2 transition-colors ${
                       localSettings.conversionMethod === 'fixed'
-                        ? 'border-[#8b4e52] dark:border-[#a86e72] bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20'
-                        : 'border-[rgba(201,169,97,0.15)] hover:border-[rgba(201,169,97,0.15)] dark:hover:border-gray-600 bg-[#fafaf8] dark:bg-[#1a1815]'
+                        ? 'border-[#294050] dark:border-[#F09988] bg-[#294050]/10 dark:bg-[#294050]/20'
+                        : 'border-[rgba(95,227,192,0.15)] hover:border-[rgba(95,227,192,0.15)] dark:hover:border-gray-600 bg-[#F7FAFA] dark:bg-[#11202B]'
                     }`}
                   >
-                    <div className="font-medium text-[#1a1815] dark:text-[#f5f3f0] mb-1">
+                    <div className="font-medium text-[#11202B] dark:text-[#EAF3F2] mb-1">
                       Fixed Rate
                     </div>
-                    <div className="text-xs text-[#696557] dark:text-[#b8b3ac]">
+                    <div className="text-xs text-[#294050] dark:text-[#9FB4BE]">
                       Use manually set exchange rates
                     </div>
                   </button>
@@ -569,9 +569,9 @@ const Currencies: React.FC = () => {
                     type="checkbox"
                     checked={localSettings.autoConvert}
                     onChange={handleAutoConvertChange}
-                    className="w-4 h-4 text-[#8b4e52] border-[rgba(201,169,97,0.15)] rounded focus:ring-[#c9a961]"
+                    className="w-4 h-4 text-[#294050] border-[rgba(95,227,192,0.15)] rounded focus:ring-[#5FE3C0]"
                   />
-                  <span className="ml-2 text-sm text-[#1a1815] dark:text-[#b8b3ac]">
+                  <span className="ml-2 text-sm text-[#11202B] dark:text-[#9FB4BE]">
                     Automatically convert transactions to primary currency
                   </span>
                 </label>
@@ -583,9 +583,9 @@ const Currencies: React.FC = () => {
                     type="checkbox"
                     checked={localSettings.cacheExchangeRates}
                     onChange={handleCacheRatesChange}
-                    className="w-4 h-4 text-[#8b4e52] border-[rgba(201,169,97,0.15)] rounded focus:ring-[#c9a961]"
+                    className="w-4 h-4 text-[#294050] border-[rgba(95,227,192,0.15)] rounded focus:ring-[#5FE3C0]"
                   />
-                  <span className="ml-2 text-sm text-[#1a1815] dark:text-[#b8b3ac]">
+                  <span className="ml-2 text-sm text-[#11202B] dark:text-[#9FB4BE]">
                     Cache exchange rates for better performance
                   </span>
                 </label>
@@ -594,10 +594,10 @@ const Currencies: React.FC = () => {
           </div>
 
           {/* Display Preferences */}
-          <div className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg shadow-sm border border-[rgba(201,169,97,0.15)] p-6">
+          <div className="bg-[#F7FAFA] dark:bg-[#0C141B] rounded-lg shadow-sm border border-[rgba(95,227,192,0.15)] p-6">
             <div className="flex items-center mb-4">
-              <Eye className="w-5 h-5 text-[#8b4e52] mr-2" />
-              <h2 className="text-lg font-semibold text-[#1a1815] dark:text-[#f5f3f0]">
+              <Eye className="w-5 h-5 text-[#294050] mr-2" />
+              <h2 className="text-lg font-semibold text-[#11202B] dark:text-[#EAF3F2]">
                 Display Preferences
               </h2>
             </div>
@@ -606,7 +606,7 @@ const Currencies: React.FC = () => {
               <div>
                 <label
                   htmlFor="currency-display-format"
-                  className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
+                  className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] mb-2"
                 >
                   Currency Display Format
                 </label>
@@ -614,7 +614,7 @@ const Currencies: React.FC = () => {
                   id="currency-display-format"
                   value={localSettings.currencyDisplayFormat}
                   onChange={handleDisplayFormatChange}
-                  className="select-input w-full px-3 pr-8 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
+                  className="select-input w-full px-3 pr-8 py-2 border border-[rgba(95,227,192,0.15)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]"
                 >
                   <option value="symbol">Symbol ($1,234.56)</option>
                   <option value="code">Code (1,234.56 USD)</option>
@@ -625,7 +625,7 @@ const Currencies: React.FC = () => {
               <div>
                 <label
                   htmlFor="decimal-places"
-                  className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
+                  className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] mb-2"
                 >
                   Decimal Places
                 </label>
@@ -636,9 +636,9 @@ const Currencies: React.FC = () => {
                   max="8"
                   value={localSettings.decimalPlaces}
                   onChange={handleDecimalPlacesChange}
-                  className="w-full px-3 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
+                  className="w-full px-3 py-2 border border-[rgba(95,227,192,0.15)] rounded-lg bg-[#F7FAFA] dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]"
                 />
-                <p className="text-xs text-[#696557] dark:text-[#b8b3ac] mt-1">
+                <p className="text-xs text-[#294050] dark:text-[#9FB4BE] mt-1">
                   Number of decimal places to display (0-8)
                 </p>
               </div>
@@ -646,7 +646,7 @@ const Currencies: React.FC = () => {
               <div className="md:col-span-2">
                 <label
                   htmlFor="decimal-separator"
-                  className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
+                  className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] mb-2"
                 >
                   Decimal Separator Standard
                 </label>
@@ -654,7 +654,7 @@ const Currencies: React.FC = () => {
                   id="decimal-separator"
                   value={localSettings.decimalSeparatorStandard}
                   onChange={handleSeparatorStandardChange}
-                  className="select-input w-full px-3 pr-8 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
+                  className="select-input w-full px-3 pr-8 py-2 border border-[rgba(95,227,192,0.15)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]"
                 >
                   <option value="point-comma">
                     Decimal point format - 1,234.56
@@ -669,7 +669,7 @@ const Currencies: React.FC = () => {
                     Decimal comma (space) format - 1 234,56
                   </option>
                 </select>
-                <p className="text-xs text-[#696557] dark:text-[#b8b3ac] mt-1">
+                <p className="text-xs text-[#294050] dark:text-[#9FB4BE] mt-1">
                   Choose how numbers are formatted with separators
                 </p>
               </div>
@@ -680,20 +680,20 @@ const Currencies: React.FC = () => {
                     type="checkbox"
                     checked={localSettings.useThousandsSeparator}
                     onChange={handleThousandsSeparatorChange}
-                    className="w-4 h-4 text-[#8b4e52] border-[rgba(201,169,97,0.15)] rounded focus:ring-[#c9a961]"
+                    className="w-4 h-4 text-[#294050] border-[rgba(95,227,192,0.15)] rounded focus:ring-[#5FE3C0]"
                   />
-                  <span className="ml-2 text-sm text-[#1a1815] dark:text-[#b8b3ac]">
+                  <span className="ml-2 text-sm text-[#11202B] dark:text-[#9FB4BE]">
                     Use thousands separator (1,234,567 vs 1234567)
                   </span>
                 </label>
               </div>
             </div>
 
-            <div className="mt-4 p-4 bg-[#f3f1ed] dark:bg-[#1a1815] rounded-lg">
-              <div className="text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2">
+            <div className="mt-4 p-4 bg-[#EAF3F2] dark:bg-[#11202B] rounded-lg">
+              <div className="text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] mb-2">
                 Preview:
               </div>
-              <div className="text-2xl font-semibold text-[#1a1815] dark:text-[#f5f3f0]">
+              <div className="text-2xl font-semibold text-[#11202B] dark:text-[#EAF3F2]">
                 {localSettings.currencyDisplayFormat === 'symbol' && '$'}
                 {localSettings.decimalPlaces > 0
                   ? formatNumber(
@@ -711,23 +711,23 @@ const Currencies: React.FC = () => {
           </div>
 
           {/* API Configuration */}
-          <div className="bg-[#fafaf8] dark:bg-[#0f0e0c] rounded-lg shadow-sm border border-[rgba(201,169,97,0.15)] p-6">
+          <div className="bg-[#F7FAFA] dark:bg-[#0C141B] rounded-lg shadow-sm border border-[rgba(95,227,192,0.15)] p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center">
-                <Key className="w-5 h-5 text-[#8b4e52] mr-2" />
-                <h2 className="text-lg font-semibold text-[#1a1815] dark:text-[#f5f3f0]">
+                <Key className="w-5 h-5 text-[#294050] mr-2" />
+                <h2 className="text-lg font-semibold text-[#11202B] dark:text-[#EAF3F2]">
                   Exchange Rate API Configuration
                 </h2>
               </div>
               <button
                 onClick={handleToggleApiKeys}
-                className="text-sm text-[#8b4e52] hover:text-[#7a4248] font-medium"
+                className="text-sm text-[#294050] hover:text-[#1E2F3C] font-medium"
               >
                 {showApiKeys ? 'Hide' : 'Show'} API Keys
               </button>
             </div>
 
-            <p className="text-sm text-[#696557] dark:text-[#b8b3ac] mb-4">
+            <p className="text-sm text-[#294050] dark:text-[#9FB4BE] mb-4">
               Configure API keys for external exchange rate providers. These are
               optional but recommended for production use.
             </p>
@@ -737,7 +737,7 @@ const Currencies: React.FC = () => {
                 <div>
                   <label
                     htmlFor="price-feed-provider"
-                    className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
+                    className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] mb-2"
                   >
                     Price Feed Provider
                   </label>
@@ -745,18 +745,18 @@ const Currencies: React.FC = () => {
                     id="price-feed-provider"
                     value={localSettings.priceFeedProvider || 'coingecko'}
                     onChange={handleProviderChange}
-                    className="select-input w-full px-3 pr-8 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
+                    className="select-input w-full px-3 pr-8 py-2 border border-[rgba(95,227,192,0.15)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]"
                   >
                     <option value="coingecko">CoinGecko</option>
                   </select>
-                  <p className="text-xs text-[#696557] dark:text-[#b8b3ac] mt-1">
+                  <p className="text-xs text-[#294050] dark:text-[#9FB4BE] mt-1">
                     Select the provider for cryptocurrency price data.
                   </p>
                 </div>
                 <div>
                   <label
                     htmlFor="price-feed-base-url"
-                    className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
+                    className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] mb-2"
                   >
                     Custom Base URL (optional)
                   </label>
@@ -766,9 +766,9 @@ const Currencies: React.FC = () => {
                     value={localSettings.priceFeedBaseUrl || ''}
                     onChange={handleBaseUrlChange}
                     placeholder="e.g. https://pro-api.coingecko.com/api/v3"
-                    className="w-full px-3 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
+                    className="w-full px-3 py-2 border border-[rgba(95,227,192,0.15)] rounded-lg bg-[#F7FAFA] dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]"
                   />
-                  <p className="text-xs text-[#696557] dark:text-[#b8b3ac] mt-1">
+                  <p className="text-xs text-[#294050] dark:text-[#9FB4BE] mt-1">
                     Override the API endpoint for self-hosted or compatible
                     oracles.
                   </p>
@@ -781,7 +781,7 @@ const Currencies: React.FC = () => {
                 <div>
                   <label
                     htmlFor="coingecko-api-key"
-                    className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
+                    className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] mb-2"
                   >
                     CoinGecko API Key
                   </label>
@@ -791,15 +791,15 @@ const Currencies: React.FC = () => {
                     value={localSettings.coingeckoApiKey || ''}
                     onChange={handleCoingeckoKeyChange}
                     placeholder="Enter your CoinGecko API key"
-                    className="w-full px-3 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
+                    className="w-full px-3 py-2 border border-[rgba(95,227,192,0.15)] rounded-lg bg-[#F7FAFA] dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]"
                   />
-                  <p className="text-xs text-[#696557] dark:text-[#b8b3ac] mt-1">
+                  <p className="text-xs text-[#294050] dark:text-[#9FB4BE] mt-1">
                     Used for cryptocurrency price feeds.{' '}
                     <a
                       href="https://www.coingecko.com/en/api"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-[#8b4e52] hover:underline"
+                      className="text-[#294050] hover:underline"
                     >
                       Get API key
                     </a>
@@ -809,7 +809,7 @@ const Currencies: React.FC = () => {
                 <div>
                   <label
                     htmlFor="fixer-api-key"
-                    className="block text-sm font-medium text-[#1a1815] dark:text-[#b8b3ac] mb-2"
+                    className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] mb-2"
                   >
                     Fixer.io API Key
                   </label>
@@ -819,15 +819,15 @@ const Currencies: React.FC = () => {
                     value={localSettings.fixerApiKey || ''}
                     onChange={handleFixerKeyChange}
                     placeholder="Enter your Fixer.io API key"
-                    className="w-full px-3 py-2 border border-[rgba(201,169,97,0.15)] rounded-lg bg-[#fafaf8] dark:bg-[#1a1815] text-[#1a1815] dark:text-[#f5f3f0] focus:outline-none focus:ring-2 focus:ring-[#c9a961]"
+                    className="w-full px-3 py-2 border border-[rgba(95,227,192,0.15)] rounded-lg bg-[#F7FAFA] dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]"
                   />
-                  <p className="text-xs text-[#696557] dark:text-[#b8b3ac] mt-1">
+                  <p className="text-xs text-[#294050] dark:text-[#9FB4BE] mt-1">
                     Used for fiat currency exchange rates.{' '}
                     <a
                       href="https://fixer.io/"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-[#8b4e52] hover:underline"
+                      className="text-[#294050] hover:underline"
                     >
                       Get API key
                     </a>
@@ -838,16 +838,16 @@ const Currencies: React.FC = () => {
           </div>
 
           {/* Information Box */}
-          <div className="bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 border border-[#8b4e52]/30 dark:border-[#8b4e52]/40 rounded-lg p-4">
+          <div className="bg-[#294050]/10 dark:bg-[#294050]/20 border border-[#294050]/30 dark:border-[#294050]/40 rounded-lg p-4">
             <div className="flex">
               <div className="flex-shrink-0">
-                <SettingsIcon className="w-5 h-5 text-[#8b4e52] dark:text-[#a86e72]" />
+                <SettingsIcon className="w-5 h-5 text-[#294050] dark:text-[#F09988]" />
               </div>
               <div className="ml-3">
-                <h3 className="text-sm font-medium text-[#8b4e52] dark:text-[#a86e72]">
+                <h3 className="text-sm font-medium text-[#294050] dark:text-[#F09988]">
                   About Currency Conversions
                 </h3>
-                <div className="mt-2 text-sm text-[#8b4e52] dark:text-[#a86e72] space-y-1">
+                <div className="mt-2 text-sm text-[#294050] dark:text-[#F09988] space-y-1">
                   <p>
                     • Historical rates provide accurate reporting for tax and
                     accounting purposes

@@ -196,8 +196,8 @@ const SectionItems: React.FC<{
             onClick={onItemClick}
             className={`w-full flex items-center justify-between px-3 py-1.5 text-sm rounded transition-colors text-left ${
               isSelected
-                ? 'bg-[#8b4e52]/10 dark:bg-[#a86e72]/20 text-[#8b4e52] dark:text-[#a86e72] font-medium'
-                : 'text-gray-600 dark:text-[#94a3b8] hover:bg-gray-50 dark:hover:bg-gray-800'
+                ? 'bg-[#294050]/10 dark:bg-[#F09988]/20 text-[#294050] dark:text-[#F09988] font-medium'
+                : 'text-gray-600 dark:text-[#9FB4BE] hover:bg-gray-50 dark:hover:bg-gray-800'
             }`}
           >
             <span>{item.title}</span>
@@ -221,8 +221,8 @@ const SectionItems: React.FC<{
                     onClick={onSelectDoc}
                     className={`w-full px-3 py-1 text-xs rounded transition-colors text-left ${
                       isSubSelected
-                        ? 'bg-[#8b4e52]/10 dark:bg-[#a86e72]/20 text-[#8b4e52] dark:text-[#a86e72] font-medium'
-                        : 'text-gray-600 dark:text-[#94a3b8] hover:bg-gray-50 dark:hover:bg-gray-800'
+                        ? 'bg-[#294050]/10 dark:bg-[#F09988]/20 text-[#294050] dark:text-[#F09988] font-medium'
+                        : 'text-gray-600 dark:text-[#9FB4BE] hover:bg-gray-50 dark:hover:bg-gray-800'
                     }`}
                   >
                     {subItem.title}
@@ -294,10 +294,10 @@ const Docs: React.FC = () => {
       <header className="bg-white dark:bg-black border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-10 py-10">
           <div className="flex items-center">
-            <BookOpen className="w-8 h-8 text-[#8b4e52] dark:text-[#a86e72] mr-4" />
+            <BookOpen className="w-8 h-8 text-[#294050] dark:text-[#F09988] mr-4" />
             <div>
               <h1>Pacioli Documentation</h1>
-              <p className="text-sm text-gray-500 dark:text-[#94a3b8] mt-1">
+              <p className="text-sm text-gray-500 dark:text-[#9FB4BE] mt-1">
                 Comprehensive guides and references for using Pacioli accounting
                 software
               </p>
@@ -328,7 +328,7 @@ const Docs: React.FC = () => {
                         className="w-full flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-colors hover:bg-gray-50 dark:hover:bg-gray-800 text-left"
                       >
                         <div className="flex items-center">
-                          <Icon className="w-4 h-4 mr-2 text-[#8b4e52] dark:text-[#a86e72]" />
+                          <Icon className="w-4 h-4 mr-2 text-[#294050] dark:text-[#F09988]" />
                           <span className="font-medium text-gray-900 dark:text-white">
                             {section.title}
                           </span>
@@ -362,7 +362,7 @@ const Docs: React.FC = () => {
               {/* Placeholder Content */}
               <div className="prose dark:prose-invert max-w-none">
                 <div className="mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
-                  <div className="inline-block px-3 py-1 bg-[#8b7355]/10 dark:bg-[#a38a6f]/10 rounded text-xs font-medium text-[#8b7355] dark:text-[#a38a6f] mb-4">
+                  <div className="inline-block px-3 py-1 bg-[#647D8B]/10 dark:bg-[#647D8B]/10 rounded text-xs font-medium text-[#647D8B] dark:text-[#647D8B] mb-4">
                     Coming Soon
                   </div>
                   <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
@@ -371,7 +371,7 @@ const Docs: React.FC = () => {
                       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
                       .join(' ')}
                   </h2>
-                  <p className="text-gray-500 dark:text-[#94a3b8]">
+                  <p className="text-gray-500 dark:text-[#9FB4BE]">
                     This documentation page is currently being prepared and will
                     be available soon.
                   </p>
@@ -386,9 +386,9 @@ const Docs: React.FC = () => {
                     <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-4/5" />
                   </div>
 
-                  <div className="bg-[#8b4e52]/5 dark:bg-[#a86e72]/10 border-l-4 border-[#8b4e52] dark:border-[#a86e72] p-4 rounded">
+                  <div className="bg-[#294050]/5 dark:bg-[#F09988]/10 border-l-4 border-[#294050] dark:border-[#F09988] p-4 rounded">
                     <p className="text-sm text-gray-700 dark:text-gray-300">
-                      <strong className="text-[#8b4e52] dark:text-[#a86e72]">
+                      <strong className="text-[#294050] dark:text-[#F09988]">
                         Note:
                       </strong>{' '}
                       Documentation content will be added here covering detailed

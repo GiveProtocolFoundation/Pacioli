@@ -95,8 +95,8 @@ const KPICard: React.FC<{ kpi: KPI }> = ({ kpi }) => {
   return (
     <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
       <div className="flex items-center justify-between mb-4">
-        <div className="w-12 h-12 rounded-lg bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20 flex items-center justify-center">
-          <Icon className="w-6 h-6 text-[#8b4e52] dark:text-[#a86e72]" />
+        <div className="w-12 h-12 rounded-lg bg-[#294050]/10 dark:bg-[#294050]/20 flex items-center justify-center">
+          <Icon className="w-6 h-6 text-[#294050] dark:text-[#F09988]" />
         </div>
         <div
           className={`flex items-center px-2 py-1 rounded-full text-xs font-medium ${
@@ -109,7 +109,7 @@ const KPICard: React.FC<{ kpi: KPI }> = ({ kpi }) => {
           {Math.abs(kpi.change)}%
         </div>
       </div>
-      <p className="text-sm text-gray-500 dark:text-[#94a3b8]">{kpi.label}</p>
+      <p className="text-sm text-gray-500 dark:text-[#9FB4BE]">{kpi.label}</p>
       <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
         {kpi.value}
       </p>
@@ -155,7 +155,7 @@ const TimePeriodDropdown: React.FC<{
               onClick={handleSelect}
               className={`w-full px-4 py-2 text-sm text-left hover:bg-gray-50 dark:hover:bg-gray-800 first:rounded-t-lg last:rounded-b-lg ${
                 current === period.value
-                  ? 'text-[#8b4e52] dark:text-[#a86e72] bg-[#8b4e52]/10 dark:bg-[#8b4e52]/20'
+                  ? 'text-[#294050] dark:text-[#F09988] bg-[#294050]/10 dark:bg-[#294050]/20'
                   : 'text-gray-700 dark:text-gray-300'
               }`}
             >
@@ -176,12 +176,12 @@ const PortfolioPerformanceChart: React.FC<{
     <div className="lg:col-span-2 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
-          <Activity className="w-5 h-5 text-[#8b4e52] mr-2" />
+          <Activity className="w-5 h-5 text-[#294050] mr-2" />
           <div>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
               Portfolio Performance
             </h3>
-            <p className="text-xs text-gray-500 dark:text-[#94a3b8]">
+            <p className="text-xs text-gray-500 dark:text-[#9FB4BE]">
               Total value over time
             </p>
           </div>
@@ -216,8 +216,8 @@ const PortfolioPerformanceChart: React.FC<{
               y1="0"
               y2="1"
             >
-              <stop offset="0%" stopColor="#8b4e52" stopOpacity="0.3" />
-              <stop offset="100%" stopColor="#8b4e52" stopOpacity="0" />
+              <stop offset="0%" stopColor="#294050" stopOpacity="0.3" />
+              <stop offset="100%" stopColor="#294050" stopOpacity="0" />
             </linearGradient>
           </defs>
 
@@ -225,7 +225,7 @@ const PortfolioPerformanceChart: React.FC<{
           <path
             d="M 50,120 L 150,100 L 250,135 L 350,80 L 450,55 L 550,65 L 650,40 L 750,20"
             fill="none"
-            stroke="#8b4e52"
+            stroke="#294050"
             strokeWidth="3"
             strokeLinecap="round"
           />
@@ -244,7 +244,7 @@ const PortfolioPerformanceChart: React.FC<{
                 cx={x}
                 cy={y}
                 r="4"
-                fill="#8b4e52"
+                fill="#294050"
                 className="hover:r-6 cursor-pointer"
               />
             )
@@ -256,7 +256,7 @@ const PortfolioPerformanceChart: React.FC<{
               key={`label-${point.date}`}
               x={50 + i * 100}
               y="245"
-              className="text-xs fill-current text-gray-500 dark:text-[#94a3b8]"
+              className="text-xs fill-current text-gray-500 dark:text-[#9FB4BE]"
               textAnchor="middle"
             >
               {point.date}
@@ -275,12 +275,12 @@ const AssetAllocationChart: React.FC<{
   return (
     <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
       <div className="flex items-center mb-6">
-        <PieChart className="w-5 h-5 text-[#8b4e52] mr-2" />
+        <PieChart className="w-5 h-5 text-[#294050] mr-2" />
         <div>
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
             Asset Allocation
           </h3>
-          <p className="text-xs text-gray-500 dark:text-[#94a3b8]">
+          <p className="text-xs text-gray-500 dark:text-[#9FB4BE]">
             Holdings by cryptocurrency
           </p>
         </div>
@@ -365,7 +365,7 @@ const AssetAllocationChart: React.FC<{
               <div className="text-sm font-medium text-gray-900 dark:text-white">
                 {asset.value}%
               </div>
-              <div className="text-xs text-gray-500 dark:text-[#94a3b8]">
+              <div className="text-xs text-gray-500 dark:text-[#9FB4BE]">
                 ${asset.amount.toLocaleString()}
               </div>
             </div>
@@ -381,12 +381,12 @@ const TransactionVolumeChart: React.FC = () => {
   return (
     <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
       <div className="flex items-center mb-6">
-        <BarChart3 className="w-5 h-5 text-[#8b4e52] mr-2" />
+        <BarChart3 className="w-5 h-5 text-[#294050] mr-2" />
         <div>
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
             Transaction Volume
           </h3>
-          <p className="text-xs text-gray-500 dark:text-[#94a3b8]">
+          <p className="text-xs text-gray-500 dark:text-[#9FB4BE]">
             Daily transaction activity
           </p>
         </div>
@@ -410,10 +410,10 @@ const TransactionVolumeChart: React.FC = () => {
               className="flex-1 flex flex-col items-center"
             >
               <div
-                className="w-full bg-[#8b4e52] dark:bg-[#8b4e52] rounded-t hover:bg-[#8b4e52] dark:hover:bg-[#8b4e52] transition-colors cursor-pointer"
+                className="w-full bg-[#294050] dark:bg-[#294050] rounded-t hover:bg-[#294050] dark:hover:bg-[#294050] transition-colors cursor-pointer"
                 style={{ height: `${height}%` }}
               />
-              <span className="text-xs text-gray-500 dark:text-[#94a3b8] mt-2">
+              <span className="text-xs text-gray-500 dark:text-[#9FB4BE] mt-2">
                 {dayName}
               </span>
             </div>
@@ -423,7 +423,7 @@ const TransactionVolumeChart: React.FC = () => {
 
       <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between text-sm">
-          <span className="text-gray-500 dark:text-[#94a3b8]">
+          <span className="text-gray-500 dark:text-[#9FB4BE]">
             Total this week
           </span>
           <span className="font-semibold text-gray-900 dark:text-white">
@@ -465,7 +465,7 @@ const Analytics: React.FC = () => {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h1>Analytics</h1>
-              <p className="text-sm text-gray-500 dark:text-[#94a3b8] mt-1">
+              <p className="text-sm text-gray-500 dark:text-[#9FB4BE] mt-1">
                 Performance insights and data visualization
               </p>
             </div>
@@ -477,13 +477,13 @@ const Analytics: React.FC = () => {
                 onToggle={handleTogglePeriodDropdown}
                 onSelect={handleSelectPeriod}
               />
-              <button className="p-2 text-gray-600 dark:text-[#94a3b8] hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg">
+              <button className="p-2 text-gray-600 dark:text-[#9FB4BE] hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg">
                 <RefreshCw className="w-5 h-5" />
               </button>
-              <button className="p-2 text-gray-600 dark:text-[#94a3b8] hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg">
+              <button className="p-2 text-gray-600 dark:text-[#9FB4BE] hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg">
                 <Download className="w-5 h-5" />
               </button>
-              <button className="p-2 text-gray-600 dark:text-[#94a3b8] hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg">
+              <button className="p-2 text-gray-600 dark:text-[#9FB4BE] hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg">
                 <Settings className="w-5 h-5" />
               </button>
             </div>
@@ -514,12 +514,12 @@ const Analytics: React.FC = () => {
           <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center">
-                <Target className="w-5 h-5 text-[#8b4e52] mr-2" />
+                <Target className="w-5 h-5 text-[#294050] mr-2" />
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                     Staking Rewards
                   </h3>
-                  <p className="text-xs text-gray-500 dark:text-[#94a3b8]">
+                  <p className="text-xs text-gray-500 dark:text-[#9FB4BE]">
                     Rewards earned over time
                   </p>
                 </div>
@@ -532,7 +532,7 @@ const Analytics: React.FC = () => {
                   <p className="text-sm font-medium text-gray-900 dark:text-white">
                     DOT Staking
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-[#94a3b8]">
+                  <p className="text-xs text-gray-500 dark:text-[#9FB4BE]">
                     12.5% APY
                   </p>
                 </div>
@@ -540,26 +540,26 @@ const Analytics: React.FC = () => {
                   <p className="text-sm font-semibold text-green-600 dark:text-green-400">
                     +$125.50
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-[#94a3b8]">
+                  <p className="text-xs text-gray-500 dark:text-[#9FB4BE]">
                     This month
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between p-4 bg-[#c9a961]/10 dark:bg-[#c9a961]/20 rounded-lg border border-[#c9a961]/30 dark:border-[#c9a961]/40">
+              <div className="flex items-center justify-between p-4 bg-[#5FE3C0]/10 dark:bg-[#5FE3C0]/20 rounded-lg border border-[#5FE3C0]/30 dark:border-[#5FE3C0]/40">
                 <div>
                   <p className="text-sm font-medium text-gray-900 dark:text-white">
                     GLMR Staking
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-[#94a3b8]">
+                  <p className="text-xs text-gray-500 dark:text-[#9FB4BE]">
                     15.2% APY
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-semibold text-[#8b4e52] dark:text-[#a86e72]">
+                  <p className="text-sm font-semibold text-[#294050] dark:text-[#F09988]">
                     +$95.75
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-[#94a3b8]">
+                  <p className="text-xs text-gray-500 dark:text-[#9FB4BE]">
                     This month
                   </p>
                 </div>
@@ -570,7 +570,7 @@ const Analytics: React.FC = () => {
                   <p className="text-sm font-medium text-gray-900 dark:text-white">
                     ASTR Staking
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-[#94a3b8]">
+                  <p className="text-xs text-gray-500 dark:text-[#9FB4BE]">
                     8.7% APY
                   </p>
                 </div>
@@ -578,7 +578,7 @@ const Analytics: React.FC = () => {
                   <p className="text-sm font-semibold text-purple-600 dark:text-purple-400">
                     +$48.20
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-[#94a3b8]">
+                  <p className="text-xs text-gray-500 dark:text-[#9FB4BE]">
                     This month
                   </p>
                 </div>
@@ -587,7 +587,7 @@ const Analytics: React.FC = () => {
 
             <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-500 dark:text-[#94a3b8]">
+                <span className="text-sm text-gray-500 dark:text-[#9FB4BE]">
                   Total Rewards
                 </span>
                 <span className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -600,12 +600,12 @@ const Analytics: React.FC = () => {
           {/* Revenue vs Expenses */}
           <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
             <div className="flex items-center mb-6">
-              <DollarSign className="w-5 h-5 text-[#8b4e52] mr-2" />
+              <DollarSign className="w-5 h-5 text-[#294050] mr-2" />
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                   Revenue vs Expenses
                 </h3>
-                <p className="text-xs text-gray-500 dark:text-[#94a3b8]">
+                <p className="text-xs text-gray-500 dark:text-[#9FB4BE]">
                   Monthly comparison
                 </p>
               </div>
@@ -636,7 +636,7 @@ const Analytics: React.FC = () => {
                         style={{ height: `${data.expense}%` }}
                       />
                     </div>
-                    <span className="text-xs text-gray-500 dark:text-[#94a3b8] mt-2">
+                    <span className="text-xs text-gray-500 dark:text-[#9FB4BE] mt-2">
                       {monthName}
                     </span>
                   </div>
@@ -647,13 +647,13 @@ const Analytics: React.FC = () => {
             <div className="mt-6 flex items-center justify-center gap-6">
               <div className="flex items-center">
                 <div className="w-3 h-3 bg-green-500 rounded mr-2" />
-                <span className="text-xs text-gray-500 dark:text-[#94a3b8]">
+                <span className="text-xs text-gray-500 dark:text-[#9FB4BE]">
                   Revenue
                 </span>
               </div>
               <div className="flex items-center">
                 <div className="w-3 h-3 bg-red-500 rounded mr-2" />
-                <span className="text-xs text-gray-500 dark:text-[#94a3b8]">
+                <span className="text-xs text-gray-500 dark:text-[#9FB4BE]">
                   Expenses
                 </span>
               </div>
