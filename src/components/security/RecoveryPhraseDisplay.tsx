@@ -124,7 +124,7 @@ export const RecoveryPhraseDisplay: React.FC<RecoveryPhraseDisplayProps> = ({
           {copied ? (
             <>
               <svg
-                className="w-4 h-4 text-[#7a9b6f]"
+                className="w-4 h-4 text-[#2E9A82]"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"

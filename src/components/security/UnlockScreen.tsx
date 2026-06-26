@@ -169,9 +169,9 @@ export const UnlockScreen: React.FC<UnlockScreenProps> = ({ onUnlock }) => {
         <div className="max-w-md w-full">
           <div className="bg-[#F7FAFA] dark:bg-[#11202B] rounded-2xl shadow-xl p-8">
             <div className="text-center">
-              <div className="w-16 h-16 bg-[#7a9b6f]/20 dark:bg-[#7a9b6f]/30 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 bg-[#2E9A82]/20 dark:bg-[#2E9A82]/30 rounded-full flex items-center justify-center mx-auto mb-4">
                 <svg
-                  className="w-8 h-8 text-[#7a9b6f] dark:text-[#8faf84]"
+                  className="w-8 h-8 text-[#2E9A82] dark:text-[#8faf84]"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"

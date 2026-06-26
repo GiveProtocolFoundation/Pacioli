@@ -387,6 +387,7 @@ const ReportsHeader: React.FC = () => (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
+          <p className="eyebrow">Insights</p>
           <h1>Reports</h1>
           <p className="text-sm text-[#294050] dark:text-[#9FB4BE] mt-1">
             Financial and cryptocurrency reporting

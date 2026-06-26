@@ -512,7 +512,7 @@ const SummaryCard: React.FC<{
       <div>
         <p className="text-sm text-[#294050] dark:text-[#9FB4BE]">{label}</p>
         <p
-          className={`text-xl font-semibold mt-1 font-[Lora] tabular-nums ${
+          className={`text-xl font-semibold mt-1 font-mono tabular-nums ${
             isPositive === undefined
               ? 'text-[#11202B] dark:text-[#EAF3F2]'
               : isPositive
@@ -576,17 +576,17 @@ const DisposalTable: React.FC<{
               <td className="py-3 px-3 font-medium text-[#11202B] dark:text-[#EAF3F2]">
                 {d.assetSymbol}
               </td>
-              <td className="py-3 px-3 text-right font-[Lora] tabular-nums text-[#11202B] dark:text-[#EAF3F2]">
+              <td className="py-3 px-3 text-right font-mono tabular-nums text-[#11202B] dark:text-[#EAF3F2]">
                 {formatNumber(d.quantity)}
               </td>
-              <td className="py-3 px-3 text-right font-[Lora] tabular-nums text-[#11202B] dark:text-[#EAF3F2]">
+              <td className="py-3 px-3 text-right font-mono tabular-nums text-[#11202B] dark:text-[#EAF3F2]">
                 {formatNumber(d.result.totalCostBasis)}
               </td>
-              <td className="py-3 px-3 text-right font-[Lora] tabular-nums text-[#11202B] dark:text-[#EAF3F2]">
+              <td className="py-3 px-3 text-right font-mono tabular-nums text-[#11202B] dark:text-[#EAF3F2]">
                 {formatNumber(d.proceeds)}
               </td>
               <td
-                className={`py-3 px-3 text-right font-[Lora] tabular-nums font-medium ${
+                className={`py-3 px-3 text-right font-mono tabular-nums font-medium ${
                   d.gainLoss.isGain ? 'text-[#5FE3C0]' : 'text-[#E8836F]'
                 }`}
               >
@@ -644,10 +644,10 @@ const DisposalTable: React.FC<{
                           <td className="py-1.5 px-2 font-mono text-[#11202B] dark:text-[#EAF3F2]">
                             {lu.lotId.substring(0, 12)}...
                           </td>
-                          <td className="py-1.5 px-2 text-right font-[Lora] tabular-nums text-[#11202B] dark:text-[#EAF3F2]">
+                          <td className="py-1.5 px-2 text-right font-mono tabular-nums text-[#11202B] dark:text-[#EAF3F2]">
                             {formatNumber(lu.quantityUsed)}
                           </td>
-                          <td className="py-1.5 px-2 text-right font-[Lora] tabular-nums text-[#11202B] dark:text-[#EAF3F2]">
+                          <td className="py-1.5 px-2 text-right font-mono tabular-nums text-[#11202B] dark:text-[#EAF3F2]">
                             {formatNumber(lu.costBasis)}
                           </td>
                         </tr>
@@ -702,13 +702,13 @@ const RemainingLotsTable: React.FC<{ lots: CryptoLot[] }> = ({ lots }) => (
             <td className="py-3 px-3 text-[#11202B] dark:text-[#EAF3F2]">
               {formatDate(lot.acquisitionDate)}
             </td>
-            <td className="py-3 px-3 text-right font-[Lora] tabular-nums text-[#11202B] dark:text-[#EAF3F2]">
+            <td className="py-3 px-3 text-right font-mono tabular-nums text-[#11202B] dark:text-[#EAF3F2]">
               {formatNumber(lot.remainingQuantity)}
             </td>
-            <td className="py-3 px-3 text-right font-[Lora] tabular-nums text-[#11202B] dark:text-[#EAF3F2]">
+            <td className="py-3 px-3 text-right font-mono tabular-nums text-[#11202B] dark:text-[#EAF3F2]">
               {formatNumber(lot.costPerUnit)}
             </td>
-            <td className="py-3 px-3 text-right font-[Lora] tabular-nums text-[#11202B] dark:text-[#EAF3F2]">
+            <td className="py-3 px-3 text-right font-mono tabular-nums text-[#11202B] dark:text-[#EAF3F2]">
               {formatNumber(
                 (
                   parseFloat(lot.remainingQuantity) *
@@ -896,7 +896,8 @@ const CostBasisReport: React.FC = () => {
                 <ArrowLeft className="w-5 h-5" />
               </button>
               <div>
-                <h1 className="text-lg font-semibold text-[#11202B] dark:text-[#EAF3F2] font-[Playfair_Display]">
+                <p className="eyebrow">Cost Basis</p>
+                <h1 className="text-lg font-semibold text-[#11202B] dark:text-[#EAF3F2]">
                   Cost Basis Report
                 </h1>
                 <p className="text-sm text-[#294050] dark:text-[#9FB4BE]">
@@ -1048,7 +1049,7 @@ const CostBasisReport: React.FC = () => {
               <label className="block text-xs font-medium text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider mb-2">
                 Weighted Avg Cost/Unit
               </label>
-              <div className="px-3 py-2 rounded-lg border border-[rgba(95,227,192,0.15)] bg-[#EAF3F2] dark:bg-[#16242F] text-[#11202B] dark:text-[#EAF3F2] text-sm font-[Lora] tabular-nums">
+              <div className="px-3 py-2 rounded-lg border border-[rgba(95,227,192,0.15)] bg-[#EAF3F2] dark:bg-[#16242F] text-[#11202B] dark:text-[#EAF3F2] text-sm font-mono tabular-nums">
                 {formatNumber(weightedAvg)}
               </div>
             </div>
