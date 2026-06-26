@@ -1,12 +1,11 @@
 /* =============================================================================
-   HERITAGE ELEGANCE DESIGN SYSTEM
-   A sophisticated color palette with burgundy, gold, and warm tones
-   honoring accounting tradition while maintaining modern usability
+   PACIOLI BRAND DESIGN SYSTEM
+   Ledger aesthetic: ink + parchment, mint-teal accent, burgundy/coral support.
+   Mirrors the marketing site (pacioli-web) for cross-surface continuity.
    ============================================================================= */
 
-/* Import Google Fonts - Heritage Elegance Typography */
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@300;400;500;600;700&family=Lora:wght@400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter+Tight:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+/* Import Google Fonts - Geist family (sans + mono) */
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap');
 
 @import 'tailwindcss';
 
@@ -14,25 +13,17 @@
 
 @theme {
   /* =============================================================================
-     TYPOGRAPHY - Heritage Elegance Fonts
+     TYPOGRAPHY - Geist family
      ============================================================================= */
 
-  /* Display font - Cormorant Garamond for headlines and titles */
-  --font-family-display: 'Cormorant Garamond', Georgia, serif;
-
-  /* Serif font - Lora for numbers and metrics */
-  --font-family-serif: 'Lora', Georgia, serif;
-
-  /* Sans-serif font - Inter for body and UI */
+  /* Display + serif + heading roles all use Geist (one family, weighted) */
+  --font-family-display: 'Geist', system-ui, -apple-system, sans-serif;
+  --font-family-serif: 'Geist', system-ui, -apple-system, sans-serif;
   --font-family-sans:
-    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-
-  /* Dashboard Soft UI - Heading font */
-  --font-family-heading: 'Playfair Display', Georgia, serif;
-  /* Dashboard Soft UI - UI font */
-  --font-family-ui: 'Inter Tight', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  /* Dashboard Soft UI - Monospace font */
-  --font-family-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+    'Geist', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-family-heading: 'Geist', system-ui, -apple-system, sans-serif;
+  --font-family-ui: 'Geist', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-family-mono: 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
 
   /* Font weight scale */
   --font-weight-light: 300;
@@ -52,125 +43,151 @@
   --line-height-small: 1.4;
 
   /* =============================================================================
-     HERITAGE ELEGANCE COLORS
+     PACIOLI BRAND COLORS
+     Source palette (pacioli-web):
+       ink           #0C141B   ink-2  #11202B   ink-3  #16242F
+       burgundy      #294050   burgundy-deep    #1E2F3C
+       coral (burgundy-bright) #E8836F
+       mint (gold)   #5FE3C0   mint-bright #9CF1DC   mint-dim #2E9A82
+       parchment     #EAF3F2   parchment-dim #9FB4BE   muted #647D8B
      ============================================================================= */
 
   /* Dark Mode Background Palette */
-  --color-bg-primary-dark: #0f0e0c;
-  --color-bg-secondary-dark: #1a1815;
-  --color-bg-tertiary-dark: #2a2620;
+  --color-bg-primary-dark: #0C141B;
+  --color-bg-secondary-dark: #11202B;
+  --color-bg-tertiary-dark: #16242F;
 
-  /* Light Mode Background Palette */
-  --color-bg-primary-light: #fafaf8;
-  --color-bg-secondary-light: #f3f1ed;
-  --color-bg-tertiary-light: #ede8e0;
+  /* Light Mode Background Palette (parchment-led) */
+  --color-bg-primary-light: #F7FAFA;
+  --color-bg-secondary-light: #EAF3F2;
+  --color-bg-tertiary-light: #D9E5E4;
 
   /* Dark Mode Text Colors */
-  --color-text-primary-dark: #f5f3f0;
-  --color-text-secondary-dark: #b8b3ac;
-  --color-text-muted-dark: #8b8580;
+  --color-text-primary-dark: #EAF3F2;
+  --color-text-secondary-dark: #9FB4BE;
+  --color-text-muted-dark: #647D8B;
 
   /* Light Mode Text Colors */
-  --color-text-primary-light: #1a1815;
-  --color-text-secondary-light: #696557;
-  --color-text-muted-light: #a39d94;
+  --color-text-primary-light: #0C141B;
+  --color-text-secondary-light: #294050;
+  --color-text-muted-light: #647D8B;
 
-  /* Accent Colors - Burgundy */
-  --color-burgundy: #8b4e52;
-  --color-burgundy-hover: #9d5a5e;
-  --color-burgundy-light: #7a4d50;
+  /* Accent Colors - Burgundy (cool slate-burgundy from pacioli-web) */
+  --color-burgundy: #294050;
+  --color-burgundy-hover: #34526B;
+  --color-burgundy-light: #1E2F3C;
 
-  /* Accent Colors - Gold */
-  --color-gold: #c9a961;
-  --color-gold-hover: #d4b56e;
-  --color-gold-light: #a8935f;
+  /* Accent Colors - "Gold" slot now maps to brand mint-teal (primary accent) */
+  --color-gold: #5FE3C0;
+  --color-gold-hover: #9CF1DC;
+  --color-gold-light: #2E9A82;
 
-  /* Accent Colors - Warm */
-  --color-warm: #d4a574;
-  --color-warm-hover: #ddb285;
-  --color-warm-light: #c49a6a;
+  /* Accent Colors - Warm coral (burgundy-bright from pacioli-web) */
+  --color-warm: #E8836F;
+  --color-warm-hover: #F09988;
+  --color-warm-light: #C56A57;
 
   /* Semantic Colors - Dark Mode */
-  --color-success: #7a9b6f;
-  --color-success-hover: #8aab7f;
-  --color-success-light: rgba(122, 155, 111, 0.15);
-  --color-warning: #b89968;
-  --color-warning-hover: #c8a978;
-  --color-warning-light: rgba(184, 153, 104, 0.15);
-  --color-error: #9d6b6b;
-  --color-error-hover: #ad7b7b;
-  --color-error-light: rgba(157, 107, 107, 0.15);
+  --color-success: #5FE3C0;
+  --color-success-hover: #9CF1DC;
+  --color-success-light: rgba(95, 227, 192, 0.15);
+  --color-warning: #E8B36F;
+  --color-warning-hover: #F0C385;
+  --color-warning-light: rgba(232, 179, 111, 0.15);
+  --color-error: #E8836F;
+  --color-error-hover: #F09988;
+  --color-error-light: rgba(232, 131, 111, 0.15);
 
-  /* Semantic Colors - Light Mode (slightly darker for contrast) */
-  --color-success-light-mode: #6a8b5f;
-  --color-warning-light-mode: #a88958;
-  --color-error-light-mode: #8d5b5b;
+  /* Semantic Colors - Light Mode (darker variants for AA contrast on parchment) */
+  --color-success-light-mode: #2E9A82;
+  --color-warning-light-mode: #B07A2F;
+  --color-error-light-mode: #B0533F;
 
-  /* Border Colors (gold-tinted) */
-  --color-border-subtle: rgba(201, 169, 97, 0.1);
-  --color-border-default: rgba(201, 169, 97, 0.15);
-  --color-border-strong: rgba(201, 169, 97, 0.3);
+  /* Border Colors (mint-tinted, replacing gold tint) */
+  --color-border-subtle: rgba(150, 180, 196, 0.07);
+  --color-border-default: rgba(150, 180, 196, 0.12);
+  --color-border-strong: rgba(150, 180, 196, 0.28);
 
   /* Surface colors for cards */
-  --color-surface-dark: #1a1815;
-  --color-surface-secondary-dark: #2a2620;
-  --color-surface-light: #ffffff;
-  --color-surface-secondary-light: #f3f1ed;
+  --color-surface-dark: #11202B;
+  --color-surface-secondary-dark: #16242F;
+  --color-surface-light: #FFFFFF;
+  --color-surface-secondary-light: #EAF3F2;
 
-  /* Legacy mappings for compatibility */
-  --color-primary: #8b4e52;
-  --color-primary-hover: #9d5a5e;
-  --color-primary-dark: #8b4e52;
-  --color-primary-dark-hover: #9d5a5e;
-  --color-primary-light: rgba(139, 78, 82, 0.1);
-  --color-primary-dark-light: rgba(139, 78, 82, 0.15);
-  --color-accent: #c9a961;
-  --color-accent-hover: #d4b56e;
-  --color-accent-dark: #c9a961;
-  --color-accent-dark-hover: #d4b56e;
+  /* Legacy mappings — primary slot = burgundy (sober UI chrome) */
+  --color-primary: #294050;
+  --color-primary-hover: #34526B;
+  --color-primary-dark: #294050;
+  --color-primary-dark-hover: #34526B;
+  --color-primary-light: rgba(41, 64, 80, 0.10);
+  --color-primary-dark-light: rgba(41, 64, 80, 0.15);
+  --color-accent: #5FE3C0;
+  --color-accent-hover: #9CF1DC;
+  --color-accent-dark: #5FE3C0;
+  --color-accent-dark-hover: #9CF1DC;
 
   /* Legacy text colors */
-  --color-text-primary: #1a1815;
-  --color-text-secondary: #696557;
-  --color-text-muted: #a39d94;
+  --color-text-primary: #0C141B;
+  --color-text-secondary: #294050;
+  --color-text-muted: #647D8B;
 
   /* Legacy surface colors */
-  --color-surface: #ffffff;
-  --color-surface-secondary: #f3f1ed;
-  --color-border: rgba(201, 169, 97, 0.15);
-  --color-border-dark: rgba(201, 169, 97, 0.15);
+  --color-surface: #FFFFFF;
+  --color-surface-secondary: #EAF3F2;
+  --color-border: rgba(150, 180, 196, 0.18);
+  --color-border-dark: rgba(150, 180, 196, 0.12);
 
   /* Legacy background colors */
-  --color-bg-main: #fafaf8;
-  --color-bg-card: #ffffff;
-  --color-bg-main-dark: #0f0e0c;
-  --color-bg-card-dark: #1a1815;
+  --color-bg-main: #F7FAFA;
+  --color-bg-card: #FFFFFF;
+  --color-bg-main-dark: #0C141B;
+  --color-bg-card-dark: #11202B;
 
   /* =============================================================================
      SOFT UI PALETTE — Dashboard-scoped additive tokens
+     Remapped from Heritage burgundy/cream to Pacioli ink/parchment/mint.
      ============================================================================= */
-  --color-soft-background: #F9F8F6;
+  --color-soft-background: #F7FAFA;
   --color-soft-surface: #FFFFFF;
-  --color-soft-primary: #5D2A2C;
-  --color-soft-primary-hover: #4A2123;
-  --color-soft-secondary: #E5E1DA;
-  --color-soft-foreground: #4A4543;
-  --color-soft-success: #166534;
-  --color-soft-success-bg: rgba(22, 101, 52, 0.08);
-  --color-soft-warning: #92400E;
-  --color-soft-warning-bg: rgba(146, 64, 14, 0.08);
-  --color-soft-danger: #991B1B;
-  --color-soft-danger-bg: rgba(153, 27, 27, 0.08);
+  --color-soft-primary: #294050;
+  --color-soft-primary-hover: #1E2F3C;
+  --color-soft-secondary: #EAF3F2;
+  --color-soft-foreground: #0C141B;
+  --color-soft-success: #2E9A82;
+  --color-soft-success-bg: rgba(46, 154, 130, 0.10);
+  --color-soft-warning: #B07A2F;
+  --color-soft-warning-bg: rgba(176, 122, 47, 0.10);
+  --color-soft-danger: #B0533F;
+  --color-soft-danger-bg: rgba(176, 83, 63, 0.10);
+
+  /* =============================================================================
+     PACIOLI BRAND - native tokens (in addition to the legacy slot mapping above)
+     Use these in new components for unambiguous intent.
+     ============================================================================= */
+  --color-ink: #0C141B;
+  --color-ink-2: #11202B;
+  --color-ink-3: #16242F;
+  --color-parchment: #EAF3F2;
+  --color-parchment-dim: #9FB4BE;
+  --color-muted: #647D8B;
+  --color-mint: #5FE3C0;
+  --color-mint-bright: #9CF1DC;
+  --color-mint-dim: #2E9A82;
+  --color-coral: #E8836F;
+  --color-coral-bright: #F09988;
+  --color-coral-dim: #C56A57;
+  --color-rule: rgba(150, 180, 196, 0.12);
+  --color-rule-soft: rgba(150, 180, 196, 0.07);
 }
 
 /* =============================================================================
    TYPOGRAPHY SYSTEM
-   - Display (Cormorant Garamond): Headlines and page titles
-   - Serif (Lora): Numbers, metrics, and financial data
-   - Sans-serif (Inter): All UI elements and body text
+   - Display (Geist 600/700): Headlines and page titles, tight tracking
+   - Sans (Geist 400/500): UI elements and body text
+   - Mono (Geist Mono): Numbers, metrics, financial data, eyebrows
    ============================================================================= */
 
-/* Base typography - Inter for entire UI */
+/* Base typography - Geist for entire UI */
 body {
   font-family: var(--font-family-sans);
   font-size: var(--font-size-body);
@@ -1283,3 +1300,155 @@ textarea::placeholder {
 .dark .alert-toast-danger {
   border-left-color: #f87171;
 }
+
+/* =============================================================================
+   PACIOLI BRAND - signature utilities
+   Matches pacioli-web aesthetic: double-rule motif, eyebrow labels, ledger card.
+   ============================================================================= */
+
+/* ::selection — mint accent on burgundy background */
+::selection {
+  background: var(--color-burgundy);
+  color: var(--color-parchment);
+}
+
+/* Focus rings — brand mint */
+:focus-visible {
+  outline: 2px solid var(--color-mint-bright);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
+/* Smooth scroll, with reduced-motion fallback */
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+
+/* ---------- Double-rule divider ----------
+   Signature visual cue for the double-entry brand:
+   a hairline rule with a mint shadow line beneath.                          */
+.double-rule {
+  border: 0;
+  height: 0;
+  border-top: 1px solid var(--color-rule);
+  box-shadow: 0 3px 0 -2px var(--color-mint-dim);
+  margin: 0;
+}
+
+/* ---------- Eyebrow ----------
+   Monospaced uppercase micro-label used above section headings.             */
+.eyebrow {
+  font-family: var(--font-family-mono);
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-mint);
+  margin: 0 0 18px;
+}
+
+/* ---------- Ledger card ----------
+   The signature surface that frames financial data — ink-3 -> ink-2 gradient,
+   rule border, a subtle drop shadow, monospace tabular alignment.            */
+.ledger-card {
+  background: linear-gradient(180deg, var(--color-ink-3), var(--color-ink-2));
+  border: 1px solid var(--color-rule);
+  border-radius: 10px;
+  padding: 22px 24px 20px;
+  box-shadow: 0 24px 60px -30px rgba(0, 0, 0, 0.8);
+}
+
+/* Light-mode ledger card — parchment surface with mint rule */
+.light .ledger-card,
+:not(.dark) .ledger-card {
+  background: linear-gradient(180deg, #FFFFFF, var(--color-bg-secondary-light));
+  box-shadow: 0 18px 40px -28px rgba(12, 20, 27, 0.18);
+}
+
+.ledger-card__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.ledger-card__title {
+  font-family: var(--font-family-display);
+  font-size: 17px;
+  color: var(--color-text-primary-dark);
+}
+.dark .ledger-card__title { color: var(--color-text-primary-dark); }
+:not(.dark) .ledger-card__title { color: var(--color-text-primary-light); }
+
+.ledger-card__date {
+  font-family: var(--font-family-mono);
+  font-size: 11px;
+  color: var(--color-muted);
+}
+
+/* Tabular journal-entry table style for use inside .ledger-card */
+.ledger-card table.je {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-family-mono);
+  font-size: 13px;
+}
+.ledger-card table.je th {
+  text-align: right;
+  font-weight: 500;
+  color: var(--color-mint);
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 0 0 8px;
+  border-bottom: 1px solid var(--color-rule);
+}
+.ledger-card table.je th:first-child { text-align: left; }
+.ledger-card table.je td { padding: 9px 0; color: var(--color-parchment-dim); text-align: right; }
+.ledger-card table.je td:first-child { text-align: left; color: var(--color-parchment); }
+:not(.dark) .ledger-card table.je td { color: var(--color-text-secondary-light); }
+:not(.dark) .ledger-card table.je td:first-child { color: var(--color-text-primary-light); }
+.ledger-card table.je td.indent { padding-left: 18px; }
+.ledger-card table.je tr.total td {
+  border-top: 1px solid var(--color-rule);
+  box-shadow: inset 0 -3px 0 -2px var(--color-mint-dim);
+  padding-bottom: 12px;
+}
+
+/* ---------- Mint-accent button (brand primary CTA) ---------- */
+.btn-mint {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-family-sans);
+  font-size: 15px;
+  font-weight: 600;
+  padding: 13px 22px;
+  border-radius: 6px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  background: var(--color-mint);
+  color: var(--color-ink);
+  transition: background .18s ease, transform .18s ease;
+}
+.btn-mint:hover {
+  background: var(--color-mint-bright);
+  transform: translateY(-1px);
+}
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-family-sans);
+  font-size: 15px;
+  font-weight: 600;
+  padding: 13px 22px;
+  border-radius: 6px;
+  cursor: pointer;
+  border: 1px solid var(--color-rule);
+  background: transparent;
+  color: var(--color-text-primary-dark);
+  transition: border-color .18s ease, color .18s ease;
+}
+:not(.dark) .btn-ghost { color: var(--color-text-primary-light); }
+.btn-ghost:hover { border-color: var(--color-mint-dim); }
