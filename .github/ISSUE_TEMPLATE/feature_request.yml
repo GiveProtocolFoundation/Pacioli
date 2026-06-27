@@ -1,0 +1,55 @@
+name: Feature request
+description: Suggest a new capability, integration, or improvement.
+labels: ["enhancement", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before filing, please check existing issues and discussions to see if
+        this has already been proposed.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: Describe the user need or pain point, not the implementation.
+      placeholder: As a treasurer for a nonprofit, I need to ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: How might Pacioli address this? Sketches, examples from other tools, or rough mockups all help.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Workarounds you've tried, or other tools that solve this differently.
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Which area does this touch?
+      multiple: true
+      options:
+        - Accounting / cost basis
+        - Multi-chain indexing
+        - Wallet integration
+        - Reports / analytics
+        - UI / UX
+        - Self-hosting
+        - Documentation
+        - Other
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Pre-flight
+      options:
+        - label: I searched existing issues and discussions for duplicates.
+          required: true

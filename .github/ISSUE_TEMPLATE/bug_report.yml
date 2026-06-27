@@ -1,0 +1,85 @@
+name: Bug report
+description: Something is broken or behaves unexpectedly.
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug. Before submitting, please search
+        existing issues to avoid duplicates.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: A short, clear description of the problem.
+      placeholder: Cost basis report shows incorrect FIFO totals when ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open Pacioli on macOS, version ...
+        2. Import wallet ...
+        3. Generate cost basis report with method = FIFO
+        4. Observe ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Which surface?
+      options:
+        - Desktop app (Tauri)
+        - Web build
+        - Both
+        - Not sure
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Pacioli version
+      placeholder: e.g. 0.1.0 (see About dialog or package.json)
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: Operating system + version
+      placeholder: e.g. macOS 14.5, Windows 11 23H2, Ubuntu 24.04
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs or screenshots
+      description: Paste console errors, screenshots, or anything else that helps. Redact wallet addresses or sensitive data.
+      render: shell
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Pre-flight
+      options:
+        - label: I searched existing issues and did not find a duplicate.
+          required: true

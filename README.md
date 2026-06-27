@@ -202,7 +202,7 @@ Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) and our [Code 
 4. Push to your fork and open a PR
 5. Ensure lint, type-check, and tests pass
 
-Project-specific coding standards (Rust doc requirements, TypeScript conventions) are in [CLAUDE.md](CLAUDE.md).
+Project-specific coding standards (Rust doc requirements, TypeScript conventions) are in [.claude/CLAUDE.md](.claude/CLAUDE.md).
 
 ---
 
