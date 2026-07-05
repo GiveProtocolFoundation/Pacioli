@@ -22,8 +22,12 @@ test.describe('Report generation and export', () => {
     await mockBlockchainRpc(page)
     await goToReports(page)
 
-    await expect(page.getByText(/financial reports/i).first()).toBeVisible({ timeout: 8_000 })
-    await expect(page.getByText(/crypto/i).first()).toBeVisible({ timeout: 5_000 })
+    await expect(page.getByText(/financial reports/i).first()).toBeVisible({
+      timeout: 8_000,
+    })
+    await expect(page.getByText(/crypto/i).first()).toBeVisible({
+      timeout: 5_000,
+    })
     await expect(page.getByText(/tax/i).first()).toBeVisible({ timeout: 5_000 })
   })
 
@@ -32,15 +36,21 @@ test.describe('Report generation and export', () => {
     await goToReports(page)
 
     // Click "Financial Reports" tab if present
-    const financialTab = page.getByRole('button', { name: /financial/i }).first()
+    const financialTab = page
+      .getByRole('button', { name: /financial/i })
+      .first()
     if (await financialTab.isVisible().catch(() => false)) {
       await financialTab.click()
     }
 
-    await expect(page.getByText(/balance sheet/i).first()).toBeVisible({ timeout: 8_000 })
+    await expect(page.getByText(/balance sheet/i).first()).toBeVisible({
+      timeout: 8_000,
+    })
   })
 
-  test('clicking Run on a report shows configuration or triggers generation', async ({ page }) => {
+  test('clicking Run on a report shows configuration or triggers generation', async ({
+    page,
+  }) => {
     await mockBlockchainRpc(page)
     await goToReports(page)
 
@@ -57,7 +67,9 @@ test.describe('Report generation and export', () => {
       ).toBeVisible({ timeout: 8_000 })
     } else {
       // Alternatively, report cards may be clickable directly
-      const reportCard = page.locator('[class*="report"], [class*="card"]').first()
+      const reportCard = page
+        .locator('[class*="report"], [class*="card"]')
+        .first()
       if (await reportCard.isVisible().catch(() => false)) {
         await reportCard.click()
         await expect(
@@ -89,7 +101,9 @@ test.describe('Report generation and export', () => {
     ).toBeVisible({ timeout: 8_000 })
   })
 
-  test('crypto reports category shows capital gains / cost basis entry', async ({ page }) => {
+  test('crypto reports category shows capital gains / cost basis entry', async ({
+    page,
+  }) => {
     await mockBlockchainRpc(page)
     await goToReports(page)
 
@@ -99,13 +113,13 @@ test.describe('Report generation and export', () => {
     }
 
     await expect(
-      page
-        .getByText(/capital gain|cost basis|realized/i)
-        .first()
+      page.getByText(/capital gain|cost basis|realized/i).first()
     ).toBeVisible({ timeout: 8_000 })
   })
 
-  test('tax reports category shows donation receipt entry', async ({ page }) => {
+  test('tax reports category shows donation receipt entry', async ({
+    page,
+  }) => {
     await mockBlockchainRpc(page)
     await goToReports(page)
 
@@ -116,9 +130,7 @@ test.describe('Report generation and export', () => {
 
     // Tax reports should mention donor receipts or form 990 etc.
     await expect(
-      page
-        .getByText(/donation|receipt|990|tax/i)
-        .first()
+      page.getByText(/donation|receipt|990|tax/i).first()
     ).toBeVisible({ timeout: 8_000 })
   })
 })
