@@ -218,7 +218,15 @@ const AssetAllocationChart: React.FC<{
 
   // Build donut chart from real allocation data
   const circumference = 2 * Math.PI * 80 // ~503
-  let dashOffset = 0
+
+  // Precompute cumulative offsets (pure, no mutation in render scope)
+  const donutSegments = assetAllocation.map((asset, i) => {
+    const dashLength = (asset.value / 100) * circumference
+    const dashOffset = assetAllocation
+      .slice(0, i)
+      .reduce((sum, a) => sum + (a.value / 100) * circumference, 0)
+    return { ...asset, dashLength, dashOffset }
+  })
 
   return (
     <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
@@ -236,25 +244,20 @@ const AssetAllocationChart: React.FC<{
 
       <div className="flex items-center justify-center mb-6">
         <svg width="200" height="200" viewBox="0 0 200 200">
-          {assetAllocation.map(asset => {
-            const dashLength = (asset.value / 100) * circumference
-            const circle = (
-              <circle
-                key={asset.name}
-                cx="100"
-                cy="100"
-                r="80"
-                fill="none"
-                stroke={asset.color}
-                strokeWidth="40"
-                strokeDasharray={`${dashLength} ${circumference}`}
-                strokeDashoffset={-dashOffset}
-                transform="rotate(-90 100 100)"
-              />
-            )
-            dashOffset += dashLength
-            return circle
-          })}
+          {donutSegments.map(segment => (
+            <circle
+              key={segment.name}
+              cx="100"
+              cy="100"
+              r="80"
+              fill="none"
+              stroke={segment.color}
+              strokeWidth="40"
+              strokeDasharray={`${segment.dashLength} ${circumference}`}
+              strokeDashoffset={-segment.dashOffset}
+              transform="rotate(-90 100 100)"
+            />
+          ))}
         </svg>
       </div>
 
@@ -627,14 +630,13 @@ const Analytics: React.FC = () => {
   // Filter transactions by time period
   const filteredTransactions = useMemo(() => {
     if (timePeriod === 'all') return allTransactions
-    const now = Date.now()
     const periodMs: Record<string, number> = {
       '7d': 7 * 24 * 60 * 60 * 1000,
       '30d': 30 * 24 * 60 * 60 * 1000,
       '90d': 90 * 24 * 60 * 60 * 1000,
       '1y': 365 * 24 * 60 * 60 * 1000,
     }
-    const cutoff = now - (periodMs[timePeriod] ?? 0)
+    const cutoff = new Date().getTime() - (periodMs[timePeriod] ?? 0)
     return allTransactions.filter(tx => {
       if (!tx.timestamp) return false
       return new Date(tx.timestamp).getTime() >= cutoff
