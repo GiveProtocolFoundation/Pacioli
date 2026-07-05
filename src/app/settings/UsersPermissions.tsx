@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import {
   Users,
   UserPlus,
@@ -10,7 +10,11 @@ import {
   X,
   Search,
   AlertCircle,
+  Loader2,
 } from 'lucide-react'
+import { useAuth } from '../../contexts/AuthContext'
+import { authService, withAutoRefresh } from '../../services/auth'
+import type { ProfileUser } from '../../types/auth'
 
 interface User {
   id: string
@@ -48,6 +52,7 @@ interface UsersTableProps {
   handleSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void
   statusFilter: 'all' | 'active' | 'inactive' | 'pending'
   handleStatusFilterChange: (e: React.ChangeEvent<HTMLSelectElement>) => void
+  isLoading: boolean
 }
 
 interface RolesViewProps {
@@ -55,300 +60,62 @@ interface RolesViewProps {
   users: User[]
 }
 
-// Mock data for users
-const mockUsers: User[] = [
-  {
-    id: '1',
-    name: 'John Smith',
-    email: 'john.smith@example.org',
-    role: {
-      id: 'admin',
-      name: 'Administrator',
-      description: 'Full access to all features and settings',
-      permissions: [],
-      isCustom: false,
-    },
-    status: 'active',
-    lastLogin: '2025-10-17T10:30:00Z',
-    twoFactorEnabled: true,
-  },
-  {
-    id: '2',
-    name: 'Sarah Johnson',
-    email: 'sarah.johnson@example.org',
-    role: {
-      id: 'accountant',
-      name: 'Accountant',
-      description: 'Manage transactions and financial records',
-      permissions: [],
-      isCustom: false,
-    },
-    status: 'active',
-    lastLogin: '2025-10-16T15:45:00Z',
-    twoFactorEnabled: true,
-  },
-  {
-    id: '3',
-    name: 'Michael Chen',
-    email: 'michael.chen@example.org',
-    role: {
-      id: 'auditor',
-      name: 'Auditor',
-      description: 'Read-only access with audit logs',
-      permissions: [],
-      isCustom: false,
-    },
-    status: 'active',
-    lastLogin: '2025-10-15T09:20:00Z',
-    twoFactorEnabled: false,
-  },
-  {
-    id: '4',
-    name: 'Emily Davis',
-    email: 'emily.davis@example.org',
-    role: {
-      id: 'viewer',
-      name: 'Viewer',
-      description: 'View-only access to reports and dashboards',
-      permissions: [],
-      isCustom: false,
-    },
-    status: 'inactive',
-    lastLogin: '2025-09-28T14:10:00Z',
-    twoFactorEnabled: false,
-  },
-  {
-    id: '5',
-    name: 'David Martinez',
-    email: 'david.martinez@example.org',
-    role: {
-      id: 'accountant',
-      name: 'Accountant',
-      description: 'Manage transactions and financial records',
-      permissions: [],
-      isCustom: false,
-    },
-    status: 'pending',
-    lastLogin: null,
-    twoFactorEnabled: false,
-  },
-]
+/** Map auth UserRole to a display-friendly Role object */
+function mapUserRoleToRole(role: string): Role {
+  const roleDefinitions: Record<string, { name: string; description: string }> = {
+    admin: { name: 'Administrator', description: 'Full access to all features and settings' },
+    'system-admin': { name: 'System Administrator', description: 'Full system access including configuration' },
+    preparer: { name: 'Preparer', description: 'Prepare and submit transactions for approval' },
+    approver: { name: 'Approver', description: 'Review and approve submitted transactions' },
+    user: { name: 'User', description: 'Standard access to view and manage records' },
+  }
 
-// Predefined roles
-const mockRoles: Role[] = [
-  {
-    id: 'admin',
-    name: 'Administrator',
-    description: 'Full access to all features and settings',
+  const def = roleDefinitions[role] ?? { name: role, description: `${role} role` }
+
+  return {
+    id: role,
+    name: def.name,
+    description: def.description,
+    permissions: [],
     isCustom: false,
-    permissions: [
-      {
-        module: 'Dashboard',
-        view: true,
-        create: true,
-        edit: true,
-        delete: true,
-      },
-      {
-        module: 'Transactions',
-        view: true,
-        create: true,
-        edit: true,
-        delete: true,
-        approve: true,
-      },
-      { module: 'Wallets', view: true, create: true, edit: true, delete: true },
-      { module: 'Reports', view: true, create: true, edit: true, delete: true },
-      {
-        module: 'Analytics',
-        view: true,
-        create: true,
-        edit: true,
-        delete: true,
-      },
-      {
-        module: 'Settings',
-        view: true,
-        create: true,
-        edit: true,
-        delete: true,
-      },
-      { module: 'Users', view: true, create: true, edit: true, delete: true },
-    ],
-  },
-  {
-    id: 'accountant',
-    name: 'Accountant',
-    description: 'Manage transactions and financial records',
-    isCustom: false,
-    permissions: [
-      {
-        module: 'Dashboard',
-        view: true,
-        create: false,
-        edit: false,
-        delete: false,
-      },
-      {
-        module: 'Transactions',
-        view: true,
-        create: true,
-        edit: true,
-        delete: false,
-        approve: true,
-      },
-      {
-        module: 'Wallets',
-        view: true,
-        create: true,
-        edit: true,
-        delete: false,
-      },
-      {
-        module: 'Reports',
-        view: true,
-        create: true,
-        edit: true,
-        delete: false,
-      },
-      {
-        module: 'Analytics',
-        view: true,
-        create: false,
-        edit: false,
-        delete: false,
-      },
-      {
-        module: 'Settings',
-        view: true,
-        create: false,
-        edit: true,
-        delete: false,
-      },
-      {
-        module: 'Users',
-        view: true,
-        create: false,
-        edit: false,
-        delete: false,
-      },
-    ],
-  },
-  {
-    id: 'auditor',
-    name: 'Auditor',
-    description: 'Read-only access with audit logs',
-    isCustom: false,
-    permissions: [
-      {
-        module: 'Dashboard',
-        view: true,
-        create: false,
-        edit: false,
-        delete: false,
-      },
-      {
-        module: 'Transactions',
-        view: true,
-        create: false,
-        edit: false,
-        delete: false,
-      },
-      {
-        module: 'Wallets',
-        view: true,
-        create: false,
-        edit: false,
-        delete: false,
-      },
-      {
-        module: 'Reports',
-        view: true,
-        create: false,
-        edit: false,
-        delete: false,
-      },
-      {
-        module: 'Analytics',
-        view: true,
-        create: false,
-        edit: false,
-        delete: false,
-      },
-      {
-        module: 'Settings',
-        view: true,
-        create: false,
-        edit: false,
-        delete: false,
-      },
-      {
-        module: 'Users',
-        view: true,
-        create: false,
-        edit: false,
-        delete: false,
-      },
-    ],
-  },
-  {
-    id: 'viewer',
-    name: 'Viewer',
-    description: 'View-only access to reports and dashboards',
-    isCustom: false,
-    permissions: [
-      {
-        module: 'Dashboard',
-        view: true,
-        create: false,
-        edit: false,
-        delete: false,
-      },
-      {
-        module: 'Transactions',
-        view: true,
-        create: false,
-        edit: false,
-        delete: false,
-      },
-      {
-        module: 'Wallets',
-        view: true,
-        create: false,
-        edit: false,
-        delete: false,
-      },
-      {
-        module: 'Reports',
-        view: true,
-        create: false,
-        edit: false,
-        delete: false,
-      },
-      {
-        module: 'Analytics',
-        view: false,
-        create: false,
-        edit: false,
-        delete: false,
-      },
-      {
-        module: 'Settings',
-        view: false,
-        create: false,
-        edit: false,
-        delete: false,
-      },
-      {
-        module: 'Users',
-        view: false,
-        create: false,
-        edit: false,
-        delete: false,
-      },
-    ],
-  },
-]
+  }
+}
+
+/** Map auth UserStatus to component status */
+function mapUserStatus(status: string): 'active' | 'inactive' | 'pending' {
+  switch (status) {
+    case 'active':
+      return 'active'
+    case 'pending_verification':
+      return 'pending'
+    default:
+      return 'inactive'
+  }
+}
+
+/** Map a ProfileUser from the auth service to the component's User interface */
+function mapProfileUserToUser(pu: ProfileUser): User {
+  return {
+    id: pu.user_id,
+    name: pu.display_name || pu.email.split('@')[0],
+    email: pu.email,
+    role: mapUserRoleToRole(pu.role),
+    status: mapUserStatus(pu.status),
+    lastLogin: null, // Auth service does not provide lastLogin
+    twoFactorEnabled: false, // Not available from current API
+  }
+}
+
+/** Build deduplicated roles list from users */
+function buildRolesFromUsers(users: User[]): Role[] {
+  const seen = new Map<string, Role>()
+  for (const u of users) {
+    if (!seen.has(u.role.id)) {
+      seen.set(u.role.id, u.role)
+    }
+  }
+  return Array.from(seen.values())
+}
 
 type ViewMode = 'users' | 'roles'
 
@@ -445,6 +212,7 @@ const UsersTable: React.FC<UsersTableProps> = ({
   handleSearchChange,
   statusFilter,
   handleStatusFilterChange,
+  isLoading,
 }) => (
   <>
     {/* Search and Filters */}
@@ -473,100 +241,113 @@ const UsersTable: React.FC<UsersTableProps> = ({
 
     {/* Users Table */}
     <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#9FB4BE] uppercase tracking-wider">
-                User
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#9FB4BE] uppercase tracking-wider">
-                Role
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#9FB4BE] uppercase tracking-wider">
-                Status
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#9FB4BE] uppercase tracking-wider">
-                Last Login
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#9FB4BE] uppercase tracking-wider">
-                2FA
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-[#9FB4BE] uppercase tracking-wider">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-            {filteredUsers.map(user => (
-              <tr
-                key={user.id}
-                className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-              >
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex items-center">
-                    <div className="w-10 h-10 rounded-full bg-[#294050]/10 dark:bg-[#294050]/20 flex items-center justify-center">
-                      <span className="text-sm font-medium text-[#294050] dark:text-[#F09988]">
-                        {user.name
-                          .split(' ')
-                          .map(n => n[0])
-                          .join('')}
-                      </span>
-                    </div>
-                    <div className="ml-4">
-                      <div className="text-sm font-medium text-gray-900 dark:text-white">
-                        {user.name}
-                      </div>
-                      <div className="text-sm text-gray-500 dark:text-[#9FB4BE]">
-                        {user.email}
-                      </div>
-                    </div>
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900 dark:text-white">
-                    {user.role.name}
-                  </div>
-                  <div className="text-xs text-gray-500 dark:text-[#9FB4BE]">
-                    {user.role.description}
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {getStatusBadge(user.status)}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-[#9FB4BE]">
-                  {formatLastLogin(user.lastLogin)}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {user.twoFactorEnabled ? (
-                    <span className="inline-flex items-center text-green-600 dark:text-green-400">
-                      <Check className="w-4 h-4" />
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center text-gray-400">
-                      <X className="w-4 h-4" />
-                    </span>
-                  )}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <button className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                    <MoreVertical className="w-5 h-5" />
-                  </button>
-                </td>
+      {isLoading ? (
+        <div className="p-12 text-center">
+          <Loader2 className="mx-auto h-8 w-8 text-gray-400 animate-spin" />
+          <p className="mt-2 text-sm text-gray-500 dark:text-[#9FB4BE]">
+            Loading users…
+          </p>
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#9FB4BE] uppercase tracking-wider">
+                  User
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#9FB4BE] uppercase tracking-wider">
+                  Role
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#9FB4BE] uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#9FB4BE] uppercase tracking-wider">
+                  Last Login
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#9FB4BE] uppercase tracking-wider">
+                  2FA
+                </th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-[#9FB4BE] uppercase tracking-wider">
+                  Actions
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+              {filteredUsers.map(user => (
+                <tr
+                  key={user.id}
+                  className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                >
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center">
+                      <div className="w-10 h-10 rounded-full bg-[#294050]/10 dark:bg-[#294050]/20 flex items-center justify-center">
+                        <span className="text-sm font-medium text-[#294050] dark:text-[#F09988]">
+                          {user.name
+                            .split(' ')
+                            .map(n => n[0])
+                            .join('')
+                            .slice(0, 2)
+                            .toUpperCase()}
+                        </span>
+                      </div>
+                      <div className="ml-4">
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">
+                          {user.name}
+                        </div>
+                        <div className="text-sm text-gray-500 dark:text-[#9FB4BE]">
+                          {user.email}
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-900 dark:text-white">
+                      {user.role.name}
+                    </div>
+                    <div className="text-xs text-gray-500 dark:text-[#9FB4BE]">
+                      {user.role.description}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {getStatusBadge(user.status)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-[#9FB4BE]">
+                    {formatLastLogin(user.lastLogin)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {user.twoFactorEnabled ? (
+                      <span className="inline-flex items-center text-green-600 dark:text-green-400">
+                        <Check className="w-4 h-4" />
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center text-gray-400">
+                        <X className="w-4 h-4" />
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <button className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                      <MoreVertical className="w-5 h-5" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
-      {filteredUsers.length === 0 && (
+      {!isLoading && filteredUsers.length === 0 && (
         <div className="p-12 text-center">
           <Users className="mx-auto h-12 w-12 text-gray-400" />
           <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">
             No users found
           </h3>
           <p className="mt-1 text-sm text-gray-500 dark:text-[#9FB4BE]">
-            Try adjusting your search or filters.
+            {searchQuery || statusFilter !== 'all'
+              ? 'Try adjusting your search or filters.'
+              : 'No users have been added to this profile yet.'}
           </p>
         </div>
       )}
@@ -577,126 +358,73 @@ const UsersTable: React.FC<UsersTableProps> = ({
 // Extracted RolesView component to avoid recreation on every render
 const RolesView: React.FC<RolesViewProps> = ({ roles, users }) => (
   <>
-    {/* Roles View */}
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      {roles.map(role => (
-        <div
-          key={role.id}
-          className="border border-gray-200 dark:border-gray-700 rounded-lg p-6 bg-white dark:bg-gray-900"
-        >
-          <div className="flex items-start justify-between mb-4">
-            <div className="flex items-center">
-              <div className="w-10 h-10 rounded-lg bg-[#294050]/10 dark:bg-[#294050]/20 flex items-center justify-center">
-                <Shield className="w-5 h-5 text-[#294050] dark:text-[#F09988]" />
-              </div>
-              <div className="ml-3">
-                <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
-                  {role.name}
-                </h3>
-                {role.isCustom && (
-                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-400 border border-purple-200 dark:border-purple-800 mt-1">
-                    Custom
-                  </span>
-                )}
-              </div>
-            </div>
-            <button className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-              <MoreVertical className="w-5 h-5" />
-            </button>
-          </div>
-
-          <p className="text-sm text-gray-500 dark:text-[#9FB4BE] mb-4">
-            {role.description}
-          </p>
-
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-xs">
-              <span className="font-medium text-gray-700 dark:text-gray-300">
-                Module
-              </span>
-              <div className="flex items-center space-x-2">
-                <span className="text-gray-500 dark:text-[#9FB4BE]">View</span>
-                <span className="text-gray-500 dark:text-[#9FB4BE]">
-                  Create
-                </span>
-                <span className="text-gray-500 dark:text-[#9FB4BE]">Edit</span>
-                <span className="text-gray-500 dark:text-[#9FB4BE]">
-                  Delete
-                </span>
-              </div>
-            </div>
-            <div className="max-h-48 overflow-y-auto space-y-2">
-              {role.permissions.map(permission => (
-                <div
-                  key={permission.module}
-                  className="flex items-center justify-between text-xs py-1 border-b border-gray-100 dark:border-gray-800"
-                >
-                  <span className="text-gray-700 dark:text-gray-300">
-                    {permission.module}
-                  </span>
-                  <div className="flex items-center space-x-2">
-                    <span className="w-12 text-center">
-                      {permission.view ? (
-                        <Check className="w-3 h-3 inline text-green-600 dark:text-green-400" />
-                      ) : (
-                        <X className="w-3 h-3 inline text-gray-300 dark:text-gray-600" />
-                      )}
-                    </span>
-                    <span className="w-12 text-center">
-                      {permission.create ? (
-                        <Check className="w-3 h-3 inline text-green-600 dark:text-green-400" />
-                      ) : (
-                        <X className="w-3 h-3 inline text-gray-300 dark:text-gray-600" />
-                      )}
-                    </span>
-                    <span className="w-12 text-center">
-                      {permission.edit ? (
-                        <Check className="w-3 h-3 inline text-green-600 dark:text-green-400" />
-                      ) : (
-                        <X className="w-3 h-3 inline text-gray-300 dark:text-gray-600" />
-                      )}
-                    </span>
-                    <span className="w-12 text-center">
-                      {permission.delete ? (
-                        <Check className="w-3 h-3 inline text-green-600 dark:text-green-400" />
-                      ) : (
-                        <X className="w-3 h-3 inline text-gray-300 dark:text-gray-600" />
-                      )}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-            <div className="flex items-center justify-between text-xs text-gray-500 dark:text-[#9FB4BE]">
-              <span>
-                {users.filter(u => u.role.id === role.id).length} users assigned
-              </span>
-              {!role.isCustom && (
-                <span className="text-[#294050] dark:text-[#F09988] hover:underline cursor-pointer">
-                  View details
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-      ))}
-
-      {/* Create Custom Role Card */}
-      <button className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 hover:border-[#294050] dark:hover:border-[#F09988] hover:bg-[#294050]/5 dark:hover:bg-[#294050]/10 transition-colors flex flex-col items-center justify-center text-center min-h-[300px]">
-        <div className="w-12 h-12 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-3">
-          <Shield className="w-6 h-6 text-gray-400" />
-        </div>
-        <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-1">
-          Create Custom Role
+    {roles.length === 0 ? (
+      <div className="p-12 text-center bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg">
+        <Shield className="mx-auto h-12 w-12 text-gray-400" />
+        <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">
+          No roles found
         </h3>
-        <p className="text-xs text-gray-500 dark:text-[#9FB4BE]">
-          Define custom permissions for specific needs
+        <p className="mt-1 text-sm text-gray-500 dark:text-[#9FB4BE]">
+          Roles will appear here once users are added to this profile.
         </p>
-      </button>
-    </div>
+      </div>
+    ) : (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {roles.map(role => (
+          <div
+            key={role.id}
+            className="border border-gray-200 dark:border-gray-700 rounded-lg p-6 bg-white dark:bg-gray-900"
+          >
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex items-center">
+                <div className="w-10 h-10 rounded-lg bg-[#294050]/10 dark:bg-[#294050]/20 flex items-center justify-center">
+                  <Shield className="w-5 h-5 text-[#294050] dark:text-[#F09988]" />
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+                    {role.name}
+                  </h3>
+                  {role.isCustom && (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-400 border border-purple-200 dark:border-purple-800 mt-1">
+                      Custom
+                    </span>
+                  )}
+                </div>
+              </div>
+              <button className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                <MoreVertical className="w-5 h-5" />
+              </button>
+            </div>
+
+            <p className="text-sm text-gray-500 dark:text-[#9FB4BE] mb-4">
+              {role.description}
+            </p>
+
+            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between text-xs text-gray-500 dark:text-[#9FB4BE]">
+                <span>
+                  {users.filter(u => u.role.id === role.id).length} users assigned
+                </span>
+              </div>
+            </div>
+          </div>
+        ))}
+
+        {/* Create Custom Role Card */}
+        <button className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 hover:border-[#294050] dark:hover:border-[#F09988] hover:bg-[#294050]/5 dark:hover:bg-[#294050]/10 transition-colors flex flex-col items-center justify-center text-center min-h-[200px]">
+          <div className="w-12 h-12 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-3">
+            <Shield className="w-6 h-6 text-gray-400" />
+          </div>
+          <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-1">
+            Create Custom Role
+          </h3>
+          <p className="text-xs text-gray-500 dark:text-[#9FB4BE]">
+            Define custom permissions for specific needs
+          </p>
+        </button>
+      </div>
+    )}
+
     {/* Security Settings */}
     <div className="mt-8 border border-gray-200 dark:border-gray-700 rounded-lg p-6 bg-white dark:bg-gray-900">
       <div className="flex items-center mb-4">
@@ -763,13 +491,50 @@ const RolesView: React.FC<RolesViewProps> = ({ roles, users }) => (
 
 const UsersPermissions: React.FC = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('users')
-  const [users] = useState<User[]>(mockUsers)
-  const [roles] = useState<Role[]>(mockRoles)
+  const [users, setUsers] = useState<User[]>([])
+  const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<
     'all' | 'active' | 'inactive' | 'pending'
   >('all')
   const [showInviteModal, setShowInviteModal] = useState(false)
+
+  const { userProfiles } = useAuth()
+  const currentProfileId =
+    localStorage.getItem('currentProfileId') || userProfiles[0]?.profile_id
+
+  // Load users from auth service
+  useEffect(() => {
+    let cancelled = false
+    const loadUsers = async () => {
+      if (!currentProfileId) {
+        setUsers([])
+        setIsLoading(false)
+        return
+      }
+      try {
+        setIsLoading(true)
+        const profileUsers = await withAutoRefresh(token =>
+          authService.getProfileUsers(token, currentProfileId)
+        )
+        if (!cancelled) {
+          setUsers(profileUsers.map(mapProfileUserToUser))
+        }
+      } catch {
+        // Auth service may not be available (dev mode / desktop) — show empty state
+        if (!cancelled) setUsers([])
+      } finally {
+        if (!cancelled) setIsLoading(false)
+      }
+    }
+    loadUsers()
+    return () => {
+      cancelled = true
+    }
+  }, [currentProfileId])
+
+  // Derive roles from loaded users
+  const roles = buildRolesFromUsers(users)
 
   const filteredUsers = users.filter(user => {
     const matchesSearch =
@@ -904,6 +669,7 @@ const UsersPermissions: React.FC = () => {
           handleSearchChange={handleSearchChange}
           statusFilter={statusFilter}
           handleStatusFilterChange={handleStatusFilterChange}
+          isLoading={isLoading}
         />
       ) : (
         <RolesView roles={roles} users={users} />
@@ -911,7 +677,7 @@ const UsersPermissions: React.FC = () => {
 
       {showInviteModal && (
         <InviteUserModal
-          roles={roles}
+          roles={roles.length > 0 ? roles : [mapUserRoleToRole('user')]}
           handleClose={handleCloseInviteModal}
           handleSend={handleSendInvite}
         />

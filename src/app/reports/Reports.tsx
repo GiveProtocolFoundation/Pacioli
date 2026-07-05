@@ -19,6 +19,7 @@ import {
   FileSpreadsheet,
   Settings,
   Plus,
+  Inbox,
 } from 'lucide-react'
 
 /**
@@ -49,15 +50,6 @@ interface Report {
 
 type ReportCategory = 'financial' | 'crypto' | 'tax' | 'custom'
 
-interface RecentRun {
-  id: string
-  reportName: string
-  ranAt: string
-  ranBy: string
-  format: 'pdf' | 'excel' | 'csv'
-  status: 'completed' | 'processing' | 'failed'
-}
-
 const reportCategories: {
   id: ReportCategory
   label: string
@@ -78,7 +70,6 @@ const reports: Report[] = [
       'Statement of financial position showing assets, liabilities, and equity',
     category: 'financial',
     icon: PieChart,
-    lastRun: '2025-10-15T14:30:00Z',
     favorite: true,
   },
   {
@@ -88,7 +79,6 @@ const reports: Report[] = [
       'Profit and loss statement showing revenue, expenses, and net income',
     category: 'financial',
     icon: TrendingUp,
-    lastRun: '2025-10-15T14:30:00Z',
     favorite: true,
   },
   {
@@ -98,7 +88,6 @@ const reports: Report[] = [
       'Statement of cash flows from operating, investing, and financing activities',
     category: 'financial',
     icon: DollarSign,
-    lastRun: '2025-10-10T09:15:00Z',
   },
   {
     id: 'trial-balance',
@@ -114,7 +103,6 @@ const reports: Report[] = [
     description: 'Complete record of all financial transactions',
     category: 'financial',
     icon: FileSpreadsheet,
-    lastRun: '2025-10-12T16:45:00Z',
   },
   {
     id: 'accounts-receivable',
@@ -138,7 +126,6 @@ const reports: Report[] = [
     description: 'Current cryptocurrency positions across all wallets',
     category: 'crypto',
     icon: Coins,
-    lastRun: '2025-10-17T08:00:00Z',
     favorite: true,
   },
   {
@@ -147,7 +134,6 @@ const reports: Report[] = [
     description: 'Summary of staking rewards earned by token and period',
     category: 'crypto',
     icon: TrendingUp,
-    lastRun: '2025-10-16T12:00:00Z',
   },
   {
     id: 'transaction-history',
@@ -155,7 +141,6 @@ const reports: Report[] = [
     description: 'Detailed list of all cryptocurrency transactions',
     category: 'crypto',
     icon: FileText,
-    lastRun: '2025-10-17T10:30:00Z',
   },
   {
     id: 'unrealized-gains',
@@ -170,7 +155,6 @@ const reports: Report[] = [
     description: 'Cost basis tracking for all cryptocurrency holdings',
     category: 'crypto',
     icon: Calculator,
-    lastRun: '2025-10-14T11:20:00Z',
   },
   {
     id: 'wallet-performance',
@@ -188,7 +172,6 @@ const reports: Report[] = [
       'Annual tax summary including realized gains, income, and deductions',
     category: 'tax',
     icon: Receipt,
-    lastRun: '2025-01-15T14:00:00Z',
     favorite: true,
   },
   {
@@ -213,41 +196,6 @@ const reports: Report[] = [
     description: 'Detailed tax lot tracking with acquisition dates and costs',
     category: 'tax',
     icon: Calculator,
-  },
-]
-
-const recentRuns: RecentRun[] = [
-  {
-    id: '1',
-    reportName: 'Crypto Holdings Report',
-    ranAt: '2025-10-17T08:00:00Z',
-    ranBy: 'John Smith',
-    format: 'pdf',
-    status: 'completed',
-  },
-  {
-    id: '2',
-    reportName: 'Income Statement (P&L)',
-    ranAt: '2025-10-15T14:30:00Z',
-    ranBy: 'Sarah Johnson',
-    format: 'excel',
-    status: 'completed',
-  },
-  {
-    id: '3',
-    reportName: 'Transaction History',
-    ranAt: '2025-10-17T10:30:00Z',
-    ranBy: 'John Smith',
-    format: 'csv',
-    status: 'completed',
-  },
-  {
-    id: '4',
-    reportName: 'Balance Sheet',
-    ranAt: '2025-10-15T14:30:00Z',
-    ranBy: 'Michael Chen',
-    format: 'pdf',
-    status: 'completed',
   },
 ]
 
@@ -314,32 +262,6 @@ const StatCard: React.FC<{
         <Icon />
       </div>
     </div>
-  </div>
-)
-
-/** Renders a single recent report run entry with status badge and download link */
-const RecentRunItem: React.FC<{
-  run: RecentRun
-  getStatusBadge: (status: RecentRun['status']) => React.ReactNode
-  formatDate: (dateString: string) => string
-}> = ({ run, getStatusBadge, formatDate }) => (
-  <div className="pb-3 border-b border-[rgba(95,227,192,0.15)] last:border-0 last:pb-0">
-    <div className="flex items-start justify-between mb-1">
-      <p className="text-sm font-medium text-[#11202B] dark:text-[#EAF3F2]">
-        {run.reportName}
-      </p>
-      {getStatusBadge(run.status)}
-    </div>
-    <p className="text-xs text-[#294050] dark:text-[#9FB4BE]">By {run.ranBy}</p>
-    <p className="text-xs text-[#647D8B] dark:text-[#294050] mt-1">
-      {formatDate(run.ranAt)}
-    </p>
-    {run.status === 'completed' && (
-      <button className="download-link mt-2 flex items-center">
-        <Download className="w-3 h-3 mr-1" />
-        Download {run.format.toUpperCase()}
-      </button>
-    )}
   </div>
 )
 
@@ -429,38 +351,6 @@ const Reports: React.FC = () => {
 
   const favoriteReports = reports.filter(r => r.favorite)
 
-  /** Formats a date string for display in the recent runs sidebar */
-  const formatDate = useCallback((dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    })
-  }, [])
-
-  /** Returns a colored status badge element for a report run status */
-  const getStatusBadge = useCallback((status: RecentRun['status']) => {
-    const styles = {
-      completed:
-        'bg-[#5FE3C0]/10 dark:bg-[#5FE3C0]/20 text-[#5FE3C0] dark:text-[#9CF1DC]',
-      processing:
-        'bg-[#294050]/10 dark:bg-[#294050]/20 text-[#294050] dark:text-[#F09988]',
-      failed:
-        'bg-[#E8836F]/10 dark:bg-[#E8836F]/20 text-[#E8836F] dark:text-[#F09988]',
-    }
-
-    return (
-      <span
-        className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${styles[status]}`}
-      >
-        {status.charAt(0).toUpperCase() + status.slice(1)}
-      </span>
-    )
-  }, [])
-
   const handleSearchChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       setSearchQuery(e.target.value)
@@ -489,7 +379,7 @@ const Reports: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Quick Stats */}
+            {/* Quick Stats — derived from report definitions, not mock data */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <StatCard
                 label="Total Reports"
@@ -503,10 +393,7 @@ const Reports: React.FC = () => {
               />
               <StatCard
                 label="Run Today"
-                value={
-                  recentRuns.filter(r => r.ranAt.startsWith('2025-10-17'))
-                    .length
-                }
+                value={0}
                 Icon={Clock}
               />
             </div>
@@ -613,20 +500,19 @@ const Reports: React.FC = () => {
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Recent Runs */}
+            {/* Recent Runs — honest empty state (no report-run history backend exists) */}
             <div className="bg-[#F7FAFA] dark:bg-[#0C141B] rounded-lg border border-[rgba(95,227,192,0.15)] p-6">
               <h3 className="text-sm font-semibold text-[#11202B] dark:text-[#EAF3F2] mb-4">
                 Recent Runs
               </h3>
-              <div className="space-y-3">
-                {recentRuns.map(run => (
-                  <RecentRunItem
-                    key={run.id}
-                    run={run}
-                    getStatusBadge={getStatusBadge}
-                    formatDate={formatDate}
-                  />
-                ))}
+              <div className="py-8 text-center">
+                <Inbox className="mx-auto h-10 w-10 text-[#647D8B]" />
+                <p className="mt-2 text-sm text-[#294050] dark:text-[#9FB4BE]">
+                  No reports run yet
+                </p>
+                <p className="mt-1 text-xs text-[#647D8B] dark:text-[#294050]">
+                  Run a report to see its history here.
+                </p>
               </div>
             </div>
 
