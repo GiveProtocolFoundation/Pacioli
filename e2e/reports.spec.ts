@@ -5,7 +5,7 @@
  *   1. Reports page loads and shows all four categories.
  *   2. Each report category (financial, crypto, tax, custom) is accessible.
  *   3. Clicking a report's "Run" button starts generation (or shows config).
- *   4. Export format options (PDF / Excel / CSV) are present.
+ *   4. Download action is available on report cards.
  *   5. "Recent runs" section is visible (even if empty).
  *   6. Favorite reports are highlighted.
  */
@@ -22,8 +22,12 @@ test.describe('Report generation and export', () => {
     await mockBlockchainRpc(page)
     await goToReports(page)
 
-    await expect(page.getByText(/financial reports/i).first()).toBeVisible({ timeout: 8_000 })
-    await expect(page.getByText(/crypto/i).first()).toBeVisible({ timeout: 5_000 })
+    await expect(page.getByText(/financial reports/i).first()).toBeVisible({
+      timeout: 8_000,
+    })
+    await expect(page.getByText(/crypto/i).first()).toBeVisible({
+      timeout: 5_000,
+    })
     await expect(page.getByText(/tax/i).first()).toBeVisible({ timeout: 5_000 })
   })
 
@@ -32,15 +36,21 @@ test.describe('Report generation and export', () => {
     await goToReports(page)
 
     // Click "Financial Reports" tab if present
-    const financialTab = page.getByRole('button', { name: /financial/i }).first()
+    const financialTab = page
+      .getByRole('button', { name: /financial/i })
+      .first()
     if (await financialTab.isVisible().catch(() => false)) {
       await financialTab.click()
     }
 
-    await expect(page.getByText(/balance sheet/i).first()).toBeVisible({ timeout: 8_000 })
+    await expect(page.getByText(/balance sheet/i).first()).toBeVisible({
+      timeout: 8_000,
+    })
   })
 
-  test('clicking Run on a report shows configuration or triggers generation', async ({ page }) => {
+  test('clicking Run on a report shows configuration or triggers generation', async ({
+    page,
+  }) => {
     await mockBlockchainRpc(page)
     await goToReports(page)
 
@@ -57,7 +67,9 @@ test.describe('Report generation and export', () => {
       ).toBeVisible({ timeout: 8_000 })
     } else {
       // Alternatively, report cards may be clickable directly
-      const reportCard = page.locator('[class*="report"], [class*="card"]').first()
+      const reportCard = page
+        .locator('[class*="report"], [class*="card"]')
+        .first()
       if (await reportCard.isVisible().catch(() => false)) {
         await reportCard.click()
         await expect(
@@ -67,30 +79,13 @@ test.describe('Report generation and export', () => {
     }
   })
 
-  test('export format options (PDF, Excel, CSV) are available on report detail', async ({ page }) => {
+  test('download action is available on report cards', async ({ page }) => {
     await mockBlockchainRpc(page)
     await goToReports(page)
 
-    // Open a report — click its card or run button
-    const firstCard = page
-      .getByText(/balance sheet|income statement/i)
-      .first()
-    if (await firstCard.isVisible().catch(() => false)) {
-      await firstCard.click()
-    }
-
-    // Look for format options
-    const pdfOption = page.getByText(/pdf/i).first()
-    const excelOption = page.getByText(/excel|xlsx/i).first()
-    const csvOption = page.getByText(/csv/i).first()
-
-    // At least one format should be visible somewhere on the page
-    const anyFormatVisible =
-      (await pdfOption.isVisible().catch(() => false)) ||
-      (await excelOption.isVisible().catch(() => false)) ||
-      (await csvOption.isVisible().catch(() => false))
-
-    expect(anyFormatVisible).toBeTruthy()
+    // Each report card has a Download icon button
+    const downloadBtn = page.getByRole('button', { name: /download/i }).first()
+    await expect(downloadBtn).toBeVisible({ timeout: 8_000 })
   })
 
   test('recent runs section is rendered', async ({ page }) => {
@@ -106,7 +101,9 @@ test.describe('Report generation and export', () => {
     ).toBeVisible({ timeout: 8_000 })
   })
 
-  test('crypto reports category shows capital gains / cost basis entry', async ({ page }) => {
+  test('crypto reports category shows capital gains / cost basis entry', async ({
+    page,
+  }) => {
     await mockBlockchainRpc(page)
     await goToReports(page)
 
@@ -116,13 +113,13 @@ test.describe('Report generation and export', () => {
     }
 
     await expect(
-      page
-        .getByText(/capital gain|cost basis|realized/i)
-        .first()
+      page.getByText(/capital gain|cost basis|realized/i).first()
     ).toBeVisible({ timeout: 8_000 })
   })
 
-  test('tax reports category shows donation receipt entry', async ({ page }) => {
+  test('tax reports category shows donation receipt entry', async ({
+    page,
+  }) => {
     await mockBlockchainRpc(page)
     await goToReports(page)
 
@@ -133,9 +130,7 @@ test.describe('Report generation and export', () => {
 
     // Tax reports should mention donor receipts or form 990 etc.
     await expect(
-      page
-        .getByText(/donation|receipt|990|tax/i)
-        .first()
+      page.getByText(/donation|receipt|990|tax/i).first()
     ).toBeVisible({ timeout: 8_000 })
   })
 })

@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useEffect, useMemo } from 'react'
 import {
   TrendingUp,
   DollarSign,
@@ -13,15 +13,20 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Coins,
-  Percent,
   Target,
 } from 'lucide-react'
+import { useWalletBalances } from '../../hooks/useWalletBalances'
+import { useProfile } from '../../contexts/ProfileContext'
+import { persistence } from '../../services/persistence'
+import type { StoredTransaction } from '../../services/persistence'
+import { useCurrency } from '../../contexts/CurrencyContext'
+import { formatCurrency } from '../../utils/currencyFormatter'
 
 interface KPI {
   id: string
   label: string
   value: string
-  change: number
+  change: number | null
   changeLabel: string
   icon: React.ElementType
   trend: 'up' | 'down' | 'neutral'
@@ -29,64 +34,20 @@ interface KPI {
 
 type TimePeriod = '7d' | '30d' | '90d' | '1y' | 'all'
 
-const kpis: KPI[] = [
-  {
-    id: 'total-value',
-    label: 'Total Portfolio Value',
-    value: '$50,000.00',
-    change: 2.8,
-    changeLabel: '+$1,365 (30d)',
-    icon: DollarSign,
-    trend: 'up',
-  },
-  {
-    id: 'crypto-holdings',
-    label: 'Crypto Holdings',
-    value: '$47,900.00',
-    change: 3.2,
-    changeLabel: '+$1,480 (30d)',
-    icon: Coins,
-    trend: 'up',
-  },
-  {
-    id: 'staking-apy',
-    label: 'Avg Staking APY',
-    value: '12.4%',
-    change: 2.1,
-    changeLabel: '+0.26% (30d)',
-    icon: Percent,
-    trend: 'up',
-  },
-  {
-    id: 'monthly-revenue',
-    label: 'Monthly Revenue',
-    value: '$4,850.00',
-    change: -5.2,
-    changeLabel: '-$266 vs last month',
-    icon: TrendingUp,
-    trend: 'down',
-  },
-]
-
-// Mock chart data for visualization
-const portfolioData = [
-  { date: '10/01', value: 46500 },
-  { date: '10/03', value: 47400 },
-  { date: '10/05', value: 47100 },
-  { date: '10/07', value: 48100 },
-  { date: '10/09', value: 48700 },
-  { date: '10/11', value: 48500 },
-  { date: '10/13', value: 49200 },
-  { date: '10/15', value: 50000 },
-]
-
-const assetAllocation = [
-  { name: 'DOT', value: 30, amount: 15000, color: '#E6007A' },
-  { name: 'GLMR', value: 24, amount: 12000, color: '#53CBC8' },
-  { name: 'KSM', value: 14, amount: 7200, color: '#000000' },
-  { name: 'ASTR', value: 14, amount: 7000, color: '#0081FF' },
-  { name: 'Others', value: 18, amount: 8800, color: '#8B5CF6' },
-]
+/** Empty state placeholder */
+const EmptyState: React.FC<{
+  icon: React.ReactNode
+  title: string
+  message: string
+}> = ({ icon, title, message }) => (
+  <div className="flex flex-col items-center justify-center py-12 text-center">
+    <div className="mx-auto h-12 w-12 text-gray-400">{icon}</div>
+    <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">
+      {title}
+    </h3>
+    <p className="mt-1 text-sm text-gray-500 dark:text-[#9FB4BE]">{message}</p>
+  </div>
+)
 
 /** Key performance indicator card displaying a metric with trend direction and change details */
 const KPICard: React.FC<{ kpi: KPI }> = ({ kpi }) => {
@@ -98,16 +59,20 @@ const KPICard: React.FC<{ kpi: KPI }> = ({ kpi }) => {
         <div className="w-12 h-12 rounded-lg bg-[#294050]/10 dark:bg-[#294050]/20 flex items-center justify-center">
           <Icon className="w-6 h-6 text-[#294050] dark:text-[#F09988]" />
         </div>
-        <div
-          className={`flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-            kpi.trend === 'up'
-              ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
-              : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
-          }`}
-        >
-          <TrendIcon className="w-3 h-3 mr-1" />
-          {Math.abs(kpi.change)}%
-        </div>
+        {kpi.change !== null && (
+          <div
+            className={`flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+              kpi.trend === 'up'
+                ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+                : kpi.trend === 'down'
+                  ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+                  : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
+            }`}
+          >
+            {kpi.trend !== 'neutral' && <TrendIcon className="w-3 h-3 mr-1" />}
+            {Math.abs(kpi.change)}%
+          </div>
+        )}
       </div>
       <p className="text-sm text-gray-500 dark:text-[#9FB4BE]">{kpi.label}</p>
       <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
@@ -168,10 +133,33 @@ const TimePeriodDropdown: React.FC<{
   )
 }
 
-/** Portfolio performance SVG line chart with gradient area fill and data point markers */
+/** Portfolio performance chart — shows real data or empty state */
 const PortfolioPerformanceChart: React.FC<{
-  portfolioData: { date: string; value: number }[]
-}> = ({ portfolioData }) => {
+  hasData: boolean
+}> = ({ hasData }) => {
+  if (!hasData) {
+    return (
+      <div className="lg:col-span-2 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+        <div className="flex items-center mb-6">
+          <Activity className="w-5 h-5 text-[#294050] mr-2" />
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              Portfolio Performance
+            </h3>
+            <p className="text-xs text-gray-500 dark:text-[#9FB4BE]">
+              Total value over time
+            </p>
+          </div>
+        </div>
+        <EmptyState
+          icon={<Activity className="w-12 h-12" />}
+          title="No performance data yet"
+          message="Connect a wallet and sync transactions to see portfolio performance over time."
+        />
+      </div>
+    )
+  }
+
   return (
     <div className="lg:col-span-2 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
       <div className="flex items-center justify-between mb-6">
@@ -187,82 +175,10 @@ const PortfolioPerformanceChart: React.FC<{
           </div>
         </div>
       </div>
-
-      {/* Mock Line Chart */}
-      <div className="h-64 relative">
-        <svg className="w-full h-full" viewBox="0 0 800 250">
-          {/* Grid lines */}
-          <g className="text-gray-200 dark:text-gray-700">
-            {[0, 1, 2, 3, 4].map(i => (
-              <line
-                key={`grid-${i}`}
-                x1="0"
-                y1={i * 50}
-                x2="800"
-                y2={i * 50}
-                stroke="currentColor"
-                strokeWidth="1"
-                strokeDasharray="4"
-              />
-            ))}
-          </g>
-
-          {/* Area fill */}
-          <defs>
-            <linearGradient
-              id="portfolioGradient"
-              x1="0"
-              x2="0"
-              y1="0"
-              y2="1"
-            >
-              <stop offset="0%" stopColor="#294050" stopOpacity="0.3" />
-              <stop offset="100%" stopColor="#294050" stopOpacity="0" />
-            </linearGradient>
-          </defs>
-
-          {/* Chart line and area */}
-          <path
-            d="M 50,120 L 150,100 L 250,135 L 350,80 L 450,55 L 550,65 L 650,40 L 750,20"
-            fill="none"
-            stroke="#294050"
-            strokeWidth="3"
-            strokeLinecap="round"
-          />
-          <path
-            d="M 50,120 L 150,100 L 250,135 L 350,80 L 450,55 L 550,65 L 650,40 L 750,20 L 750,250 L 50,250 Z"
-            fill="url(#portfolioGradient)"
-          />
-
-          {/* Data points */}
-          {portfolioData.map((point, i) => {
-            const x = 50 + i * 100
-            const y = 120 - i * 12 + (i % 2 === 0 ? 15 : 0)
-            return (
-              <circle
-                key={`point-${point.date}`}
-                cx={x}
-                cy={y}
-                r="4"
-                fill="#294050"
-                className="hover:r-6 cursor-pointer"
-              />
-            )
-          })}
-
-          {/* X-axis labels */}
-          {portfolioData.map((point, i) => (
-            <text
-              key={`label-${point.date}`}
-              x={50 + i * 100}
-              y="245"
-              className="text-xs fill-current text-gray-500 dark:text-[#9FB4BE]"
-              textAnchor="middle"
-            >
-              {point.date}
-            </text>
-          ))}
-        </svg>
+      <div className="h-64 flex items-center justify-center text-sm text-gray-500 dark:text-[#9FB4BE]">
+        <p>
+          Historical portfolio data will appear here as transactions are synced.
+        </p>
       </div>
     </div>
   )
@@ -270,8 +186,48 @@ const PortfolioPerformanceChart: React.FC<{
 
 /** Donut chart with color-coded legend showing asset allocation by cryptocurrency */
 const AssetAllocationChart: React.FC<{
-  assetAllocation: { name: string; value: number; amount: number; color: string }[]
+  assetAllocation: {
+    name: string
+    value: number
+    amount: number
+    color: string
+  }[]
 }> = ({ assetAllocation }) => {
+  if (assetAllocation.length === 0) {
+    return (
+      <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+        <div className="flex items-center mb-6">
+          <PieChart className="w-5 h-5 text-[#294050] mr-2" />
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              Asset Allocation
+            </h3>
+            <p className="text-xs text-gray-500 dark:text-[#9FB4BE]">
+              Holdings by cryptocurrency
+            </p>
+          </div>
+        </div>
+        <EmptyState
+          icon={<PieChart className="w-12 h-12" />}
+          title="No holdings data"
+          message="Connect a wallet to see your asset allocation breakdown."
+        />
+      </div>
+    )
+  }
+
+  // Build donut chart from real allocation data
+  const circumference = 2 * Math.PI * 80 // ~503
+
+  // Precompute cumulative offsets (pure, no mutation in render scope)
+  const donutSegments = assetAllocation.map((asset, i) => {
+    const dashLength = (asset.value / 100) * circumference
+    const dashOffset = assetAllocation
+      .slice(0, i)
+      .reduce((sum, a) => sum + (a.value / 100) * circumference, 0)
+    return { ...asset, dashLength, dashOffset }
+  })
+
   return (
     <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
       <div className="flex items-center mb-6">
@@ -287,71 +243,27 @@ const AssetAllocationChart: React.FC<{
       </div>
 
       <div className="flex items-center justify-center mb-6">
-        {/* Mock Donut Chart */}
         <svg width="200" height="200" viewBox="0 0 200 200">
-          <circle
-            cx="100"
-            cy="100"
-            r="80"
-            fill="none"
-            stroke="#E6007A"
-            strokeWidth="40"
-            strokeDasharray="151 503"
-            transform="rotate(-90 100 100)"
-          />
-          <circle
-            cx="100"
-            cy="100"
-            r="80"
-            fill="none"
-            stroke="#53CBC8"
-            strokeWidth="40"
-            strokeDasharray="121 503"
-            strokeDashoffset="-151"
-            transform="rotate(-90 100 100)"
-          />
-          <circle
-            cx="100"
-            cy="100"
-            r="80"
-            fill="none"
-            stroke="#000000"
-            strokeWidth="40"
-            strokeDasharray="70 503"
-            strokeDashoffset="-272"
-            transform="rotate(-90 100 100)"
-          />
-          <circle
-            cx="100"
-            cy="100"
-            r="80"
-            fill="none"
-            stroke="#0081FF"
-            strokeWidth="40"
-            strokeDasharray="70 503"
-            strokeDashoffset="-342"
-            transform="rotate(-90 100 100)"
-          />
-          <circle
-            cx="100"
-            cy="100"
-            r="80"
-            fill="none"
-            stroke="#8B5CF6"
-            strokeWidth="40"
-            strokeDasharray="91 503"
-            strokeDashoffset="-412"
-            transform="rotate(-90 100 100)"
-          />
+          {donutSegments.map(segment => (
+            <circle
+              key={segment.name}
+              cx="100"
+              cy="100"
+              r="80"
+              fill="none"
+              stroke={segment.color}
+              strokeWidth="40"
+              strokeDasharray={`${segment.dashLength} ${circumference}`}
+              strokeDashoffset={-segment.dashOffset}
+              transform="rotate(-90 100 100)"
+            />
+          ))}
         </svg>
       </div>
 
       <div className="space-y-3">
         {assetAllocation.map(asset => (
-          <div
-            key={asset.name}
-            className="flex items-center justify-between"
-          >
+          <div key={asset.name} className="flex items-center justify-between">
             <div className="flex items-center">
               <div
                 className="w-3 h-3 rounded-full mr-3"
@@ -376,8 +288,40 @@ const AssetAllocationChart: React.FC<{
   )
 }
 
-/** Bar chart displaying daily transaction volume with weekly total summary */
-const TransactionVolumeChart: React.FC = () => {
+/** Transaction volume bar chart from real transaction counts */
+const TransactionVolumeChart: React.FC<{
+  transactions: StoredTransaction[]
+}> = ({ transactions }) => {
+  // Group transactions by day of the week for the past 7 days
+  const dailyCounts = useMemo(() => {
+    const now = new Date()
+    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+    const counts = new Array<number>(7).fill(0)
+
+    for (const tx of transactions) {
+      if (!tx.timestamp) continue
+      const txDate = new Date(tx.timestamp)
+      const diffDays = Math.floor(
+        (now.getTime() - txDate.getTime()) / (1000 * 60 * 60 * 24)
+      )
+      if (diffDays >= 0 && diffDays < 7) {
+        const dayIndex = txDate.getDay()
+        // JS getDay: 0=Sun, map to Mon=0 ... Sun=6
+        const adjustedIndex = dayIndex === 0 ? 6 : dayIndex - 1
+        counts[adjustedIndex]++
+      }
+    }
+
+    const maxCount = Math.max(...counts, 1)
+    return days.map((day, i) => ({
+      day,
+      count: counts[i],
+      height: Math.max((counts[i] / maxCount) * 100, counts[i] > 0 ? 5 : 0),
+    }))
+  }, [transactions])
+
+  const totalThisWeek = dailyCounts.reduce((s, d) => s + d.count, 0)
+
   return (
     <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
       <div className="flex items-center mb-6">
@@ -392,53 +336,197 @@ const TransactionVolumeChart: React.FC = () => {
         </div>
       </div>
 
-      {/* Mock Bar Chart */}
-      <div className="h-48 flex items-end justify-between gap-2">
-        {[65, 85, 45, 90, 70, 95, 80].map((height, i) => {
-          const dayName = [
-            'Mon',
-            'Tue',
-            'Wed',
-            'Thu',
-            'Fri',
-            'Sat',
-            'Sun',
-          ][i]
-          return (
-            <div
-              key={dayName}
-              className="flex-1 flex flex-col items-center"
-            >
-              <div
-                className="w-full bg-[#294050] dark:bg-[#294050] rounded-t hover:bg-[#294050] dark:hover:bg-[#294050] transition-colors cursor-pointer"
-                style={{ height: `${height}%` }}
-              />
-              <span className="text-xs text-gray-500 dark:text-[#9FB4BE] mt-2">
-                {dayName}
+      {totalThisWeek === 0 ? (
+        <EmptyState
+          icon={<BarChart3 className="w-12 h-12" />}
+          title="No recent transactions"
+          message="Transaction volume will appear here after syncing wallet data."
+        />
+      ) : (
+        <>
+          <div className="h-48 flex items-end justify-between gap-2">
+            {dailyCounts.map(d => (
+              <div key={d.day} className="flex-1 flex flex-col items-center">
+                <div
+                  className="w-full bg-[#294050] dark:bg-[#294050] rounded-t hover:bg-[#294050] dark:hover:bg-[#294050] transition-colors cursor-pointer"
+                  style={{ height: `${d.height}%` }}
+                />
+                <span className="text-xs text-gray-500 dark:text-[#9FB4BE] mt-2">
+                  {d.day}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-gray-500 dark:text-[#9FB4BE]">
+                Total this week
+              </span>
+              <span className="font-semibold text-gray-900 dark:text-white">
+                {totalThisWeek} transaction{totalThisWeek === 1 ? '' : 's'}
               </span>
             </div>
-          )
-        })}
-      </div>
-
-      <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-        <div className="flex items-center justify-between text-sm">
-          <span className="text-gray-500 dark:text-[#9FB4BE]">
-            Total this week
-          </span>
-          <span className="font-semibold text-gray-900 dark:text-white">
-            $2,850
-          </span>
-        </div>
-      </div>
+          </div>
+        </>
+      )}
     </div>
   )
+}
+
+/** Revenue vs Expenses chart from real classified transactions */
+const RevenueExpensesChart: React.FC<{
+  transactions: StoredTransaction[]
+  formatCurrencyValue: (amount: number) => string
+}> = ({ transactions, formatCurrencyValue }) => {
+  // Group by month (last 5 months)
+  const monthlyData = useMemo(() => {
+    const now = new Date()
+    const months: { name: string; revenue: number; expense: number }[] = []
+
+    for (let i = 4; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+      const monthName = d.toLocaleDateString('en-US', { month: 'short' })
+      const monthStart = d.getTime()
+      const monthEnd = new Date(
+        d.getFullYear(),
+        d.getMonth() + 1,
+        0,
+        23,
+        59,
+        59
+      ).getTime()
+
+      let revenue = 0
+      let expense = 0
+
+      for (const tx of transactions) {
+        if (!tx.timestamp) continue
+        const txTime = new Date(tx.timestamp).getTime()
+        if (txTime < monthStart || txTime > monthEnd) continue
+
+        const amount = tx.value
+          ? Math.abs(Number(tx.value) / Math.pow(10, tx.token_decimals ?? 18))
+          : 0
+        const usdPrice = tx.price_at_acquisition_usd
+          ? Number(tx.price_at_acquisition_usd)
+          : 0
+        const usdAmount = amount * usdPrice
+
+        if (tx.tx_type === 'expense') {
+          expense += usdAmount
+        } else {
+          revenue += usdAmount
+        }
+      }
+
+      months.push({ name: monthName, revenue, expense })
+    }
+    return months
+  }, [transactions])
+
+  const maxVal = Math.max(
+    ...monthlyData.map(m => Math.max(m.revenue, m.expense)),
+    1
+  )
+  const hasAnyData = monthlyData.some(m => m.revenue > 0 || m.expense > 0)
+
+  return (
+    <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+      <div className="flex items-center mb-6">
+        <DollarSign className="w-5 h-5 text-[#294050] mr-2" />
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            Revenue vs Expenses
+          </h3>
+          <p className="text-xs text-gray-500 dark:text-[#9FB4BE]">
+            Monthly comparison
+          </p>
+        </div>
+      </div>
+
+      {!hasAnyData ? (
+        <EmptyState
+          icon={<DollarSign className="w-12 h-12" />}
+          title="No classified transactions"
+          message="Revenue and expense data will appear after transactions are synced and classified."
+        />
+      ) : (
+        <>
+          <div className="h-48 flex items-end justify-between gap-3">
+            {monthlyData.map(data => (
+              <div
+                key={data.name}
+                className="flex-1 flex flex-col items-center"
+              >
+                <div className="w-full flex gap-1 items-end h-full">
+                  <div
+                    className="flex-1 bg-green-500 dark:bg-green-600 rounded-t"
+                    style={{ height: `${(data.revenue / maxVal) * 100}%` }}
+                    title={`Revenue: ${formatCurrencyValue(data.revenue)}`}
+                  />
+                  <div
+                    className="flex-1 bg-red-500 dark:bg-red-600 rounded-t"
+                    style={{ height: `${(data.expense / maxVal) * 100}%` }}
+                    title={`Expenses: ${formatCurrencyValue(data.expense)}`}
+                  />
+                </div>
+                <span className="text-xs text-gray-500 dark:text-[#9FB4BE] mt-2">
+                  {data.name}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-6 flex items-center justify-center gap-6">
+            <div className="flex items-center">
+              <div className="w-3 h-3 bg-green-500 rounded mr-2" />
+              <span className="text-xs text-gray-500 dark:text-[#9FB4BE]">
+                Revenue
+              </span>
+            </div>
+            <div className="flex items-center">
+              <div className="w-3 h-3 bg-red-500 rounded mr-2" />
+              <span className="text-xs text-gray-500 dark:text-[#9FB4BE]">
+                Expenses
+              </span>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
+/** Brand colors for common crypto tokens */
+const TOKEN_COLORS: Record<string, string> = {
+  DOT: '#E6007A',
+  KSM: '#000000',
+  GLMR: '#53CBC8',
+  MOVR: '#53CBC8',
+  ASTR: '#0081FF',
+  ETH: '#627EEA',
+  BTC: '#F7931A',
+  USDC: '#2775CA',
+  USDT: '#26A17B',
+}
+
+/** Get a color for a token, falling back to a hash-based color */
+function getTokenColor(symbol: string): string {
+  return TOKEN_COLORS[symbol.toUpperCase()] ?? '#8B5CF6'
 }
 
 /** Analytics dashboard page with KPI cards, portfolio performance chart, and asset allocation */
 const Analytics: React.FC = () => {
   const [timePeriod, setTimePeriod] = useState<TimePeriod>('30d')
   const [showPeriodDropdown, setShowPeriodDropdown] = useState(false)
+  const { settings: currencySettings } = useCurrency()
+  const { currentProfile } = useProfile()
+  const { balances, wallets, isLoading: walletsLoading } = useWalletBalances()
+  const [allTransactions, setAllTransactions] = useState<StoredTransaction[]>(
+    []
+  )
+  const [txLoading, setTxLoading] = useState(true)
 
   const timePeriods: { value: TimePeriod; label: string }[] = [
     { value: '7d', label: 'Last 7 days' },
@@ -448,6 +536,181 @@ const Analytics: React.FC = () => {
     { value: 'all', label: 'All time' },
   ]
 
+  // Load all transactions for analytics
+  useEffect(() => {
+    let cancelled = false
+    const load = async () => {
+      if (!currentProfile) {
+        setAllTransactions([])
+        setTxLoading(false)
+        return
+      }
+      try {
+        const stored = await persistence.getAllTransactions(currentProfile.id)
+        if (!cancelled) setAllTransactions(stored)
+      } catch {
+        if (!cancelled) setAllTransactions([])
+      } finally {
+        if (!cancelled) setTxLoading(false)
+      }
+    }
+    load()
+    return () => {
+      cancelled = true
+    }
+  }, [currentProfile])
+
+  // Compute total portfolio value from real balances
+  const totalPortfolioValue = useMemo(() => {
+    if (!balances) return 0
+    return balances.reduce((sum, wb) => sum + (wb.total_value_usd ?? 0), 0)
+  }, [balances])
+
+  // Compute crypto holdings value (total minus stablecoins would be ideal, but for now use total)
+  const cryptoHoldingsValue = useMemo(() => {
+    if (!balances) return 0
+    return balances.reduce((sum, wb) => {
+      let walletTotal = wb.native_balance.value_usd ?? 0
+      for (const tb of wb.token_balances) {
+        walletTotal += tb.value_usd ?? 0
+      }
+      return sum + walletTotal
+    }, 0)
+  }, [balances])
+
+  // Compute asset allocation from real balances
+  const assetAllocation = useMemo(() => {
+    if (!balances || balances.length === 0) return []
+
+    const aggregated = new Map<string, number>()
+    for (const wb of balances) {
+      const nativeSymbol = wb.native_balance.symbol.toUpperCase()
+      const nativeUsd = wb.native_balance.value_usd ?? 0
+      aggregated.set(
+        nativeSymbol,
+        (aggregated.get(nativeSymbol) ?? 0) + nativeUsd
+      )
+      for (const tb of wb.token_balances) {
+        const symbol = tb.symbol.toUpperCase()
+        const usd = tb.value_usd ?? 0
+        aggregated.set(symbol, (aggregated.get(symbol) ?? 0) + usd)
+      }
+    }
+
+    const entries = Array.from(aggregated.entries())
+      .filter(([, usd]) => usd > 0)
+      .sort((a, b) => b[1] - a[1])
+
+    const total = entries.reduce((s, [, v]) => s + v, 0)
+    if (total === 0) return []
+
+    // Show top 4, group rest as Others
+    const top = entries.slice(0, 4)
+    const othersValue = entries.slice(4).reduce((s, [, v]) => s + v, 0)
+
+    const result = top.map(([name, amount]) => ({
+      name,
+      value: Math.round((amount / total) * 100),
+      amount: Math.round(amount),
+      color: getTokenColor(name),
+    }))
+
+    if (othersValue > 0) {
+      result.push({
+        name: 'Others',
+        value: Math.round((othersValue / total) * 100),
+        amount: Math.round(othersValue),
+        color: '#8B5CF6',
+      })
+    }
+
+    return result
+  }, [balances])
+
+  // Filter transactions by time period
+  const filteredTransactions = useMemo(() => {
+    if (timePeriod === 'all') return allTransactions
+    const periodMs: Record<string, number> = {
+      '7d': 7 * 24 * 60 * 60 * 1000,
+      '30d': 30 * 24 * 60 * 60 * 1000,
+      '90d': 90 * 24 * 60 * 60 * 1000,
+      '1y': 365 * 24 * 60 * 60 * 1000,
+    }
+    const cutoff = new Date().getTime() - (periodMs[timePeriod] ?? 0)
+    return allTransactions.filter(tx => {
+      if (!tx.timestamp) return false
+      return new Date(tx.timestamp).getTime() >= cutoff
+    })
+  }, [allTransactions, timePeriod])
+
+  // Build KPIs from real data
+  const kpis = useMemo((): KPI[] => {
+    const hasWallets = wallets.length > 0
+
+    const fmtCurrency = (v: number) =>
+      formatCurrency(v, currencySettings.primaryCurrency, {
+        decimalPlaces: currencySettings.decimalPlaces,
+        useThousandsSeparator: currencySettings.useThousandsSeparator,
+        decimalSeparatorStandard: currencySettings.decimalSeparatorStandard,
+      })
+
+    return [
+      {
+        id: 'total-value',
+        label: 'Total Portfolio Value',
+        value: hasWallets ? fmtCurrency(totalPortfolioValue) : '—',
+        change: null,
+        changeLabel: hasWallets
+          ? `${wallets.length} wallet${wallets.length === 1 ? '' : 's'} connected`
+          : 'No wallets connected',
+        icon: DollarSign,
+        trend: 'neutral',
+      },
+      {
+        id: 'crypto-holdings',
+        label: 'Crypto Holdings',
+        value: hasWallets ? fmtCurrency(cryptoHoldingsValue) : '—',
+        change: null,
+        changeLabel: hasWallets
+          ? `${assetAllocation.length} asset${assetAllocation.length === 1 ? '' : 's'}`
+          : 'No holdings',
+        icon: Coins,
+        trend: 'neutral',
+      },
+      {
+        id: 'transactions',
+        label: 'Transactions',
+        value: String(filteredTransactions.length),
+        change: null,
+        changeLabel:
+          filteredTransactions.length > 0
+            ? `In selected period`
+            : 'No transactions in period',
+        icon: TrendingUp,
+        trend: 'neutral',
+      },
+      {
+        id: 'wallets',
+        label: 'Active Wallets',
+        value: String(wallets.length),
+        change: null,
+        changeLabel:
+          wallets.length > 0
+            ? 'Tracked & connected'
+            : 'Add a wallet to get started',
+        icon: BarChart3,
+        trend: 'neutral',
+      },
+    ]
+  }, [
+    wallets,
+    totalPortfolioValue,
+    cryptoHoldingsValue,
+    assetAllocation,
+    filteredTransactions,
+    currencySettings,
+  ])
+
   const handleTogglePeriodDropdown = useCallback(() => {
     setShowPeriodDropdown(!showPeriodDropdown)
   }, [showPeriodDropdown])
@@ -456,6 +719,19 @@ const Analytics: React.FC = () => {
     setTimePeriod(value)
     setShowPeriodDropdown(false)
   }, [])
+
+  const formatCurrencyValue = useCallback(
+    (amount: number) =>
+      formatCurrency(amount, currencySettings.primaryCurrency, {
+        decimalPlaces: currencySettings.decimalPlaces,
+        useThousandsSeparator: currencySettings.useThousandsSeparator,
+        decimalSeparatorStandard: currencySettings.decimalSeparatorStandard,
+      }),
+    [currencySettings]
+  )
+
+  const isLoading = walletsLoading || txLoading
+  const hasData = wallets.length > 0
 
   return (
     <div className="min-h-screen ledger-background">
@@ -502,15 +778,15 @@ const Analytics: React.FC = () => {
         {/* Charts Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Portfolio Performance - Large Chart */}
-          <PortfolioPerformanceChart portfolioData={portfolioData} />
+          <PortfolioPerformanceChart hasData={hasData && !isLoading} />
 
           {/* Asset Allocation - Pie Chart */}
           <AssetAllocationChart assetAllocation={assetAllocation} />
 
           {/* Transaction Volume - Bar Chart */}
-          <TransactionVolumeChart />
+          <TransactionVolumeChart transactions={filteredTransactions} />
 
-          {/* Staking Rewards */}
+          {/* Staking Rewards — Coming Soon (no backend exists) */}
           <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center">
@@ -525,140 +801,18 @@ const Analytics: React.FC = () => {
                 </div>
               </div>
             </div>
-
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
-                <div>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">
-                    DOT Staking
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-[#9FB4BE]">
-                    12.5% APY
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-semibold text-green-600 dark:text-green-400">
-                    +$125.50
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-[#9FB4BE]">
-                    This month
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between p-4 bg-[#5FE3C0]/10 dark:bg-[#5FE3C0]/20 rounded-lg border border-[#5FE3C0]/30 dark:border-[#5FE3C0]/40">
-                <div>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">
-                    GLMR Staking
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-[#9FB4BE]">
-                    15.2% APY
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-semibold text-[#294050] dark:text-[#F09988]">
-                    +$95.75
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-[#9FB4BE]">
-                    This month
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
-                <div>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">
-                    ASTR Staking
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-[#9FB4BE]">
-                    8.7% APY
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-semibold text-purple-600 dark:text-purple-400">
-                    +$48.20
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-[#9FB4BE]">
-                    This month
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-500 dark:text-[#9FB4BE]">
-                  Total Rewards
-                </span>
-                <span className="text-lg font-semibold text-gray-900 dark:text-white">
-                  $269.45
-                </span>
-              </div>
-            </div>
+            <EmptyState
+              icon={<Target className="w-12 h-12" />}
+              title="Coming soon"
+              message="Staking reward tracking is not yet available. This feature will be added in a future update."
+            />
           </div>
 
           {/* Revenue vs Expenses */}
-          <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-            <div className="flex items-center mb-6">
-              <DollarSign className="w-5 h-5 text-[#294050] mr-2" />
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  Revenue vs Expenses
-                </h3>
-                <p className="text-xs text-gray-500 dark:text-[#9FB4BE]">
-                  Monthly comparison
-                </p>
-              </div>
-            </div>
-
-            {/* Mock Grouped Bar Chart */}
-            <div className="h-48 flex items-end justify-between gap-3">
-              {[
-                { revenue: 70, expense: 45 },
-                { revenue: 85, expense: 50 },
-                { revenue: 75, expense: 55 },
-                { revenue: 90, expense: 48 },
-                { revenue: 80, expense: 52 },
-              ].map((data, i) => {
-                const monthName = ['Jun', 'Jul', 'Aug', 'Sep', 'Oct'][i]
-                return (
-                  <div
-                    key={monthName}
-                    className="flex-1 flex flex-col items-center"
-                  >
-                    <div className="w-full flex gap-1 items-end h-full">
-                      <div
-                        className="flex-1 bg-green-500 dark:bg-green-600 rounded-t"
-                        style={{ height: `${data.revenue}%` }}
-                      />
-                      <div
-                        className="flex-1 bg-red-500 dark:bg-red-600 rounded-t"
-                        style={{ height: `${data.expense}%` }}
-                      />
-                    </div>
-                    <span className="text-xs text-gray-500 dark:text-[#9FB4BE] mt-2">
-                      {monthName}
-                    </span>
-                  </div>
-                )
-              })}
-            </div>
-
-            <div className="mt-6 flex items-center justify-center gap-6">
-              <div className="flex items-center">
-                <div className="w-3 h-3 bg-green-500 rounded mr-2" />
-                <span className="text-xs text-gray-500 dark:text-[#9FB4BE]">
-                  Revenue
-                </span>
-              </div>
-              <div className="flex items-center">
-                <div className="w-3 h-3 bg-red-500 rounded mr-2" />
-                <span className="text-xs text-gray-500 dark:text-[#9FB4BE]">
-                  Expenses
-                </span>
-              </div>
-            </div>
-          </div>
+          <RevenueExpensesChart
+            transactions={filteredTransactions}
+            formatCurrencyValue={formatCurrencyValue}
+          />
         </div>
       </div>
     </div>
