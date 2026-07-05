@@ -62,15 +62,34 @@ interface RolesViewProps {
 
 /** Map auth UserRole to a display-friendly Role object */
 function mapUserRoleToRole(role: string): Role {
-  const roleDefinitions: Record<string, { name: string; description: string }> = {
-    admin: { name: 'Administrator', description: 'Full access to all features and settings' },
-    'system-admin': { name: 'System Administrator', description: 'Full system access including configuration' },
-    preparer: { name: 'Preparer', description: 'Prepare and submit transactions for approval' },
-    approver: { name: 'Approver', description: 'Review and approve submitted transactions' },
-    user: { name: 'User', description: 'Standard access to view and manage records' },
-  }
+  const roleDefinitions: Record<string, { name: string; description: string }> =
+    {
+      admin: {
+        name: 'Administrator',
+        description: 'Full access to all features and settings',
+      },
+      'system-admin': {
+        name: 'System Administrator',
+        description: 'Full system access including configuration',
+      },
+      preparer: {
+        name: 'Preparer',
+        description: 'Prepare and submit transactions for approval',
+      },
+      approver: {
+        name: 'Approver',
+        description: 'Review and approve submitted transactions',
+      },
+      user: {
+        name: 'User',
+        description: 'Standard access to view and manage records',
+      },
+    }
 
-  const def = roleDefinitions[role] ?? { name: role, description: `${role} role` }
+  const def = roleDefinitions[role] ?? {
+    name: role,
+    description: `${role} role`,
+  }
 
   return {
     id: role,
@@ -403,7 +422,8 @@ const RolesView: React.FC<RolesViewProps> = ({ roles, users }) => (
             <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-between text-xs text-gray-500 dark:text-[#9FB4BE]">
                 <span>
-                  {users.filter(u => u.role.id === role.id).length} users assigned
+                  {users.filter(u => u.role.id === role.id).length} users
+                  assigned
                 </span>
               </div>
             </div>

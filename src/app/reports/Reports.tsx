@@ -391,11 +391,7 @@ const Reports: React.FC = () => {
                 value={favoriteReports.length}
                 Icon={Star}
               />
-              <StatCard
-                label="Run Today"
-                value={0}
-                Icon={Clock}
-              />
+              <StatCard label="Run Today" value={0} Icon={Clock} />
             </div>
 
             {/* Search and Filters */}

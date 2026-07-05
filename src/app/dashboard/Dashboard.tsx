@@ -80,7 +80,9 @@ const StatsCard: React.FC<{
             {changeIcon}
             <span className={`text-sm ${changeColor}`}>{changeValue}</span>
             {changeLabel && (
-              <span className="text-sm dashboard-muted-text ml-1">{changeLabel}</span>
+              <span className="text-sm dashboard-muted-text ml-1">
+                {changeLabel}
+              </span>
             )}
           </div>
         </div>
@@ -106,9 +108,7 @@ const EmptyState: React.FC<{
     <h3 className="mt-2 text-sm font-medium text-[#11202B] dark:text-[#EAF3F2]">
       {title}
     </h3>
-    <p className="mt-1 text-sm dashboard-muted-text">
-      {message}
-    </p>
+    <p className="mt-1 text-sm dashboard-muted-text">{message}</p>
   </div>
 )
 
@@ -234,9 +234,7 @@ const RecentTransactionsTable: React.FC<{
         <p className="eyebrow">Activity</p>
         <h2>Recent Transactions</h2>
       </div>
-      <button className="text-sm dashboard-link">
-        View All
-      </button>
+      <button className="text-sm dashboard-link">View All</button>
     </div>
     {recentTransactions.length === 0 ? (
       <EmptyState
@@ -306,8 +304,7 @@ const RecentTransactionsTable: React.FC<{
                         : 'badge-pending'
                     }`}
                   >
-                    {tx.status.charAt(0).toUpperCase() +
-                      tx.status.slice(1)}
+                    {tx.status.charAt(0).toUpperCase() + tx.status.slice(1)}
                   </span>
                 </td>
               </tr>
@@ -320,7 +317,9 @@ const RecentTransactionsTable: React.FC<{
 )
 
 /** Sidebar card with quick action buttons for common tasks like recording donations and generating reports */
-const QuickActionsCard: React.FC<{ onNewTransaction: () => void }> = ({ onNewTransaction }) => (
+const QuickActionsCard: React.FC<{ onNewTransaction: () => void }> = ({
+  onNewTransaction,
+}) => (
   <div className="ledger-card border border-[rgba(95,227,192,0.15)]">
     <div className="px-6 py-4 border-b border-[rgba(95,227,192,0.15)]">
       <p className="eyebrow">Workspace</p>
@@ -355,7 +354,9 @@ const QuickActionsCard: React.FC<{ onNewTransaction: () => void }> = ({ onNewTra
 )
 
 /** Map a StoredTransaction tx_type to the dashboard Transaction type */
-function mapTxType(txType: string | null | undefined): 'donation' | 'expense' | 'transfer' | 'exchange' {
+function mapTxType(
+  txType: string | null | undefined
+): 'donation' | 'expense' | 'transfer' | 'exchange' {
   switch (txType) {
     case 'donation':
       return 'donation'
@@ -372,8 +373,18 @@ function mapTxType(txType: string | null | undefined): 'donation' | 'expense' | 
 /** Derive account balances from WalletBalances data */
 function deriveAccountBalances(
   balances: Array<{
-    native_balance: { symbol: string; balance: string; decimals: number; value_usd: number | null }
-    token_balances: Array<{ symbol: string; balance: string; decimals: number; value_usd: number | null }>
+    native_balance: {
+      symbol: string
+      balance: string
+      decimals: number
+      value_usd: number | null
+    }
+    token_balances: Array<{
+      symbol: string
+      balance: string
+      decimals: number
+      value_usd: number | null
+    }>
     total_value_usd: number | null
   }> | null
 ): AccountBalance[] {
@@ -383,14 +394,19 @@ function deriveAccountBalances(
 
   for (const wb of balances) {
     const nativeSymbol = wb.native_balance.symbol.toUpperCase()
-    const nativeAmount = Number(wb.native_balance.balance) / Math.pow(10, wb.native_balance.decimals)
+    const nativeAmount =
+      Number(wb.native_balance.balance) /
+      Math.pow(10, wb.native_balance.decimals)
     const nativeUsd = wb.native_balance.value_usd ?? 0
     const existing = aggregated.get(nativeSymbol)
     if (existing) {
       existing.amount += nativeAmount
       existing.usdValue += nativeUsd
     } else {
-      aggregated.set(nativeSymbol, { amount: nativeAmount, usdValue: nativeUsd })
+      aggregated.set(nativeSymbol, {
+        amount: nativeAmount,
+        usdValue: nativeUsd,
+      })
     }
 
     for (const tb of wb.token_balances) {
@@ -426,7 +442,9 @@ const Dashboard: React.FC = () => {
   const { currentProfile } = useProfile()
   const { balances, wallets, isLoading: walletsLoading } = useWalletBalances()
 
-  const [recentTransactions, setRecentTransactions] = useState<Transaction[]>([])
+  const [recentTransactions, setRecentTransactions] = useState<Transaction[]>(
+    []
+  )
   const [txLoading, setTxLoading] = useState(true)
 
   const handleNewTransaction = useCallback(() => {
@@ -434,7 +452,10 @@ const Dashboard: React.FC = () => {
   }, [navigate])
 
   // Derive account balances from real wallet data
-  const accountBalances = useMemo(() => deriveAccountBalances(balances), [balances])
+  const accountBalances = useMemo(
+    () => deriveAccountBalances(balances),
+    [balances]
+  )
 
   const totalPortfolioValue = useMemo(
     () => accountBalances.reduce((sum, acc) => sum + acc.usdValue, 0),
@@ -465,16 +486,25 @@ const Dashboard: React.FC = () => {
           })
           .slice(0, 5)
           .map(tx => {
-            const amount = tx.value ? Number(tx.value) / Math.pow(10, tx.token_decimals ?? 18) : 0
-            const usdValue = tx.price_at_acquisition_usd ? amount * Number(tx.price_at_acquisition_usd) : 0
+            const amount = tx.value
+              ? Number(tx.value) / Math.pow(10, tx.token_decimals ?? 18)
+              : 0
+            const usdValue = tx.price_at_acquisition_usd
+              ? amount * Number(tx.price_at_acquisition_usd)
+              : 0
             return {
               id: tx.id,
-              date: tx.timestamp ? new Date(tx.timestamp).toISOString().slice(0, 10) : 'Unknown',
-              description: tx.hash ? `Tx ${tx.hash.slice(0, 8)}…${tx.hash.slice(-6)}` : 'Transaction',
+              date: tx.timestamp
+                ? new Date(tx.timestamp).toISOString().slice(0, 10)
+                : 'Unknown',
+              description: tx.hash
+                ? `Tx ${tx.hash.slice(0, 8)}…${tx.hash.slice(-6)}`
+                : 'Transaction',
               type: mapTxType(tx.tx_type),
               crypto: tx.token_symbol ?? tx.chain.toUpperCase(),
               amount: tx.tx_type === 'expense' ? -Math.abs(amount) : amount,
-              usdValue: tx.tx_type === 'expense' ? -Math.abs(usdValue) : usdValue,
+              usdValue:
+                tx.tx_type === 'expense' ? -Math.abs(usdValue) : usdValue,
               status: tx.status === 'pending' ? 'pending' : 'completed',
             }
           })
@@ -553,7 +583,8 @@ const Dashboard: React.FC = () => {
                         currencySettings.primaryCurrency,
                         {
                           decimalPlaces: currencySettings.decimalPlaces,
-                          useThousandsSeparator: currencySettings.useThousandsSeparator,
+                          useThousandsSeparator:
+                            currencySettings.useThousandsSeparator,
                           decimalSeparatorStandard:
                             currencySettings.decimalSeparatorStandard,
                         }
@@ -582,7 +613,11 @@ const Dashboard: React.FC = () => {
             value={isLoading ? '—' : String(recentTransactions.length)}
             changeIcon={null}
             changeColor="dashboard-body-text"
-            changeValue={recentTransactions.length > 0 ? 'Latest activity' : 'No activity yet'}
+            changeValue={
+              recentTransactions.length > 0
+                ? 'Latest activity'
+                : 'No activity yet'
+            }
             icon={<PieChart />}
           />
         </div>

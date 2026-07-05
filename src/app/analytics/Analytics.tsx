@@ -45,9 +45,7 @@ const EmptyState: React.FC<{
     <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">
       {title}
     </h3>
-    <p className="mt-1 text-sm text-gray-500 dark:text-[#9FB4BE]">
-      {message}
-    </p>
+    <p className="mt-1 text-sm text-gray-500 dark:text-[#9FB4BE]">{message}</p>
   </div>
 )
 
@@ -178,7 +176,9 @@ const PortfolioPerformanceChart: React.FC<{
         </div>
       </div>
       <div className="h-64 flex items-center justify-center text-sm text-gray-500 dark:text-[#9FB4BE]">
-        <p>Historical portfolio data will appear here as transactions are synced.</p>
+        <p>
+          Historical portfolio data will appear here as transactions are synced.
+        </p>
       </div>
     </div>
   )
@@ -186,7 +186,12 @@ const PortfolioPerformanceChart: React.FC<{
 
 /** Donut chart with color-coded legend showing asset allocation by cryptocurrency */
 const AssetAllocationChart: React.FC<{
-  assetAllocation: { name: string; value: number; amount: number; color: string }[]
+  assetAllocation: {
+    name: string
+    value: number
+    amount: number
+    color: string
+  }[]
 }> = ({ assetAllocation }) => {
   if (assetAllocation.length === 0) {
     return (
@@ -255,10 +260,7 @@ const AssetAllocationChart: React.FC<{
 
       <div className="space-y-3">
         {assetAllocation.map(asset => (
-          <div
-            key={asset.name}
-            className="flex items-center justify-between"
-          >
+          <div key={asset.name} className="flex items-center justify-between">
             <div className="flex items-center">
               <div
                 className="w-3 h-3 rounded-full mr-3"
@@ -296,7 +298,9 @@ const TransactionVolumeChart: React.FC<{
     for (const tx of transactions) {
       if (!tx.timestamp) continue
       const txDate = new Date(tx.timestamp)
-      const diffDays = Math.floor((now.getTime() - txDate.getTime()) / (1000 * 60 * 60 * 24))
+      const diffDays = Math.floor(
+        (now.getTime() - txDate.getTime()) / (1000 * 60 * 60 * 24)
+      )
       if (diffDays >= 0 && diffDays < 7) {
         const dayIndex = txDate.getDay()
         // JS getDay: 0=Sun, map to Mon=0 ... Sun=6
@@ -339,10 +343,7 @@ const TransactionVolumeChart: React.FC<{
         <>
           <div className="h-48 flex items-end justify-between gap-2">
             {dailyCounts.map(d => (
-              <div
-                key={d.day}
-                className="flex-1 flex flex-col items-center"
-              >
+              <div key={d.day} className="flex-1 flex flex-col items-center">
                 <div
                   className="w-full bg-[#294050] dark:bg-[#294050] rounded-t hover:bg-[#294050] dark:hover:bg-[#294050] transition-colors cursor-pointer"
                   style={{ height: `${d.height}%` }}
@@ -384,7 +385,14 @@ const RevenueExpensesChart: React.FC<{
       const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
       const monthName = d.toLocaleDateString('en-US', { month: 'short' })
       const monthStart = d.getTime()
-      const monthEnd = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59).getTime()
+      const monthEnd = new Date(
+        d.getFullYear(),
+        d.getMonth() + 1,
+        0,
+        23,
+        59,
+        59
+      ).getTime()
 
       let revenue = 0
       let expense = 0
@@ -394,8 +402,12 @@ const RevenueExpensesChart: React.FC<{
         const txTime = new Date(tx.timestamp).getTime()
         if (txTime < monthStart || txTime > monthEnd) continue
 
-        const amount = tx.value ? Math.abs(Number(tx.value) / Math.pow(10, tx.token_decimals ?? 18)) : 0
-        const usdPrice = tx.price_at_acquisition_usd ? Number(tx.price_at_acquisition_usd) : 0
+        const amount = tx.value
+          ? Math.abs(Number(tx.value) / Math.pow(10, tx.token_decimals ?? 18))
+          : 0
+        const usdPrice = tx.price_at_acquisition_usd
+          ? Number(tx.price_at_acquisition_usd)
+          : 0
         const usdAmount = amount * usdPrice
 
         if (tx.tx_type === 'expense') {
@@ -410,7 +422,10 @@ const RevenueExpensesChart: React.FC<{
     return months
   }, [transactions])
 
-  const maxVal = Math.max(...monthlyData.map(m => Math.max(m.revenue, m.expense)), 1)
+  const maxVal = Math.max(
+    ...monthlyData.map(m => Math.max(m.revenue, m.expense)),
+    1
+  )
   const hasAnyData = monthlyData.some(m => m.revenue > 0 || m.expense > 0)
 
   return (
@@ -505,7 +520,9 @@ const Analytics: React.FC = () => {
   const { settings: currencySettings } = useCurrency()
   const { currentProfile } = useProfile()
   const { balances, wallets, isLoading: walletsLoading } = useWalletBalances()
-  const [allTransactions, setAllTransactions] = useState<StoredTransaction[]>([])
+  const [allTransactions, setAllTransactions] = useState<StoredTransaction[]>(
+    []
+  )
   const [txLoading, setTxLoading] = useState(true)
 
   const timePeriods: { value: TimePeriod; label: string }[] = [
@@ -566,7 +583,10 @@ const Analytics: React.FC = () => {
     for (const wb of balances) {
       const nativeSymbol = wb.native_balance.symbol.toUpperCase()
       const nativeUsd = wb.native_balance.value_usd ?? 0
-      aggregated.set(nativeSymbol, (aggregated.get(nativeSymbol) ?? 0) + nativeUsd)
+      aggregated.set(
+        nativeSymbol,
+        (aggregated.get(nativeSymbol) ?? 0) + nativeUsd
+      )
       for (const tb of wb.token_balances) {
         const symbol = tb.symbol.toUpperCase()
         const usd = tb.value_usd ?? 0
@@ -638,7 +658,9 @@ const Analytics: React.FC = () => {
         label: 'Total Portfolio Value',
         value: hasWallets ? fmtCurrency(totalPortfolioValue) : '—',
         change: null,
-        changeLabel: hasWallets ? `${wallets.length} wallet${wallets.length === 1 ? '' : 's'} connected` : 'No wallets connected',
+        changeLabel: hasWallets
+          ? `${wallets.length} wallet${wallets.length === 1 ? '' : 's'} connected`
+          : 'No wallets connected',
         icon: DollarSign,
         trend: 'neutral',
       },
@@ -647,7 +669,9 @@ const Analytics: React.FC = () => {
         label: 'Crypto Holdings',
         value: hasWallets ? fmtCurrency(cryptoHoldingsValue) : '—',
         change: null,
-        changeLabel: hasWallets ? `${assetAllocation.length} asset${assetAllocation.length === 1 ? '' : 's'}` : 'No holdings',
+        changeLabel: hasWallets
+          ? `${assetAllocation.length} asset${assetAllocation.length === 1 ? '' : 's'}`
+          : 'No holdings',
         icon: Coins,
         trend: 'neutral',
       },
@@ -656,7 +680,10 @@ const Analytics: React.FC = () => {
         label: 'Transactions',
         value: String(filteredTransactions.length),
         change: null,
-        changeLabel: filteredTransactions.length > 0 ? `In selected period` : 'No transactions in period',
+        changeLabel:
+          filteredTransactions.length > 0
+            ? `In selected period`
+            : 'No transactions in period',
         icon: TrendingUp,
         trend: 'neutral',
       },
@@ -665,12 +692,22 @@ const Analytics: React.FC = () => {
         label: 'Active Wallets',
         value: String(wallets.length),
         change: null,
-        changeLabel: wallets.length > 0 ? 'Tracked & connected' : 'Add a wallet to get started',
+        changeLabel:
+          wallets.length > 0
+            ? 'Tracked & connected'
+            : 'Add a wallet to get started',
         icon: BarChart3,
         trend: 'neutral',
       },
     ]
-  }, [wallets, totalPortfolioValue, cryptoHoldingsValue, assetAllocation, filteredTransactions, currencySettings])
+  }, [
+    wallets,
+    totalPortfolioValue,
+    cryptoHoldingsValue,
+    assetAllocation,
+    filteredTransactions,
+    currencySettings,
+  ])
 
   const handleTogglePeriodDropdown = useCallback(() => {
     setShowPeriodDropdown(!showPeriodDropdown)
