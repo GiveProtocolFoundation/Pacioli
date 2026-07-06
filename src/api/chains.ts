@@ -6,6 +6,7 @@
  */
 
 import { invoke } from '@tauri-apps/api/core'
+import { isTauriAvailable } from '../utils/tauri'
 import type {
   ChainInfo,
   ChainTransaction,
@@ -77,6 +78,9 @@ export async function fetchBalances(
   chainId: string,
   address: string
 ): Promise<WalletBalances> {
+  if (!isTauriAvailable()) {
+    throw new Error('Balance fetching requires the desktop app')
+  }
   return invoke<WalletBalances>('chain_fetch_balances', { chainId, address })
 }
 
@@ -103,6 +107,9 @@ export async function fetchTransaction(
 export async function fetchAllBalances(
   addresses: WalletAddress[]
 ): Promise<WalletBalances[]> {
+  if (!isTauriAvailable()) {
+    return []
+  }
   const pairs: [string, string][] = addresses.map(w => [w.chainId, w.address])
   return invoke<WalletBalances[]>('chain_fetch_all_balances', {
     addresses: pairs,
