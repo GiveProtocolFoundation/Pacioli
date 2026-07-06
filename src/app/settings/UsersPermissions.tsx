@@ -60,6 +60,23 @@ interface RolesViewProps {
   users: User[]
 }
 
+interface UserRowProps {
+  user: User
+  getStatusBadge: (status: User['status']) => React.ReactNode
+  formatLastLogin: (date: string | null) => string
+}
+
+interface RoleCardProps {
+  role: Role
+  userCount: number
+}
+
+interface InviteFormFieldsProps {
+  roles: Role[]
+  handleClose: () => void
+  handleSend: () => void
+}
+
 /** Map auth UserRole to a display-friendly Role object */
 function mapUserRoleToRole(role: string): Role {
   const roleDefinitions: Record<string, { name: string; description: string }> =
@@ -138,6 +155,76 @@ function buildRolesFromUsers(users: User[]): Role[] {
 
 type ViewMode = 'users' | 'roles'
 
+/** Form fields and action buttons for the invite-user modal */
+const InviteFormFields: React.FC<InviteFormFieldsProps> = ({
+  roles,
+  handleClose,
+  handleSend,
+}) => (
+  <div className="space-y-4">
+    <div>
+      <label
+        htmlFor="inviteEmail"
+        className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+      >
+        Email Address
+      </label>
+      <input
+        id="inviteEmail"
+        type="email"
+        placeholder="user@example.org"
+        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]"
+      />
+    </div>
+
+    <div>
+      <label
+        htmlFor="inviteRole"
+        className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+      >
+        Role
+      </label>
+      <select
+        id="inviteRole"
+        className="select-input w-full px-3 pr-8 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]"
+      >
+        {roles.map(role => (
+          <option key={role.id} value={role.id}>
+            {role.name}
+          </option>
+        ))}
+      </select>
+    </div>
+
+    <div className="bg-[#5FE3C0]/10 dark:bg-[#5FE3C0]/20 border border-[#5FE3C0]/30 dark:border-[#5FE3C0]/40 rounded-lg p-3">
+      <div className="flex">
+        <AlertCircle className="w-5 h-5 text-[#294050] dark:text-[#F09988] flex-shrink-0" />
+        <p className="ml-3 text-xs text-[#294050] dark:text-[#F09988]">
+          An invitation email will be sent to the user with instructions to set
+          up their account.
+        </p>
+      </div>
+    </div>
+
+    <div className="flex items-center space-x-3 pt-4">
+      <button
+        onClick={handleClose}
+        className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+      >
+        Cancel
+      </button>
+      <button
+        onClick={handleSend}
+        className="flex-1 px-4 py-2 text-sm font-medium text-white bg-[#294050] rounded-lg hover:bg-[#1E2F3C] flex items-center justify-center"
+      >
+        <Mail className="w-4 h-4 mr-2" />
+        Send Invite
+      </button>
+    </div>
+  </div>
+)
+
+/** Modal dialog for inviting a new user to the current profile */
 const InviteUserModal: React.FC<{
   roles: Role[]
   handleClose: () => void
@@ -157,69 +244,75 @@ const InviteUserModal: React.FC<{
         </button>
       </div>
 
-      <div className="space-y-4">
-        <div>
-          <label
-            htmlFor="inviteEmail"
-            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-          >
-            Email Address
-          </label>
-          <input
-            id="inviteEmail"
-            type="email"
-            placeholder="user@example.org"
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]"
-          />
-        </div>
-
-        <div>
-          <label
-            htmlFor="inviteRole"
-            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-          >
-            Role
-          </label>
-          <select
-            id="inviteRole"
-            className="select-input w-full px-3 pr-8 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]"
-          >
-            {roles.map(role => (
-              <option key={role.id} value={role.id}>
-                {role.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="bg-[#5FE3C0]/10 dark:bg-[#5FE3C0]/20 border border-[#5FE3C0]/30 dark:border-[#5FE3C0]/40 rounded-lg p-3">
-          <div className="flex">
-            <AlertCircle className="w-5 h-5 text-[#294050] dark:text-[#F09988] flex-shrink-0" />
-            <p className="ml-3 text-xs text-[#294050] dark:text-[#F09988]">
-              An invitation email will be sent to the user with instructions to
-              set up their account.
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center space-x-3 pt-4">
-          <button
-            onClick={handleClose}
-            className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSend}
-            className="flex-1 px-4 py-2 text-sm font-medium text-white bg-[#294050] rounded-lg hover:bg-[#1E2F3C] flex items-center justify-center"
-          >
-            <Mail className="w-4 h-4 mr-2" />
-            Send Invite
-          </button>
-        </div>
-      </div>
+      <InviteFormFields
+        roles={roles}
+        handleClose={handleClose}
+        handleSend={handleSend}
+      />
     </div>
   </div>
+)
+
+/** Single row in the users table displaying user info, role, status, and actions */
+const UserRow: React.FC<UserRowProps> = ({
+  user,
+  getStatusBadge,
+  formatLastLogin,
+}) => (
+  <tr className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+    <td className="px-6 py-4 whitespace-nowrap">
+      <div className="flex items-center">
+        <div className="w-10 h-10 rounded-full bg-[#294050]/10 dark:bg-[#294050]/20 flex items-center justify-center">
+          <span className="text-sm font-medium text-[#294050] dark:text-[#F09988]">
+            {user.name
+              .split(' ')
+              .map(n => n[0])
+              .join('')
+              .slice(0, 2)
+              .toUpperCase()}
+          </span>
+        </div>
+        <div className="ml-4">
+          <div className="text-sm font-medium text-gray-900 dark:text-white">
+            {user.name}
+          </div>
+          <div className="text-sm text-gray-500 dark:text-[#9FB4BE]">
+            {user.email}
+          </div>
+        </div>
+      </div>
+    </td>
+    <td className="px-6 py-4 whitespace-nowrap">
+      <div className="text-sm text-gray-900 dark:text-white">
+        {user.role.name}
+      </div>
+      <div className="text-xs text-gray-500 dark:text-[#9FB4BE]">
+        {user.role.description}
+      </div>
+    </td>
+    <td className="px-6 py-4 whitespace-nowrap">
+      {getStatusBadge(user.status)}
+    </td>
+    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-[#9FB4BE]">
+      {formatLastLogin(user.lastLogin)}
+    </td>
+    <td className="px-6 py-4 whitespace-nowrap">
+      {user.twoFactorEnabled ? (
+        <span className="inline-flex items-center text-green-600 dark:text-green-400">
+          <Check className="w-4 h-4" />
+        </span>
+      ) : (
+        <span className="inline-flex items-center text-gray-400">
+          <X className="w-4 h-4" />
+        </span>
+      )}
+    </td>
+    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+      <button className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+        <MoreVertical className="w-5 h-5" />
+      </button>
+    </td>
+  </tr>
 )
 
 // Extracted UsersTable component to avoid recreation on every render
@@ -294,63 +387,12 @@ const UsersTable: React.FC<UsersTableProps> = ({
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
               {filteredUsers.map(user => (
-                <tr
+                <UserRow
                   key={user.id}
-                  className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                >
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="w-10 h-10 rounded-full bg-[#294050]/10 dark:bg-[#294050]/20 flex items-center justify-center">
-                        <span className="text-sm font-medium text-[#294050] dark:text-[#F09988]">
-                          {user.name
-                            .split(' ')
-                            .map(n => n[0])
-                            .join('')
-                            .slice(0, 2)
-                            .toUpperCase()}
-                        </span>
-                      </div>
-                      <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900 dark:text-white">
-                          {user.name}
-                        </div>
-                        <div className="text-sm text-gray-500 dark:text-[#9FB4BE]">
-                          {user.email}
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900 dark:text-white">
-                      {user.role.name}
-                    </div>
-                    <div className="text-xs text-gray-500 dark:text-[#9FB4BE]">
-                      {user.role.description}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {getStatusBadge(user.status)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-[#9FB4BE]">
-                    {formatLastLogin(user.lastLogin)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {user.twoFactorEnabled ? (
-                      <span className="inline-flex items-center text-green-600 dark:text-green-400">
-                        <Check className="w-4 h-4" />
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center text-gray-400">
-                        <X className="w-4 h-4" />
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                      <MoreVertical className="w-5 h-5" />
-                    </button>
-                  </td>
-                </tr>
+                  user={user}
+                  getStatusBadge={getStatusBadge}
+                  formatLastLogin={formatLastLogin}
+                />
               ))}
             </tbody>
           </table>
@@ -374,6 +416,42 @@ const UsersTable: React.FC<UsersTableProps> = ({
   </>
 )
 
+/** Card displaying a single role with its description and assigned user count */
+const RoleCard: React.FC<RoleCardProps> = ({ role, userCount }) => (
+  <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-6 bg-white dark:bg-gray-900">
+    <div className="flex items-start justify-between mb-4">
+      <div className="flex items-center">
+        <div className="w-10 h-10 rounded-lg bg-[#294050]/10 dark:bg-[#294050]/20 flex items-center justify-center">
+          <Shield className="w-5 h-5 text-[#294050] dark:text-[#F09988]" />
+        </div>
+        <div className="ml-3">
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+            {role.name}
+          </h3>
+          {role.isCustom && (
+            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-400 border border-purple-200 dark:border-purple-800 mt-1">
+              Custom
+            </span>
+          )}
+        </div>
+      </div>
+      <button className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+        <MoreVertical className="w-5 h-5" />
+      </button>
+    </div>
+
+    <p className="text-sm text-gray-500 dark:text-[#9FB4BE] mb-4">
+      {role.description}
+    </p>
+
+    <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+      <div className="flex items-center justify-between text-xs text-gray-500 dark:text-[#9FB4BE]">
+        <span>{userCount} users assigned</span>
+      </div>
+    </div>
+  </div>
+)
+
 // Extracted RolesView component to avoid recreation on every render
 const RolesView: React.FC<RolesViewProps> = ({ roles, users }) => (
   <>
@@ -390,44 +468,11 @@ const RolesView: React.FC<RolesViewProps> = ({ roles, users }) => (
     ) : (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {roles.map(role => (
-          <div
+          <RoleCard
             key={role.id}
-            className="border border-gray-200 dark:border-gray-700 rounded-lg p-6 bg-white dark:bg-gray-900"
-          >
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex items-center">
-                <div className="w-10 h-10 rounded-lg bg-[#294050]/10 dark:bg-[#294050]/20 flex items-center justify-center">
-                  <Shield className="w-5 h-5 text-[#294050] dark:text-[#F09988]" />
-                </div>
-                <div className="ml-3">
-                  <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
-                    {role.name}
-                  </h3>
-                  {role.isCustom && (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-400 border border-purple-200 dark:border-purple-800 mt-1">
-                      Custom
-                    </span>
-                  )}
-                </div>
-              </div>
-              <button className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                <MoreVertical className="w-5 h-5" />
-              </button>
-            </div>
-
-            <p className="text-sm text-gray-500 dark:text-[#9FB4BE] mb-4">
-              {role.description}
-            </p>
-
-            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-              <div className="flex items-center justify-between text-xs text-gray-500 dark:text-[#9FB4BE]">
-                <span>
-                  {users.filter(u => u.role.id === role.id).length} users
-                  assigned
-                </span>
-              </div>
-            </div>
-          </div>
+            role={role}
+            userCount={users.filter(u => u.role.id === role.id).length}
+          />
         ))}
 
         {/* Create Custom Role Card */}
@@ -509,6 +554,7 @@ const RolesView: React.FC<RolesViewProps> = ({ roles, users }) => (
   </>
 )
 
+/** Settings page for managing users and role-based permissions */
 const UsersPermissions: React.FC = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('users')
   const [users, setUsers] = useState<User[]>([])
@@ -526,6 +572,7 @@ const UsersPermissions: React.FC = () => {
   // Load users from auth service
   useEffect(() => {
     let cancelled = false
+    /** Fetch profile users from the auth service and map them to the component's User type */
     const loadUsers = async () => {
       if (!currentProfileId) {
         setUsers([])
