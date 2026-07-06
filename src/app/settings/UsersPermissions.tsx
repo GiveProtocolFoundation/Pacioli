@@ -253,6 +253,20 @@ const InviteUserModal: React.FC<{
   </div>
 )
 
+/** Circular avatar showing the user's initials */
+const UserAvatar: React.FC<{ name: string }> = ({ name }) => (
+  <div className="w-10 h-10 rounded-full bg-[#294050]/10 dark:bg-[#294050]/20 flex items-center justify-center">
+    <span className="text-sm font-medium text-[#294050] dark:text-[#F09988]">
+      {name
+        .split(' ')
+        .map(n => n[0])
+        .join('')
+        .slice(0, 2)
+        .toUpperCase()}
+    </span>
+  </div>
+)
+
 /** Single row in the users table displaying user info, role, status, and actions */
 const UserRow: React.FC<UserRowProps> = ({
   user,
@@ -262,16 +276,7 @@ const UserRow: React.FC<UserRowProps> = ({
   <tr className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
     <td className="px-6 py-4 whitespace-nowrap">
       <div className="flex items-center">
-        <div className="w-10 h-10 rounded-full bg-[#294050]/10 dark:bg-[#294050]/20 flex items-center justify-center">
-          <span className="text-sm font-medium text-[#294050] dark:text-[#F09988]">
-            {user.name
-              .split(' ')
-              .map(n => n[0])
-              .join('')
-              .slice(0, 2)
-              .toUpperCase()}
-          </span>
-        </div>
+        <UserAvatar name={user.name} />
         <div className="ml-4">
           <div className="text-sm font-medium text-gray-900 dark:text-white">
             {user.name}
@@ -416,14 +421,19 @@ const UsersTable: React.FC<UsersTableProps> = ({
   </>
 )
 
+/** Rounded icon badge for a role card */
+const RoleIconBadge: React.FC = () => (
+  <div className="w-10 h-10 rounded-lg bg-[#294050]/10 dark:bg-[#294050]/20 flex items-center justify-center">
+    <Shield className="w-5 h-5 text-[#294050] dark:text-[#F09988]" />
+  </div>
+)
+
 /** Card displaying a single role with its description and assigned user count */
 const RoleCard: React.FC<RoleCardProps> = ({ role, userCount }) => (
   <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-6 bg-white dark:bg-gray-900">
     <div className="flex items-start justify-between mb-4">
       <div className="flex items-center">
-        <div className="w-10 h-10 rounded-lg bg-[#294050]/10 dark:bg-[#294050]/20 flex items-center justify-center">
-          <Shield className="w-5 h-5 text-[#294050] dark:text-[#F09988]" />
-        </div>
+        <RoleIconBadge />
         <div className="ml-3">
           <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
             {role.name}
