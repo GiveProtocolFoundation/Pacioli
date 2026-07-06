@@ -6,6 +6,7 @@
  */
 
 import { invoke } from '@tauri-apps/api/core'
+import { isTauriAvailable } from '../utils/tauri'
 import type {
   ChainInfo,
   ChainTransaction,
@@ -18,7 +19,7 @@ import type {
  *
  * @returns List of supported chains with their configuration
  */
-export async function getSupportedChains(): Promise<ChainInfo[]> {
+export function getSupportedChains(): Promise<ChainInfo[]> {
   return invoke<ChainInfo[]>('chain_get_supported_chains')
 }
 
@@ -28,7 +29,7 @@ export async function getSupportedChains(): Promise<ChainInfo[]> {
  * @param chainId - Chain identifier (name or numeric ID)
  * @returns True if the chain is supported
  */
-export async function isChainSupported(chainId: string): Promise<boolean> {
+export function isChainSupported(chainId: string): Promise<boolean> {
   return invoke<boolean>('chain_is_supported', { chainId })
 }
 
@@ -39,7 +40,7 @@ export async function isChainSupported(chainId: string): Promise<boolean> {
  * @param address - Address to validate
  * @returns True if the address is valid for the chain
  */
-export async function validateAddress(
+export function validateAddress(
   chainId: string,
   address: string
 ): Promise<boolean> {
@@ -54,7 +55,7 @@ export async function validateAddress(
  * @param fromBlock - Optional starting block number
  * @returns List of transactions
  */
-export async function fetchTransactions(
+export function fetchTransactions(
   chainId: string,
   address: string,
   fromBlock?: number
@@ -73,10 +74,15 @@ export async function fetchTransactions(
  * @param address - Wallet address
  * @returns Wallet balances including native and token balances
  */
-export async function fetchBalances(
+export function fetchBalances(
   chainId: string,
   address: string
 ): Promise<WalletBalances> {
+  if (!isTauriAvailable()) {
+    return Promise.reject(
+      new Error('Balance fetching requires the desktop app')
+    )
+  }
   return invoke<WalletBalances>('chain_fetch_balances', { chainId, address })
 }
 
@@ -87,7 +93,7 @@ export async function fetchBalances(
  * @param hash - Transaction hash
  * @returns Transaction details
  */
-export async function fetchTransaction(
+export function fetchTransaction(
   chainId: string,
   hash: string
 ): Promise<ChainTransaction> {
@@ -100,9 +106,12 @@ export async function fetchTransaction(
  * @param addresses - List of chain/address pairs
  * @returns List of wallet balances
  */
-export async function fetchAllBalances(
+export function fetchAllBalances(
   addresses: WalletAddress[]
 ): Promise<WalletBalances[]> {
+  if (!isTauriAvailable()) {
+    return Promise.resolve([])
+  }
   const pairs: [string, string][] = addresses.map(w => [w.chainId, w.address])
   return invoke<WalletBalances[]>('chain_fetch_all_balances', {
     addresses: pairs,
@@ -117,7 +126,7 @@ export async function fetchAllBalances(
  * @param fromBlock - Optional starting block number
  * @returns Combined list of transactions sorted by timestamp
  */
-export async function fetchAllTransactions(
+export function fetchAllTransactions(
   address: string,
   chainIds: string[],
   fromBlock?: number
@@ -135,7 +144,7 @@ export async function fetchAllTransactions(
  * @param chainId - Chain identifier
  * @returns Connection status message
  */
-export async function connectChain(chainId: string): Promise<string> {
+export function connectChain(chainId: string): Promise<string> {
   return invoke<string>('chain_connect', { chainId })
 }
 
@@ -171,6 +180,6 @@ export async function setRpcUrl(
  * @param chainId - Chain identifier
  * @returns Current block number
  */
-export async function getBlockNumber(chainId: string): Promise<number> {
+export function getBlockNumber(chainId: string): Promise<number> {
   return invoke<number>('chain_get_block_number', { chainId })
 }
