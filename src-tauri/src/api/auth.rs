@@ -410,7 +410,7 @@ pub async fn register(
         "#,
     )
     .bind(&profile_id)
-    .bind(format!("{}'s Workspace", &input.display_name))
+    .bind(format!("{}'s Workspace", input.display_name))
     .bind(now)
     .bind(now)
     .execute(pool)

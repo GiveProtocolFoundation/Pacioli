@@ -474,7 +474,7 @@ pub async fn create_journal_entry(
     let entry_date = NaiveDateTime::parse_from_str(&input.entry_date, "%Y-%m-%dT%H:%M:%S")
         .or_else(|_| {
             NaiveDateTime::parse_from_str(
-                &format!("{}T00:00:00", &input.entry_date),
+                &format!("{}T00:00:00", input.entry_date),
                 "%Y-%m-%dT%H:%M:%S",
             )
         })

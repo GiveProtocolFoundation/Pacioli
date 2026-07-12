@@ -434,7 +434,7 @@ pub async fn link_wallet_to_account(
         "success",
         Some(&format!(
             "Linked {} wallet: {}",
-            wallet_type, &request.wallet_address
+            wallet_type, request.wallet_address
         )),
     )
     .await;
