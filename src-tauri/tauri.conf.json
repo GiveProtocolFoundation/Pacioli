@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Pacioli",
-  "version": "0.1.0",
-  "identifier": "com.civicmastery.numbers",
+  "version": "0.1.0-alpha.1",
+  "identifier": "io.pacioli.app",
   "build": {
     "beforeDevCommand": "pnpm dev",
     "devUrl": "http://localhost:1420",
@@ -51,11 +51,11 @@
       "icons/icon.ico"
     ],
     "category": "Finance",
-    "shortDescription": "Blockchain transaction tracker for the Polkadot ecosystem",
-    "longDescription": "A comprehensive blockchain transaction tracker that supports EVM and Substrate chains in the Polkadot ecosystem, including Moonbeam, Moonriver, Astar, and Acala.",
-    "copyright": "© 2024 CivicMastery",
-    "homepage": "https://github.com/civicmastery/Pacioli",
-    "publisher": "CivicMastery",
+    "shortDescription": "Local-first accounting for digital assets, fiat, and nonprofit funds",
+    "longDescription": "Pacioli is an open-source, local-first accounting platform for digital assets, fiat, and nonprofit fund accounting. It separates evidence from interpretation across a four-layer model: raw transactions, journal entries, general ledger, and reports.",
+    "copyright": "© 2026 Give Protocol Foundation",
+    "homepage": "https://pacioli.io",
+    "publisher": "Give Protocol Foundation",
     "resources": ["resources/token-lists/*"]
   },
   "plugins": {
