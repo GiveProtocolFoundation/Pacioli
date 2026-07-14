@@ -25,14 +25,14 @@ Procure:
 
 Set secrets:
 
-| Secret | Value |
-| --- | --- |
-| `APPLE_CERTIFICATE` | base64 of the `.p12` (`base64 -i cert.p12 \| pbcopy`) |
-| `APPLE_CERTIFICATE_PASSWORD` | password chosen at `.p12` export |
-| `APPLE_SIGNING_IDENTITY` | e.g. `Developer ID Application: Give Protocol Foundation (TEAMID)` |
-| `APPLE_ID` | the Apple ID email |
-| `APPLE_PASSWORD` | the app-specific password |
-| `APPLE_TEAM_ID` | the 10-character Team ID |
+| Secret                       | Value                                                              |
+| ---------------------------- | ------------------------------------------------------------------ |
+| `APPLE_CERTIFICATE`          | base64 of the `.p12` (`base64 -i cert.p12 \| pbcopy`)              |
+| `APPLE_CERTIFICATE_PASSWORD` | password chosen at `.p12` export                                   |
+| `APPLE_SIGNING_IDENTITY`     | e.g. `Developer ID Application: Give Protocol Foundation (TEAMID)` |
+| `APPLE_ID`                   | the Apple ID email                                                 |
+| `APPLE_PASSWORD`             | the app-specific password                                          |
+| `APPLE_TEAM_ID`              | the 10-character Team ID                                           |
 
 Then uncomment the six `APPLE_*` lines in `release.yml`. Signing and notarization
 both run automatically during the macOS matrix job.
@@ -52,10 +52,10 @@ signing, so pick ONE option:
       `.pfx` — only possible where the CA offers a cloud/exportable flavor.
       Set secrets and uncomment the two `WINDOWS_*` lines in `release.yml`:
 
-| Secret | Value |
-| --- | --- |
-| `WINDOWS_CERTIFICATE` | base64 of the `.pfx` |
-| `WINDOWS_CERTIFICATE_PASSWORD` | the `.pfx` password |
+| Secret                         | Value                |
+| ------------------------------ | -------------------- |
+| `WINDOWS_CERTIFICATE`          | base64 of the `.pfx` |
+| `WINDOWS_CERTIFICATE_PASSWORD` | the `.pfx` password  |
 
 - [ ] **Option C: ship unsigned for now** and document the SmartScreen bypass in
       release notes (current state; fine pre-launch, not fine at Gate 4).
