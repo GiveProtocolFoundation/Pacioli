@@ -558,9 +558,24 @@ pub async fn post_journal_entry(
         return Err("Cannot post a reversed entry".to_string());
     }
 
+    // Friendly line-count check (DB trigger is the authority, this gives a better message)
+    let line_count: (i64,) =
+        sqlx::query_as("SELECT COUNT(*) FROM journal_entry_lines WHERE journal_entry_id = ?")
+            .bind(id)
+            .fetch_one(&state.pool)
+            .await
+            .map_err(|e| e.to_string())?;
+
+    if line_count.0 == 0 {
+        return Err("Cannot post: entry has no lines".to_string());
+    }
+    if line_count.0 < 2 {
+        return Err("Cannot post: entry needs at least 2 lines (debit and credit)".to_string());
+    }
+
     // Validate balance before posting (the DB trigger also enforces this)
     let balance: (f64,) = sqlx::query_as(
-        "SELECT ABS(SUM(debit_amount) - SUM(credit_amount)) FROM journal_entry_lines WHERE journal_entry_id = ?",
+        "SELECT ABS(COALESCE(SUM(debit_amount) - SUM(credit_amount), 1e18)) FROM journal_entry_lines WHERE journal_entry_id = ?",
     )
     .bind(id)
     .fetch_one(&state.pool)
@@ -870,4 +885,452 @@ pub async fn get_draft_journal_entry_count(state: State<'_, DatabaseState>) -> R
     .map_err(|e| e.to_string())?;
 
     Ok(row.0)
+}
+
+// ============================================================================
+// Tests — Journal-Entry Balance Invariant (GIV-665)
+// ============================================================================
+
+#[cfg(test)]
+mod tests {
+    use sqlx::sqlite::SqlitePoolOptions;
+    use sqlx::SqlitePool;
+
+    /// Creates an in-memory SQLite pool with all migrations applied.
+    async fn setup_test_db() -> SqlitePool {
+        let pool = SqlitePoolOptions::new()
+            .connect("sqlite::memory:")
+            .await
+            .expect("Failed to create in-memory SQLite pool");
+
+        sqlx::migrate!("./migrations")
+            .run(&pool)
+            .await
+            .expect("Failed to run migrations");
+
+        pool
+    }
+
+    /// Returns two GL account IDs from the seed data (1000=Cash, 4000=Income).
+    async fn get_test_accounts(pool: &SqlitePool) -> (i64, i64) {
+        let (acct_a,): (i64,) =
+            sqlx::query_as("SELECT id FROM gl_accounts WHERE account_number = '1000'")
+                .fetch_one(pool)
+                .await
+                .expect("Seed account 1000 should exist");
+        let (acct_b,): (i64,) =
+            sqlx::query_as("SELECT id FROM gl_accounts WHERE account_number = '4000'")
+                .fetch_one(pool)
+                .await
+                .expect("Seed account 4000 should exist");
+        (acct_a, acct_b)
+    }
+
+    /// Creates a draft journal entry and returns its id.
+    async fn create_draft_entry(pool: &SqlitePool) -> i64 {
+        let result = sqlx::query(
+            "INSERT INTO journal_entries (entry_date, entry_number, description, is_posted, created_by) VALUES ('2026-01-01', 'TEST-001', 'Test entry', 0, 'test')",
+        )
+        .execute(pool)
+        .await
+        .expect("Failed to create draft entry");
+
+        result.last_insert_rowid()
+    }
+
+    /// Adds a balanced pair of lines (debit + credit) to the given entry.
+    async fn add_balanced_lines(
+        pool: &SqlitePool,
+        entry_id: i64,
+        debit_acct: i64,
+        credit_acct: i64,
+        amount: f64,
+    ) {
+        sqlx::query(
+            "INSERT INTO journal_entry_lines (journal_entry_id, gl_account_id, debit_amount, credit_amount, line_number) VALUES (?, ?, ?, 0, 1)",
+        )
+        .bind(entry_id)
+        .bind(debit_acct)
+        .bind(amount)
+        .execute(pool)
+        .await
+        .expect("Failed to add debit line");
+
+        sqlx::query(
+            "INSERT INTO journal_entry_lines (journal_entry_id, gl_account_id, debit_amount, credit_amount, line_number) VALUES (?, ?, 0, ?, 2)",
+        )
+        .bind(entry_id)
+        .bind(credit_acct)
+        .bind(amount)
+        .execute(pool)
+        .await
+        .expect("Failed to add credit line");
+    }
+
+    // ---- Born-posted INSERT rejected ----
+
+    #[tokio::test]
+    async fn born_posted_insert_rejected() {
+        let pool = setup_test_db().await;
+
+        let result = sqlx::query(
+            "INSERT INTO journal_entries (entry_date, entry_number, description, is_posted, created_by) VALUES ('2026-01-01', 'BP-001', 'Born posted', 1, 'test')",
+        )
+        .execute(&pool)
+        .await;
+
+        assert!(result.is_err(), "Born-posted INSERT should be rejected");
+        let err = result.unwrap_err().to_string();
+        assert!(
+            err.contains("must be created as drafts"),
+            "Error should mention drafts, got: {err}"
+        );
+    }
+
+    // ---- Line immutability on posted entries ----
+
+    #[tokio::test]
+    async fn insert_line_on_posted_entry_rejected() {
+        let pool = setup_test_db().await;
+        let (acct_a, acct_b) = get_test_accounts(&pool).await;
+        let entry_id = create_draft_entry(&pool).await;
+        add_balanced_lines(&pool, entry_id, acct_a, acct_b, 100.0).await;
+
+        // Post it
+        sqlx::query("UPDATE journal_entries SET is_posted = 1 WHERE id = ?")
+            .bind(entry_id)
+            .execute(&pool)
+            .await
+            .expect("Posting balanced entry should succeed");
+
+        // Try to insert a new line
+        let result = sqlx::query(
+            "INSERT INTO journal_entry_lines (journal_entry_id, gl_account_id, debit_amount, credit_amount, line_number) VALUES (?, ?, 50, 0, 3)",
+        )
+        .bind(entry_id)
+        .bind(acct_a)
+        .execute(&pool)
+        .await;
+
+        assert!(
+            result.is_err(),
+            "INSERT line on posted entry should be rejected"
+        );
+        let err = result.unwrap_err().to_string();
+        assert!(
+            err.contains("immutable"),
+            "Error should mention immutability, got: {err}"
+        );
+    }
+
+    #[tokio::test]
+    async fn update_line_on_posted_entry_rejected() {
+        let pool = setup_test_db().await;
+        let (acct_a, acct_b) = get_test_accounts(&pool).await;
+        let entry_id = create_draft_entry(&pool).await;
+        add_balanced_lines(&pool, entry_id, acct_a, acct_b, 100.0).await;
+
+        sqlx::query("UPDATE journal_entries SET is_posted = 1 WHERE id = ?")
+            .bind(entry_id)
+            .execute(&pool)
+            .await
+            .expect("Posting balanced entry should succeed");
+
+        // Try to update a line
+        let result = sqlx::query(
+            "UPDATE journal_entry_lines SET debit_amount = 200 WHERE journal_entry_id = ? AND line_number = 1",
+        )
+        .bind(entry_id)
+        .execute(&pool)
+        .await;
+
+        assert!(
+            result.is_err(),
+            "UPDATE line on posted entry should be rejected"
+        );
+        let err = result.unwrap_err().to_string();
+        assert!(
+            err.contains("immutable"),
+            "Error should mention immutability, got: {err}"
+        );
+    }
+
+    #[tokio::test]
+    async fn delete_line_on_posted_entry_rejected() {
+        let pool = setup_test_db().await;
+        let (acct_a, acct_b) = get_test_accounts(&pool).await;
+        let entry_id = create_draft_entry(&pool).await;
+        add_balanced_lines(&pool, entry_id, acct_a, acct_b, 100.0).await;
+
+        sqlx::query("UPDATE journal_entries SET is_posted = 1 WHERE id = ?")
+            .bind(entry_id)
+            .execute(&pool)
+            .await
+            .expect("Posting balanced entry should succeed");
+
+        // Try to delete a line
+        let result = sqlx::query(
+            "DELETE FROM journal_entry_lines WHERE journal_entry_id = ? AND line_number = 1",
+        )
+        .bind(entry_id)
+        .execute(&pool)
+        .await;
+
+        assert!(
+            result.is_err(),
+            "DELETE line on posted entry should be rejected"
+        );
+        let err = result.unwrap_err().to_string();
+        assert!(
+            err.contains("immutable"),
+            "Error should mention immutability, got: {err}"
+        );
+    }
+
+    // ---- Draft entry line ops still allowed ----
+
+    #[tokio::test]
+    async fn crud_lines_on_draft_entry_allowed() {
+        let pool = setup_test_db().await;
+        let (acct_a, acct_b) = get_test_accounts(&pool).await;
+        let entry_id = create_draft_entry(&pool).await;
+
+        // INSERT
+        sqlx::query(
+            "INSERT INTO journal_entry_lines (journal_entry_id, gl_account_id, debit_amount, credit_amount, line_number) VALUES (?, ?, 100, 0, 1)",
+        )
+        .bind(entry_id)
+        .bind(acct_a)
+        .execute(&pool)
+        .await
+        .expect("INSERT line on draft should succeed");
+
+        // UPDATE
+        sqlx::query(
+            "UPDATE journal_entry_lines SET debit_amount = 200 WHERE journal_entry_id = ? AND line_number = 1",
+        )
+        .bind(entry_id)
+        .execute(&pool)
+        .await
+        .expect("UPDATE line on draft should succeed");
+
+        // DELETE
+        sqlx::query(
+            "DELETE FROM journal_entry_lines WHERE journal_entry_id = ? AND line_number = 1",
+        )
+        .bind(entry_id)
+        .execute(&pool)
+        .await
+        .expect("DELETE line on draft should succeed");
+
+        // Re-add balanced lines for completeness
+        add_balanced_lines(&pool, entry_id, acct_a, acct_b, 50.0).await;
+    }
+
+    // ---- Zero-line entry post rejected ----
+
+    #[tokio::test]
+    async fn zero_line_entry_post_rejected() {
+        let pool = setup_test_db().await;
+        let entry_id = create_draft_entry(&pool).await;
+
+        let result = sqlx::query("UPDATE journal_entries SET is_posted = 1 WHERE id = ?")
+            .bind(entry_id)
+            .execute(&pool)
+            .await;
+
+        assert!(
+            result.is_err(),
+            "Posting zero-line entry should be rejected"
+        );
+        let err = result.unwrap_err().to_string();
+        assert!(
+            err.contains("at least 2 lines"),
+            "Error should mention minimum lines, got: {err}"
+        );
+    }
+
+    // ---- Unbalanced post rejected (direct SQL, proves trigger) ----
+
+    #[tokio::test]
+    async fn unbalanced_post_rejected_via_direct_sql() {
+        let pool = setup_test_db().await;
+        let (acct_a, acct_b) = get_test_accounts(&pool).await;
+        let entry_id = create_draft_entry(&pool).await;
+
+        // Add unbalanced lines: debit 100, credit 50
+        sqlx::query(
+            "INSERT INTO journal_entry_lines (journal_entry_id, gl_account_id, debit_amount, credit_amount, line_number) VALUES (?, ?, 100, 0, 1)",
+        )
+        .bind(entry_id)
+        .bind(acct_a)
+        .execute(&pool)
+        .await
+        .expect("Insert debit line");
+
+        sqlx::query(
+            "INSERT INTO journal_entry_lines (journal_entry_id, gl_account_id, debit_amount, credit_amount, line_number) VALUES (?, ?, 0, 50, 2)",
+        )
+        .bind(entry_id)
+        .bind(acct_b)
+        .execute(&pool)
+        .await
+        .expect("Insert credit line");
+
+        let result = sqlx::query("UPDATE journal_entries SET is_posted = 1 WHERE id = ?")
+            .bind(entry_id)
+            .execute(&pool)
+            .await;
+
+        assert!(
+            result.is_err(),
+            "Posting unbalanced entry should be rejected"
+        );
+        let err = result.unwrap_err().to_string();
+        assert!(
+            err.contains("debits must equal credits"),
+            "Error should mention balance, got: {err}"
+        );
+    }
+
+    // ---- Happy path: create draft -> balanced lines -> post -> void ----
+
+    #[tokio::test]
+    async fn happy_path_draft_post_void() {
+        let pool = setup_test_db().await;
+        let (acct_a, acct_b) = get_test_accounts(&pool).await;
+
+        // Create draft
+        let entry_id = create_draft_entry(&pool).await;
+
+        // Verify it's a draft
+        let (is_posted,): (bool,) =
+            sqlx::query_as("SELECT is_posted FROM journal_entries WHERE id = ?")
+                .bind(entry_id)
+                .fetch_one(&pool)
+                .await
+                .expect("Should fetch entry");
+        assert!(!is_posted, "Entry should start as draft");
+
+        // Add balanced lines
+        add_balanced_lines(&pool, entry_id, acct_a, acct_b, 100.0).await;
+
+        // Post
+        sqlx::query("UPDATE journal_entries SET is_posted = 1 WHERE id = ?")
+            .bind(entry_id)
+            .execute(&pool)
+            .await
+            .expect("Posting balanced entry should succeed");
+
+        let (is_posted,): (bool,) =
+            sqlx::query_as("SELECT is_posted FROM journal_entries WHERE id = ?")
+                .bind(entry_id)
+                .fetch_one(&pool)
+                .await
+                .expect("Should fetch entry");
+        assert!(is_posted, "Entry should be posted");
+
+        // Void
+        sqlx::query("UPDATE journal_entries SET is_reversed = 1 WHERE id = ?")
+            .bind(entry_id)
+            .execute(&pool)
+            .await
+            .expect("Voiding entry should succeed");
+
+        let (is_reversed,): (bool,) =
+            sqlx::query_as("SELECT is_reversed FROM journal_entries WHERE id = ?")
+                .bind(entry_id)
+                .fetch_one(&pool)
+                .await
+                .expect("Should fetch entry");
+        assert!(is_reversed, "Entry should be voided");
+    }
+
+    // ---- Single-line entry post rejected ----
+
+    #[tokio::test]
+    async fn single_line_entry_post_rejected() {
+        let pool = setup_test_db().await;
+        let (acct_a, _acct_b) = get_test_accounts(&pool).await;
+        let entry_id = create_draft_entry(&pool).await;
+
+        // Add only one line
+        sqlx::query(
+            "INSERT INTO journal_entry_lines (journal_entry_id, gl_account_id, debit_amount, credit_amount, line_number) VALUES (?, ?, 100, 0, 1)",
+        )
+        .bind(entry_id)
+        .bind(acct_a)
+        .execute(&pool)
+        .await
+        .expect("Insert single line");
+
+        let result = sqlx::query("UPDATE journal_entries SET is_posted = 1 WHERE id = ?")
+            .bind(entry_id)
+            .execute(&pool)
+            .await;
+
+        assert!(
+            result.is_err(),
+            "Posting single-line entry should be rejected"
+        );
+        let err = result.unwrap_err().to_string();
+        assert!(
+            err.contains("at least 2 lines"),
+            "Error should mention minimum lines, got: {err}"
+        );
+    }
+
+    // ---- Re-pointing a line onto a posted entry is blocked ----
+
+    #[tokio::test]
+    async fn repoint_line_onto_posted_entry_rejected() {
+        let pool = setup_test_db().await;
+        let (acct_a, acct_b) = get_test_accounts(&pool).await;
+
+        // Create and post entry A
+        let entry_a = create_draft_entry(&pool).await;
+        add_balanced_lines(&pool, entry_a, acct_a, acct_b, 100.0).await;
+        sqlx::query("UPDATE journal_entries SET is_posted = 1 WHERE id = ?")
+            .bind(entry_a)
+            .execute(&pool)
+            .await
+            .expect("Post entry A");
+
+        // Create draft entry B with a line
+        let result_b = sqlx::query(
+            "INSERT INTO journal_entries (entry_date, entry_number, description, is_posted, created_by) VALUES ('2026-01-02', 'TEST-002', 'Entry B', 0, 'test')",
+        )
+        .execute(&pool)
+        .await
+        .expect("Create entry B");
+        let entry_b = result_b.last_insert_rowid();
+
+        sqlx::query(
+            "INSERT INTO journal_entry_lines (journal_entry_id, gl_account_id, debit_amount, credit_amount, line_number) VALUES (?, ?, 50, 0, 1)",
+        )
+        .bind(entry_b)
+        .bind(acct_a)
+        .execute(&pool)
+        .await
+        .expect("Add line to draft entry B");
+
+        // Try to re-point entry B's line onto posted entry A
+        let result = sqlx::query(
+            "UPDATE journal_entry_lines SET journal_entry_id = ? WHERE journal_entry_id = ? AND line_number = 1",
+        )
+        .bind(entry_a)
+        .bind(entry_b)
+        .execute(&pool)
+        .await;
+
+        assert!(
+            result.is_err(),
+            "Re-pointing line onto posted entry should be rejected"
+        );
+        let err = result.unwrap_err().to_string();
+        assert!(
+            err.contains("immutable"),
+            "Error should mention immutability, got: {err}"
+        );
+    }
 }
