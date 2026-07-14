@@ -1,8 +1,8 @@
 [package]
 name = "pacioli"
-version = "0.1.0"
+version = "0.1.0-alpha.1"
 description = "Open-source crypto accounting platform for Polkadot ecosystem"
-authors = ["you"]
+authors = ["Give Protocol Foundation"]
 license = "AGPL-3.0-only"
 edition = "2021"
 
