@@ -559,13 +559,12 @@ pub async fn post_journal_entry(
     }
 
     // Friendly line-count check (DB trigger is the authority, this gives a better message)
-    let line_count: (i64,) = sqlx::query_as(
-        "SELECT COUNT(*) FROM journal_entry_lines WHERE journal_entry_id = ?",
-    )
-    .bind(id)
-    .fetch_one(&state.pool)
-    .await
-    .map_err(|e| e.to_string())?;
+    let line_count: (i64,) =
+        sqlx::query_as("SELECT COUNT(*) FROM journal_entry_lines WHERE journal_entry_id = ?")
+            .bind(id)
+            .fetch_one(&state.pool)
+            .await
+            .map_err(|e| e.to_string())?;
 
     if line_count.0 == 0 {
         return Err("Cannot post: entry has no lines".to_string());
@@ -940,7 +939,13 @@ mod tests {
     }
 
     /// Adds a balanced pair of lines (debit + credit) to the given entry.
-    async fn add_balanced_lines(pool: &SqlitePool, entry_id: i64, debit_acct: i64, credit_acct: i64, amount: f64) {
+    async fn add_balanced_lines(
+        pool: &SqlitePool,
+        entry_id: i64,
+        debit_acct: i64,
+        credit_acct: i64,
+        amount: f64,
+    ) {
         sqlx::query(
             "INSERT INTO journal_entry_lines (journal_entry_id, gl_account_id, debit_amount, credit_amount, line_number) VALUES (?, ?, ?, 0, 1)",
         )
@@ -1007,7 +1012,10 @@ mod tests {
         .execute(&pool)
         .await;
 
-        assert!(result.is_err(), "INSERT line on posted entry should be rejected");
+        assert!(
+            result.is_err(),
+            "INSERT line on posted entry should be rejected"
+        );
         let err = result.unwrap_err().to_string();
         assert!(
             err.contains("immutable"),
@@ -1036,7 +1044,10 @@ mod tests {
         .execute(&pool)
         .await;
 
-        assert!(result.is_err(), "UPDATE line on posted entry should be rejected");
+        assert!(
+            result.is_err(),
+            "UPDATE line on posted entry should be rejected"
+        );
         let err = result.unwrap_err().to_string();
         assert!(
             err.contains("immutable"),
@@ -1065,7 +1076,10 @@ mod tests {
         .execute(&pool)
         .await;
 
-        assert!(result.is_err(), "DELETE line on posted entry should be rejected");
+        assert!(
+            result.is_err(),
+            "DELETE line on posted entry should be rejected"
+        );
         let err = result.unwrap_err().to_string();
         assert!(
             err.contains("immutable"),
@@ -1125,7 +1139,10 @@ mod tests {
             .execute(&pool)
             .await;
 
-        assert!(result.is_err(), "Posting zero-line entry should be rejected");
+        assert!(
+            result.is_err(),
+            "Posting zero-line entry should be rejected"
+        );
         let err = result.unwrap_err().to_string();
         assert!(
             err.contains("at least 2 lines"),
@@ -1165,7 +1182,10 @@ mod tests {
             .execute(&pool)
             .await;
 
-        assert!(result.is_err(), "Posting unbalanced entry should be rejected");
+        assert!(
+            result.is_err(),
+            "Posting unbalanced entry should be rejected"
+        );
         let err = result.unwrap_err().to_string();
         assert!(
             err.contains("debits must equal credits"),
@@ -1249,7 +1269,10 @@ mod tests {
             .execute(&pool)
             .await;
 
-        assert!(result.is_err(), "Posting single-line entry should be rejected");
+        assert!(
+            result.is_err(),
+            "Posting single-line entry should be rejected"
+        );
         let err = result.unwrap_err().to_string();
         assert!(
             err.contains("at least 2 lines"),
@@ -1300,7 +1323,10 @@ mod tests {
         .execute(&pool)
         .await;
 
-        assert!(result.is_err(), "Re-pointing line onto posted entry should be rejected");
+        assert!(
+            result.is_err(),
+            "Re-pointing line onto posted entry should be rejected"
+        );
         let err = result.unwrap_err().to_string();
         assert!(
             err.contains("immutable"),
