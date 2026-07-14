@@ -5,6 +5,7 @@ mod db;
 mod evm_indexer;
 mod fetchers;
 mod indexer;
+mod intelligence;
 mod storage;
 mod sync;
 
