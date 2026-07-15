@@ -59,12 +59,12 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
           id: nextLineId(),
           glAccountId: l.glAccountId,
           debitAmount:
-            (l.debitAmount as unknown as number) > 0
-              ? String(l.debitAmount)
+            l.debitMinor > 0
+              ? (l.debitMinor / 100).toFixed(2)
               : '',
           creditAmount:
-            (l.creditAmount as unknown as number) > 0
-              ? String(l.creditAmount)
+            l.creditMinor > 0
+              ? (l.creditMinor / 100).toFixed(2)
               : '',
           description: l.description ?? '',
         }))
@@ -120,6 +120,10 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
     [lines.length]
   )
 
+  /** Converts a dollar string to integer minor units (cents). */
+  const toMinor = (val: string): number =>
+    Math.round((parseFloat(val) || 0) * 100)
+
   const handleSaveDraft = useCallback(async () => {
     setError(null)
     setSaving(true)
@@ -134,8 +138,10 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
           .map(l => ({
             gl_account_id: l.glAccountId as number,
             token_id: null,
-            debit_amount: parseFloat(l.debitAmount) || 0,
-            credit_amount: parseFloat(l.creditAmount) || 0,
+            debit_minor: toMinor(l.debitAmount),
+            credit_minor: toMinor(l.creditAmount),
+            quantity: null,
+            asset_id: 'USD',
             description: l.description || null,
           })),
       }
@@ -162,8 +168,10 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
           .map(l => ({
             gl_account_id: l.glAccountId as number,
             token_id: null,
-            debit_amount: parseFloat(l.debitAmount) || 0,
-            credit_amount: parseFloat(l.creditAmount) || 0,
+            debit_minor: toMinor(l.debitAmount),
+            credit_minor: toMinor(l.creditAmount),
+            quantity: null,
+            asset_id: 'USD',
             description: l.description || null,
           })),
       }

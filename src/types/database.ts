@@ -194,6 +194,18 @@ export interface JournalEntry {
   createdBy?: string
   createdAt: Date
   updatedAt: Date
+  /** FK to entities table (nullable in Stage 1). */
+  entityId?: string
+  /** Lifecycle status: draft, approved, posted, voided. */
+  status: string
+  /** How the entry was drafted: manual, rule, model. */
+  origin: string
+  /** Who approved this entry. */
+  approvedBy?: string
+  /** When this entry was approved. */
+  approvedAt?: Date
+  /** When this entry was posted to the ledger. */
+  postedAt?: Date
 }
 
 export interface JournalEntryLine {
@@ -201,11 +213,19 @@ export interface JournalEntryLine {
   journalEntryId: number
   glAccountId: number
   tokenId?: number
-  debitAmount: string // Stored as DECIMAL(18, 2)
-  creditAmount: string // Stored as DECIMAL(18, 2)
+  debitAmount: number // Legacy float column (kept for backward compat)
+  creditAmount: number // Legacy float column (kept for backward compat)
   description?: string
   lineNumber?: number
   createdAt: Date
+  /** Debit value in functional-currency minor units (USD cents). */
+  debitMinor: number
+  /** Credit value in functional-currency minor units (USD cents). */
+  creditMinor: number
+  /** Token quantity as canonical decimal string. Null for pure-fiat lines. */
+  quantity?: string
+  /** Asset identifier: 'USD' for fiat, 'token:<id>' for tokens, null for measurement lines. */
+  assetId?: string
 }
 
 // =============================================================================
