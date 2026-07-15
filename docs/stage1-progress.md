@@ -92,15 +92,15 @@ but NOT in the accounting engine.
 
 ### 3. Conflicts with the seven invariants
 
-| # | Invariant | Finding |
-|---|-----------|---------|
-| 1 | Balance structural | Partially met (GIV-665 triggers). Gaps: balance is checked as ONE aggregate sum across all assets (not per currency/asset); no Rust type-level enforcement; 0.01 float tolerance. |
-| 2 | No floats | **Violated end-to-end.** `accounting.rs` money structs are `f64` (debit/credit/balances, lines 127–224); SQLite `DECIMAL(18,2)` has NUMERIC affinity = stored as float; frontend sums amounts as JS `number` (`JournalEntries.tsx:330–438`); frontend FIFO in JS numbers. Balance trigger compares float sums to 0.01. |
-| 3 | Append-only | **Violated:** `void_journal_entry` (accounting.rs:604) just flips `is_reversed=1`; no reversing entry is generated; `reversed_by_entry_id` is never populated. Posted-line immutability (GIV-665) does hold. |
-| 4 | Reports are views | Met so far (trial balance is a query; reporting views derive). |
-| 5 | Raw tx immutable | Met in classification path (`auto_classify_transaction` only reads `multi_chain_transactions`); no code mutates raw tx during classification. |
-| 6 | Read-only wallets | Met; nothing here touches signing. |
-| 7 | Provenance | **Absent:** no origin/approver/timestamps beyond created_by/created_at. |
+| #   | Invariant          | Finding                                                                                                                                                                                                                                                                                                                |
+| --- | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Balance structural | Partially met (GIV-665 triggers). Gaps: balance is checked as ONE aggregate sum across all assets (not per currency/asset); no Rust type-level enforcement; 0.01 float tolerance.                                                                                                                                      |
+| 2   | No floats          | **Violated end-to-end.** `accounting.rs` money structs are `f64` (debit/credit/balances, lines 127–224); SQLite `DECIMAL(18,2)` has NUMERIC affinity = stored as float; frontend sums amounts as JS `number` (`JournalEntries.tsx:330–438`); frontend FIFO in JS numbers. Balance trigger compares float sums to 0.01. |
+| 3   | Append-only        | **Violated:** `void_journal_entry` (accounting.rs:604) just flips `is_reversed=1`; no reversing entry is generated; `reversed_by_entry_id` is never populated. Posted-line immutability (GIV-665) does hold.                                                                                                           |
+| 4   | Reports are views  | Met so far (trial balance is a query; reporting views derive).                                                                                                                                                                                                                                                         |
+| 5   | Raw tx immutable   | Met in classification path (`auto_classify_transaction` only reads `multi_chain_transactions`); no code mutates raw tx during classification.                                                                                                                                                                          |
+| 6   | Read-only wallets  | Met; nothing here touches signing.                                                                                                                                                                                                                                                                                     |
+| 7   | Provenance         | **Absent:** no origin/approver/timestamps beyond created_by/created_at.                                                                                                                                                                                                                                                |
 
 ### 4. Float inventory (Invariant 2 remediation targets)
 
@@ -121,6 +121,7 @@ but NOT in the accounting engine.
 All migrations append-only, SQLite path first (web path lags per mandate).
 
 **M1 — journal-entry header lifecycle + provenance**
+
 - Add to `journal_entries`: `entity_id` (FK `entities`, nullable initially),
   `status` TEXT CHECK('draft','approved','posted','voided') backfilled from
   `is_posted`; `origin` TEXT CHECK('manual','rule','model') DEFAULT
@@ -131,12 +132,14 @@ All migrations append-only, SQLite path first (web path lags per mandate).
   column during transition so existing code keeps working, then retire it.
 
 **M2 — exact-decimal amounts (the decision point, §6 Q1)**
+
 - Recommended: new columns storing amounts as INTEGER minor units in the
   functional currency (exactly trigger-summable) + `quantity` as TEXT
   canonical decimal validated by `rust_decimal` in Rust; balance trigger
   compares integer sums for exact equality (tolerance 0, not 0.01).
 
 **M3 — per-asset balance**
+
 - Add `asset_id`/currency dimension to `journal_entry_lines` (generalize
   `token_id`; fiat 'USD' included); posting trigger validates balance PER
   asset group; measurement lines (functional-currency valuation) carry the

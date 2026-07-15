@@ -6,7 +6,7 @@ intended to be read by a reviewing CPA. Every convention here was proposed
 in the Stage 1 Phase 0 recon (`docs/stage1-progress.md` §5–§6) and approved
 by the board on 2026-07-15 (GIV-668).
 
-Sections marked *(reserved)* will be completed in the phase that implements
+Sections marked _(reserved)_ will be completed in the phase that implements
 them; nothing in a reserved section is implemented yet.
 
 ## 1. Ledger structure
@@ -20,7 +20,7 @@ them; nothing in a reserved section is implemented yet.
   functional-currency measurement.
 - **Layered records.** Raw imported blockchain transactions are Layer 1
   evidence and are immutable: classification creates journal entries that
-  *reference* raw transactions, never modifies them.
+  _reference_ raw transactions, never modifies them.
 
 ## 2. Amount representation (approved Q1)
 
@@ -49,7 +49,7 @@ An entry is postable only if **both** of the following hold:
    balanced lines.
 2. **Per-asset quantity balance for asset movements.** For every
    currency/asset that appears on an entry's lines with a quantity, the
-   entry's debit quantities equal its credit quantities *for that asset*,
+   entry's debit quantities equal its credit quantities _for that asset_,
    unless the difference is explicitly carried by measurement lines
    (below). Assets are never treated as fungible with each other.
 
@@ -67,11 +67,11 @@ framework).
 
 Example — swap 10 A (basis $100, fair value $150) for 4 B:
 
-| Line | Account | Asset | Qty | Debit | Credit |
-|------|---------|-------|-----|-------|--------|
-| 1 | Digital assets — B | B | +4 | $150.00 | |
-| 2 | Digital assets — A | A | −10 | | $100.00 |
-| 3 | Realized gain on digital assets | — | | | $50.00 |
+| Line | Account                         | Asset | Qty | Debit   | Credit  |
+| ---- | ------------------------------- | ----- | --- | ------- | ------- |
+| 1    | Digital assets — B              | B     | +4  | $150.00 |         |
+| 2    | Digital assets — A              | A     | −10 |         | $100.00 |
+| 3    | Realized gain on digital assets | —     |     |         | $50.00  |
 
 Lines 1–2 balance each asset's quantity movement; line 3 is the
 measurement line carrying the valuation difference to net income. The
@@ -116,16 +116,16 @@ Every entry records:
 - Single entity books, US GAAP, USD functional currency. No IFRS, no
   parallel books, no multi-entity consolidation.
 
-## 8. Transfers between own wallets *(reserved — Phase 7)*
+## 8. Transfers between own wallets _(reserved — Phase 7)_
 
 Treatment of lot movement without realization will be documented when the
 cost-basis engine lands.
 
-## 9. Cost basis *(reserved — Phase 7)*
+## 9. Cost basis _(reserved — Phase 7)_
 
 FIFO lot relief, per wallet per asset; method documented with the engine.
 
-## 10. Fair-value measurement *(reserved — Phase 8)*
+## 10. Fair-value measurement _(reserved — Phase 8)_
 
 ASU 2023-08 remeasurement conventions, price sources, and override policy
 will be documented with the measurement framework.
