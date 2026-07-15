@@ -46,10 +46,10 @@ const createMemoryStorage = (): StorageService => {
     for (let i = 0; i < localStorage.length; i++) {
       const lsKey = localStorage.key(i)
       if (lsKey?.startsWith(SETTINGS_LS_PREFIX)) {
-        settings.set(
-          lsKey.slice(SETTINGS_LS_PREFIX.length),
-          localStorage.getItem(lsKey)!
-        )
+        const value = localStorage.getItem(lsKey)
+        if (value !== null) {
+          settings.set(lsKey.slice(SETTINGS_LS_PREFIX.length), value)
+        }
       }
     }
   } catch {
@@ -271,9 +271,11 @@ const createMemoryStorage = (): StorageService => {
       settingsCount: settings.size,
     }),
 
-    previewImport: () => Promise.reject(new Error('Import not available in browser mode')),
+    previewImport: () =>
+      Promise.reject(new Error('Import not available in browser mode')),
 
-    importData: () => Promise.reject(new Error('Import not available in browser mode')),
+    importData: () =>
+      Promise.reject(new Error('Import not available in browser mode')),
   }
 }
 
