@@ -314,8 +314,8 @@ is_reversed=1, reversed_by_entry_id=<new_id>`. Both entries remain in
   3. `approve_journal_entry` used read-check-write; now a conditional
      `UPDATE ... WHERE status='draft'` with `rows_affected` check (mirrors the
      posting pattern, clean error instead of a trigger abort under races).
-  New regression test: `double_void_conditional_update_is_noop`. 34 accounting
-  tests green, clippy clean. Known pre-existing debt (not a Phase 2
-  regression): entry numbers derive from `COUNT(*)+1`, collidable if rows are
-  ever deleted — same scheme as `create_journal_entry`; fold into a future
-  sequence-table fix.
+     New regression test: `double_void_conditional_update_is_noop`. 34 accounting
+     tests green, clippy clean. Known pre-existing debt (not a Phase 2
+     regression): entry numbers derive from `COUNT(*)+1`, collidable if rows are
+     ever deleted — same scheme as `create_journal_entry`; fold into a future
+     sequence-table fix.
