@@ -24,8 +24,7 @@ const mockSaveSyncStatus = vi.fn()
 
 vi.mock('../../services/blockchain/polkadotService', () => ({
   polkadotService: {
-    subscribeNewBlocks: (...args: unknown[]) =>
-      mockSubscribeNewBlocks(...args),
+    subscribeNewBlocks: (...args: unknown[]) => mockSubscribeNewBlocks(...args),
     fetchTransactionHistoryHybrid: (...args: unknown[]) =>
       mockFetchTransactionHistoryHybrid(...args),
   },
@@ -60,9 +59,8 @@ describe('useBlockSubscription — service contracts', () => {
   })
 
   it('subscribeNewBlocks returns an unsubscribe function', async () => {
-    const { polkadotService } = await import(
-      '../../services/blockchain/polkadotService'
-    )
+    const { polkadotService } =
+      await import('../../services/blockchain/polkadotService')
 
     const unsub = await polkadotService.subscribeNewBlocks(
       'polkadot' as never,
@@ -85,9 +83,8 @@ describe('useBlockSubscription — service contracts', () => {
       }
     )
 
-    const { polkadotService } = await import(
-      '../../services/blockchain/polkadotService'
-    )
+    const { polkadotService } =
+      await import('../../services/blockchain/polkadotService')
     const blockNumbers: number[] = []
 
     await polkadotService.subscribeNewBlocks(
@@ -98,19 +95,21 @@ describe('useBlockSubscription — service contracts', () => {
     )
 
     expect(capturedCb).not.toBeNull()
+    if (!capturedCb) throw new Error('capturedCb was not set by mock')
+    // TS can't narrow closure-captured let vars; bind to const after guard
+    const cb = capturedCb as (header: HeaderLike) => void
 
     // Simulate blocks
-    capturedCb!({ number: { toNumber: () => 100 } })
-    capturedCb!({ number: { toNumber: () => 101 } })
-    capturedCb!({ number: { toNumber: () => 102 } })
+    cb({ number: { toNumber: () => 100 } })
+    cb({ number: { toNumber: () => 101 } })
+    cb({ number: { toNumber: () => 102 } })
 
     expect(blockNumbers).toEqual([100, 101, 102])
   })
 
   it('unsubscribe can be called multiple times safely', async () => {
-    const { polkadotService } = await import(
-      '../../services/blockchain/polkadotService'
-    )
+    const { polkadotService } =
+      await import('../../services/blockchain/polkadotService')
 
     const unsub = await polkadotService.subscribeNewBlocks(
       'polkadot' as never,
@@ -134,9 +133,8 @@ describe('useBlockSubscription — service contracts', () => {
       }
     )
 
-    const { polkadotService } = await import(
-      '../../services/blockchain/polkadotService'
-    )
+    const { polkadotService } =
+      await import('../../services/blockchain/polkadotService')
 
     // Simulates what the hook does: subscribe + debounce refresh
     let debounceTimer: ReturnType<typeof setTimeout> | null = null
@@ -146,18 +144,17 @@ describe('useBlockSubscription — service contracts', () => {
       refreshCount++
     }
 
-    await polkadotService.subscribeNewBlocks(
-      'polkadot' as never,
-      () => {
-        if (debounceTimer) clearTimeout(debounceTimer)
-        debounceTimer = setTimeout(doRefresh, DEBOUNCE_MS)
-      }
-    )
+    await polkadotService.subscribeNewBlocks('polkadot' as never, () => {
+      if (debounceTimer) clearTimeout(debounceTimer)
+      debounceTimer = setTimeout(doRefresh, DEBOUNCE_MS)
+    })
 
     // Rapid blocks
-    capturedCb!({ number: { toNumber: () => 100 } })
-    capturedCb!({ number: { toNumber: () => 101 } })
-    capturedCb!({ number: { toNumber: () => 102 } })
+    if (!capturedCb) throw new Error('capturedCb was not set by mock')
+    const cb = capturedCb as (header: HeaderLike) => void
+    cb({ number: { toNumber: () => 100 } })
+    cb({ number: { toNumber: () => 101 } })
+    cb({ number: { toNumber: () => 102 } })
 
     // Not yet refreshed
     expect(refreshCount).toBe(0)
@@ -170,12 +167,10 @@ describe('useBlockSubscription — service contracts', () => {
   })
 
   it('incremental refresh: fetches transactions from last synced block', async () => {
-    const { indexedDBService } = await import(
-      '../../services/database/indexedDBService'
-    )
-    const { polkadotService } = await import(
-      '../../services/blockchain/polkadotService'
-    )
+    const { indexedDBService } =
+      await import('../../services/database/indexedDBService')
+    const { polkadotService } =
+      await import('../../services/blockchain/polkadotService')
 
     // Simulate existing sync status
     mockLoadSyncStatus.mockResolvedValue({
