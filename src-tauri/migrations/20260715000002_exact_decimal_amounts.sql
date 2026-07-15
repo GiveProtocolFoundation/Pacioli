@@ -38,18 +38,23 @@ UPDATE journal_entry_lines SET
 -- ---------------------------------------------------------------------------
 -- 3. Enforce one-sided minor-unit columns via trigger
 -- ---------------------------------------------------------------------------
+-- Negative values are also rejected: a negative debit is a credit smuggled
+-- onto the wrong side, which lets nonsense entries pass the SUM balance check
+-- (e.g. +100 debit and -100 debit "balance" at zero).
 CREATE TRIGGER journal_entry_lines_minor_one_sided_insert
 BEFORE INSERT ON journal_entry_lines
 WHEN (NEW.debit_minor > 0 AND NEW.credit_minor > 0)
+  OR NEW.debit_minor < 0 OR NEW.credit_minor < 0
 BEGIN
-    SELECT RAISE(ABORT, 'Each line must have exactly one of debit_minor or credit_minor, not both');
+    SELECT RAISE(ABORT, 'Each line must have exactly one non-negative debit_minor or credit_minor');
 END;
 
 CREATE TRIGGER journal_entry_lines_minor_one_sided_update
 BEFORE UPDATE ON journal_entry_lines
 WHEN (NEW.debit_minor > 0 AND NEW.credit_minor > 0)
+  OR NEW.debit_minor < 0 OR NEW.credit_minor < 0
 BEGIN
-    SELECT RAISE(ABORT, 'Each line must have exactly one of debit_minor or credit_minor, not both');
+    SELECT RAISE(ABORT, 'Each line must have exactly one non-negative debit_minor or credit_minor');
 END;
 
 -- ---------------------------------------------------------------------------

@@ -270,7 +270,10 @@ pub struct PostedEntryLine {
     /// Credit value in functional-currency minor units (USD cents).
     pub credit_minor: i64,
     /// Token quantity as canonical decimal (rust_decimal). NULL for fiat-only.
-    #[serde(serialize_with = "serialize_opt_decimal", deserialize_with = "deserialize_opt_decimal")]
+    #[serde(
+        serialize_with = "serialize_opt_decimal",
+        deserialize_with = "deserialize_opt_decimal"
+    )]
     pub quantity: Option<Decimal>,
     /// Asset identifier. NULL for measurement lines.
     pub asset_id: Option<String>,
@@ -279,7 +282,10 @@ pub struct PostedEntryLine {
 }
 
 /// Serializes Option<Decimal> as Option<String>.
-fn serialize_opt_decimal<S: serde::Serializer>(val: &Option<Decimal>, ser: S) -> Result<S::Ok, S::Error> {
+fn serialize_opt_decimal<S: serde::Serializer>(
+    val: &Option<Decimal>,
+    ser: S,
+) -> Result<S::Ok, S::Error> {
     match val {
         Some(d) => ser.serialize_some(&d.to_string()),
         None => ser.serialize_none(),
@@ -287,7 +293,9 @@ fn serialize_opt_decimal<S: serde::Serializer>(val: &Option<Decimal>, ser: S) ->
 }
 
 /// Deserializes Option<String> to Option<Decimal>.
-fn deserialize_opt_decimal<'de, D: serde::Deserializer<'de>>(de: D) -> Result<Option<Decimal>, D::Error> {
+fn deserialize_opt_decimal<'de, D: serde::Deserializer<'de>>(
+    de: D,
+) -> Result<Option<Decimal>, D::Error> {
     let opt: Option<String> = Option::deserialize(de)?;
     match opt {
         Some(s) => Decimal::from_str(&s)
@@ -333,8 +341,14 @@ impl PostedEntry {
             ));
         }
 
-        // Validate one-sided lines
+        // Validate one-sided, non-negative lines
         for (i, line) in lines.iter().enumerate() {
+            if line.debit_minor < 0 || line.credit_minor < 0 {
+                return Err(format!(
+                    "Line {i} has negative minor units (debit {}, credit {}); amounts must be non-negative — a negative debit is a credit on the wrong side",
+                    line.debit_minor, line.credit_minor
+                ));
+            }
             if line.debit_minor > 0 && line.credit_minor > 0 {
                 return Err(format!(
                     "Line {i} has both debit_minor ({}) and credit_minor ({}); must be one-sided",
@@ -368,9 +382,13 @@ impl PostedEntry {
         for line in &lines {
             if let (Some(ref asset_id), Some(ref qty)) = (&line.asset_id, &line.quantity) {
                 if line.debit_minor > 0 {
-                    *asset_debits.entry(asset_id.clone()).or_insert(Decimal::ZERO) += qty;
+                    *asset_debits
+                        .entry(asset_id.clone())
+                        .or_insert(Decimal::ZERO) += qty;
                 } else {
-                    *asset_credits.entry(asset_id.clone()).or_insert(Decimal::ZERO) += qty;
+                    *asset_credits
+                        .entry(asset_id.clone())
+                        .or_insert(Decimal::ZERO) += qty;
                 }
             }
         }
@@ -640,8 +658,11 @@ pub async fn create_journal_entry(
         return Err("Journal entry must have at least one line".to_string());
     }
 
-    // Validate each line has exactly one of debit or credit > 0
+    // Validate each line has exactly one non-negative debit or credit > 0
     for line in &input.lines {
+        if line.debit_minor < 0 || line.credit_minor < 0 {
+            return Err("Line amounts must be non-negative".to_string());
+        }
         if (line.debit_minor > 0 && line.credit_minor > 0)
             || (line.debit_minor == 0 && line.credit_minor == 0)
         {
@@ -800,11 +821,19 @@ pub async fn void_journal_entry(
         .map_err(|e| e.to_string())?
         .ok_or_else(|| "Journal entry not found".to_string())?;
 
-    if entry.is_reversed {
+    if entry.is_reversed || entry.status == "voided" {
         return Err("Journal entry is already voided".to_string());
     }
 
-    sqlx::query("UPDATE journal_entries SET is_reversed = 1 WHERE id = ?")
+    // State machine: voided is terminal from posted. Draft/approved entries
+    // are edited or deleted, not voided.
+    if entry.status != "posted" {
+        return Err("Only posted entries can be voided".to_string());
+    }
+
+    // Same-write: keep status and the legacy is_reversed flag in sync so the
+    // status-based UI and the M1 backfill semantics stay coherent.
+    sqlx::query("UPDATE journal_entries SET is_reversed = 1, status = 'voided' WHERE id = ?")
         .bind(id)
         .execute(&state.pool)
         .await
@@ -1593,6 +1622,37 @@ mod tests {
     }
 
     #[test]
+    fn posted_entry_rejects_negative_minor_units() {
+        // A negative debit is a credit smuggled onto the wrong side: the pair
+        // (+100, -100) sums to zero on both sides and would pass the balance
+        // check while breaking the trial balance.
+        let result = PostedEntry::new(vec![
+            PostedEntryLine {
+                gl_account_id: 1,
+                debit_minor: 100,
+                credit_minor: 0,
+                quantity: None,
+                asset_id: Some("USD".to_string()),
+                description: None,
+            },
+            PostedEntryLine {
+                gl_account_id: 2,
+                debit_minor: -100,
+                credit_minor: 0,
+                quantity: None,
+                asset_id: Some("USD".to_string()),
+                description: None,
+            },
+        ]);
+        assert!(result.is_err(), "Negative minor units must be rejected");
+        let err = result.unwrap_err();
+        assert!(
+            err.contains("non-negative"),
+            "Should report negative amounts, got: {err}"
+        );
+    }
+
+    #[test]
     fn posted_entry_rejects_unbalanced_minor_units() {
         let result = PostedEntry::new(vec![
             PostedEntryLine {
@@ -1719,7 +1779,11 @@ mod tests {
         // Assets appearing on only one side are valid (cross-asset movements).
         //
         // With this interpretation, the swap example succeeds.
-        assert!(result.is_ok(), "Swap example should succeed: {}", result.unwrap_err());
+        assert!(
+            result.is_ok(),
+            "Swap example should succeed: {}",
+            result.unwrap_err()
+        );
     }
 
     #[test]
@@ -1743,7 +1807,10 @@ mod tests {
                 description: None,
             },
         ]);
-        assert!(result.is_err(), "Same-asset quantity imbalance must be rejected");
+        assert!(
+            result.is_err(),
+            "Same-asset quantity imbalance must be rejected"
+        );
         let err = result.unwrap_err();
         assert!(
             err.contains("Per-asset quantity imbalance"),
@@ -1848,7 +1915,10 @@ mod tests {
             .execute(&pool)
             .await;
 
-        assert!(result.is_err(), "1-cent minor-unit imbalance must be rejected by trigger");
+        assert!(
+            result.is_err(),
+            "1-cent minor-unit imbalance must be rejected by trigger"
+        );
         let err = result.unwrap_err().to_string();
         assert!(
             err.contains("does not balance"),
@@ -1867,6 +1937,76 @@ mod tests {
         .await;
 
         assert!(result.is_err(), "Non-draft INSERT should be rejected");
+    }
+
+    #[tokio::test]
+    async fn trigger_rejects_born_posted_legacy_is_posted() {
+        let pool = setup_test_db().await;
+
+        // is_posted=1 at INSERT (with status='draft') must be rejected:
+        // views filter on is_posted=1, so this would surface an entry that
+        // never passed the balance trigger.
+        let result = sqlx::query(
+            "INSERT INTO journal_entries (entry_date, entry_number, description, is_posted, status, origin, created_by) VALUES ('2026-01-01', 'BORN-002', 'Test', 1, 'draft', 'manual', 'test')",
+        )
+        .execute(&pool)
+        .await;
+
+        assert!(
+            result.is_err(),
+            "Born is_posted=1 INSERT should be rejected"
+        );
+    }
+
+    #[tokio::test]
+    async fn trigger_rejects_is_posted_without_status_same_write() {
+        let pool = setup_test_db().await;
+        let (acct_a, acct_b) = get_test_accounts(&pool).await;
+        let entry_id = create_named_draft_entry(&pool, "COHERE-001").await;
+        add_balanced_lines(&pool, entry_id, acct_a, acct_b, 10000).await;
+
+        // Flipping is_posted alone (status stays 'draft') would create a
+        // divergent row whose lines escape the status-based immutability
+        // triggers while views still count it as posted.
+        let result = sqlx::query("UPDATE journal_entries SET is_posted = 1 WHERE id = ?")
+            .bind(entry_id)
+            .execute(&pool)
+            .await;
+
+        assert!(
+            result.is_err(),
+            "is_posted=1 without status='posted' in the same write must be rejected"
+        );
+        let err = result.unwrap_err().to_string();
+        assert!(
+            err.contains("same-write"),
+            "Error should mention same-write sync, got: {err}"
+        );
+    }
+
+    #[tokio::test]
+    async fn trigger_rejects_negative_minor_units() {
+        let pool = setup_test_db().await;
+        let (acct_a, _) = get_test_accounts(&pool).await;
+        let entry_id = create_named_draft_entry(&pool, "NEG-001").await;
+
+        let result = sqlx::query(
+            "INSERT INTO journal_entry_lines (journal_entry_id, gl_account_id, debit_amount, credit_amount, debit_minor, credit_minor, asset_id, line_number) VALUES (?, ?, -1, 0, -100, 0, 'USD', 1)",
+        )
+        .bind(entry_id)
+        .bind(acct_a)
+        .execute(&pool)
+        .await;
+
+        assert!(
+            result.is_err(),
+            "Negative debit_minor line must be rejected by trigger"
+        );
+        let err = result.unwrap_err().to_string();
+        assert!(
+            err.contains("non-negative"),
+            "Error should mention non-negative, got: {err}"
+        );
     }
 
     #[tokio::test]
@@ -1923,7 +2063,10 @@ mod tests {
             .execute(&pool)
             .await;
 
-        assert!(result.is_err(), "Per-asset quantity imbalance must be rejected by trigger");
+        assert!(
+            result.is_err(),
+            "Per-asset quantity imbalance must be rejected by trigger"
+        );
         let err = result.unwrap_err().to_string();
         assert!(
             err.contains("Per-asset quantity imbalance"),

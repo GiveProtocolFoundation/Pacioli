@@ -50,12 +50,27 @@ DROP TRIGGER IF EXISTS journal_entry_lines_no_insert_posted;
 DROP TRIGGER IF EXISTS journal_entry_lines_no_update_posted;
 DROP TRIGGER IF EXISTS journal_entry_lines_no_delete_posted;
 
--- 3b. Prevent born-posted/born-approved entries (must start as 'draft')
+-- 3b. Prevent born-posted/born-approved entries (must start as 'draft').
+--     Also blocks the legacy column: is_posted=1 at INSERT would let a row
+--     bypass the balance trigger while views (which filter on is_posted=1)
+--     treat it as posted.
 CREATE TRIGGER journal_entries_no_born_posted
 BEFORE INSERT ON journal_entries
-WHEN NEW.status != 'draft'
+WHEN NEW.status != 'draft' OR NEW.is_posted = 1
 BEGIN
     SELECT RAISE(ABORT, 'Journal entries must be created as drafts (status=draft)');
+END;
+
+-- 3b'. Enforce same-write coherence for the legacy is_posted column:
+--      flipping is_posted to 1 requires status to be set to posted/voided in
+--      the same UPDATE. Prevents divergent rows (is_posted=1, status=draft)
+--      whose lines would escape the status-based immutability triggers while
+--      views still count them as posted.
+CREATE TRIGGER journal_entries_is_posted_coherence
+BEFORE UPDATE OF is_posted ON journal_entries
+WHEN NEW.is_posted = 1 AND NEW.status NOT IN ('posted', 'voided')
+BEGIN
+    SELECT RAISE(ABORT, 'is_posted=1 requires status=posted or voided in the same write (same-write sync)');
 END;
 
 -- 3c. Status transition enforcement: draft -> approved -> posted

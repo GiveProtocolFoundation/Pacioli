@@ -238,3 +238,31 @@ persistence path; `f64` removed from accounting money structs.
     7 PostedEntry constructor tests, 1 swap worked example from
     `accounting-model.md`, 5 direct-SQL trigger tests). Full suite: 200+
     tests green, clippy clean.
+- **Session 4 (2026-07-15, CTO — GIV-673 review):** Reviewed and hardened
+  PR #213 before merge. Three gaps closed:
+  - **Negative minor units** were accepted end-to-end: a `-100` debit is a
+    credit smuggled onto the wrong side, so `(+100 debit, -100 debit)`
+    passed the SUM balance checks while breaking the trial balance —
+    violating the Phase 1 acceptance gate. Now rejected in
+    `PostedEntry::new`, `create_journal_entry`, and the M2 one-sided
+    triggers (INSERT + UPDATE).
+  - **Legacy born-posted bypass**: the rebuilt born-posted trigger checked
+    `status` only, so `INSERT ... is_posted=1, status='draft'` skipped the
+    balance trigger while M4 views (which filter on `is_posted=1`) counted
+    the entry as posted. Born-posted trigger now also blocks
+    `NEW.is_posted=1`, and a new coherence trigger forces same-write:
+    `is_posted=1` requires `status IN ('posted','voided')` in the same
+    UPDATE (safe — every Rust write path already does same-write).
+  - **Void path missed same-write**: `void_journal_entry` set
+    `is_reversed=1` only, leaving `status='posted'`, so the status-based UI
+    showed voided entries as posted. Now sets `status='voided'` in the same
+    write and enforces the state machine (only posted entries can be
+    voided).
+  - 4 regression tests added (27 accounting tests total; full suite 198
+    green; CI-equivalent clippy + fmt clean).
+  - **Documented limitation** (non-blocking): the per-asset quantity
+    trigger compares `CAST(quantity AS REAL)` — SQLite has no decimal type,
+    so quantities beyond ~15 significant digits could false-pass at the SQL
+    backstop layer. The Rust `PostedEntry` layer compares exactly via
+    `rust_decimal` and is the authoritative gate; revisit if a non-Rust
+    writer ever appears.
