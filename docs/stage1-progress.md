@@ -300,3 +300,22 @@ is_reversed=1, reversed_by_entry_id=<new_id>`. Both entries remain in
   - **Decisions:** no chart-of-accounts changes needed (seed is adequate);
     no view changes needed (voided entries correctly included via is_posted=1
     filter).
+- **Session 6 (2026-07-15, CTO — GIV-677 review):** Reviewed and hardened
+  Phase 2 before merge. Three gaps closed:
+  1. `void_journal_entry` ran ~7 auto-commit statements against the pool
+     instead of the mandated single transaction — a crash mid-void (or a
+     concurrent double-void) could leave a posted reversing entry with the
+     original still posted, i.e. a duplicate reversal in the GL. Now the whole
+     void runs in one sqlx transaction, and the original is voided with a
+     conditional `UPDATE ... WHERE status='posted'`; 0 rows affected rolls the
+     duplicate reversal back. `PostedEntry` validation moved before any write.
+  2. Reversing entry did not copy `entity_id` from the original — provenance
+     now preserved (origin, entity_id, reference_number).
+  3. `approve_journal_entry` used read-check-write; now a conditional
+     `UPDATE ... WHERE status='draft'` with `rows_affected` check (mirrors the
+     posting pattern, clean error instead of a trigger abort under races).
+  New regression test: `double_void_conditional_update_is_noop`. 34 accounting
+  tests green, clippy clean. Known pre-existing debt (not a Phase 2
+  regression): entry numbers derive from `COUNT(*)+1`, collidable if rows are
+  ever deleted — same scheme as `create_journal_entry`; fold into a future
+  sequence-table fix.

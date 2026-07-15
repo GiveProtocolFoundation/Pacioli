@@ -773,14 +773,20 @@ pub async fn approve_journal_entry(
         return Err("Journal entry is already approved".to_string());
     }
 
-    sqlx::query(
-        "UPDATE journal_entries SET status = 'approved', approved_by = ?, approved_at = CURRENT_TIMESTAMP WHERE id = ?",
+    // Conditional UPDATE: race-safe — approves exactly once even under
+    // concurrent calls (mirrors the posting pattern).
+    let result = sqlx::query(
+        "UPDATE journal_entries SET status = 'approved', approved_by = ?, approved_at = CURRENT_TIMESTAMP WHERE id = ? AND status = 'draft'",
     )
     .bind(&approver)
     .bind(id)
     .execute(&state.pool)
     .await
     .map_err(|e| e.to_string())?;
+
+    if result.rows_affected() == 0 {
+        return Err("Journal entry is no longer a draft (concurrently modified)".to_string());
+    }
 
     get_journal_entry(state, id).await
 }
@@ -881,9 +887,14 @@ pub async fn void_journal_entry(
     state: State<'_, DatabaseState>,
     id: i64,
 ) -> Result<JournalEntryWithLines, String> {
+    // ONE transaction for the whole void: the GL must never hold a posted
+    // reversing entry without the original being voided (or vice versa).
+    // A crash or a lost race rolls everything back.
+    let mut tx = state.pool.begin().await.map_err(|e| e.to_string())?;
+
     let entry = sqlx::query_as::<_, JournalEntry>("SELECT * FROM journal_entries WHERE id = ?")
         .bind(id)
-        .fetch_optional(&state.pool)
+        .fetch_optional(&mut *tx)
         .await
         .map_err(|e| e.to_string())?
         .ok_or_else(|| "Journal entry not found".to_string())?;
@@ -901,13 +912,31 @@ pub async fn void_journal_entry(
         "SELECT * FROM journal_entry_lines WHERE journal_entry_id = ? ORDER BY line_number",
     )
     .bind(id)
-    .fetch_all(&state.pool)
+    .fetch_all(&mut *tx)
     .await
     .map_err(|e| e.to_string())?;
 
+    // Validate the reversing entry via PostedEntry BEFORE writing anything
+    // (belt-and-suspenders with triggers)
+    let rev_lines: Vec<PostedEntryLine> = original_lines
+        .iter()
+        .map(|l| {
+            let quantity = l.quantity.as_ref().and_then(|q| Decimal::from_str(q).ok());
+            PostedEntryLine {
+                gl_account_id: l.gl_account_id,
+                debit_minor: l.credit_minor, // swapped
+                credit_minor: l.debit_minor, // swapped
+                quantity,
+                asset_id: l.asset_id.clone(),
+                description: l.description.clone(),
+            }
+        })
+        .collect();
+    let _validated = PostedEntry::new(rev_lines)?;
+
     // Generate entry number for the reversing entry
     let count: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM journal_entries")
-        .fetch_one(&state.pool)
+        .fetch_one(&mut *tx)
         .await
         .map_err(|e| e.to_string())?;
     let rev_entry_number = format!("JE-{:06}", count.0 + 1);
@@ -915,21 +944,23 @@ pub async fn void_journal_entry(
     let entry_number_display = entry.entry_number.as_deref().unwrap_or("unknown");
     let rev_description = format!("Reversal of entry #{entry_number_display}");
 
-    // Create the reversing entry as a draft first (born-posted trigger requires drafts)
+    // Create the reversing entry as a draft first (born-posted trigger requires
+    // drafts). Copy provenance: origin, entity_id, reference_number.
     let rev_result = sqlx::query(
         r#"
         INSERT INTO journal_entries (
             entry_date, entry_number, description, reference_number,
-            is_posted, status, origin, created_by, approved_by, approved_at
+            is_posted, status, origin, entity_id, created_by, approved_by, approved_at
         )
-        VALUES (DATE('now'), ?, ?, ?, 0, 'draft', ?, 'system', 'system', CURRENT_TIMESTAMP)
+        VALUES (DATE('now'), ?, ?, ?, 0, 'draft', ?, ?, 'system', 'system', CURRENT_TIMESTAMP)
         "#,
     )
     .bind(&rev_entry_number)
     .bind(&rev_description)
     .bind(&entry.reference_number)
     .bind(&entry.origin)
-    .execute(&state.pool)
+    .bind(&entry.entity_id)
+    .execute(&mut *tx)
     .await
     .map_err(|e| e.to_string())?;
 
@@ -961,32 +992,15 @@ pub async fn void_journal_entry(
         .bind(&line.asset_id) // preserve asset_id
         .bind(&line.description)
         .bind(i as i64 + 1)
-        .execute(&state.pool)
+        .execute(&mut *tx)
         .await
         .map_err(|e| e.to_string())?;
     }
 
-    // Validate the reversing entry via PostedEntry (belt-and-suspenders)
-    let rev_lines: Vec<PostedEntryLine> = original_lines
-        .iter()
-        .map(|l| {
-            let quantity = l.quantity.as_ref().and_then(|q| Decimal::from_str(q).ok());
-            PostedEntryLine {
-                gl_account_id: l.gl_account_id,
-                debit_minor: l.credit_minor, // swapped
-                credit_minor: l.debit_minor, // swapped
-                quantity,
-                asset_id: l.asset_id.clone(),
-                description: l.description.clone(),
-            }
-        })
-        .collect();
-    let _validated = PostedEntry::new(rev_lines)?;
-
     // Approve then post the reversing entry (status machine: draft -> approved -> posted)
     sqlx::query("UPDATE journal_entries SET status = 'approved' WHERE id = ?")
         .bind(rev_entry_id)
-        .execute(&state.pool)
+        .execute(&mut *tx)
         .await
         .map_err(|e| e.to_string())?;
 
@@ -994,20 +1008,32 @@ pub async fn void_journal_entry(
         "UPDATE journal_entries SET status = 'posted', is_posted = 1, posted_at = CURRENT_TIMESTAMP WHERE id = ? AND status = 'approved'",
     )
     .bind(rev_entry_id)
-    .execute(&state.pool)
+    .execute(&mut *tx)
     .await
     .map_err(|e| e.to_string())?;
 
     // Void the original entry: set status='voided', is_reversed=1,
-    // reversed_by_entry_id in the same write
-    sqlx::query(
-        "UPDATE journal_entries SET status = 'voided', is_reversed = 1, reversed_by_entry_id = ? WHERE id = ?",
+    // reversed_by_entry_id in the same write. Conditional on status='posted'
+    // so a concurrent void loses the race cleanly: 0 rows affected here rolls
+    // back the duplicate reversing entry instead of leaving it posted.
+    let void_result = sqlx::query(
+        "UPDATE journal_entries SET status = 'voided', is_reversed = 1, reversed_by_entry_id = ? WHERE id = ? AND status = 'posted'",
     )
     .bind(rev_entry_id)
     .bind(id)
-    .execute(&state.pool)
+    .execute(&mut *tx)
     .await
     .map_err(|e| e.to_string())?;
+
+    if void_result.rows_affected() == 0 {
+        // Entry was voided (or otherwise moved) concurrently — tx drop rolls
+        // back the reversing entry, so no duplicate reversal reaches the GL.
+        return Err(
+            "Journal entry was voided concurrently; no duplicate reversal created".to_string(),
+        );
+    }
+
+    tx.commit().await.map_err(|e| e.to_string())?;
 
     get_journal_entry(state, id).await
 }
@@ -2659,6 +2685,48 @@ mod tests {
             qty_a,
             Decimal::from(10),
             "token:A quantity must be exactly 10"
+        );
+    }
+
+    // ---- Double-void race: conditional void UPDATE is a clean 0-row no-op ----
+    //
+    // void_journal_entry runs in ONE transaction and voids the original with
+    // `WHERE id = ? AND status = 'posted'`. If two calls race, the loser's
+    // UPDATE affects 0 rows and its whole transaction (including the duplicate
+    // reversing entry) rolls back. This test proves the SQL semantics the
+    // Rust guard relies on: the second conditional void is a no-op, not an
+    // error, and no second reversal reaches the GL.
+    #[tokio::test]
+    async fn double_void_conditional_update_is_noop() {
+        let pool = setup_test_db().await;
+        let (acct_a, acct_b) = get_test_accounts(&pool).await;
+        let entry_id = create_named_draft_entry(&pool, "DVOID-001").await;
+        add_balanced_lines(&pool, entry_id, acct_a, acct_b, 10000).await;
+        approve_and_post_entry(&pool, entry_id).await;
+
+        // First void wins
+        let first = sqlx::query(
+            "UPDATE journal_entries SET status = 'voided', is_reversed = 1 WHERE id = ? AND status = 'posted'",
+        )
+        .bind(entry_id)
+        .execute(&pool)
+        .await
+        .expect("First conditional void should succeed");
+        assert_eq!(first.rows_affected(), 1, "First void must affect 1 row");
+
+        // Second void loses cleanly: 0 rows, no trigger abort (WHERE filters
+        // the row out before the immutability trigger can fire)
+        let second = sqlx::query(
+            "UPDATE journal_entries SET status = 'voided', is_reversed = 1 WHERE id = ? AND status = 'posted'",
+        )
+        .bind(entry_id)
+        .execute(&pool)
+        .await
+        .expect("Second conditional void must not error");
+        assert_eq!(
+            second.rows_affected(),
+            0,
+            "Second void must be a 0-row no-op so the caller rolls back its duplicate reversal"
         );
     }
 }
