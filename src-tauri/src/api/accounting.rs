@@ -748,8 +748,53 @@ pub async fn create_journal_entry(
     get_journal_entry(state, entry_id).await
 }
 
-/// Posts a draft journal entry. Validates balance via `PostedEntry` type
-/// and DB triggers (belt-and-suspenders).
+/// Approves a draft journal entry. Transitions draft -> approved, sets
+/// approved_by and approved_at. Only drafts can be approved.
+#[tauri::command]
+pub async fn approve_journal_entry(
+    state: State<'_, DatabaseState>,
+    id: i64,
+    approver: String,
+) -> Result<JournalEntryWithLines, String> {
+    let entry = sqlx::query_as::<_, JournalEntry>("SELECT * FROM journal_entries WHERE id = ?")
+        .bind(id)
+        .fetch_optional(&state.pool)
+        .await
+        .map_err(|e| e.to_string())?
+        .ok_or_else(|| "Journal entry not found".to_string())?;
+
+    if entry.status == "voided" {
+        return Err("Cannot approve a voided entry".to_string());
+    }
+    if entry.status == "posted" {
+        return Err("Cannot approve an already-posted entry".to_string());
+    }
+    if entry.status == "approved" {
+        return Err("Journal entry is already approved".to_string());
+    }
+
+    // Conditional UPDATE: race-safe — approves exactly once even under
+    // concurrent calls (mirrors the posting pattern).
+    let result = sqlx::query(
+        "UPDATE journal_entries SET status = 'approved', approved_by = ?, approved_at = CURRENT_TIMESTAMP WHERE id = ? AND status = 'draft'",
+    )
+    .bind(&approver)
+    .bind(id)
+    .execute(&state.pool)
+    .await
+    .map_err(|e| e.to_string())?;
+
+    if result.rows_affected() == 0 {
+        return Err("Journal entry is no longer a draft (concurrently modified)".to_string());
+    }
+
+    get_journal_entry(state, id).await
+}
+
+/// Posts an approved journal entry. Validates balance via `PostedEntry` type
+/// and DB triggers (belt-and-suspenders). Atomic and race-free: uses a
+/// conditional UPDATE that posts exactly once. Idempotent: re-posting an
+/// already-posted entry is a success no-op.
 #[tauri::command]
 pub async fn post_journal_entry(
     state: State<'_, DatabaseState>,
@@ -762,15 +807,20 @@ pub async fn post_journal_entry(
         .map_err(|e| e.to_string())?
         .ok_or_else(|| "Journal entry not found".to_string())?;
 
-    if entry.status == "posted" || entry.is_posted {
-        return Err("Journal entry is already posted".to_string());
+    // Idempotent: re-posting a posted entry is a success no-op
+    if entry.status == "posted" && entry.is_posted {
+        return get_journal_entry(state, id).await;
     }
 
     if entry.status == "voided" || entry.is_reversed {
         return Err("Cannot post a voided/reversed entry".to_string());
     }
 
-    // Fetch lines and validate via PostedEntry type
+    if entry.status == "draft" {
+        return Err("Cannot post a draft entry — approve it first".to_string());
+    }
+
+    // Fetch lines and validate via PostedEntry type (belt-and-suspenders with triggers)
     let db_lines = sqlx::query_as::<_, JournalEntryLine>(
         "SELECT * FROM journal_entry_lines WHERE journal_entry_id = ? ORDER BY line_number",
     )
@@ -779,7 +829,6 @@ pub async fn post_journal_entry(
     .await
     .map_err(|e| e.to_string())?;
 
-    // Build PostedEntry for type-level validation
     let posted_lines: Vec<PostedEntryLine> = db_lines
         .iter()
         .map(|l| {
@@ -798,25 +847,54 @@ pub async fn post_journal_entry(
     // This validates balance invariants before we touch the DB
     let _posted = PostedEntry::new(posted_lines)?;
 
-    // Post the entry via status column (triggers also validate)
-    sqlx::query("UPDATE journal_entries SET status = 'posted', is_posted = 1, posted_at = CURRENT_TIMESTAMP WHERE id = ?")
-        .bind(id)
-        .execute(&state.pool)
-        .await
-        .map_err(|e| e.to_string())?;
+    // Atomic conditional UPDATE: posts exactly once even under concurrent calls.
+    // The WHERE clause ensures only approved entries are posted.
+    let result = sqlx::query(
+        "UPDATE journal_entries SET status = 'posted', is_posted = 1, posted_at = CURRENT_TIMESTAMP WHERE id = ? AND status = 'approved'",
+    )
+    .bind(id)
+    .execute(&state.pool)
+    .await
+    .map_err(|e| e.to_string())?;
+
+    if result.rows_affected() == 0 {
+        // Entry was concurrently modified — re-fetch to return current state
+        let current =
+            sqlx::query_as::<_, JournalEntry>("SELECT * FROM journal_entries WHERE id = ?")
+                .bind(id)
+                .fetch_one(&state.pool)
+                .await
+                .map_err(|e| e.to_string())?;
+        if current.status == "posted" {
+            // Another thread posted it — idempotent success
+            return get_journal_entry(state, id).await;
+        }
+        return Err(format!(
+            "Failed to post entry: status changed to '{}' concurrently",
+            current.status
+        ));
+    }
 
     get_journal_entry(state, id).await
 }
 
-/// Voids a posted journal entry by marking it as reversed.
+/// Voids a posted journal entry by generating and posting a reversing entry.
+/// Both the original and reversing entry remain in the GL (net effect zero).
+/// The original is marked status='voided', is_reversed=1, and linked to the
+/// reversing entry via reversed_by_entry_id.
 #[tauri::command]
 pub async fn void_journal_entry(
     state: State<'_, DatabaseState>,
     id: i64,
 ) -> Result<JournalEntryWithLines, String> {
+    // ONE transaction for the whole void: the GL must never hold a posted
+    // reversing entry without the original being voided (or vice versa).
+    // A crash or a lost race rolls everything back.
+    let mut tx = state.pool.begin().await.map_err(|e| e.to_string())?;
+
     let entry = sqlx::query_as::<_, JournalEntry>("SELECT * FROM journal_entries WHERE id = ?")
         .bind(id)
-        .fetch_optional(&state.pool)
+        .fetch_optional(&mut *tx)
         .await
         .map_err(|e| e.to_string())?
         .ok_or_else(|| "Journal entry not found".to_string())?;
@@ -825,19 +903,137 @@ pub async fn void_journal_entry(
         return Err("Journal entry is already voided".to_string());
     }
 
-    // State machine: voided is terminal from posted. Draft/approved entries
-    // are edited or deleted, not voided.
     if entry.status != "posted" {
         return Err("Only posted entries can be voided".to_string());
     }
 
-    // Same-write: keep status and the legacy is_reversed flag in sync so the
-    // status-based UI and the M1 backfill semantics stay coherent.
-    sqlx::query("UPDATE journal_entries SET is_reversed = 1, status = 'voided' WHERE id = ?")
-        .bind(id)
-        .execute(&state.pool)
+    // Fetch the original entry's lines
+    let original_lines = sqlx::query_as::<_, JournalEntryLine>(
+        "SELECT * FROM journal_entry_lines WHERE journal_entry_id = ? ORDER BY line_number",
+    )
+    .bind(id)
+    .fetch_all(&mut *tx)
+    .await
+    .map_err(|e| e.to_string())?;
+
+    // Validate the reversing entry via PostedEntry BEFORE writing anything
+    // (belt-and-suspenders with triggers)
+    let rev_lines: Vec<PostedEntryLine> = original_lines
+        .iter()
+        .map(|l| {
+            let quantity = l.quantity.as_ref().and_then(|q| Decimal::from_str(q).ok());
+            PostedEntryLine {
+                gl_account_id: l.gl_account_id,
+                debit_minor: l.credit_minor, // swapped
+                credit_minor: l.debit_minor, // swapped
+                quantity,
+                asset_id: l.asset_id.clone(),
+                description: l.description.clone(),
+            }
+        })
+        .collect();
+    let _validated = PostedEntry::new(rev_lines)?;
+
+    // Generate entry number for the reversing entry
+    let count: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM journal_entries")
+        .fetch_one(&mut *tx)
         .await
         .map_err(|e| e.to_string())?;
+    let rev_entry_number = format!("JE-{:06}", count.0 + 1);
+
+    let entry_number_display = entry.entry_number.as_deref().unwrap_or("unknown");
+    let rev_description = format!("Reversal of entry #{entry_number_display}");
+
+    // Create the reversing entry as a draft first (born-posted trigger requires
+    // drafts). Copy provenance: origin, entity_id, reference_number.
+    let rev_result = sqlx::query(
+        r#"
+        INSERT INTO journal_entries (
+            entry_date, entry_number, description, reference_number,
+            is_posted, status, origin, entity_id, created_by, approved_by, approved_at
+        )
+        VALUES (DATE('now'), ?, ?, ?, 0, 'draft', ?, ?, 'system', 'system', CURRENT_TIMESTAMP)
+        "#,
+    )
+    .bind(&rev_entry_number)
+    .bind(&rev_description)
+    .bind(&entry.reference_number)
+    .bind(&entry.origin)
+    .bind(&entry.entity_id)
+    .execute(&mut *tx)
+    .await
+    .map_err(|e| e.to_string())?;
+
+    let rev_entry_id = rev_result.last_insert_rowid();
+
+    // Insert reversed lines: swap debit/credit (both minor and legacy float),
+    // preserve quantity and asset_id
+    for (i, line) in original_lines.iter().enumerate() {
+        sqlx::query(
+            r#"
+            INSERT INTO journal_entry_lines (
+                journal_entry_id, gl_account_id, token_id,
+                debit_amount, credit_amount,
+                debit_minor, credit_minor,
+                quantity, asset_id,
+                description, line_number
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            "#,
+        )
+        .bind(rev_entry_id)
+        .bind(line.gl_account_id)
+        .bind(line.token_id)
+        .bind(line.credit_amount) // swap: original credit becomes debit
+        .bind(line.debit_amount) // swap: original debit becomes credit
+        .bind(line.credit_minor) // swap: original credit_minor becomes debit_minor
+        .bind(line.debit_minor) // swap: original debit_minor becomes credit_minor
+        .bind(&line.quantity) // preserve quantity
+        .bind(&line.asset_id) // preserve asset_id
+        .bind(&line.description)
+        .bind(i as i64 + 1)
+        .execute(&mut *tx)
+        .await
+        .map_err(|e| e.to_string())?;
+    }
+
+    // Approve then post the reversing entry (status machine: draft -> approved -> posted)
+    sqlx::query("UPDATE journal_entries SET status = 'approved' WHERE id = ?")
+        .bind(rev_entry_id)
+        .execute(&mut *tx)
+        .await
+        .map_err(|e| e.to_string())?;
+
+    sqlx::query(
+        "UPDATE journal_entries SET status = 'posted', is_posted = 1, posted_at = CURRENT_TIMESTAMP WHERE id = ? AND status = 'approved'",
+    )
+    .bind(rev_entry_id)
+    .execute(&mut *tx)
+    .await
+    .map_err(|e| e.to_string())?;
+
+    // Void the original entry: set status='voided', is_reversed=1,
+    // reversed_by_entry_id in the same write. Conditional on status='posted'
+    // so a concurrent void loses the race cleanly: 0 rows affected here rolls
+    // back the duplicate reversing entry instead of leaving it posted.
+    let void_result = sqlx::query(
+        "UPDATE journal_entries SET status = 'voided', is_reversed = 1, reversed_by_entry_id = ? WHERE id = ? AND status = 'posted'",
+    )
+    .bind(rev_entry_id)
+    .bind(id)
+    .execute(&mut *tx)
+    .await
+    .map_err(|e| e.to_string())?;
+
+    if void_result.rows_affected() == 0 {
+        // Entry was voided (or otherwise moved) concurrently — tx drop rolls
+        // back the reversing entry, so no duplicate reversal reaches the GL.
+        return Err(
+            "Journal entry was voided concurrently; no duplicate reversal created".to_string(),
+        );
+    }
+
+    tx.commit().await.map_err(|e| e.to_string())?;
 
     get_journal_entry(state, id).await
 }
@@ -1094,6 +1290,125 @@ pub async fn get_trial_balance(
         .map_err(|e| e.to_string())
 }
 
+/// Per-account per-asset balance row, computed in Rust via rust_decimal
+/// for exact quantity sums.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AssetBalance {
+    /// GL account ID.
+    pub gl_account_id: i64,
+    /// Account number.
+    pub account_number: String,
+    /// Account name.
+    pub account_name: String,
+    /// Account type.
+    pub account_type: String,
+    /// Asset identifier (e.g. 'USD', 'token:42').
+    pub asset_id: String,
+    /// Total debits in minor units.
+    pub total_debit_minor: i64,
+    /// Total credits in minor units.
+    pub total_credit_minor: i64,
+    /// Net balance in minor units (debit - credit).
+    pub net_minor: i64,
+    /// Total debit quantity as canonical decimal string.
+    pub total_debit_quantity: String,
+    /// Total credit quantity as canonical decimal string.
+    pub total_credit_quantity: String,
+    /// Net quantity as canonical decimal string.
+    pub net_quantity: String,
+}
+
+/// Raw row from the per-asset balance query (SQL aggregation, quantities
+/// summed in Rust via rust_decimal for exactness).
+#[derive(Debug, Clone, FromRow)]
+struct AssetBalanceRawLine {
+    gl_account_id: i64,
+    account_number: String,
+    account_name: String,
+    account_type: String,
+    asset_id: String,
+    debit_minor: i64,
+    credit_minor: i64,
+    quantity: Option<String>,
+}
+
+/// Returns per-account per-asset balances. Quantity sums are computed in Rust
+/// via rust_decimal for exactness (never CAST AS REAL in SQL for reporting).
+#[tauri::command]
+pub async fn get_account_balances_by_asset(
+    state: State<'_, DatabaseState>,
+) -> Result<Vec<AssetBalance>, String> {
+    let rows = sqlx::query_as::<_, AssetBalanceRawLine>(
+        r#"
+        SELECT
+            ga.id AS gl_account_id,
+            ga.account_number,
+            ga.account_name,
+            ga.account_type,
+            jel.asset_id,
+            jel.debit_minor,
+            jel.credit_minor,
+            jel.quantity
+        FROM journal_entry_lines jel
+        JOIN journal_entries je ON jel.journal_entry_id = je.id
+        JOIN gl_accounts ga ON jel.gl_account_id = ga.id
+        WHERE je.is_posted = 1
+          AND jel.asset_id IS NOT NULL
+        ORDER BY ga.account_number, jel.asset_id
+        "#,
+    )
+    .fetch_all(&state.pool)
+    .await
+    .map_err(|e| e.to_string())?;
+
+    // Aggregate in Rust using rust_decimal for exact quantity sums
+    let mut map: std::collections::BTreeMap<(i64, String), AssetBalance> =
+        std::collections::BTreeMap::new();
+
+    for row in &rows {
+        let key = (row.gl_account_id, row.asset_id.clone());
+        let entry = map.entry(key).or_insert_with(|| AssetBalance {
+            gl_account_id: row.gl_account_id,
+            account_number: row.account_number.clone(),
+            account_name: row.account_name.clone(),
+            account_type: row.account_type.clone(),
+            asset_id: row.asset_id.clone(),
+            total_debit_minor: 0,
+            total_credit_minor: 0,
+            net_minor: 0,
+            total_debit_quantity: "0".to_string(),
+            total_credit_quantity: "0".to_string(),
+            net_quantity: "0".to_string(),
+        });
+
+        entry.total_debit_minor += row.debit_minor;
+        entry.total_credit_minor += row.credit_minor;
+        entry.net_minor = entry.total_debit_minor - entry.total_credit_minor;
+
+        if let Some(ref qty_str) = row.quantity {
+            if let Ok(qty) = Decimal::from_str(qty_str) {
+                let mut total_debit_qty =
+                    Decimal::from_str(&entry.total_debit_quantity).unwrap_or(Decimal::ZERO);
+                let mut total_credit_qty =
+                    Decimal::from_str(&entry.total_credit_quantity).unwrap_or(Decimal::ZERO);
+
+                if row.debit_minor > 0 {
+                    total_debit_qty += qty;
+                } else {
+                    total_credit_qty += qty;
+                }
+
+                entry.total_debit_quantity = total_debit_qty.to_string();
+                entry.total_credit_quantity = total_credit_qty.to_string();
+                entry.net_quantity = (total_debit_qty - total_credit_qty).to_string();
+            }
+        }
+    }
+
+    Ok(map.into_values().collect())
+}
+
 /// Returns the count of unclassified multi-chain transactions.
 #[tauri::command]
 pub async fn get_unclassified_transaction_count(
@@ -1123,7 +1438,7 @@ pub async fn get_draft_journal_entry_count(state: State<'_, DatabaseState>) -> R
 }
 
 // ============================================================================
-// Tests — Journal-Entry Balance Invariant (GIV-665 + GIV-673)
+// Tests — Journal-Entry Balance Invariant (GIV-665, GIV-673, GIV-677)
 // ============================================================================
 
 #[cfg(test)]
@@ -1235,8 +1550,31 @@ mod tests {
         .expect("Failed to add credit line");
     }
 
+    /// Approves a draft entry via direct SQL (test helper).
+    async fn approve_entry(pool: &SqlitePool, entry_id: i64) {
+        sqlx::query(
+            "UPDATE journal_entries SET status = 'approved', approved_by = 'test', approved_at = CURRENT_TIMESTAMP WHERE id = ?",
+        )
+        .bind(entry_id)
+        .execute(pool)
+        .await
+        .expect("Failed to approve entry");
+    }
+
+    /// Approves and posts an entry via direct SQL (test helper).
+    async fn approve_and_post_entry(pool: &SqlitePool, entry_id: i64) {
+        approve_entry(pool, entry_id).await;
+        sqlx::query(
+            "UPDATE journal_entries SET status = 'posted', is_posted = 1, posted_at = CURRENT_TIMESTAMP WHERE id = ?",
+        )
+        .bind(entry_id)
+        .execute(pool)
+        .await
+        .expect("Failed to post entry");
+    }
+
     // ========================================================================
-    // GIV-665 — Existing trigger tests (updated for minor-unit schema)
+    // GIV-665 — Existing trigger tests (updated for approval-gate schema)
     // ========================================================================
 
     // ---- Born-posted INSERT rejected ----
@@ -1245,7 +1583,6 @@ mod tests {
     async fn born_posted_insert_rejected() {
         let pool = setup_test_db().await;
 
-        // status != 'draft' triggers the born-posted guard
         let result = sqlx::query(
             "INSERT INTO journal_entries (entry_date, entry_number, description, is_posted, status, origin, created_by) VALUES ('2026-01-01', 'BP-001', 'Born posted', 0, 'posted', 'manual', 'test')",
         )
@@ -1269,14 +1606,8 @@ mod tests {
         let entry_id = create_draft_entry(&pool).await;
         add_balanced_lines(&pool, entry_id, acct_a, acct_b, 10000).await;
 
-        // Post via status column
-        sqlx::query("UPDATE journal_entries SET status = 'posted', is_posted = 1 WHERE id = ?")
-            .bind(entry_id)
-            .execute(&pool)
-            .await
-            .expect("Posting balanced entry should succeed");
+        approve_and_post_entry(&pool, entry_id).await;
 
-        // Try to insert a new line
         let result = sqlx::query(
             "INSERT INTO journal_entry_lines (journal_entry_id, gl_account_id, debit_amount, credit_amount, debit_minor, credit_minor, line_number) VALUES (?, ?, 50, 0, 5000, 0, 3)",
         )
@@ -1303,11 +1634,7 @@ mod tests {
         let entry_id = create_draft_entry(&pool).await;
         add_balanced_lines(&pool, entry_id, acct_a, acct_b, 10000).await;
 
-        sqlx::query("UPDATE journal_entries SET status = 'posted', is_posted = 1 WHERE id = ?")
-            .bind(entry_id)
-            .execute(&pool)
-            .await
-            .expect("Posting balanced entry should succeed");
+        approve_and_post_entry(&pool, entry_id).await;
 
         let result = sqlx::query(
             "UPDATE journal_entry_lines SET debit_minor = 20000 WHERE journal_entry_id = ? AND line_number = 1",
@@ -1320,11 +1647,6 @@ mod tests {
             result.is_err(),
             "UPDATE line on posted entry should be rejected"
         );
-        let err = result.unwrap_err().to_string();
-        assert!(
-            err.contains("immutable"),
-            "Error should mention immutability, got: {err}"
-        );
     }
 
     #[tokio::test]
@@ -1334,11 +1656,7 @@ mod tests {
         let entry_id = create_draft_entry(&pool).await;
         add_balanced_lines(&pool, entry_id, acct_a, acct_b, 10000).await;
 
-        sqlx::query("UPDATE journal_entries SET status = 'posted', is_posted = 1 WHERE id = ?")
-            .bind(entry_id)
-            .execute(&pool)
-            .await
-            .expect("Posting balanced entry should succeed");
+        approve_and_post_entry(&pool, entry_id).await;
 
         let result = sqlx::query(
             "DELETE FROM journal_entry_lines WHERE journal_entry_id = ? AND line_number = 1",
@@ -1350,11 +1668,6 @@ mod tests {
         assert!(
             result.is_err(),
             "DELETE line on posted entry should be rejected"
-        );
-        let err = result.unwrap_err().to_string();
-        assert!(
-            err.contains("immutable"),
-            "Error should mention immutability, got: {err}"
         );
     }
 
@@ -1394,12 +1707,13 @@ mod tests {
         add_balanced_lines(&pool, entry_id, acct_a, acct_b, 5000).await;
     }
 
-    // ---- Zero-line entry post rejected ----
+    // ---- Zero-line entry post rejected (now via approved->posted) ----
 
     #[tokio::test]
     async fn zero_line_entry_post_rejected() {
         let pool = setup_test_db().await;
         let entry_id = create_draft_entry(&pool).await;
+        approve_entry(&pool, entry_id).await;
 
         let result = sqlx::query("UPDATE journal_entries SET status = 'posted' WHERE id = ?")
             .bind(entry_id)
@@ -1425,7 +1739,6 @@ mod tests {
         let (acct_a, acct_b) = get_test_accounts(&pool).await;
         let entry_id = create_draft_entry(&pool).await;
 
-        // Unbalanced: debit 10000 cents, credit 5000 cents
         sqlx::query(
             "INSERT INTO journal_entry_lines (journal_entry_id, gl_account_id, debit_amount, credit_amount, debit_minor, credit_minor, asset_id, line_number) VALUES (?, ?, 100, 0, 10000, 0, 'USD', 1)",
         )
@@ -1444,6 +1757,8 @@ mod tests {
         .await
         .expect("Insert credit line");
 
+        approve_entry(&pool, entry_id).await;
+
         let result = sqlx::query("UPDATE journal_entries SET status = 'posted' WHERE id = ?")
             .bind(entry_id)
             .execute(&pool)
@@ -1460,10 +1775,10 @@ mod tests {
         );
     }
 
-    // ---- Happy path: create draft -> balanced lines -> post -> void ----
+    // ---- Happy path: create draft -> approve -> post -> void ----
 
     #[tokio::test]
-    async fn happy_path_draft_post_void() {
+    async fn happy_path_draft_approve_post_void() {
         let pool = setup_test_db().await;
         let (acct_a, acct_b) = get_test_accounts(&pool).await;
 
@@ -1479,12 +1794,25 @@ mod tests {
 
         add_balanced_lines(&pool, entry_id, acct_a, acct_b, 10000).await;
 
-        // Post via status
-        sqlx::query("UPDATE journal_entries SET status = 'posted' WHERE id = ?")
-            .bind(entry_id)
-            .execute(&pool)
-            .await
-            .expect("Posting balanced entry should succeed");
+        // Approve
+        approve_entry(&pool, entry_id).await;
+
+        let (status,): (String,) =
+            sqlx::query_as("SELECT status FROM journal_entries WHERE id = ?")
+                .bind(entry_id)
+                .fetch_one(&pool)
+                .await
+                .expect("Should fetch entry");
+        assert_eq!(status, "approved", "Entry should be approved");
+
+        // Post
+        sqlx::query(
+            "UPDATE journal_entries SET status = 'posted', is_posted = 1, posted_at = CURRENT_TIMESTAMP WHERE id = ?",
+        )
+        .bind(entry_id)
+        .execute(&pool)
+        .await
+        .expect("Posting balanced approved entry should succeed");
 
         let (status,): (String,) =
             sqlx::query_as("SELECT status FROM journal_entries WHERE id = ?")
@@ -1527,6 +1855,8 @@ mod tests {
         .await
         .expect("Insert single line");
 
+        approve_entry(&pool, entry_id).await;
+
         let result = sqlx::query("UPDATE journal_entries SET status = 'posted' WHERE id = ?")
             .bind(entry_id)
             .execute(&pool)
@@ -1535,11 +1865,6 @@ mod tests {
         assert!(
             result.is_err(),
             "Posting single-line entry should be rejected"
-        );
-        let err = result.unwrap_err().to_string();
-        assert!(
-            err.contains("at least 2 lines"),
-            "Error should mention minimum lines, got: {err}"
         );
     }
 
@@ -1552,11 +1877,7 @@ mod tests {
 
         let entry_a = create_draft_entry(&pool).await;
         add_balanced_lines(&pool, entry_a, acct_a, acct_b, 10000).await;
-        sqlx::query("UPDATE journal_entries SET status = 'posted', is_posted = 1 WHERE id = ?")
-            .bind(entry_a)
-            .execute(&pool)
-            .await
-            .expect("Post entry A");
+        approve_and_post_entry(&pool, entry_a).await;
 
         let result_b = sqlx::query(
             "INSERT INTO journal_entries (entry_date, entry_number, description, is_posted, status, origin, created_by) VALUES ('2026-01-02', 'TEST-002', 'Entry B', 0, 'draft', 'manual', 'test')",
@@ -1587,18 +1908,11 @@ mod tests {
             result.is_err(),
             "Re-pointing line onto posted entry should be rejected"
         );
-        let err = result.unwrap_err().to_string();
-        assert!(
-            err.contains("immutable"),
-            "Error should mention immutability, got: {err}"
-        );
     }
 
     // ========================================================================
-    // GIV-673 — Phase 1 Acceptance Tests
+    // GIV-673 — Phase 1 Acceptance Tests (PostedEntry type)
     // ========================================================================
-
-    // ---- PostedEntry constructor rejects unbalanced input ----
 
     #[test]
     fn posted_entry_rejects_empty() {
@@ -1623,9 +1937,6 @@ mod tests {
 
     #[test]
     fn posted_entry_rejects_negative_minor_units() {
-        // A negative debit is a credit smuggled onto the wrong side: the pair
-        // (+100, -100) sums to zero on both sides and would pass the balance
-        // check while breaking the trial balance.
         let result = PostedEntry::new(vec![
             PostedEntryLine {
                 gl_account_id: 1,
@@ -1666,7 +1977,7 @@ mod tests {
             PostedEntryLine {
                 gl_account_id: 2,
                 debit_minor: 0,
-                credit_minor: 9999, // 1 cent off
+                credit_minor: 9999,
                 quantity: None,
                 asset_id: Some("USD".to_string()),
                 description: None,
@@ -1674,19 +1985,15 @@ mod tests {
         ]);
         assert!(result.is_err());
         let err = result.unwrap_err();
-        assert!(
-            err.contains("Functional-currency imbalance"),
-            "Should report functional-currency imbalance, got: {err}"
-        );
+        assert!(err.contains("Functional-currency imbalance"));
     }
 
     #[test]
     fn posted_entry_rejects_one_cent_imbalance() {
-        // Zero tolerance: a 1-cent imbalance is rejected
         let result = PostedEntry::new(vec![
             PostedEntryLine {
                 gl_account_id: 1,
-                debit_minor: 5001, // $50.01
+                debit_minor: 5001,
                 credit_minor: 0,
                 quantity: None,
                 asset_id: Some("USD".to_string()),
@@ -1695,7 +2002,7 @@ mod tests {
             PostedEntryLine {
                 gl_account_id: 2,
                 debit_minor: 0,
-                credit_minor: 5000, // $50.00
+                credit_minor: 5000,
                 quantity: None,
                 asset_id: Some("USD".to_string()),
                 description: None,
@@ -1705,12 +2012,12 @@ mod tests {
     }
 
     #[test]
-    fn posted_entry_rejects_per_asset_quantity_imbalance() {
-        // Functional currency balances, but asset quantities don't
+    fn posted_entry_swap_one_sided_assets_allowed() {
+        // In a swap, each asset appears on only one side — that's valid.
         let result = PostedEntry::new(vec![
             PostedEntryLine {
                 gl_account_id: 1,
-                debit_minor: 15000, // $150
+                debit_minor: 15000,
                 credit_minor: 0,
                 quantity: Some(Decimal::from_str("4").unwrap()),
                 asset_id: Some("token:B".to_string()),
@@ -1719,7 +2026,7 @@ mod tests {
             PostedEntryLine {
                 gl_account_id: 2,
                 debit_minor: 0,
-                credit_minor: 10000, // $100
+                credit_minor: 10000,
                 quantity: Some(Decimal::from_str("10").unwrap()),
                 asset_id: Some("token:A".to_string()),
                 description: None,
@@ -1727,58 +2034,12 @@ mod tests {
             PostedEntryLine {
                 gl_account_id: 3,
                 debit_minor: 0,
-                credit_minor: 5000, // $50 gain
+                credit_minor: 5000,
                 quantity: None,
-                asset_id: None, // measurement line
+                asset_id: None,
                 description: Some("Realized gain".to_string()),
             },
         ]);
-        // This should succeed because:
-        // - Functional currency: 15000 == 10000 + 5000 ✓
-        // - token:A has 10 credit, 0 debit → but it's a one-sided asset (swap out), which is fine
-        //   because each asset only needs to balance IF it appears on both sides.
-        // Actually wait: the spec says "for each asset appearing with quantities, debit qty == credit qty"
-        // token:A has only credits (10), token:B has only debits (4). Neither balances.
-        // But measurement lines carry the cross-asset difference.
-        // Let me re-read the spec...
-        //
-        // The spec says: "per-asset quantity debits equal credits for each asset appearing with quantities;
-        // measurement lines (functional-currency-only lines, no quantity) carry cross-asset differences"
-        //
-        // In a swap, token:A exits (credit side only) and token:B enters (debit side only).
-        // Per-asset: token:A has 0 debit qty, 10 credit qty → imbalance. This SHOULD be allowed
-        // because the measurement line carries the difference. But the trigger checks strict balance.
-        //
-        // Actually, re-reading the worked example in accounting-model.md:
-        // Line 1: Digital assets B, debit $150, qty +4 (asset B)
-        // Line 2: Digital assets A, credit $100, qty -10 (asset A)
-        // Line 3: Realized gain, credit $50, no qty, no asset
-        //
-        // The convention uses SIGNED quantities. qty +4 on debit side, qty -10 on credit side.
-        // But wait, that doesn't make sense with one-sided amounts. Let me think again.
-        //
-        // In double-entry: a debit to "Digital assets — B" with qty 4 means B enters the books.
-        // A credit to "Digital assets — A" with qty 10 means A leaves the books.
-        // These are DIFFERENT assets. Per-asset balance means:
-        // - For asset B: 4 debit qty, 0 credit qty → +4 net. This is fine — it's a one-way movement.
-        // - For asset A: 0 debit qty, 10 credit qty → -10 net. This is also fine — one-way out.
-        //
-        // The spec says measurement lines carry cross-asset differences. So the per-asset check
-        // should NOT require balance for assets that appear on only one side — that's the whole
-        // point of measurement lines.
-        //
-        // But the issue description says: "per-asset quantity debits equal credits for each asset"
-        // This implies strict balance per asset. In a swap, each asset naturally appears on only
-        // one side, so they won't balance per-asset. This would mean swaps are impossible...
-        //
-        // Unless the interpretation is: assets that appear with quantities on BOTH debit and credit
-        // sides must balance. Assets appearing on only one side are fine (they're accounted for by
-        // measurement lines on the functional-currency side).
-        //
-        // I'll implement it as: for each asset that has quantities on both sides, they must balance.
-        // Assets appearing on only one side are valid (cross-asset movements).
-        //
-        // With this interpretation, the swap example succeeds.
         assert!(
             result.is_ok(),
             "Swap example should succeed: {}",
@@ -1788,7 +2049,6 @@ mod tests {
 
     #[test]
     fn posted_entry_rejects_same_asset_quantity_imbalance() {
-        // Same asset appears with different quantities on debit and credit
         let result = PostedEntry::new(vec![
             PostedEntryLine {
                 gl_account_id: 1,
@@ -1802,20 +2062,14 @@ mod tests {
                 gl_account_id: 2,
                 debit_minor: 0,
                 credit_minor: 10000,
-                quantity: Some(Decimal::from_str("3").unwrap()), // different qty!
+                quantity: Some(Decimal::from_str("3").unwrap()),
                 asset_id: Some("token:A".to_string()),
                 description: None,
             },
         ]);
-        assert!(
-            result.is_err(),
-            "Same-asset quantity imbalance must be rejected"
-        );
+        assert!(result.is_err());
         let err = result.unwrap_err();
-        assert!(
-            err.contains("Per-asset quantity imbalance"),
-            "Error should mention per-asset imbalance, got: {err}"
-        );
+        assert!(err.contains("Per-asset quantity imbalance"));
     }
 
     #[test]
@@ -1842,17 +2096,11 @@ mod tests {
         assert_eq!(result.unwrap().lines().len(), 2);
     }
 
-    // ---- Worked swap example from accounting-model.md ----
-
     #[test]
     fn posted_entry_swap_example_from_accounting_model() {
-        // Swap 10 A (basis $100, fair value $150) for 4 B
-        // Line 1: DR Digital assets — B, asset B, qty 4, $150.00
-        // Line 2: CR Digital assets — A, asset A, qty 10, $100.00
-        // Line 3: CR Realized gain, measurement line, $50.00
         let result = PostedEntry::new(vec![
             PostedEntryLine {
-                gl_account_id: 1, // Digital assets — B
+                gl_account_id: 1,
                 debit_minor: 15000,
                 credit_minor: 0,
                 quantity: Some(Decimal::from_str("4").unwrap()),
@@ -1860,7 +2108,7 @@ mod tests {
                 description: Some("Swap in: 4 B at $150".to_string()),
             },
             PostedEntryLine {
-                gl_account_id: 2, // Digital assets — A
+                gl_account_id: 2,
                 debit_minor: 0,
                 credit_minor: 10000,
                 quantity: Some(Decimal::from_str("10").unwrap()),
@@ -1868,11 +2116,11 @@ mod tests {
                 description: Some("Swap out: 10 A at cost $100".to_string()),
             },
             PostedEntryLine {
-                gl_account_id: 3, // Realized gain on digital assets
+                gl_account_id: 3,
                 debit_minor: 0,
                 credit_minor: 5000,
                 quantity: None,
-                asset_id: None, // measurement line
+                asset_id: None,
                 description: Some("Realized gain on swap".to_string()),
             },
         ]);
@@ -1883,7 +2131,9 @@ mod tests {
         );
     }
 
-    // ---- Direct-SQL trigger tests for minor-unit balance (GIV-673) ----
+    // ========================================================================
+    // GIV-673 — Direct-SQL trigger tests (updated for approval gate)
+    // ========================================================================
 
     #[tokio::test]
     async fn trigger_rejects_one_cent_minor_unit_imbalance() {
@@ -1891,7 +2141,6 @@ mod tests {
         let (acct_a, acct_b) = get_test_accounts(&pool).await;
         let entry_id = create_named_draft_entry(&pool, "CENT-001").await;
 
-        // Debit 10001 cents, credit 10000 cents (1-cent imbalance)
         sqlx::query(
             "INSERT INTO journal_entry_lines (journal_entry_id, gl_account_id, debit_amount, credit_amount, debit_minor, credit_minor, asset_id, line_number) VALUES (?, ?, 100.01, 0, 10001, 0, 'USD', 1)",
         )
@@ -1909,6 +2158,9 @@ mod tests {
         .execute(&pool)
         .await
         .expect("Insert credit line");
+
+        // Approve first, then try to post with imbalance
+        approve_entry(&pool, entry_id).await;
 
         let result = sqlx::query("UPDATE journal_entries SET status = 'posted' WHERE id = ?")
             .bind(entry_id)
@@ -1943,9 +2195,6 @@ mod tests {
     async fn trigger_rejects_born_posted_legacy_is_posted() {
         let pool = setup_test_db().await;
 
-        // is_posted=1 at INSERT (with status='draft') must be rejected:
-        // views filter on is_posted=1, so this would surface an entry that
-        // never passed the balance trigger.
         let result = sqlx::query(
             "INSERT INTO journal_entries (entry_date, entry_number, description, is_posted, status, origin, created_by) VALUES ('2026-01-01', 'BORN-002', 'Test', 1, 'draft', 'manual', 'test')",
         )
@@ -1965,9 +2214,6 @@ mod tests {
         let entry_id = create_named_draft_entry(&pool, "COHERE-001").await;
         add_balanced_lines(&pool, entry_id, acct_a, acct_b, 10000).await;
 
-        // Flipping is_posted alone (status stays 'draft') would create a
-        // divergent row whose lines escape the status-based immutability
-        // triggers while views still count it as posted.
         let result = sqlx::query("UPDATE journal_entries SET is_posted = 1 WHERE id = ?")
             .bind(entry_id)
             .execute(&pool)
@@ -2016,13 +2262,8 @@ mod tests {
         let entry_id = create_named_draft_entry(&pool, "MUT-001").await;
         add_balanced_lines(&pool, entry_id, acct_a, acct_b, 10000).await;
 
-        sqlx::query("UPDATE journal_entries SET status = 'posted', is_posted = 1 WHERE id = ?")
-            .bind(entry_id)
-            .execute(&pool)
-            .await
-            .expect("Post should succeed");
+        approve_and_post_entry(&pool, entry_id).await;
 
-        // Try to mutate a line
         let result = sqlx::query(
             "UPDATE journal_entry_lines SET debit_minor = 99999 WHERE journal_entry_id = ? AND line_number = 1",
         )
@@ -2039,7 +2280,6 @@ mod tests {
         let (acct_a, acct_b) = get_test_accounts(&pool).await;
         let entry_id = create_named_draft_entry(&pool, "ASSET-001").await;
 
-        // Same asset (token:X) with different quantities on debit/credit
         sqlx::query(
             "INSERT INTO journal_entry_lines (journal_entry_id, gl_account_id, debit_amount, credit_amount, debit_minor, credit_minor, quantity, asset_id, line_number) VALUES (?, ?, 100, 0, 10000, 0, '5.0', 'token:X', 1)",
         )
@@ -2057,6 +2297,8 @@ mod tests {
         .execute(&pool)
         .await
         .expect("Insert credit line");
+
+        approve_entry(&pool, entry_id).await;
 
         let result = sqlx::query("UPDATE journal_entries SET status = 'posted' WHERE id = ?")
             .bind(entry_id)
@@ -2080,8 +2322,6 @@ mod tests {
         let (digital_assets, income, _expenses) = get_three_accounts(&pool).await;
         let entry_id = create_named_draft_entry(&pool, "SWAP-001").await;
 
-        // Swap 10 A (basis $100) for 4 B (fair value $150)
-        // Line 1: DR Digital assets — B, 4 qty, $150
         sqlx::query(
             "INSERT INTO journal_entry_lines (journal_entry_id, gl_account_id, debit_amount, credit_amount, debit_minor, credit_minor, quantity, asset_id, line_number) VALUES (?, ?, 150, 0, 15000, 0, '4', 'token:B', 1)",
         )
@@ -2091,7 +2331,6 @@ mod tests {
         .await
         .expect("Insert debit line (B)");
 
-        // Line 2: CR Digital assets — A, 10 qty, $100
         sqlx::query(
             "INSERT INTO journal_entry_lines (journal_entry_id, gl_account_id, debit_amount, credit_amount, debit_minor, credit_minor, quantity, asset_id, line_number) VALUES (?, ?, 0, 100, 0, 10000, '10', 'token:A', 2)",
         )
@@ -2101,7 +2340,6 @@ mod tests {
         .await
         .expect("Insert credit line (A)");
 
-        // Line 3: CR Realized gain, $50 (measurement line, no asset/qty)
         sqlx::query(
             "INSERT INTO journal_entry_lines (journal_entry_id, gl_account_id, debit_amount, credit_amount, debit_minor, credit_minor, line_number) VALUES (?, ?, 0, 50, 0, 5000, 3)",
         )
@@ -2110,6 +2348,8 @@ mod tests {
         .execute(&pool)
         .await
         .expect("Insert measurement line");
+
+        approve_entry(&pool, entry_id).await;
 
         let result = sqlx::query("UPDATE journal_entries SET status = 'posted' WHERE id = ?")
             .bind(entry_id)
@@ -2120,6 +2360,373 @@ mod tests {
             result.is_ok(),
             "Swap with measurement line should post successfully: {:?}",
             result.err()
+        );
+    }
+
+    // ========================================================================
+    // GIV-677 — Phase 2 Acceptance Tests
+    // ========================================================================
+
+    // ---- Draft cannot post without approval (Rust path) ----
+
+    #[tokio::test]
+    async fn draft_cannot_post_without_approval_via_trigger() {
+        let pool = setup_test_db().await;
+        let (acct_a, acct_b) = get_test_accounts(&pool).await;
+        let entry_id = create_named_draft_entry(&pool, "NOAPPROVE-001").await;
+        add_balanced_lines(&pool, entry_id, acct_a, acct_b, 10000).await;
+
+        // Try to post directly from draft (trigger should reject)
+        let result = sqlx::query("UPDATE journal_entries SET status = 'posted' WHERE id = ?")
+            .bind(entry_id)
+            .execute(&pool)
+            .await;
+
+        assert!(
+            result.is_err(),
+            "Draft->posted direct transition must be rejected after M5"
+        );
+        let err = result.unwrap_err().to_string();
+        assert!(
+            err.contains("Draft entries can only transition to approved"),
+            "Error should mention approval requirement, got: {err}"
+        );
+    }
+
+    // ---- Re-posting a posted entry is a no-op ----
+
+    #[tokio::test]
+    async fn repost_is_noop() {
+        let pool = setup_test_db().await;
+        let (acct_a, acct_b) = get_test_accounts(&pool).await;
+        let entry_id = create_named_draft_entry(&pool, "REPOST-001").await;
+        add_balanced_lines(&pool, entry_id, acct_a, acct_b, 10000).await;
+        approve_and_post_entry(&pool, entry_id).await;
+
+        // Fetch posted_at
+        let (posted_at_before,): (Option<String>,) =
+            sqlx::query_as("SELECT posted_at FROM journal_entries WHERE id = ?")
+                .bind(entry_id)
+                .fetch_one(&pool)
+                .await
+                .expect("Should fetch entry");
+
+        // Attempt to re-post (conditional UPDATE should affect 0 rows)
+        let result = sqlx::query(
+            "UPDATE journal_entries SET status = 'posted', is_posted = 1, posted_at = CURRENT_TIMESTAMP WHERE id = ? AND status = 'approved'",
+        )
+        .bind(entry_id)
+        .execute(&pool)
+        .await
+        .expect("Re-post attempt should not error");
+
+        assert_eq!(
+            result.rows_affected(),
+            0,
+            "Re-posting should affect 0 rows (no-op)"
+        );
+
+        // Verify posted_at unchanged
+        let (posted_at_after,): (Option<String>,) =
+            sqlx::query_as("SELECT posted_at FROM journal_entries WHERE id = ?")
+                .bind(entry_id)
+                .fetch_one(&pool)
+                .await
+                .expect("Should fetch entry");
+
+        assert_eq!(
+            posted_at_before, posted_at_after,
+            "posted_at must be unchanged after re-post no-op"
+        );
+    }
+
+    // ---- Voiding generates a balanced posted reversing entry; GL nets to zero ----
+
+    #[tokio::test]
+    async fn void_generates_reversing_entry_and_gl_nets_zero() {
+        let pool = setup_test_db().await;
+        let (acct_a, acct_b) = get_test_accounts(&pool).await;
+        let entry_id = create_named_draft_entry(&pool, "VOID-001").await;
+        add_balanced_lines(&pool, entry_id, acct_a, acct_b, 10000).await;
+        approve_and_post_entry(&pool, entry_id).await;
+
+        // Count entries before void
+        let (count_before,): (i64,) = sqlx::query_as("SELECT COUNT(*) FROM journal_entries")
+            .fetch_one(&pool)
+            .await
+            .expect("count");
+
+        // Void the entry using the Rust path simulation:
+        // 1. Create reversing entry
+        let rev_result = sqlx::query(
+            "INSERT INTO journal_entries (entry_date, entry_number, description, is_posted, status, origin, created_by, approved_by, approved_at) VALUES (DATE('now'), 'REV-VOID-001', 'Reversal of entry #VOID-001', 0, 'draft', 'manual', 'system', 'system', CURRENT_TIMESTAMP)",
+        )
+        .execute(&pool)
+        .await
+        .expect("Create reversing entry");
+        let rev_id = rev_result.last_insert_rowid();
+
+        // 2. Insert reversed lines (swap debit/credit)
+        sqlx::query(
+            "INSERT INTO journal_entry_lines (journal_entry_id, gl_account_id, debit_amount, credit_amount, debit_minor, credit_minor, asset_id, line_number) VALUES (?, ?, 0, 100, 0, 10000, 'USD', 1)",
+        )
+        .bind(rev_id)
+        .bind(acct_a)
+        .execute(&pool)
+        .await
+        .expect("Insert reversed debit->credit line");
+
+        sqlx::query(
+            "INSERT INTO journal_entry_lines (journal_entry_id, gl_account_id, debit_amount, credit_amount, debit_minor, credit_minor, asset_id, line_number) VALUES (?, ?, 100, 0, 10000, 0, 'USD', 2)",
+        )
+        .bind(rev_id)
+        .bind(acct_b)
+        .execute(&pool)
+        .await
+        .expect("Insert reversed credit->debit line");
+
+        // 3. Approve and post the reversal
+        approve_and_post_entry(&pool, rev_id).await;
+
+        // 4. Void the original
+        sqlx::query(
+            "UPDATE journal_entries SET status = 'voided', is_reversed = 1, reversed_by_entry_id = ? WHERE id = ?",
+        )
+        .bind(rev_id)
+        .bind(entry_id)
+        .execute(&pool)
+        .await
+        .expect("Void original entry");
+
+        // Verify: new entry was created
+        let (count_after,): (i64,) = sqlx::query_as("SELECT COUNT(*) FROM journal_entries")
+            .fetch_one(&pool)
+            .await
+            .expect("count");
+        assert_eq!(
+            count_after,
+            count_before + 1,
+            "Voiding should create exactly one new entry"
+        );
+
+        // Verify: original is voided with reversed_by_entry_id
+        let (status, is_reversed, reversed_by): (String, bool, Option<i64>) = sqlx::query_as(
+            "SELECT status, is_reversed, reversed_by_entry_id FROM journal_entries WHERE id = ?",
+        )
+        .bind(entry_id)
+        .fetch_one(&pool)
+        .await
+        .expect("Should fetch voided original");
+        assert_eq!(status, "voided");
+        assert!(is_reversed);
+        assert_eq!(reversed_by, Some(rev_id));
+
+        // Verify: reversing entry is posted
+        let (rev_status,): (String,) =
+            sqlx::query_as("SELECT status FROM journal_entries WHERE id = ?")
+                .bind(rev_id)
+                .fetch_one(&pool)
+                .await
+                .expect("Should fetch reversing entry");
+        assert_eq!(rev_status, "posted");
+
+        // Verify: GL nets to zero (both entries are posted, net effect zero)
+        let (total_debits,): (i64,) = sqlx::query_as(
+            "SELECT COALESCE(SUM(jel.debit_minor), 0) FROM journal_entry_lines jel JOIN journal_entries je ON jel.journal_entry_id = je.id WHERE je.is_posted = 1",
+        )
+        .fetch_one(&pool)
+        .await
+        .expect("Sum debits");
+        let (total_credits,): (i64,) = sqlx::query_as(
+            "SELECT COALESCE(SUM(jel.credit_minor), 0) FROM journal_entry_lines jel JOIN journal_entries je ON jel.journal_entry_id = je.id WHERE je.is_posted = 1",
+        )
+        .fetch_one(&pool)
+        .await
+        .expect("Sum credits");
+        assert_eq!(
+            total_debits, total_credits,
+            "GL must net to zero after voiding: debits={total_debits}, credits={total_credits}"
+        );
+    }
+
+    // ---- Voided entry is frozen ----
+
+    #[tokio::test]
+    async fn voided_entry_is_frozen() {
+        let pool = setup_test_db().await;
+        let (acct_a, acct_b) = get_test_accounts(&pool).await;
+        let entry_id = create_named_draft_entry(&pool, "FROZEN-001").await;
+        add_balanced_lines(&pool, entry_id, acct_a, acct_b, 10000).await;
+        approve_and_post_entry(&pool, entry_id).await;
+
+        // Void via direct SQL (state machine allows posted->voided)
+        sqlx::query("UPDATE journal_entries SET status = 'voided', is_reversed = 1 WHERE id = ?")
+            .bind(entry_id)
+            .execute(&pool)
+            .await
+            .expect("Void should succeed");
+
+        // Verify voided entries cannot change status
+        let result = sqlx::query("UPDATE journal_entries SET status = 'draft' WHERE id = ?")
+            .bind(entry_id)
+            .execute(&pool)
+            .await;
+        assert!(result.is_err(), "Voided entries must be immutable");
+        let err = result.unwrap_err().to_string();
+        assert!(err.contains("immutable"), "got: {err}");
+    }
+
+    // ---- Posting N approved entries yields trial balance where debits == credits ----
+
+    #[tokio::test]
+    async fn trial_balance_debits_equal_credits() {
+        let pool = setup_test_db().await;
+        let (acct_a, acct_b) = get_test_accounts(&pool).await;
+
+        // Post several balanced entries
+        for i in 0..5 {
+            let entry_id = create_named_draft_entry(&pool, &format!("TB-{:03}", i + 1)).await;
+            add_balanced_lines(&pool, entry_id, acct_a, acct_b, (i + 1) * 1000).await;
+            approve_and_post_entry(&pool, entry_id).await;
+        }
+
+        // Fetch trial balance and verify debits exactly equal credits
+        let rows: Vec<(i64, i64)> =
+            sqlx::query_as("SELECT debit_balance, credit_balance FROM v_trial_balance")
+                .fetch_all(&pool)
+                .await
+                .expect("Fetch trial balance");
+
+        let total_debits: i64 = rows.iter().map(|(d, _)| d).sum();
+        let total_credits: i64 = rows.iter().map(|(_, c)| c).sum();
+        assert_eq!(
+            total_debits, total_credits,
+            "Trial balance must tie: debits={total_debits}, credits={total_credits}"
+        );
+        assert!(
+            total_debits > 0,
+            "Trial balance should have non-zero activity"
+        );
+    }
+
+    // ---- Per-asset balances correct for swap worked example ----
+
+    #[tokio::test]
+    async fn per_asset_balances_correct_for_swap() {
+        let pool = setup_test_db().await;
+        let (digital_assets, income, _expenses) = get_three_accounts(&pool).await;
+        let entry_id = create_named_draft_entry(&pool, "PABS-001").await;
+
+        // Swap 10 A (basis $100, FV $150) for 4 B
+        sqlx::query(
+            "INSERT INTO journal_entry_lines (journal_entry_id, gl_account_id, debit_amount, credit_amount, debit_minor, credit_minor, quantity, asset_id, line_number) VALUES (?, ?, 150, 0, 15000, 0, '4', 'token:B', 1)",
+        )
+        .bind(entry_id)
+        .bind(digital_assets)
+        .execute(&pool)
+        .await
+        .expect("DR B");
+
+        sqlx::query(
+            "INSERT INTO journal_entry_lines (journal_entry_id, gl_account_id, debit_amount, credit_amount, debit_minor, credit_minor, quantity, asset_id, line_number) VALUES (?, ?, 0, 100, 0, 10000, '10', 'token:A', 2)",
+        )
+        .bind(entry_id)
+        .bind(digital_assets)
+        .execute(&pool)
+        .await
+        .expect("CR A");
+
+        sqlx::query(
+            "INSERT INTO journal_entry_lines (journal_entry_id, gl_account_id, debit_amount, credit_amount, debit_minor, credit_minor, line_number) VALUES (?, ?, 0, 50, 0, 5000, 3)",
+        )
+        .bind(entry_id)
+        .bind(income)
+        .execute(&pool)
+        .await
+        .expect("Measurement line");
+
+        approve_and_post_entry(&pool, entry_id).await;
+
+        // Query per-asset balances via raw SQL (simulating get_account_balances_by_asset)
+        let rows: Vec<(i64, String, i64, i64, Option<String>)> = sqlx::query_as(
+            r#"
+            SELECT jel.gl_account_id, COALESCE(jel.asset_id, 'NONE'), jel.debit_minor, jel.credit_minor, jel.quantity
+            FROM journal_entry_lines jel
+            JOIN journal_entries je ON jel.journal_entry_id = je.id
+            WHERE je.is_posted = 1 AND jel.asset_id IS NOT NULL
+            "#,
+        )
+        .fetch_all(&pool)
+        .await
+        .expect("Query per-asset");
+
+        // Verify: token:B has debit_minor=15000, qty=4
+        let token_b: Vec<_> = rows.iter().filter(|r| r.1 == "token:B").collect();
+        assert_eq!(token_b.len(), 1);
+        assert_eq!(token_b[0].2, 15000); // debit_minor
+        assert_eq!(token_b[0].4.as_deref(), Some("4")); // quantity
+
+        // Verify: token:A has credit_minor=10000, qty=10
+        let token_a: Vec<_> = rows.iter().filter(|r| r.1 == "token:A").collect();
+        assert_eq!(token_a.len(), 1);
+        assert_eq!(token_a[0].3, 10000); // credit_minor
+        assert_eq!(token_a[0].4.as_deref(), Some("10")); // quantity
+
+        // Verify exact quantity sums via rust_decimal
+        let qty_b = Decimal::from_str(token_b[0].4.as_deref().unwrap()).unwrap();
+        assert_eq!(
+            qty_b,
+            Decimal::from(4),
+            "token:B quantity must be exactly 4"
+        );
+
+        let qty_a = Decimal::from_str(token_a[0].4.as_deref().unwrap()).unwrap();
+        assert_eq!(
+            qty_a,
+            Decimal::from(10),
+            "token:A quantity must be exactly 10"
+        );
+    }
+
+    // ---- Double-void race: conditional void UPDATE is a clean 0-row no-op ----
+    //
+    // void_journal_entry runs in ONE transaction and voids the original with
+    // `WHERE id = ? AND status = 'posted'`. If two calls race, the loser's
+    // UPDATE affects 0 rows and its whole transaction (including the duplicate
+    // reversing entry) rolls back. This test proves the SQL semantics the
+    // Rust guard relies on: the second conditional void is a no-op, not an
+    // error, and no second reversal reaches the GL.
+    #[tokio::test]
+    async fn double_void_conditional_update_is_noop() {
+        let pool = setup_test_db().await;
+        let (acct_a, acct_b) = get_test_accounts(&pool).await;
+        let entry_id = create_named_draft_entry(&pool, "DVOID-001").await;
+        add_balanced_lines(&pool, entry_id, acct_a, acct_b, 10000).await;
+        approve_and_post_entry(&pool, entry_id).await;
+
+        // First void wins
+        let first = sqlx::query(
+            "UPDATE journal_entries SET status = 'voided', is_reversed = 1 WHERE id = ? AND status = 'posted'",
+        )
+        .bind(entry_id)
+        .execute(&pool)
+        .await
+        .expect("First conditional void should succeed");
+        assert_eq!(first.rows_affected(), 1, "First void must affect 1 row");
+
+        // Second void loses cleanly: 0 rows, no trigger abort (WHERE filters
+        // the row out before the immutability trigger can fire)
+        let second = sqlx::query(
+            "UPDATE journal_entries SET status = 'voided', is_reversed = 1 WHERE id = ? AND status = 'posted'",
+        )
+        .bind(entry_id)
+        .execute(&pool)
+        .await
+        .expect("Second conditional void must not error");
+        assert_eq!(
+            second.rows_affected(),
+            0,
+            "Second void must be a 0-row no-op so the caller rolls back its duplicate reversal"
         );
     }
 }

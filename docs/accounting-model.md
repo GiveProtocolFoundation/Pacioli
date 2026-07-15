@@ -82,11 +82,48 @@ entry balances in USD exactly ($150.00 = $100.00 + $50.00).
 - **Lifecycle:** `draft → approved → posted`, with `voided` as the only
   terminal correction state. Drafts may be edited freely. Posted entries
   are immutable at the data layer (enforced by triggers).
+- **Approval gate (Phase 2):** every entry must be approved before it can
+  be posted. Direct `draft → posted` transitions are blocked by database
+  triggers. Posting is atomic and idempotent: the conditional UPDATE posts
+  exactly once even under concurrent calls, and re-posting an
+  already-posted entry is a success no-op (returns the entry unchanged,
+  `posted_at` untouched).
 - **Corrections are reversing entries.** A posted entry is never edited or
   deleted. Voiding a posted entry generates and posts a full reversing
   entry, links the pair (`reversed_by_entry_id`), and records who voided
-  it and why. (The legacy flag-flip void is replaced in Phase 2.)
+  it and why.
 - Adjustments follow the same rule: new adjusting entries, never edits.
+
+### Corrections and reversals
+
+When a posted entry must be corrected, the engine generates a **reversing
+entry** rather than editing or deleting the original. This preserves the
+complete audit trail required for CPA review.
+
+**Mechanism (implemented in Phase 2):**
+
+1. The system creates a new journal entry with the same lines but debit
+   and credit sides swapped (both functional-currency minor units and
+   token quantities are preserved).
+2. The reversing entry's description reads `Reversal of entry #<entry_number>`;
+   its `origin` is copied from the original; its entry date is the date of
+   the void operation.
+3. The reversing entry is posted through the standard balanced-posting
+   path (it must pass `PostedEntry` validation and database triggers).
+4. The original entry is marked `status='voided'`, `is_reversed=1`, and
+   `reversed_by_entry_id` is populated with the reversing entry's ID.
+
+**Reporting convention:** Both the original and the reversing entry remain
+in the general ledger and all financial reports. Their net effect is zero.
+`voided` is a lifecycle marker meaning "this entry has been reversed"; it
+is never used as an exclusion filter in views or queries. The M4 views
+(`v_trial_balance`, `v_account_balances`, `v_balance_sheet`,
+`v_income_statement`) include voided entries because they filter on
+`is_posted=1`, which is true for both the original (before voiding sets
+`is_posted` state) and the reversing entry.
+
+**Frozen entries:** Once voided, the original entry is immutable — the
+database triggers prevent any further status changes from `voided`.
 
 ## 5. Approval gate
 

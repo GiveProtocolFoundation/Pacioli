@@ -433,11 +433,13 @@ pub fn run() {
             api::accounting::get_journal_entries,
             api::accounting::get_journal_entry,
             api::accounting::create_journal_entry,
+            api::accounting::approve_journal_entry,
             api::accounting::post_journal_entry,
             api::accounting::void_journal_entry,
             api::accounting::auto_classify_transaction,
             api::accounting::update_transaction_classification,
             api::accounting::get_account_balances,
+            api::accounting::get_account_balances_by_asset,
             api::accounting::get_trial_balance,
             api::accounting::get_unclassified_transaction_count,
             api::accounting::get_draft_journal_entry_count
