@@ -20,12 +20,12 @@ import JournalEntryDrawer from './JournalEntryDrawer'
 
 type StatusFilter = 'all' | 'draft' | 'posted' | 'void'
 
-/** Derives a display status from journal entry booleans */
+/** Derives a display status from the lifecycle status column */
 function getEntryStatus(
   entry: JournalEntryWithLines
 ): 'draft' | 'posted' | 'void' {
-  if (entry.isReversed) return 'void'
-  if (entry.isPosted) return 'posted'
+  if (entry.status === 'voided') return 'void'
+  if (entry.status === 'posted') return 'posted'
   return 'draft'
 }
 
@@ -327,11 +327,11 @@ const JournalEntries: React.FC = () => {
               {filteredEntries.map(entry => {
                 const status = getEntryStatus(entry)
                 const totalDebits = entry.lines.reduce(
-                  (sum, l) => sum + (l.debitAmount as unknown as number),
+                  (sum, l) => sum + l.debitMinor,
                   0
                 )
                 const totalCredits = entry.lines.reduce(
-                  (sum, l) => sum + (l.creditAmount as unknown as number),
+                  (sum, l) => sum + l.creditMinor,
                   0
                 )
                 const isExpanded = expandedId === entry.id
@@ -370,10 +370,10 @@ const JournalEntries: React.FC = () => {
                         {refDisplay}
                       </td>
                       <td className="px-4 py-3 text-sm text-right font-mono text-[#11202B] dark:text-[#EAF3F2]">
-                        {totalDebits.toFixed(2)}
+                        {(totalDebits / 100).toFixed(2)}
                       </td>
                       <td className="px-4 py-3 text-sm text-right font-mono text-[#11202B] dark:text-[#EAF3F2]">
-                        {totalCredits.toFixed(2)}
+                        {(totalCredits / 100).toFixed(2)}
                       </td>
                       <td className="px-4 py-3 text-center">
                         <StatusBadge status={status} />
@@ -429,13 +429,13 @@ const JournalEntries: React.FC = () => {
                                     {resolveAccountName(line.glAccountId)}
                                   </td>
                                   <td className="py-1.5 px-4 text-right font-mono text-[#11202B] dark:text-[#EAF3F2]">
-                                    {(line.debitAmount as unknown as number) > 0
-                                      ? (line.debitAmount as unknown as number).toFixed(2)
+                                    {line.debitMinor > 0
+                                      ? (line.debitMinor / 100).toFixed(2)
                                       : ''}
                                   </td>
                                   <td className="py-1.5 px-4 text-right font-mono text-[#11202B] dark:text-[#EAF3F2]">
-                                    {(line.creditAmount as unknown as number) > 0
-                                      ? (line.creditAmount as unknown as number).toFixed(2)
+                                    {line.creditMinor > 0
+                                      ? (line.creditMinor / 100).toFixed(2)
                                       : ''}
                                   </td>
                                   <td className="py-1.5 pl-4 text-[#294050] dark:text-[#9FB4BE]">
