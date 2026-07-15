@@ -96,11 +96,13 @@ describe('useBlockSubscription — service contracts', () => {
 
     expect(capturedCb).not.toBeNull()
     if (!capturedCb) throw new Error('capturedCb was not set by mock')
+    // TS can't narrow closure-captured let vars; bind to const after guard
+    const cb = capturedCb as (header: HeaderLike) => void
 
     // Simulate blocks
-    capturedCb({ number: { toNumber: () => 100 } })
-    capturedCb({ number: { toNumber: () => 101 } })
-    capturedCb({ number: { toNumber: () => 102 } })
+    cb({ number: { toNumber: () => 100 } })
+    cb({ number: { toNumber: () => 101 } })
+    cb({ number: { toNumber: () => 102 } })
 
     expect(blockNumbers).toEqual([100, 101, 102])
   })
@@ -149,9 +151,10 @@ describe('useBlockSubscription — service contracts', () => {
 
     // Rapid blocks
     if (!capturedCb) throw new Error('capturedCb was not set by mock')
-    capturedCb({ number: { toNumber: () => 100 } })
-    capturedCb({ number: { toNumber: () => 101 } })
-    capturedCb({ number: { toNumber: () => 102 } })
+    const cb = capturedCb as (header: HeaderLike) => void
+    cb({ number: { toNumber: () => 100 } })
+    cb({ number: { toNumber: () => 101 } })
+    cb({ number: { toNumber: () => 102 } })
 
     // Not yet refreshed
     expect(refreshCount).toBe(0)
