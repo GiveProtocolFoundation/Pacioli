@@ -61,50 +61,72 @@ pub struct ProviderConfig {
     pub base_url: Option<String>,
 }
 
+/// Chat message role, following the standard system/user/assistant convention
+/// used by all major LLM providers.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum Role {
+    /// Instructions that frame the model's behaviour for the conversation.
     System,
+    /// A message from the human operator or upstream caller.
     User,
+    /// A message produced by the model.
     Assistant,
 }
 
+/// A single message in a chat conversation, pairing a [`Role`] with its text.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ChatMessage {
+    /// Who produced this message.
     pub role: Role,
+    /// The textual content of the message.
     pub content: String,
 }
 
+/// Parameters for a chat-completion call sent to a [`ChatCompletionProvider`].
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ChatRequest {
+    /// Ordered conversation history to send to the model.
     pub messages: Vec<ChatMessage>,
+    /// Optional cap on the number of tokens the model may generate.
     pub max_tokens: Option<u32>,
+    /// Sampling temperature; lower values are more deterministic.
     pub temperature: Option<f32>,
 }
 
+/// The result of a non-streaming chat-completion call.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ChatResponse {
+    /// The model's generated text.
     pub content: String,
-    /// Provider-reported token usage, when available.
+    /// Provider-reported input token usage, when available.
     pub input_tokens: Option<u64>,
+    /// Provider-reported output token usage, when available.
     pub output_tokens: Option<u64>,
 }
 
 /// One incremental chunk of a streamed completion.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ChatChunk {
+    /// The incremental text fragment produced by the model in this chunk.
     pub delta: String,
+    /// `true` when the model has finished generating and this is the final chunk.
     pub done: bool,
 }
 
+/// Errors that can occur during provider resolution or chat completion.
 #[derive(Debug, thiserror::Error)]
 pub enum IntelligenceError {
+    /// The requested [`ProviderKind`] has no concrete implementation yet.
     #[error("provider not implemented yet: {0:?}")]
     NotImplemented(ProviderKind),
+    /// The supplied [`ProviderConfig`] is invalid (e.g. missing required fields).
     #[error("provider configuration invalid: {0}")]
     InvalidConfig(String),
+    /// The provider does not support the streaming completion path.
     #[error("streaming is not supported by this provider")]
     StreamingUnsupported,
+    /// A network or provider-side error during the completion request.
     #[error("provider request failed: {0}")]
     Request(String),
 }
@@ -155,6 +177,7 @@ pub enum Provider {
 }
 
 impl Provider {
+    /// Dispatch a chat-completion request to whichever backend this provider wraps.
     pub async fn complete(&self, request: &ChatRequest) -> Result<ChatResponse, IntelligenceError> {
         match self {
             Provider::Stub(p) => p.complete(request).await,
