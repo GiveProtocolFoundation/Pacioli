@@ -98,11 +98,12 @@ describe('useBlockSubscription — service contracts', () => {
     )
 
     expect(capturedCb).not.toBeNull()
+    if (!capturedCb) throw new Error('capturedCb was not set by mock')
 
     // Simulate blocks
-    capturedCb!({ number: { toNumber: () => 100 } })
-    capturedCb!({ number: { toNumber: () => 101 } })
-    capturedCb!({ number: { toNumber: () => 102 } })
+    capturedCb({ number: { toNumber: () => 100 } })
+    capturedCb({ number: { toNumber: () => 101 } })
+    capturedCb({ number: { toNumber: () => 102 } })
 
     expect(blockNumbers).toEqual([100, 101, 102])
   })
@@ -155,9 +156,10 @@ describe('useBlockSubscription — service contracts', () => {
     )
 
     // Rapid blocks
-    capturedCb!({ number: { toNumber: () => 100 } })
-    capturedCb!({ number: { toNumber: () => 101 } })
-    capturedCb!({ number: { toNumber: () => 102 } })
+    if (!capturedCb) throw new Error('capturedCb was not set by mock')
+    capturedCb({ number: { toNumber: () => 100 } })
+    capturedCb({ number: { toNumber: () => 101 } })
+    capturedCb({ number: { toNumber: () => 102 } })
 
     // Not yet refreshed
     expect(refreshCount).toBe(0)
