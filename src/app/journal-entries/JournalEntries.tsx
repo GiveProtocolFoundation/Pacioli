@@ -12,10 +12,7 @@ import {
   ChevronRight,
 } from 'lucide-react'
 import { useNavBadges } from '../../contexts/NavBadgeContext'
-import type {
-  JournalEntryWithLines,
-  GLAccount,
-} from '../../types/database'
+import type { JournalEntryWithLines, GLAccount } from '../../types/database'
 import JournalEntryDrawer from './JournalEntryDrawer'
 
 type StatusFilter = 'all' | 'draft' | 'posted' | 'void'
@@ -147,12 +144,9 @@ const JournalEntries: React.FC = () => {
     [setSearchParams]
   )
 
-  const handleToggleExpand = useCallback(
-    (id: number) => {
-      setExpandedId(prev => (prev === id ? null : id))
-    },
-    []
-  )
+  const handleToggleExpand = useCallback((id: number) => {
+    setExpandedId(prev => (prev === id ? null : id))
+  }, [])
 
   const clearEditingEntry = useCallback(() => setEditingEntry(undefined), []) // skipcq: JS-W1042 — React setState requires explicit argument
 
@@ -210,7 +204,9 @@ const JournalEntries: React.FC = () => {
 
   const resolveAccountName = (glAccountId: number) => {
     const acct = accountMap.get(glAccountId)
-    return acct ? `${acct.accountNumber} · ${acct.accountName}` : `#${glAccountId}`
+    return acct
+      ? `${acct.accountNumber} · ${acct.accountName}`
+      : `#${glAccountId}`
   }
 
   return (

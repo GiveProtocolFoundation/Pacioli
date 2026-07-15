@@ -270,7 +270,10 @@ pub struct PostedEntryLine {
     /// Credit value in functional-currency minor units (USD cents).
     pub credit_minor: i64,
     /// Token quantity as canonical decimal (rust_decimal). NULL for fiat-only.
-    #[serde(serialize_with = "serialize_opt_decimal", deserialize_with = "deserialize_opt_decimal")]
+    #[serde(
+        serialize_with = "serialize_opt_decimal",
+        deserialize_with = "deserialize_opt_decimal"
+    )]
     pub quantity: Option<Decimal>,
     /// Asset identifier. NULL for measurement lines.
     pub asset_id: Option<String>,
@@ -279,7 +282,10 @@ pub struct PostedEntryLine {
 }
 
 /// Serializes Option<Decimal> as Option<String>.
-fn serialize_opt_decimal<S: serde::Serializer>(val: &Option<Decimal>, ser: S) -> Result<S::Ok, S::Error> {
+fn serialize_opt_decimal<S: serde::Serializer>(
+    val: &Option<Decimal>,
+    ser: S,
+) -> Result<S::Ok, S::Error> {
     match val {
         Some(d) => ser.serialize_some(&d.to_string()),
         None => ser.serialize_none(),
@@ -287,7 +293,9 @@ fn serialize_opt_decimal<S: serde::Serializer>(val: &Option<Decimal>, ser: S) ->
 }
 
 /// Deserializes Option<String> to Option<Decimal>.
-fn deserialize_opt_decimal<'de, D: serde::Deserializer<'de>>(de: D) -> Result<Option<Decimal>, D::Error> {
+fn deserialize_opt_decimal<'de, D: serde::Deserializer<'de>>(
+    de: D,
+) -> Result<Option<Decimal>, D::Error> {
     let opt: Option<String> = Option::deserialize(de)?;
     match opt {
         Some(s) => Decimal::from_str(&s)
@@ -368,9 +376,13 @@ impl PostedEntry {
         for line in &lines {
             if let (Some(ref asset_id), Some(ref qty)) = (&line.asset_id, &line.quantity) {
                 if line.debit_minor > 0 {
-                    *asset_debits.entry(asset_id.clone()).or_insert(Decimal::ZERO) += qty;
+                    *asset_debits
+                        .entry(asset_id.clone())
+                        .or_insert(Decimal::ZERO) += qty;
                 } else {
-                    *asset_credits.entry(asset_id.clone()).or_insert(Decimal::ZERO) += qty;
+                    *asset_credits
+                        .entry(asset_id.clone())
+                        .or_insert(Decimal::ZERO) += qty;
                 }
             }
         }
@@ -1719,7 +1731,11 @@ mod tests {
         // Assets appearing on only one side are valid (cross-asset movements).
         //
         // With this interpretation, the swap example succeeds.
-        assert!(result.is_ok(), "Swap example should succeed: {}", result.unwrap_err());
+        assert!(
+            result.is_ok(),
+            "Swap example should succeed: {}",
+            result.unwrap_err()
+        );
     }
 
     #[test]
@@ -1743,7 +1759,10 @@ mod tests {
                 description: None,
             },
         ]);
-        assert!(result.is_err(), "Same-asset quantity imbalance must be rejected");
+        assert!(
+            result.is_err(),
+            "Same-asset quantity imbalance must be rejected"
+        );
         let err = result.unwrap_err();
         assert!(
             err.contains("Per-asset quantity imbalance"),
@@ -1848,7 +1867,10 @@ mod tests {
             .execute(&pool)
             .await;
 
-        assert!(result.is_err(), "1-cent minor-unit imbalance must be rejected by trigger");
+        assert!(
+            result.is_err(),
+            "1-cent minor-unit imbalance must be rejected by trigger"
+        );
         let err = result.unwrap_err().to_string();
         assert!(
             err.contains("does not balance"),
@@ -1923,7 +1945,10 @@ mod tests {
             .execute(&pool)
             .await;
 
-        assert!(result.is_err(), "Per-asset quantity imbalance must be rejected by trigger");
+        assert!(
+            result.is_err(),
+            "Per-asset quantity imbalance must be rejected by trigger"
+        );
         let err = result.unwrap_err().to_string();
         assert!(
             err.contains("Per-asset quantity imbalance"),

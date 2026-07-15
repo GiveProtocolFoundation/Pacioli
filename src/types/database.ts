@@ -292,7 +292,11 @@ export interface CostBasisPreference {
 // CLASSIFICATION STATUS (multi_chain_transactions)
 // =============================================================================
 
-export type ClassificationStatus = 'unclassified' | 'classified' | 'ignored' | 'split'
+export type ClassificationStatus =
+  | 'unclassified'
+  | 'classified'
+  | 'ignored'
+  | 'split'
 
 // =============================================================================
 // JOURNAL ENTRY WITH LINES (API response shape from Rust backend)

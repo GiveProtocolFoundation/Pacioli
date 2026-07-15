@@ -109,7 +109,9 @@ const TrialBalance: React.FC = () => {
                     {row.accountType}
                   </td>
                   <td className="px-5 py-2.5 text-sm text-right font-mono text-[#11202B] dark:text-[#EAF3F2]">
-                    {row.debitBalance > 0 ? (row.debitBalance / 100).toFixed(2) : ''}
+                    {row.debitBalance > 0
+                      ? (row.debitBalance / 100).toFixed(2)
+                      : ''}
                   </td>
                   <td className="px-5 py-2.5 text-sm text-right font-mono text-[#11202B] dark:text-[#EAF3F2]">
                     {row.creditBalance > 0
