@@ -38,7 +38,7 @@ const TrialBalance: React.FC = () => {
       debits += r.debitBalance
       credits += r.creditBalance
     }
-    return { debits, credits, isBalanced: Math.abs(debits - credits) < 0.01 }
+    return { debits, credits, isBalanced: debits === credits }
   }, [rows])
 
   return (
@@ -109,11 +109,13 @@ const TrialBalance: React.FC = () => {
                     {row.accountType}
                   </td>
                   <td className="px-5 py-2.5 text-sm text-right font-mono text-[#11202B] dark:text-[#EAF3F2]">
-                    {row.debitBalance > 0 ? row.debitBalance.toFixed(2) : ''}
+                    {row.debitBalance > 0
+                      ? (row.debitBalance / 100).toFixed(2)
+                      : ''}
                   </td>
                   <td className="px-5 py-2.5 text-sm text-right font-mono text-[#11202B] dark:text-[#EAF3F2]">
                     {row.creditBalance > 0
-                      ? row.creditBalance.toFixed(2)
+                      ? (row.creditBalance / 100).toFixed(2)
                       : ''}
                   </td>
                 </tr>
@@ -128,10 +130,10 @@ const TrialBalance: React.FC = () => {
                   Totals
                 </td>
                 <td className="px-5 py-3 text-sm text-right font-mono text-[#11202B] dark:text-[#EAF3F2]">
-                  {totals.debits.toFixed(2)}
+                  {(totals.debits / 100).toFixed(2)}
                 </td>
                 <td className="px-5 py-3 text-sm text-right font-mono text-[#11202B] dark:text-[#EAF3F2]">
-                  {totals.credits.toFixed(2)}
+                  {(totals.credits / 100).toFixed(2)}
                 </td>
               </tr>
               <tr className="bg-[#F7FAFA] dark:bg-[#11202B]">
@@ -145,7 +147,7 @@ const TrialBalance: React.FC = () => {
                 >
                   {totals.isBalanced
                     ? 'Trial balance is in balance'
-                    : `Out of balance by ${Math.abs(totals.debits - totals.credits).toFixed(2)}`}
+                    : `Out of balance by ${(Math.abs(totals.debits - totals.credits) / 100).toFixed(2)}`}
                 </td>
               </tr>
             </tfoot>

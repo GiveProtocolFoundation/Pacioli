@@ -77,10 +77,15 @@ export interface CreateJournalEntryRequest {
 export interface CreateJournalEntryLineRequest {
   glAccountId: number
   tokenId?: number
-  debitAmount: Decimal
-  creditAmount: Decimal
+  /** Debit value in functional-currency minor units (USD cents). */
+  debitMinor: number
+  /** Credit value in functional-currency minor units (USD cents). */
+  creditMinor: number
+  /** Token quantity as canonical decimal string. Null for pure-fiat lines. */
+  quantity?: string
+  /** Asset identifier: 'USD' for fiat, 'token:<id>' for tokens. */
+  assetId?: string
   description?: string
-  lineNumber?: number
 }
 
 export interface RecordDisposalRequest {
