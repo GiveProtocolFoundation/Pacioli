@@ -4,9 +4,9 @@ Session constitution: `SCOPE.md` (repo root). Stage 1 mandate: GIV-668.
 Gate 1: CPA-reviewed statements from real imported transactions, manually
 classified through the approval queue.
 
-**Current phase: 1 (Balance enforcement at the data layer) — migration plan
-M1–M3 + recommendations Q1–Q5 approved by board 2026-07-15; implementation
-delegated to Engineer. Conventions doc: `docs/accounting-model.md`.**
+**Current phase: 2 (Posting engine and general ledger) — Phase 1 landed;
+Phase 2 implemented by Engineer (GIV-677): approval gate, atomic idempotent
+posting, reversing entries, per-asset balances.**
 
 ## Phase Checklist
 
@@ -16,7 +16,9 @@ delegated to Engineer. Conventions doc: `docs/accounting-model.md`.**
       (GIV-665 pre-landed triggers; M1–M3 migrations, `PostedEntry` Rust type,
       exact-integer balance enforcement, per-asset quantity balance,
       frontend minor-unit display — all landed by Engineer, GIV-673)
-- [ ] **Phase 2 — Posting engine and general ledger**
+- [x] **Phase 2 — Posting engine and general ledger**
+      (GIV-677: approval gate, atomic idempotent posting, reversing entries,
+      per-asset balances, trial balance verification — Engineer)
 - [ ] **Phase 3 — Approval queue and manual journal entry UI**
 - [ ] **Phase 4 — Classification workflow: raw transactions → draft entries**
 - [ ] **Phase 5 — Periods, close, and lock**
@@ -266,3 +268,35 @@ persistence path; `f64` removed from accounting money structs.
     backstop layer. The Rust `PostedEntry` layer compares exactly via
     `rust_decimal` and is the authoritative gate; revisit if a non-Rust
     writer ever appears.
+- **Session 5 (2026-07-15, Engineer — GIV-677):** Implemented Phase 2
+  (posting engine + GL):
+  - **M5** (`20260715000005_tighten_state_machine.sql`): tightened status
+    transition trigger to remove `draft→posted` (requires approval);
+    balance-validation trigger now fires only on `approved→posted`.
+    Verified M4 views include voided entries (is_posted=1 filter already
+    covers them — no view changes needed).
+  - **`approve_journal_entry` Tauri command:** transitions `draft→approved`,
+    sets `approved_by`/`approved_at`. Only drafts can be approved.
+  - **Posting hardening:** `post_journal_entry` now requires status=approved;
+    uses atomic conditional `UPDATE ... WHERE status='approved'` with
+    `rows_affected` check for race-free posting. Idempotent: re-posting a
+    posted entry returns it unchanged (no-op, `posted_at` untouched).
+  - **Reversing entries:** `void_journal_entry` replaced from flag-flip to
+    generating a full reversing entry: same lines with debit/credit swapped,
+    posted through the balanced path, original marked `status='voided',
+    is_reversed=1, reversed_by_entry_id=<new_id>`. Both entries remain in
+    GL, net effect zero. Convention documented in `docs/accounting-model.md`
+    ("Corrections and reversals" section).
+  - **Per-asset balances:** new `get_account_balances_by_asset` Tauri command
+    and `AssetBalance` type. Quantity sums computed in Rust via `rust_decimal`
+    (never `CAST AS REAL` in SQL for reporting).
+  - **Tests:** 6 new Phase 2 acceptance tests added: draft-cannot-post-
+    without-approval (trigger), re-post is no-op, void generates reversing
+    entry with GL net zero, voided entry frozen, trial balance debits==credits,
+    per-asset balances correct for swap example. All existing tests updated
+    for approval gate (draft→approved→posted path). Chart of accounts seed
+    verified: covers small-business chart with correct account_type/
+    normal_balance.
+  - **Decisions:** no chart-of-accounts changes needed (seed is adequate);
+    no view changes needed (voided entries correctly included via is_posted=1
+    filter).
