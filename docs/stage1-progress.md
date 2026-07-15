@@ -284,7 +284,7 @@ persistence path; `f64` removed from accounting money structs.
   - **Reversing entries:** `void_journal_entry` replaced from flag-flip to
     generating a full reversing entry: same lines with debit/credit swapped,
     posted through the balanced path, original marked `status='voided',
-    is_reversed=1, reversed_by_entry_id=<new_id>`. Both entries remain in
+is_reversed=1, reversed_by_entry_id=<new_id>`. Both entries remain in
     GL, net effect zero. Convention documented in `docs/accounting-model.md`
     ("Corrections and reversals" section).
   - **Per-asset balances:** new `get_account_balances_by_asset` Tauri command
