@@ -12,9 +12,10 @@ delegated to Engineer. Conventions doc: `docs/accounting-model.md`.**
 
 - [x] **Phase 0 — Reconnaissance and tracker** (report below; migration plan
       approved by board 2026-07-15)
-- [ ] **Phase 1 — Balance enforcement at the data layer**
-      (~40% pre-landed by GIV-665, see report §3; M1–M3 + `PostedEntry`
-      delegated to Engineer, `docs/accounting-model.md` authored)
+- [x] **Phase 1 — Balance enforcement at the data layer**
+      (GIV-665 pre-landed triggers; M1–M3 migrations, `PostedEntry` Rust type,
+      exact-integer balance enforcement, per-asset quantity balance,
+      frontend minor-unit display — all landed by Engineer, GIV-673)
 - [ ] **Phase 2 — Posting engine and general ledger**
 - [ ] **Phase 3 — Approval queue and manual journal entry UI**
 - [ ] **Phase 4 — Classification workflow: raw transactions → draft entries**
@@ -204,3 +205,64 @@ persistence path; `f64` removed from accounting money structs.
   (per-asset balance), Rust `PostedEntry` constructible only from balanced
   lines, and the acceptance test that no public API path can persist an
   unbalanced posted entry. Docs-only session; no engine code touched.
+- **Session 3 (2026-07-14, Engineer — GIV-673):** Implemented Phase 1
+  migrations and Rust/frontend changes:
+  - **M1** (`20260715000001_journal_entry_lifecycle.sql`): lifecycle
+    columns (`entity_id`, `status`, `origin`, `approved_by`, `approved_at`,
+    `posted_at`); backfilled status from `is_posted`; rebuilt GIV-665
+    triggers against `status` column; state machine: draft→approved→posted,
+    voided terminal. Same-write pattern keeps `is_posted` synced (no
+    bidirectional triggers — they cause circular firing).
+  - **M2** (`20260715000002_exact_decimal_amounts.sql`): `debit_minor`/
+    `credit_minor` (INTEGER, USD cents) + `quantity` (TEXT canonical decimal);
+    backfilled from `ROUND(amount*100)`; one-sided enforcement triggers;
+    replaced float-tolerance balance triggers with exact-integer comparison
+    (zero tolerance).
+  - **M3** (`20260715000003_per_asset_balance.sql`): `asset_id` TEXT
+    column (`'USD'`/`'token:<id>'`); per-asset quantity balance trigger
+    checks assets appearing on BOTH debit and credit sides (one-sided
+    assets are valid for swaps/measurement lines).
+  - **M4** (`20260715000004_update_views_minor_units.sql`): rebuilt
+    `v_account_balances`, `v_trial_balance`, `v_balance_sheet`,
+    `v_income_statement` to use minor-unit columns.
+  - **Rust**: `PostedEntry` type (private fields, constructor validates:
+    ≥2 lines, one-sided, non-zero, exact functional-currency balance,
+    per-asset quantity balance for dual-sided assets). Removed `f64` from
+    `JournalEntryLineInput`, `AccountBalance`, `TrialBalanceRow`. Updated
+    `create_journal_entry`, `post_journal_entry`, `auto_classify_transaction`
+    for minor units.
+  - **Frontend**: `JournalEntries.tsx`, `JournalEntryDrawer.tsx`,
+    `TrialBalance.tsx` updated for minor-unit display (`/100` at boundary).
+    Type definitions updated in `database.ts` and `accounting.ts`.
+  - **Tests**: 23 accounting tests pass (10 GIV-665 trigger tests updated,
+    7 PostedEntry constructor tests, 1 swap worked example from
+    `accounting-model.md`, 5 direct-SQL trigger tests). Full suite: 200+
+    tests green, clippy clean.
+- **Session 4 (2026-07-15, CTO — GIV-673 review):** Reviewed and hardened
+  PR #213 before merge. Three gaps closed:
+  - **Negative minor units** were accepted end-to-end: a `-100` debit is a
+    credit smuggled onto the wrong side, so `(+100 debit, -100 debit)`
+    passed the SUM balance checks while breaking the trial balance —
+    violating the Phase 1 acceptance gate. Now rejected in
+    `PostedEntry::new`, `create_journal_entry`, and the M2 one-sided
+    triggers (INSERT + UPDATE).
+  - **Legacy born-posted bypass**: the rebuilt born-posted trigger checked
+    `status` only, so `INSERT ... is_posted=1, status='draft'` skipped the
+    balance trigger while M4 views (which filter on `is_posted=1`) counted
+    the entry as posted. Born-posted trigger now also blocks
+    `NEW.is_posted=1`, and a new coherence trigger forces same-write:
+    `is_posted=1` requires `status IN ('posted','voided')` in the same
+    UPDATE (safe — every Rust write path already does same-write).
+  - **Void path missed same-write**: `void_journal_entry` set
+    `is_reversed=1` only, leaving `status='posted'`, so the status-based UI
+    showed voided entries as posted. Now sets `status='voided'` in the same
+    write and enforces the state machine (only posted entries can be
+    voided).
+  - 4 regression tests added (27 accounting tests total; full suite 198
+    green; CI-equivalent clippy + fmt clean).
+  - **Documented limitation** (non-blocking): the per-asset quantity
+    trigger compares `CAST(quantity AS REAL)` — SQLite has no decimal type,
+    so quantities beyond ~15 significant digits could false-pass at the SQL
+    backstop layer. The Rust `PostedEntry` layer compares exactly via
+    `rust_decimal` and is the authoritative gate; revisit if a non-Rust
+    writer ever appears.

@@ -1,10 +1,7 @@
 import React, { useState, useCallback, useMemo } from 'react'
 import { invoke } from '@tauri-apps/api/core'
 import { X, Plus, Trash2 } from 'lucide-react'
-import type {
-  GLAccount,
-  JournalEntryWithLines,
-} from '../../types/database'
+import type { GLAccount, JournalEntryWithLines } from '../../types/database'
 
 interface LineInput {
   id: string
@@ -58,14 +55,9 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
       ? entry.lines.map(l => ({
           id: nextLineId(),
           glAccountId: l.glAccountId,
-          debitAmount:
-            (l.debitAmount as unknown as number) > 0
-              ? String(l.debitAmount)
-              : '',
+          debitAmount: l.debitMinor > 0 ? (l.debitMinor / 100).toFixed(2) : '',
           creditAmount:
-            (l.creditAmount as unknown as number) > 0
-              ? String(l.creditAmount)
-              : '',
+            l.creditMinor > 0 ? (l.creditMinor / 100).toFixed(2) : '',
           description: l.description ?? '',
         }))
       : [emptyLine(), emptyLine()]
@@ -85,11 +77,7 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
   const isBalanced = difference < 0.01 && totalDebits > 0
 
   const handleLineChange = useCallback(
-    (
-      index: number,
-      field: keyof LineInput,
-      value: string | number
-    ) => {
+    (index: number, field: keyof LineInput, value: string | number) => {
       setLines(prev => {
         const updated = [...prev]
         updated[index] = { ...updated[index], [field]: value }
@@ -120,6 +108,10 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
     [lines.length]
   )
 
+  /** Converts a dollar string to integer minor units (cents). */
+  const toMinor = (val: string): number =>
+    Math.round((parseFloat(val) || 0) * 100)
+
   const handleSaveDraft = useCallback(async () => {
     setError(null)
     setSaving(true)
@@ -134,8 +126,10 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
           .map(l => ({
             gl_account_id: l.glAccountId as number,
             token_id: null,
-            debit_amount: parseFloat(l.debitAmount) || 0,
-            credit_amount: parseFloat(l.creditAmount) || 0,
+            debit_minor: toMinor(l.debitAmount),
+            credit_minor: toMinor(l.creditAmount),
+            quantity: null,
+            asset_id: 'USD',
             description: l.description || null,
           })),
       }
@@ -162,8 +156,10 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
           .map(l => ({
             gl_account_id: l.glAccountId as number,
             token_id: null,
-            debit_amount: parseFloat(l.debitAmount) || 0,
-            credit_amount: parseFloat(l.creditAmount) || 0,
+            debit_minor: toMinor(l.debitAmount),
+            credit_minor: toMinor(l.creditAmount),
+            quantity: null,
+            asset_id: 'USD',
             description: l.description || null,
           })),
       }
@@ -180,13 +176,11 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
     }
   }, [entryDate, description, referenceNumber, lines, onSaved])
 
-  return ( // skipcq: JS-0415 — drawer layout requires nested containers
+  return (
+    // skipcq: JS-0415 — drawer layout requires nested containers
     <div className="fixed inset-0 z-50 flex justify-end">
       {/* Backdrop */}
-      <div
-        className="fixed inset-0 bg-black/40"
-        onClick={onClose}
-      />
+      <div className="fixed inset-0 bg-black/40" onClick={onClose} />
       {/* Drawer panel */}
       <div className="relative w-full max-w-2xl bg-[#F7FAFA] dark:bg-[#11202B] shadow-xl flex flex-col overflow-hidden">
         {/* Header */}
@@ -389,9 +383,7 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
                   : 'text-amber-600 dark:text-amber-400'
               }`}
             >
-              {isBalanced
-                ? 'Balanced'
-                : `Off by ${difference.toFixed(2)}`}
+              {isBalanced ? 'Balanced' : `Off by ${difference.toFixed(2)}`}
             </span>
           </div>
         </div>
@@ -407,7 +399,9 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
             </button>
             <button
               onClick={handleSaveDraft}
-              disabled={saving || lines.filter(l => l.glAccountId !== '').length < 2}
+              disabled={
+                saving || lines.filter(l => l.glAccountId !== '').length < 2
+              }
               className="px-4 py-2 text-sm rounded-lg border border-[#294050] text-[#294050] hover:bg-[#294050]/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Save Draft
