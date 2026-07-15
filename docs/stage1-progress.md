@@ -4,15 +4,17 @@ Session constitution: `SCOPE.md` (repo root). Stage 1 mandate: GIV-668.
 Gate 1: CPA-reviewed statements from real imported transactions, manually
 classified through the approval queue.
 
-**Current phase: 0 (Reconnaissance) — report below; migration plan awaiting
-board approval.**
+**Current phase: 1 (Balance enforcement at the data layer) — migration plan
+M1–M3 + recommendations Q1–Q5 approved by board 2026-07-15; implementation
+delegated to Engineer. Conventions doc: `docs/accounting-model.md`.**
 
 ## Phase Checklist
 
 - [x] **Phase 0 — Reconnaissance and tracker** (report below; migration plan
-      proposed, pending board approval)
+      approved by board 2026-07-15)
 - [ ] **Phase 1 — Balance enforcement at the data layer**
-      (~40% pre-landed by GIV-665, see report §3)
+      (~40% pre-landed by GIV-665, see report §3; M1–M3 + `PostedEntry`
+      delegated to Engineer, `docs/accounting-model.md` authored)
 - [ ] **Phase 2 — Posting engine and general ledger**
 - [ ] **Phase 3 — Approval queue and manual journal entry UI**
 - [ ] **Phase 4 — Classification workflow: raw transactions → draft entries**
@@ -176,9 +178,26 @@ persistence path; `f64` removed from accounting money structs.
 - 2026-07-14 — Phase 0 recon complete; GIV-665 (data-layer balance
   triggers) recognized as pre-landed Phase-1 work. Migration plan M1–M3
   submitted to board for approval (GIV-668 confirmation).
+- 2026-07-15 — **Board APPROVED the Phase 1 plan and all five
+  recommendations** (GIV-668 confirmation `a32590f3`, no overrides):
+  Q1 = INTEGER minor units + TEXT `rust_decimal` quantities, zero
+  tolerance; Q2 = functional-currency balance always + per-asset quantity
+  balance with explicit measurement lines; Q3 = `auto_classify_transaction`
+  parked, manual-only Stage 1, `origin='rule'` on Stage-2 re-enable;
+  Q4 = void → generated reversing entries (Phase 2); Q5 = web/IndexedDB
+  journal path deferred past Gate 1, SQLite is the system of record.
+  Conventions written up in `docs/accounting-model.md`.
 
 ### 8. Session log
 
 - **Session 1 (2026-07-14, CTO):** Phase 0 recon + this tracker. No
   functional changes. Next step: on board approval of §5/§6 → delegate
   Phase 1 implementation (M1–M3 + `PostedEntry` type + tests).
+- **Session 2 (2026-07-15, CTO):** Phase 0 acceptance gate cleared (board
+  approval). Authored `docs/accounting-model.md` (approved conventions,
+  measurement-line worked example, reserved sections for Phases 7/8).
+  Delegated Phase 1 implementation to Engineer as a GIV-668 child issue:
+  M1 (lifecycle + provenance columns), M2 (exact-decimal amounts), M3
+  (per-asset balance), Rust `PostedEntry` constructible only from balanced
+  lines, and the acceptance test that no public API path can persist an
+  unbalanced posted entry. Docs-only session; no engine code touched.
