@@ -621,7 +621,7 @@ const Navigation: React.FC<NavigationProps> = ({
       badge: pendingCount > 0 ? pendingCount : undefined,
       subItems: [
         { name: 'All', href: '/transactions?filter=all' },
-        { name: 'Unclassified', href: '/transactions?filter=unclassified', badge: unclassifiedTransactions },
+        { name: 'Classify', href: '/classification', badge: unclassifiedTransactions },
         { name: 'Classified', href: '/transactions?filter=classified' },
         { name: 'Ignored', href: '/transactions?filter=ignored' },
       ],
@@ -683,7 +683,7 @@ const Navigation: React.FC<NavigationProps> = ({
       badge: pendingCount > 0 ? pendingCount : undefined,
       subItems: [
         { name: 'All', href: '/transactions?filter=all' },
-        { name: 'Unclassified', href: '/transactions?filter=unclassified', badge: unclassifiedTransactions },
+        { name: 'Classify', href: '/classification', badge: unclassifiedTransactions },
         { name: 'Classified', href: '/transactions?filter=classified' },
         { name: 'Ignored', href: '/transactions?filter=ignored' },
       ],

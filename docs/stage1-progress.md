@@ -4,9 +4,9 @@ Session constitution: `SCOPE.md` (repo root). Stage 1 mandate: GIV-668.
 Gate 1: CPA-reviewed statements from real imported transactions, manually
 classified through the approval queue.
 
-**Current phase: 3 (Approval queue and manual journal entry UI) — Phases 1-2
-landed; Phase 3 implemented by Engineer (GIV-678): approval queue view,
-manual journal entry form, entry detail view with reversal linkage.**
+**Current phase: 4 (Classification workflow) — Phases 1-3 landed;
+Phase 4 implemented by Engineer (GIV-683): classification queue view,
+rust_decimal precision at the boundary, provenance linkage.**
 
 ## Phase Checklist
 
@@ -23,7 +23,10 @@ manual journal entry form, entry detail view with reversal linkage.**
       (GIV-678: approval queue with all lifecycle tabs, approve/post/void/demote
       actions, manual journal entry form with integer-math balance indicator,
       entry detail view with reversal linkage, per-asset quantity hints — Engineer)
-- [ ] **Phase 4 — Classification workflow: raw transactions → draft entries**
+- [x] **Phase 4 — Classification workflow: raw transactions → draft entries**
+      (GIV-683: classification queue view with auto/manual/skip actions,
+      rust_decimal precision at boundary, provenance: origin=rule for
+      auto-classified entries, classification_status flip — Engineer)
 - [ ] **Phase 5 — Periods, close, and lock**
 - [ ] **Phase 6 — Financial statements v1**
 - [ ] **Phase 7 — Cost basis engine (FIFO first)**
@@ -389,3 +392,44 @@ WHERE status='approved'` (the M5 state machine explicitly allows
      draft lines replaceable; posted lines still immutable) + 6 Vitest cases
      (negative-sign regression, leading decimal point). 38 accounting tests +
      33 utils tests green; tsc + eslint clean.
+- **Session 9 (2026-07-15, Engineer — GIV-683):** Implemented Phase 4
+  (classification workflow: raw transactions → draft journal entries):
+  - **Precision at the boundary (Inv-2):** replaced `f64` parsing in
+    `auto_classify_transaction` with `rust_decimal::Decimal` at the
+    boundary — `Decimal::from_str` → `* ONE_HUNDRED` → `.round()` → `i64`.
+    No float touches money. Raw string values in `multi_chain_transactions`
+    are never mutated (Inv-5).
+  - **Provenance (Inv-7):** added optional `origin` field to
+    `NewJournalEntryInput`; `create_journal_entry` now respects it
+    (defaults to 'manual'). `auto_classify_transaction` sets
+    `origin='rule'`. Every generated draft carries `rawTransactionId`;
+    classifying flips `classification_status` to 'classified' via the
+    existing `create_journal_entry` path.
+  - **Backend commands:** `get_unclassified_transactions` — returns all
+    rows with `classification_status='unclassified'` ordered by timestamp
+    DESC. `ignore_transaction` — sets status to 'ignored' (conditional
+    UPDATE, only unclassified→ignored). Both registered as Tauri commands.
+    `MultiChainTransaction` public struct added with `serde(rename_all =
+    "camelCase")` for frontend consumption.
+  - **Classification queue view** (`ClassificationQueue.tsx`): lists
+    unclassified raw transactions (chain, hash, type, value, fee,
+    timestamp). Three actions per row: Auto (calls
+    `auto_classify_transaction`), Manual (opens Phase 3
+    `JournalEntryDrawer` pre-filled with `rawTransactionId` +
+    description), Skip (calls `ignore_transaction` with optional reason
+    via confirmation modal). Route registered at `/classification`;
+    nav link replaces 'Unclassified' sub-item under Transactions.
+  - **JournalEntryDrawer enhancements:** new props `rawTransactionId`,
+    `initialLines`, `initialDescription` for pre-filling from the
+    classification queue. `rawTransactionId` passed through to
+    `create_journal_entry` (triggers classification_status flip).
+    `LineInput` interface exported for reuse.
+  - **TypeScript types:** `RawTransaction` interface added to
+    `database.ts`. `classificationUtils.ts` with `formatTimestamp`,
+    `truncateHash`, `displayTxType`.
+  - **Tests:** 7 Rust tests (rust_decimal boundary exact, zero/rounding,
+    auto-classify provenance + classification_status flip, ignore status
+    flip, raw tx immutability beyond classification_status, unclassified
+    count tracking, NewJournalEntryInput origin acceptance). 5 Vitest
+    tests (formatTimestamp, truncateHash, displayTxType, txTypeLabels).
+    No schema/migration changes.

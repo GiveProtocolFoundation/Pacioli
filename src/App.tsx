@@ -48,6 +48,9 @@ const JournalEntries = React.lazy(
 const ChartOfAccounts = React.lazy(() => import('./app/ledger/ChartOfAccounts'))
 const TrialBalance = React.lazy(() => import('./app/ledger/TrialBalance'))
 const Reconciliation = React.lazy(() => import('./app/ledger/Reconciliation'))
+const ClassificationQueue = React.lazy(
+  () => import('./app/classification/ClassificationQueue')
+)
 
 // Loading fallback component
 const LoadingFallback: React.FC = () => (
@@ -171,6 +174,7 @@ const MainRoutes: React.FC = () => (
       <Route path="/docs" element={<Docs />} />
       <Route path="/support" element={<Support />} />
       <Route path="/profile" element={<Profile />} />
+      <Route path="/classification" element={<ClassificationQueue />} />
       <Route path="/journal-entries" element={<JournalEntries />} />
       <Route path="/chart-of-accounts" element={<ChartOfAccounts />} />
       <Route path="/trial-balance" element={<TrialBalance />} />

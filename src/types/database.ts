@@ -298,6 +298,21 @@ export type ClassificationStatus =
   | 'ignored'
   | 'split'
 
+/** Raw multi-chain transaction row from the Rust backend (camelCase via serde). */
+export interface RawTransaction {
+  id: string
+  chainId: string
+  hash: string
+  fromAddress: string
+  toAddress: string | null
+  value: string
+  fee: string | null
+  timestamp: number
+  txType: string
+  status: string
+  classificationStatus: ClassificationStatus
+}
+
 // =============================================================================
 // JOURNAL ENTRY WITH LINES (API response shape from Rust backend)
 // =============================================================================
