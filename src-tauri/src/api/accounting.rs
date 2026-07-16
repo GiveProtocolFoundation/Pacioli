@@ -1,5 +1,6 @@
 use chrono::NaiveDateTime;
-use rust_decimal::Decimal;
+use rust_decimal::prelude::ToPrimitive;
+use rust_decimal::{Decimal, RoundingStrategy};
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 use std::collections::HashMap;
@@ -681,18 +682,23 @@ pub async fn create_journal_entry(
         })
         .map_err(|e| format!("Invalid date format: {e}"))?;
 
-    // Generate entry number
-    let count: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM journal_entries")
-        .fetch_one(&state.pool)
-        .await
-        .map_err(|e| e.to_string())?;
-    let entry_number = format!("JE-{:06}", count.0 + 1);
-
     let origin = input.origin.as_deref().unwrap_or("manual");
     let valid_origins = ["manual", "rule", "model"];
     if !valid_origins.contains(&origin) {
         return Err(format!("Invalid origin: {origin}"));
     }
+
+    // Single transaction: entry header + lines + classification flip commit or
+    // roll back together, so a failure cannot leave a half-written draft or a
+    // raw transaction marked classified without its journal entry.
+    let mut tx = state.pool.begin().await.map_err(|e| e.to_string())?;
+
+    // Generate entry number
+    let count: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM journal_entries")
+        .fetch_one(&mut *tx)
+        .await
+        .map_err(|e| e.to_string())?;
+    let entry_number = format!("JE-{:06}", count.0 + 1);
 
     let result = sqlx::query(
         r#"
@@ -705,7 +711,7 @@ pub async fn create_journal_entry(
     .bind(&input.description)
     .bind(&input.reference_number)
     .bind(origin)
-    .execute(&state.pool)
+    .execute(&mut *tx)
     .await
     .map_err(|e| e.to_string())?;
 
@@ -738,21 +744,32 @@ pub async fn create_journal_entry(
         .bind(&line.asset_id)
         .bind(&line.description)
         .bind(i as i64 + 1)
-        .execute(&state.pool)
+        .execute(&mut *tx)
         .await
         .map_err(|e| e.to_string())?;
     }
 
-    // If linked to a raw transaction, update its classification status
+    // If linked to a raw transaction, flip its classification status.
+    // Conditional on 'unclassified' so a double-submit (or auto-classify racing
+    // a manual classify) cannot create a second draft for the same raw tx or
+    // silently resurrect an ignored one; 0 rows -> roll back the whole entry.
     if let Some(ref tx_id) = input.raw_transaction_id {
-        sqlx::query(
-            "UPDATE multi_chain_transactions SET classification_status = 'classified' WHERE id = ?",
+        let flipped = sqlx::query(
+            "UPDATE multi_chain_transactions SET classification_status = 'classified' WHERE id = ? AND classification_status = 'unclassified'",
         )
         .bind(tx_id)
-        .execute(&state.pool)
+        .execute(&mut *tx)
         .await
         .map_err(|e| e.to_string())?;
+
+        if flipped.rows_affected() == 0 {
+            return Err(format!(
+                "Raw transaction {tx_id} not found or already classified/ignored"
+            ));
+        }
     }
+
+    tx.commit().await.map_err(|e| e.to_string())?;
 
     get_journal_entry(state, entry_id).await
 }
@@ -1210,13 +1227,13 @@ pub async fn auto_classify_transaction(
 ) -> Result<JournalEntryWithLines, String> {
     // Fetch the raw transaction
     let tx = sqlx::query_as::<_, MultiChainTx>(
-        "SELECT id, chain_id, hash, from_address, to_address, value, fee, timestamp, tx_type, status FROM multi_chain_transactions WHERE id = ?",
+        "SELECT id, chain_id, hash, from_address, to_address, value, fee, timestamp, tx_type, status FROM multi_chain_transactions WHERE id = ? AND classification_status = 'unclassified'",
     )
     .bind(&transaction_id)
     .fetch_optional(&state.pool)
     .await
     .map_err(|e| e.to_string())?
-    .ok_or_else(|| "Transaction not found".to_string())?;
+    .ok_or_else(|| "Transaction not found or already classified/ignored".to_string())?;
 
     // Resolve GL account IDs
     let crypto_assets_id = get_account_id_by_number(&state.pool, "1200").await?;
@@ -1226,24 +1243,21 @@ pub async fn auto_classify_transaction(
 
     // Parse amounts via rust_decimal at the boundary — no f64 in the money path (Inv-2).
     // The raw string value in the source row is never modified (Inv-5).
+    // Rounding is explicit half-away-from-zero: Decimal::round() defaults to
+    // banker's rounding (10000.5 -> 10000), which is not the money convention
+    // used elsewhere in this codebase.
     let amount_dec = Decimal::from_str(&tx.value)
         .map_err(|e| format!("Cannot parse value '{}': {e}", tx.value))?;
-    let amount_minor: i64 = (amount_dec * Decimal::ONE_HUNDRED)
-        .round()
-        .to_string()
-        .parse::<i64>()
-        .map_err(|e| format!("Value overflow: {e}"))?;
+    let amount_minor: i64 = decimal_to_minor_units(amount_dec)
+        .ok_or_else(|| format!("Value out of range: {}", tx.value))?;
     let fee_dec = tx
         .fee
         .as_deref()
         .unwrap_or("0")
         .parse::<Decimal>()
         .unwrap_or(Decimal::ZERO);
-    let fee_minor: i64 = (fee_dec * Decimal::ONE_HUNDRED)
-        .round()
-        .to_string()
-        .parse::<i64>()
-        .map_err(|e| format!("Fee overflow: {e}"))?;
+    let fee_minor: i64 =
+        decimal_to_minor_units(fee_dec).ok_or_else(|| format!("Fee out of range: {:?}", tx.fee))?;
 
     // Build lines based on tx_type heuristics
     let mut lines = Vec::new();
@@ -1399,6 +1413,15 @@ struct MultiChainTx {
     status: String,
 }
 
+/// Converts an exact decimal amount to integer minor units (cents) using
+/// explicit half-away-from-zero rounding. Returns None on i64 overflow.
+fn decimal_to_minor_units(amount: Decimal) -> Option<i64> {
+    amount
+        .checked_mul(Decimal::ONE_HUNDRED)?
+        .round_dp_with_strategy(0, RoundingStrategy::MidpointAwayFromZero)
+        .to_i64()
+}
+
 /// Resolves a GL account number to its database ID.
 async fn get_account_id_by_number(pool: &sqlx::SqlitePool, number: &str) -> Result<i64, String> {
     let row: (i64,) =
@@ -1457,16 +1480,18 @@ pub async fn get_unclassified_transactions(
 }
 
 /// Ignores a raw transaction with an optional reason. Sets classification_status
-/// to 'ignored'. The raw row is never mutated beyond this field (Inv-5).
+/// to 'ignored' and records the reason in classification_note. The raw
+/// financial fields are never mutated (Inv-5).
 #[tauri::command]
 pub async fn ignore_transaction(
     state: State<'_, DatabaseState>,
     transaction_id: String,
-    _reason: Option<String>,
+    reason: Option<String>,
 ) -> Result<(), String> {
     let result = sqlx::query(
-        "UPDATE multi_chain_transactions SET classification_status = 'ignored' WHERE id = ? AND classification_status = 'unclassified'",
+        "UPDATE multi_chain_transactions SET classification_status = 'ignored', classification_note = ? WHERE id = ? AND classification_status = 'unclassified'",
     )
+    .bind(&reason)
     .bind(&transaction_id)
     .execute(&state.pool)
     .await
@@ -3072,6 +3097,7 @@ mod tests {
     // ========================================================================
 
     /// Inserts a raw transaction into multi_chain_transactions for testing.
+    #[allow(clippy::too_many_arguments)] // mirrors the table's column list
     async fn insert_raw_tx(
         pool: &SqlitePool,
         id: &str,
@@ -3116,40 +3142,37 @@ mod tests {
     fn decimal_boundary_conversion_exact() {
         // Ensure string → Decimal → minor units produces exact results
         let val = Decimal::from_str("19.99").unwrap();
-        let minor = (val * Decimal::ONE_HUNDRED)
-            .round()
-            .to_string()
-            .parse::<i64>()
-            .unwrap();
-        assert_eq!(minor, 1999, "19.99 should parse to 1999 cents exactly");
+        assert_eq!(
+            decimal_to_minor_units(val),
+            Some(1999),
+            "19.99 should parse to 1999 cents exactly"
+        );
 
         let val2 = Decimal::from_str("0.1").unwrap() + Decimal::from_str("0.2").unwrap();
-        let minor2 = (val2 * Decimal::ONE_HUNDRED)
-            .round()
-            .to_string()
-            .parse::<i64>()
-            .unwrap();
-        assert_eq!(minor2, 30, "0.1 + 0.2 should be 30 cents (no float drift)");
+        assert_eq!(
+            decimal_to_minor_units(val2),
+            Some(30),
+            "0.1 + 0.2 should be 30 cents (no float drift)"
+        );
     }
 
     #[test]
-    fn decimal_boundary_zero_and_negative() {
-        let zero = Decimal::from_str("0").unwrap();
-        let minor = (zero * Decimal::ONE_HUNDRED)
-            .round()
-            .to_string()
-            .parse::<i64>()
-            .unwrap();
-        assert_eq!(minor, 0);
+    fn decimal_boundary_zero_negative_and_midpoint() {
+        assert_eq!(decimal_to_minor_units(Decimal::ZERO), Some(0));
 
+        // 100.005 * 100 = 10000.5 → half-away-from-zero rounds to 10001.
+        // Decimal::round() alone would give 10000 (banker's rounding) — the
+        // helper exists precisely to pin this behavior.
         let val = Decimal::from_str("100.005").unwrap();
-        let minor = (val * Decimal::ONE_HUNDRED)
-            .round()
-            .to_string()
-            .parse::<i64>()
-            .unwrap();
-        // 100.005 * 100 = 10000.5 → rounds to 10001
-        assert_eq!(minor, 10001);
+        assert_eq!(decimal_to_minor_units(val), Some(10001));
+
+        // Negative midpoint rounds away from zero too.
+        let neg = Decimal::from_str("-0.505").unwrap();
+        assert_eq!(decimal_to_minor_units(neg), Some(-51));
+
+        // i64 overflow returns None instead of panicking.
+        let huge = Decimal::MAX;
+        assert_eq!(decimal_to_minor_units(huge), None);
     }
 
     // ---- auto_classify_transaction provenance + classification_status ----
@@ -3287,6 +3310,98 @@ mod tests {
             get_classification_status(&pool, tx_id).await,
             "ignored",
             "Ignored tx should have classification_status = 'ignored'"
+        );
+    }
+
+    #[tokio::test]
+    async fn ignore_persists_reason_in_classification_note() {
+        let pool = setup_test_db().await;
+        let tx_id = "moonbeam_0xnote1";
+        insert_raw_tx(
+            &pool, tx_id, "moonbeam", "0xnote1", "1.00", None, "approve", 1700000000,
+        )
+        .await;
+
+        sqlx::query(
+            "UPDATE multi_chain_transactions SET classification_status = 'ignored', classification_note = ? WHERE id = ? AND classification_status = 'unclassified'",
+        )
+        .bind("gas-only approval, no economic effect")
+        .bind(tx_id)
+        .execute(&pool)
+        .await
+        .expect("Ignore with reason");
+
+        let (note,): (Option<String>,) =
+            sqlx::query_as("SELECT classification_note FROM multi_chain_transactions WHERE id = ?")
+                .bind(tx_id)
+                .fetch_one(&pool)
+                .await
+                .expect("Fetch note");
+        assert_eq!(
+            note.as_deref(),
+            Some("gas-only approval, no economic effect"),
+            "Skip reason must be persisted, not dropped"
+        );
+    }
+
+    #[tokio::test]
+    async fn conditional_classification_flip_blocks_double_classify() {
+        let pool = setup_test_db().await;
+        let tx_id = "moonbeam_0xdup1";
+        insert_raw_tx(
+            &pool, tx_id, "moonbeam", "0xdup1", "5.00", None, "claim", 1700000000,
+        )
+        .await;
+
+        // First flip (the create_journal_entry conditional UPDATE) succeeds
+        let first = sqlx::query(
+            "UPDATE multi_chain_transactions SET classification_status = 'classified' WHERE id = ? AND classification_status = 'unclassified'",
+        )
+        .bind(tx_id)
+        .execute(&pool)
+        .await
+        .expect("First flip");
+        assert_eq!(first.rows_affected(), 1);
+
+        // Second flip (double-submit / racing auto-classify) affects 0 rows,
+        // which create_journal_entry converts into a rollback + error.
+        let second = sqlx::query(
+            "UPDATE multi_chain_transactions SET classification_status = 'classified' WHERE id = ? AND classification_status = 'unclassified'",
+        )
+        .bind(tx_id)
+        .execute(&pool)
+        .await
+        .expect("Second flip");
+        assert_eq!(
+            second.rows_affected(),
+            0,
+            "Already-classified raw tx must not be classifiable again"
+        );
+
+        // Ignored txs are equally protected from resurrection.
+        let tx2 = "moonbeam_0xdup2";
+        insert_raw_tx(
+            &pool, tx2, "moonbeam", "0xdup2", "5.00", None, "claim", 1700000001,
+        )
+        .await;
+        sqlx::query(
+            "UPDATE multi_chain_transactions SET classification_status = 'ignored' WHERE id = ? AND classification_status = 'unclassified'",
+        )
+        .bind(tx2)
+        .execute(&pool)
+        .await
+        .expect("Ignore tx2");
+        let resurrect = sqlx::query(
+            "UPDATE multi_chain_transactions SET classification_status = 'classified' WHERE id = ? AND classification_status = 'unclassified'",
+        )
+        .bind(tx2)
+        .execute(&pool)
+        .await
+        .expect("Attempt resurrect");
+        assert_eq!(
+            resurrect.rows_affected(),
+            0,
+            "Ignored raw tx must not be silently reclassified"
         );
     }
 

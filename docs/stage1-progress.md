@@ -433,3 +433,40 @@ WHERE status='approved'` (the M5 state machine explicitly allows
     count tracking, NewJournalEntryInput origin acceptance). 5 Vitest
     tests (formatTimestamp, truncateHash, displayTxType, txTypeLabels).
     No schema/migration changes.
+- **Session 9 review hardening (2026-07-16, CTO — GIV-683):** Four gaps
+  closed during review of PR #219:
+  1. **Rounding was banker's, and its test was red.** `Decimal::round()`
+     rounds half-to-even (10000.5 → 10000), so the shipped test asserting
+     10000.5 → 10001 failed. Extracted `decimal_to_minor_units()` using
+     explicit `RoundingStrategy::MidpointAwayFromZero` (the money
+     convention), `checked_mul` + `to_i64()` so out-of-range values return
+     an error instead of panicking (`Decimal::MAX * 100` panics on
+     multiply).
+  2. **No unclassified guard on auto-classify.** `auto_classify_transaction`
+     fetched the raw tx by id only — invoking it on an already-classified
+     tx created a duplicate draft, and on an ignored tx silently
+     resurrected it to 'classified'. The SELECT now requires
+     `classification_status='unclassified'`.
+  3. **`create_journal_entry` was non-atomic with an unconditional flip.**
+     Header, lines, and classification flip were separate auto-commit
+     statements; a failure mid-way left a half-written draft, and a
+     double-submit from the manual drawer double-classified the raw tx.
+     Now one sqlx transaction; the flip is conditional
+     (`WHERE classification_status='unclassified'`), 0 rows → rollback +
+     error. This also covers the auto path (belt-and-braces with #2).
+  4. **Skip reason was silently dropped.** `ignore_transaction` accepted
+     `_reason` and discarded it while the UI collected it. Added migration
+     `20260716000001_add_classification_note.sql` (workflow-metadata
+     column, same category as `classification_status`; raw financial
+     fields stay immutable per Inv-5) and the reason now persists to
+     `classification_note`.
+     New tests: conditional-flip blocks double-classify + ignored-tx
+     resurrection; ignore persists reason; midpoint/negative/overflow
+     rounding pinned. 218 Rust lib tests + 269 Vitest green; clippy/tsc/
+     eslint clean.
+  - **Inv-5 enforcement note:** a DB-level immutability trigger on
+    `multi_chain_transactions` is NOT possible today — ingestion re-sync
+    legitimately upserts rows (`ON CONFLICT(chain_id, hash) DO UPDATE` in
+    persistence.rs / db/multi_chain.rs). Inv-5 remains enforced at the
+    accounting layer + tests. Revisit if ingestion gains a
+    finalized-transaction concept.
