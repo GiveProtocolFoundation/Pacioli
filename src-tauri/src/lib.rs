@@ -436,6 +436,8 @@ pub fn run() {
             api::accounting::approve_journal_entry,
             api::accounting::post_journal_entry,
             api::accounting::void_journal_entry,
+            api::accounting::demote_journal_entry,
+            api::accounting::update_journal_entry,
             api::accounting::auto_classify_transaction,
             api::accounting::update_transaction_classification,
             api::accounting::get_account_balances,

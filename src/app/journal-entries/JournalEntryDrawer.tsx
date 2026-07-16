@@ -2,12 +2,15 @@ import React, { useState, useCallback, useMemo } from 'react'
 import { invoke } from '@tauri-apps/api/core'
 import { X, Plus, Trash2 } from 'lucide-react'
 import type { GLAccount, JournalEntryWithLines } from '../../types/database'
+import { toMinorUnits, minorToDollars } from './journalEntryUtils'
 
 interface LineInput {
   id: string
   glAccountId: number | ''
   debitAmount: string
   creditAmount: string
+  quantity: string
+  assetId: string
   description: string
 }
 
@@ -29,10 +32,17 @@ const emptyLine = (): LineInput => ({
   glAccountId: '',
   debitAmount: '',
   creditAmount: '',
+  quantity: '',
+  assetId: 'USD',
   description: '',
 })
 
-/** Slide-in drawer for creating/viewing a journal entry */
+/**
+ * Slide-in drawer for creating/editing draft journal entries.
+ * Editing an approved entry requires demote-to-draft first (backend enforces).
+ * @param props - Component properties
+ * @returns The JournalEntryDrawer component
+ */
 const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
   accounts,
   entry,
@@ -40,7 +50,8 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
   onClose,
   onSaved,
 }) => {
-  const isView = Boolean(entry)
+  const isView = Boolean(entry) && entry?.status !== 'draft'
+  const isEditDraft = Boolean(entry) && entry?.status === 'draft'
   const [entryDate, setEntryDate] = useState(
     entry?.entryDate
       ? new Date(entry.entryDate).toISOString().split('T')[0]
@@ -55,9 +66,10 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
       ? entry.lines.map(l => ({
           id: nextLineId(),
           glAccountId: l.glAccountId,
-          debitAmount: l.debitMinor > 0 ? (l.debitMinor / 100).toFixed(2) : '',
-          creditAmount:
-            l.creditMinor > 0 ? (l.creditMinor / 100).toFixed(2) : '',
+          debitAmount: l.debitMinor > 0 ? minorToDollars(l.debitMinor) : '',
+          creditAmount: l.creditMinor > 0 ? minorToDollars(l.creditMinor) : '',
+          quantity: l.quantity ?? '',
+          assetId: l.assetId ?? 'USD',
           description: l.description ?? '',
         }))
       : [emptyLine(), emptyLine()]
@@ -65,28 +77,46 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const totalDebits = useMemo(
-    () => lines.reduce((s, l) => s + (parseFloat(l.debitAmount) || 0), 0),
+  /** Compute balance in integer minor units (no floats touching money). */
+  const totalDebitMinor = useMemo(
+    () => lines.reduce((s, l) => s + toMinorUnits(l.debitAmount), 0),
     [lines]
   )
-  const totalCredits = useMemo(
-    () => lines.reduce((s, l) => s + (parseFloat(l.creditAmount) || 0), 0),
+  const totalCreditMinor = useMemo(
+    () => lines.reduce((s, l) => s + toMinorUnits(l.creditAmount), 0),
     [lines]
   )
-  const difference = Math.abs(totalDebits - totalCredits)
-  const isBalanced = difference < 0.01 && totalDebits > 0
+  const differenceMinor = totalDebitMinor - totalCreditMinor
+  const isBalanced = differenceMinor === 0 && totalDebitMinor > 0
+
+  /** Per-asset quantity balance hints. */
+  const assetQuantityHints = useMemo(() => {
+    const map = new Map<string, { debit: number; credit: number }>()
+    for (const l of lines) {
+      if (!l.quantity || !l.assetId || l.assetId === 'USD') continue
+      const qty = Number.parseFloat(l.quantity)
+      if (Number.isNaN(qty) || qty === 0) continue
+      const existing = map.get(l.assetId) ?? { debit: 0, credit: 0 }
+      if (toMinorUnits(l.debitAmount) > 0) {
+        existing.debit += qty
+      } else {
+        existing.credit += qty
+      }
+      map.set(l.assetId, existing)
+    }
+    return map
+  }, [lines])
 
   const handleLineChange = useCallback(
     (index: number, field: keyof LineInput, value: string | number) => {
       setLines(prev => {
         const updated = [...prev]
         updated[index] = { ...updated[index], [field]: value }
-        // If entering a debit, clear credit (and vice versa)
-        if (field === 'debitAmount' && parseFloat(value as string) > 0) {
+        if (field === 'debitAmount' && toMinorUnits(value as string) > 0) {
           updated[index].creditAmount = ''
         } else if (
           field === 'creditAmount' &&
-          parseFloat(value as string) > 0
+          toMinorUnits(value as string) > 0
         ) {
           updated[index].debitAmount = ''
         }
@@ -108,73 +138,53 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
     [lines.length]
   )
 
-  /** Converts a dollar string to integer minor units (cents). */
-  const toMinor = (val: string): number =>
-    Math.round((parseFloat(val) || 0) * 100)
-
   const handleSaveDraft = useCallback(async () => {
     setError(null)
     setSaving(true)
     try {
+      // Keys are camelCase: NewJournalEntryInput / JournalEntryLineInput are
+      // #[serde(rename_all = "camelCase")] on the Rust side.
       const input = {
-        entry_date: entryDate,
+        entryDate,
         description,
-        reference_number: referenceNumber || null,
-        raw_transaction_id: null,
+        referenceNumber: referenceNumber || null,
+        rawTransactionId: null,
         lines: lines
           .filter(l => l.glAccountId !== '')
           .map(l => ({
-            gl_account_id: l.glAccountId as number,
-            token_id: null,
-            debit_minor: toMinor(l.debitAmount),
-            credit_minor: toMinor(l.creditAmount),
-            quantity: null,
-            asset_id: 'USD',
+            glAccountId: l.glAccountId as number,
+            tokenId: null,
+            debitMinor: toMinorUnits(l.debitAmount),
+            creditMinor: toMinorUnits(l.creditAmount),
+            quantity: l.quantity || null,
+            assetId: l.assetId || 'USD',
             description: l.description || null,
           })),
       }
-      await invoke('create_journal_entry', { input })
+      if (isEditDraft && entry) {
+        // Edit-in-place: creating a new entry here would leave a duplicate
+        // draft in the queue.
+        await invoke('update_journal_entry', { id: entry.id, input })
+      } else {
+        await invoke('create_journal_entry', { input })
+      }
       onSaved()
     } catch (err) {
       setError(typeof err === 'string' ? err : 'Failed to save entry')
     } finally {
       setSaving(false)
     }
-  }, [entryDate, description, referenceNumber, lines, onSaved])
+  }, [
+    entryDate,
+    description,
+    referenceNumber,
+    lines,
+    isEditDraft,
+    entry,
+    onSaved,
+  ])
 
-  const handlePostEntry = useCallback(async () => {
-    setError(null)
-    setSaving(true)
-    try {
-      const input = {
-        entry_date: entryDate,
-        description,
-        reference_number: referenceNumber || null,
-        raw_transaction_id: null,
-        lines: lines
-          .filter(l => l.glAccountId !== '')
-          .map(l => ({
-            gl_account_id: l.glAccountId as number,
-            token_id: null,
-            debit_minor: toMinor(l.debitAmount),
-            credit_minor: toMinor(l.creditAmount),
-            quantity: null,
-            asset_id: 'USD',
-            description: l.description || null,
-          })),
-      }
-      const created = await invoke<JournalEntryWithLines>(
-        'create_journal_entry',
-        { input }
-      )
-      await invoke('post_journal_entry', { id: created.id })
-      onSaved()
-    } catch (err) {
-      setError(typeof err === 'string' ? err : 'Failed to post entry')
-    } finally {
-      setSaving(false)
-    }
-  }, [entryDate, description, referenceNumber, lines, onSaved])
+  const isEditable = !isView || isEditDraft
 
   return (
     // skipcq: JS-0415 — drawer layout requires nested containers
@@ -186,7 +196,11 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-[rgba(95,227,192,0.15)]">
           <h2 className="text-lg font-bold text-[#11202B] dark:text-[#EAF3F2]">
-            {isView ? 'Journal Entry' : 'New Journal Entry'}
+            {isView
+              ? 'Journal Entry'
+              : isEditDraft
+                ? 'Edit Draft'
+                : 'New Journal Entry'}
           </h2>
           <button
             onClick={onClose}
@@ -196,7 +210,7 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
           </button>
         </div>
 
-        {/* Body — scrollable */}
+        {/* Body */}
         <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
           {error && (
             <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-sm">
@@ -213,7 +227,7 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
               type="date"
               value={entryDate}
               onChange={e => setEntryDate(e.target.value)}
-              disabled={isView}
+              disabled={!isEditable}
               className="w-full px-3 py-2 rounded-lg border border-[rgba(95,227,192,0.15)] bg-white dark:bg-[#0C141B] text-[#11202B] dark:text-[#EAF3F2] text-sm disabled:opacity-60"
             />
           </div>
@@ -227,7 +241,7 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
               type="text"
               value={description}
               onChange={e => setDescription(e.target.value)}
-              disabled={isView}
+              disabled={!isEditable}
               placeholder="e.g. Staking reward on Polkadot"
               className="w-full px-3 py-2 rounded-lg border border-[rgba(95,227,192,0.15)] bg-white dark:bg-[#0C141B] text-[#11202B] dark:text-[#EAF3F2] text-sm placeholder-[#647D8B] disabled:opacity-60"
             />
@@ -242,7 +256,7 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
               type="text"
               value={referenceNumber}
               onChange={e => setReferenceNumber(e.target.value)}
-              disabled={isView}
+              disabled={!isEditable}
               placeholder="Transaction hash or reference"
               className="w-full px-3 py-2 rounded-lg border border-[rgba(95,227,192,0.15)] bg-white dark:bg-[#0C141B] text-[#11202B] dark:text-[#EAF3F2] text-sm font-mono placeholder-[#647D8B] disabled:opacity-60"
             />
@@ -254,7 +268,7 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
               <label className="text-sm font-medium text-[#294050] dark:text-[#9FB4BE]">
                 Line Items
               </label>
-              {!isView && (
+              {isEditable && (
                 <button
                   onClick={handleAddLine}
                   className="flex items-center gap-1 text-xs text-[#294050] hover:text-[#1E2F3C] transition-colors"
@@ -271,7 +285,7 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
                   key={line.id}
                   className="flex gap-2 items-start p-3 rounded-lg border border-[rgba(95,227,192,0.1)] bg-white dark:bg-[#0C141B]"
                 >
-                  {/* Account selector */}
+                  {/* Account + asset + memo */}
                   <div className="flex-1 min-w-0">
                     <select
                       value={line.glAccountId}
@@ -279,29 +293,53 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
                         handleLineChange(
                           idx,
                           'glAccountId',
-                          e.target.value ? parseInt(e.target.value) : ''
+                          e.target.value
+                            ? Number.parseInt(e.target.value, 10)
+                            : ''
                         )
                       }
-                      disabled={isView}
+                      disabled={!isEditable}
                       className="w-full px-2 py-1.5 rounded border border-[rgba(95,227,192,0.15)] bg-white dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] text-sm disabled:opacity-60"
                     >
                       <option value="">Select account...</option>
                       {accounts.map(a => (
                         <option key={a.id} value={a.id}>
-                          {a.accountNumber} · {a.accountName}
+                          {a.accountNumber} &middot; {a.accountName}
                         </option>
                       ))}
                     </select>
-                    <input
-                      type="text"
-                      value={line.description}
-                      onChange={e =>
-                        handleLineChange(idx, 'description', e.target.value)
-                      }
-                      disabled={isView}
-                      placeholder="Memo"
-                      className="w-full mt-1 px-2 py-1 rounded border border-[rgba(95,227,192,0.1)] bg-transparent text-[#294050] dark:text-[#9FB4BE] text-xs placeholder-[#647D8B] disabled:opacity-60"
-                    />
+                    <div className="flex gap-2 mt-1">
+                      <input
+                        type="text"
+                        value={line.quantity}
+                        onChange={e =>
+                          handleLineChange(idx, 'quantity', e.target.value)
+                        }
+                        disabled={!isEditable}
+                        placeholder="Qty"
+                        className="w-20 px-2 py-1 rounded border border-[rgba(95,227,192,0.1)] bg-transparent text-[#294050] dark:text-[#9FB4BE] text-xs placeholder-[#647D8B] disabled:opacity-60"
+                      />
+                      <input
+                        type="text"
+                        value={line.assetId}
+                        onChange={e =>
+                          handleLineChange(idx, 'assetId', e.target.value)
+                        }
+                        disabled={!isEditable}
+                        placeholder="Asset"
+                        className="w-24 px-2 py-1 rounded border border-[rgba(95,227,192,0.1)] bg-transparent text-[#294050] dark:text-[#9FB4BE] text-xs placeholder-[#647D8B] disabled:opacity-60"
+                      />
+                      <input
+                        type="text"
+                        value={line.description}
+                        onChange={e =>
+                          handleLineChange(idx, 'description', e.target.value)
+                        }
+                        disabled={!isEditable}
+                        placeholder="Memo"
+                        className="flex-1 px-2 py-1 rounded border border-[rgba(95,227,192,0.1)] bg-transparent text-[#294050] dark:text-[#9FB4BE] text-xs placeholder-[#647D8B] disabled:opacity-60"
+                      />
+                    </div>
                   </div>
 
                   {/* Debit */}
@@ -310,14 +348,14 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
                       Debit
                     </label>
                     <input
-                      type="number"
-                      step="0.01"
-                      min="0"
+                      type="text"
+                      inputMode="decimal"
                       value={line.debitAmount}
                       onChange={e =>
                         handleLineChange(idx, 'debitAmount', e.target.value)
                       }
-                      disabled={isView}
+                      disabled={!isEditable}
+                      placeholder="0.00"
                       className="w-full px-2 py-1.5 rounded border border-[rgba(95,227,192,0.15)] bg-white dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] text-sm text-right font-mono disabled:opacity-60"
                     />
                   </div>
@@ -328,20 +366,20 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
                       Credit
                     </label>
                     <input
-                      type="number"
-                      step="0.01"
-                      min="0"
+                      type="text"
+                      inputMode="decimal"
                       value={line.creditAmount}
                       onChange={e =>
                         handleLineChange(idx, 'creditAmount', e.target.value)
                       }
-                      disabled={isView}
+                      disabled={!isEditable}
+                      placeholder="0.00"
                       className="w-full px-2 py-1.5 rounded border border-[rgba(95,227,192,0.15)] bg-white dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] text-sm text-right font-mono disabled:opacity-60"
                     />
                   </div>
 
                   {/* Remove */}
-                  {!isView && lines.length > 2 && (
+                  {isEditable && lines.length > 2 && (
                     <button
                       onClick={() => handleRemoveLine(idx)}
                       className="mt-4 p-1 text-[#647D8B] hover:text-red-500 transition-colors"
@@ -354,7 +392,7 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
             </div>
           </div>
 
-          {/* Balance indicator */}
+          {/* Balance indicator — integer math, no floats */}
           <div
             className={`flex items-center justify-between p-3 rounded-lg border ${
               isBalanced
@@ -366,13 +404,13 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
               <span className="text-[#294050] dark:text-[#9FB4BE]">
                 Debits:{' '}
                 <span className="font-mono font-medium text-[#11202B] dark:text-[#EAF3F2]">
-                  {totalDebits.toFixed(2)}
+                  {minorToDollars(totalDebitMinor)}
                 </span>
               </span>
               <span className="text-[#294050] dark:text-[#9FB4BE]">
                 Credits:{' '}
                 <span className="font-mono font-medium text-[#11202B] dark:text-[#EAF3F2]">
-                  {totalCredits.toFixed(2)}
+                  {minorToDollars(totalCreditMinor)}
                 </span>
               </span>
             </div>
@@ -383,13 +421,46 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
                   : 'text-amber-600 dark:text-amber-400'
               }`}
             >
-              {isBalanced ? 'Balanced' : `Off by ${difference.toFixed(2)}`}
+              {isBalanced
+                ? 'Balanced'
+                : `Off by ${minorToDollars(Math.abs(differenceMinor))}`}
             </span>
           </div>
+
+          {/* Per-asset quantity balance hints */}
+          {assetQuantityHints.size > 0 && (
+            <div className="space-y-1">
+              {Array.from(assetQuantityHints.entries()).map(([asset, bal]) => {
+                const net = bal.debit - bal.credit
+                const balanced = Math.abs(net) < 1e-12
+                return (
+                  <div
+                    key={asset}
+                    className={`flex items-center justify-between px-3 py-1.5 rounded text-xs ${
+                      balanced
+                        ? 'bg-[#5FE3C0]/5 text-[#294050] dark:text-[#9FB4BE]'
+                        : 'bg-amber-50 dark:bg-amber-900/10 text-amber-700 dark:text-amber-400'
+                    }`}
+                  >
+                    <span className="font-mono">{asset}</span>
+                    <span>
+                      DR {bal.debit} / CR {bal.credit}
+                      {!balanced && (
+                        <span className="ml-2 font-medium">
+                          (net {net > 0 ? '+' : ''}
+                          {net})
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
+          )}
         </div>
 
         {/* Footer buttons */}
-        {!isView && (
+        {isEditable && (
           <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-[rgba(95,227,192,0.15)]">
             <button
               onClick={onClose}
@@ -402,16 +473,9 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
               disabled={
                 saving || lines.filter(l => l.glAccountId !== '').length < 2
               }
-              className="px-4 py-2 text-sm rounded-lg border border-[#294050] text-[#294050] hover:bg-[#294050]/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Save Draft
-            </button>
-            <button
-              onClick={handlePostEntry}
-              disabled={saving || !isBalanced}
               className="px-4 py-2 text-sm rounded-lg bg-[#294050] text-white hover:bg-[#1E2F3C] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Post Entry
+              {isEditDraft ? 'Update Draft' : 'Save Draft'}
             </button>
           </div>
         )}

@@ -1038,6 +1038,156 @@ pub async fn void_journal_entry(
     get_journal_entry(state, id).await
 }
 
+/// Demotes an approved journal entry back to draft for editing.
+/// The DB state machine explicitly allows approved -> draft (M5).
+/// Race-safe: conditional UPDATE demotes exactly once; a concurrent
+/// post/demote makes this a clean error instead of a silent overwrite.
+#[tauri::command]
+pub async fn demote_journal_entry(
+    state: State<'_, DatabaseState>,
+    id: i64,
+) -> Result<JournalEntryWithLines, String> {
+    let entry = sqlx::query_as::<_, JournalEntry>("SELECT * FROM journal_entries WHERE id = ?")
+        .bind(id)
+        .fetch_optional(&state.pool)
+        .await
+        .map_err(|e| e.to_string())?
+        .ok_or_else(|| "Journal entry not found".to_string())?;
+
+    if entry.status == "voided" {
+        return Err("Cannot demote a voided entry".to_string());
+    }
+    if entry.status == "posted" {
+        return Err("Cannot demote a posted entry — void it instead".to_string());
+    }
+    if entry.status == "draft" {
+        return Err("Journal entry is already a draft".to_string());
+    }
+
+    let result = sqlx::query(
+        "UPDATE journal_entries SET status = 'draft', approved_by = NULL, approved_at = NULL WHERE id = ? AND status = 'approved'",
+    )
+    .bind(id)
+    .execute(&state.pool)
+    .await
+    .map_err(|e| e.to_string())?;
+
+    if result.rows_affected() == 0 {
+        return Err("Journal entry is no longer approved (concurrently modified)".to_string());
+    }
+
+    get_journal_entry(state, id).await
+}
+
+/// Updates a DRAFT journal entry in place: header fields plus a full
+/// replacement of its lines, in ONE transaction. Only drafts are editable;
+/// the conditional header UPDATE (`WHERE status = 'draft'`) makes a
+/// concurrent approve/post roll the whole edit back. Line-level input is
+/// validated with the same rules as `create_journal_entry`.
+#[tauri::command]
+pub async fn update_journal_entry(
+    state: State<'_, DatabaseState>,
+    id: i64,
+    input: NewJournalEntryInput,
+) -> Result<JournalEntryWithLines, String> {
+    if input.lines.is_empty() {
+        return Err("Journal entry must have at least one line".to_string());
+    }
+
+    for line in &input.lines {
+        if line.debit_minor < 0 || line.credit_minor < 0 {
+            return Err("Line amounts must be non-negative".to_string());
+        }
+        if (line.debit_minor > 0 && line.credit_minor > 0)
+            || (line.debit_minor == 0 && line.credit_minor == 0)
+        {
+            return Err("Each line must have exactly one of debit or credit amount".to_string());
+        }
+    }
+
+    let entry_date = NaiveDateTime::parse_from_str(&input.entry_date, "%Y-%m-%dT%H:%M:%S")
+        .or_else(|_| {
+            NaiveDateTime::parse_from_str(
+                &format!("{}T00:00:00", input.entry_date),
+                "%Y-%m-%dT%H:%M:%S",
+            )
+        })
+        .map_err(|e| format!("Invalid date format: {e}"))?;
+
+    let mut tx = state.pool.begin().await.map_err(|e| e.to_string())?;
+
+    let entry = sqlx::query_as::<_, JournalEntry>("SELECT * FROM journal_entries WHERE id = ?")
+        .bind(id)
+        .fetch_optional(&mut *tx)
+        .await
+        .map_err(|e| e.to_string())?
+        .ok_or_else(|| "Journal entry not found".to_string())?;
+
+    if entry.status != "draft" {
+        return Err("Only draft entries can be edited".to_string());
+    }
+
+    // Conditional header update: if the entry stopped being a draft between
+    // the read above and this write, 0 rows are affected and we roll back.
+    let header = sqlx::query(
+        "UPDATE journal_entries SET entry_date = ?, description = ?, reference_number = ? WHERE id = ? AND status = 'draft'",
+    )
+    .bind(entry_date)
+    .bind(&input.description)
+    .bind(&input.reference_number)
+    .bind(id)
+    .execute(&mut *tx)
+    .await
+    .map_err(|e| e.to_string())?;
+
+    if header.rows_affected() == 0 {
+        return Err("Journal entry is no longer a draft (concurrently modified)".to_string());
+    }
+
+    // Full line replacement (draft lines are mutable; posted-line
+    // immutability triggers only protect posted entries).
+    sqlx::query("DELETE FROM journal_entry_lines WHERE journal_entry_id = ?")
+        .bind(id)
+        .execute(&mut *tx)
+        .await
+        .map_err(|e| e.to_string())?;
+
+    for (i, line) in input.lines.iter().enumerate() {
+        let debit_amount = line.debit_minor as f64 / 100.0;
+        let credit_amount = line.credit_minor as f64 / 100.0;
+        sqlx::query(
+            r#"
+            INSERT INTO journal_entry_lines (
+                journal_entry_id, gl_account_id, token_id,
+                debit_amount, credit_amount,
+                debit_minor, credit_minor,
+                quantity, asset_id,
+                description, line_number
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            "#,
+        )
+        .bind(id)
+        .bind(line.gl_account_id)
+        .bind(line.token_id)
+        .bind(debit_amount)
+        .bind(credit_amount)
+        .bind(line.debit_minor)
+        .bind(line.credit_minor)
+        .bind(&line.quantity)
+        .bind(&line.asset_id)
+        .bind(&line.description)
+        .bind(i as i64 + 1)
+        .execute(&mut *tx)
+        .await
+        .map_err(|e| e.to_string())?;
+    }
+
+    tx.commit().await.map_err(|e| e.to_string())?;
+
+    get_journal_entry(state, id).await
+}
+
 // ============================================================================
 // Auto-Classify Command
 // ============================================================================
@@ -2727,6 +2877,104 @@ mod tests {
             second.rows_affected(),
             0,
             "Second void must be a 0-row no-op so the caller rolls back its duplicate reversal"
+        );
+    }
+
+    // ---- Demote: approved -> draft is allowed, clears approval provenance ----
+    #[tokio::test]
+    async fn demote_approved_entry_returns_to_draft() {
+        let pool = setup_test_db().await;
+        let (acct_a, acct_b) = get_test_accounts(&pool).await;
+        let entry_id = create_named_draft_entry(&pool, "DEMOTE-001").await;
+        add_balanced_lines(&pool, entry_id, acct_a, acct_b, 5000).await;
+        approve_entry(&pool, entry_id).await;
+
+        // Conditional demote (the SQL demote_journal_entry relies on)
+        let result = sqlx::query(
+            "UPDATE journal_entries SET status = 'draft', approved_by = NULL, approved_at = NULL WHERE id = ? AND status = 'approved'",
+        )
+        .bind(entry_id)
+        .execute(&pool)
+        .await
+        .expect("Demote of an approved entry must succeed (M5 allows approved->draft)");
+        assert_eq!(result.rows_affected(), 1);
+
+        let (status, approved_by): (String, Option<String>) =
+            sqlx::query_as("SELECT status, approved_by FROM journal_entries WHERE id = ?")
+                .bind(entry_id)
+                .fetch_one(&pool)
+                .await
+                .expect("Fetch demoted entry");
+        assert_eq!(status, "draft");
+        assert!(
+            approved_by.is_none(),
+            "Demote must clear approval provenance"
+        );
+    }
+
+    // ---- Demote race: conditional UPDATE is a 0-row no-op on non-approved ----
+    #[tokio::test]
+    async fn demote_non_approved_entry_is_noop() {
+        let pool = setup_test_db().await;
+        let (acct_a, acct_b) = get_test_accounts(&pool).await;
+        let entry_id = create_named_draft_entry(&pool, "DEMOTE-002").await;
+        add_balanced_lines(&pool, entry_id, acct_a, acct_b, 5000).await;
+        approve_and_post_entry(&pool, entry_id).await;
+
+        // Posted entry: the WHERE clause filters it out before the state
+        // machine trigger could fire — clean 0-row no-op, caller errors.
+        let result = sqlx::query(
+            "UPDATE journal_entries SET status = 'draft', approved_by = NULL, approved_at = NULL WHERE id = ? AND status = 'approved'",
+        )
+        .bind(entry_id)
+        .execute(&pool)
+        .await
+        .expect("Conditional demote of a posted entry must not error");
+        assert_eq!(result.rows_affected(), 0);
+    }
+
+    // ---- Draft edit: draft lines are mutable (delete + reinsert works) ----
+    #[tokio::test]
+    async fn draft_lines_can_be_replaced() {
+        let pool = setup_test_db().await;
+        let (acct_a, acct_b) = get_test_accounts(&pool).await;
+        let entry_id = create_named_draft_entry(&pool, "EDIT-001").await;
+        add_balanced_lines(&pool, entry_id, acct_a, acct_b, 5000).await;
+
+        sqlx::query("DELETE FROM journal_entry_lines WHERE journal_entry_id = ?")
+            .bind(entry_id)
+            .execute(&pool)
+            .await
+            .expect("Draft lines must be deletable");
+
+        add_balanced_lines(&pool, entry_id, acct_a, acct_b, 7500).await;
+
+        let (total,): (i64,) = sqlx::query_as(
+            "SELECT COALESCE(SUM(debit_minor), 0) FROM journal_entry_lines WHERE journal_entry_id = ?",
+        )
+        .bind(entry_id)
+        .fetch_one(&pool)
+        .await
+        .expect("Sum replaced lines");
+        assert_eq!(total, 7500, "Replaced draft lines must be the new amounts");
+    }
+
+    // ---- Posted lines stay immutable: delete must be rejected ----
+    #[tokio::test]
+    async fn posted_lines_cannot_be_deleted() {
+        let pool = setup_test_db().await;
+        let (acct_a, acct_b) = get_test_accounts(&pool).await;
+        let entry_id = create_named_draft_entry(&pool, "EDIT-002").await;
+        add_balanced_lines(&pool, entry_id, acct_a, acct_b, 5000).await;
+        approve_and_post_entry(&pool, entry_id).await;
+
+        let result = sqlx::query("DELETE FROM journal_entry_lines WHERE journal_entry_id = ?")
+            .bind(entry_id)
+            .execute(&pool)
+            .await;
+        assert!(
+            result.is_err(),
+            "Deleting lines of a posted entry must be rejected by the immutability trigger"
         );
     }
 }
