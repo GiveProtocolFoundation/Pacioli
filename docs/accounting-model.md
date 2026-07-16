@@ -153,16 +153,68 @@ Every entry records:
 - Single entity books, US GAAP, USD functional currency. No IFRS, no
   parallel books, no multi-entity consolidation.
 
-## 8. Transfers between own wallets _(reserved — Phase 7)_
+## 8. Periods and close (Phase 5)
+
+Accounting periods define the time boundaries for financial reporting and
+entry-date constraints. Monthly granularity is used in Stage 1.
+
+### Period lifecycle
+
+- **Open:** entries with dates inside the period can be drafted, approved,
+  and posted normally.
+- **Closed:** no entry whose `entry_date` falls inside the period can be
+  posted. This is enforced at the database layer by a trigger that fires
+  on the `approved → posted` transition — the same guard point as the
+  balance-validation trigger (M5). Drafting and approving entries inside
+  a closed period is permitted (they may be intended for a future reopen),
+  but posting is blocked.
+- **Reopen:** a closed period can be reopened. This is a deliberate audit
+  event: the system records `reopened_by` and `reopened_at`. Once
+  reopened, the period behaves as open again.
+
+### Close prerequisites
+
+A period can be closed only if **no draft or approved entries** exist with
+`entry_date` inside the period. The close command counts pending entries
+and rejects with an exact count if any remain. This prevents orphaned
+in-flight entries from being silently locked away.
+
+### Non-overlapping enforcement
+
+Periods must not overlap (a date belongs to at most one period). SQLite
+lacks exclusion constraints, so overlap detection is enforced in Rust
+at creation time. The engine checks `period_start <= new_end AND
+period_end >= new_start` before inserting a new period.
+
+### Corrections in closed periods
+
+Posted entries inside a closed period are already immutable (Phase 2
+immutability triggers). Voiding a posted entry generates a reversing
+entry with its own `entry_date` — which must fall in an **open** period.
+The reversing entry is posted through the standard `draft → approved →
+posted` path, so the closed-period trigger applies to it: if the
+reversal's entry_date falls in a closed period, posting is rejected.
+
+The convention is: corrections to entries in closed periods are dated
+in the current open period. The reversal lands in the current period;
+the net effect appears in the period where the reversing entry is dated.
+
+### Idempotency
+
+Close and reopen follow the Phase 2/3 conditional-UPDATE pattern:
+`UPDATE ... WHERE status='open'` (or `='closed'`). Double-close and
+double-reopen are 0-row no-ops — no error, no side effects.
+
+## 9. Transfers between own wallets _(reserved — Phase 7)_
 
 Treatment of lot movement without realization will be documented when the
 cost-basis engine lands.
 
-## 9. Cost basis _(reserved — Phase 7)_
+## 10. Cost basis _(reserved — Phase 7)_
 
 FIFO lot relief, per wallet per asset; method documented with the engine.
 
-## 10. Fair-value measurement _(reserved — Phase 8)_
+## 11. Fair-value measurement _(reserved — Phase 8)_
 
 ASU 2023-08 remeasurement conventions, price sources, and override policy
 will be documented with the measurement framework.

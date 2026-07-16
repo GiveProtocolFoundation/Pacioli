@@ -51,6 +51,9 @@ const Reconciliation = React.lazy(() => import('./app/ledger/Reconciliation'))
 const ClassificationQueue = React.lazy(
   () => import('./app/classification/ClassificationQueue')
 )
+const AccountingPeriods = React.lazy(
+  () => import('./app/accounting-periods/AccountingPeriods')
+)
 
 // Loading fallback component
 const LoadingFallback: React.FC = () => (
@@ -179,6 +182,7 @@ const MainRoutes: React.FC = () => (
       <Route path="/chart-of-accounts" element={<ChartOfAccounts />} />
       <Route path="/trial-balance" element={<TrialBalance />} />
       <Route path="/ledger/reconciliation" element={<Reconciliation />} />
+      <Route path="/accounting-periods" element={<AccountingPeriods />} />
       <Route path="/reports/balance-sheet" element={<Reports />} />
     </Routes>
   </Navigation>
