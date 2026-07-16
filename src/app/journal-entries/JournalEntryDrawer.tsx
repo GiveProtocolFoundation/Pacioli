@@ -142,31 +142,39 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
     setError(null)
     setSaving(true)
     try {
+      // Keys are camelCase: NewJournalEntryInput / JournalEntryLineInput are
+      // #[serde(rename_all = "camelCase")] on the Rust side.
       const input = {
-        entry_date: entryDate,
+        entryDate,
         description,
-        reference_number: referenceNumber || null,
-        raw_transaction_id: null,
+        referenceNumber: referenceNumber || null,
+        rawTransactionId: null,
         lines: lines
           .filter(l => l.glAccountId !== '')
           .map(l => ({
-            gl_account_id: l.glAccountId as number,
-            token_id: null,
-            debit_minor: toMinorUnits(l.debitAmount),
-            credit_minor: toMinorUnits(l.creditAmount),
+            glAccountId: l.glAccountId as number,
+            tokenId: null,
+            debitMinor: toMinorUnits(l.debitAmount),
+            creditMinor: toMinorUnits(l.creditAmount),
             quantity: l.quantity || null,
-            asset_id: l.assetId || 'USD',
+            assetId: l.assetId || 'USD',
             description: l.description || null,
           })),
       }
-      await invoke('create_journal_entry', { input })
+      if (isEditDraft && entry) {
+        // Edit-in-place: creating a new entry here would leave a duplicate
+        // draft in the queue.
+        await invoke('update_journal_entry', { id: entry.id, input })
+      } else {
+        await invoke('create_journal_entry', { input })
+      }
       onSaved()
     } catch (err) {
       setError(typeof err === 'string' ? err : 'Failed to save entry')
     } finally {
       setSaving(false)
     }
-  }, [entryDate, description, referenceNumber, lines, onSaved])
+  }, [entryDate, description, referenceNumber, lines, isEditDraft, entry, onSaved])
 
   const isEditable = !isView || isEditDraft
 

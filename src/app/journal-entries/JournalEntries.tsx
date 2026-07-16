@@ -13,6 +13,7 @@ import {
   ChevronRight,
 } from 'lucide-react'
 import { useNavBadges } from '../../contexts/NavBadgeContext'
+import { useAuth } from '../../contexts/AuthContext'
 import type { JournalEntryWithLines, GLAccount } from '../../types/database'
 import JournalEntryDrawer from './JournalEntryDrawer'
 import JournalEntryDetail from './JournalEntryDetail'
@@ -114,6 +115,7 @@ const JournalEntries: React.FC = () => {
   >()
   const [voidConfirmId, setVoidConfirmId] = useState<number | null>(null)
   const { refreshCounts } = useNavBadges()
+  const { user } = useAuth()
 
   const accountMap = useMemo(() => {
     const m = new Map<number, GLAccount>()
@@ -124,15 +126,21 @@ const JournalEntries: React.FC = () => {
   const fetchEntries = useCallback(async () => {
     setLoading(true)
     try {
+      // Backend buckets: 'draft' = unposted (drafts AND approved), 'posted',
+      // 'void'. 'approved' has no backend bucket, so fetch the unposted
+      // bucket and let the exact client-side status filter narrow it.
       const statusFilter =
         filterParam === 'all'
           ? null
           : filterParam === 'voided'
             ? 'void'
-            : filterParam
+            : filterParam === 'approved'
+              ? 'draft'
+              : filterParam
+      // Tauri command args are camelCase on the JS side by default.
       const result = await invoke<JournalEntryWithLines[]>(
         'get_journal_entries',
-        { status_filter: statusFilter, limit: 200, offset: 0 }
+        { statusFilter, limit: 200, offset: 0 }
       )
       setEntries(result)
     } catch (err) {
@@ -220,9 +228,11 @@ const JournalEntries: React.FC = () => {
     async (id: number) => {
       setActionError(null)
       try {
+        // Record the real approver identity (Inv-7 provenance), not a
+        // placeholder string.
         await invoke('approve_journal_entry', {
           id,
-          approver: 'current-user',
+          approver: user?.email ?? user?.display_name ?? 'unknown',
         })
         fetchEntries()
         refreshCounts()
@@ -231,7 +241,7 @@ const JournalEntries: React.FC = () => {
         setActionError(msg)
       }
     },
-    [fetchEntries, refreshCounts]
+    [fetchEntries, refreshCounts, user]
   )
 
   /** Post an approved entry */
@@ -267,34 +277,24 @@ const JournalEntries: React.FC = () => {
     [fetchEntries, refreshCounts]
   )
 
-  /** Demote an approved entry back to draft for editing */
+  /**
+   * Demote an approved entry back to draft for editing.
+   * Uses the dedicated backend command: the DB state machine allows
+   * approved -> draft directly. (void_journal_entry only accepts POSTED
+   * entries and creates a posted reversal — wrong tool for an unposted
+   * approved entry.)
+   */
   const handleDemote = useCallback(
     async (entry: JournalEntryWithLines) => {
       setActionError(null)
       try {
-        await invoke('void_journal_entry', { id: entry.id })
-        const input = {
-          entry_date: new Date(entry.entryDate).toISOString().split('T')[0],
-          description: entry.description ?? '',
-          reference_number: entry.referenceNumber ?? null,
-          raw_transaction_id: null,
-          lines: entry.lines.map(l => ({
-            gl_account_id: l.glAccountId,
-            token_id: l.tokenId ?? null,
-            debit_minor: l.debitMinor,
-            credit_minor: l.creditMinor,
-            quantity: l.quantity ?? null,
-            asset_id: l.assetId ?? 'USD',
-            description: l.description ?? null,
-          })),
-        }
-        const newDraft = await invoke<JournalEntryWithLines>(
-          'create_journal_entry',
-          { input }
+        const demoted = await invoke<JournalEntryWithLines>(
+          'demote_journal_entry',
+          { id: entry.id }
         )
         fetchEntries()
         refreshCounts()
-        handleEditEntry(newDraft)
+        handleEditEntry(demoted)
       } catch (err) {
         const msg = typeof err === 'string' ? err : 'Failed to demote entry'
         setActionError(msg)

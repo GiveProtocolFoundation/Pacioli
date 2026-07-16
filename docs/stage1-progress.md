@@ -354,3 +354,38 @@ is_reversed=1, reversed_by_entry_id=<new_id>`. Both entries remain in
     unbalanced, all-zeros, multi-line swap from accounting-model.md,
     float-error immunity), `displayStatus` (all statuses + unknown
     fallback), `formatDate` (null, string, Date).
+- **Session 8 (2026-07-15, CTO — GIV-678 review hardening):** Four gaps
+  fixed before merge:
+  1. **Demote was guaranteed to fail and conceptually wrong.** The UI
+     demoted approved→draft by calling `void_journal_entry` + re-create,
+     but void only accepts POSTED entries (`WHERE status='posted'`) and
+     creates a posted reversal — wrong tool for an unposted entry. Added a
+     dedicated `demote_journal_entry` Tauri command: race-safe conditional
+     `UPDATE … SET status='draft', approved_by=NULL, approved_at=NULL
+     WHERE status='approved'` (the M5 state machine explicitly allows
+     approved→draft). UI now calls it directly.
+  2. **"Update Draft" created duplicates.** Editing a draft re-invoked
+     `create_journal_entry`, leaving the old draft behind. Added
+     `update_journal_entry` (draft-only, ONE transaction: conditional
+     header update `WHERE status='draft'` + full line replacement; a
+     concurrent approve/post rolls the whole edit back). Posted-line
+     immutability triggers are untouched — only draft lines are mutable.
+  3. **Invoke payloads could not deserialize.** `NewJournalEntryInput` /
+     `JournalEntryLineInput` are `#[serde(rename_all = "camelCase")]` and
+     Tauri v2 expects camelCase arg keys, but the UI sent snake_case
+     (`entry_date`, `gl_account_id`, `status_filter`, …) — create/save
+     failed against the real backend, and the always-null `status_filter`
+     was silently masked by the client-side tab filter. All payloads now
+     camelCase.
+  4. **`toMinorUnits('-0.50')` returned +50.** `parseInt('-0')` is `-0`,
+     which is not `< 0`, so sub-dollar negatives silently flipped sign.
+     Sign is now parsed from the string. Also: `approve_journal_entry` now
+     records the real authenticated user (email) as approver instead of the
+     `'current-user'` placeholder (Inv-7 provenance; backend `created_by`
+     is still hardcoded `'system'` in the create path — pre-existing debt,
+     same bucket as the entry-number sequence fix).
+  New tests: 4 Rust SQL-semantics tests (demote approved→draft clears
+  approval provenance; conditional demote is a 0-row no-op on posted;
+  draft lines replaceable; posted lines still immutable) + 6 Vitest cases
+  (negative-sign regression, leading decimal point). 38 accounting tests +
+  33 utils tests green; tsc + eslint clean.

@@ -53,6 +53,20 @@ describe('toMinorUnits', () => {
     const b = toMinorUnits('0.01')
     expect(a + b).toBe(2000) // exactly $20.00
   })
+
+  it('should preserve the sign of negative amounts', () => {
+    expect(toMinorUnits('-1.50')).toBe(-150)
+    expect(toMinorUnits('-100')).toBe(-10000)
+    // Regression: parseInt('-0') is -0 (not < 0), which used to flip
+    // sub-dollar negatives to positive.
+    expect(toMinorUnits('-0.50')).toBe(-50)
+    expect(toMinorUnits('-0.01')).toBe(-1)
+  })
+
+  it('should handle a leading decimal point', () => {
+    expect(toMinorUnits('.5')).toBe(50)
+    expect(toMinorUnits('.05')).toBe(5)
+  })
 })
 
 describe('minorToDollars', () => {

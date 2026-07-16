@@ -7,13 +7,19 @@
 export function toMinorUnits(val: string): number {
   const trimmed = val.trim()
   if (trimmed === '') return 0
-  const parts = trimmed.split('.')
+  // Parse the sign from the string, not from parseInt: parseInt('-0', 10)
+  // yields -0, which is NOT < 0, so "-0.50" silently flipped sign to +50.
+  const negative = trimmed.startsWith('-')
+  const unsigned = trimmed.replace(/^[+-]/, '')
+  const parts = unsigned.split('.')
+  const fraction = parts[1] ?? ''
   const whole = Number.parseInt(parts[0] || '0', 10)
-  if (Number.isNaN(whole)) return 0
-  const centStr = (parts[1] ?? '').slice(0, 2).padEnd(2, '0')
+  if (Number.isNaN(whole) && fraction === '') return 0
+  const centStr = fraction.slice(0, 2).padEnd(2, '0')
   const cents = Number.parseInt(centStr, 10)
-  if (Number.isNaN(cents)) return 0
-  return whole * 100 + (whole < 0 ? -cents : cents)
+  const magnitude =
+    (Number.isNaN(whole) ? 0 : whole) * 100 + (Number.isNaN(cents) ? 0 : cents)
+  return negative ? -magnitude : magnitude
 }
 
 /**
