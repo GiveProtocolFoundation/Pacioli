@@ -4,9 +4,10 @@ Session constitution: `SCOPE.md` (repo root). Stage 1 mandate: GIV-668.
 Gate 1: CPA-reviewed statements from real imported transactions, manually
 classified through the approval queue.
 
-**Current phase: 5 (Accounting periods) — Phases 1-4 landed;
-Phase 5 implemented by Engineer (GIV-684): accounting_periods table,
-closed-period posting trigger, period lifecycle commands, Periods UI.**
+**Current phase: 6 (Financial statements v1) — Phases 1-5 landed;
+Phase 6 implemented by Engineer (GIV-688): income statement, balance
+sheet, trial balance with period filtering + comparative prior period,
+verify_ties assertion, CSV export, statement UI pages.**
 
 ## Phase Checklist
 
@@ -32,7 +33,11 @@ closed-period posting trigger, period lifecycle commands, Periods UI.**
       DB trigger blocks posting into closed periods, list_periods/
       close_period/reopen_period commands, Periods UI with confirm
       modals, reopen audit log, 9 Rust tests — Engineer)
-- [ ] **Phase 6 — Financial statements v1**
+- [x] **Phase 6 — Financial statements v1**
+      (GIV-688: balance sheet, income statement, trial balance with period
+      filtering + comparative prior period, verify_ties assertion enforced
+      before all statement returns, CSV export, statement UI pages with
+      period selector and comparative columns — Engineer)
 - [ ] **Phase 7 — Cost basis engine (FIFO first)**
 - [ ] **Phase 8 — Fair-value measurement (ASU 2023-08)**
 - [ ] **Phase 9 — Invariant test suite (proptest)**
@@ -549,3 +554,89 @@ WHERE status='approved'` (the M5 state machine explicitly allows
     literal trailing `undefined` args in tests.
   - Tests: +3 Rust (posted entry_date immutable; draft entry_date
     editable; conditional-insert overlap atomicity) → 230 lib green.
+- **Session 11 (2026-07-16, Engineer — GIV-688):** Implemented Phase 6
+  (financial statements v1):
+  - **New Rust module** (`src-tauri/src/api/statements.rs`): financial
+    statement engine with period-aware queries over posted entries using
+    i64 minor units (no floats touch money — Inv-2). Reports are derived
+    views, never stored (Inv-4). Voided entries net out via their
+    reversals — verified by test. Three statement types: balance sheet,
+    income statement, trial balance.
+  - **Period-aware aggregation:** SQL queries filter posted entries by
+    `entry_date` within the requested date range. Supports both
+    accounting-period selection and arbitrary date ranges.
+  - **Comparative prior period:** each statement automatically computes
+    a comparative prior period of equal duration (e.g., current year
+    2025 → prior year 2024). Both periods returned to the UI.
+  - **`verify_ties` function (non-negotiable):** runs four tie checks
+    before any statement data is returned to the UI: (1) balance sheet
+    ties (A = L + E incl. NI), (2) net income matches between BS and IS,
+    (3) trial balance is in balance, (4) trial balance NI cross-checks
+    income statement NI. A statement that does not tie is a hard error —
+    it never renders silently.
+  - **CSV export:** three Tauri commands
+    (`export_balance_sheet_csv`, `export_income_statement_csv`,
+    `export_trial_balance_csv`) write statements to CSV via the existing
+    `csv` crate. Export runs `verify_ties` before writing. PDF deferred
+    (no lightweight tooling available without heavy deps).
+  - **UI pages:** `BalanceSheet.tsx`, `IncomeStatement.tsx`,
+    `PeriodTrialBalance.tsx` — period selector (start/end date inputs),
+    comparative columns with change percentage, CSV export button via
+    Tauri file-save dialog. Error messages surfaced verbatim from the
+    Rust backend. JSX depth kept ≤ 4 via extracted sub-components
+    (PeriodSelector, SectionTable, IncomeSection, TrialBalanceRowComponent).
+  - **Routes:** `/reports/balance-sheet`, `/reports/income-statement`,
+    `/reports/trial-balance` added to App.tsx. Reports.tsx route map
+    updated for all three.
+  - **Tests:** 11 Rust tests in statements.rs (balance sheet ties,
+    income statement net income, trial balance balances, verify_ties pass,
+    verify fails on corrupted BS/IS/TB, voided-entry neutrality,
+    comparative period dates, format_minor, empty period balanced,
+    zero-balance exclusion). 6 Vitest tests for statementUtils.ts
+    (formatMinorAsDollars, formatMinorPlain, formatStatementDate,
+    computeChangePercent, formatChangePercent, defaultPeriodDates).
+  - **Docs:** `docs/accounting-model.md` §9 (Financial statements)
+    documenting account classification, net income tie, verification,
+    period filtering, comparative periods, CSV export. This tracker
+    updated (Phase 6 checkbox + this session log).
+  - **No schema migration.** No SQL views created. All aggregation in
+    Rust from posted journal_entry_lines.
+- **Session 11 addendum (2026-07-16, CTO review hardening — GIV-688):**
+  two correctness gaps found and fixed on the PR before merge:
+  1. **SQL filter leak (critical):** the aggregation query put the
+     `is_posted = 1` + date predicates on a chained LEFT JOIN's ON
+     clause. That only NULLs the `journal_entries` columns — the line
+     rows still survive and get summed, so DRAFT entries and
+     out-of-period entries leaked into every statement (repro: a draft
+     for 999.00 and an out-of-period posted 555.00 both appeared in a
+     Feb-only statement). The 12 unit tests were pure-fixture and never
+     executed the SQL, so CI stayed green over a broken query. Fixed
+     with INNER JOINs + WHERE-clause predicates
+     (`query_account_activity`), and two new **DB integration tests**
+     (in-memory SQLite + full migrations) that seed posted-in-period,
+     posted-before-period, and draft entries and assert exclusion.
+     Rule for future phases: any new SQL aggregation needs at least one
+     DB-backed test — fixture tests cannot catch join-semantics bugs.
+  2. **Balance sheet was period-movement, not as-of:** A/L/E were
+     aggregated over `[start, end]` only, so a June balance sheet
+     dropped every opening balance (all pre-June cash vanished) and
+     there was no retained-earnings concept. Statements now aggregate
+     twice: cumulative (inception..=end) for balance sheet + trial
+     balance, period (start..=end) for the income statement. New
+     `retained_earnings_minor` on the balance sheet = cumulative NI −
+     current-period NI; tie is A = L + (equity accounts + RE + NI).
+     Trial balance is now conventional "as at end date" (matches M4
+     views/Phase 2). `verify_ties` check 4 updated: TB cumulative NI
+     must equal BS retained earnings + current-period NI.
+  - Also: all three Tauri commands and CSV exports now route through a
+    single `build_verified_statements` gate, and the **comparative
+    prior period is verified too** before rendering (previously prior
+    statements bypassed `verify_ties`). BalanceSheet UI + CSV gained a
+    Retained Earnings line; trial balance page header is "As of {end}".
+    16 Rust statement tests green (14 fixture + 2 DB integration).
+  - **Known limit (tracker-documented):** the comparative prior period
+    is equal _day-count_ duration ending the day before the current
+    start (2025 full year → 2024-01-02..2024-12-31), not
+    calendar-aligned. Acceptable for v1; calendar-aligned comparatives
+    (prior month/quarter/year via `accounting_periods`) are future
+    polish.
