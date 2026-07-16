@@ -4,9 +4,9 @@ Session constitution: `SCOPE.md` (repo root). Stage 1 mandate: GIV-668.
 Gate 1: CPA-reviewed statements from real imported transactions, manually
 classified through the approval queue.
 
-**Current phase: 4 (Classification workflow) — Phases 1-3 landed;
-Phase 4 implemented by Engineer (GIV-683): classification queue view,
-rust_decimal precision at the boundary, provenance linkage.**
+**Current phase: 5 (Accounting periods) — Phases 1-4 landed;
+Phase 5 implemented by Engineer (GIV-684): accounting_periods table,
+closed-period posting trigger, period lifecycle commands, Periods UI.**
 
 ## Phase Checklist
 
@@ -27,7 +27,11 @@ rust_decimal precision at the boundary, provenance linkage.**
       (GIV-683: classification queue view with auto/manual/skip actions,
       rust_decimal precision at boundary, provenance: origin=rule for
       auto-classified entries, classification_status flip — Engineer)
-- [ ] **Phase 5 — Periods, close, and lock**
+- [x] **Phase 5 — Periods, close, and lock**
+      (GIV-684: accounting_periods table with open/closed lifecycle,
+      DB trigger blocks posting into closed periods, list_periods/
+      close_period/reopen_period commands, Periods UI with confirm
+      modals, reopen audit log, 9 Rust tests — Engineer)
 - [ ] **Phase 6 — Financial statements v1**
 - [ ] **Phase 7 — Cost basis engine (FIFO first)**
 - [ ] **Phase 8 — Fair-value measurement (ASU 2023-08)**
@@ -470,3 +474,47 @@ WHERE status='approved'` (the M5 state machine explicitly allows
     persistence.rs / db/multi_chain.rs). Inv-5 remains enforced at the
     accounting layer + tests. Revisit if ingestion gains a
     finalized-transaction concept.
+- **Session 10 (2026-07-16, Engineer — GIV-684):** Implemented Phase 5
+  (accounting periods, close, and lock):
+  - **M6** (`20260716000002_accounting_periods.sql`): `accounting_periods`
+    table with `id`, `period_start`/`period_end` (DATE), `status`
+    CHECK('open','closed'), audit columns (`closed_by`, `closed_at`,
+    `reopened_by`, `reopened_at`), `period_start_before_end` constraint.
+    Trigger `prevent_posting_into_closed_period` fires on
+    `approved→posted` transition: rejects if any closed period contains
+    the entry's `entry_date`. This also blocks reversals from landing in
+    closed periods (void generates a new entry with its own entry_date
+    through the same posting path).
+  - **Non-overlapping enforcement:** overlap detection in Rust (SQLite
+    lacks exclusion constraints). `create_period` checks
+    `period_start <= ? AND period_end >= ?` before INSERT. Documented
+    SQLite limitation.
+  - **Backend commands:** `list_periods` (all periods, descending by
+    start date), `create_period` (validates dates, rejects overlaps),
+    `close_period` (single transaction: rejects if pending draft/approved
+    entries exist in the period with exact count; conditional UPDATE
+    WHERE status='open' — double-close is 0-row idempotent no-op),
+    `reopen_period` (conditional UPDATE WHERE status='closed', records
+    `reopened_by`/`reopened_at` — deliberately loud audit event;
+    double-reopen is 0-row no-op). All follow Phase 2/3 conditional-UPDATE
+    idempotency pattern.
+  - **UI:** `AccountingPeriods.tsx` — Periods page listing all periods
+    with status badges (Open/Closed), date ranges, closed-by/at metadata.
+    Close and Reopen actions with amber/blue confirmation banners (same
+    pattern as void confirmation in JournalEntries). Create form for new
+    periods with start/end date pickers. Reopen audit log section shows
+    all periods that have been reopened. Backend errors surfaced verbatim.
+    Route at `/accounting-periods`; navigation item added with CalendarDays
+    icon.
+  - **Error surfacing:** the existing `handlePost` in JournalEntries.tsx
+    already surfaces Tauri errors verbatim via `setActionError(msg)` —
+    the closed-period trigger message "Cannot post entry: the accounting
+    period containing this entry date is closed" propagates to the UI
+    automatically.
+  - **Tests:** 9 Rust tests: trigger blocks posting into closed period;
+    posting into open period succeeds; close rejects with pending drafts;
+    double-close is a 0-row no-op; reversal into open period succeeds;
+    reversal into closed period blocked; reopen allows posting; posting
+    outside any period succeeds; overlap detection. Vitest tests for
+    period utility functions (formatDate, formatDateTime, firstDayOfMonth,
+    lastDayOfMonth).

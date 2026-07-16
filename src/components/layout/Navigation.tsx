@@ -20,6 +20,7 @@ import {
   Building2,
   BookOpen,
   Scale,
+  CalendarDays,
 } from 'lucide-react'
 import PacioliWhiteLogo from '../../assets/Pacioli_logo_white.svg'
 import PacioliBlackLogo from '../../assets/pacioli_logo_black.svg'
@@ -650,6 +651,7 @@ const Navigation: React.FC<NavigationProps> = ({
         { name: 'Reconciliation', href: '/ledger/reconciliation' },
       ],
     },
+    { name: 'Periods', href: '/accounting-periods', icon: CalendarDays },
     { name: 'Wallets', href: '/wallets', icon: Wallet },
     { name: 'Entities', href: '/entities', icon: Building2 },
     {
@@ -720,6 +722,7 @@ const Navigation: React.FC<NavigationProps> = ({
         { name: 'Reconciliation', href: '/ledger/reconciliation' },
       ],
     },
+    { name: 'Periods', href: '/accounting-periods', icon: CalendarDays },
     { name: 'Wallets', href: '/wallets', icon: Wallet },
     { name: 'Entities', href: '/entities', icon: Building2 },
     { name: 'Tax Reports', href: '/reports', icon: FileText },

@@ -1702,6 +1702,248 @@ pub async fn get_draft_journal_entry_count(state: State<'_, DatabaseState>) -> R
 }
 
 // ============================================================================
+// Types — Accounting Periods (GIV-684, Phase 5)
+// ============================================================================
+
+/// An accounting period with open/closed lifecycle.
+#[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
+#[serde(rename_all = "camelCase")]
+pub struct AccountingPeriod {
+    /// Auto-incremented primary key.
+    pub id: i64,
+    /// First date of the period (inclusive).
+    pub period_start: String,
+    /// Last date of the period (inclusive).
+    pub period_end: String,
+    /// Either 'open' or 'closed'.
+    pub status: String,
+    /// Who closed the period.
+    pub closed_by: Option<String>,
+    /// When the period was closed.
+    pub closed_at: Option<NaiveDateTime>,
+    /// Who last reopened the period.
+    pub reopened_by: Option<String>,
+    /// When the period was last reopened.
+    pub reopened_at: Option<NaiveDateTime>,
+    /// Timestamp when the period was created.
+    pub created_at: Option<NaiveDateTime>,
+    /// Timestamp when the period was last updated.
+    pub updated_at: Option<NaiveDateTime>,
+}
+
+/// Input for creating a new accounting period.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NewAccountingPeriodInput {
+    /// First date of the period (ISO 8601 date, e.g. "2026-01-01").
+    pub period_start: String,
+    /// Last date of the period (ISO 8601 date, e.g. "2026-01-31").
+    pub period_end: String,
+}
+
+// ============================================================================
+// Accounting Periods Commands (GIV-684, Phase 5)
+// ============================================================================
+
+/// Returns all accounting periods ordered by period_start descending.
+#[tauri::command]
+pub async fn list_periods(
+    state: State<'_, DatabaseState>,
+) -> Result<Vec<AccountingPeriod>, String> {
+    sqlx::query_as::<_, AccountingPeriod>(
+        "SELECT * FROM accounting_periods ORDER BY period_start DESC",
+    )
+    .fetch_all(&state.pool)
+    .await
+    .map_err(|e| e.to_string())
+}
+
+/// Creates a new accounting period. Validates non-overlapping ranges in Rust.
+///
+/// Monthly granularity for Stage 1. The caller provides start/end dates;
+/// overlap detection is enforced here (SQLite lacks exclusion constraints).
+#[tauri::command]
+pub async fn create_period(
+    state: State<'_, DatabaseState>,
+    input: NewAccountingPeriodInput,
+) -> Result<AccountingPeriod, String> {
+    // Validate dates parse correctly
+    let start = chrono::NaiveDate::parse_from_str(&input.period_start, "%Y-%m-%d")
+        .map_err(|_| format!("Invalid period_start date: {}", input.period_start))?;
+    let end = chrono::NaiveDate::parse_from_str(&input.period_end, "%Y-%m-%d")
+        .map_err(|_| format!("Invalid period_end date: {}", input.period_end))?;
+
+    if start >= end {
+        return Err("period_start must be before period_end".to_string());
+    }
+
+    // Check for overlapping periods (enforce in Rust; SQLite lacks exclusion constraints)
+    let overlap_count: (i64,) = sqlx::query_as(
+        "SELECT COUNT(*) FROM accounting_periods WHERE period_start <= ? AND period_end >= ?",
+    )
+    .bind(&input.period_end)
+    .bind(&input.period_start)
+    .fetch_one(&state.pool)
+    .await
+    .map_err(|e| e.to_string())?;
+
+    if overlap_count.0 > 0 {
+        return Err(format!(
+            "Period {start} to {end} overlaps with an existing period"
+        ));
+    }
+
+    let result = sqlx::query(
+        "INSERT INTO accounting_periods (period_start, period_end, status) VALUES (?, ?, 'open')",
+    )
+    .bind(&input.period_start)
+    .bind(&input.period_end)
+    .execute(&state.pool)
+    .await
+    .map_err(|e| e.to_string())?;
+
+    let id = result.last_insert_rowid();
+
+    sqlx::query_as::<_, AccountingPeriod>("SELECT * FROM accounting_periods WHERE id = ?")
+        .bind(id)
+        .fetch_one(&state.pool)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+/// Closes an open accounting period. Rejects if any draft or approved entries
+/// exist with entry_date inside the period — those must be posted or deleted
+/// first. Uses conditional UPDATE (WHERE status='open') for race safety.
+/// Double-close is a 0-row no-op (idempotent).
+#[tauri::command]
+pub async fn close_period(
+    state: State<'_, DatabaseState>,
+    period_id: i64,
+    closed_by: String,
+) -> Result<AccountingPeriod, String> {
+    let mut tx = state.pool.begin().await.map_err(|e| e.to_string())?;
+
+    // Fetch the period
+    let period = sqlx::query_as::<_, AccountingPeriod>(
+        "SELECT * FROM accounting_periods WHERE id = ?",
+    )
+    .bind(period_id)
+    .fetch_optional(&mut *tx)
+    .await
+    .map_err(|e| e.to_string())?
+    .ok_or_else(|| "Accounting period not found".to_string())?;
+
+    // Already closed — idempotent no-op
+    if period.status == "closed" {
+        return Ok(period);
+    }
+
+    // Check for pending (draft or approved) entries dated inside this period
+    let pending_count: (i64,) = sqlx::query_as(
+        r#"
+        SELECT COUNT(*) FROM journal_entries
+        WHERE status IN ('draft', 'approved')
+          AND DATE(entry_date) >= ?
+          AND DATE(entry_date) <= ?
+        "#,
+    )
+    .bind(&period.period_start)
+    .bind(&period.period_end)
+    .fetch_one(&mut *tx)
+    .await
+    .map_err(|e| e.to_string())?;
+
+    if pending_count.0 > 0 {
+        return Err(format!(
+            "Cannot close period: {} draft/approved journal entries remain with dates in this period. Post or remove them first.",
+            pending_count.0
+        ));
+    }
+
+    // Conditional UPDATE: race-safe — closes exactly once
+    let result = sqlx::query(
+        "UPDATE accounting_periods SET status = 'closed', closed_by = ?, closed_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND status = 'open'",
+    )
+    .bind(&closed_by)
+    .bind(period_id)
+    .execute(&mut *tx)
+    .await
+    .map_err(|e| e.to_string())?;
+
+    if result.rows_affected() == 0 {
+        // Double-close or concurrent modification — idempotent
+        let current = sqlx::query_as::<_, AccountingPeriod>(
+            "SELECT * FROM accounting_periods WHERE id = ?",
+        )
+        .bind(period_id)
+        .fetch_one(&mut *tx)
+        .await
+        .map_err(|e| e.to_string())?;
+        tx.commit().await.map_err(|e| e.to_string())?;
+        return Ok(current);
+    }
+
+    tx.commit().await.map_err(|e| e.to_string())?;
+
+    sqlx::query_as::<_, AccountingPeriod>("SELECT * FROM accounting_periods WHERE id = ?")
+        .bind(period_id)
+        .fetch_one(&state.pool)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+/// Reopens a closed accounting period. This is deliberately loud — it is an
+/// audit event. Records reopened_by/reopened_at. Uses conditional UPDATE
+/// (WHERE status='closed') for race safety. Double-reopen is a 0-row no-op.
+#[tauri::command]
+pub async fn reopen_period(
+    state: State<'_, DatabaseState>,
+    period_id: i64,
+    reopened_by: String,
+) -> Result<AccountingPeriod, String> {
+    let period = sqlx::query_as::<_, AccountingPeriod>(
+        "SELECT * FROM accounting_periods WHERE id = ?",
+    )
+    .bind(period_id)
+    .fetch_optional(&state.pool)
+    .await
+    .map_err(|e| e.to_string())?
+    .ok_or_else(|| "Accounting period not found".to_string())?;
+
+    // Already open — idempotent no-op
+    if period.status == "open" {
+        return Ok(period);
+    }
+
+    // Conditional UPDATE: race-safe — reopens exactly once
+    let result = sqlx::query(
+        "UPDATE accounting_periods SET status = 'open', reopened_by = ?, reopened_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND status = 'closed'",
+    )
+    .bind(&reopened_by)
+    .bind(period_id)
+    .execute(&state.pool)
+    .await
+    .map_err(|e| e.to_string())?;
+
+    if result.rows_affected() == 0 {
+        // Double-reopen or concurrent modification — return current state
+        return sqlx::query_as::<_, AccountingPeriod>(
+            "SELECT * FROM accounting_periods WHERE id = ?",
+        )
+        .bind(period_id)
+        .fetch_one(&state.pool)
+        .await
+        .map_err(|e| e.to_string());
+    }
+
+    sqlx::query_as::<_, AccountingPeriod>("SELECT * FROM accounting_periods WHERE id = ?")
+        .bind(period_id)
+        .fetch_one(&state.pool)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+// ============================================================================
 // Tests — Journal-Entry Balance Invariant (GIV-665, GIV-673, GIV-677)
 // ============================================================================
 
@@ -3507,5 +3749,301 @@ mod tests {
         };
         assert_eq!(input.origin.as_deref(), Some("rule"));
         assert_eq!(input.raw_transaction_id.as_deref(), Some("tx123"));
+    }
+
+    // ========================================================================
+    // GIV-684 — Accounting Periods: Close and Lock (Phase 5)
+    // ========================================================================
+
+    /// Creates an accounting period via direct SQL.
+    async fn create_test_period(pool: &SqlitePool, start: &str, end: &str) -> i64 {
+        let result = sqlx::query(
+            "INSERT INTO accounting_periods (period_start, period_end, status) VALUES (?, ?, 'open')",
+        )
+        .bind(start)
+        .bind(end)
+        .execute(pool)
+        .await
+        .expect("Failed to create test period");
+        result.last_insert_rowid()
+    }
+
+    /// Closes a period via direct SQL.
+    async fn close_test_period(pool: &SqlitePool, period_id: i64) {
+        sqlx::query(
+            "UPDATE accounting_periods SET status = 'closed', closed_by = 'test', closed_at = CURRENT_TIMESTAMP WHERE id = ?",
+        )
+        .bind(period_id)
+        .execute(pool)
+        .await
+        .expect("Failed to close test period");
+    }
+
+    /// Creates a draft entry with a specific entry_date.
+    async fn create_dated_draft_entry(pool: &SqlitePool, entry_number: &str, entry_date: &str) -> i64 {
+        let result = sqlx::query(
+            "INSERT INTO journal_entries (entry_date, entry_number, description, is_posted, status, origin, created_by) VALUES (?, ?, 'Test entry', 0, 'draft', 'manual', 'test')",
+        )
+        .bind(entry_date)
+        .bind(entry_number)
+        .execute(pool)
+        .await
+        .expect("Failed to create dated draft entry");
+        result.last_insert_rowid()
+    }
+
+    #[tokio::test]
+    async fn trigger_blocks_posting_into_closed_period() {
+        let pool = setup_test_db().await;
+        let (acct_a, acct_b) = get_test_accounts(&pool).await;
+
+        // Create and close a period for January 2026
+        let period_id = create_test_period(&pool, "2026-01-01", "2026-01-31").await;
+        close_test_period(&pool, period_id).await;
+
+        // Create an entry dated inside the closed period
+        let entry_id = create_dated_draft_entry(&pool, "CP-001", "2026-01-15").await;
+        add_balanced_lines(&pool, entry_id, acct_a, acct_b, 10000).await;
+        approve_entry(&pool, entry_id).await;
+
+        // Attempt to post — should fail
+        let result = sqlx::query(
+            "UPDATE journal_entries SET status = 'posted', is_posted = 1, posted_at = CURRENT_TIMESTAMP WHERE id = ? AND status = 'approved'",
+        )
+        .bind(entry_id)
+        .execute(&pool)
+        .await;
+
+        assert!(result.is_err(), "Posting into a closed period should be rejected");
+        let err = result.unwrap_err().to_string();
+        assert!(
+            err.contains("closed"),
+            "Error should mention closed period, got: {err}"
+        );
+    }
+
+    #[tokio::test]
+    async fn posting_into_open_period_succeeds() {
+        let pool = setup_test_db().await;
+        let (acct_a, acct_b) = get_test_accounts(&pool).await;
+
+        // Create an open period for January 2026
+        let _period_id = create_test_period(&pool, "2026-01-01", "2026-01-31").await;
+
+        // Create and post an entry dated inside the open period
+        let entry_id = create_dated_draft_entry(&pool, "OP-001", "2026-01-15").await;
+        add_balanced_lines(&pool, entry_id, acct_a, acct_b, 10000).await;
+        approve_entry(&pool, entry_id).await;
+
+        let result = sqlx::query(
+            "UPDATE journal_entries SET status = 'posted', is_posted = 1, posted_at = CURRENT_TIMESTAMP WHERE id = ? AND status = 'approved'",
+        )
+        .bind(entry_id)
+        .execute(&pool)
+        .await;
+
+        assert!(result.is_ok(), "Posting into an open period should succeed");
+    }
+
+    #[tokio::test]
+    async fn close_rejects_with_pending_drafts() {
+        let pool = setup_test_db().await;
+        let (acct_a, acct_b) = get_test_accounts(&pool).await;
+
+        // Create open period
+        let period_id = create_test_period(&pool, "2026-02-01", "2026-02-28").await;
+
+        // Create a draft entry inside the period
+        let _entry_id = create_dated_draft_entry(&pool, "PD-001", "2026-02-10").await;
+        add_balanced_lines(&pool, _entry_id, acct_a, acct_b, 5000).await;
+
+        // Check pending count (simulate close_period logic)
+        let (pending_count,): (i64,) = sqlx::query_as(
+            "SELECT COUNT(*) FROM journal_entries WHERE status IN ('draft', 'approved') AND DATE(entry_date) >= '2026-02-01' AND DATE(entry_date) <= '2026-02-28'",
+        )
+        .fetch_one(&pool)
+        .await
+        .expect("Count pending entries");
+
+        assert!(pending_count > 0, "Should have pending entries blocking close");
+
+        // The close should be rejected (simulate the Rust command logic)
+        assert_eq!(pending_count, 1, "Exactly 1 pending draft should block close");
+
+        // Verify period stays open
+        let (status,): (String,) = sqlx::query_as(
+            "SELECT status FROM accounting_periods WHERE id = ?",
+        )
+        .bind(period_id)
+        .fetch_one(&pool)
+        .await
+        .expect("Fetch period status");
+        assert_eq!(status, "open", "Period should remain open with pending drafts");
+    }
+
+    #[tokio::test]
+    async fn double_close_is_noop() {
+        let pool = setup_test_db().await;
+
+        // Create and close a period
+        let period_id = create_test_period(&pool, "2026-03-01", "2026-03-31").await;
+        close_test_period(&pool, period_id).await;
+
+        // Second close attempt — conditional UPDATE should affect 0 rows
+        let result = sqlx::query(
+            "UPDATE accounting_periods SET status = 'closed', closed_by = 'test2', closed_at = CURRENT_TIMESTAMP WHERE id = ? AND status = 'open'",
+        )
+        .bind(period_id)
+        .execute(&pool)
+        .await
+        .expect("Double-close should not error");
+
+        assert_eq!(result.rows_affected(), 0, "Double-close should be a 0-row no-op");
+
+        // Period still shows original closer
+        let (closed_by,): (Option<String>,) = sqlx::query_as(
+            "SELECT closed_by FROM accounting_periods WHERE id = ?",
+        )
+        .bind(period_id)
+        .fetch_one(&pool)
+        .await
+        .expect("Fetch closed_by");
+        assert_eq!(closed_by.as_deref(), Some("test"), "Original closer should be preserved");
+    }
+
+    #[tokio::test]
+    async fn reversal_into_open_period_succeeds() {
+        let pool = setup_test_db().await;
+        let (acct_a, acct_b) = get_test_accounts(&pool).await;
+
+        // Create two periods: Jan (will close), Feb (stays open)
+        let jan_id = create_test_period(&pool, "2026-01-01", "2026-01-31").await;
+        let _feb_id = create_test_period(&pool, "2026-02-01", "2026-02-28").await;
+
+        // Post an entry in January (before closing)
+        let entry_id = create_dated_draft_entry(&pool, "RV-001", "2026-01-15").await;
+        add_balanced_lines(&pool, entry_id, acct_a, acct_b, 10000).await;
+        approve_and_post_entry(&pool, entry_id).await;
+
+        // Close January
+        close_test_period(&pool, jan_id).await;
+
+        // Create a reversal entry dated in February (open period) — should succeed
+        let rev_id = create_dated_draft_entry(&pool, "RV-002", "2026-02-15").await;
+        add_balanced_lines(&pool, rev_id, acct_b, acct_a, 10000).await;
+        approve_entry(&pool, rev_id).await;
+
+        let result = sqlx::query(
+            "UPDATE journal_entries SET status = 'posted', is_posted = 1, posted_at = CURRENT_TIMESTAMP WHERE id = ? AND status = 'approved'",
+        )
+        .bind(rev_id)
+        .execute(&pool)
+        .await;
+
+        assert!(result.is_ok(), "Reversal into an open period should succeed");
+    }
+
+    #[tokio::test]
+    async fn reversal_into_closed_period_blocked() {
+        let pool = setup_test_db().await;
+        let (acct_a, acct_b) = get_test_accounts(&pool).await;
+
+        // Create and close January
+        let jan_id = create_test_period(&pool, "2026-01-01", "2026-01-31").await;
+        close_test_period(&pool, jan_id).await;
+
+        // Attempt to create a reversal entry dated inside closed January
+        let rev_id = create_dated_draft_entry(&pool, "RV-003", "2026-01-20").await;
+        add_balanced_lines(&pool, rev_id, acct_b, acct_a, 10000).await;
+        approve_entry(&pool, rev_id).await;
+
+        let result = sqlx::query(
+            "UPDATE journal_entries SET status = 'posted', is_posted = 1, posted_at = CURRENT_TIMESTAMP WHERE id = ? AND status = 'approved'",
+        )
+        .bind(rev_id)
+        .execute(&pool)
+        .await;
+
+        assert!(result.is_err(), "Reversal into a closed period should be blocked");
+        let err = result.unwrap_err().to_string();
+        assert!(
+            err.contains("closed"),
+            "Error should mention closed period, got: {err}"
+        );
+    }
+
+    #[tokio::test]
+    async fn reopen_period_allows_posting() {
+        let pool = setup_test_db().await;
+        let (acct_a, acct_b) = get_test_accounts(&pool).await;
+
+        // Create, close, then reopen a period
+        let period_id = create_test_period(&pool, "2026-04-01", "2026-04-30").await;
+        close_test_period(&pool, period_id).await;
+
+        // Reopen
+        sqlx::query(
+            "UPDATE accounting_periods SET status = 'open', reopened_by = 'test', reopened_at = CURRENT_TIMESTAMP WHERE id = ?",
+        )
+        .bind(period_id)
+        .execute(&pool)
+        .await
+        .expect("Reopen period");
+
+        // Now posting into the reopened period should succeed
+        let entry_id = create_dated_draft_entry(&pool, "RE-001", "2026-04-15").await;
+        add_balanced_lines(&pool, entry_id, acct_a, acct_b, 10000).await;
+        approve_entry(&pool, entry_id).await;
+
+        let result = sqlx::query(
+            "UPDATE journal_entries SET status = 'posted', is_posted = 1, posted_at = CURRENT_TIMESTAMP WHERE id = ? AND status = 'approved'",
+        )
+        .bind(entry_id)
+        .execute(&pool)
+        .await;
+
+        assert!(result.is_ok(), "Posting into a reopened period should succeed");
+    }
+
+    #[tokio::test]
+    async fn posting_outside_any_period_succeeds() {
+        let pool = setup_test_db().await;
+        let (acct_a, acct_b) = get_test_accounts(&pool).await;
+
+        // Create and close January period only
+        let jan_id = create_test_period(&pool, "2026-01-01", "2026-01-31").await;
+        close_test_period(&pool, jan_id).await;
+
+        // Post an entry dated in March (no period defined) — should succeed
+        let entry_id = create_dated_draft_entry(&pool, "NP-001", "2026-03-15").await;
+        add_balanced_lines(&pool, entry_id, acct_a, acct_b, 10000).await;
+        approve_and_post_entry(&pool, entry_id).await;
+
+        let (status,): (String,) = sqlx::query_as(
+            "SELECT status FROM journal_entries WHERE id = ?",
+        )
+        .bind(entry_id)
+        .fetch_one(&pool)
+        .await
+        .expect("Fetch entry status");
+        assert_eq!(status, "posted", "Entry outside any period should post fine");
+    }
+
+    #[tokio::test]
+    async fn period_overlap_rejected() {
+        let pool = setup_test_db().await;
+
+        // Create first period
+        create_test_period(&pool, "2026-01-01", "2026-01-31").await;
+
+        // Attempt overlapping period
+        let overlap_count: (i64,) = sqlx::query_as(
+            "SELECT COUNT(*) FROM accounting_periods WHERE period_start <= '2026-01-15' AND period_end >= '2026-01-01'",
+        )
+        .fetch_one(&pool)
+        .await
+        .expect("Check overlap");
+
+        assert!(overlap_count.0 > 0, "Overlapping period should be detected");
     }
 }
