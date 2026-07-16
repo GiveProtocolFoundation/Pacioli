@@ -16,6 +16,9 @@ pub mod persistence;
 pub mod price_feeds;
 /// The `prices` module provides functionality for retrieving and managing price data.
 pub mod prices;
+/// Financial statement generation: balance sheet, income statement, trial balance,
+/// tie verification, and CSV export (GIV-688, Phase 6).
+pub mod statements;
 /// Provides functionality for wallet-based authentication, including
 /// signing in users through their wallets and verifying credentials.
 pub mod wallet_auth;

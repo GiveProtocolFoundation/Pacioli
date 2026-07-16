@@ -205,7 +205,79 @@ Close and reopen follow the Phase 2/3 conditional-UPDATE pattern:
 `UPDATE ... WHERE status='open'` (or `='closed'`). Double-close and
 double-reopen are 0-row no-ops — no error, no side effects.
 
-## 9. Transfers between own wallets _(reserved — Phase 7)_
+## 9. Financial statements (Phase 6)
+
+Financial statements are **derived views** over posted entries (Invariant 4):
+no stored report tables, no snapshots. The Rust engine queries posted
+journal entries within a date range, aggregates using i64 minor units
+(no floats touch money — Invariant 2), and returns structured reports
+with mechanically verified ties.
+
+### Statement types
+
+1. **Balance Sheet** — Assets, Liabilities, Equity for a selected period.
+   Equity includes the current-period net income computed from Income and
+   Expense accounts.
+2. **Income Statement** — Revenue (Income accounts) and Expenses for a
+   selected period.
+3. **Trial Balance** — All accounts with non-zero activity in the period,
+   showing debit and credit balances.
+
+### Account classification for statements
+
+| Account Type | Statement       | Section       | Sign convention                |
+| ------------ | --------------- | ------------- | ------------------------------ |
+| Asset        | Balance Sheet   | Assets        | Debit − Credit (natural debit) |
+| Liability    | Balance Sheet   | Liabilities   | Credit − Debit (natural credit)|
+| Equity       | Balance Sheet   | Equity        | Credit − Debit (natural credit)|
+| Income       | Income Statement| Revenue       | Credit − Debit (natural credit)|
+| Expense      | Income Statement| Expenses      | Debit − Credit (natural debit) |
+
+### How net income ties to equity
+
+The balance sheet includes a **net income plug**: current-period net income
+(Revenue − Expenses) is added to the Equity section. The tie assertion is:
+
+    Total Assets = Total Liabilities + (Equity + Net Income)
+
+If this equation does not hold, the statement generation **fails loudly**
+— the `verify_ties` function returns an error and the UI never renders a
+statement that does not tie.
+
+### Tie verification (`verify_ties`)
+
+Before returning any statement to the UI, the engine runs four checks:
+
+1. **Balance sheet ties**: Assets = Liabilities + Equity (incl. net income)
+2. **Net income consistency**: Income Statement net income = Balance Sheet
+   net income plug
+3. **Trial balance is in balance**: Total debits = Total credits
+4. **Cross-check**: Trial balance net income (Income credits − Expense
+   debits) = Income Statement net income
+
+A failure on any check is a hard error — the statement is never rendered
+silently with incorrect figures.
+
+### Period filtering
+
+Statements accept a start date and end date. Only posted entries with
+`entry_date` within the range are included. Voided entries net out via
+their reversing entries (both are posted and included in aggregation).
+
+### Comparative periods
+
+Each statement includes a **comparative prior period** of the same
+duration, immediately preceding the current period. For example, if the
+current period is 2025-01-01 to 2025-12-31, the prior period is
+2024-01-01 to 2024-12-31. The UI shows both periods side by side with
+percentage change.
+
+### CSV export
+
+All three statements can be exported to CSV. The export runs the same
+`verify_ties` check — a statement that does not tie cannot be exported.
+
+## 10. Transfers between own wallets _(reserved — Phase 7)_
 
 Treatment of lot movement without realization will be documented when the
 cost-basis engine lands.

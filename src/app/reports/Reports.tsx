@@ -327,6 +327,9 @@ const ReportsHeader: React.FC = () => (
 /** Route map for reports with functional sub-pages */
 const reportRoutes: Record<string, string> = {
   'cost-basis': '/reports/cost-basis',
+  'balance-sheet': '/reports/balance-sheet',
+  'income-statement': '/reports/income-statement',
+  'trial-balance': '/reports/trial-balance',
 }
 
 /** Main reports page with search, category filtering, and recent run history */
