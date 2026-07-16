@@ -601,3 +601,42 @@ WHERE status='approved'` (the M5 state machine explicitly allows
     updated (Phase 6 checkbox + this session log).
   - **No schema migration.** No SQL views created. All aggregation in
     Rust from posted journal_entry_lines.
+- **Session 11 addendum (2026-07-16, CTO review hardening — GIV-688):**
+  two correctness gaps found and fixed on the PR before merge:
+  1. **SQL filter leak (critical):** the aggregation query put the
+     `is_posted = 1` + date predicates on a chained LEFT JOIN's ON
+     clause. That only NULLs the `journal_entries` columns — the line
+     rows still survive and get summed, so DRAFT entries and
+     out-of-period entries leaked into every statement (repro: a draft
+     for 999.00 and an out-of-period posted 555.00 both appeared in a
+     Feb-only statement). The 12 unit tests were pure-fixture and never
+     executed the SQL, so CI stayed green over a broken query. Fixed
+     with INNER JOINs + WHERE-clause predicates
+     (`query_account_activity`), and two new **DB integration tests**
+     (in-memory SQLite + full migrations) that seed posted-in-period,
+     posted-before-period, and draft entries and assert exclusion.
+     Rule for future phases: any new SQL aggregation needs at least one
+     DB-backed test — fixture tests cannot catch join-semantics bugs.
+  2. **Balance sheet was period-movement, not as-of:** A/L/E were
+     aggregated over `[start, end]` only, so a June balance sheet
+     dropped every opening balance (all pre-June cash vanished) and
+     there was no retained-earnings concept. Statements now aggregate
+     twice: cumulative (inception..=end) for balance sheet + trial
+     balance, period (start..=end) for the income statement. New
+     `retained_earnings_minor` on the balance sheet = cumulative NI −
+     current-period NI; tie is A = L + (equity accounts + RE + NI).
+     Trial balance is now conventional "as at end date" (matches M4
+     views/Phase 2). `verify_ties` check 4 updated: TB cumulative NI
+     must equal BS retained earnings + current-period NI.
+  - Also: all three Tauri commands and CSV exports now route through a
+    single `build_verified_statements` gate, and the **comparative
+    prior period is verified too** before rendering (previously prior
+    statements bypassed `verify_ties`). BalanceSheet UI + CSV gained a
+    Retained Earnings line; trial balance page header is "As of {end}".
+    16 Rust statement tests green (14 fixture + 2 DB integration).
+  - **Known limit (tracker-documented):** the comparative prior period
+    is equal _day-count_ duration ending the day before the current
+    start (2025 full year → 2024-01-02..2024-12-31), not
+    calendar-aligned. Acceptable for v1; calendar-aligned comparatives
+    (prior month/quarter/year via `accounting_periods`) are future
+    polish.

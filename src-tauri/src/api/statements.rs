@@ -55,7 +55,8 @@ pub struct StatementSection {
     pub subtotal_minor: i64,
 }
 
-/// Balance sheet report for a given date range.
+/// Balance sheet report as of `end_date` (cumulative from inception).
+/// `start_date` scopes the current-period net income split only.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct BalanceSheetReport {
@@ -63,13 +64,17 @@ pub struct BalanceSheetReport {
     pub start_date: String,
     /// End date of the reporting period (ISO 8601 date string).
     pub end_date: String,
-    /// Assets section.
+    /// Assets section (cumulative balances as of end_date).
     pub assets: StatementSection,
-    /// Liabilities section.
+    /// Liabilities section (cumulative balances as of end_date).
     pub liabilities: StatementSection,
-    /// Equity section (excluding current-period net income).
+    /// Equity section (contributed equity accounts, excluding retained
+    /// earnings and current-period net income).
     pub equity: StatementSection,
-    /// Current-period net income in minor units (plugged into equity).
+    /// Retained earnings in minor units: accumulated net income from
+    /// inception through the day before start_date.
+    pub retained_earnings_minor: i64,
+    /// Current-period net income in minor units (start_date..=end_date).
     pub net_income_minor: i64,
     /// Total assets in minor units.
     pub total_assets_minor: i64,
@@ -163,12 +168,24 @@ struct PeriodAccountRow {
     total_credit_minor: i64,
 }
 
-/// Queries posted journal entries within a date range, aggregating debit_minor
-/// and credit_minor per GL account. Only posted entries (is_posted = 1) are
-/// included — voided entries net out via their reversing entries.
-async fn query_period_accounts(
+/// Aggregates posted journal-entry activity per GL account.
+///
+/// Filtering uses INNER JOINs with predicates in the WHERE clause. Putting the
+/// posted/date predicates on a chained LEFT JOIN's ON clause only NULLs the
+/// joined columns — the line rows still survive and get summed, which leaked
+/// draft and out-of-period lines into statements (caught in CTO review).
+///
+/// * `start_date = None` — cumulative activity from inception through
+///   `end_date` (balance-sheet / as-of semantics).
+/// * `start_date = Some(d)` — activity within `[d, end_date]`
+///   (income-statement / period semantics).
+///
+/// Only posted entries (is_posted = 1) are included — voided entries net out
+/// via their reversing entries. Inactive accounts with posted history are
+/// intentionally INCLUDED: excluding them would break the ties.
+async fn query_account_activity(
     pool: &sqlx::SqlitePool,
-    start_date: &str,
+    start_date: Option<&str>,
     end_date: &str,
 ) -> Result<Vec<PeriodAccountRow>, String> {
     sqlx::query_as::<_, PeriodAccountRow>(
@@ -179,21 +196,21 @@ async fn query_period_accounts(
             ga.account_type,
             COALESCE(SUM(jel.debit_minor), 0) AS total_debit_minor,
             COALESCE(SUM(jel.credit_minor), 0) AS total_credit_minor
-        FROM gl_accounts ga
-        LEFT JOIN journal_entry_lines jel ON ga.id = jel.gl_account_id
-        LEFT JOIN journal_entries je ON jel.journal_entry_id = je.id
-            AND je.is_posted = 1
-            AND DATE(je.entry_date) >= ?
-            AND DATE(je.entry_date) <= ?
-        WHERE ga.is_active = 1
+        FROM journal_entry_lines jel
+        INNER JOIN journal_entries je ON je.id = jel.journal_entry_id
+        INNER JOIN gl_accounts ga ON ga.id = jel.gl_account_id
+        WHERE je.is_posted = 1
+            AND DATE(je.entry_date) <= DATE(?)
+            AND (? IS NULL OR DATE(je.entry_date) >= DATE(?))
         GROUP BY ga.id, ga.account_number, ga.account_name, ga.account_type
         HAVING COALESCE(SUM(jel.debit_minor), 0) != 0
             OR COALESCE(SUM(jel.credit_minor), 0) != 0
         ORDER BY ga.account_number
         "#,
     )
-    .bind(start_date)
     .bind(end_date)
+    .bind(start_date)
+    .bind(start_date)
     .fetch_all(pool)
     .await
     .map_err(|e| e.to_string())
@@ -240,27 +257,42 @@ fn build_section(label: &str, rows: &[PeriodAccountRow], types: &[&str]) -> Stat
 // Statement Builders (pure logic, testable)
 // ============================================================================
 
-/// Builds a balance sheet from period account rows.
+/// Builds a balance sheet as of `end_date`.
 ///
-/// Balance sheet tie: total_assets == total_liabilities + total_equity
-/// where total_equity includes current-period net income.
+/// A balance sheet reports cumulative positions, not period movements:
+/// `cumulative_rows` must cover inception..=end_date and `period_rows` must
+/// cover start_date..=end_date (both posted-only). Building A/L/E from period
+/// activity alone would drop every opening balance (caught in CTO review).
+///
+/// Equity decomposes as: contributed equity accounts (cumulative) + retained
+/// earnings (net income accumulated before start_date) + current-period net
+/// income. Tie: total_assets == total_liabilities + total_equity.
 fn build_balance_sheet(
-    rows: &[PeriodAccountRow],
+    cumulative_rows: &[PeriodAccountRow],
+    period_rows: &[PeriodAccountRow],
     start_date: &str,
     end_date: &str,
 ) -> BalanceSheetReport {
-    let assets = build_section("Assets", rows, &["Asset"]);
-    let liabilities = build_section("Liabilities", rows, &["Liability"]);
-    let equity = build_section("Equity", rows, &["Equity"]);
+    let assets = build_section("Assets", cumulative_rows, &["Asset"]);
+    let liabilities = build_section("Liabilities", cumulative_rows, &["Liability"]);
+    let equity = build_section("Equity", cumulative_rows, &["Equity"]);
 
-    // Net income = Income - Expenses for the period
-    let revenue_section = build_section("Income", rows, &["Income"]);
-    let expense_section = build_section("Expenses", rows, &["Expense"]);
-    let net_income_minor = revenue_section.subtotal_minor - expense_section.subtotal_minor;
+    // Current-period net income = Income - Expenses over the period rows.
+    let period_revenue = build_section("Income", period_rows, &["Income"]);
+    let period_expense = build_section("Expenses", period_rows, &["Expense"]);
+    let net_income_minor = period_revenue.subtotal_minor - period_expense.subtotal_minor;
+
+    // Retained earnings = accumulated net income from inception through the
+    // day before start_date (cumulative NI minus the current-period portion).
+    let cumulative_revenue = build_section("Income", cumulative_rows, &["Income"]);
+    let cumulative_expense = build_section("Expenses", cumulative_rows, &["Expense"]);
+    let cumulative_net_income =
+        cumulative_revenue.subtotal_minor - cumulative_expense.subtotal_minor;
+    let retained_earnings_minor = cumulative_net_income - net_income_minor;
 
     let total_assets_minor = assets.subtotal_minor;
     let total_liabilities_minor = liabilities.subtotal_minor;
-    let total_equity_minor = equity.subtotal_minor + net_income_minor;
+    let total_equity_minor = equity.subtotal_minor + retained_earnings_minor + net_income_minor;
 
     let is_balanced = total_assets_minor == total_liabilities_minor + total_equity_minor;
 
@@ -270,6 +302,7 @@ fn build_balance_sheet(
         assets,
         liabilities,
         equity,
+        retained_earnings_minor,
         net_income_minor,
         total_assets_minor,
         total_liabilities_minor,
@@ -302,7 +335,9 @@ fn build_income_statement(
     }
 }
 
-/// Builds a trial balance from period account rows.
+/// Builds a trial balance as of `end_date` from cumulative account rows
+/// (inception..=end_date, posted-only) — conventional "trial balance as at
+/// date" semantics, consistent with the Phase 2 balances and the M4 views.
 fn build_trial_balance(
     rows: &[PeriodAccountRow],
     start_date: &str,
@@ -344,9 +379,12 @@ fn build_trial_balance(
 /// assertions pass, or Err with a description of what failed.
 ///
 /// Assertions:
-/// 1. Balance sheet balances: assets == liabilities + equity (incl. net income)
+/// 1. Balance sheet balances: assets == liabilities + equity
+///    (incl. retained earnings and current-period net income)
 /// 2. Net income on the income statement == the corresponding equity movement
 /// 3. Trial balance is in balance: total debits == total credits
+/// 4. Trial balance cumulative net income (Income − Expense as of end_date)
+///    == balance sheet retained earnings + current-period net income
 pub fn verify_ties(
     balance_sheet: &BalanceSheetReport,
     income_statement: &IncomeStatementReport,
@@ -378,8 +416,9 @@ pub fn verify_ties(
         ));
     }
 
-    // 4. Cross-check: income statement net income should equal the difference
-    // between revenue-type and expense-type totals from the trial balance
+    // 4. Cross-check: the trial balance is cumulative as of end_date, so its
+    // Income − Expense total must equal retained earnings + current-period
+    // net income on the balance sheet.
     let tb_income: i64 = trial_balance
         .rows
         .iter()
@@ -393,11 +432,13 @@ pub fn verify_ties(
         .map(|r| r.debit_balance - r.credit_balance)
         .sum();
     let tb_net_income = tb_income - tb_expense;
+    let bs_accumulated_income =
+        balance_sheet.retained_earnings_minor + balance_sheet.net_income_minor;
 
-    if tb_net_income != income_statement.net_income_minor {
+    if tb_net_income != bs_accumulated_income {
         return Err(format!(
-            "Trial balance net income ({}) != income statement net income ({})",
-            tb_net_income, income_statement.net_income_minor,
+            "Trial balance cumulative net income ({}) != balance sheet retained earnings + net income ({})",
+            tb_net_income, bs_accumulated_income,
         ));
     }
 
@@ -431,6 +472,42 @@ fn compute_prior_period(start_date: &str, end_date: &str) -> Result<(String, Str
 }
 
 // ============================================================================
+// Shared builder — query, build, and verify all three statements
+// ============================================================================
+
+/// All three statements for one period, built together and verified as a set.
+struct VerifiedStatements {
+    balance_sheet: BalanceSheetReport,
+    income_statement: IncomeStatementReport,
+    trial_balance: TrialBalanceReport,
+}
+
+/// Queries cumulative (inception..=end) and period (start..=end) activity,
+/// builds all three statements, and runs `verify_ties`. Every statement
+/// handed to the UI or an export goes through this single gate — a statement
+/// that does not tie is a hard error, never a silent render.
+async fn build_verified_statements(
+    pool: &sqlx::SqlitePool,
+    start_date: &str,
+    end_date: &str,
+) -> Result<VerifiedStatements, String> {
+    let cumulative_rows = query_account_activity(pool, None, end_date).await?;
+    let period_rows = query_account_activity(pool, Some(start_date), end_date).await?;
+
+    let balance_sheet = build_balance_sheet(&cumulative_rows, &period_rows, start_date, end_date);
+    let income_statement = build_income_statement(&period_rows, start_date, end_date);
+    let trial_balance = build_trial_balance(&cumulative_rows, start_date, end_date);
+
+    verify_ties(&balance_sheet, &income_statement, &trial_balance)?;
+
+    Ok(VerifiedStatements {
+        balance_sheet,
+        income_statement,
+        trial_balance,
+    })
+}
+
+// ============================================================================
 // Tauri Commands — Financial Statements
 // ============================================================================
 
@@ -461,23 +538,15 @@ pub async fn get_balance_sheet(
     state: State<'_, DatabaseState>,
     params: StatementParams,
 ) -> Result<ComparativeBalanceSheet, String> {
-    // Current period
-    let current_rows =
-        query_period_accounts(&state.pool, &params.start_date, &params.end_date).await?;
-    let current_bs = build_balance_sheet(&current_rows, &params.start_date, &params.end_date);
-    let current_is = build_income_statement(&current_rows, &params.start_date, &params.end_date);
-    let current_tb = build_trial_balance(&current_rows, &params.start_date, &params.end_date);
-
-    verify_ties(&current_bs, &current_is, &current_tb)?;
-
-    // Prior period (same duration, immediately preceding)
     let (prior_start, prior_end) = compute_prior_period(&params.start_date, &params.end_date)?;
-    let prior_rows = query_period_accounts(&state.pool, &prior_start, &prior_end).await?;
-    let prior_bs = build_balance_sheet(&prior_rows, &prior_start, &prior_end);
+
+    let current =
+        build_verified_statements(&state.pool, &params.start_date, &params.end_date).await?;
+    let prior = build_verified_statements(&state.pool, &prior_start, &prior_end).await?;
 
     Ok(ComparativeBalanceSheet {
-        current: current_bs,
-        prior: prior_bs,
+        current: current.balance_sheet,
+        prior: prior.balance_sheet,
     })
 }
 
@@ -498,21 +567,15 @@ pub async fn get_income_statement(
     state: State<'_, DatabaseState>,
     params: StatementParams,
 ) -> Result<ComparativeIncomeStatement, String> {
-    let current_rows =
-        query_period_accounts(&state.pool, &params.start_date, &params.end_date).await?;
-    let current_bs = build_balance_sheet(&current_rows, &params.start_date, &params.end_date);
-    let current_is = build_income_statement(&current_rows, &params.start_date, &params.end_date);
-    let current_tb = build_trial_balance(&current_rows, &params.start_date, &params.end_date);
-
-    verify_ties(&current_bs, &current_is, &current_tb)?;
-
     let (prior_start, prior_end) = compute_prior_period(&params.start_date, &params.end_date)?;
-    let prior_rows = query_period_accounts(&state.pool, &prior_start, &prior_end).await?;
-    let prior_is = build_income_statement(&prior_rows, &prior_start, &prior_end);
+
+    let current =
+        build_verified_statements(&state.pool, &params.start_date, &params.end_date).await?;
+    let prior = build_verified_statements(&state.pool, &prior_start, &prior_end).await?;
 
     Ok(ComparativeIncomeStatement {
-        current: current_is,
-        prior: prior_is,
+        current: current.income_statement,
+        prior: prior.income_statement,
     })
 }
 
@@ -533,21 +596,15 @@ pub async fn get_period_trial_balance(
     state: State<'_, DatabaseState>,
     params: StatementParams,
 ) -> Result<ComparativeTrialBalance, String> {
-    let current_rows =
-        query_period_accounts(&state.pool, &params.start_date, &params.end_date).await?;
-    let current_bs = build_balance_sheet(&current_rows, &params.start_date, &params.end_date);
-    let current_is = build_income_statement(&current_rows, &params.start_date, &params.end_date);
-    let current_tb = build_trial_balance(&current_rows, &params.start_date, &params.end_date);
-
-    verify_ties(&current_bs, &current_is, &current_tb)?;
-
     let (prior_start, prior_end) = compute_prior_period(&params.start_date, &params.end_date)?;
-    let prior_rows = query_period_accounts(&state.pool, &prior_start, &prior_end).await?;
-    let prior_tb = build_trial_balance(&prior_rows, &prior_start, &prior_end);
+
+    let current =
+        build_verified_statements(&state.pool, &params.start_date, &params.end_date).await?;
+    let prior = build_verified_statements(&state.pool, &prior_start, &prior_end).await?;
 
     Ok(ComparativeTrialBalance {
-        current: current_tb,
-        prior: prior_tb,
+        current: current.trial_balance,
+        prior: prior.trial_balance,
     })
 }
 
@@ -570,11 +627,9 @@ pub async fn export_balance_sheet_csv(
     params: StatementParams,
     path: String,
 ) -> Result<(), String> {
-    let rows = query_period_accounts(&state.pool, &params.start_date, &params.end_date).await?;
-    let bs = build_balance_sheet(&rows, &params.start_date, &params.end_date);
-    let is = build_income_statement(&rows, &params.start_date, &params.end_date);
-    let tb = build_trial_balance(&rows, &params.start_date, &params.end_date);
-    verify_ties(&bs, &is, &tb)?;
+    let statements =
+        build_verified_statements(&state.pool, &params.start_date, &params.end_date).await?;
+    let bs = statements.balance_sheet;
 
     let mut writer = Writer::from_path(&path).map_err(|e| e.to_string())?;
 
@@ -629,7 +684,15 @@ pub async fn export_balance_sheet_csv(
         .write_record([
             "Equity",
             "",
-            "Net Income",
+            "Retained Earnings",
+            &format_minor(bs.retained_earnings_minor),
+        ])
+        .map_err(|e| e.to_string())?;
+    writer
+        .write_record([
+            "Equity",
+            "",
+            "Net Income (current period)",
             &format_minor(bs.net_income_minor),
         ])
         .map_err(|e| e.to_string())?;
@@ -656,11 +719,9 @@ pub async fn export_income_statement_csv(
     params: StatementParams,
     path: String,
 ) -> Result<(), String> {
-    let rows = query_period_accounts(&state.pool, &params.start_date, &params.end_date).await?;
-    let bs = build_balance_sheet(&rows, &params.start_date, &params.end_date);
-    let is = build_income_statement(&rows, &params.start_date, &params.end_date);
-    let tb = build_trial_balance(&rows, &params.start_date, &params.end_date);
-    verify_ties(&bs, &is, &tb)?;
+    let statements =
+        build_verified_statements(&state.pool, &params.start_date, &params.end_date).await?;
+    let is = statements.income_statement;
 
     let mut writer = Writer::from_path(&path).map_err(|e| e.to_string())?;
 
@@ -729,11 +790,9 @@ pub async fn export_trial_balance_csv(
     params: StatementParams,
     path: String,
 ) -> Result<(), String> {
-    let rows = query_period_accounts(&state.pool, &params.start_date, &params.end_date).await?;
-    let bs = build_balance_sheet(&rows, &params.start_date, &params.end_date);
-    let is = build_income_statement(&rows, &params.start_date, &params.end_date);
-    let tb = build_trial_balance(&rows, &params.start_date, &params.end_date);
-    verify_ties(&bs, &is, &tb)?;
+    let statements =
+        build_verified_statements(&state.pool, &params.start_date, &params.end_date).await?;
+    let tb = statements.trial_balance;
 
     let mut writer = Writer::from_path(&path).map_err(|e| e.to_string())?;
 
@@ -825,10 +884,11 @@ mod tests {
     #[test]
     fn test_balance_sheet_ties() {
         let rows = balanced_fixture();
-        let bs = build_balance_sheet(&rows, "2025-01-01", "2025-12-31");
+        let bs = build_balance_sheet(&rows, &rows, "2025-01-01", "2025-12-31");
 
         assert_eq!(bs.total_assets_minor, 50000);
         assert_eq!(bs.total_liabilities_minor, 10000);
+        assert_eq!(bs.retained_earnings_minor, 0); // no pre-period history
         assert_eq!(bs.net_income_minor, 10000);
         assert_eq!(bs.total_equity_minor, 40000); // 30000 equity + 10000 NI
         assert!(bs.is_balanced);
@@ -861,7 +921,7 @@ mod tests {
     #[test]
     fn test_verify_ties_pass() {
         let rows = balanced_fixture();
-        let bs = build_balance_sheet(&rows, "2025-01-01", "2025-12-31");
+        let bs = build_balance_sheet(&rows, &rows, "2025-01-01", "2025-12-31");
         let is = build_income_statement(&rows, "2025-01-01", "2025-12-31");
         let tb = build_trial_balance(&rows, "2025-01-01", "2025-12-31");
 
@@ -871,7 +931,7 @@ mod tests {
     #[test]
     fn test_verify_ties_fails_on_corrupted_balance_sheet() {
         let rows = balanced_fixture();
-        let mut bs = build_balance_sheet(&rows, "2025-01-01", "2025-12-31");
+        let mut bs = build_balance_sheet(&rows, &rows, "2025-01-01", "2025-12-31");
         let is = build_income_statement(&rows, "2025-01-01", "2025-12-31");
         let tb = build_trial_balance(&rows, "2025-01-01", "2025-12-31");
 
@@ -887,7 +947,7 @@ mod tests {
     #[test]
     fn test_verify_ties_fails_on_net_income_mismatch() {
         let rows = balanced_fixture();
-        let bs = build_balance_sheet(&rows, "2025-01-01", "2025-12-31");
+        let bs = build_balance_sheet(&rows, &rows, "2025-01-01", "2025-12-31");
         let mut is = build_income_statement(&rows, "2025-01-01", "2025-12-31");
         let tb = build_trial_balance(&rows, "2025-01-01", "2025-12-31");
 
@@ -902,7 +962,7 @@ mod tests {
     #[test]
     fn test_verify_ties_fails_on_unbalanced_trial_balance() {
         let rows = balanced_fixture();
-        let bs = build_balance_sheet(&rows, "2025-01-01", "2025-12-31");
+        let bs = build_balance_sheet(&rows, &rows, "2025-01-01", "2025-12-31");
         let is = build_income_statement(&rows, "2025-01-01", "2025-12-31");
         let mut tb = build_trial_balance(&rows, "2025-01-01", "2025-12-31");
 
@@ -928,7 +988,7 @@ mod tests {
             row("4000", "Donation Revenue", "Income", 10000, 10000),
         ];
 
-        let bs = build_balance_sheet(&rows, "2025-01-01", "2025-12-31");
+        let bs = build_balance_sheet(&rows, &rows, "2025-01-01", "2025-12-31");
         let is = build_income_statement(&rows, "2025-01-01", "2025-12-31");
         let tb = build_trial_balance(&rows, "2025-01-01", "2025-12-31");
 
@@ -976,7 +1036,7 @@ mod tests {
     #[test]
     fn test_empty_period_produces_balanced_statements() {
         let rows: Vec<PeriodAccountRow> = vec![];
-        let bs = build_balance_sheet(&rows, "2025-01-01", "2025-12-31");
+        let bs = build_balance_sheet(&rows, &rows, "2025-01-01", "2025-12-31");
         let is = build_income_statement(&rows, "2025-01-01", "2025-12-31");
         let tb = build_trial_balance(&rows, "2025-01-01", "2025-12-31");
 
@@ -997,5 +1057,219 @@ mod tests {
         assert_eq!(section.items.len(), 1);
         assert_eq!(section.items[0].account_number, "1000");
         assert_eq!(section.subtotal_minor, 5000);
+    }
+
+    #[test]
+    fn test_retained_earnings_split_from_prior_income() {
+        // Entity history: 10000 contributed equity, 20000 total income
+        // (15000 earned before the period, 5000 within the period).
+        let cumulative = vec![
+            row("1000", "Cash", "Asset", 30000, 0),
+            row("3000", "Owner Equity", "Equity", 0, 10000),
+            row("4000", "Donation Revenue", "Income", 0, 20000),
+        ];
+        let period = vec![
+            row("1000", "Cash", "Asset", 5000, 0),
+            row("4000", "Donation Revenue", "Income", 0, 5000),
+        ];
+
+        let bs = build_balance_sheet(&cumulative, &period, "2025-06-01", "2025-06-30");
+        let is = build_income_statement(&period, "2025-06-01", "2025-06-30");
+        let tb = build_trial_balance(&cumulative, "2025-06-01", "2025-06-30");
+
+        // Opening balances survive: assets are cumulative, not period movement.
+        assert_eq!(bs.total_assets_minor, 30000);
+        assert_eq!(bs.net_income_minor, 5000);
+        assert_eq!(bs.retained_earnings_minor, 15000);
+        assert_eq!(bs.total_equity_minor, 30000); // 10000 + 15000 RE + 5000 NI
+        assert!(bs.is_balanced);
+        assert_eq!(is.net_income_minor, 5000);
+        assert!(verify_ties(&bs, &is, &tb).is_ok());
+    }
+
+    #[test]
+    fn test_verify_ties_fails_on_corrupted_retained_earnings() {
+        let rows = balanced_fixture();
+        let mut bs = build_balance_sheet(&rows, &rows, "2025-01-01", "2025-12-31");
+        let is = build_income_statement(&rows, "2025-01-01", "2025-12-31");
+        let tb = build_trial_balance(&rows, "2025-01-01", "2025-12-31");
+
+        // Corrupt retained earnings while keeping the A = L + E arithmetic
+        // consistent, so only the trial-balance cross-check can catch it.
+        bs.retained_earnings_minor += 700;
+        bs.total_equity_minor += 700;
+        bs.total_assets_minor += 700;
+
+        let result = verify_ties(&bs, &is, &tb);
+        assert!(result.is_err());
+        assert!(result
+            .unwrap_err()
+            .contains("Trial balance cumulative net income"));
+    }
+
+    // ========================================================================
+    // DB integration tests — the SQL layer itself (draft / date filtering)
+    // ========================================================================
+
+    /// Creates an in-memory SQLite pool with all migrations applied.
+    async fn setup_test_db() -> sqlx::SqlitePool {
+        let pool = sqlx::sqlite::SqlitePoolOptions::new()
+            .connect("sqlite::memory:")
+            .await
+            .expect("Failed to create in-memory SQLite pool");
+
+        sqlx::migrate!("./migrations")
+            .run(&pool)
+            .await
+            .expect("Failed to run migrations");
+
+        pool
+    }
+
+    /// Looks up a seed GL account id by account number.
+    async fn account_id(pool: &sqlx::SqlitePool, number: &str) -> i64 {
+        let (id,): (i64,) = sqlx::query_as("SELECT id FROM gl_accounts WHERE account_number = ?")
+            .bind(number)
+            .fetch_one(pool)
+            .await
+            .expect("Seed account should exist");
+        id
+    }
+
+    /// Creates a draft entry on a given date with one balanced debit/credit
+    /// line pair, and returns its id.
+    async fn create_draft_with_lines(
+        pool: &sqlx::SqlitePool,
+        entry_number: &str,
+        entry_date: &str,
+        debit_acct: i64,
+        credit_acct: i64,
+        amount_minor: i64,
+    ) -> i64 {
+        let result = sqlx::query(
+            "INSERT INTO journal_entries (entry_date, entry_number, description, is_posted, status, origin, created_by) VALUES (?, ?, 'Statement test entry', 0, 'draft', 'manual', 'test')",
+        )
+        .bind(entry_date)
+        .bind(entry_number)
+        .execute(pool)
+        .await
+        .expect("Failed to create draft entry");
+        let entry_id = result.last_insert_rowid();
+
+        let legacy_amount = amount_minor as f64 / 100.0;
+        sqlx::query(
+            "INSERT INTO journal_entry_lines (journal_entry_id, gl_account_id, debit_amount, credit_amount, debit_minor, credit_minor, asset_id, line_number) VALUES (?, ?, ?, 0, ?, 0, 'USD', 1)",
+        )
+        .bind(entry_id)
+        .bind(debit_acct)
+        .bind(legacy_amount)
+        .bind(amount_minor)
+        .execute(pool)
+        .await
+        .expect("Failed to add debit line");
+        sqlx::query(
+            "INSERT INTO journal_entry_lines (journal_entry_id, gl_account_id, debit_amount, credit_amount, debit_minor, credit_minor, asset_id, line_number) VALUES (?, ?, 0, ?, 0, ?, 'USD', 2)",
+        )
+        .bind(entry_id)
+        .bind(credit_acct)
+        .bind(legacy_amount)
+        .bind(amount_minor)
+        .execute(pool)
+        .await
+        .expect("Failed to add credit line");
+
+        entry_id
+    }
+
+    /// Walks an entry through draft -> approved -> posted via direct SQL.
+    async fn approve_and_post(pool: &sqlx::SqlitePool, entry_id: i64) {
+        sqlx::query(
+            "UPDATE journal_entries SET status = 'approved', approved_by = 'test', approved_at = CURRENT_TIMESTAMP WHERE id = ?",
+        )
+        .bind(entry_id)
+        .execute(pool)
+        .await
+        .expect("Failed to approve entry");
+        sqlx::query(
+            "UPDATE journal_entries SET status = 'posted', is_posted = 1, posted_at = CURRENT_TIMESTAMP WHERE id = ?",
+        )
+        .bind(entry_id)
+        .execute(pool)
+        .await
+        .expect("Failed to post entry");
+    }
+
+    /// Seeds: posted in-period (100.00), posted before period (555.00), and a
+    /// DRAFT in-period (999.00) that must never reach any statement.
+    async fn seed_statement_fixture(pool: &sqlx::SqlitePool) {
+        let cash = account_id(pool, "1000").await;
+        let income = account_id(pool, "4000").await;
+
+        let in_period =
+            create_draft_with_lines(pool, "ST-001", "2026-02-10", cash, income, 10000).await;
+        approve_and_post(pool, in_period).await;
+
+        let before_period =
+            create_draft_with_lines(pool, "ST-002", "2026-01-05", cash, income, 55500).await;
+        approve_and_post(pool, before_period).await;
+
+        // Draft stays a draft — is_posted = 0.
+        create_draft_with_lines(pool, "ST-003", "2026-02-15", cash, income, 99900).await;
+    }
+
+    #[tokio::test]
+    async fn db_query_excludes_drafts_and_out_of_period_entries() {
+        let pool = setup_test_db().await;
+        seed_statement_fixture(&pool).await;
+
+        // Period query: only the posted in-period entry.
+        let period_rows = query_account_activity(&pool, Some("2026-02-01"), "2026-02-28")
+            .await
+            .expect("period query should succeed");
+        let cash_row = period_rows
+            .iter()
+            .find(|r| r.account_number == "1000")
+            .expect("Cash should have period activity");
+        assert_eq!(
+            cash_row.total_debit_minor, 10000,
+            "Draft (99900) and January (55500) lines must be excluded"
+        );
+
+        // Cumulative query: both posted entries, still no draft.
+        let cumulative_rows = query_account_activity(&pool, None, "2026-02-28")
+            .await
+            .expect("cumulative query should succeed");
+        let cash_row = cumulative_rows
+            .iter()
+            .find(|r| r.account_number == "1000")
+            .expect("Cash should have cumulative activity");
+        assert_eq!(
+            cash_row.total_debit_minor,
+            10000 + 55500,
+            "Cumulative must include prior posted entries and exclude drafts"
+        );
+    }
+
+    #[tokio::test]
+    async fn db_balance_sheet_includes_opening_balances_and_ties() {
+        let pool = setup_test_db().await;
+        seed_statement_fixture(&pool).await;
+
+        let statements = build_verified_statements(&pool, "2026-02-01", "2026-02-28")
+            .await
+            .expect("statements should build and tie");
+
+        let bs = &statements.balance_sheet;
+        assert_eq!(bs.total_assets_minor, 65500, "Assets are as-of end date");
+        assert_eq!(bs.net_income_minor, 10000, "NI is period-scoped");
+        assert_eq!(
+            bs.retained_earnings_minor, 55500,
+            "Pre-period income lands in retained earnings"
+        );
+        assert!(bs.is_balanced);
+
+        assert_eq!(statements.income_statement.net_income_minor, 10000);
+        assert!(statements.trial_balance.is_balanced);
+        assert_eq!(statements.trial_balance.total_debits_minor, 65500);
     }
 }
