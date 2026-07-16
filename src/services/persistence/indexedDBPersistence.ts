@@ -51,6 +51,7 @@ class IndexedDBPersistenceService implements PersistenceService {
   private db: IDBDatabase | null = null
   private initPromise: Promise<void> | null = null
 
+  /** Opens the IndexedDB database (idempotent; reuses an in-flight open). */
   private init(): Promise<void> {
     if (this.db) {
       return Promise.resolve()
@@ -989,6 +990,8 @@ class IndexedDBPersistenceService implements PersistenceService {
     await indexedDBService.saveTransactions(network, address, transactions)
   }
 
+  /** Loads chain transactions for an address. */
+  // skipcq: JS-0105, JS-D1001 — delegates to indexedDBService
   getChainTransactions(
     network: string,
     address: string
@@ -996,6 +999,8 @@ class IndexedDBPersistenceService implements PersistenceService {
     return indexedDBService.getTransactionsFor(network, address)
   }
 
+  /** Loads the sync status for a chain/address pair. */
+  // skipcq: JS-0105, JS-D1001 — delegates to indexedDBService
   loadChainSyncStatus(
     network: string,
     address: string
@@ -1019,6 +1024,8 @@ class IndexedDBPersistenceService implements PersistenceService {
     await indexedDBService.saveWallets(wallets)
   }
 
+  /** Loads all connected wallets. */
+  // skipcq: JS-0105, JS-D1001 — delegates to indexedDBService
   loadConnectedWallets(): Promise<ConnectedWallet[]> {
     return indexedDBService.loadWallets()
   }
