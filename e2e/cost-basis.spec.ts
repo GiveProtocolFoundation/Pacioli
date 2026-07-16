@@ -33,18 +33,20 @@ test.describe('Cost basis report generation', () => {
     ).toBeVisible({ timeout: 8_000 })
   })
 
-  test('cost basis / capital gains report card is visible', async ({ page }) => {
+  test('cost basis / capital gains report card is visible', async ({
+    page,
+  }) => {
     await mockBlockchainRpc(page)
     await goToReports(page)
 
     // Check for any cost-basis related report in the listing
-    const costBasisCard = page
-      .getByText(/cost basis|capital gain/i)
-      .first()
+    const costBasisCard = page.getByText(/cost basis|capital gain/i).first()
     await expect(costBasisCard).toBeVisible({ timeout: 8_000 })
   })
 
-  test('clicking a crypto report card shows detail or run options', async ({ page }) => {
+  test('clicking a crypto report card shows detail or run options', async ({
+    page,
+  }) => {
     await mockBlockchainRpc(page)
     await goToReports(page)
 
@@ -75,7 +77,9 @@ test.describe('Cost basis report generation', () => {
   //     1. Seed fixture transactions with known acquisition/disposal dates and prices.
   //     2. Trigger cost-basis calculation via the report UI.
   //     3. Verify that per-asset gain/loss values match expected FIFO/HIFO output.
-  test.skip('cost basis calculation returns correct FIFO results', async ({ page }) => {
+  test.skip('cost basis calculation returns correct FIFO results', async ({
+    page,
+  }) => {
     // Depends on GIV-447: cost basis engine
     await mockBlockchainRpc(page)
     await goToReports(page)
@@ -84,7 +88,9 @@ test.describe('Cost basis report generation', () => {
   })
 
   // TODO(GIV-447): Unskip once cost-basis calculation supports HIFO/LIFO methods.
-  test.skip('cost basis method selector persists selection across report runs', async ({ page }) => {
+  test.skip('cost basis method selector persists selection across report runs', ({
+    page,
+  }) => {
     // Depends on GIV-447
     void page
     expect(true).toBe(false)
