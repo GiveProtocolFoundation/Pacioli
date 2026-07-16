@@ -54,6 +54,15 @@ const ClassificationQueue = React.lazy(
 const AccountingPeriods = React.lazy(
   () => import('./app/accounting-periods/AccountingPeriods')
 )
+const BalanceSheetReport = React.lazy(
+  () => import('./app/reports/BalanceSheet')
+)
+const IncomeStatementReport = React.lazy(
+  () => import('./app/reports/IncomeStatement')
+)
+const PeriodTrialBalance = React.lazy(
+  () => import('./app/reports/PeriodTrialBalance')
+)
 
 // Loading fallback component
 const LoadingFallback: React.FC = () => (
@@ -183,7 +192,9 @@ const MainRoutes: React.FC = () => (
       <Route path="/trial-balance" element={<TrialBalance />} />
       <Route path="/ledger/reconciliation" element={<Reconciliation />} />
       <Route path="/accounting-periods" element={<AccountingPeriods />} />
-      <Route path="/reports/balance-sheet" element={<Reports />} />
+      <Route path="/reports/balance-sheet" element={<BalanceSheetReport />} />
+      <Route path="/reports/income-statement" element={<IncomeStatementReport />} />
+      <Route path="/reports/trial-balance" element={<PeriodTrialBalance />} />
     </Routes>
   </Navigation>
 )
