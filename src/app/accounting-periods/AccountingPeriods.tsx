@@ -173,7 +173,7 @@ const CreatePeriodForm: React.FC<{
   )
 
   const handleSubmit = useCallback(() => {
-    void onCreate(newStart, newEnd)
+    onCreate(newStart, newEnd)
   }, [onCreate, newStart, newEnd])
 
   return (
@@ -218,6 +218,57 @@ const CreatePeriodForm: React.FC<{
     </div>
   )
 }
+
+/**
+ * Renders the header row of the periods table.
+ * @returns Table head element
+ */
+const PeriodsTableHeader: React.FC = () => (
+  <thead>
+    <tr className="border-b border-[rgba(95,227,192,0.1)] bg-[#F7FAFA] dark:bg-[#0C141B]/50">
+      <th className="text-left px-4 py-3 text-xs font-semibold text-[#294050]/60 dark:text-[#9FB4BE] uppercase tracking-wider">
+        Period
+      </th>
+      <th className="text-left px-4 py-3 text-xs font-semibold text-[#294050]/60 dark:text-[#9FB4BE] uppercase tracking-wider">
+        Status
+      </th>
+      <th className="text-left px-4 py-3 text-xs font-semibold text-[#294050]/60 dark:text-[#9FB4BE] uppercase tracking-wider">
+        Closed By
+      </th>
+      <th className="text-left px-4 py-3 text-xs font-semibold text-[#294050]/60 dark:text-[#9FB4BE] uppercase tracking-wider">
+        Closed At
+      </th>
+      <th className="text-right px-4 py-3 text-xs font-semibold text-[#294050]/60 dark:text-[#9FB4BE] uppercase tracking-wider">
+        Actions
+      </th>
+    </tr>
+  </thead>
+)
+
+/**
+ * Renders the periods table (header + one row per period).
+ * @param props - Component props
+ * @returns Periods table element
+ */
+const PeriodsTable: React.FC<{
+  periods: AccountingPeriod[]
+  onRequestAction: (action: ConfirmActionState) => void
+}> = ({ periods, onRequestAction }) => (
+  <div className="overflow-hidden rounded-lg border border-[rgba(95,227,192,0.1)] bg-white dark:bg-[#111B24]">
+    <table className="w-full text-sm">
+      <PeriodsTableHeader />
+      <tbody className="divide-y divide-[rgba(95,227,192,0.08)]">
+        {periods.map(period => (
+          <PeriodRow
+            key={period.id}
+            period={period}
+            onRequestAction={onRequestAction}
+          />
+        ))}
+      </tbody>
+    </table>
+  </div>
+)
 
 /**
  * Renders the audit log of period reopen events.
@@ -339,9 +390,9 @@ const AccountingPeriods: React.FC = () => {
   const handleConfirm = useCallback(() => {
     if (!confirmAction) return
     if (confirmAction.type === 'close') {
-      void handleClose(confirmAction.periodId)
+      handleClose(confirmAction.periodId)
     } else {
-      void handleReopen(confirmAction.periodId)
+      handleReopen(confirmAction.periodId)
     }
   }, [confirmAction, handleClose, handleReopen])
 
@@ -424,38 +475,7 @@ const AccountingPeriods: React.FC = () => {
           </p>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-lg border border-[rgba(95,227,192,0.1)] bg-white dark:bg-[#111B24]">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-[rgba(95,227,192,0.1)] bg-[#F7FAFA] dark:bg-[#0C141B]/50">
-                <th className="text-left px-4 py-3 text-xs font-semibold text-[#294050]/60 dark:text-[#9FB4BE] uppercase tracking-wider">
-                  Period
-                </th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-[#294050]/60 dark:text-[#9FB4BE] uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-[#294050]/60 dark:text-[#9FB4BE] uppercase tracking-wider">
-                  Closed By
-                </th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-[#294050]/60 dark:text-[#9FB4BE] uppercase tracking-wider">
-                  Closed At
-                </th>
-                <th className="text-right px-4 py-3 text-xs font-semibold text-[#294050]/60 dark:text-[#9FB4BE] uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[rgba(95,227,192,0.08)]">
-              {periods.map(period => (
-                <PeriodRow
-                  key={period.id}
-                  period={period}
-                  onRequestAction={setConfirmAction}
-                />
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <PeriodsTable periods={periods} onRequestAction={setConfirmAction} />
       )}
 
       <ReopenAuditLog periods={periods} />
