@@ -496,3 +496,20 @@ export interface SortOptions {
   field: string
   direction: 'asc' | 'desc'
 }
+
+// =============================================================================
+// ACCOUNTING PERIODS (GIV-684, Phase 5)
+// =============================================================================
+
+export interface AccountingPeriod {
+  id: number
+  periodStart: string
+  periodEnd: string
+  status: 'open' | 'closed'
+  closedBy?: string
+  closedAt?: string
+  reopenedBy?: string
+  reopenedAt?: string
+  createdAt?: string
+  updatedAt?: string
+}

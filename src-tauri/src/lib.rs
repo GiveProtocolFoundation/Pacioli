@@ -446,7 +446,12 @@ pub fn run() {
             api::accounting::get_account_balances_by_asset,
             api::accounting::get_trial_balance,
             api::accounting::get_unclassified_transaction_count,
-            api::accounting::get_draft_journal_entry_count
+            api::accounting::get_draft_journal_entry_count,
+            // Accounting periods commands (GIV-684, Phase 5)
+            api::accounting::list_periods,
+            api::accounting::create_period,
+            api::accounting::close_period,
+            api::accounting::reopen_period
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
