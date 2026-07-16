@@ -20,6 +20,152 @@ interface IgnoreModal {
   hash: string
 }
 
+const HEADER_CELL =
+  'px-4 py-3 text-xs font-medium text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider'
+
+/** Static table header row for the classification queue. */
+const QueueHeaderRow: React.FC = () => (
+  <tr>
+    <th className={`${HEADER_CELL} text-left`}>Chain</th>
+    <th className={`${HEADER_CELL} text-left`}>Hash</th>
+    <th className={`${HEADER_CELL} text-left`}>Type</th>
+    <th className={`${HEADER_CELL} text-right`}>Value</th>
+    <th className={`${HEADER_CELL} text-right`}>Fee</th>
+    <th className={`${HEADER_CELL} text-left`}>Timestamp</th>
+    <th className={`${HEADER_CELL} text-center`}>Actions</th>
+  </tr>
+)
+
+/** Props for a single classification queue row. */
+interface QueueRowProps {
+  tx: RawTransaction
+  busy: boolean
+  onAutoClassify: (event: React.MouseEvent<HTMLButtonElement>) => void
+  onManualClassify: (event: React.MouseEvent<HTMLButtonElement>) => void
+  onIgnore: (event: React.MouseEvent<HTMLButtonElement>) => void
+}
+
+/** One raw transaction row with Auto / Manual / Skip actions. */
+const QueueRow: React.FC<QueueRowProps> = ({
+  tx,
+  busy,
+  onAutoClassify,
+  onManualClassify,
+  onIgnore,
+}) => (
+  <tr className="hover:bg-[#EAF3F2] dark:hover:bg-[#11202B]">
+    <td className="px-4 py-3 whitespace-nowrap text-sm text-[#11202B] dark:text-[#EAF3F2]">
+      {tx.chainId}
+    </td>
+    <td className="px-4 py-3 whitespace-nowrap text-sm font-mono text-[#294050] dark:text-[#9FB4BE]">
+      <span title={tx.hash}>{truncateHash(tx.hash)}</span>
+    </td>
+    <td className="px-4 py-3 whitespace-nowrap">
+      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[#294050]/10 text-[#294050] dark:bg-[#294050]/20 dark:text-[#9FB4BE]">
+        {displayTxType(tx.txType)}
+      </span>
+    </td>
+    <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-mono text-[#11202B] dark:text-[#EAF3F2]">
+      {tx.value}
+    </td>
+    <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-mono text-[#647D8B]">
+      {tx.fee ?? '—'}
+    </td>
+    <td className="px-4 py-3 whitespace-nowrap text-sm text-[#294050] dark:text-[#9FB4BE]">
+      {formatTimestampFull(tx.timestamp)}
+    </td>
+    <td className="px-4 py-3 whitespace-nowrap text-center">
+      <div className="flex items-center justify-center gap-1">
+        <button
+          data-txid={tx.id}
+          onClick={onAutoClassify}
+          disabled={busy}
+          className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded bg-[#5FE3C0]/10 text-[#294050] dark:text-[#5FE3C0] hover:bg-[#5FE3C0]/20 disabled:opacity-50 transition-colors"
+          title="Auto-classify using heuristic rules"
+        >
+          <Zap className="w-3 h-3" />
+          Auto
+        </button>
+        <button
+          data-txid={tx.id}
+          onClick={onManualClassify}
+          disabled={busy}
+          className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/50 disabled:opacity-50 transition-colors"
+          title="Manually classify with journal entry form"
+        >
+          <FileEdit className="w-3 h-3" />
+          Manual
+        </button>
+        <button
+          data-txid={tx.id}
+          onClick={onIgnore}
+          disabled={busy}
+          className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded bg-gray-100 text-gray-600 dark:bg-gray-800/50 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700/50 disabled:opacity-50 transition-colors"
+          title="Skip / ignore this transaction"
+        >
+          <EyeOff className="w-3 h-3" />
+          Skip
+        </button>
+      </div>
+    </td>
+  </tr>
+)
+
+/** Props for the skip/ignore confirmation dialog. */
+interface IgnoreDialogProps {
+  hash: string
+  reason: string
+  busy: boolean
+  onReasonChange: (event: React.ChangeEvent<HTMLInputElement>) => void
+  onConfirm: () => void
+  onCancel: () => void
+}
+
+/** Confirmation dialog for skipping/ignoring a raw transaction. */
+const IgnoreDialog: React.FC<IgnoreDialogProps> = ({
+  hash,
+  reason,
+  busy,
+  onReasonChange,
+  onConfirm,
+  onCancel,
+}) => (
+  <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 bg-black/40" onClick={onCancel} />
+    <div className="relative bg-[#F7FAFA] dark:bg-[#11202B] rounded-lg shadow-xl p-6 max-w-sm w-full mx-4">
+      <h3 className="text-lg font-bold text-[#11202B] dark:text-[#EAF3F2] mb-2">
+        Skip Transaction
+      </h3>
+      <p className="text-sm text-[#294050] dark:text-[#9FB4BE] mb-4">
+        Mark <span className="font-mono">{truncateHash(hash)}</span> as ignored?
+        This can be reversed later.
+      </p>
+      <input
+        type="text"
+        placeholder="Reason (optional)"
+        value={reason}
+        onChange={onReasonChange}
+        className="w-full px-3 py-2 mb-4 border border-[rgba(95,227,192,0.15)] rounded-lg bg-white dark:bg-[#0C141B] text-[#11202B] dark:text-[#EAF3F2] placeholder-[#647D8B] focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]"
+      />
+      <div className="flex justify-end gap-2">
+        <button
+          onClick={onCancel}
+          className="px-4 py-2 text-sm border border-[rgba(95,227,192,0.15)] rounded-lg text-[#294050] dark:text-[#9FB4BE] hover:bg-[#EAF3F2] dark:hover:bg-[#16242F]"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={onConfirm}
+          disabled={busy}
+          className="px-4 py-2 text-sm rounded-lg bg-[#294050] text-white hover:bg-[#1E2F3C] disabled:opacity-50"
+        >
+          Confirm
+        </button>
+      </div>
+    </div>
+  </div>
+)
+
 /**
  * Classification queue: lists unclassified raw transactions and provides
  * actions to auto-classify, manually classify, or skip/ignore each row.
@@ -65,20 +211,20 @@ const ClassificationQueue: React.FC = () => {
 
   const filtered = useMemo(() => {
     if (!searchQuery) return transactions
-    const q = searchQuery.toLowerCase()
+    const needle = searchQuery.toLowerCase()
     return transactions.filter(
       tx =>
-        tx.hash.toLowerCase().includes(q) ||
-        tx.chainId.toLowerCase().includes(q) ||
-        tx.txType.toLowerCase().includes(q) ||
-        tx.fromAddress.toLowerCase().includes(q) ||
-        (tx.toAddress?.toLowerCase().includes(q) ?? false)
+        tx.hash.toLowerCase().includes(needle) ||
+        tx.chainId.toLowerCase().includes(needle) ||
+        tx.txType.toLowerCase().includes(needle) ||
+        tx.fromAddress.toLowerCase().includes(needle) ||
+        (tx.toAddress?.toLowerCase().includes(needle) ?? false)
     )
   }, [transactions, searchQuery])
 
   const handleAutoClassify = useCallback(
-    async (e: React.MouseEvent<HTMLButtonElement>) => {
-      const txId = e.currentTarget.dataset.txid
+    async (event: React.MouseEvent<HTMLButtonElement>) => {
+      const txId = event.currentTarget.dataset.txid
       if (!txId) return
       setProcessingId(txId)
       setActionError(null)
@@ -98,8 +244,8 @@ const ClassificationQueue: React.FC = () => {
   )
 
   const handleManualClassify = useCallback(
-    (e: React.MouseEvent<HTMLButtonElement>) => {
-      const txId = e.currentTarget.dataset.txid
+    (event: React.MouseEvent<HTMLButtonElement>) => {
+      const txId = event.currentTarget.dataset.txid
       if (!txId) return
       const tx = transactions.find(t => t.id === txId)
       if (tx) setDrawerTx(tx)
@@ -108,8 +254,8 @@ const ClassificationQueue: React.FC = () => {
   )
 
   const handleIgnoreClick = useCallback(
-    (e: React.MouseEvent<HTMLButtonElement>) => {
-      const txId = e.currentTarget.dataset.txid
+    (event: React.MouseEvent<HTMLButtonElement>) => {
+      const txId = event.currentTarget.dataset.txid
       if (!txId) return
       const tx = transactions.find(t => t.id === txId)
       if (tx) {
@@ -158,8 +304,8 @@ const ClassificationQueue: React.FC = () => {
   }, [])
 
   const handleSearchChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      setSearchQuery(e.target.value)
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      setSearchQuery(event.target.value)
     },
     []
   )
@@ -169,8 +315,8 @@ const ClassificationQueue: React.FC = () => {
   }, [fetchData])
 
   const handleReasonChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      setIgnoreReason(e.target.value)
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      setIgnoreReason(event.target.value)
     },
     []
   )
@@ -241,95 +387,19 @@ const ClassificationQueue: React.FC = () => {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-[#EAF3F2] dark:bg-[#11202B] border-b border-[rgba(95,227,192,0.15)]">
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
-                    Chain
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
-                    Hash
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
-                    Type
-                  </th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
-                    Value
-                  </th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
-                    Fee
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
-                    Timestamp
-                  </th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
+                <QueueHeaderRow />
               </thead>
               <tbody className="divide-y divide-[rgba(95,227,192,0.1)]">
-                {filtered.map(tx => {
-                  const busy = processingId === tx.id
-                  return (
-                    <tr
-                      key={tx.id}
-                      className="hover:bg-[#EAF3F2] dark:hover:bg-[#11202B]"
-                    >
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-[#11202B] dark:text-[#EAF3F2]">
-                        {tx.chainId}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm font-mono text-[#294050] dark:text-[#9FB4BE]">
-                        <span title={tx.hash}>{truncateHash(tx.hash)}</span>
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[#294050]/10 text-[#294050] dark:bg-[#294050]/20 dark:text-[#9FB4BE]">
-                          {displayTxType(tx.txType)}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-mono text-[#11202B] dark:text-[#EAF3F2]">
-                        {tx.value}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-mono text-[#647D8B]">
-                        {tx.fee ?? '—'}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-[#294050] dark:text-[#9FB4BE]">
-                        {formatTimestampFull(tx.timestamp)}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-center">
-                        <div className="flex items-center justify-center gap-1">
-                          <button
-                            data-txid={tx.id}
-                            onClick={handleAutoClassify}
-                            disabled={busy}
-                            className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded bg-[#5FE3C0]/10 text-[#294050] dark:text-[#5FE3C0] hover:bg-[#5FE3C0]/20 disabled:opacity-50 transition-colors"
-                            title="Auto-classify using heuristic rules"
-                          >
-                            <Zap className="w-3 h-3" />
-                            Auto
-                          </button>
-                          <button
-                            data-txid={tx.id}
-                            onClick={handleManualClassify}
-                            disabled={busy}
-                            className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/50 disabled:opacity-50 transition-colors"
-                            title="Manually classify with journal entry form"
-                          >
-                            <FileEdit className="w-3 h-3" />
-                            Manual
-                          </button>
-                          <button
-                            data-txid={tx.id}
-                            onClick={handleIgnoreClick}
-                            disabled={busy}
-                            className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded bg-gray-100 text-gray-600 dark:bg-gray-800/50 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700/50 disabled:opacity-50 transition-colors"
-                            title="Skip / ignore this transaction"
-                          >
-                            <EyeOff className="w-3 h-3" />
-                            Skip
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  )
-                })}
+                {filtered.map(tx => (
+                  <QueueRow
+                    key={tx.id}
+                    tx={tx}
+                    busy={processingId === tx.id}
+                    onAutoClassify={handleAutoClassify}
+                    onManualClassify={handleManualClassify}
+                    onIgnore={handleIgnoreClick}
+                  />
+                ))}
               </tbody>
             </table>
           </div>
@@ -348,46 +418,14 @@ const ClassificationQueue: React.FC = () => {
 
       {/* Ignore confirmation modal */}
       {ignoreModal !== null && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div
-            className="fixed inset-0 bg-black/40"
-            onClick={handleIgnoreCancel}
-          />
-          <div className="relative bg-[#F7FAFA] dark:bg-[#11202B] rounded-lg shadow-xl p-6 max-w-sm w-full mx-4">
-            <h3 className="text-lg font-bold text-[#11202B] dark:text-[#EAF3F2] mb-2">
-              Skip Transaction
-            </h3>
-            <p className="text-sm text-[#294050] dark:text-[#9FB4BE] mb-4">
-              Mark{' '}
-              <span className="font-mono">
-                {truncateHash(ignoreModal.hash)}
-              </span>{' '}
-              as ignored? This can be reversed later.
-            </p>
-            <input
-              type="text"
-              placeholder="Reason (optional)"
-              value={ignoreReason}
-              onChange={handleReasonChange}
-              className="w-full px-3 py-2 mb-4 border border-[rgba(95,227,192,0.15)] rounded-lg bg-white dark:bg-[#0C141B] text-[#11202B] dark:text-[#EAF3F2] placeholder-[#647D8B] focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]"
-            />
-            <div className="flex justify-end gap-2">
-              <button
-                onClick={handleIgnoreCancel}
-                className="px-4 py-2 text-sm border border-[rgba(95,227,192,0.15)] rounded-lg text-[#294050] dark:text-[#9FB4BE] hover:bg-[#EAF3F2] dark:hover:bg-[#16242F]"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleIgnoreConfirm}
-                disabled={processingId === ignoreModal.transactionId}
-                className="px-4 py-2 text-sm rounded-lg bg-[#294050] text-white hover:bg-[#1E2F3C] disabled:opacity-50"
-              >
-                Confirm
-              </button>
-            </div>
-          </div>
-        </div>
+        <IgnoreDialog
+          hash={ignoreModal.hash}
+          reason={ignoreReason}
+          busy={processingId === ignoreModal.transactionId}
+          onReasonChange={handleReasonChange}
+          onConfirm={handleIgnoreConfirm}
+          onCancel={handleIgnoreCancel}
+        />
       )}
 
       {/* Manual classification drawer (Phase 3 JournalEntryDrawer) */}
