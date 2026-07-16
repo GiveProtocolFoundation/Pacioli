@@ -451,7 +451,14 @@ pub fn run() {
             api::accounting::list_periods,
             api::accounting::create_period,
             api::accounting::close_period,
-            api::accounting::reopen_period
+            api::accounting::reopen_period,
+            // Financial statement commands (GIV-688, Phase 6)
+            api::statements::get_balance_sheet,
+            api::statements::get_income_statement,
+            api::statements::get_period_trial_balance,
+            api::statements::export_balance_sheet_csv,
+            api::statements::export_income_statement_csv,
+            api::statements::export_trial_balance_csv
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
