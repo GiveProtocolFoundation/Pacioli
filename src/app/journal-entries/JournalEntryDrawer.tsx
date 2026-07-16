@@ -4,7 +4,7 @@ import { X, Plus, Trash2 } from 'lucide-react'
 import type { GLAccount, JournalEntryWithLines } from '../../types/database'
 import { toMinorUnits, minorToDollars } from './journalEntryUtils'
 
-interface LineInput {
+export interface LineInput {
   id: string
   glAccountId: number | ''
   debitAmount: string
@@ -18,6 +18,9 @@ interface JournalEntryDrawerProps {
   accounts: GLAccount[]
   entry?: JournalEntryWithLines
   transactionRef?: string
+  rawTransactionId?: string
+  initialLines?: LineInput[]
+  initialDescription?: string
   onClose: () => void
   onSaved: () => void
 }
@@ -47,6 +50,9 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
   accounts,
   entry,
   transactionRef,
+  rawTransactionId,
+  initialLines,
+  initialDescription,
   onClose,
   onSaved,
 }) => {
@@ -57,7 +63,9 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
       ? new Date(entry.entryDate).toISOString().split('T')[0]
       : new Date().toISOString().split('T')[0]
   )
-  const [description, setDescription] = useState(entry?.description ?? '')
+  const [description, setDescription] = useState(
+    entry?.description ?? initialDescription ?? ''
+  )
   const [referenceNumber, setReferenceNumber] = useState(
     entry?.referenceNumber ?? transactionRef ?? ''
   )
@@ -72,7 +80,7 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
           assetId: l.assetId ?? 'USD',
           description: l.description ?? '',
         }))
-      : [emptyLine(), emptyLine()]
+      : (initialLines ?? [emptyLine(), emptyLine()])
   )
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -148,7 +156,8 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
         entryDate,
         description,
         referenceNumber: referenceNumber || null,
-        rawTransactionId: null,
+        rawTransactionId: rawTransactionId ?? null,
+        origin: rawTransactionId ? 'manual' : null,
         lines: lines
           .filter(l => l.glAccountId !== '')
           .map(l => ({
@@ -178,6 +187,7 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
     entryDate,
     description,
     referenceNumber,
+    rawTransactionId,
     lines,
     isEditDraft,
     entry,

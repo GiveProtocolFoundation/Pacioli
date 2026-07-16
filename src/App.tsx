@@ -48,6 +48,9 @@ const JournalEntries = React.lazy(
 const ChartOfAccounts = React.lazy(() => import('./app/ledger/ChartOfAccounts'))
 const TrialBalance = React.lazy(() => import('./app/ledger/TrialBalance'))
 const Reconciliation = React.lazy(() => import('./app/ledger/Reconciliation'))
+const ClassificationQueue = React.lazy(
+  () => import('./app/classification/ClassificationQueue')
+)
 
 // Loading fallback component
 const LoadingFallback: React.FC = () => (
@@ -171,6 +174,7 @@ const MainRoutes: React.FC = () => (
       <Route path="/docs" element={<Docs />} />
       <Route path="/support" element={<Support />} />
       <Route path="/profile" element={<Profile />} />
+      <Route path="/classification" element={<ClassificationQueue />} />
       <Route path="/journal-entries" element={<JournalEntries />} />
       <Route path="/chart-of-accounts" element={<ChartOfAccounts />} />
       <Route path="/trial-balance" element={<TrialBalance />} />
@@ -194,7 +198,9 @@ const BrandedAntdProvider: React.FC<{ children: React.ReactNode }> = ({
   return (
     <ConfigProvider
       theme={{
-        algorithm: isDark ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
+        algorithm: isDark
+          ? antdTheme.darkAlgorithm
+          : antdTheme.defaultAlgorithm,
         token: {
           colorPrimary: '#5FE3C0',
           colorInfo: '#5FE3C0',
@@ -230,25 +236,25 @@ const App: React.FC = () => (
         <AppWrapper>
           <AppProviders>
             <BrandedAntdProvider>
-            <Suspense fallback={<LoadingFallback />}>
-              <Routes>
-                {/* Onboarding for first-time setup */}
-                <Route path="/onboarding" element={<Onboarding />} />
+              <Suspense fallback={<LoadingFallback />}>
+                <Routes>
+                  {/* Onboarding for first-time setup */}
+                  <Route path="/onboarding" element={<Onboarding />} />
 
-                {/* Redirect old auth routes to dashboard for local-only MVP */}
-                <Route
-                  path="/login"
-                  element={<Navigate to="/dashboard" replace />}
-                />
-                <Route
-                  path="/register"
-                  element={<Navigate to="/dashboard" replace />}
-                />
+                  {/* Redirect old auth routes to dashboard for local-only MVP */}
+                  <Route
+                    path="/login"
+                    element={<Navigate to="/dashboard" replace />}
+                  />
+                  <Route
+                    path="/register"
+                    element={<Navigate to="/dashboard" replace />}
+                  />
 
-                {/* Main routes - no auth required for local-only version */}
-                <Route path="/*" element={<MainRoutes />} />
-              </Routes>
-            </Suspense>
+                  {/* Main routes - no auth required for local-only version */}
+                  <Route path="/*" element={<MainRoutes />} />
+                </Routes>
+              </Suspense>
             </BrandedAntdProvider>
           </AppProviders>
         </AppWrapper>

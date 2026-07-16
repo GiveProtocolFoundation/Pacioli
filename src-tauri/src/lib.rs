@@ -440,6 +440,8 @@ pub fn run() {
             api::accounting::update_journal_entry,
             api::accounting::auto_classify_transaction,
             api::accounting::update_transaction_classification,
+            api::accounting::get_unclassified_transactions,
+            api::accounting::ignore_transaction,
             api::accounting::get_account_balances,
             api::accounting::get_account_balances_by_asset,
             api::accounting::get_trial_balance,
