@@ -159,9 +159,7 @@ const JournalEntryDetail: React.FC<JournalEntryDetailProps> = ({
                 {entry.isReversed && !reversalEntry && (
                   <span>
                     This entry has been voided. Reversed by entry ID:{' '}
-                    <span className="font-mono">
-                      {entry.reversedByEntryId}
-                    </span>
+                    <span className="font-mono">{entry.reversedByEntryId}</span>
                   </span>
                 )}
                 {isReversing && reversalEntry && (
@@ -170,14 +168,14 @@ const JournalEntryDetail: React.FC<JournalEntryDetailProps> = ({
                     <span className="font-mono font-medium">
                       {reversalEntry.entryNumber}
                     </span>{' '}
-                    ({formatDate(reversalEntry.entryDate)}). Both entries
-                    remain in the ledger with a net effect of zero.
+                    ({formatDate(reversalEntry.entryDate)}). Both entries remain
+                    in the ledger with a net effect of zero.
                   </span>
                 )}
                 {isReversing && !reversalEntry && (
                   <span>
-                    This is a reversing entry. {entry.description}. Both
-                    entries remain in the ledger with a net effect of zero.
+                    This is a reversing entry. {entry.description}. Both entries
+                    remain in the ledger with a net effect of zero.
                   </span>
                 )}
               </div>
@@ -320,10 +318,7 @@ const JournalEntryDetail: React.FC<JournalEntryDetailProps> = ({
                 </thead>
                 <tbody className="divide-y divide-[rgba(95,227,192,0.08)]">
                   {entry.lines.map(line => (
-                    <tr
-                      key={line.id}
-                      className="bg-white dark:bg-[#11202B]"
-                    >
+                    <tr key={line.id} className="bg-white dark:bg-[#11202B]">
                       <td className="px-4 py-2 text-[#11202B] dark:text-[#EAF3F2]">
                         {resolveAccountName(line.glAccountId)}
                       </td>

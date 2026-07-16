@@ -66,10 +66,8 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
       ? entry.lines.map(l => ({
           id: nextLineId(),
           glAccountId: l.glAccountId,
-          debitAmount:
-            l.debitMinor > 0 ? minorToDollars(l.debitMinor) : '',
-          creditAmount:
-            l.creditMinor > 0 ? minorToDollars(l.creditMinor) : '',
+          debitAmount: l.debitMinor > 0 ? minorToDollars(l.debitMinor) : '',
+          creditAmount: l.creditMinor > 0 ? minorToDollars(l.creditMinor) : '',
           quantity: l.quantity ?? '',
           assetId: l.assetId ?? 'USD',
           description: l.description ?? '',
@@ -416,33 +414,31 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
           {/* Per-asset quantity balance hints */}
           {assetQuantityHints.size > 0 && (
             <div className="space-y-1">
-              {Array.from(assetQuantityHints.entries()).map(
-                ([asset, bal]) => {
-                  const net = bal.debit - bal.credit
-                  const balanced = Math.abs(net) < 1e-12
-                  return (
-                    <div
-                      key={asset}
-                      className={`flex items-center justify-between px-3 py-1.5 rounded text-xs ${
-                        balanced
-                          ? 'bg-[#5FE3C0]/5 text-[#294050] dark:text-[#9FB4BE]'
-                          : 'bg-amber-50 dark:bg-amber-900/10 text-amber-700 dark:text-amber-400'
-                      }`}
-                    >
-                      <span className="font-mono">{asset}</span>
-                      <span>
-                        DR {bal.debit} / CR {bal.credit}
-                        {!balanced && (
-                          <span className="ml-2 font-medium">
-                            (net {net > 0 ? '+' : ''}
-                            {net})
-                          </span>
-                        )}
-                      </span>
-                    </div>
-                  )
-                }
-              )}
+              {Array.from(assetQuantityHints.entries()).map(([asset, bal]) => {
+                const net = bal.debit - bal.credit
+                const balanced = Math.abs(net) < 1e-12
+                return (
+                  <div
+                    key={asset}
+                    className={`flex items-center justify-between px-3 py-1.5 rounded text-xs ${
+                      balanced
+                        ? 'bg-[#5FE3C0]/5 text-[#294050] dark:text-[#9FB4BE]'
+                        : 'bg-amber-50 dark:bg-amber-900/10 text-amber-700 dark:text-amber-400'
+                    }`}
+                  >
+                    <span className="font-mono">{asset}</span>
+                    <span>
+                      DR {bal.debit} / CR {bal.credit}
+                      {!balanced && (
+                        <span className="ml-2 font-medium">
+                          (net {net > 0 ? '+' : ''}
+                          {net})
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                )
+              })}
             </div>
           )}
         </div>

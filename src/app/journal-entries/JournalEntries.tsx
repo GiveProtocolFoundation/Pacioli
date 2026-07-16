@@ -305,10 +305,7 @@ const JournalEntries: React.FC = () => {
 
   const handleDismissError = useCallback(() => setActionError(null), [])
 
-  const handleDismissVoidConfirm = useCallback(
-    () => setVoidConfirmId(null),
-    []
-  )
+  const handleDismissVoidConfirm = useCallback(() => setVoidConfirmId(null), [])
 
   const resolveAccountName = useCallback(
     (glAccountId: number) => {
@@ -596,9 +593,7 @@ const JournalEntries: React.FC = () => {
                           <table className="w-full text-sm">
                             <thead>
                               <tr className="text-xs uppercase text-[#294050] dark:text-[#9FB4BE]">
-                                <th className="text-left py-1 pr-4">
-                                  Account
-                                </th>
+                                <th className="text-left py-1 pr-4">Account</th>
                                 <th className="text-right py-1 px-4 w-32">
                                   Debit
                                 </th>
