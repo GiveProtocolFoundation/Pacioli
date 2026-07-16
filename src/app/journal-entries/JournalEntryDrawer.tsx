@@ -174,7 +174,15 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
     } finally {
       setSaving(false)
     }
-  }, [entryDate, description, referenceNumber, lines, isEditDraft, entry, onSaved])
+  }, [
+    entryDate,
+    description,
+    referenceNumber,
+    lines,
+    isEditDraft,
+    entry,
+    onSaved,
+  ])
 
   const isEditable = !isView || isEditDraft
 

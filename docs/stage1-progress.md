@@ -362,7 +362,7 @@ is_reversed=1, reversed_by_entry_id=<new_id>`. Both entries remain in
      creates a posted reversal — wrong tool for an unposted entry. Added a
      dedicated `demote_journal_entry` Tauri command: race-safe conditional
      `UPDATE … SET status='draft', approved_by=NULL, approved_at=NULL
-     WHERE status='approved'` (the M5 state machine explicitly allows
+WHERE status='approved'` (the M5 state machine explicitly allows
      approved→draft). UI now calls it directly.
   2. **"Update Draft" created duplicates.** Editing a draft re-invoked
      `create_journal_entry`, leaving the old draft behind. Added
@@ -384,8 +384,8 @@ is_reversed=1, reversed_by_entry_id=<new_id>`. Both entries remain in
      `'current-user'` placeholder (Inv-7 provenance; backend `created_by`
      is still hardcoded `'system'` in the create path — pre-existing debt,
      same bucket as the entry-number sequence fix).
-  New tests: 4 Rust SQL-semantics tests (demote approved→draft clears
-  approval provenance; conditional demote is a 0-row no-op on posted;
-  draft lines replaceable; posted lines still immutable) + 6 Vitest cases
-  (negative-sign regression, leading decimal point). 38 accounting tests +
-  33 utils tests green; tsc + eslint clean.
+     New tests: 4 Rust SQL-semantics tests (demote approved→draft clears
+     approval provenance; conditional demote is a 0-row no-op on posted;
+     draft lines replaceable; posted lines still immutable) + 6 Vitest cases
+     (negative-sign regression, leading decimal point). 38 accounting tests +
+     33 utils tests green; tsc + eslint clean.
