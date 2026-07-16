@@ -1,11 +1,11 @@
 /** Formats a Unix timestamp to a localized date string. */
-export function formatTimestamp(ts: number): string {
-  return new Date(ts * 1000).toLocaleDateString()
+export function formatTimestamp(timestampSecs: number): string {
+  return new Date(timestampSecs * 1000).toLocaleDateString()
 }
 
 /** Formats a Unix timestamp to a localized date+time string. */
-export function formatTimestampFull(ts: number): string {
-  return new Date(ts * 1000).toLocaleString()
+export function formatTimestampFull(timestampSecs: number): string {
+  return new Date(timestampSecs * 1000).toLocaleString()
 }
 
 /** Truncates a hex hash to a short display form (first 8 + last 4 chars). */
