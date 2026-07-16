@@ -261,7 +261,7 @@ export const mockAuthService: AuthService = {
     })
   },
 
-  async verifyToken(_token: string): Promise<TokenVerifyResponse> {
+  verifyToken(_token: string): Promise<TokenVerifyResponse> {
     return Promise.resolve({
       valid: true,
       user_id: 'mock_user_id',
@@ -318,7 +318,7 @@ export const mockAuthService: AuthService = {
     return Promise.resolve()
   },
 
-  async revokeAllSessions(_token: string): Promise<number> {
+  revokeAllSessions(_token: string): Promise<number> {
     return Promise.resolve(1)
   },
 

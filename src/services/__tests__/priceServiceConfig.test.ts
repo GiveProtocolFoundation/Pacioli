@@ -38,11 +38,12 @@ describe('priceService config read-through', () => {
   })
 
   it('loadPriceFeedConfig reads api_key and base_url from persistence', async () => {
-    mockGetSetting.mockImplementation(async (key: string) => {
-      if (key === 'price_feed_api_key') return 'test-api-key-123'
+    mockGetSetting.mockImplementation((key: string) => {
+      if (key === 'price_feed_api_key')
+        return Promise.resolve('test-api-key-123')
       if (key === 'price_feed_base_url')
-        return 'https://custom.coingecko.example/api/v3'
-      return null
+        return Promise.resolve('https://custom.coingecko.example/api/v3')
+      return Promise.resolve(null)
     })
 
     const config = await loadPriceFeedConfig()
@@ -84,10 +85,11 @@ describe('priceService config read-through', () => {
   })
 
   it('getCurrentPrice passes configured apiKey and baseUrl to invoke', async () => {
-    mockGetSetting.mockImplementation(async (key: string) => {
-      if (key === 'price_feed_api_key') return 'my-pro-key'
-      if (key === 'price_feed_base_url') return 'https://pro.example.com/v3'
-      return null
+    mockGetSetting.mockImplementation((key: string) => {
+      if (key === 'price_feed_api_key') return Promise.resolve('my-pro-key')
+      if (key === 'price_feed_base_url')
+        return Promise.resolve('https://pro.example.com/v3')
+      return Promise.resolve(null)
     })
     mockInvoke.mockResolvedValue({
       coin_id: 'polkadot',
