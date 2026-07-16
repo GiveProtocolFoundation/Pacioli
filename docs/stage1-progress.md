@@ -4,9 +4,9 @@ Session constitution: `SCOPE.md` (repo root). Stage 1 mandate: GIV-668.
 Gate 1: CPA-reviewed statements from real imported transactions, manually
 classified through the approval queue.
 
-**Current phase: 2 (Posting engine and general ledger) — Phase 1 landed;
-Phase 2 implemented by Engineer (GIV-677): approval gate, atomic idempotent
-posting, reversing entries, per-asset balances.**
+**Current phase: 3 (Approval queue and manual journal entry UI) — Phases 1-2
+landed; Phase 3 implemented by Engineer (GIV-678): approval queue view,
+manual journal entry form, entry detail view with reversal linkage.**
 
 ## Phase Checklist
 
@@ -19,7 +19,10 @@ posting, reversing entries, per-asset balances.**
 - [x] **Phase 2 — Posting engine and general ledger**
       (GIV-677: approval gate, atomic idempotent posting, reversing entries,
       per-asset balances, trial balance verification — Engineer)
-- [ ] **Phase 3 — Approval queue and manual journal entry UI**
+- [x] **Phase 3 — Approval queue and manual journal entry UI**
+      (GIV-678: approval queue with all lifecycle tabs, approve/post/void/demote
+      actions, manual journal entry form with integer-math balance indicator,
+      entry detail view with reversal linkage, per-asset quantity hints — Engineer)
 - [ ] **Phase 4 — Classification workflow: raw transactions → draft entries**
 - [ ] **Phase 5 — Periods, close, and lock**
 - [ ] **Phase 6 — Financial statements v1**
@@ -319,3 +322,35 @@ is_reversed=1, reversed_by_entry_id=<new_id>`. Both entries remain in
      regression): entry numbers derive from `COUNT(*)+1`, collidable if rows are
      ever deleted — same scheme as `create_journal_entry`; fold into a future
      sequence-table fix.
+- **Session 7 (2026-07-15, Engineer — GIV-678):** Implemented Phase 3
+  (approval queue + manual journal entry UI):
+  - **Approval queue view** (`JournalEntries.tsx`): five-tab filter
+    (All/Draft/Approved/Posted/Voided), per-row actions wired to Tauri
+    commands — Approve (draft→approved), Post (approved→posted), Void
+    (posted→voided with confirmation dialog explaining reversing entry),
+    Demote (approved→draft by voiding + re-creating as draft for editing).
+    Origin column shows manual/rule/model provenance. Expanded rows show
+    approver, timestamps, reference. Backend errors surfaced verbatim.
+  - **Manual journal entry form** (`JournalEntryDrawer.tsx`): create/edit
+    drafts only. Line items with account picker, debit/credit in decimal
+    strings converted to integer minor units via `toMinorUnits()` (string
+    parsing, no floats touch money). Optional quantity + asset_id per line.
+    Live balance indicator uses integer math (exact zero comparison, not
+    float tolerance). Per-asset quantity balance hints for multi-asset
+    entries.
+  - **Entry detail view** (`JournalEntryDetail.tsx`): full lines with
+    account, asset, quantity, debit/credit, memo. Lifecycle timeline
+    (created→approved→posted→voided with timestamps and actors). Reversal
+    linkage: voided entries link to reversing entry, reversing entries link
+    back to original. Both visibly marked per `docs/accounting-model.md`
+    corrections convention.
+  - **Shared utilities** (`journalEntryUtils.ts`): `toMinorUnits()`,
+    `minorToDollars()`, `computeBalance()`, `displayStatus()`,
+    `formatDate()`, `formatDateTime()` — extracted for testability.
+  - **Tests:** 31 Vitest tests covering: `toMinorUnits` (whole dollars,
+    cents, single-digit cents, truncation, empty/non-numeric, float-trap
+    avoidance for 0.1+0.2 and 19.99+0.01), `minorToDollars` (formatting,
+    negatives, padding), roundtrip identity, `computeBalance` (balanced,
+    unbalanced, all-zeros, multi-line swap from accounting-model.md,
+    float-error immunity), `displayStatus` (all statuses + unknown
+    fallback), `formatDate` (null, string, Date).
