@@ -93,7 +93,14 @@ const NavItemList: React.FC<{
   variant: 'desktop' | 'mobile'
   onToggleExpanded: (itemName: string) => () => void
   onLinkClick?: () => void
-}> = ({ navItems, expandedItems, location, variant, onToggleExpanded, onLinkClick }) => {
+}> = ({
+  navItems,
+  expandedItems,
+  location,
+  variant,
+  onToggleExpanded,
+  onLinkClick,
+}) => {
   const isDesktop = variant === 'desktop'
 
   const getButtonClass = (isActive: boolean) => {
@@ -148,9 +155,7 @@ const NavItemList: React.FC<{
                 </div>
                 <div className="flex items-center space-x-2">
                   {item.badge && (
-                    <span className={badgeClass}>
-                      {item.badge}
-                    </span>
+                    <span className={badgeClass}>{item.badge}</span>
                   )}
                   <ChevronDown
                     className={`w-4 h-4 transition-transform ${
@@ -171,11 +176,7 @@ const NavItemList: React.FC<{
                   <item.icon className="w-5 h-5 mr-3" />
                   <span>{item.name}</span>
                 </div>
-                {item.badge && (
-                  <span className={badgeClass}>
-                    {item.badge}
-                  </span>
-                )}
+                {item.badge && <span className={badgeClass}>{item.badge}</span>}
               </Link>
             )}
 
@@ -221,7 +222,9 @@ const UserAvatar: React.FC<{
   }
 
   return (
-    <div className={`${sizeClass} bg-[#D9E5E4] dark:bg-[#16242F] rounded-full flex items-center justify-center`}>
+    <div
+      className={`${sizeClass} bg-[#D9E5E4] dark:bg-[#16242F] rounded-full flex items-center justify-center`}
+    >
       <User className="w-5 h-5 text-[#294050] dark:text-[#9FB4BE]" />
     </div>
   )
@@ -448,9 +451,7 @@ const MobileSidebar: React.FC<{
             </p>
             <p className="text-xs text-[#647D8B] dark:text-[#647D8B]">
               {userEmail ||
-                (userType === 'organization'
-                  ? 'Admin'
-                  : 'Personal Account')}
+                (userType === 'organization' ? 'Admin' : 'Personal Account')}
             </p>
           </div>
         </div>
@@ -515,9 +516,7 @@ const TopBar: React.FC<{
           <Bell className="w-6 h-6" />
           {unreadNotificationCount > 0 && (
             <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center bg-[#294050] dark:bg-[#294050] rounded-full text-white text-xs font-medium px-1">
-              {unreadNotificationCount > 99
-                ? '99+'
-                : unreadNotificationCount}
+              {unreadNotificationCount > 99 ? '99+' : unreadNotificationCount}
             </span>
           )}
         </button>
@@ -547,10 +546,7 @@ const TopBar: React.FC<{
             onClick={onToggleUserMenu}
             className="flex items-center space-x-2 p-2 rounded-lg hover:bg-[rgba(95,227,192,0.05)] dark:hover:bg-[rgba(95,227,192,0.08)]"
           >
-            <UserAvatar
-              userAvatar={userAvatar}
-              size="sm"
-            />
+            <UserAvatar userAvatar={userAvatar} size="sm" />
             <ChevronDown className="w-4 h-4 text-[#294050] dark:text-[#9FB4BE] hidden sm:block" />
           </button>
 
@@ -621,7 +617,11 @@ const Navigation: React.FC<NavigationProps> = ({
       badge: pendingCount > 0 ? pendingCount : undefined,
       subItems: [
         { name: 'All', href: '/transactions?filter=all' },
-        { name: 'Classify', href: '/classification', badge: unclassifiedTransactions },
+        {
+          name: 'Classify',
+          href: '/classification',
+          badge: unclassifiedTransactions,
+        },
         { name: 'Classified', href: '/transactions?filter=classified' },
         { name: 'Ignored', href: '/transactions?filter=ignored' },
       ],
@@ -632,7 +632,11 @@ const Navigation: React.FC<NavigationProps> = ({
       icon: BookOpen,
       subItems: [
         { name: 'All Entries', href: '/journal-entries?filter=all' },
-        { name: 'Drafts', href: '/journal-entries?filter=draft', badge: draftJournalEntries },
+        {
+          name: 'Drafts',
+          href: '/journal-entries?filter=draft',
+          badge: draftJournalEntries,
+        },
         { name: 'Posted', href: '/journal-entries?filter=posted' },
       ],
     },
@@ -683,7 +687,11 @@ const Navigation: React.FC<NavigationProps> = ({
       badge: pendingCount > 0 ? pendingCount : undefined,
       subItems: [
         { name: 'All', href: '/transactions?filter=all' },
-        { name: 'Classify', href: '/classification', badge: unclassifiedTransactions },
+        {
+          name: 'Classify',
+          href: '/classification',
+          badge: unclassifiedTransactions,
+        },
         { name: 'Classified', href: '/transactions?filter=classified' },
         { name: 'Ignored', href: '/transactions?filter=ignored' },
       ],
@@ -694,7 +702,11 @@ const Navigation: React.FC<NavigationProps> = ({
       icon: BookOpen,
       subItems: [
         { name: 'All Entries', href: '/journal-entries?filter=all' },
-        { name: 'Drafts', href: '/journal-entries?filter=draft', badge: draftJournalEntries },
+        {
+          name: 'Drafts',
+          href: '/journal-entries?filter=draft',
+          badge: draftJournalEntries,
+        },
         { name: 'Posted', href: '/journal-entries?filter=posted' },
       ],
     },

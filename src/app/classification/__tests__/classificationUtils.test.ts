@@ -79,8 +79,17 @@ describe('displayTxType', () => {
 describe('txTypeLabels', () => {
   it('should have entries for all standard transaction types', () => {
     const expectedTypes = [
-      'transfer', 'swap', 'bridge', 'stake', 'unstake',
-      'claim', 'mint', 'burn', 'approve', 'contract_call', 'unknown',
+      'transfer',
+      'swap',
+      'bridge',
+      'stake',
+      'unstake',
+      'claim',
+      'mint',
+      'burn',
+      'approve',
+      'contract_call',
+      'unknown',
     ]
     for (const t of expectedTypes) {
       expect(txTypeLabels[t]).toBeDefined()

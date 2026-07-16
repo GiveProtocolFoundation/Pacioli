@@ -63,7 +63,9 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
       ? new Date(entry.entryDate).toISOString().split('T')[0]
       : new Date().toISOString().split('T')[0]
   )
-  const [description, setDescription] = useState(entry?.description ?? initialDescription ?? '')
+  const [description, setDescription] = useState(
+    entry?.description ?? initialDescription ?? ''
+  )
   const [referenceNumber, setReferenceNumber] = useState(
     entry?.referenceNumber ?? transactionRef ?? ''
   )
@@ -78,7 +80,7 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
           assetId: l.assetId ?? 'USD',
           description: l.description ?? '',
         }))
-      : initialLines ?? [emptyLine(), emptyLine()]
+      : (initialLines ?? [emptyLine(), emptyLine()])
   )
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
