@@ -72,7 +72,7 @@ const PeriodSelector: React.FC<PeriodSelectorProps> = ({
       <input
         type="date"
         value={startDate}
-        onChange={(e) => onStartChange(e.target.value)}
+        onChange={e => onStartChange(e.target.value)}
         className="px-3 py-1.5 text-sm border border-[rgba(95,227,192,0.25)] rounded bg-[#F7FAFA] dark:bg-[#0C141B] text-[#11202B] dark:text-[#EAF3F2]"
       />
     </div>
@@ -83,7 +83,7 @@ const PeriodSelector: React.FC<PeriodSelectorProps> = ({
       <input
         type="date"
         value={endDate}
-        onChange={(e) => onEndChange(e.target.value)}
+        onChange={e => onEndChange(e.target.value)}
         className="px-3 py-1.5 text-sm border border-[rgba(95,227,192,0.25)] rounded bg-[#F7FAFA] dark:bg-[#0C141B] text-[#11202B] dark:text-[#EAF3F2]"
       />
     </div>
@@ -103,10 +103,15 @@ interface IncomeSectionProps {
 }
 
 /** Renders a section (Revenue or Expenses) with line items. */
-const IncomeSection: React.FC<IncomeSectionProps> = ({ section, priorSection }) => {
+const IncomeSection: React.FC<IncomeSectionProps> = ({
+  section,
+  priorSection,
+}) => {
   const priorMap = useMemo(() => {
     if (!priorSection) return new Map<string, number>()
-    return new Map(priorSection.items.map((i) => [i.accountNumber, i.balanceMinor]))
+    return new Map(
+      priorSection.items.map(i => [i.accountNumber, i.balanceMinor])
+    )
   }, [priorSection])
 
   return (
@@ -136,16 +141,21 @@ const IncomeSection: React.FC<IncomeSectionProps> = ({ section, priorSection }) 
           </tr>
         </thead>
         <tbody>
-          {section.items.map((item) => {
+          {section.items.map(item => {
             const prior = priorMap.get(item.accountNumber) ?? 0
-            const changePct = priorSection !== null ? computeChangePercent(item.balanceMinor, prior) : null
+            const changePct =
+              priorSection !== null
+                ? computeChangePercent(item.balanceMinor, prior)
+                : null
             return (
               <tr
                 key={item.accountNumber}
                 className="border-b border-[rgba(95,227,192,0.08)] hover:bg-[#EAF3F2] dark:hover:bg-[#16242F]"
               >
                 <td className="px-4 py-2 text-sm text-[#11202B] dark:text-[#EAF3F2]">
-                  <span className="font-mono text-[#5FE3C0] mr-2">{item.accountNumber}</span>
+                  <span className="font-mono text-[#5FE3C0] mr-2">
+                    {item.accountNumber}
+                  </span>
                   {item.accountName}
                 </td>
                 <td className="px-4 py-2 text-sm text-right font-mono text-[#11202B] dark:text-[#EAF3F2]">
@@ -180,7 +190,12 @@ const IncomeSection: React.FC<IncomeSectionProps> = ({ section, priorSection }) 
             )}
             {priorSection !== null && (
               <td className="px-4 py-2 text-sm text-right font-mono text-[#647D8B]">
-                {formatChangePercent(computeChangePercent(section.subtotalMinor, priorSection.subtotalMinor))}
+                {formatChangePercent(
+                  computeChangePercent(
+                    section.subtotalMinor,
+                    priorSection.subtotalMinor
+                  )
+                )}
               </td>
             )}
           </tr>
@@ -207,9 +222,12 @@ const IncomeStatement: React.FC = () => {
     setLoading(true)
     setError(null)
     try {
-      const result = await invoke<ComparativeIncomeStatement>('get_income_statement', {
-        params: { startDate, endDate },
-      })
+      const result = await invoke<ComparativeIncomeStatement>(
+        'get_income_statement',
+        {
+          params: { startDate, endDate },
+        }
+      )
       setData(result)
     } catch (err) {
       setError(String(err))
@@ -238,9 +256,10 @@ const IncomeStatement: React.FC = () => {
     }
   }, [startDate, endDate])
 
-  const hasPrior = data !== null
-    && (data.prior.revenue.items.length > 0
-      || data.prior.expenses.items.length > 0)
+  const hasPrior =
+    data !== null &&
+    (data.prior.revenue.items.length > 0 ||
+      data.prior.expenses.items.length > 0)
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto">
@@ -318,13 +337,21 @@ const IncomeStatement: React.FC = () => {
                 Net Income
               </span>
               <div className="text-right">
-                <span className={`text-base font-mono font-bold ${data.current.netIncomeMinor >= 0 ? 'text-[#5FE3C0]' : 'text-red-600 dark:text-red-400'}`}>
+                <span
+                  className={`text-base font-mono font-bold ${data.current.netIncomeMinor >= 0 ? 'text-[#5FE3C0]' : 'text-red-600 dark:text-red-400'}`}
+                >
                   {formatMinorAsDollars(data.current.netIncomeMinor)}
                 </span>
                 {hasPrior && (
                   <span className="ml-4 text-sm font-mono text-[#647D8B]">
                     (Prior: {formatMinorAsDollars(data.prior.netIncomeMinor)},{' '}
-                    {formatChangePercent(computeChangePercent(data.current.netIncomeMinor, data.prior.netIncomeMinor))})
+                    {formatChangePercent(
+                      computeChangePercent(
+                        data.current.netIncomeMinor,
+                        data.prior.netIncomeMinor
+                      )
+                    )}
+                    )
                   </span>
                 )}
               </div>

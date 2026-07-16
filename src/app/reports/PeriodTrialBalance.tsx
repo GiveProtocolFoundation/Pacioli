@@ -64,7 +64,7 @@ const PeriodSelector: React.FC<PeriodSelectorProps> = ({
       <input
         type="date"
         value={startDate}
-        onChange={(e) => onStartChange(e.target.value)}
+        onChange={e => onStartChange(e.target.value)}
         className="px-3 py-1.5 text-sm border border-[rgba(95,227,192,0.25)] rounded bg-[#F7FAFA] dark:bg-[#0C141B] text-[#11202B] dark:text-[#EAF3F2]"
       />
     </div>
@@ -75,7 +75,7 @@ const PeriodSelector: React.FC<PeriodSelectorProps> = ({
       <input
         type="date"
         value={endDate}
-        onChange={(e) => onEndChange(e.target.value)}
+        onChange={e => onEndChange(e.target.value)}
         className="px-3 py-1.5 text-sm border border-[rgba(95,227,192,0.25)] rounded bg-[#F7FAFA] dark:bg-[#0C141B] text-[#11202B] dark:text-[#EAF3F2]"
       />
     </div>
@@ -105,7 +105,11 @@ const TrialBalanceRowComponent: React.FC<TrialBalanceRowProps> = ({
   hasPrior,
   even,
 }) => (
-  <tr className={even ? 'bg-white dark:bg-[#11202B]' : 'bg-[#EAF3F2] dark:bg-[#16242F]'}>
+  <tr
+    className={
+      even ? 'bg-white dark:bg-[#11202B]' : 'bg-[#EAF3F2] dark:bg-[#16242F]'
+    }
+  >
     <td className="px-5 py-2.5 text-sm font-mono text-[#5FE3C0] font-medium">
       {row.accountNumber}
     </td>
@@ -151,9 +155,12 @@ const PeriodTrialBalance: React.FC = () => {
     setLoading(true)
     setError(null)
     try {
-      const result = await invoke<ComparativeTrialBalance>('get_period_trial_balance', {
-        params: { startDate, endDate },
-      })
+      const result = await invoke<ComparativeTrialBalance>(
+        'get_period_trial_balance',
+        {
+          params: { startDate, endDate },
+        }
+      )
       setData(result)
     } catch (err) {
       setError(String(err))
@@ -187,10 +194,10 @@ const PeriodTrialBalance: React.FC = () => {
   const priorMap = useMemo(() => {
     if (!data) return new Map<string, { debit: number; credit: number }>()
     return new Map(
-      data.prior.rows.map((r) => [
+      data.prior.rows.map(r => [
         r.accountNumber,
         { debit: r.debitBalance, credit: r.creditBalance },
-      ]),
+      ])
     )
   }, [data])
 
@@ -304,7 +311,10 @@ const PeriodTrialBalance: React.FC = () => {
             </tbody>
             <tfoot>
               <tr className="bg-[#EAF3F2] dark:bg-[#16242F] font-bold border-t-2 border-[#5FE3C0]">
-                <td colSpan={3} className="px-5 py-3 text-sm text-[#11202B] dark:text-[#EAF3F2]">
+                <td
+                  colSpan={3}
+                  className="px-5 py-3 text-sm text-[#11202B] dark:text-[#EAF3F2]"
+                >
                   Totals
                 </td>
                 <td className="px-5 py-3 text-sm text-right font-mono text-[#11202B] dark:text-[#EAF3F2]">

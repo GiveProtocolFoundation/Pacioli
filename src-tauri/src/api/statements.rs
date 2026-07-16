@@ -218,7 +218,11 @@ fn build_section(label: &str, rows: &[PeriodAccountRow], types: &[&str]) -> Stat
             account_number: r.account_number.clone(),
             account_name: r.account_name.clone(),
             account_type: r.account_type.clone(),
-            balance_minor: signed_balance(&r.account_type, r.total_debit_minor, r.total_credit_minor),
+            balance_minor: signed_balance(
+                &r.account_type,
+                r.total_debit_minor,
+                r.total_credit_minor,
+            ),
         })
         .filter(|item| item.balance_minor != 0)
         .collect();
@@ -362,8 +366,7 @@ pub fn verify_ties(
     if income_statement.net_income_minor != balance_sheet.net_income_minor {
         return Err(format!(
             "Net income mismatch: income statement ({}) != balance sheet net income plug ({})",
-            income_statement.net_income_minor,
-            balance_sheet.net_income_minor,
+            income_statement.net_income_minor, balance_sheet.net_income_minor,
         ));
     }
 
@@ -371,8 +374,7 @@ pub fn verify_ties(
     if !trial_balance.is_balanced {
         return Err(format!(
             "Trial balance does not tie: debits ({}) != credits ({})",
-            trial_balance.total_debits_minor,
-            trial_balance.total_credits_minor,
+            trial_balance.total_debits_minor, trial_balance.total_credits_minor,
         ));
     }
 
@@ -395,8 +397,7 @@ pub fn verify_ties(
     if tb_net_income != income_statement.net_income_minor {
         return Err(format!(
             "Trial balance net income ({}) != income statement net income ({})",
-            tb_net_income,
-            income_statement.net_income_minor,
+            tb_net_income, income_statement.net_income_minor,
         ));
     }
 
@@ -461,7 +462,8 @@ pub async fn get_balance_sheet(
     params: StatementParams,
 ) -> Result<ComparativeBalanceSheet, String> {
     // Current period
-    let current_rows = query_period_accounts(&state.pool, &params.start_date, &params.end_date).await?;
+    let current_rows =
+        query_period_accounts(&state.pool, &params.start_date, &params.end_date).await?;
     let current_bs = build_balance_sheet(&current_rows, &params.start_date, &params.end_date);
     let current_is = build_income_statement(&current_rows, &params.start_date, &params.end_date);
     let current_tb = build_trial_balance(&current_rows, &params.start_date, &params.end_date);
@@ -496,7 +498,8 @@ pub async fn get_income_statement(
     state: State<'_, DatabaseState>,
     params: StatementParams,
 ) -> Result<ComparativeIncomeStatement, String> {
-    let current_rows = query_period_accounts(&state.pool, &params.start_date, &params.end_date).await?;
+    let current_rows =
+        query_period_accounts(&state.pool, &params.start_date, &params.end_date).await?;
     let current_bs = build_balance_sheet(&current_rows, &params.start_date, &params.end_date);
     let current_is = build_income_statement(&current_rows, &params.start_date, &params.end_date);
     let current_tb = build_trial_balance(&current_rows, &params.start_date, &params.end_date);
@@ -530,7 +533,8 @@ pub async fn get_period_trial_balance(
     state: State<'_, DatabaseState>,
     params: StatementParams,
 ) -> Result<ComparativeTrialBalance, String> {
-    let current_rows = query_period_accounts(&state.pool, &params.start_date, &params.end_date).await?;
+    let current_rows =
+        query_period_accounts(&state.pool, &params.start_date, &params.end_date).await?;
     let current_bs = build_balance_sheet(&current_rows, &params.start_date, &params.end_date);
     let current_is = build_income_statement(&current_rows, &params.start_date, &params.end_date);
     let current_tb = build_trial_balance(&current_rows, &params.start_date, &params.end_date);
@@ -622,7 +626,12 @@ pub async fn export_balance_sheet_csv(
             .map_err(|e| e.to_string())?;
     }
     writer
-        .write_record(["Equity", "", "Net Income", &format_minor(bs.net_income_minor)])
+        .write_record([
+            "Equity",
+            "",
+            "Net Income",
+            &format_minor(bs.net_income_minor),
+        ])
         .map_err(|e| e.to_string())?;
     writer
         .write_record(["", "", "Total Equity", &format_minor(bs.total_equity_minor)])
@@ -670,7 +679,12 @@ pub async fn export_income_statement_csv(
             .map_err(|e| e.to_string())?;
     }
     writer
-        .write_record(["", "", "Total Revenue", &format_minor(is.total_revenue_minor)])
+        .write_record([
+            "",
+            "",
+            "Total Revenue",
+            &format_minor(is.total_revenue_minor),
+        ])
         .map_err(|e| e.to_string())?;
 
     for item in &is.expenses.items {
@@ -684,7 +698,12 @@ pub async fn export_income_statement_csv(
             .map_err(|e| e.to_string())?;
     }
     writer
-        .write_record(["", "", "Total Expenses", &format_minor(is.total_expenses_minor)])
+        .write_record([
+            "",
+            "",
+            "Total Expenses",
+            &format_minor(is.total_expenses_minor),
+        ])
         .map_err(|e| e.to_string())?;
 
     writer
@@ -862,9 +881,7 @@ mod tests {
 
         let result = verify_ties(&bs, &is, &tb);
         assert!(result.is_err());
-        assert!(result
-            .unwrap_err()
-            .contains("Balance sheet does not tie"));
+        assert!(result.unwrap_err().contains("Balance sheet does not tie"));
     }
 
     #[test]
@@ -931,21 +948,18 @@ mod tests {
         // Full year 2025 (Jan 1 – Dec 31): 365 inclusive days.
         // Prior end = Dec 31 2024. Prior period is same gap (364 days between
         // start and end), so prior start = Jan 2 2024.
-        let (prior_start, prior_end) =
-            compute_prior_period("2025-01-01", "2025-12-31").unwrap();
+        let (prior_start, prior_end) = compute_prior_period("2025-01-01", "2025-12-31").unwrap();
         assert_eq!(prior_end, "2024-12-31");
         assert_eq!(prior_start, "2024-01-02");
 
         // Monthly: January 2025 (31 inclusive days, gap = 30).
         // Prior end = Dec 31 2024. Prior start = Dec 1 2024.
-        let (prior_start, prior_end) =
-            compute_prior_period("2025-01-01", "2025-01-31").unwrap();
+        let (prior_start, prior_end) = compute_prior_period("2025-01-01", "2025-01-31").unwrap();
         assert_eq!(prior_end, "2024-12-31");
         assert_eq!(prior_start, "2024-12-01");
 
         // Single day period
-        let (prior_start, prior_end) =
-            compute_prior_period("2025-06-15", "2025-06-15").unwrap();
+        let (prior_start, prior_end) = compute_prior_period("2025-06-15", "2025-06-15").unwrap();
         assert_eq!(prior_end, "2025-06-14");
         assert_eq!(prior_start, "2025-06-14");
     }

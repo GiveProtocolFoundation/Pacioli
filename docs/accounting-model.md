@@ -225,13 +225,13 @@ with mechanically verified ties.
 
 ### Account classification for statements
 
-| Account Type | Statement       | Section       | Sign convention                |
-| ------------ | --------------- | ------------- | ------------------------------ |
-| Asset        | Balance Sheet   | Assets        | Debit − Credit (natural debit) |
-| Liability    | Balance Sheet   | Liabilities   | Credit − Debit (natural credit)|
-| Equity       | Balance Sheet   | Equity        | Credit − Debit (natural credit)|
-| Income       | Income Statement| Revenue       | Credit − Debit (natural credit)|
-| Expense      | Income Statement| Expenses      | Debit − Credit (natural debit) |
+| Account Type | Statement        | Section     | Sign convention                 |
+| ------------ | ---------------- | ----------- | ------------------------------- |
+| Asset        | Balance Sheet    | Assets      | Debit − Credit (natural debit)  |
+| Liability    | Balance Sheet    | Liabilities | Credit − Debit (natural credit) |
+| Equity       | Balance Sheet    | Equity      | Credit − Debit (natural credit) |
+| Income       | Income Statement | Revenue     | Credit − Debit (natural credit) |
+| Expense      | Income Statement | Expenses    | Debit − Credit (natural debit)  |
 
 ### How net income ties to equity
 
