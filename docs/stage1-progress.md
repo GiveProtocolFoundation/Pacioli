@@ -410,7 +410,7 @@ WHERE status='approved'` (the M5 state machine explicitly allows
     DESC. `ignore_transaction` — sets status to 'ignored' (conditional
     UPDATE, only unclassified→ignored). Both registered as Tauri commands.
     `MultiChainTransaction` public struct added with `serde(rename_all =
-    "camelCase")` for frontend consumption.
+"camelCase")` for frontend consumption.
   - **Classification queue view** (`ClassificationQueue.tsx`): lists
     unclassified raw transactions (chain, hash, type, value, fee,
     timestamp). Three actions per row: Auto (calls

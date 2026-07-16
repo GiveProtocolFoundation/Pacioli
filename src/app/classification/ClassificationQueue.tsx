@@ -1,17 +1,18 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { invoke } from '@tauri-apps/api/core'
-import {
-  Search,
-  Zap,
-  FileEdit,
-  EyeOff,
-  Inbox,
-  RefreshCw,
-} from 'lucide-react'
+import { Search, Zap, FileEdit, EyeOff, Inbox, RefreshCw } from 'lucide-react'
 import { useNavBadges } from '../../contexts/NavBadgeContext'
-import type { RawTransaction, GLAccount, JournalEntryWithLines } from '../../types/database'
+import type {
+  RawTransaction,
+  GLAccount,
+  JournalEntryWithLines,
+} from '../../types/database'
 import JournalEntryDrawer from '../journal-entries/JournalEntryDrawer'
-import { formatTimestampFull, truncateHash, displayTxType } from './classificationUtils'
+import {
+  formatTimestampFull,
+  truncateHash,
+  displayTxType,
+} from './classificationUtils'
 
 /** Skip/ignore modal state. */
 interface IgnoreModal {
@@ -177,7 +178,9 @@ const ClassificationQueue: React.FC = () => {
   if (loading) {
     return (
       <div className="p-6 min-h-screen ledger-background flex items-center justify-center">
-        <div className="text-[#294050] dark:text-[#9FB4BE]">Loading classification queue...</div>
+        <div className="text-[#294050] dark:text-[#9FB4BE]">
+          Loading classification queue...
+        </div>
       </div>
     )
   }
@@ -228,7 +231,8 @@ const ClassificationQueue: React.FC = () => {
 
       {/* Count summary */}
       <div className="mb-4 text-sm text-[#294050] dark:text-[#9FB4BE]">
-        {filtered.length} unclassified transaction{filtered.length !== 1 ? 's' : ''}
+        {filtered.length} unclassified transaction
+        {filtered.length !== 1 ? 's' : ''}
       </div>
 
       {/* Table */}
@@ -345,14 +349,20 @@ const ClassificationQueue: React.FC = () => {
       {/* Ignore confirmation modal */}
       {ignoreModal !== null && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="fixed inset-0 bg-black/40" onClick={handleIgnoreCancel} />
+          <div
+            className="fixed inset-0 bg-black/40"
+            onClick={handleIgnoreCancel}
+          />
           <div className="relative bg-[#F7FAFA] dark:bg-[#11202B] rounded-lg shadow-xl p-6 max-w-sm w-full mx-4">
             <h3 className="text-lg font-bold text-[#11202B] dark:text-[#EAF3F2] mb-2">
               Skip Transaction
             </h3>
             <p className="text-sm text-[#294050] dark:text-[#9FB4BE] mb-4">
-              Mark <span className="font-mono">{truncateHash(ignoreModal.hash)}</span> as
-              ignored? This can be reversed later.
+              Mark{' '}
+              <span className="font-mono">
+                {truncateHash(ignoreModal.hash)}
+              </span>{' '}
+              as ignored? This can be reversed later.
             </p>
             <input
               type="text"

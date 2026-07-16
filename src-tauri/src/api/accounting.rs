@@ -3158,10 +3158,16 @@ mod tests {
     async fn auto_classify_claim_creates_draft_with_provenance() {
         let pool = setup_test_db().await;
         let tx_id = "moonbeam_0xabc123";
-        insert_raw_tx(&pool, tx_id, "moonbeam", "0xabc123", "50.00", None, "claim", 1700000000).await;
+        insert_raw_tx(
+            &pool, tx_id, "moonbeam", "0xabc123", "50.00", None, "claim", 1700000000,
+        )
+        .await;
 
         // Verify starts unclassified
-        assert_eq!(get_classification_status(&pool, tx_id).await, "unclassified");
+        assert_eq!(
+            get_classification_status(&pool, tx_id).await,
+            "unclassified"
+        );
 
         // Simulate auto_classify_transaction by calling the internal logic.
         // We go through the full SQL path to verify the integration.
@@ -3220,7 +3226,10 @@ mod tests {
                 .fetch_one(&pool)
                 .await
                 .expect("Fetch origin");
-        assert_eq!(origin, "rule", "Auto-classified entry should have origin = 'rule'");
+        assert_eq!(
+            origin, "rule",
+            "Auto-classified entry should have origin = 'rule'"
+        );
 
         // Verify classification_status flipped
         assert_eq!(
@@ -3245,16 +3254,25 @@ mod tests {
         .await
         .expect("Sum credits");
         assert_eq!(total_debit, total_credit, "Entry must be balanced");
-        assert_eq!(total_debit, 5000, "Debit should be 5000 minor units ($50.00)");
+        assert_eq!(
+            total_debit, 5000,
+            "Debit should be 5000 minor units ($50.00)"
+        );
     }
 
     #[tokio::test]
     async fn ignore_transaction_flips_status() {
         let pool = setup_test_db().await;
         let tx_id = "moonbeam_0xdef456";
-        insert_raw_tx(&pool, tx_id, "moonbeam", "0xdef456", "10.00", None, "approve", 1700000000).await;
+        insert_raw_tx(
+            &pool, tx_id, "moonbeam", "0xdef456", "10.00", None, "approve", 1700000000,
+        )
+        .await;
 
-        assert_eq!(get_classification_status(&pool, tx_id).await, "unclassified");
+        assert_eq!(
+            get_classification_status(&pool, tx_id).await,
+            "unclassified"
+        );
 
         // Ignore the transaction
         sqlx::query(
@@ -3277,7 +3295,14 @@ mod tests {
         let pool = setup_test_db().await;
         let tx_id = "moonbeam_0x789abc";
         insert_raw_tx(
-            &pool, tx_id, "moonbeam", "0x789abc", "25.50", Some("0.01"), "transfer", 1700000000,
+            &pool,
+            tx_id,
+            "moonbeam",
+            "0x789abc",
+            "25.50",
+            Some("0.01"),
+            "transfer",
+            1700000000,
         )
         .await;
 
@@ -3291,16 +3316,19 @@ mod tests {
         .expect("Classify");
 
         // Verify value and fee are untouched
-        let (value, fee): (String, Option<String>) = sqlx::query_as(
-            "SELECT value, fee FROM multi_chain_transactions WHERE id = ?",
-        )
-        .bind(tx_id)
-        .fetch_one(&pool)
-        .await
-        .expect("Fetch raw tx");
+        let (value, fee): (String, Option<String>) =
+            sqlx::query_as("SELECT value, fee FROM multi_chain_transactions WHERE id = ?")
+                .bind(tx_id)
+                .fetch_one(&pool)
+                .await
+                .expect("Fetch raw tx");
 
         assert_eq!(value, "25.50", "Raw value must be untouched (Inv-5)");
-        assert_eq!(fee.as_deref(), Some("0.01"), "Raw fee must be untouched (Inv-5)");
+        assert_eq!(
+            fee.as_deref(),
+            Some("0.01"),
+            "Raw fee must be untouched (Inv-5)"
+        );
     }
 
     #[tokio::test]
@@ -3317,8 +3345,14 @@ mod tests {
         let baseline = count;
 
         // Insert two raw txs
-        insert_raw_tx(&pool, "test_1", "ethereum", "0x111", "100", None, "transfer", 1700000000).await;
-        insert_raw_tx(&pool, "test_2", "ethereum", "0x222", "200", None, "stake", 1700000001).await;
+        insert_raw_tx(
+            &pool, "test_1", "ethereum", "0x111", "100", None, "transfer", 1700000000,
+        )
+        .await;
+        insert_raw_tx(
+            &pool, "test_2", "ethereum", "0x222", "200", None, "stake", 1700000001,
+        )
+        .await;
 
         let (count,): (i64,) = sqlx::query_as(
             "SELECT COUNT(*) FROM multi_chain_transactions WHERE classification_status = 'unclassified'",
