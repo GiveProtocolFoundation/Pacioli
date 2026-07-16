@@ -1777,30 +1777,34 @@ pub async fn create_period(
         return Err("period_start must be before period_end".to_string());
     }
 
-    // Check for overlapping periods (enforce in Rust; SQLite lacks exclusion constraints)
-    let overlap_count: (i64,) = sqlx::query_as(
-        "SELECT COUNT(*) FROM accounting_periods WHERE period_start <= ? AND period_end >= ?",
+    // Overlap enforcement in Rust/SQL (SQLite lacks exclusion constraints).
+    // Atomic conditional INSERT: the overlap check and the insert are a single
+    // statement, so two concurrent create_period calls cannot both pass a
+    // read-check-write race — the same rows_affected pattern as the lifecycle
+    // transitions.
+    let result = sqlx::query(
+        r#"
+        INSERT INTO accounting_periods (period_start, period_end, status)
+        SELECT ?, ?, 'open'
+        WHERE NOT EXISTS (
+            SELECT 1 FROM accounting_periods
+            WHERE period_start <= ? AND period_end >= ?
+        )
+        "#,
     )
+    .bind(&input.period_start)
+    .bind(&input.period_end)
     .bind(&input.period_end)
     .bind(&input.period_start)
-    .fetch_one(&state.pool)
+    .execute(&state.pool)
     .await
     .map_err(|e| e.to_string())?;
 
-    if overlap_count.0 > 0 {
+    if result.rows_affected() == 0 {
         return Err(format!(
             "Period {start} to {end} overlaps with an existing period"
         ));
     }
-
-    let result = sqlx::query(
-        "INSERT INTO accounting_periods (period_start, period_end, status) VALUES (?, ?, 'open')",
-    )
-    .bind(&input.period_start)
-    .bind(&input.period_end)
-    .execute(&state.pool)
-    .await
-    .map_err(|e| e.to_string())?;
 
     let id = result.last_insert_rowid();
 
@@ -4075,5 +4079,119 @@ mod tests {
         .expect("Check overlap");
 
         assert!(overlap_count.0 > 0, "Overlapping period should be detected");
+    }
+
+    /// Review hardening (GIV-684): the overlap check + insert must be one
+    /// atomic statement — a plain read-check-write races under concurrency.
+    #[tokio::test]
+    async fn create_period_conditional_insert_rejects_overlap_atomically() {
+        let pool = setup_test_db().await;
+
+        create_test_period(&pool, "2026-01-01", "2026-01-31").await;
+
+        // Same conditional INSERT the command uses; overlapping range -> 0 rows
+        let result = sqlx::query(
+            r#"
+            INSERT INTO accounting_periods (period_start, period_end, status)
+            SELECT ?, ?, 'open'
+            WHERE NOT EXISTS (
+                SELECT 1 FROM accounting_periods
+                WHERE period_start <= ? AND period_end >= ?
+            )
+            "#,
+        )
+        .bind("2026-01-15")
+        .bind("2026-02-15")
+        .bind("2026-02-15")
+        .bind("2026-01-15")
+        .execute(&pool)
+        .await
+        .expect("Conditional insert should not error");
+        assert_eq!(
+            result.rows_affected(),
+            0,
+            "Overlapping period insert must be a 0-row no-op"
+        );
+
+        // Non-overlapping range -> 1 row
+        let result = sqlx::query(
+            r#"
+            INSERT INTO accounting_periods (period_start, period_end, status)
+            SELECT ?, ?, 'open'
+            WHERE NOT EXISTS (
+                SELECT 1 FROM accounting_periods
+                WHERE period_start <= ? AND period_end >= ?
+            )
+            "#,
+        )
+        .bind("2026-02-01")
+        .bind("2026-02-28")
+        .bind("2026-02-28")
+        .bind("2026-02-01")
+        .execute(&pool)
+        .await
+        .expect("Conditional insert should not error");
+        assert_eq!(result.rows_affected(), 1, "Adjacent period should insert");
+    }
+
+    /// Review hardening (GIV-684): the closed-period lock keys off entry_date,
+    /// so backdating a POSTED entry into a closed period via direct UPDATE
+    /// must be blocked at the DB layer (entry_date immutability trigger).
+    #[tokio::test]
+    async fn posted_entry_date_is_immutable() {
+        let pool = setup_test_db().await;
+        let (acct_a, acct_b) = get_test_accounts(&pool).await;
+
+        // Close January; post an entry in (open) March
+        let jan_id = create_test_period(&pool, "2026-01-01", "2026-01-31").await;
+        close_test_period(&pool, jan_id).await;
+
+        let entry_id = create_dated_draft_entry(&pool, "BD-001", "2026-03-15").await;
+        add_balanced_lines(&pool, entry_id, acct_a, acct_b, 10000).await;
+        approve_and_post_entry(&pool, entry_id).await;
+
+        // Attempt to backdate the posted entry into closed January
+        let result =
+            sqlx::query("UPDATE journal_entries SET entry_date = '2026-01-15' WHERE id = ?")
+                .bind(entry_id)
+                .execute(&pool)
+                .await;
+
+        assert!(
+            result.is_err(),
+            "entry_date of a posted entry must be immutable"
+        );
+        let err = result.unwrap_err().to_string();
+        assert!(
+            err.contains("immutable"),
+            "Error should mention immutability, got: {err}"
+        );
+
+        // Date unchanged
+        let (entry_date,): (String,) =
+            sqlx::query_as("SELECT DATE(entry_date) FROM journal_entries WHERE id = ?")
+                .bind(entry_id)
+                .fetch_one(&pool)
+                .await
+                .expect("Fetch entry_date");
+        assert_eq!(entry_date, "2026-03-15", "entry_date must be unchanged");
+    }
+
+    /// Draft entry_date stays editable (update_journal_entry path) — the
+    /// immutability trigger must only bite posted/voided entries.
+    #[tokio::test]
+    async fn draft_entry_date_remains_editable() {
+        let pool = setup_test_db().await;
+        let (acct_a, acct_b) = get_test_accounts(&pool).await;
+
+        let entry_id = create_dated_draft_entry(&pool, "BD-002", "2026-03-15").await;
+        add_balanced_lines(&pool, entry_id, acct_a, acct_b, 10000).await;
+
+        let result =
+            sqlx::query("UPDATE journal_entries SET entry_date = '2026-04-01' WHERE id = ?")
+                .bind(entry_id)
+                .execute(&pool)
+                .await;
+        assert!(result.is_ok(), "Draft entry_date must remain editable");
     }
 }

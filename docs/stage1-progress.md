@@ -518,3 +518,34 @@ WHERE status='approved'` (the M5 state machine explicitly allows
     outside any period succeeds; overlap detection. Vitest tests for
     period utility functions (formatDate, formatDateTime, firstDayOfMonth,
     lastDayOfMonth).
+- **Session 10 review hardening (2026-07-16, CTO — GIV-684, PR #220):**
+  - **Posted entry_date immutability (M6 trigger added):** the closed-period
+    lock keys entirely off `entry_date`, but existing immutability triggers
+    only covered status/is_posted transitions and line mutations — a direct
+    `UPDATE journal_entries SET entry_date = ...` on a POSTED entry could
+    backdate it into (or out of) a closed period, silently rewriting a
+    closed month. Added `journal_entries_posted_entry_date_immutable`
+    (blocks entry_date updates when status is posted/voided) to the same
+    pre-authorized M6 migration. No app path updates entry_date after
+    posting (update_journal_entry is draft-only) — pure defense-in-depth.
+    Draft entry_date stays editable (tested).
+  - **create_period overlap race:** the overlap check was read-check-write
+    outside any transaction — two concurrent creates could both pass and
+    insert overlapping periods. Replaced with a single atomic conditional
+    `INSERT ... SELECT ... WHERE NOT EXISTS(overlap)` + rows_affected
+    check, matching the lifecycle conditional-UPDATE pattern.
+  - **Audit identity:** close/reopen sent hardcoded `closedBy: 'user'` —
+    now the authenticated user (`useAuth` email/display_name), same as the
+    Phase 3 approver fix. A period-close audit trail attributed to 'user'
+    is worthless.
+  - **Dead code with a latent TZ bug removed:** `firstDayOfMonth`/
+    `lastDayOfMonth` were unused by the UI, and `lastDayOfMonth` mixed a
+    local-time `Date` with `toISOString()` (UTC) — off-by-one day in UTC+
+    timezones, which would have left the month's last day outside the
+    period had it ever been wired up. Deleted rather than fixed.
+  - **DeepSource JS blockers cleared** (run was red): JSX depth (extracted
+    PeriodRow/PeriodStatusBadge/ConfirmActionBanner/CreatePeriodForm/
+    ReopenAuditLog), short names, string concat, missing doc comments,
+    literal trailing `undefined` args in tests.
+  - Tests: +3 Rust (posted entry_date immutable; draft entry_date
+    editable; conditional-insert overlap atomicity) → 230 lib green.

@@ -9,6 +9,7 @@ import {
   Clock,
 } from 'lucide-react'
 import type { AccountingPeriod } from '../../types/database'
+import { useAuth } from '../../contexts/AuthContext'
 import { formatDate, formatDateTime } from './accountingPeriodUtils'
 
 const statusConfig = {
@@ -26,21 +27,249 @@ const statusConfig = {
   },
 } as const
 
+interface ConfirmActionState {
+  type: 'close' | 'reopen'
+  periodId: number
+  label: string
+}
+
+/**
+ * Renders the open/closed status badge for a period.
+ * @param props - Component props
+ * @returns Status badge element
+ */
+const PeriodStatusBadge: React.FC<{ status: string }> = ({ status }) => {
+  const config =
+    statusConfig[status as keyof typeof statusConfig] ?? statusConfig.open
+  const StatusIcon = config.icon
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${config.className}`}
+    >
+      <StatusIcon className="h-3.5 w-3.5" />
+      {config.label}
+    </span>
+  )
+}
+
+/**
+ * Renders a single accounting-period table row with its close/reopen action.
+ * @param props - Component props
+ * @returns Table row element
+ */
+const PeriodRow: React.FC<{
+  period: AccountingPeriod
+  onRequestAction: (action: ConfirmActionState) => void
+}> = ({ period, onRequestAction }) => {
+  const rangeLabel = `${formatDate(period.periodStart)} – ${formatDate(period.periodEnd)}`
+  const isOpen = period.status === 'open'
+
+  const handleActionClick = useCallback(() => {
+    onRequestAction({
+      type: isOpen ? 'close' : 'reopen',
+      periodId: period.id,
+      label: rangeLabel,
+    })
+  }, [isOpen, onRequestAction, period.id, rangeLabel])
+
+  return (
+    <tr className="hover:bg-[#F7FAFA]/50 dark:hover:bg-[#0C141B]/30 transition-colors">
+      <td className="px-4 py-3 text-[#294050] dark:text-[#EDF4F4] font-medium">
+        {rangeLabel}
+      </td>
+      <td className="px-4 py-3">
+        <PeriodStatusBadge status={period.status} />
+      </td>
+      <td className="px-4 py-3 text-[#294050]/60 dark:text-[#9FB4BE] text-xs">
+        {period.closedBy ?? '\u2014'}
+      </td>
+      <td className="px-4 py-3 text-[#294050]/60 dark:text-[#9FB4BE] text-xs">
+        {formatDateTime(period.closedAt)}
+      </td>
+      <td className="px-4 py-3 text-right">
+        {isOpen ? (
+          <button
+            onClick={handleActionClick}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-amber-50 text-amber-700 hover:bg-amber-100 dark:bg-amber-900/20 dark:text-amber-300 dark:hover:bg-amber-900/40 transition-colors"
+          >
+            <Lock className="h-3.5 w-3.5" />
+            Close
+          </button>
+        ) : (
+          <button
+            onClick={handleActionClick}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-300 dark:hover:bg-blue-900/40 transition-colors"
+          >
+            <Unlock className="h-3.5 w-3.5" />
+            Reopen
+          </button>
+        )}
+      </td>
+    </tr>
+  )
+}
+
+/**
+ * Renders the confirmation banner for a pending close/reopen action.
+ * @param props - Component props
+ * @returns Confirmation banner element
+ */
+const ConfirmActionBanner: React.FC<{
+  action: ConfirmActionState
+  onCancel: () => void
+  onConfirm: () => void
+}> = ({ action, onCancel, onConfirm }) => (
+  <div className="mb-4 flex items-center justify-between p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-300 dark:border-amber-700 text-amber-800 dark:text-amber-300 text-sm">
+    <span>
+      {action.type === 'close'
+        ? `Close period ${action.label}? No more entries can be posted into this period until it is reopened.`
+        : `Reopen period ${action.label}? This is an audit event — entries can be posted into this period again.`}
+    </span>
+    <div className="flex gap-2 ml-4">
+      <button
+        onClick={onCancel}
+        className="px-3 py-1 rounded text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/40 font-medium"
+      >
+        Cancel
+      </button>
+      <button
+        onClick={onConfirm}
+        className={`px-3 py-1 rounded font-medium text-white ${
+          action.type === 'close'
+            ? 'bg-amber-600 hover:bg-amber-700'
+            : 'bg-blue-600 hover:bg-blue-700'
+        }`}
+      >
+        {action.type === 'close' ? 'Close Period' : 'Reopen Period'}
+      </button>
+    </div>
+  </div>
+)
+
+/**
+ * Renders the create-period form (start/end date inputs).
+ * @param props - Component props
+ * @returns Create form element
+ */
+const CreatePeriodForm: React.FC<{
+  onCreate: (periodStart: string, periodEnd: string) => Promise<void>
+  error: string | null
+}> = ({ onCreate, error }) => {
+  const [newStart, setNewStart] = useState('')
+  const [newEnd, setNewEnd] = useState('')
+
+  const handleStartChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      setNewStart(event.target.value)
+    },
+    []
+  )
+
+  const handleEndChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      setNewEnd(event.target.value)
+    },
+    []
+  )
+
+  const handleSubmit = useCallback(() => {
+    void onCreate(newStart, newEnd)
+  }, [onCreate, newStart, newEnd])
+
+  return (
+    <div className="mb-6 p-4 rounded-lg border border-[rgba(95,227,192,0.2)] bg-white dark:bg-[#111B24]">
+      <h3 className="text-sm font-semibold text-[#294050] dark:text-[#EDF4F4] mb-3">
+        Create Accounting Period
+      </h3>
+      <div className="flex items-end gap-4">
+        <div className="flex-1">
+          <label className="block text-xs text-[#294050]/60 dark:text-[#9FB4BE] mb-1">
+            Start Date
+          </label>
+          <input
+            type="date"
+            value={newStart}
+            onChange={handleStartChange}
+            className="w-full px-3 py-2 rounded-lg border border-[rgba(95,227,192,0.2)] bg-white dark:bg-[#0C141B] text-[#294050] dark:text-[#EDF4F4] text-sm"
+          />
+        </div>
+        <div className="flex-1">
+          <label className="block text-xs text-[#294050]/60 dark:text-[#9FB4BE] mb-1">
+            End Date
+          </label>
+          <input
+            type="date"
+            value={newEnd}
+            onChange={handleEndChange}
+            className="w-full px-3 py-2 rounded-lg border border-[rgba(95,227,192,0.2)] bg-white dark:bg-[#0C141B] text-[#294050] dark:text-[#EDF4F4] text-sm"
+          />
+        </div>
+        <button
+          onClick={handleSubmit}
+          disabled={!newStart || !newEnd}
+          className="px-4 py-2 rounded-lg bg-[#294050] text-white hover:bg-[#1e3040] dark:bg-[#5FE3C0] dark:text-[#0C141B] dark:hover:bg-[#4dd3b0] text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Create
+        </button>
+      </div>
+      {error && (
+        <p className="mt-2 text-sm text-red-600 dark:text-red-400">{error}</p>
+      )}
+    </div>
+  )
+}
+
+/**
+ * Renders the audit log of period reopen events.
+ * @param props - Component props
+ * @returns Audit log element, or null when no reopen events exist
+ */
+const ReopenAuditLog: React.FC<{ periods: AccountingPeriod[] }> = ({
+  periods,
+}) => {
+  const reopened = periods.filter(period => period.reopenedBy)
+  if (reopened.length === 0) return null
+  return (
+    <div className="mt-6 p-4 rounded-lg border border-[rgba(95,227,192,0.1)] bg-white dark:bg-[#111B24]">
+      <h3 className="text-sm font-semibold text-[#294050] dark:text-[#EDF4F4] mb-3 flex items-center gap-2">
+        <CheckCircle2 className="h-4 w-4" />
+        Reopen Audit Log
+      </h3>
+      <div className="space-y-2">
+        {reopened.map(period => (
+          <div
+            key={`audit-${period.id}`}
+            className="text-xs text-[#294050]/60 dark:text-[#9FB4BE]"
+          >
+            Period {formatDate(period.periodStart)} –{' '}
+            {formatDate(period.periodEnd)} reopened by{' '}
+            <strong>{period.reopenedBy}</strong> at{' '}
+            {formatDateTime(period.reopenedAt)}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Accounting Periods page: lists periods with open/closed status, supports
+ * creating periods and closing/reopening them with confirmation. Close and
+ * reopen record the authenticated user for the audit trail (GIV-684).
+ * @returns Accounting periods page element
+ */
 const AccountingPeriods: React.FC = () => {
+  const { user } = useAuth()
   const [periods, setPeriods] = useState<AccountingPeriod[]>([])
   const [loading, setLoading] = useState(true)
   const [actionError, setActionError] = useState<string | null>(null)
   const [showCreateForm, setShowCreateForm] = useState(false)
-  const [newStart, setNewStart] = useState('')
-  const [newEnd, setNewEnd] = useState('')
   const [createError, setCreateError] = useState<string | null>(null)
+  const [confirmAction, setConfirmAction] = useState<ConfirmActionState | null>(
+    null
+  )
 
-  // Confirmation state for close/reopen actions
-  const [confirmAction, setConfirmAction] = useState<{
-    type: 'close' | 'reopen'
-    periodId: number
-    label: string
-  } | null>(null)
+  const actor = user?.email ?? user?.display_name ?? 'unknown'
 
   const fetchPeriods = useCallback(async () => {
     try {
@@ -57,20 +286,21 @@ const AccountingPeriods: React.FC = () => {
     fetchPeriods()
   }, [fetchPeriods])
 
-  const handleCreate = useCallback(async () => {
-    setCreateError(null)
-    try {
-      await invoke('create_period', {
-        input: { periodStart: newStart, periodEnd: newEnd },
-      })
-      setShowCreateForm(false)
-      setNewStart('')
-      setNewEnd('')
-      await fetchPeriods()
-    } catch (err) {
-      setCreateError(String(err))
-    }
-  }, [newStart, newEnd, fetchPeriods])
+  const handleCreate = useCallback(
+    async (periodStart: string, periodEnd: string) => {
+      setCreateError(null)
+      try {
+        await invoke('create_period', {
+          input: { periodStart, periodEnd },
+        })
+        setShowCreateForm(false)
+        await fetchPeriods()
+      } catch (err) {
+        setCreateError(String(err))
+      }
+    },
+    [fetchPeriods]
+  )
 
   const handleClose = useCallback(
     async (periodId: number) => {
@@ -79,14 +309,14 @@ const AccountingPeriods: React.FC = () => {
       try {
         await invoke('close_period', {
           periodId,
-          closedBy: 'user',
+          closedBy: actor,
         })
         await fetchPeriods()
       } catch (err) {
         setActionError(String(err))
       }
     },
-    [fetchPeriods]
+    [actor, fetchPeriods]
   )
 
   const handleReopen = useCallback(
@@ -96,15 +326,24 @@ const AccountingPeriods: React.FC = () => {
       try {
         await invoke('reopen_period', {
           periodId,
-          reopenedBy: 'user',
+          reopenedBy: actor,
         })
         await fetchPeriods()
       } catch (err) {
         setActionError(String(err))
       }
     },
-    [fetchPeriods]
+    [actor, fetchPeriods]
   )
+
+  const handleConfirm = useCallback(() => {
+    if (!confirmAction) return
+    if (confirmAction.type === 'close') {
+      void handleClose(confirmAction.periodId)
+    } else {
+      void handleReopen(confirmAction.periodId)
+    }
+  }, [confirmAction, handleClose, handleReopen])
 
   const handleDismissError = useCallback(() => {
     setActionError(null)
@@ -113,20 +352,6 @@ const AccountingPeriods: React.FC = () => {
   const handleDismissConfirm = useCallback(() => {
     setConfirmAction(null)
   }, [])
-
-  const handleStartChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      setNewStart(e.target.value)
-    },
-    []
-  )
-
-  const handleEndChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      setNewEnd(e.target.value)
-    },
-    []
-  )
 
   const handleToggleCreate = useCallback(() => {
     setShowCreateForm(prev => !prev)
@@ -177,81 +402,15 @@ const AccountingPeriods: React.FC = () => {
       )}
 
       {confirmAction && (
-        <div className="mb-4 flex items-center justify-between p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-300 dark:border-amber-700 text-amber-800 dark:text-amber-300 text-sm">
-          <span>
-            {confirmAction.type === 'close'
-              ? `Close period ${confirmAction.label}? No more entries can be posted into this period until it is reopened.`
-              : `Reopen period ${confirmAction.label}? This is an audit event — entries can be posted into this period again.`}
-          </span>
-          <div className="flex gap-2 ml-4">
-            <button
-              onClick={handleDismissConfirm}
-              className="px-3 py-1 rounded text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/40 font-medium"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={
-                confirmAction.type === 'close'
-                  ? () => handleClose(confirmAction.periodId)
-                  : () => handleReopen(confirmAction.periodId)
-              }
-              className={`px-3 py-1 rounded font-medium text-white ${
-                confirmAction.type === 'close'
-                  ? 'bg-amber-600 hover:bg-amber-700'
-                  : 'bg-blue-600 hover:bg-blue-700'
-              }`}
-            >
-              {confirmAction.type === 'close'
-                ? 'Close Period'
-                : 'Reopen Period'}
-            </button>
-          </div>
-        </div>
+        <ConfirmActionBanner
+          action={confirmAction}
+          onCancel={handleDismissConfirm}
+          onConfirm={handleConfirm}
+        />
       )}
 
       {showCreateForm && (
-        <div className="mb-6 p-4 rounded-lg border border-[rgba(95,227,192,0.2)] bg-white dark:bg-[#111B24]">
-          <h3 className="text-sm font-semibold text-[#294050] dark:text-[#EDF4F4] mb-3">
-            Create Accounting Period
-          </h3>
-          <div className="flex items-end gap-4">
-            <div className="flex-1">
-              <label className="block text-xs text-[#294050]/60 dark:text-[#9FB4BE] mb-1">
-                Start Date
-              </label>
-              <input
-                type="date"
-                value={newStart}
-                onChange={handleStartChange}
-                className="w-full px-3 py-2 rounded-lg border border-[rgba(95,227,192,0.2)] bg-white dark:bg-[#0C141B] text-[#294050] dark:text-[#EDF4F4] text-sm"
-              />
-            </div>
-            <div className="flex-1">
-              <label className="block text-xs text-[#294050]/60 dark:text-[#9FB4BE] mb-1">
-                End Date
-              </label>
-              <input
-                type="date"
-                value={newEnd}
-                onChange={handleEndChange}
-                className="w-full px-3 py-2 rounded-lg border border-[rgba(95,227,192,0.2)] bg-white dark:bg-[#0C141B] text-[#294050] dark:text-[#EDF4F4] text-sm"
-              />
-            </div>
-            <button
-              onClick={handleCreate}
-              disabled={!newStart || !newEnd}
-              className="px-4 py-2 rounded-lg bg-[#294050] text-white hover:bg-[#1e3040] dark:bg-[#5FE3C0] dark:text-[#0C141B] dark:hover:bg-[#4dd3b0] text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Create
-            </button>
-          </div>
-          {createError && (
-            <p className="mt-2 text-sm text-red-600 dark:text-red-400">
-              {createError}
-            </p>
-          )}
-        </div>
+        <CreatePeriodForm onCreate={handleCreate} error={createError} />
       )}
 
       {periods.length === 0 ? (
@@ -287,95 +446,19 @@ const AccountingPeriods: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-[rgba(95,227,192,0.08)]">
-              {periods.map(period => {
-                const cfg =
-                  statusConfig[period.status as keyof typeof statusConfig] ??
-                  statusConfig.open
-                const StatusIcon = cfg.icon
-                return (
-                  <tr
-                    key={period.id}
-                    className="hover:bg-[#F7FAFA]/50 dark:hover:bg-[#0C141B]/30 transition-colors"
-                  >
-                    <td className="px-4 py-3 text-[#294050] dark:text-[#EDF4F4] font-medium">
-                      {formatDate(period.periodStart)} –{' '}
-                      {formatDate(period.periodEnd)}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${cfg.className}`}
-                      >
-                        <StatusIcon className="h-3.5 w-3.5" />
-                        {cfg.label}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-[#294050]/60 dark:text-[#9FB4BE] text-xs">
-                      {period.closedBy ?? '\u2014'}
-                    </td>
-                    <td className="px-4 py-3 text-[#294050]/60 dark:text-[#9FB4BE] text-xs">
-                      {formatDateTime(period.closedAt)}
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      {period.status === 'open' ? (
-                        <button
-                          onClick={() =>
-                            setConfirmAction({
-                              type: 'close',
-                              periodId: period.id,
-                              label: `${formatDate(period.periodStart)} – ${formatDate(period.periodEnd)}`,
-                            })
-                          }
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-amber-50 text-amber-700 hover:bg-amber-100 dark:bg-amber-900/20 dark:text-amber-300 dark:hover:bg-amber-900/40 transition-colors"
-                        >
-                          <Lock className="h-3.5 w-3.5" />
-                          Close
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() =>
-                            setConfirmAction({
-                              type: 'reopen',
-                              periodId: period.id,
-                              label: `${formatDate(period.periodStart)} – ${formatDate(period.periodEnd)}`,
-                            })
-                          }
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-300 dark:hover:bg-blue-900/40 transition-colors"
-                        >
-                          <Unlock className="h-3.5 w-3.5" />
-                          Reopen
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                )
-              })}
+              {periods.map(period => (
+                <PeriodRow
+                  key={period.id}
+                  period={period}
+                  onRequestAction={setConfirmAction}
+                />
+              ))}
             </tbody>
           </table>
         </div>
       )}
 
-      {periods.some(p => p.reopenedBy) && (
-        <div className="mt-6 p-4 rounded-lg border border-[rgba(95,227,192,0.1)] bg-white dark:bg-[#111B24]">
-          <h3 className="text-sm font-semibold text-[#294050] dark:text-[#EDF4F4] mb-3 flex items-center gap-2">
-            <CheckCircle2 className="h-4 w-4" />
-            Reopen Audit Log
-          </h3>
-          <div className="space-y-2">
-            {periods
-              .filter(p => p.reopenedBy)
-              .map(p => (
-                <div
-                  key={`audit-${p.id}`}
-                  className="text-xs text-[#294050]/60 dark:text-[#9FB4BE]"
-                >
-                  Period {formatDate(p.periodStart)} – {formatDate(p.periodEnd)}{' '}
-                  reopened by <strong>{p.reopenedBy}</strong> at{' '}
-                  {formatDateTime(p.reopenedAt)}
-                </div>
-              ))}
-          </div>
-        </div>
-      )}
+      <ReopenAuditLog periods={periods} />
     </div>
   )
 }

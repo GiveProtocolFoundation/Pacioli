@@ -53,3 +53,22 @@ BEGIN
         THEN RAISE(ABORT, 'Cannot post entry: the accounting period containing this entry date is closed')
     END;
 END;
+
+-- ---------------------------------------------------------------------------
+-- 3. Trigger: posted/voided entry_date immutability (review hardening)
+--
+--    The closed-period lock keys entirely off entry_date, but the existing
+--    immutability triggers only cover status/is_posted transitions and line
+--    mutations. Without this trigger, a direct
+--      UPDATE journal_entries SET entry_date = ... WHERE id = ...
+--    on a posted entry could backdate it into (or out of) a closed period,
+--    silently rewriting a closed month. No application path updates
+--    entry_date after posting (update_journal_entry is draft-only), so this
+--    is pure defense-in-depth at the DB layer, consistent with M1/M5.
+-- ---------------------------------------------------------------------------
+CREATE TRIGGER journal_entries_posted_entry_date_immutable
+BEFORE UPDATE OF entry_date ON journal_entries
+WHEN OLD.status IN ('posted', 'voided')
+BEGIN
+    SELECT RAISE(ABORT, 'entry_date of a posted or voided journal entry is immutable; void the entry and create a correcting entry');
+END;
