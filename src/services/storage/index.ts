@@ -57,7 +57,7 @@ const createMemoryStorage = (): StorageService => {
   }
 
   return {
-    ensureInitialized: async () => {
+    ensureInitialized: () => {
       if (appState === 'Uninitialized') {
         const id = crypto.randomUUID()
         profiles.set(id, {
@@ -69,14 +69,14 @@ const createMemoryStorage = (): StorageService => {
           updated_at: new Date().toISOString(),
         })
         appState = 'Unlocked'
-        return `initialized:${id}`
+        return Promise.resolve(`initialized:${id}`)
       }
-      return 'already_initialized'
+      return Promise.resolve('already_initialized')
     },
 
-    getAppState: async () => appState,
+    getAppState: () => Promise.resolve(appState),
 
-    resetApp: async () => {
+    resetApp: () => {
       profiles.clear()
       wallets.clear()
       settings.clear()
@@ -92,9 +92,10 @@ const createMemoryStorage = (): StorageService => {
       } catch {
         /* noop */
       }
+      return Promise.resolve()
     },
 
-    createProfile: async input => {
+    createProfile: input => {
       const id = crypto.randomUUID()
       const profile: import('../../types/storage').StorageProfile = {
         id,
@@ -105,16 +106,16 @@ const createMemoryStorage = (): StorageService => {
         updated_at: new Date().toISOString(),
       }
       profiles.set(id, profile)
-      return profile
+      return Promise.resolve(profile)
     },
 
-    getProfile: async id => profiles.get(id) ?? null,
+    getProfile: id => Promise.resolve(profiles.get(id) ?? null),
 
-    getAllProfiles: async () => Array.from(profiles.values()),
+    getAllProfiles: () => Promise.resolve(Array.from(profiles.values())),
 
-    updateProfile: async (id, input) => {
+    updateProfile: (id, input) => {
       const existing = profiles.get(id)
-      if (!existing) throw new Error('Profile not found')
+      if (!existing) return Promise.reject(new Error('Profile not found'))
       const updated = {
         ...existing,
         ...input,
@@ -122,23 +123,27 @@ const createMemoryStorage = (): StorageService => {
         updated_at: new Date().toISOString(),
       }
       profiles.set(id, updated)
-      return updated
+      return Promise.resolve(updated)
     },
 
-    deleteProfile: async id => {
+    deleteProfile: id => {
       profiles.delete(id)
+      return Promise.resolve()
     },
 
-    getDefaultProfile: async () =>
-      Array.from(profiles.values()).find(p => p.is_default) ?? null,
+    getDefaultProfile: () =>
+      Promise.resolve(
+        Array.from(profiles.values()).find(p => p.is_default) ?? null
+      ),
 
-    setDefaultProfile: async id => {
+    setDefaultProfile: id => {
       profiles.forEach((p, key) => {
         profiles.set(key, { ...p, is_default: key === id })
       })
+      return Promise.resolve()
     },
 
-    createWallet: async input => {
+    createWallet: input => {
       const id = crypto.randomUUID()
       const wallet: import('../../types/storage').StorageWallet = {
         id,
@@ -151,17 +156,19 @@ const createMemoryStorage = (): StorageService => {
         updated_at: new Date().toISOString(),
       }
       wallets.set(id, wallet)
-      return wallet
+      return Promise.resolve(wallet)
     },
 
-    getWallet: async id => wallets.get(id) ?? null,
+    getWallet: id => Promise.resolve(wallets.get(id) ?? null),
 
-    getWalletsByProfile: async profileId =>
-      Array.from(wallets.values()).filter(w => w.profile_id === profileId),
+    getWalletsByProfile: profileId =>
+      Promise.resolve(
+        Array.from(wallets.values()).filter(w => w.profile_id === profileId)
+      ),
 
-    updateWallet: async (id, input) => {
+    updateWallet: (id, input) => {
       const existing = wallets.get(id)
-      if (!existing) throw new Error('Wallet not found')
+      if (!existing) return Promise.reject(new Error('Wallet not found'))
       const updated = {
         ...existing,
         ...input,
@@ -169,41 +176,46 @@ const createMemoryStorage = (): StorageService => {
         updated_at: new Date().toISOString(),
       }
       wallets.set(id, updated)
-      return updated
+      return Promise.resolve(updated)
     },
 
-    deleteWallet: async id => {
+    deleteWallet: id => {
       wallets.delete(id)
+      return Promise.resolve()
     },
 
-    getSetting: async key => settings.get(key) ?? null,
+    getSetting: key => Promise.resolve(settings.get(key) ?? null),
 
-    setSetting: async (key, value) => {
+    setSetting: (key, value) => {
       settings.set(key, value)
       try {
         localStorage.setItem(SETTINGS_LS_PREFIX + key, value)
       } catch {
         /* noop */
       }
+      return Promise.resolve()
     },
 
-    deleteSetting: async key => {
+    deleteSetting: key => {
       settings.delete(key)
       try {
         localStorage.removeItem(SETTINGS_LS_PREFIX + key)
       } catch {
         /* noop */
       }
+      return Promise.resolve()
     },
 
-    getAllSettings: async () =>
-      Array.from(settings.entries()).map(([key, value]) => ({
-        key,
-        value,
-        updated_at: new Date().toISOString(),
-      })),
+    getAllSettings: () =>
+      Promise.resolve(
+        Array.from(settings.entries()).map(([key, value]) => ({
+          key,
+          value,
+          updated_at: new Date().toISOString(),
+        }))
+      ),
 
-    setPassword: async () => {
+    setPassword: () => {
       hasPasswordSet = true
       // Generate mock recovery phrase for browser mode
       const words = [
@@ -221,55 +233,64 @@ const createMemoryStorage = (): StorageService => {
         'accident',
       ]
       mockRecoveryPhrase = words.join(' ')
-      return mockRecoveryPhrase
+      return Promise.resolve(mockRecoveryPhrase)
     },
 
-    changePassword: async () => {},
+    changePassword: () => Promise.resolve(),
 
-    removePassword: async () => {
+    removePassword: () => {
       hasPasswordSet = false
       mockRecoveryPhrase = ''
+      return Promise.resolve()
     },
 
-    hasPassword: async () => hasPasswordSet,
+    hasPassword: () => Promise.resolve(hasPasswordSet),
 
-    unlock: async () => {
+    unlock: () => {
       appState = 'Unlocked'
-      return true
+      return Promise.resolve(true)
     },
 
-    lock: async () => {
+    lock: () => {
       if (hasPasswordSet) {
         appState = 'Locked'
       }
+      return Promise.resolve()
     },
 
-    validatePasswordStrength: async password => {
+    validatePasswordStrength: password => {
       if (password.length < 8) {
-        throw new Error('Password must be at least 8 characters long')
+        return Promise.reject(
+          new Error('Password must be at least 8 characters long')
+        )
       }
+      return Promise.resolve()
     },
 
-    hasRecoveryPhrase: async () => mockRecoveryPhrase.length > 0,
+    hasRecoveryPhrase: () => Promise.resolve(mockRecoveryPhrase.length > 0),
 
-    verifyRecoveryPhrase: async phrase => phrase === mockRecoveryPhrase,
+    verifyRecoveryPhrase: phrase =>
+      Promise.resolve(phrase === mockRecoveryPhrase),
 
-    resetPasswordWithRecovery: async phrase => {
+    resetPasswordWithRecovery: phrase => {
       if (phrase !== mockRecoveryPhrase) {
-        throw new Error('Invalid recovery phrase')
+        return Promise.reject(new Error('Invalid recovery phrase'))
       }
       // Password is reset (in memory mode, just keep things unlocked)
+      return Promise.resolve()
     },
 
-    exportData: async () => {
+    exportData: () => {
       console.warn('[MemoryStorage] Export not available in browser mode')
+      return Promise.resolve()
     },
 
-    getExportStats: async () => ({
-      profileCount: profiles.size,
-      walletCount: wallets.size,
-      settingsCount: settings.size,
-    }),
+    getExportStats: () =>
+      Promise.resolve({
+        profileCount: profiles.size,
+        walletCount: wallets.size,
+        settingsCount: settings.size,
+      }),
 
     previewImport: () =>
       Promise.reject(new Error('Import not available in browser mode')),
