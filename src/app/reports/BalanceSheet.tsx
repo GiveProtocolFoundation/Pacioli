@@ -75,7 +75,7 @@ const PeriodSelector: React.FC<PeriodSelectorProps> = ({
       <input
         type="date"
         value={startDate}
-        onChange={(e) => onStartChange(e.target.value)}
+        onChange={e => onStartChange(e.target.value)}
         className="px-3 py-1.5 text-sm border border-[rgba(95,227,192,0.25)] rounded bg-[#F7FAFA] dark:bg-[#0C141B] text-[#11202B] dark:text-[#EAF3F2]"
       />
     </div>
@@ -86,7 +86,7 @@ const PeriodSelector: React.FC<PeriodSelectorProps> = ({
       <input
         type="date"
         value={endDate}
-        onChange={(e) => onEndChange(e.target.value)}
+        onChange={e => onEndChange(e.target.value)}
         className="px-3 py-1.5 text-sm border border-[rgba(95,227,192,0.25)] rounded bg-[#F7FAFA] dark:bg-[#0C141B] text-[#11202B] dark:text-[#EAF3F2]"
       />
     </div>
@@ -118,7 +118,9 @@ const SectionTable: React.FC<SectionTableProps> = ({
 }) => {
   const priorMap = useMemo(() => {
     if (!priorSection) return new Map<string, number>()
-    return new Map(priorSection.items.map((i) => [i.accountNumber, i.balanceMinor]))
+    return new Map(
+      priorSection.items.map(i => [i.accountNumber, i.balanceMinor])
+    )
   }, [priorSection])
 
   return (
@@ -148,16 +150,21 @@ const SectionTable: React.FC<SectionTableProps> = ({
           </tr>
         </thead>
         <tbody>
-          {section.items.map((item) => {
+          {section.items.map(item => {
             const prior = priorMap.get(item.accountNumber) ?? 0
-            const changePct = priorSection !== null ? computeChangePercent(item.balanceMinor, prior) : null
+            const changePct =
+              priorSection !== null
+                ? computeChangePercent(item.balanceMinor, prior)
+                : null
             return (
               <tr
                 key={item.accountNumber}
                 className="border-b border-[rgba(95,227,192,0.08)] hover:bg-[#EAF3F2] dark:hover:bg-[#16242F]"
               >
                 <td className="px-4 py-2 text-sm text-[#11202B] dark:text-[#EAF3F2]">
-                  <span className="font-mono text-[#5FE3C0] mr-2">{item.accountNumber}</span>
+                  <span className="font-mono text-[#5FE3C0] mr-2">
+                    {item.accountNumber}
+                  </span>
                   {item.accountName}
                 </td>
                 <td className="px-4 py-2 text-sm text-right font-mono text-[#11202B] dark:text-[#EAF3F2]">
@@ -192,7 +199,9 @@ const SectionTable: React.FC<SectionTableProps> = ({
             )}
             {priorTotalMinor !== null && (
               <td className="px-4 py-2 text-sm text-right font-mono text-[#647D8B]">
-                {formatChangePercent(computeChangePercent(totalMinor, priorTotalMinor))}
+                {formatChangePercent(
+                  computeChangePercent(totalMinor, priorTotalMinor)
+                )}
               </td>
             )}
           </tr>
@@ -219,9 +228,12 @@ const BalanceSheet: React.FC = () => {
     setLoading(true)
     setError(null)
     try {
-      const result = await invoke<ComparativeBalanceSheet>('get_balance_sheet', {
-        params: { startDate, endDate },
-      })
+      const result = await invoke<ComparativeBalanceSheet>(
+        'get_balance_sheet',
+        {
+          params: { startDate, endDate },
+        }
+      )
       setData(result)
     } catch (err) {
       setError(String(err))
@@ -250,10 +262,11 @@ const BalanceSheet: React.FC = () => {
     }
   }, [startDate, endDate])
 
-  const hasPrior = data !== null
-    && (data.prior.assets.items.length > 0
-      || data.prior.liabilities.items.length > 0
-      || data.prior.equity.items.length > 0)
+  const hasPrior =
+    data !== null &&
+    (data.prior.assets.items.length > 0 ||
+      data.prior.liabilities.items.length > 0 ||
+      data.prior.equity.items.length > 0)
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto">
@@ -318,7 +331,8 @@ const BalanceSheet: React.FC = () => {
             <div className="flex items-center gap-2 p-3 mb-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded">
               <AlertTriangle className="w-4 h-4 text-red-600 dark:text-red-400" />
               <span className="text-sm font-medium text-red-700 dark:text-red-300">
-                Balance sheet does not tie — investigate before relying on these figures.
+                Balance sheet does not tie — investigate before relying on these
+                figures.
               </span>
             </div>
           )}
@@ -367,7 +381,9 @@ const BalanceSheet: React.FC = () => {
           </div>
 
           <div className="mt-4 pt-3 border-t border-[rgba(95,227,192,0.15)]">
-            <div className={`text-center text-sm font-medium ${data.current.isBalanced ? 'text-[#5FE3C0]' : 'text-red-600 dark:text-red-400'}`}>
+            <div
+              className={`text-center text-sm font-medium ${data.current.isBalanced ? 'text-[#5FE3C0]' : 'text-red-600 dark:text-red-400'}`}
+            >
               {data.current.isBalanced
                 ? 'Assets = Liabilities + Equity — Balance sheet ties.'
                 : `Out of balance by ${formatMinorAsDollars(Math.abs(data.current.totalAssetsMinor - data.current.totalLiabilitiesMinor - data.current.totalEquityMinor))}`}

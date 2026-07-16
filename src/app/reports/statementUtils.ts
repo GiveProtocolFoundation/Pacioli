@@ -28,7 +28,7 @@ export function formatStatementDate(isoDate: string): string {
   const date = new Date(
     Number.parseInt(parts[0], 10),
     Number.parseInt(parts[1], 10) - 1,
-    Number.parseInt(parts[2], 10),
+    Number.parseInt(parts[2], 10)
   )
   return date.toLocaleDateString('en-US', {
     month: 'short',
@@ -40,7 +40,7 @@ export function formatStatementDate(isoDate: string): string {
 /** Returns the period-over-period change as a percentage, or null if prior is 0. */
 export function computeChangePercent(
   current: number,
-  prior: number,
+  prior: number
 ): number | null {
   if (prior === 0) return null
   return ((current - prior) / Math.abs(prior)) * 100

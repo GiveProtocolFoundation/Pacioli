@@ -193,7 +193,10 @@ const MainRoutes: React.FC = () => (
       <Route path="/ledger/reconciliation" element={<Reconciliation />} />
       <Route path="/accounting-periods" element={<AccountingPeriods />} />
       <Route path="/reports/balance-sheet" element={<BalanceSheetReport />} />
-      <Route path="/reports/income-statement" element={<IncomeStatementReport />} />
+      <Route
+        path="/reports/income-statement"
+        element={<IncomeStatementReport />}
+      />
       <Route path="/reports/trial-balance" element={<PeriodTrialBalance />} />
     </Routes>
   </Navigation>
