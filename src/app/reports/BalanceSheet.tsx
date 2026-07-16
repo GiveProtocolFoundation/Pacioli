@@ -33,6 +33,7 @@ interface BalanceSheetData {
   assets: StatementSection
   liabilities: StatementSection
   equity: StatementSection
+  retainedEarningsMinor: number
   netIncomeMinor: number
   totalAssetsMinor: number
   totalLiabilitiesMinor: number
@@ -356,12 +357,20 @@ const BalanceSheet: React.FC = () => {
           <SectionTable
             section={data.current.equity}
             priorSection={hasPrior ? data.prior.equity : null}
-            totalLabel="Total Equity (excl. NI)"
+            totalLabel="Total Equity Accounts (excl. RE and NI)"
             totalMinor={data.current.equity.subtotalMinor}
             priorTotalMinor={hasPrior ? data.prior.equity.subtotalMinor : null}
           />
 
           <div className="border-t-2 border-[#5FE3C0] mt-2 pt-3">
+            <div className="flex justify-between px-4 py-1">
+              <span className="text-sm font-medium text-[#294050] dark:text-[#9FB4BE]">
+                Retained Earnings (prior periods)
+              </span>
+              <span className="text-sm font-mono font-medium text-[#11202B] dark:text-[#EAF3F2]">
+                {formatMinorAsDollars(data.current.retainedEarningsMinor)}
+              </span>
+            </div>
             <div className="flex justify-between px-4 py-1">
               <span className="text-sm font-medium text-[#294050] dark:text-[#9FB4BE]">
                 Net Income (current period)

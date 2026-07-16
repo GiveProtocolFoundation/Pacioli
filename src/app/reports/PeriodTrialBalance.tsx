@@ -210,8 +210,7 @@ const PeriodTrialBalance: React.FC = () => {
           </h1>
           {data !== null && (
             <p className="text-sm text-[#294050] dark:text-[#9FB4BE] mt-1">
-              {formatStatementDate(data.current.startDate)} &mdash;{' '}
-              {formatStatementDate(data.current.endDate)}
+              As of {formatStatementDate(data.current.endDate)}
             </p>
           )}
         </div>

@@ -215,13 +215,17 @@ with mechanically verified ties.
 
 ### Statement types
 
-1. **Balance Sheet** — Assets, Liabilities, Equity for a selected period.
-   Equity includes the current-period net income computed from Income and
-   Expense accounts.
-2. **Income Statement** — Revenue (Income accounts) and Expenses for a
-   selected period.
-3. **Trial Balance** — All accounts with non-zero activity in the period,
-   showing debit and credit balances.
+1. **Balance Sheet** — Assets, Liabilities, Equity **as of the period end
+   date** (cumulative from inception: a balance sheet reports positions,
+   not period movements, so opening balances are always included). Equity
+   decomposes into contributed equity accounts, **retained earnings** (net
+   income accumulated before the period start), and current-period net
+   income.
+2. **Income Statement** — Revenue (Income accounts) and Expenses for the
+   selected period (start through end).
+3. **Trial Balance** — All accounts with non-zero cumulative balances
+   **as of the period end date** (conventional "trial balance as at
+   date", consistent with the M4 views and the Phase 2 balances).
 
 ### Account classification for statements
 
@@ -235,42 +239,57 @@ with mechanically verified ties.
 
 ### How net income ties to equity
 
-The balance sheet includes a **net income plug**: current-period net income
-(Revenue − Expenses) is added to the Equity section. The tie assertion is:
+There is no journal-entry closing process in Stage 1: Income and Expense
+accounts are never closed into an equity account. Instead the balance
+sheet derives the equity roll-forward from the ledger on every run:
 
-    Total Assets = Total Liabilities + (Equity + Net Income)
+    Retained Earnings = Net Income accumulated from inception
+                        through the day before the period start
+    Total Equity      = Equity accounts + Retained Earnings
+                        + Current-Period Net Income
+    Total Assets      = Total Liabilities + Total Equity
 
-If this equation does not hold, the statement generation **fails loudly**
+If the last equation does not hold, statement generation **fails loudly**
 — the `verify_ties` function returns an error and the UI never renders a
 statement that does not tie.
 
 ### Tie verification (`verify_ties`)
 
-Before returning any statement to the UI, the engine runs four checks:
+Before any statement is returned to the UI or exported, the engine builds
+all three statements for the period and runs four checks (current AND
+comparative prior period both pass through the same gate):
 
-1. **Balance sheet ties**: Assets = Liabilities + Equity (incl. net income)
+1. **Balance sheet ties**: Assets = Liabilities + Equity (incl. retained
+   earnings and current-period net income)
 2. **Net income consistency**: Income Statement net income = Balance Sheet
-   net income plug
+   current-period net income
 3. **Trial balance is in balance**: Total debits = Total credits
-4. **Cross-check**: Trial balance net income (Income credits − Expense
-   debits) = Income Statement net income
+4. **Cross-check**: Trial balance cumulative net income (Income −
+   Expense as of the end date) = Balance Sheet retained earnings +
+   current-period net income
 
 A failure on any check is a hard error — the statement is never rendered
 silently with incorrect figures.
 
 ### Period filtering
 
-Statements accept a start date and end date. Only posted entries with
-`entry_date` within the range are included. Voided entries net out via
+Only **posted** entries feed statements, filtered by `entry_date`:
+cumulative aggregation (inception..=end) for balance sheet and trial
+balance, period aggregation (start..=end) for the income statement and
+the net-income split. The posted/date predicates are applied in the SQL
+WHERE clause over INNER JOINs — never on a chained LEFT JOIN's ON clause,
+which would silently leak draft and out-of-period lines into the sums
+(regression covered by DB integration tests). Voided entries net out via
 their reversing entries (both are posted and included in aggregation).
 
 ### Comparative periods
 
 Each statement includes a **comparative prior period** of the same
-duration, immediately preceding the current period. For example, if the
-current period is 2025-01-01 to 2025-12-31, the prior period is
-2024-01-01 to 2024-12-31. The UI shows both periods side by side with
-percentage change.
+day-count duration, ending the day before the current period starts (for
+example, the prior period of 2025-01-01..2025-12-31 is
+2024-01-02..2024-12-31 — equal duration, not calendar-aligned). The
+comparative balance sheet and trial balance are "as of" the prior period
+end date. The UI shows both periods side by side with percentage change.
 
 ### CSV export
 
