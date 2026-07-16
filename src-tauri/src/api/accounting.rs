@@ -1824,14 +1824,13 @@ pub async fn close_period(
     let mut tx = state.pool.begin().await.map_err(|e| e.to_string())?;
 
     // Fetch the period
-    let period = sqlx::query_as::<_, AccountingPeriod>(
-        "SELECT * FROM accounting_periods WHERE id = ?",
-    )
-    .bind(period_id)
-    .fetch_optional(&mut *tx)
-    .await
-    .map_err(|e| e.to_string())?
-    .ok_or_else(|| "Accounting period not found".to_string())?;
+    let period =
+        sqlx::query_as::<_, AccountingPeriod>("SELECT * FROM accounting_periods WHERE id = ?")
+            .bind(period_id)
+            .fetch_optional(&mut *tx)
+            .await
+            .map_err(|e| e.to_string())?
+            .ok_or_else(|| "Accounting period not found".to_string())?;
 
     // Already closed — idempotent no-op
     if period.status == "closed" {
@@ -1872,13 +1871,12 @@ pub async fn close_period(
 
     if result.rows_affected() == 0 {
         // Double-close or concurrent modification — idempotent
-        let current = sqlx::query_as::<_, AccountingPeriod>(
-            "SELECT * FROM accounting_periods WHERE id = ?",
-        )
-        .bind(period_id)
-        .fetch_one(&mut *tx)
-        .await
-        .map_err(|e| e.to_string())?;
+        let current =
+            sqlx::query_as::<_, AccountingPeriod>("SELECT * FROM accounting_periods WHERE id = ?")
+                .bind(period_id)
+                .fetch_one(&mut *tx)
+                .await
+                .map_err(|e| e.to_string())?;
         tx.commit().await.map_err(|e| e.to_string())?;
         return Ok(current);
     }
@@ -1901,14 +1899,13 @@ pub async fn reopen_period(
     period_id: i64,
     reopened_by: String,
 ) -> Result<AccountingPeriod, String> {
-    let period = sqlx::query_as::<_, AccountingPeriod>(
-        "SELECT * FROM accounting_periods WHERE id = ?",
-    )
-    .bind(period_id)
-    .fetch_optional(&state.pool)
-    .await
-    .map_err(|e| e.to_string())?
-    .ok_or_else(|| "Accounting period not found".to_string())?;
+    let period =
+        sqlx::query_as::<_, AccountingPeriod>("SELECT * FROM accounting_periods WHERE id = ?")
+            .bind(period_id)
+            .fetch_optional(&state.pool)
+            .await
+            .map_err(|e| e.to_string())?
+            .ok_or_else(|| "Accounting period not found".to_string())?;
 
     // Already open — idempotent no-op
     if period.status == "open" {
@@ -3780,7 +3777,11 @@ mod tests {
     }
 
     /// Creates a draft entry with a specific entry_date.
-    async fn create_dated_draft_entry(pool: &SqlitePool, entry_number: &str, entry_date: &str) -> i64 {
+    async fn create_dated_draft_entry(
+        pool: &SqlitePool,
+        entry_number: &str,
+        entry_date: &str,
+    ) -> i64 {
         let result = sqlx::query(
             "INSERT INTO journal_entries (entry_date, entry_number, description, is_posted, status, origin, created_by) VALUES (?, ?, 'Test entry', 0, 'draft', 'manual', 'test')",
         )
@@ -3814,7 +3815,10 @@ mod tests {
         .execute(&pool)
         .await;
 
-        assert!(result.is_err(), "Posting into a closed period should be rejected");
+        assert!(
+            result.is_err(),
+            "Posting into a closed period should be rejected"
+        );
         let err = result.unwrap_err().to_string();
         assert!(
             err.contains("closed"),
@@ -3865,20 +3869,28 @@ mod tests {
         .await
         .expect("Count pending entries");
 
-        assert!(pending_count > 0, "Should have pending entries blocking close");
+        assert!(
+            pending_count > 0,
+            "Should have pending entries blocking close"
+        );
 
         // The close should be rejected (simulate the Rust command logic)
-        assert_eq!(pending_count, 1, "Exactly 1 pending draft should block close");
+        assert_eq!(
+            pending_count, 1,
+            "Exactly 1 pending draft should block close"
+        );
 
         // Verify period stays open
-        let (status,): (String,) = sqlx::query_as(
-            "SELECT status FROM accounting_periods WHERE id = ?",
-        )
-        .bind(period_id)
-        .fetch_one(&pool)
-        .await
-        .expect("Fetch period status");
-        assert_eq!(status, "open", "Period should remain open with pending drafts");
+        let (status,): (String,) =
+            sqlx::query_as("SELECT status FROM accounting_periods WHERE id = ?")
+                .bind(period_id)
+                .fetch_one(&pool)
+                .await
+                .expect("Fetch period status");
+        assert_eq!(
+            status, "open",
+            "Period should remain open with pending drafts"
+        );
     }
 
     #[tokio::test]
@@ -3898,17 +3910,24 @@ mod tests {
         .await
         .expect("Double-close should not error");
 
-        assert_eq!(result.rows_affected(), 0, "Double-close should be a 0-row no-op");
+        assert_eq!(
+            result.rows_affected(),
+            0,
+            "Double-close should be a 0-row no-op"
+        );
 
         // Period still shows original closer
-        let (closed_by,): (Option<String>,) = sqlx::query_as(
-            "SELECT closed_by FROM accounting_periods WHERE id = ?",
-        )
-        .bind(period_id)
-        .fetch_one(&pool)
-        .await
-        .expect("Fetch closed_by");
-        assert_eq!(closed_by.as_deref(), Some("test"), "Original closer should be preserved");
+        let (closed_by,): (Option<String>,) =
+            sqlx::query_as("SELECT closed_by FROM accounting_periods WHERE id = ?")
+                .bind(period_id)
+                .fetch_one(&pool)
+                .await
+                .expect("Fetch closed_by");
+        assert_eq!(
+            closed_by.as_deref(),
+            Some("test"),
+            "Original closer should be preserved"
+        );
     }
 
     #[tokio::test]
@@ -3940,7 +3959,10 @@ mod tests {
         .execute(&pool)
         .await;
 
-        assert!(result.is_ok(), "Reversal into an open period should succeed");
+        assert!(
+            result.is_ok(),
+            "Reversal into an open period should succeed"
+        );
     }
 
     #[tokio::test]
@@ -3964,7 +3986,10 @@ mod tests {
         .execute(&pool)
         .await;
 
-        assert!(result.is_err(), "Reversal into a closed period should be blocked");
+        assert!(
+            result.is_err(),
+            "Reversal into a closed period should be blocked"
+        );
         let err = result.unwrap_err().to_string();
         assert!(
             err.contains("closed"),
@@ -4002,7 +4027,10 @@ mod tests {
         .execute(&pool)
         .await;
 
-        assert!(result.is_ok(), "Posting into a reopened period should succeed");
+        assert!(
+            result.is_ok(),
+            "Posting into a reopened period should succeed"
+        );
     }
 
     #[tokio::test]
@@ -4019,14 +4047,16 @@ mod tests {
         add_balanced_lines(&pool, entry_id, acct_a, acct_b, 10000).await;
         approve_and_post_entry(&pool, entry_id).await;
 
-        let (status,): (String,) = sqlx::query_as(
-            "SELECT status FROM journal_entries WHERE id = ?",
-        )
-        .bind(entry_id)
-        .fetch_one(&pool)
-        .await
-        .expect("Fetch entry status");
-        assert_eq!(status, "posted", "Entry outside any period should post fine");
+        let (status,): (String,) =
+            sqlx::query_as("SELECT status FROM journal_entries WHERE id = ?")
+                .bind(entry_id)
+                .fetch_one(&pool)
+                .await
+                .expect("Fetch entry status");
+        assert_eq!(
+            status, "posted",
+            "Entry outside any period should post fine"
+        );
     }
 
     #[tokio::test]

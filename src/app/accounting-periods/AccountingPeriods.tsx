@@ -129,7 +129,7 @@ const AccountingPeriods: React.FC = () => {
   )
 
   const handleToggleCreate = useCallback(() => {
-    setShowCreateForm((prev) => !prev)
+    setShowCreateForm(prev => !prev)
     setCreateError(null)
   }, [])
 
@@ -202,7 +202,9 @@ const AccountingPeriods: React.FC = () => {
                   : 'bg-blue-600 hover:bg-blue-700'
               }`}
             >
-              {confirmAction.type === 'close' ? 'Close Period' : 'Reopen Period'}
+              {confirmAction.type === 'close'
+                ? 'Close Period'
+                : 'Reopen Period'}
             </button>
           </div>
         </div>
@@ -285,7 +287,7 @@ const AccountingPeriods: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-[rgba(95,227,192,0.08)]">
-              {periods.map((period) => {
+              {periods.map(period => {
                 const cfg =
                   statusConfig[period.status as keyof typeof statusConfig] ??
                   statusConfig.open
@@ -352,7 +354,7 @@ const AccountingPeriods: React.FC = () => {
         </div>
       )}
 
-      {periods.some((p) => p.reopenedBy) && (
+      {periods.some(p => p.reopenedBy) && (
         <div className="mt-6 p-4 rounded-lg border border-[rgba(95,227,192,0.1)] bg-white dark:bg-[#111B24]">
           <h3 className="text-sm font-semibold text-[#294050] dark:text-[#EDF4F4] mb-3 flex items-center gap-2">
             <CheckCircle2 className="h-4 w-4" />
@@ -360,8 +362,8 @@ const AccountingPeriods: React.FC = () => {
           </h3>
           <div className="space-y-2">
             {periods
-              .filter((p) => p.reopenedBy)
-              .map((p) => (
+              .filter(p => p.reopenedBy)
+              .map(p => (
                 <div
                   key={`audit-${p.id}`}
                   className="text-xs text-[#294050]/60 dark:text-[#9FB4BE]"
