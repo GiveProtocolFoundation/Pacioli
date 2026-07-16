@@ -138,6 +138,97 @@ const TrialBalanceRowComponent: React.FC<TrialBalanceRowProps> = ({
   </tr>
 )
 
+interface TrialBalanceHeadProps {
+  hasPrior: boolean
+}
+
+/** Trial balance table header (Account # / Name / Type / Debit / Credit + prior columns). */
+const TrialBalanceHead: React.FC<TrialBalanceHeadProps> = ({ hasPrior }) => (
+  <thead>
+    <tr className="bg-[#294050] text-white">
+      <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider">
+        Account #
+      </th>
+      <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider">
+        Account Name
+      </th>
+      <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider">
+        Type
+      </th>
+      <th className="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wider">
+        Debit
+      </th>
+      <th className="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wider">
+        Credit
+      </th>
+      {hasPrior && (
+        <th className="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wider text-[#9FB4BE]">
+          Prior Debit
+        </th>
+      )}
+      {hasPrior && (
+        <th className="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wider text-[#9FB4BE]">
+          Prior Credit
+        </th>
+      )}
+    </tr>
+  </thead>
+)
+
+interface TrialBalanceFootProps {
+  current: TrialBalanceReport
+  prior: TrialBalanceReport
+  hasPrior: boolean
+}
+
+/** Trial balance footer: totals row plus balanced/out-of-balance status row. */
+const TrialBalanceFoot: React.FC<TrialBalanceFootProps> = ({
+  current,
+  prior,
+  hasPrior,
+}) => (
+  <tfoot>
+    <tr className="bg-[#EAF3F2] dark:bg-[#16242F] font-bold border-t-2 border-[#5FE3C0]">
+      <td
+        colSpan={3}
+        className="px-5 py-3 text-sm text-[#11202B] dark:text-[#EAF3F2]"
+      >
+        Totals
+      </td>
+      <td className="px-5 py-3 text-sm text-right font-mono text-[#11202B] dark:text-[#EAF3F2]">
+        {formatMinorAsDollars(current.totalDebitsMinor)}
+      </td>
+      <td className="px-5 py-3 text-sm text-right font-mono text-[#11202B] dark:text-[#EAF3F2]">
+        {formatMinorAsDollars(current.totalCreditsMinor)}
+      </td>
+      {hasPrior && (
+        <td className="px-5 py-3 text-sm text-right font-mono text-[#647D8B]">
+          {formatMinorAsDollars(prior.totalDebitsMinor)}
+        </td>
+      )}
+      {hasPrior && (
+        <td className="px-5 py-3 text-sm text-right font-mono text-[#647D8B]">
+          {formatMinorAsDollars(prior.totalCreditsMinor)}
+        </td>
+      )}
+    </tr>
+    <tr className="bg-[#F7FAFA] dark:bg-[#11202B]">
+      <td
+        colSpan={hasPrior ? 7 : 5}
+        className={`px-5 py-2 text-sm text-center font-medium ${
+          current.isBalanced
+            ? 'text-[#5FE3C0]'
+            : 'text-red-600 dark:text-red-400'
+        }`}
+      >
+        {current.isBalanced
+          ? 'Trial balance is in balance'
+          : `Out of balance by ${formatMinorAsDollars(Math.abs(current.totalDebitsMinor - current.totalCreditsMinor))}`}
+      </td>
+    </tr>
+  </tfoot>
+)
+
 // ============================================================================
 // Main Component
 // ============================================================================
@@ -261,35 +352,7 @@ const PeriodTrialBalance: React.FC = () => {
       {!loading && data !== null && (
         <div className="border border-[rgba(95,227,192,0.15)] rounded-lg overflow-hidden">
           <table className="min-w-full">
-            <thead>
-              <tr className="bg-[#294050] text-white">
-                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider">
-                  Account #
-                </th>
-                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider">
-                  Account Name
-                </th>
-                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider">
-                  Type
-                </th>
-                <th className="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wider">
-                  Debit
-                </th>
-                <th className="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wider">
-                  Credit
-                </th>
-                {hasPrior && (
-                  <th className="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wider text-[#9FB4BE]">
-                    Prior Debit
-                  </th>
-                )}
-                {hasPrior && (
-                  <th className="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wider text-[#9FB4BE]">
-                    Prior Credit
-                  </th>
-                )}
-              </tr>
-            </thead>
+            <TrialBalanceHead hasPrior={hasPrior} />
             <tbody className="divide-y divide-[rgba(95,227,192,0.1)]">
               {data.current.rows.map((row, idx) => {
                 const prior = priorMap.get(row.accountNumber) ?? {
@@ -308,46 +371,11 @@ const PeriodTrialBalance: React.FC = () => {
                 )
               })}
             </tbody>
-            <tfoot>
-              <tr className="bg-[#EAF3F2] dark:bg-[#16242F] font-bold border-t-2 border-[#5FE3C0]">
-                <td
-                  colSpan={3}
-                  className="px-5 py-3 text-sm text-[#11202B] dark:text-[#EAF3F2]"
-                >
-                  Totals
-                </td>
-                <td className="px-5 py-3 text-sm text-right font-mono text-[#11202B] dark:text-[#EAF3F2]">
-                  {formatMinorAsDollars(data.current.totalDebitsMinor)}
-                </td>
-                <td className="px-5 py-3 text-sm text-right font-mono text-[#11202B] dark:text-[#EAF3F2]">
-                  {formatMinorAsDollars(data.current.totalCreditsMinor)}
-                </td>
-                {hasPrior && (
-                  <td className="px-5 py-3 text-sm text-right font-mono text-[#647D8B]">
-                    {formatMinorAsDollars(data.prior.totalDebitsMinor)}
-                  </td>
-                )}
-                {hasPrior && (
-                  <td className="px-5 py-3 text-sm text-right font-mono text-[#647D8B]">
-                    {formatMinorAsDollars(data.prior.totalCreditsMinor)}
-                  </td>
-                )}
-              </tr>
-              <tr className="bg-[#F7FAFA] dark:bg-[#11202B]">
-                <td
-                  colSpan={hasPrior ? 7 : 5}
-                  className={`px-5 py-2 text-sm text-center font-medium ${
-                    data.current.isBalanced
-                      ? 'text-[#5FE3C0]'
-                      : 'text-red-600 dark:text-red-400'
-                  }`}
-                >
-                  {data.current.isBalanced
-                    ? 'Trial balance is in balance'
-                    : `Out of balance by ${formatMinorAsDollars(Math.abs(data.current.totalDebitsMinor - data.current.totalCreditsMinor))}`}
-                </td>
-              </tr>
-            </tfoot>
+            <TrialBalanceFoot
+              current={data.current}
+              prior={data.prior}
+              hasPrior={hasPrior}
+            />
           </table>
         </div>
       )}

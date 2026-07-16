@@ -9,6 +9,10 @@ import {
   formatChangePercent,
   defaultPeriodDates,
 } from './statementUtils'
+import {
+  StatementSectionHead,
+  StatementSectionFoot,
+} from './StatementTableParts'
 
 // ============================================================================
 // Types matching Rust serde output
@@ -120,26 +124,7 @@ const IncomeSection: React.FC<IncomeSectionProps> = ({
         {section.label}
       </h3>
       <table className="min-w-full">
-        <thead>
-          <tr className="border-b border-[rgba(95,227,192,0.2)]">
-            <th className="px-4 py-2 text-left text-xs font-medium text-[#647D8B] uppercase">
-              Account
-            </th>
-            <th className="px-4 py-2 text-right text-xs font-medium text-[#647D8B] uppercase">
-              Current
-            </th>
-            {priorSection !== null && (
-              <th className="px-4 py-2 text-right text-xs font-medium text-[#647D8B] uppercase">
-                Prior
-              </th>
-            )}
-            {priorSection !== null && (
-              <th className="px-4 py-2 text-right text-xs font-medium text-[#647D8B] uppercase">
-                Change
-              </th>
-            )}
-          </tr>
-        </thead>
+        <StatementSectionHead showPrior={priorSection !== null} />
         <tbody>
           {section.items.map(item => {
             const prior = priorMap.get(item.accountNumber) ?? 0
@@ -175,35 +160,52 @@ const IncomeSection: React.FC<IncomeSectionProps> = ({
             )
           })}
         </tbody>
-        <tfoot>
-          <tr className="border-t-2 border-[#5FE3C0] font-bold">
-            <td className="px-4 py-2 text-sm text-[#11202B] dark:text-[#EAF3F2]">
-              Total {section.label}
-            </td>
-            <td className="px-4 py-2 text-sm text-right font-mono text-[#11202B] dark:text-[#EAF3F2]">
-              {formatMinorAsDollars(section.subtotalMinor)}
-            </td>
-            {priorSection !== null && (
-              <td className="px-4 py-2 text-sm text-right font-mono text-[#647D8B]">
-                {formatMinorAsDollars(priorSection.subtotalMinor)}
-              </td>
-            )}
-            {priorSection !== null && (
-              <td className="px-4 py-2 text-sm text-right font-mono text-[#647D8B]">
-                {formatChangePercent(
-                  computeChangePercent(
-                    section.subtotalMinor,
-                    priorSection.subtotalMinor
-                  )
-                )}
-              </td>
-            )}
-          </tr>
-        </tfoot>
+        <StatementSectionFoot
+          label={`Total ${section.label}`}
+          totalMinor={section.subtotalMinor}
+          priorTotalMinor={
+            priorSection !== null ? priorSection.subtotalMinor : null
+          }
+        />
       </table>
     </div>
   )
 }
+
+interface NetIncomeSummaryProps {
+  netIncomeMinor: number
+  priorNetIncomeMinor: number | null
+}
+
+/** Bottom-line net income row with optional prior-period comparison. */
+const NetIncomeSummary: React.FC<NetIncomeSummaryProps> = ({
+  netIncomeMinor,
+  priorNetIncomeMinor,
+}) => (
+  <div className="border-t-2 border-[#5FE3C0] mt-2 pt-3">
+    <div className="flex justify-between px-4 py-2">
+      <span className="text-base font-bold text-[#11202B] dark:text-[#EAF3F2]">
+        Net Income
+      </span>
+      <div className="text-right">
+        <span
+          className={`text-base font-mono font-bold ${netIncomeMinor >= 0 ? 'text-[#5FE3C0]' : 'text-red-600 dark:text-red-400'}`}
+        >
+          {formatMinorAsDollars(netIncomeMinor)}
+        </span>
+        {priorNetIncomeMinor !== null && (
+          <span className="ml-4 text-sm font-mono text-[#647D8B]">
+            (Prior: {formatMinorAsDollars(priorNetIncomeMinor)},{' '}
+            {formatChangePercent(
+              computeChangePercent(netIncomeMinor, priorNetIncomeMinor)
+            )}
+            )
+          </span>
+        )}
+      </div>
+    </div>
+  </div>
+)
 
 // ============================================================================
 // Main Component
@@ -331,32 +333,10 @@ const IncomeStatement: React.FC = () => {
             priorSection={hasPrior ? data.prior.expenses : null}
           />
 
-          <div className="border-t-2 border-[#5FE3C0] mt-2 pt-3">
-            <div className="flex justify-between px-4 py-2">
-              <span className="text-base font-bold text-[#11202B] dark:text-[#EAF3F2]">
-                Net Income
-              </span>
-              <div className="text-right">
-                <span
-                  className={`text-base font-mono font-bold ${data.current.netIncomeMinor >= 0 ? 'text-[#5FE3C0]' : 'text-red-600 dark:text-red-400'}`}
-                >
-                  {formatMinorAsDollars(data.current.netIncomeMinor)}
-                </span>
-                {hasPrior && (
-                  <span className="ml-4 text-sm font-mono text-[#647D8B]">
-                    (Prior: {formatMinorAsDollars(data.prior.netIncomeMinor)},{' '}
-                    {formatChangePercent(
-                      computeChangePercent(
-                        data.current.netIncomeMinor,
-                        data.prior.netIncomeMinor
-                      )
-                    )}
-                    )
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
+          <NetIncomeSummary
+            netIncomeMinor={data.current.netIncomeMinor}
+            priorNetIncomeMinor={hasPrior ? data.prior.netIncomeMinor : null}
+          />
         </div>
       )}
     </div>

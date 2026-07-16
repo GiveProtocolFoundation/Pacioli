@@ -9,6 +9,10 @@ import {
   formatChangePercent,
   defaultPeriodDates,
 } from './statementUtils'
+import {
+  StatementSectionHead,
+  StatementSectionFoot,
+} from './StatementTableParts'
 
 // ============================================================================
 // Types matching Rust serde output
@@ -130,26 +134,7 @@ const SectionTable: React.FC<SectionTableProps> = ({
         {section.label}
       </h3>
       <table className="min-w-full">
-        <thead>
-          <tr className="border-b border-[rgba(95,227,192,0.2)]">
-            <th className="px-4 py-2 text-left text-xs font-medium text-[#647D8B] uppercase">
-              Account
-            </th>
-            <th className="px-4 py-2 text-right text-xs font-medium text-[#647D8B] uppercase">
-              Current
-            </th>
-            {priorSection !== null && (
-              <th className="px-4 py-2 text-right text-xs font-medium text-[#647D8B] uppercase">
-                Prior
-              </th>
-            )}
-            {priorSection !== null && (
-              <th className="px-4 py-2 text-right text-xs font-medium text-[#647D8B] uppercase">
-                Change
-              </th>
-            )}
-          </tr>
-        </thead>
+        <StatementSectionHead showPrior={priorSection !== null} />
         <tbody>
           {section.items.map(item => {
             const prior = priorMap.get(item.accountNumber) ?? 0
@@ -185,28 +170,11 @@ const SectionTable: React.FC<SectionTableProps> = ({
             )
           })}
         </tbody>
-        <tfoot>
-          <tr className="border-t-2 border-[#5FE3C0] font-bold">
-            <td className="px-4 py-2 text-sm text-[#11202B] dark:text-[#EAF3F2]">
-              {totalLabel}
-            </td>
-            <td className="px-4 py-2 text-sm text-right font-mono text-[#11202B] dark:text-[#EAF3F2]">
-              {formatMinorAsDollars(totalMinor)}
-            </td>
-            {priorTotalMinor !== null && (
-              <td className="px-4 py-2 text-sm text-right font-mono text-[#647D8B]">
-                {formatMinorAsDollars(priorTotalMinor)}
-              </td>
-            )}
-            {priorTotalMinor !== null && (
-              <td className="px-4 py-2 text-sm text-right font-mono text-[#647D8B]">
-                {formatChangePercent(
-                  computeChangePercent(totalMinor, priorTotalMinor)
-                )}
-              </td>
-            )}
-          </tr>
-        </tfoot>
+        <StatementSectionFoot
+          label={totalLabel}
+          totalMinor={totalMinor}
+          priorTotalMinor={priorTotalMinor}
+        />
       </table>
     </div>
   )
