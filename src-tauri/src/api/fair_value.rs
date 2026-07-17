@@ -686,6 +686,101 @@ async fn create_draft_adjusting_entry(
     Ok(entry_id)
 }
 
+/// Outcome of remeasuring a single holding inside the accounting tx.
+enum HoldingOutcome {
+    /// A non-voided remeasurement JE already exists for this date.
+    AlreadyRemeasured,
+    /// No price observation available for the asset on the run date.
+    NoPrice,
+    /// Priced, but fair value equals carrying — no entry needed.
+    NoChange,
+    /// Asset was never acquired through the journal engine.
+    NoAssetAccount,
+    /// Draft adjusting entry created.
+    Adjusted {
+        /// The new draft journal entry ID.
+        entry_id: i64,
+        /// The price observation used.
+        price_observation_id: i64,
+        /// Carrying amount before adjustment (minor units).
+        carrying: i64,
+        /// Fair value at remeasurement (minor units).
+        fair_value: i64,
+        /// Unrealized gain/loss (minor units).
+        unrealized: i64,
+    },
+}
+
+/// Remeasures one holding inside the open accounting transaction:
+/// idempotency guard, price lookup (manual observations take precedence),
+/// carrying-amount computation (cost basis + prior POSTED adjustments),
+/// and draft-entry creation when the fair value differs from carrying.
+async fn remeasure_holding(
+    tx: &mut SqliteTx<'_>,
+    input: &RemeasurementInput,
+    holding: &HoldingSummary,
+) -> Result<HoldingOutcome, String> {
+    // Idempotency guard: re-running a period-end date must never create
+    // duplicate draft adjustments (a duplicated draft that got
+    // approved+posted would double-adjust the GL). Voided entries don't
+    // count — voiding re-opens the slot.
+    if has_remeasurement_for_date(tx, &holding.asset_id, &holding.wallet_id, &input.run_date)
+        .await?
+    {
+        return Ok(HoldingOutcome::AlreadyRemeasured);
+    }
+
+    let price_obs = sqlx::query_as::<_, PriceObservation>(
+        r#"
+        SELECT * FROM price_observations
+        WHERE asset_id = ? AND price_date = ?
+        ORDER BY CASE WHEN source = 'manual' THEN 0 ELSE 1 END, created_at DESC
+        LIMIT 1
+        "#,
+    )
+    .bind(&holding.asset_id)
+    .bind(&input.run_date)
+    .fetch_optional(&mut **tx)
+    .await
+    .map_err(|e| e.to_string())?;
+
+    let Some(price_obs) = price_obs else {
+        return Ok(HoldingOutcome::NoPrice);
+    };
+
+    // Compute fair value = quantity × price (in minor units)
+    let fv_minor = fair_value_to_minor(holding.total_remaining_quantity, &price_obs.price_decimal)?;
+
+    // Carrying amount = cost basis of open lots PLUS the net effect of
+    // prior POSTED remeasurement adjustments for this asset+wallet.
+    // Under ASU 2023-08 the GL carries the asset at the fair value set
+    // by the last posted remeasurement, not at original cost — using
+    // raw cost here would re-recognize every prior period's gain/loss
+    // on each subsequent run (double counting).
+    let prior_adj = prior_posted_adjustment(tx, &holding.asset_id, &holding.wallet_id).await?;
+    let carrying = holding.total_cost_basis_minor + prior_adj;
+    let unrealized = fv_minor - carrying;
+
+    if unrealized == 0 {
+        return Ok(HoldingOutcome::NoChange);
+    }
+
+    let Some(asset_acct_id) = find_asset_account(tx, &holding.asset_id).await? else {
+        return Ok(HoldingOutcome::NoAssetAccount);
+    };
+
+    let entry_id =
+        create_draft_adjusting_entry(tx, input, holding, asset_acct_id, unrealized).await?;
+
+    Ok(HoldingOutcome::Adjusted {
+        entry_id,
+        price_observation_id: price_obs.id,
+        carrying,
+        fair_value: fv_minor,
+        unrealized,
+    })
+}
+
 /// Core remeasurement engine.
 ///
 /// For each holding (asset+wallet with open lots):
@@ -756,86 +851,40 @@ pub async fn run_remeasurement_impl(
             continue;
         }
 
-        // Idempotency guard: re-running a period-end date must never create
-        // duplicate draft adjustments (a duplicated draft that got
-        // approved+posted would double-adjust the GL). Voided entries don't
-        // count — voiding re-opens the slot.
-        if has_remeasurement_for_date(
-            &mut tx,
-            &holding.asset_id,
-            &holding.wallet_id,
-            &input.run_date,
-        )
-        .await?
-        {
-            already_remeasured.push(format!("{}@{}", holding.asset_id, holding.wallet_id));
-            continue;
+        match remeasure_holding(&mut tx, input, holding).await? {
+            HoldingOutcome::AlreadyRemeasured => {
+                already_remeasured.push(format!("{}@{}", holding.asset_id, holding.wallet_id));
+            }
+            HoldingOutcome::NoPrice | HoldingOutcome::NoAssetAccount => {
+                push_unique(&mut skipped_assets, &holding.asset_id);
+            }
+            HoldingOutcome::NoChange => {
+                // No adjustment needed — but still counted as remeasured
+                remeasured_holdings += 1;
+            }
+            HoldingOutcome::Adjusted {
+                entry_id,
+                price_observation_id,
+                carrying,
+                fair_value,
+                unrealized,
+            } => {
+                remeasured_holdings += 1;
+                entries_generated += 1;
+                total_unrealized += unrealized;
+
+                // Collect data for remeasurement_entries (inserted after run record)
+                remeasurement_entry_data.push((
+                    entry_id,
+                    holding.asset_id.clone(),
+                    holding.wallet_id.clone(),
+                    price_observation_id,
+                    carrying,
+                    fair_value,
+                    unrealized,
+                ));
+            }
         }
-
-        let price_obs = sqlx::query_as::<_, PriceObservation>(
-            r#"
-            SELECT * FROM price_observations
-            WHERE asset_id = ? AND price_date = ?
-            ORDER BY CASE WHEN source = 'manual' THEN 0 ELSE 1 END, created_at DESC
-            LIMIT 1
-            "#,
-        )
-        .bind(&holding.asset_id)
-        .bind(&input.run_date)
-        .fetch_optional(&mut *tx)
-        .await
-        .map_err(|e| e.to_string())?;
-
-        let Some(price_obs) = price_obs else {
-            push_unique(&mut skipped_assets, &holding.asset_id);
-            continue;
-        };
-
-        // Compute fair value = quantity × price (in minor units)
-        let fv_minor =
-            fair_value_to_minor(holding.total_remaining_quantity, &price_obs.price_decimal)?;
-
-        // Carrying amount = cost basis of open lots PLUS the net effect of
-        // prior POSTED remeasurement adjustments for this asset+wallet.
-        // Under ASU 2023-08 the GL carries the asset at the fair value set
-        // by the last posted remeasurement, not at original cost — using
-        // raw cost here would re-recognize every prior period's gain/loss
-        // on each subsequent run (double counting).
-        let prior_adj =
-            prior_posted_adjustment(&mut tx, &holding.asset_id, &holding.wallet_id).await?;
-        let carrying = holding.total_cost_basis_minor + prior_adj;
-        let unrealized = fv_minor - carrying;
-
-        remeasured_holdings += 1;
-
-        if unrealized == 0 {
-            // No adjustment needed — but still counted as remeasured
-            continue;
-        }
-
-        let Some(asset_acct_id) = find_asset_account(&mut tx, &holding.asset_id).await? else {
-            // Never acquired through the journal engine — skip
-            push_unique(&mut skipped_assets, &holding.asset_id);
-            continue;
-        };
-
-        let entry_id =
-            create_draft_adjusting_entry(&mut tx, input, holding, asset_acct_id, unrealized)
-                .await?;
-
-        entries_generated += 1;
-        total_unrealized += unrealized;
-
-        // Collect data for remeasurement_entries (inserted after run record)
-        remeasurement_entry_data.push((
-            entry_id,
-            holding.asset_id.clone(),
-            holding.wallet_id.clone(),
-            price_obs.id,
-            carrying,
-            fv_minor,
-            unrealized,
-        ));
     }
 
     // Determine run status
