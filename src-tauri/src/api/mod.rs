@@ -28,3 +28,8 @@ pub mod statements;
 /// Provides functionality for wallet-based authentication, including
 /// signing in users through their wallets and verifying credentials.
 pub mod wallet_auth;
+
+/// Property-based invariant tests (proptest) pinning SCOPE.md invariants
+/// against real engine paths. Phase 9, GIV-691.
+#[cfg(test)]
+mod proptest_invariants;

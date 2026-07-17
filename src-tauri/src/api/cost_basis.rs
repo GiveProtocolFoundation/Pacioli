@@ -533,7 +533,7 @@ pub async fn acquire_lot(
 }
 
 /// Pool-level acquisition engine (testable without Tauri `State`).
-async fn acquire_lot_impl(
+pub(crate) async fn acquire_lot_impl(
     pool: &sqlx::SqlitePool,
     input: &AcquireLotInput,
 ) -> Result<CostBasisLot, String> {
@@ -612,7 +612,7 @@ pub async fn dispose_lots(
 }
 
 /// Internal disposal engine parameterized by lot-selection method.
-async fn dispose_lots_with_method(
+pub(crate) async fn dispose_lots_with_method(
     pool: &sqlx::SqlitePool,
     input: &DisposeLotInput,
     selector: &dyn LotSelector,
@@ -713,7 +713,7 @@ pub async fn transfer_lots(
 }
 
 /// Pool-level transfer engine (testable without Tauri `State`).
-async fn transfer_lots_impl(
+pub(crate) async fn transfer_lots_impl(
     pool: &sqlx::SqlitePool,
     input: &TransferLotInput,
 ) -> Result<Vec<CostBasisLot>, String> {

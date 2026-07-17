@@ -161,6 +161,14 @@ pub struct JournalEntryLine {
     pub asset_id: Option<String>,
 }
 
+/// Shared SELECT for decoding [`JournalEntryLine`] rows.
+///
+/// The legacy `debit_amount`/`credit_amount` columns are declared DECIMAL
+/// (NUMERIC affinity), so SQLite stores whole-dollar REAL values as
+/// INTEGER — and sqlx refuses to decode an INTEGER storage class into
+/// `f64`. CAST both back to REAL so every stored value decodes.
+const SELECT_JOURNAL_ENTRY_LINES: &str = "SELECT id, journal_entry_id, gl_account_id, token_id, CAST(debit_amount AS REAL) AS debit_amount, CAST(credit_amount AS REAL) AS credit_amount, description, line_number, created_at, debit_minor, credit_minor, quantity, asset_id FROM journal_entry_lines WHERE journal_entry_id = ? ORDER BY line_number";
+
 /// A journal entry with its lines, returned to the frontend.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -613,13 +621,11 @@ pub async fn get_journal_entries(
 
     let mut result = Vec::with_capacity(entries.len());
     for entry in entries {
-        let lines = sqlx::query_as::<_, JournalEntryLine>(
-            "SELECT * FROM journal_entry_lines WHERE journal_entry_id = ? ORDER BY line_number",
-        )
-        .bind(entry.id)
-        .fetch_all(&state.pool)
-        .await
-        .map_err(|e| e.to_string())?;
+        let lines = sqlx::query_as::<_, JournalEntryLine>(SELECT_JOURNAL_ENTRY_LINES)
+            .bind(entry.id)
+            .fetch_all(&state.pool)
+            .await
+            .map_err(|e| e.to_string())?;
 
         result.push(JournalEntryWithLines { entry, lines });
     }
@@ -640,13 +646,11 @@ pub async fn get_journal_entry(
         .map_err(|e| e.to_string())?
         .ok_or_else(|| "Journal entry not found".to_string())?;
 
-    let lines = sqlx::query_as::<_, JournalEntryLine>(
-        "SELECT * FROM journal_entry_lines WHERE journal_entry_id = ? ORDER BY line_number",
-    )
-    .bind(entry.id)
-    .fetch_all(&state.pool)
-    .await
-    .map_err(|e| e.to_string())?;
+    let lines = sqlx::query_as::<_, JournalEntryLine>(SELECT_JOURNAL_ENTRY_LINES)
+        .bind(entry.id)
+        .fetch_all(&state.pool)
+        .await
+        .map_err(|e| e.to_string())?;
 
     Ok(JournalEntryWithLines { entry, lines })
 }
@@ -847,13 +851,11 @@ pub async fn post_journal_entry(
     }
 
     // Fetch lines and validate via PostedEntry type (belt-and-suspenders with triggers)
-    let db_lines = sqlx::query_as::<_, JournalEntryLine>(
-        "SELECT * FROM journal_entry_lines WHERE journal_entry_id = ? ORDER BY line_number",
-    )
-    .bind(id)
-    .fetch_all(&state.pool)
-    .await
-    .map_err(|e| e.to_string())?;
+    let db_lines = sqlx::query_as::<_, JournalEntryLine>(SELECT_JOURNAL_ENTRY_LINES)
+        .bind(id)
+        .fetch_all(&state.pool)
+        .await
+        .map_err(|e| e.to_string())?;
 
     let posted_lines: Vec<PostedEntryLine> = db_lines
         .iter()
@@ -913,10 +915,21 @@ pub async fn void_journal_entry(
     state: State<'_, DatabaseState>,
     id: i64,
 ) -> Result<JournalEntryWithLines, String> {
+    void_journal_entry_impl(&state.pool, id).await?;
+    get_journal_entry(state, id).await
+}
+
+/// Pool-level void engine (testable without Tauri `State`). Voids a posted
+/// entry by generating and posting a reversing entry in ONE transaction and
+/// returns the reversing entry's id. See [`void_journal_entry`].
+pub(crate) async fn void_journal_entry_impl(
+    pool: &sqlx::SqlitePool,
+    id: i64,
+) -> Result<i64, String> {
     // ONE transaction for the whole void: the GL must never hold a posted
     // reversing entry without the original being voided (or vice versa).
     // A crash or a lost race rolls everything back.
-    let mut tx = state.pool.begin().await.map_err(|e| e.to_string())?;
+    let mut tx = pool.begin().await.map_err(|e| e.to_string())?;
 
     let entry = sqlx::query_as::<_, JournalEntry>("SELECT * FROM journal_entries WHERE id = ?")
         .bind(id)
@@ -934,13 +947,11 @@ pub async fn void_journal_entry(
     }
 
     // Fetch the original entry's lines
-    let original_lines = sqlx::query_as::<_, JournalEntryLine>(
-        "SELECT * FROM journal_entry_lines WHERE journal_entry_id = ? ORDER BY line_number",
-    )
-    .bind(id)
-    .fetch_all(&mut *tx)
-    .await
-    .map_err(|e| e.to_string())?;
+    let original_lines = sqlx::query_as::<_, JournalEntryLine>(SELECT_JOURNAL_ENTRY_LINES)
+        .bind(id)
+        .fetch_all(&mut *tx)
+        .await
+        .map_err(|e| e.to_string())?;
 
     // Validate the reversing entry via PostedEntry BEFORE writing anything
     // (belt-and-suspenders with triggers)
@@ -978,7 +989,7 @@ pub async fn void_journal_entry(
             entry_date, entry_number, description, reference_number,
             is_posted, status, origin, entity_id, created_by, approved_by, approved_at
         )
-        VALUES (DATE('now'), ?, ?, ?, 0, 'draft', ?, ?, 'system', 'system', CURRENT_TIMESTAMP)
+        VALUES (datetime('now'), ?, ?, ?, 0, 'draft', ?, ?, 'system', 'system', CURRENT_TIMESTAMP)
         "#,
     )
     .bind(&rev_entry_number)
@@ -1061,7 +1072,7 @@ pub async fn void_journal_entry(
 
     tx.commit().await.map_err(|e| e.to_string())?;
 
-    get_journal_entry(state, id).await
+    Ok(rev_entry_id)
 }
 
 /// Demotes an approved journal entry back to draft for editing.
@@ -1415,7 +1426,7 @@ struct MultiChainTx {
 
 /// Converts an exact decimal amount to integer minor units (cents) using
 /// explicit half-away-from-zero rounding. Returns None on i64 overflow.
-fn decimal_to_minor_units(amount: Decimal) -> Option<i64> {
+pub(crate) fn decimal_to_minor_units(amount: Decimal) -> Option<i64> {
     amount
         .checked_mul(Decimal::ONE_HUNDRED)?
         .round_dp_with_strategy(0, RoundingStrategy::MidpointAwayFromZero)
@@ -2966,7 +2977,7 @@ mod tests {
         // Void the entry using the Rust path simulation:
         // 1. Create reversing entry
         let rev_result = sqlx::query(
-            "INSERT INTO journal_entries (entry_date, entry_number, description, is_posted, status, origin, created_by, approved_by, approved_at) VALUES (DATE('now'), 'REV-VOID-001', 'Reversal of entry #VOID-001', 0, 'draft', 'manual', 'system', 'system', CURRENT_TIMESTAMP)",
+            "INSERT INTO journal_entries (entry_date, entry_number, description, is_posted, status, origin, created_by, approved_by, approved_at) VALUES (datetime('now'), 'REV-VOID-001', 'Reversal of entry #VOID-001', 0, 'draft', 'manual', 'system', 'system', CURRENT_TIMESTAMP)",
         )
         .execute(&pool)
         .await

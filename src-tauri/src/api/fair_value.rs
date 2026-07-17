@@ -234,7 +234,7 @@ struct HoldingSummary {
 ///
 /// fair_value_minor = quantity × price_per_unit, rounded to nearest cent
 /// (MidpointAwayFromZero, matching the cost basis convention).
-fn fair_value_to_minor(quantity: Decimal, price_decimal: &str) -> Result<i64, String> {
+pub(crate) fn fair_value_to_minor(quantity: Decimal, price_decimal: &str) -> Result<i64, String> {
     let price = Decimal::from_str(price_decimal)
         .map_err(|e| format!("Invalid price decimal '{price_decimal}': {e}"))?;
     let cents_per_dollar = Decimal::from(100);

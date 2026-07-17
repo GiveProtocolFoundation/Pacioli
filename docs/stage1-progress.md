@@ -4,11 +4,10 @@ Session constitution: `SCOPE.md` (repo root). Stage 1 mandate: GIV-668.
 Gate 1: CPA-reviewed statements from real imported transactions, manually
 classified through the approval queue.
 
-**Current phase: 8 (Fair-value measurement) — Phases 1-7 landed;
-Phase 8 implemented by Engineer (GIV-690): ASU 2023-08 period-end
-remeasurement, PriceSource trait + CoinGecko provider, manual price
-overrides with append-only provenance, draft adjusting entries for
-unrealized gain/loss, 15 Rust tests with hand-computed fixtures.**
+**Current phase: 9 (Invariant test suite) — Phases 1-8 landed;
+Phase 9 implemented by Engineer (GIV-691): 27 property-based tests
+via proptest pinning all 7 SCOPE.md invariants against real engine
+paths. 314 total tests green, clippy clean.**
 
 ## Phase Checklist
 
@@ -50,7 +49,13 @@ unrealized gain/loss, 15 Rust tests with hand-computed fixtures.**
       draft adjusting entries (unrealized gain/loss through net income),
       M8 migration with append-only triggers on all three tables,
       15 Rust tests including hand-computed gain/loss fixtures — Engineer)
-- [ ] **Phase 9 — Invariant test suite (proptest)**
+- [x] **Phase 9 — Invariant test suite (proptest)**
+      (GIV-691: 27 property-based tests via `proptest` crate pinning all 7
+      SCOPE.md invariants against real engine paths — Inv-1 structural balance,
+      Inv-2 no-float exact arithmetic, Inv-3 state machine + void net-zero,
+      Inv-7 append-only provenance, cost basis conservation/transfer/FIFO/
+      over-consumption, fair-value idempotency + unrealized=FV−cost,
+      statements tie/TB/BS/IS/multi-period — Engineer)
 - [ ] **Phase 10 — Gate 1 rehearsal**
 
 ---
@@ -877,3 +882,77 @@ WHERE status='approved'` (the M5 state machine explicitly allows
       scanned). Partial disposals self-correct at the next remeasurement.
       Proportional relief of fair-value adjustments at disposal time is
       future Stage 1+ work; documented in accounting-model.md §11.
+- **Session 14 (2026-07-17, Engineer — GIV-691):** Implemented Phase 9
+  (invariant test suite — proptest):
+  - **New module** (`src-tauri/src/api/proptest_invariants.rs`): 27
+    property-based tests using the `proptest` crate, pinning all 7
+    SCOPE.md invariants against real engine paths (not re-implemented
+    SQL). All tests exercise production functions via in-memory SQLite
+    databases with full migrations applied.
+  - **Inv-1 — Structural balance (4 tests):** `PostedEntry::new` accepts
+    balanced entries and rejects unbalanced; M2 trigger independently
+    rejects unbalanced via raw SQL; per-asset quantity imbalance on
+    dual-sided assets rejected.
+  - **Inv-2 — No floats / exact arithmetic (4 tests):**
+    `decimal_to_minor_units` exact conversion, minor unit sum exact
+    (no drift over 100 random additions), `fair_value_to_minor` exact,
+    `Decimal` string roundtrip identity.
+  - **Inv-3 — State machine + void net-zero (2 tests):** random
+    transition sequences never produce an illegal status; void generates
+    a reversing entry whose GL net effect is exactly zero.
+  - **Inv-7 — Append-only provenance (6 tests):** `lot_consumptions`,
+    `price_observations`, `remeasurement_runs`, `remeasurement_entries`
+    all reject UPDATE/DELETE at the trigger level; posted journal entry
+    lines immutable; `cost_basis_lots` core columns immutable.
+  - **Cost basis (4 tests):** conservation (total cost invariant after
+    partial disposal), transfer produces zero realized gain, FIFO
+    ordering (oldest lot consumed first), no over-consumption (disposal >
+    available → error).
+  - **Fair value (2 tests):** idempotency (re-running same date = noop),
+    unrealized gain/loss = fair_value − carrying_amount.
+  - **Statements (5 tests):** random balanced entries always tie,
+    trial balance nets to zero, BS ties (A = L + E + RE + NI),
+    IS net income matches BS NI, multi-period entries tie independently.
+  - **Visibility changes for cross-module test access:** 5 functions
+    widened to `pub(crate)` (accounting.rs: `decimal_to_minor_units`;
+    fair_value.rs: `fair_value_to_minor`; cost_basis.rs:
+    `acquire_lot_impl`, `dispose_lots_with_method`, `transfer_lots_impl`;
+    statements.rs: `build_verified_statements` + `VerifiedStatements`
+    struct fields).
+  - **Dev dependency:** `proptest = "1.4"` added to `Cargo.toml`.
+  - 314 total tests green (27 proptest + 287 existing); clippy + rustfmt
+    clean.
+- **Session 14 review-hardening (2026-07-17, CTO — GIV-691):** on review,
+  two spec gaps were closed and the hardened void test surfaced (and
+  fixed) two REAL production bugs:
+  - **Void property now exercises the production engine.** Extracted
+    `void_journal_entry_impl(pool, id)` (pool-level, testable without
+    Tauri `State`; thin `#[tauri::command]` wrapper preserved) and
+    rewrote `inv3_void_net_effect_zero` to call it: asserts original
+    `voided` + linked via `reversed_by_entry_id`, reversal `posted` and
+    decodable, double-void rejected, overall AND per-account GL net-zero.
+    The prior version simulated the reversal via raw SQL.
+  - **Production bug #1 (found by the hardened test):** the void engine
+    inserted the reversing entry with `DATE('now')` (date-only) while
+    `JournalEntry.entry_date` decodes as `NaiveDateTime` — every voided
+    entry's reversal broke journal listings. Fixed to `datetime('now')`;
+    test now pins decodability of the reversal row.
+  - **Production bug #2 (found by the same test):** legacy
+    `debit_amount`/`credit_amount` are declared DECIMAL (NUMERIC
+    affinity), so SQLite stores whole-dollar f64 values (e.g. 5.0) as
+    INTEGER, which sqlx refuses to decode back into `f64` — any line
+    with a whole-dollar amount broke entry fetch. Fixed with a shared
+    `SELECT_JOURNAL_ENTRY_LINES` query that CASTs both columns to REAL
+    at all 4 decode sites.
+  - **Added the missing Property-5 interleaving case**
+    (`cost_basis_interleaved_ops_conserve`): random interleaved
+    buy/sell/transfer sequences against the production engines; after
+    EVERY op no lot is over-consumed; transfers never realize gain;
+    final conservation Σ(consumed) + Σ(remaining) = Σ(acquired) within
+    ±1 minor unit per rounding site.
+  - `proptest-regressions/api/proptest_invariants.txt` checked in (seed
+    that reproduced the void decode regression).
+  - Test-fixture fixes: `create_draft` stores full datetimes; helper
+    inserts use `0.0` literals for the legacy REAL amount columns.
+  - 28 proptest properties / 321 total lib tests green; clippy (CI
+    flags) + rustfmt clean.
