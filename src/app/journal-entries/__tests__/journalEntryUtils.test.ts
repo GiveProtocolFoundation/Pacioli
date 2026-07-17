@@ -184,6 +184,7 @@ describe('displayStatus', () => {
 describe('formatDate', () => {
   it('should return em-dash for null/undefined', () => {
     expect(formatDate(null)).toBe('\u2014')
+    // skipcq: JS-W1042 — undefined is the explicit value under test, not a trailing optional
     expect(formatDate(undefined)).toBe('\u2014')
   })
 

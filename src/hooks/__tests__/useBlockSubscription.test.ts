@@ -50,8 +50,8 @@ describe('useBlockSubscription — service contracts', () => {
     mockSubscribeNewBlocks.mockResolvedValue(mockUnsubscribe)
     mockLoadSyncStatus.mockResolvedValue(null)
     mockFetchTransactionHistoryHybrid.mockResolvedValue([])
-    mockSaveTransactions.mockResolvedValue(undefined)
-    mockSaveSyncStatus.mockResolvedValue(undefined)
+    mockSaveTransactions.mockImplementation(() => Promise.resolve())
+    mockSaveSyncStatus.mockImplementation(() => Promise.resolve())
   })
 
   afterEach(() => {

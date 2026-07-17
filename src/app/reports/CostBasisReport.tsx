@@ -73,16 +73,16 @@ interface ReportData {
 export function filterStoredTransactionsForAccounting(
   txs: StoredTransaction[]
 ): StoredTransaction[] {
-  return txs.filter(tx => {
-    if (tx.tx_type !== 'xcm') return true
-    if (tx.xcm_role === 'send') return true
-    // Unmatched receive: keep as pending
-    if (tx.xcm_role === 'receive' && tx.xcm_status !== 'matched') return true
-    // No role annotation yet: keep conservatively (pre-GIV-447 data)
-    if (!tx.xcm_role) return true
-    // Matched receive: exclude — already captured by the send leg
-    return false
-  })
+  return txs.filter(
+    tx =>
+      tx.tx_type !== 'xcm' ||
+      tx.xcm_role === 'send' ||
+      // Unmatched receive: keep as pending
+      (tx.xcm_role === 'receive' && tx.xcm_status !== 'matched') ||
+      // No role annotation yet: keep conservatively (pre-GIV-447 data)
+      !tx.xcm_role
+    // Matched receive: excluded — already captured by the send leg
+  )
 }
 
 /**

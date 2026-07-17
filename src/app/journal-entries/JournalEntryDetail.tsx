@@ -94,10 +94,7 @@ const JournalEntryDetail: React.FC<JournalEntryDetailProps> = ({
     if (entry.reversedByEntryId) {
       return entries.find(e => e.id === entry.reversedByEntryId)
     }
-    if (
-      entry.description &&
-      entry.description.startsWith('Reversal of entry #')
-    ) {
+    if (entry.description?.startsWith('Reversal of entry #')) {
       const originalNumber = entry.description.replace(
         'Reversal of entry #',
         ''

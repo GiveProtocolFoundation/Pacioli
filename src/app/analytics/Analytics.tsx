@@ -684,7 +684,7 @@ const Analytics: React.FC = () => {
         change: null,
         changeLabel:
           filteredTransactions.length > 0
-            ? `In selected period`
+            ? 'In selected period'
             : 'No transactions in period',
         icon: TrendingUp,
         trend: 'neutral',

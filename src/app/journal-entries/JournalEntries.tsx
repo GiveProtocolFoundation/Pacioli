@@ -191,6 +191,7 @@ const JournalEntries: React.FC = () => {
     setExpandedId(prev => (prev === id ? null : id))
   }, [])
 
+  // skipcq: JS-W1042 — undefined is the required value (React setState), not a trailing optional
   const clearEditingEntry = useCallback(() => setEditingEntry(undefined), [])
 
   const handleNewEntry = useCallback(() => {
@@ -220,6 +221,7 @@ const JournalEntries: React.FC = () => {
   }, [])
 
   const handleCloseDetail = useCallback(() => {
+    // skipcq: JS-W1042 — undefined is the required value (React setState), not a trailing optional
     setDetailEntry(undefined)
   }, [])
 
