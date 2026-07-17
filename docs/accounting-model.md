@@ -483,16 +483,16 @@ them out of the GL). Fair value is computed as
   journal entry already exists for the same asset+wallet+date. Voiding
   the entry re-opens the slot.
 - **Sequencing:** remeasure → approve → post → close. Pending
-  remeasurement drafts from a *prior* date should be posted or voided
+  remeasurement drafts from a _prior_ date should be posted or voided
   before running the next period end; the carrying amount only reflects
-  *posted* adjustments.
+  _posted_ adjustments.
 - Price fetching (network I/O) and price-observation inserts happen
-  *before* the accounting transaction; the draft entries, run record, and
+  _before_ the accounting transaction; the draft entries, run record, and
   linkage rows are written in one all-or-nothing transaction.
 
 ### Known limitation — disposals relieve cost, not carrying
 
-Lot disposals (§10) relieve the *cost basis* of consumed lots; realized
+Lot disposals (§10) relieve the _cost basis_ of consumed lots; realized
 gain/loss is measured against cost, not against the last remeasured fair
 value, and prior fair-value adjustments are not proportionally relieved
 at disposal. After a **full** disposal of a remeasured holding, the

@@ -870,7 +870,7 @@ WHERE status='approved'` (the M5 state machine explicitly allows
       carry asset_id with NULL quantity, which the per-asset check permits
       by design — measurement lines carry valuation differences).
     - +3 tests (18 fair-value tests total; 287 lib tests green).
-    - **Additional documented debt:** disposals (§10) relieve *cost*, not
+    - **Additional documented debt:** disposals (§10) relieve _cost_, not
       remeasured carrying value; after a FULL disposal of a remeasured
       holding, the residual prior fair-value adjustment stays in the asset
       account until a manual adjusting entry (no open lots → holding is not
