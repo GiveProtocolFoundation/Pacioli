@@ -5797,6 +5797,7 @@ dependencies = [
  "keccak-hash 0.10.0",
  "keyring",
  "nonzero_ext",
+ "proptest",
  "rand 0.8.6",
  "reqwest 0.12.23",
  "reqwest-middleware",
