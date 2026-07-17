@@ -476,17 +476,17 @@ fn compute_prior_period(start_date: &str, end_date: &str) -> Result<(String, Str
 // ============================================================================
 
 /// All three statements for one period, built together and verified as a set.
-struct VerifiedStatements {
-    balance_sheet: BalanceSheetReport,
-    income_statement: IncomeStatementReport,
-    trial_balance: TrialBalanceReport,
+pub(crate) struct VerifiedStatements {
+    pub(crate) balance_sheet: BalanceSheetReport,
+    pub(crate) income_statement: IncomeStatementReport,
+    pub(crate) trial_balance: TrialBalanceReport,
 }
 
 /// Queries cumulative (inception..=end) and period (start..=end) activity,
 /// builds all three statements, and runs `verify_ties`. Every statement
 /// handed to the UI or an export goes through this single gate — a statement
 /// that does not tie is a hard error, never a silent render.
-async fn build_verified_statements(
+pub(crate) async fn build_verified_statements(
     pool: &sqlx::SqlitePool,
     start_date: &str,
     end_date: &str,

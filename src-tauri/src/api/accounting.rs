@@ -1415,7 +1415,7 @@ struct MultiChainTx {
 
 /// Converts an exact decimal amount to integer minor units (cents) using
 /// explicit half-away-from-zero rounding. Returns None on i64 overflow.
-fn decimal_to_minor_units(amount: Decimal) -> Option<i64> {
+pub(crate) fn decimal_to_minor_units(amount: Decimal) -> Option<i64> {
     amount
         .checked_mul(Decimal::ONE_HUNDRED)?
         .round_dp_with_strategy(0, RoundingStrategy::MidpointAwayFromZero)
