@@ -838,3 +838,42 @@ WHERE status='approved'` (the M5 state machine explicitly allows
       sequences these steps automatically.
     - No automated CoinGecko coin-ID mapping per asset. The caller must
       provide the mapping. A future asset metadata table could store this.
+  - **CTO review hardening (GIV-690, 2026-07-17)** — 4 gaps fixed on the
+    PR branch before merge:
+    1. **Second-period double-count (critical).** The engine measured every
+       run against raw cost basis. After period 1's +5,000 gain was posted,
+       the GL carried the asset at FV1, but period 2 computed FV2 − cost
+       instead of FV2 − FV1 — the GL would end at FV1 + FV2 − cost after two
+       closes. Carrying amount is now cost basis of open lots **plus the net
+       unrealized gain/loss of prior POSTED remeasurement entries** for the
+       asset+wallet (voided entries excluded — their reversals net them out
+       of the GL). Test posts period 1 through the funnel, remeasures period
+       2, posts it, and asserts the GL asset balance equals FV2 exactly.
+    2. **No idempotency guard.** Re-running the same run_date created
+       duplicate drafts; if both were approved+posted the GL would be
+       double-adjusted. Now a holding is skipped (reported in
+       `alreadyRemeasured`) when a non-voided remeasurement entry already
+       exists for the same asset+wallet+entry_date. Voiding re-opens the
+       slot. (Fourth phase in this mandate where the idempotency /
+       read-check-write mandate was missed — 2, 5, 7, 8.)
+    3. **Network I/O inside the accounting transaction.** CoinGecko fetches
+       (and price-observation inserts) ran with the sqlx write transaction
+       open, holding the SQLite writer across HTTP latency and rolling back
+       price provenance if the run later failed. Price resolution now runs
+       before the transaction; draft entries + run record + linkage rows
+       remain one all-or-nothing transaction.
+    4. **holdings_count unit mismatch.** `holdings.len() − skipped_assets.len()`
+       subtracted a per-asset list from a per-asset+wallet list, miscounting
+       multi-wallet assets. The run now counts holdings actually remeasured.
+    - The second-period test also proves generated drafts pass the M3
+      per-asset / M5 state-machine posting triggers (remeasurement lines
+      carry asset_id with NULL quantity, which the per-asset check permits
+      by design — measurement lines carry valuation differences).
+    - +3 tests (18 fair-value tests total; 287 lib tests green).
+    - **Additional documented debt:** disposals (§10) relieve *cost*, not
+      remeasured carrying value; after a FULL disposal of a remeasured
+      holding, the residual prior fair-value adjustment stays in the asset
+      account until a manual adjusting entry (no open lots → holding is not
+      scanned). Partial disposals self-correct at the next remeasurement.
+      Proportional relief of fair-value adjustments at disposal time is
+      future Stage 1+ work; documented in accounting-model.md §11.

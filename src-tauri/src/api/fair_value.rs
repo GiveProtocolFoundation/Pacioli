@@ -182,6 +182,10 @@ pub struct RemeasurementResult {
     pub entries: Vec<RemeasurementEntry>,
     /// Assets that were skipped because no price was available.
     pub skipped_assets: Vec<String>,
+    /// Holdings ("asset_id@wallet_id") skipped because a non-voided
+    /// remeasurement entry already exists for the same run date
+    /// (idempotency guard — re-running a date never duplicates drafts).
+    pub already_remeasured: Vec<String>,
 }
 
 /// Holding summary used internally for remeasurement.
@@ -402,6 +406,7 @@ pub async fn run_remeasurement_impl(
             run,
             entries: Vec::new(),
             skipped_assets: Vec::new(),
+            already_remeasured: Vec::new(),
         });
     }
 
@@ -413,15 +418,19 @@ pub async fn run_remeasurement_impl(
 
     let asset_coin_map = input.asset_coin_map.as_ref().cloned().unwrap_or_default();
 
-    // ONE transaction for the entire remeasurement run
-    let mut tx = pool.begin().await.map_err(|e| e.to_string())?;
-
     let mut entries_generated = 0i64;
     let mut total_unrealized = 0i64;
+    let mut remeasured_holdings = 0i64;
     let mut skipped_assets: Vec<String> = Vec::new();
+    let mut already_remeasured: Vec<String> = Vec::new();
     let mut remeasurement_entry_data: Vec<(i64, String, String, i64, i64, i64, i64)> = Vec::new();
 
-    // Step 1: Ensure price observations exist for all holdings
+    // Step 1: Ensure price observations exist for all holdings.
+    //
+    // Deliberately OUTSIDE the accounting transaction:
+    // - network I/O (CoinGecko) must never hold the SQLite write lock, and
+    // - price observations are provenance (Inv-7): once fetched they are
+    //   recorded even if the accounting phase below fails.
     for holding in &holdings {
         // Check if we already have a price for this asset on the run date
         let existing = sqlx::query_as::<_, PriceObservation>(
@@ -434,7 +443,7 @@ pub async fn run_remeasurement_impl(
         )
         .bind(&holding.asset_id)
         .bind(&input.run_date)
-        .fetch_optional(&mut *tx)
+        .fetch_optional(pool)
         .await
         .map_err(|e| e.to_string())?;
 
@@ -463,7 +472,7 @@ pub async fn run_remeasurement_impl(
                         .bind(&price_str)
                         .bind(coin_id)
                         .bind(&input.initiated_by)
-                        .execute(&mut *tx)
+                        .execute(pool)
                         .await
                         .map_err(|e| e.to_string())?;
                     }
@@ -487,9 +496,38 @@ pub async fn run_remeasurement_impl(
         }
     }
 
-    // Step 2: For each holding with a price, compute gain/loss and create draft entries
+    // Step 2: ONE transaction for the accounting writes (draft entries,
+    // run record, entry linkage). All-or-nothing.
+    let mut tx = pool.begin().await.map_err(|e| e.to_string())?;
+
     for holding in &holdings {
         if skipped_assets.contains(&holding.asset_id) {
+            continue;
+        }
+
+        // Idempotency guard: if a non-voided remeasurement entry already
+        // exists for this asset+wallet on this run date, skip it. Re-running
+        // a period-end date must never create duplicate draft adjustments
+        // (a duplicated draft that gets approved+posted would double-adjust
+        // the GL). Voided entries don't count — voiding re-opens the slot.
+        let dup: (i64,) = sqlx::query_as(
+            r#"
+            SELECT COUNT(*)
+            FROM remeasurement_entries re
+            INNER JOIN journal_entries je ON je.id = re.journal_entry_id
+            WHERE re.asset_id = ? AND re.wallet_id = ?
+              AND je.entry_date = ? AND je.status != 'voided'
+            "#,
+        )
+        .bind(&holding.asset_id)
+        .bind(&holding.wallet_id)
+        .bind(&input.run_date)
+        .fetch_one(&mut *tx)
+        .await
+        .map_err(|e| e.to_string())?;
+
+        if dup.0 > 0 {
+            already_remeasured.push(format!("{}@{}", holding.asset_id, holding.wallet_id));
             continue;
         }
 
@@ -520,11 +558,36 @@ pub async fn run_remeasurement_impl(
         // Compute fair value = quantity × price (in minor units)
         let fv_minor =
             fair_value_to_minor(holding.total_remaining_quantity, &price_obs.price_decimal)?;
-        let carrying = holding.total_cost_basis_minor;
+
+        // Carrying amount = cost basis of open lots PLUS the net effect of
+        // prior POSTED remeasurement adjustments for this asset+wallet.
+        // Under ASU 2023-08 the GL carries the asset at the fair value set
+        // by the last posted remeasurement, not at original cost — using
+        // raw cost here would re-recognize every prior period's gain/loss
+        // on each subsequent run (double counting). Voided entries are
+        // excluded (their reversing entries net them out of the GL).
+        let prior_adj: (i64,) = sqlx::query_as(
+            r#"
+            SELECT COALESCE(SUM(re.unrealized_gain_loss_minor), 0)
+            FROM remeasurement_entries re
+            INNER JOIN journal_entries je ON je.id = re.journal_entry_id
+            WHERE re.asset_id = ? AND re.wallet_id = ?
+              AND je.status = 'posted'
+            "#,
+        )
+        .bind(&holding.asset_id)
+        .bind(&holding.wallet_id)
+        .fetch_one(&mut *tx)
+        .await
+        .map_err(|e| e.to_string())?;
+
+        let carrying = holding.total_cost_basis_minor + prior_adj.0;
         let unrealized = fv_minor - carrying;
 
+        remeasured_holdings += 1;
+
         if unrealized == 0 {
-            // No adjustment needed — but still count as remeasured
+            // No adjustment needed — but still counted as remeasured
             continue;
         }
 
@@ -726,7 +789,10 @@ pub async fn run_remeasurement_impl(
         "partial"
     };
 
-    let holdings_count = holdings.len() as i64 - skipped_assets.len() as i64;
+    // Count holdings actually remeasured (priced, incl. zero-change ones).
+    // NOTE: holdings are per asset+wallet while skipped_assets is per asset,
+    // so subtracting list lengths would miscount multi-wallet assets.
+    let holdings_count = remeasured_holdings;
 
     // Insert remeasurement run
     let run_result = sqlx::query(
@@ -799,6 +865,7 @@ pub async fn run_remeasurement_impl(
         run,
         entries,
         skipped_assets,
+        already_remeasured,
     })
 }
 
@@ -1594,5 +1661,195 @@ mod tests {
                 .await;
 
         assert!(update_result.is_err());
+    }
+
+    // ---- review-hardening tests (GIV-690) ----
+
+    /// Helper: push a draft entry through the approve → post funnel.
+    /// Proves the remeasurement drafts survive the M3/M5 posting triggers.
+    async fn approve_and_post(pool: &SqlitePool, entry_id: i64) {
+        let approved = sqlx::query(
+            "UPDATE journal_entries SET status = 'approved', approved_by = 'cfo@example.com', approved_at = CURRENT_TIMESTAMP WHERE id = ? AND status = 'draft'",
+        )
+        .bind(entry_id)
+        .execute(pool)
+        .await
+        .expect("approve failed");
+        assert_eq!(approved.rows_affected(), 1, "entry was not in draft");
+
+        let posted = sqlx::query(
+            "UPDATE journal_entries SET status = 'posted', is_posted = 1, posted_at = CURRENT_TIMESTAMP WHERE id = ? AND status = 'approved'",
+        )
+        .bind(entry_id)
+        .execute(pool)
+        .await
+        .expect("post failed (balance/per-asset triggers?)");
+        assert_eq!(posted.rows_affected(), 1, "entry was not approved");
+    }
+
+    /// Helper: standard ETH fixture — 10 ETH @ $3,000 = $30,000 cost basis,
+    /// with the acquisition posted so the asset-account lookup works.
+    /// Returns (asset_acct, gain_acct, loss_acct).
+    async fn seed_eth_fixture(pool: &SqlitePool) -> (i64, i64, i64) {
+        let asset_acct = seed_account(pool, "Digital Assets — ETH", "Asset").await;
+        let cash_acct = seed_account(pool, "Cash", "Asset").await;
+        let gain_acct = seed_account(pool, "Unrealized Gain", "Income").await;
+        let loss_acct = seed_account(pool, "Unrealized Loss", "Expense").await;
+        seed_posted_entry(
+            pool,
+            asset_acct,
+            cash_acct,
+            "token:ETH",
+            3_000_000,
+            "2026-01-15",
+        )
+        .await;
+        seed_lot(
+            pool,
+            "token:ETH",
+            "0xWallet1",
+            "2026-01-15",
+            "10",
+            3_000_000,
+        )
+        .await;
+        (asset_acct, gain_acct, loss_acct)
+    }
+
+    fn remeasure_input(run_date: &str, gain_acct: i64, loss_acct: i64) -> RemeasurementInput {
+        RemeasurementInput {
+            run_date: run_date.to_string(),
+            initiated_by: "cfo@example.com".to_string(),
+            unrealized_gain_account_id: gain_acct,
+            unrealized_loss_account_id: loss_acct,
+            asset_coin_map: None,
+            api_key: None,
+        }
+    }
+
+    async fn record_price(pool: &SqlitePool, asset_id: &str, date: &str, price: &str) {
+        record_manual_price_impl(
+            pool,
+            &ManualPriceInput {
+                asset_id: asset_id.to_string(),
+                price_date: date.to_string(),
+                price_decimal: price.to_string(),
+                recorded_by: "cfo@example.com".to_string(),
+                note: None,
+            },
+        )
+        .await
+        .unwrap();
+    }
+
+    #[tokio::test]
+    async fn second_period_measures_against_posted_fair_value_not_cost() {
+        // Period 1: 10 ETH, cost $30,000, price $3,500 → +$5,000 gain, POSTED.
+        // Period 2: price $3,800 → adjustment must be FV2 − FV1 = $3,000,
+        // NOT FV2 − cost = $8,000 (which would double-count period 1's gain).
+        let pool = setup_test_db().await;
+        let (asset_acct, gain_acct, loss_acct) = seed_eth_fixture(&pool).await;
+
+        record_price(&pool, "token:ETH", "2026-06-30", "3500.00").await;
+        let r1 =
+            run_remeasurement_impl(&pool, &remeasure_input("2026-06-30", gain_acct, loss_acct))
+                .await
+                .unwrap();
+        assert_eq!(r1.run.total_unrealized_gain_loss_minor, 500_000);
+
+        // Post the period-1 draft through the standard funnel — this also
+        // proves the generated entry passes the M3/M5 posting triggers.
+        approve_and_post(&pool, r1.entries[0].journal_entry_id).await;
+
+        // Period 2
+        record_price(&pool, "token:ETH", "2026-09-30", "3800.00").await;
+        let r2 =
+            run_remeasurement_impl(&pool, &remeasure_input("2026-09-30", gain_acct, loss_acct))
+                .await
+                .unwrap();
+
+        assert_eq!(r2.run.entries_generated, 1);
+        let e2 = &r2.entries[0];
+        // Carrying = cost 3,000,000 + posted prior adjustment 500,000 = 3,500,000
+        assert_eq!(e2.carrying_amount_minor, 3_500_000);
+        assert_eq!(e2.fair_value_minor, 3_800_000);
+        assert_eq!(e2.unrealized_gain_loss_minor, 300_000);
+
+        // Post period 2 as well; GL asset balance must equal FV2 exactly.
+        approve_and_post(&pool, e2.journal_entry_id).await;
+        let gl: (i64,) = sqlx::query_as(
+            "SELECT COALESCE(SUM(jel.debit_minor - jel.credit_minor), 0) FROM journal_entry_lines jel INNER JOIN journal_entries je ON je.id = jel.journal_entry_id WHERE jel.gl_account_id = ? AND je.status = 'posted'",
+        )
+        .bind(asset_acct)
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+        // acquisition 3,000,000 + 500,000 + 300,000 = 3,800,000 = FV2
+        assert_eq!(gl.0, 3_800_000);
+    }
+
+    #[tokio::test]
+    async fn rerun_same_date_creates_no_duplicate_drafts() {
+        let pool = setup_test_db().await;
+        let (_asset_acct, gain_acct, loss_acct) = seed_eth_fixture(&pool).await;
+
+        record_price(&pool, "token:ETH", "2026-06-30", "3500.00").await;
+        let input = remeasure_input("2026-06-30", gain_acct, loss_acct);
+
+        let r1 = run_remeasurement_impl(&pool, &input).await.unwrap();
+        assert_eq!(r1.run.entries_generated, 1);
+
+        let count_before: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM journal_entries")
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+
+        // Re-run for the same date — the pending draft must NOT be duplicated
+        // (a duplicate that got approved+posted would double-adjust the GL).
+        let r2 = run_remeasurement_impl(&pool, &input).await.unwrap();
+        assert_eq!(r2.run.entries_generated, 0);
+        assert_eq!(
+            r2.already_remeasured,
+            vec!["token:ETH@0xWallet1".to_string()]
+        );
+
+        let count_after: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM journal_entries")
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+        assert_eq!(count_before.0, count_after.0);
+    }
+
+    #[tokio::test]
+    async fn voided_remeasurement_is_excluded_from_carrying_and_rerun_guard() {
+        let pool = setup_test_db().await;
+        let (_asset_acct, gain_acct, loss_acct) = seed_eth_fixture(&pool).await;
+
+        record_price(&pool, "token:ETH", "2026-06-30", "3500.00").await;
+        let r1 =
+            run_remeasurement_impl(&pool, &remeasure_input("2026-06-30", gain_acct, loss_acct))
+                .await
+                .unwrap();
+        approve_and_post(&pool, r1.entries[0].journal_entry_id).await;
+
+        // Void the posted remeasurement (posted → voided is the void path).
+        sqlx::query(
+            "UPDATE journal_entries SET status = 'voided' WHERE id = ? AND status = 'posted'",
+        )
+        .bind(r1.entries[0].journal_entry_id)
+        .execute(&pool)
+        .await
+        .unwrap();
+
+        // Re-running the SAME date is allowed again (voided re-opens the slot)
+        // and the carrying amount falls back to cost basis (voided adjustments
+        // are netted out of the GL by their reversing entries).
+        let r2 =
+            run_remeasurement_impl(&pool, &remeasure_input("2026-06-30", gain_acct, loss_acct))
+                .await
+                .unwrap();
+        assert_eq!(r2.run.entries_generated, 1);
+        assert_eq!(r2.entries[0].carrying_amount_minor, 3_000_000);
+        assert_eq!(r2.entries[0].unrealized_gain_loss_minor, 500_000);
     }
 }

@@ -459,12 +459,49 @@ Each remeasurement execution creates:
 All three tables (`price_observations`, `remeasurement_runs`,
 `remeasurement_entries`) are protected by append-only triggers.
 
-### Integration with cost basis lots
+### Integration with cost basis lots — carrying amount
 
-The carrying amount for an asset in a wallet is the sum of
-`cost_basis_minor` across open (non-closed) lots for that
-asset+wallet pair — the same aggregation as `get_lot_summary` (§10).
-Fair value is computed as `total_remaining_quantity × price_per_unit`.
+The carrying amount for an asset in a wallet is:
+
+> sum of `cost_basis_minor` across open (non-closed) lots for the
+> asset+wallet pair (the same aggregation as `get_lot_summary`, §10)
+> **plus** the net unrealized gain/loss of all prior **posted**
+> remeasurement entries for that asset+wallet.
+
+Under ASU 2023-08 the GL carries the asset at the fair value set by the
+last posted remeasurement — measuring against raw cost would re-recognize
+every prior period's gain/loss on each subsequent run. Voided
+remeasurement entries are excluded (their posted reversing entries net
+them out of the GL). Fair value is computed as
+`total_remaining_quantity × price_per_unit`; the adjustment is
+`fair value − carrying amount`.
+
+### Idempotency and sequencing
+
+- **Re-running a period-end date never duplicates drafts.** A holding is
+  skipped (reported in `alreadyRemeasured`) if a non-voided remeasurement
+  journal entry already exists for the same asset+wallet+date. Voiding
+  the entry re-opens the slot.
+- **Sequencing:** remeasure → approve → post → close. Pending
+  remeasurement drafts from a *prior* date should be posted or voided
+  before running the next period end; the carrying amount only reflects
+  *posted* adjustments.
+- Price fetching (network I/O) and price-observation inserts happen
+  *before* the accounting transaction; the draft entries, run record, and
+  linkage rows are written in one all-or-nothing transaction.
+
+### Known limitation — disposals relieve cost, not carrying
+
+Lot disposals (§10) relieve the *cost basis* of consumed lots; realized
+gain/loss is measured against cost, not against the last remeasured fair
+value, and prior fair-value adjustments are not proportionally relieved
+at disposal. After a **full** disposal of a remeasured holding, the
+residual prior adjustment remains in the asset account until a manual
+adjusting entry (the holding no longer appears in the remeasurement scan
+because it has no open lots). Partial disposals self-correct at the next
+remeasurement (the carrying-forward formula measures the remaining
+quantity against remaining cost + all prior adjustments). Proportional
+relief of fair-value adjustments at disposal is documented Stage 1 debt.
 
 ### Amount representation
 
