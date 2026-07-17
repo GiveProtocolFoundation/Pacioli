@@ -458,7 +458,15 @@ pub fn run() {
             api::statements::get_period_trial_balance,
             api::statements::export_balance_sheet_csv,
             api::statements::export_income_statement_csv,
-            api::statements::export_trial_balance_csv
+            api::statements::export_trial_balance_csv,
+            // Cost basis engine commands (GIV-689, Phase 7)
+            api::cost_basis::acquire_lot,
+            api::cost_basis::dispose_lots,
+            api::cost_basis::transfer_lots,
+            api::cost_basis::get_open_lots,
+            api::cost_basis::get_lot_summary,
+            api::cost_basis::get_lot_consumptions,
+            api::cost_basis::get_realized_gains_losses
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

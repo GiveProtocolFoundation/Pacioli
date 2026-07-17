@@ -296,14 +296,82 @@ end date. The UI shows both periods side by side with percentage change.
 All three statements can be exported to CSV. The export runs the same
 `verify_ties` check — a statement that does not tie cannot be exported.
 
-## 10. Transfers between own wallets _(reserved — Phase 7)_
+## 10. Cost basis (Phase 7)
 
-Treatment of lot movement without realization will be documented when the
-cost-basis engine lands.
+### Lot tracking
 
-## 10. Cost basis _(reserved — Phase 7)_
+Every acquisition of a digital asset opens a **lot** scoped to a specific
+wallet address and asset identifier. A lot records:
 
-FIFO lot relief, per wallet per asset; method documented with the engine.
+- the quantity acquired (canonical decimal string, `rust_decimal`);
+- the total cost basis in functional-currency minor units (USD cents);
+- the date acquired (accounting date);
+- the remaining un-consumed quantity.
+
+Lots are **append-only**: consumption is recorded in a separate
+`lot_consumptions` table, never by destructive updates that lose history
+(Invariant 7, provenance). The `remaining_quantity` field on the lot is
+updated atomically in the same transaction as the consumption insert.
+
+### Cost basis method — FIFO (trait-based)
+
+Disposals consume lots in **First-In, First-Out** order: the oldest
+lots (by `acquired_date`, then `id`) are consumed first. The selection
+method is abstracted behind a `LotSelector` trait so that LIFO, HIFO,
+and specific-ID methods can be added later without changing the
+consumption engine.
+
+### Realized gain/loss
+
+When an asset is disposed (sale, swap, or other realization event):
+
+1. The engine selects open lots for the disposed asset and wallet in
+   FIFO order.
+2. Each lot is consumed proportionally:
+   `portion_cost = (quantity_consumed / lot_quantity) × lot_cost_basis`.
+3. Proceeds are allocated proportionally across consumed lots
+   (last lot receives the remainder to avoid rounding drift).
+4. Realized gain/loss per lot portion = proceeds − cost basis.
+5. A `lot_consumptions` record is created with `event_type = 'disposal'`.
+6. Holding period is computed (event date − acquired date) and
+   long-term status (≥ 365 days) is recorded.
+
+The journal entry for the disposal (debit Cash/Receivable, credit
+Digital Assets, debit/credit Realized Gain/Loss) goes through the
+normal `draft → approved → posted` lifecycle. The cost basis engine
+is called **after** posting to record the lot consumption.
+
+### Transfers between own wallets
+
+A transfer between wallets owned by the same entity is **not a
+realization event**. The treatment:
+
+1. Source lots are consumed in FIFO order, same as a disposal.
+2. New lots are created in the destination wallet preserving the
+   **original acquired date** and **proportional cost basis**.
+3. `lot_consumptions` records are created with `event_type = 'transfer'`,
+   `proceeds_minor = 0`, `realized_gain_loss_minor = 0`, and
+   `destination_lot_id` linking to the new lot.
+4. The journal entry for the transfer (debit Crypto Assets wallet-B /
+   credit Crypto Assets wallet-A) moves the carrying amount between
+   sub-accounts without touching income/expense accounts.
+
+This interacts with Phase 4's transfer classification: when a raw
+blockchain transfer is classified and the from/to addresses both belong
+to the user's tracked wallets (`user_wallets` table), the transfer is
+a non-realizing lot move. Future phases may automate this detection.
+
+### Amount representation
+
+Consistent with §2:
+
+- Quantities: TEXT canonical decimals (`rust_decimal`), up to 18
+  decimal places for chain-native assets.
+- Cost basis, proceeds, gain/loss: INTEGER minor units (USD cents),
+  exact arithmetic, no floats.
+- Proportional cost basis uses `rust_decimal` division and rounds
+  with `MidpointAwayFromZero` (the existing `decimal_to_minor_units`
+  convention).
 
 ## 11. Fair-value measurement _(reserved — Phase 8)_
 
