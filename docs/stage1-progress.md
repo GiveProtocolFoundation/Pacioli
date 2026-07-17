@@ -922,3 +922,37 @@ WHERE status='approved'` (the M5 state machine explicitly allows
   - **Dev dependency:** `proptest = "1.4"` added to `Cargo.toml`.
   - 314 total tests green (27 proptest + 287 existing); clippy + rustfmt
     clean.
+- **Session 14 review-hardening (2026-07-17, CTO — GIV-691):** on review,
+  two spec gaps were closed and the hardened void test surfaced (and
+  fixed) two REAL production bugs:
+  - **Void property now exercises the production engine.** Extracted
+    `void_journal_entry_impl(pool, id)` (pool-level, testable without
+    Tauri `State`; thin `#[tauri::command]` wrapper preserved) and
+    rewrote `inv3_void_net_effect_zero` to call it: asserts original
+    `voided` + linked via `reversed_by_entry_id`, reversal `posted` and
+    decodable, double-void rejected, overall AND per-account GL net-zero.
+    The prior version simulated the reversal via raw SQL.
+  - **Production bug #1 (found by the hardened test):** the void engine
+    inserted the reversing entry with `DATE('now')` (date-only) while
+    `JournalEntry.entry_date` decodes as `NaiveDateTime` — every voided
+    entry's reversal broke journal listings. Fixed to `datetime('now')`;
+    test now pins decodability of the reversal row.
+  - **Production bug #2 (found by the same test):** legacy
+    `debit_amount`/`credit_amount` are declared DECIMAL (NUMERIC
+    affinity), so SQLite stores whole-dollar f64 values (e.g. 5.0) as
+    INTEGER, which sqlx refuses to decode back into `f64` — any line
+    with a whole-dollar amount broke entry fetch. Fixed with a shared
+    `SELECT_JOURNAL_ENTRY_LINES` query that CASTs both columns to REAL
+    at all 4 decode sites.
+  - **Added the missing Property-5 interleaving case**
+    (`cost_basis_interleaved_ops_conserve`): random interleaved
+    buy/sell/transfer sequences against the production engines; after
+    EVERY op no lot is over-consumed; transfers never realize gain;
+    final conservation Σ(consumed) + Σ(remaining) = Σ(acquired) within
+    ±1 minor unit per rounding site.
+  - `proptest-regressions/api/proptest_invariants.txt` checked in (seed
+    that reproduced the void decode regression).
+  - Test-fixture fixes: `create_draft` stores full datetimes; helper
+    inserts use `0.0` literals for the legacy REAL amount columns.
+  - 28 proptest properties / 321 total lib tests green; clippy (CI
+    flags) + rustfmt clean.

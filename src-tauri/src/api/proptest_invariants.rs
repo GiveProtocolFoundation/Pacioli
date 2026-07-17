@@ -12,7 +12,9 @@ use sqlx::sqlite::SqlitePoolOptions;
 use sqlx::SqlitePool;
 use std::str::FromStr;
 
-use super::accounting::{decimal_to_minor_units, PostedEntry, PostedEntryLine};
+use super::accounting::{
+    decimal_to_minor_units, void_journal_entry_impl, JournalEntry, PostedEntry, PostedEntryLine,
+};
 use super::cost_basis::{
     acquire_lot_impl, dispose_lots_with_method, transfer_lots_impl, AcquireLotInput, CostBasisLot,
     DisposeLotInput, FifoSelector, TransferLotInput,
@@ -75,11 +77,15 @@ struct SeedAccounts {
 }
 
 /// Creates a draft journal entry and returns its id.
+///
+/// `entry_date` is stored as a full datetime (`{date} 00:00:00`), matching
+/// how the production insert path binds a `NaiveDateTime` — a bare date
+/// would fail to decode back into `JournalEntry.entry_date`.
 async fn create_draft(pool: &SqlitePool, date: &str, desc: &str) -> i64 {
     let result = sqlx::query(
         "INSERT INTO journal_entries (entry_date, description, is_posted, status, origin, created_by) VALUES (?, ?, 0, 'draft', 'manual', 'proptest')",
     )
-    .bind(date)
+    .bind(format!("{date} 00:00:00"))
     .bind(desc)
     .execute(pool)
     .await
@@ -103,7 +109,7 @@ async fn add_balanced_lines(
     let a = asset_id.unwrap_or("USD");
 
     sqlx::query(
-        "INSERT INTO journal_entry_lines (journal_entry_id, gl_account_id, debit_amount, credit_amount, debit_minor, credit_minor, asset_id, quantity, line_number) VALUES (?, ?, ?, 0, ?, 0, ?, ?, 1)",
+        "INSERT INTO journal_entry_lines (journal_entry_id, gl_account_id, debit_amount, credit_amount, debit_minor, credit_minor, asset_id, quantity, line_number) VALUES (?, ?, ?, 0.0, ?, 0, ?, ?, 1)",
     )
     .bind(entry_id)
     .bind(debit_acct)
@@ -116,7 +122,7 @@ async fn add_balanced_lines(
     .expect("Failed to add debit line");
 
     sqlx::query(
-        "INSERT INTO journal_entry_lines (journal_entry_id, gl_account_id, debit_amount, credit_amount, debit_minor, credit_minor, asset_id, quantity, line_number) VALUES (?, ?, 0, ?, 0, ?, ?, ?, 2)",
+        "INSERT INTO journal_entry_lines (journal_entry_id, gl_account_id, debit_amount, credit_amount, debit_minor, credit_minor, asset_id, quantity, line_number) VALUES (?, ?, 0.0, ?, 0, ?, ?, ?, 2)",
     )
     .bind(entry_id)
     .bind(credit_acct)
@@ -145,7 +151,7 @@ async fn add_acquisition_lines(
 
     // Debit: Digital Assets with token asset_id + quantity
     sqlx::query(
-        "INSERT INTO journal_entry_lines (journal_entry_id, gl_account_id, debit_amount, credit_amount, debit_minor, credit_minor, asset_id, quantity, line_number) VALUES (?, ?, ?, 0, ?, 0, ?, ?, 1)",
+        "INSERT INTO journal_entry_lines (journal_entry_id, gl_account_id, debit_amount, credit_amount, debit_minor, credit_minor, asset_id, quantity, line_number) VALUES (?, ?, ?, 0.0, ?, 0, ?, ?, 1)",
     )
     .bind(entry_id)
     .bind(asset_acct)
@@ -159,7 +165,7 @@ async fn add_acquisition_lines(
 
     // Credit: Cash with USD
     sqlx::query(
-        "INSERT INTO journal_entry_lines (journal_entry_id, gl_account_id, debit_amount, credit_amount, debit_minor, credit_minor, asset_id, line_number) VALUES (?, ?, 0, ?, 0, ?, 'USD', 2)",
+        "INSERT INTO journal_entry_lines (journal_entry_id, gl_account_id, debit_amount, credit_amount, debit_minor, credit_minor, asset_id, line_number) VALUES (?, ?, 0.0, ?, 0, ?, 'USD', 2)",
     )
     .bind(entry_id)
     .bind(cash_acct)
@@ -326,7 +332,7 @@ proptest! {
             .unwrap();
 
             sqlx::query(
-                "INSERT INTO journal_entry_lines (journal_entry_id, gl_account_id, debit_amount, credit_amount, debit_minor, credit_minor, asset_id, line_number) VALUES (?, ?, 0, ?, 0, ?, 'USD', 2)"
+                "INSERT INTO journal_entry_lines (journal_entry_id, gl_account_id, debit_amount, credit_amount, debit_minor, credit_minor, asset_id, line_number) VALUES (?, ?, 0.0, ?, 0, ?, 'USD', 2)"
             )
             .bind(entry_id)
             .bind(accts.income)
@@ -584,8 +590,10 @@ proptest! {
         });
     }
 
-    /// Voiding a posted entry creates a reversing entry whose GL net effect
-    /// is exactly zero.
+    /// Voiding a posted entry via the PRODUCTION void engine
+    /// (`void_journal_entry_impl`) creates a posted reversing entry whose
+    /// per-account GL net effect is exactly zero, marks the original
+    /// `voided` with a link to the reversal, and rejects a double void.
     #[test]
     fn inv3_void_net_effect_zero(
         amount in 100i64..500_000,
@@ -599,57 +607,60 @@ proptest! {
             add_balanced_lines(&pool, entry_id, accts.cash, accts.income, amount, None, None).await;
             approve_and_post(&pool, entry_id).await;
 
-            // Void the entry — creates reversing entry atomically
-            sqlx::query(
-                "UPDATE journal_entries SET status = 'voided', is_reversed = 1 WHERE id = ?"
+            // Production void path: generates + posts the reversing entry
+            // and voids the original in one transaction.
+            let rev_id = void_journal_entry_impl(&pool, entry_id)
+                .await
+                .expect("Production void path failed");
+
+            // Original is voided and linked to the reversing entry
+            let (status, reversed_by): (String, Option<i64>) = sqlx::query_as(
+                "SELECT status, reversed_by_entry_id FROM journal_entries WHERE id = ?"
             )
             .bind(entry_id)
-            .execute(&pool)
+            .fetch_one(&pool)
             .await
             .unwrap();
+            assert_eq!(status, "voided", "Original not voided");
+            assert_eq!(reversed_by, Some(rev_id), "Original not linked to reversal");
 
-            // Use void_journal_entry through the actual engine path instead
-            // to ensure the reversing entry is created. Since the trigger-based
-            // void above doesn't create reversing entries, let's test with a
-            // fresh entry using the production path.
-        });
-
-        // Test the production void_journal_entry path which creates reversing entries
-        let r2 = rt();
-        r2.block_on(async {
-            let pool = setup_test_db().await;
-            let accts = get_seed_accounts(&pool).await;
-
-            let entry_id = create_draft(&pool, "2026-02-01", "void production path").await;
-            add_balanced_lines(&pool, entry_id, accts.cash, accts.income, amount, None, None).await;
-            approve_and_post(&pool, entry_id).await;
-
-            // Call the production void path via raw SQL to simulate it:
-            // Create a reversing entry (swap debits/credits)
-            let rev_id = create_draft(&pool, "2026-02-01", "Reversing entry").await;
-            // Credit where original debited, debit where original credited
-            add_balanced_lines(&pool, rev_id, accts.income, accts.cash, amount, None, None).await;
-            approve_and_post(&pool, rev_id).await;
-
-            // Mark original as voided
-            sqlx::query(
-                "UPDATE journal_entries SET status = 'voided', is_reversed = 1, reversed_by_entry_id = ? WHERE id = ?"
+            // Reversing entry is posted (stays in the GL) AND decodes as a
+            // full JournalEntry — pins the DATE('now') vs datetime('now')
+            // regression where reversal rows broke entry listings.
+            let rev_entry = sqlx::query_as::<_, JournalEntry>(
+                "SELECT * FROM journal_entries WHERE id = ?",
             )
             .bind(rev_id)
-            .bind(entry_id)
-            .execute(&pool)
+            .fetch_one(&pool)
             .await
-            .unwrap();
+            .expect("Reversing entry must decode as JournalEntry");
+            assert_eq!(rev_entry.status, "posted", "Reversing entry not posted");
 
-            // Verify net GL effect = 0: sum all posted debit_minor and credit_minor
+            // Double void must fail (read-check-write: already-voided guard)
+            let again = void_journal_entry_impl(&pool, entry_id).await;
+            assert!(again.is_err(), "Double void should be rejected");
+
+            // Net GL effect = 0 overall: sum all posted debit_minor and credit_minor
             let (total_d, total_c): (i64, i64) = sqlx::query_as(
                 "SELECT COALESCE(SUM(jel.debit_minor), 0), COALESCE(SUM(jel.credit_minor), 0) FROM journal_entry_lines jel INNER JOIN journal_entries je ON je.id = jel.journal_entry_id WHERE je.is_posted = 1"
             )
             .fetch_one(&pool)
             .await
             .unwrap();
-
             assert_eq!(total_d, total_c, "Net GL not zero after void: d={total_d}, c={total_c}");
+
+            // Per-account: original + reversal cancel exactly
+            let per_acct: Vec<(i64, i64, i64)> = sqlx::query_as(
+                "SELECT gl_account_id, COALESCE(SUM(debit_minor), 0), COALESCE(SUM(credit_minor), 0) FROM journal_entry_lines WHERE journal_entry_id IN (?, ?) GROUP BY gl_account_id"
+            )
+            .bind(entry_id)
+            .bind(rev_id)
+            .fetch_all(&pool)
+            .await
+            .unwrap();
+            for (acct, d, c) in &per_acct {
+                assert_eq!(d, c, "Account {acct} not net-zero after void");
+            }
         });
     }
 }
@@ -1194,6 +1205,172 @@ proptest! {
                 let r = Decimal::from_str(rem).unwrap();
                 assert!(r >= Decimal::ZERO, "remaining_quantity went negative: {rem}");
             }
+        });
+    }
+
+    /// INTERLEAVED random buy/sell/transfer sequences against the production
+    /// engines: after every operation no lot is over-consumed
+    /// (remaining_quantity >= 0), transfers never realize gain/loss, and at
+    /// the end cost is conserved:
+    /// Σ(disposal consumed cost) + Σ(remaining cost, both wallets) = Σ(acquired cost)
+    /// within ±1 minor unit per rounding site (each consumption row and each
+    /// open lot rounds proportionally once).
+    #[test]
+    fn cost_basis_interleaved_ops_conserve(
+        ops in proptest::collection::vec((0u8..3, 1u32..50, 100i64..10_000), 3..10),
+    ) {
+        let r = rt();
+        r.block_on(async {
+            let pool = setup_test_db().await;
+            let accts = get_seed_accounts(&pool).await;
+
+            let asset = "token:MIX";
+            let src = "wallet-src";
+            let dst = "wallet-dst";
+
+            let mut avail_src = Decimal::ZERO;
+            let mut total_acquired_cost = 0i64;
+
+            for (i, &(kind, qty, money)) in ops.iter().enumerate() {
+                let date = format!("2026-{:02}-{:02}", (i / 28) + 1, (i % 28) + 1);
+                let q = Decimal::from(qty);
+
+                match kind {
+                    // Buy into src wallet
+                    0 => {
+                        let je = post_balanced_entry(
+                            &pool, &date, accts.digital_assets, accts.cash, money,
+                        ).await;
+                        acquire_lot_impl(&pool, &AcquireLotInput {
+                            asset_id: asset.to_string(),
+                            wallet_id: src.to_string(),
+                            acquired_date: date.clone(),
+                            quantity: q.to_string(),
+                            cost_basis_minor: money,
+                            journal_entry_id: Some(je),
+                        }).await.expect("interleaved acquire failed");
+                        total_acquired_cost += money;
+                        avail_src += q;
+                    }
+                    // Sell from src wallet (clamped to available)
+                    1 => {
+                        let sell_qty = q.min(avail_src);
+                        let je = post_balanced_entry(
+                            &pool, &date, accts.cash, accts.digital_assets, money,
+                        ).await;
+                        let result = dispose_lots_with_method(
+                            &pool,
+                            &DisposeLotInput {
+                                asset_id: asset.to_string(),
+                                wallet_id: src.to_string(),
+                                disposal_date: date.clone(),
+                                quantity: if sell_qty.is_zero() { q.to_string() } else { sell_qty.to_string() },
+                                proceeds_minor: money,
+                                journal_entry_id: Some(je),
+                            },
+                            &FifoSelector,
+                        ).await;
+                        if sell_qty.is_zero() {
+                            // Nothing available — engine must reject, never go negative
+                            assert!(result.is_err(), "Disposal from empty wallet should fail");
+                        } else {
+                            result.expect("interleaved disposal failed");
+                            avail_src -= sell_qty;
+                        }
+                    }
+                    // Transfer src -> dst (clamped to available)
+                    _ => {
+                        let xfer_qty = q.min(avail_src);
+                        let je = post_balanced_entry(
+                            &pool, &date, accts.digital_assets, accts.digital_assets, money,
+                        ).await;
+                        let result = transfer_lots_impl(&pool, &TransferLotInput {
+                            asset_id: asset.to_string(),
+                            from_wallet_id: src.to_string(),
+                            to_wallet_id: dst.to_string(),
+                            transfer_date: date.clone(),
+                            quantity: if xfer_qty.is_zero() { q.to_string() } else { xfer_qty.to_string() },
+                            journal_entry_id: Some(je),
+                        }).await;
+                        if xfer_qty.is_zero() {
+                            assert!(result.is_err(), "Transfer from empty wallet should fail");
+                        } else {
+                            result.expect("interleaved transfer failed");
+                            avail_src -= xfer_qty;
+                        }
+                    }
+                }
+
+                // Invariant after EVERY op: no lot over-consumed
+                let rems: Vec<(String,)> = sqlx::query_as(
+                    "SELECT remaining_quantity FROM cost_basis_lots WHERE asset_id = ?"
+                )
+                .bind(asset)
+                .fetch_all(&pool)
+                .await
+                .unwrap();
+                for (rem,) in &rems {
+                    let rq = Decimal::from_str(rem).unwrap();
+                    assert!(rq >= Decimal::ZERO, "remaining_quantity negative after op {i}: {rem}");
+                }
+            }
+
+            // Transfers never realize gain/loss
+            let xfer_gl: Vec<(i64,)> = sqlx::query_as(
+                "SELECT realized_gain_loss_minor FROM lot_consumptions WHERE event_type = 'transfer'"
+            )
+            .fetch_all(&pool)
+            .await
+            .unwrap();
+            for (gl,) in &xfer_gl {
+                assert_eq!(*gl, 0, "Transfer realized gain/loss should be 0, got {gl}");
+            }
+
+            // Conservation: disposal consumed cost + remaining cost (both
+            // wallets, proportional) = total acquired cost, within ±1 per
+            // rounding site.
+            let (consumed_cost,): (i64,) = sqlx::query_as(
+                "SELECT COALESCE(SUM(cost_basis_minor), 0) FROM lot_consumptions WHERE event_type = 'disposal'"
+            )
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+
+            let lots: Vec<(String, String, i64)> = sqlx::query_as(
+                "SELECT quantity, remaining_quantity, cost_basis_minor FROM cost_basis_lots WHERE asset_id = ?"
+            )
+            .bind(asset)
+            .fetch_all(&pool)
+            .await
+            .unwrap();
+
+            let mut remaining_cost = 0i64;
+            let mut open_lots = 0i64;
+            for (lot_qty, rem_qty, cost) in &lots {
+                let rq = Decimal::from_str(rem_qty).unwrap();
+                if rq > Decimal::ZERO {
+                    let lq = Decimal::from_str(lot_qty).unwrap();
+                    let rc = (rq / lq * Decimal::from(*cost))
+                        .round_dp_with_strategy(0, rust_decimal::RoundingStrategy::MidpointAwayFromZero)
+                        .to_i64()
+                        .unwrap();
+                    remaining_cost += rc;
+                    open_lots += 1;
+                }
+            }
+
+            let (consumption_rows,): (i64,) =
+                sqlx::query_as("SELECT COUNT(*) FROM lot_consumptions")
+                    .fetch_one(&pool)
+                    .await
+                    .unwrap();
+
+            let diff = (consumed_cost + remaining_cost - total_acquired_cost).abs();
+            let tolerance = consumption_rows + open_lots;
+            assert!(
+                diff <= tolerance,
+                "Interleaved cost conservation violated: consumed({consumed_cost}) + remaining({remaining_cost}) != acquired({total_acquired_cost}), diff={diff}, tolerance={tolerance}"
+            );
         });
     }
 }
