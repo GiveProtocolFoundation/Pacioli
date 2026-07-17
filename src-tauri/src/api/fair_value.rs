@@ -391,13 +391,12 @@ pub async fn run_remeasurement_impl(
         .map_err(|e| e.to_string())?;
 
         let run_id = result.last_insert_rowid();
-        let run = sqlx::query_as::<_, RemeasurementRun>(
-            "SELECT * FROM remeasurement_runs WHERE id = ?",
-        )
-        .bind(run_id)
-        .fetch_one(pool)
-        .await
-        .map_err(|e| e.to_string())?;
+        let run =
+            sqlx::query_as::<_, RemeasurementRun>("SELECT * FROM remeasurement_runs WHERE id = ?")
+                .bind(run_id)
+                .fetch_one(pool)
+                .await
+                .map_err(|e| e.to_string())?;
 
         return Ok(RemeasurementResult {
             run,
@@ -412,11 +411,7 @@ pub async fn run_remeasurement_impl(
         .as_ref()
         .map(|_| CoinGeckoPriceSource::new(input.api_key.clone()));
 
-    let asset_coin_map = input
-        .asset_coin_map
-        .as_ref()
-        .cloned()
-        .unwrap_or_default();
+    let asset_coin_map = input.asset_coin_map.as_ref().cloned().unwrap_or_default();
 
     // ONE transaction for the entire remeasurement run
     let mut tx = pool.begin().await.map_err(|e| e.to_string())?;
@@ -1170,11 +1165,9 @@ mod tests {
         .await
         .unwrap();
 
-        let result = sqlx::query(
-            "UPDATE price_observations SET price_minor = 360000 WHERE id = 1",
-        )
-        .execute(&pool)
-        .await;
+        let result = sqlx::query("UPDATE price_observations SET price_minor = 360000 WHERE id = 1")
+            .execute(&pool)
+            .await;
 
         assert!(result.is_err());
         let err = result.unwrap_err().to_string();
@@ -1198,7 +1191,11 @@ mod tests {
 
         assert!(result.is_err());
         let err = result.unwrap_err().to_string();
-        assert!(err.contains("immutable") || err.contains("append-only") || err.contains("cannot be deleted"));
+        assert!(
+            err.contains("immutable")
+                || err.contains("append-only")
+                || err.contains("cannot be deleted")
+        );
     }
 
     // ---- remeasurement engine: hand-computed fixtures ----
@@ -1215,10 +1212,26 @@ mod tests {
         let loss_acct = seed_account(&pool, "Unrealized Loss on Digital Assets", "Expense").await;
 
         // Seed the acquisition entry (posted) so asset lookup works
-        seed_posted_entry(&pool, asset_acct, cash_acct, "token:ETH", 3_000_000, "2026-01-15").await;
+        seed_posted_entry(
+            &pool,
+            asset_acct,
+            cash_acct,
+            "token:ETH",
+            3_000_000,
+            "2026-01-15",
+        )
+        .await;
 
         // Seed lot: 10 ETH @ $3,000 = $30,000
-        seed_lot(&pool, "token:ETH", "0xWallet1", "2026-01-15", "10", 3_000_000).await;
+        seed_lot(
+            &pool,
+            "token:ETH",
+            "0xWallet1",
+            "2026-01-15",
+            "10",
+            3_000_000,
+        )
+        .await;
 
         // Record price at period end
         let price_input = ManualPriceInput {
@@ -1269,20 +1282,19 @@ mod tests {
         // Line 1: Dr Digital Assets 500,000
         assert_eq!(lines[0].0, asset_acct);
         assert_eq!(lines[0].1, 500_000); // debit
-        assert_eq!(lines[0].2, 0);       // credit
-        // Line 2: Cr Unrealized Gain 500,000
+        assert_eq!(lines[0].2, 0); // credit
+                                   // Line 2: Cr Unrealized Gain 500,000
         assert_eq!(lines[1].0, gain_acct);
-        assert_eq!(lines[1].1, 0);       // debit
+        assert_eq!(lines[1].1, 0); // debit
         assert_eq!(lines[1].2, 500_000); // credit
 
         // Verify the journal entry is a draft with origin='rule'
-        let je: (String, String) = sqlx::query_as(
-            "SELECT status, origin FROM journal_entries WHERE id = ?",
-        )
-        .bind(entry.journal_entry_id)
-        .fetch_one(&pool)
-        .await
-        .unwrap();
+        let je: (String, String) =
+            sqlx::query_as("SELECT status, origin FROM journal_entries WHERE id = ?")
+                .bind(entry.journal_entry_id)
+                .fetch_one(&pool)
+                .await
+                .unwrap();
         assert_eq!(je.0, "draft");
         assert_eq!(je.1, "rule");
     }
@@ -1298,7 +1310,15 @@ mod tests {
         let gain_acct = seed_account(&pool, "Unrealized Gain on Digital Assets", "Income").await;
         let loss_acct = seed_account(&pool, "Unrealized Loss on Digital Assets", "Expense").await;
 
-        seed_posted_entry(&pool, asset_acct, cash_acct, "token:DOT", 4_000, "2026-03-01").await;
+        seed_posted_entry(
+            &pool,
+            asset_acct,
+            cash_acct,
+            "token:DOT",
+            4_000,
+            "2026-03-01",
+        )
+        .await;
 
         // Seed lot: 5 DOT @ $8.00 = $40.00 = 4,000 cents
         seed_lot(&pool, "token:DOT", "0xWallet1", "2026-03-01", "5", 4_000).await;
@@ -1348,10 +1368,10 @@ mod tests {
         // Line 1: Dr Unrealized Loss 750
         assert_eq!(lines[0].0, loss_acct);
         assert_eq!(lines[0].1, 750); // debit
-        assert_eq!(lines[0].2, 0);   // credit
-        // Line 2: Cr Digital Assets 750
+        assert_eq!(lines[0].2, 0); // credit
+                                   // Line 2: Cr Digital Assets 750
         assert_eq!(lines[1].0, asset_acct);
-        assert_eq!(lines[1].1, 0);   // debit
+        assert_eq!(lines[1].1, 0); // debit
         assert_eq!(lines[1].2, 750); // credit
     }
 
@@ -1365,7 +1385,15 @@ mod tests {
         let gain_acct = seed_account(&pool, "Unrealized Gain", "Income").await;
         let loss_acct = seed_account(&pool, "Unrealized Loss", "Expense").await;
 
-        seed_posted_entry(&pool, asset_acct, cash_acct, "token:ETH", 100_000, "2026-01-15").await;
+        seed_posted_entry(
+            &pool,
+            asset_acct,
+            cash_acct,
+            "token:ETH",
+            100_000,
+            "2026-01-15",
+        )
+        .await;
 
         // 10 ETH @ $100 each = $1,000 = 100,000 cents
         seed_lot(&pool, "token:ETH", "0xWallet1", "2026-01-15", "10", 100_000).await;
@@ -1408,31 +1436,57 @@ mod tests {
         let loss_acct = seed_account(&pool, "Unrealized Loss", "Expense").await;
 
         // ETH: 2 units @ $3,000 = $6,000 = 600,000 cents
-        seed_posted_entry(&pool, eth_acct, cash_acct, "token:ETH", 600_000, "2026-01-15").await;
+        seed_posted_entry(
+            &pool,
+            eth_acct,
+            cash_acct,
+            "token:ETH",
+            600_000,
+            "2026-01-15",
+        )
+        .await;
         seed_lot(&pool, "token:ETH", "0xWallet1", "2026-01-15", "2", 600_000).await;
 
         // DOT: 100 units @ $7.00 = $700 = 70,000 cents
-        seed_posted_entry(&pool, dot_acct, cash_acct, "token:DOT", 70_000, "2026-02-01").await;
+        seed_posted_entry(
+            &pool,
+            dot_acct,
+            cash_acct,
+            "token:DOT",
+            70_000,
+            "2026-02-01",
+        )
+        .await;
         seed_lot(&pool, "token:DOT", "0xWallet1", "2026-02-01", "100", 70_000).await;
 
         // Prices at period end
         // ETH: $3,200/ea → FV = 2 × 3200 = $6,400 → gain $400
-        record_manual_price_impl(&pool, &ManualPriceInput {
-            asset_id: "token:ETH".to_string(),
-            price_date: "2026-06-30".to_string(),
-            price_decimal: "3200.00".to_string(),
-            recorded_by: "cfo@example.com".to_string(),
-            note: None,
-        }).await.unwrap();
+        record_manual_price_impl(
+            &pool,
+            &ManualPriceInput {
+                asset_id: "token:ETH".to_string(),
+                price_date: "2026-06-30".to_string(),
+                price_decimal: "3200.00".to_string(),
+                recorded_by: "cfo@example.com".to_string(),
+                note: None,
+            },
+        )
+        .await
+        .unwrap();
 
         // DOT: $5.50/ea → FV = 100 × 5.50 = $550 → loss $150
-        record_manual_price_impl(&pool, &ManualPriceInput {
-            asset_id: "token:DOT".to_string(),
-            price_date: "2026-06-30".to_string(),
-            price_decimal: "5.50".to_string(),
-            recorded_by: "cfo@example.com".to_string(),
-            note: None,
-        }).await.unwrap();
+        record_manual_price_impl(
+            &pool,
+            &ManualPriceInput {
+                asset_id: "token:DOT".to_string(),
+                price_date: "2026-06-30".to_string(),
+                price_decimal: "5.50".to_string(),
+                recorded_by: "cfo@example.com".to_string(),
+                note: None,
+            },
+        )
+        .await
+        .unwrap();
 
         let input = RemeasurementInput {
             run_date: "2026-06-30".to_string(),
@@ -1486,7 +1540,15 @@ mod tests {
         let gain_acct = seed_account(&pool, "Unrealized Gain", "Income").await;
         let loss_acct = seed_account(&pool, "Unrealized Loss", "Expense").await;
 
-        seed_posted_entry(&pool, asset_acct, cash_acct, "token:ETH", 100_000, "2026-01-15").await;
+        seed_posted_entry(
+            &pool,
+            asset_acct,
+            cash_acct,
+            "token:ETH",
+            100_000,
+            "2026-01-15",
+        )
+        .await;
         seed_lot(&pool, "token:ETH", "0xWallet1", "2026-01-15", "10", 100_000).await;
 
         // No price recorded and no coin map → skipped
@@ -1525,12 +1587,11 @@ mod tests {
         let result = run_remeasurement_impl(&pool, &input).await.unwrap();
 
         // Try to update the run
-        let update_result = sqlx::query(
-            "UPDATE remeasurement_runs SET status = 'partial' WHERE id = ?",
-        )
-        .bind(result.run.id)
-        .execute(&pool)
-        .await;
+        let update_result =
+            sqlx::query("UPDATE remeasurement_runs SET status = 'partial' WHERE id = ?")
+                .bind(result.run.id)
+                .execute(&pool)
+                .await;
 
         assert!(update_result.is_err());
     }

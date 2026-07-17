@@ -439,6 +439,7 @@ approval queue (§5). The system never posts silently on its own behalf:
   Assets (asset account).
 
 Each draft entry:
+
 - has `origin = 'rule'` (system-generated);
 - has `created_by` set to the real user who initiated the remeasurement;
 - references the specific price observation used;

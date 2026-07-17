@@ -772,7 +772,7 @@ WHERE status='approved'` (the M5 state machine explicitly allows
     - `remeasurement_entries` — links each run to its generated draft
       journal entries with carrying amount, fair value, unrealized gain/loss,
       and the price observation used.
-    All three tables protected by UPDATE/DELETE triggers (Inv-7 append-only).
+      All three tables protected by UPDATE/DELETE triggers (Inv-7 append-only).
   - **New Rust module** (`src-tauri/src/api/fair_value.rs`):
     - `PriceSource` trait (async, Send+Sync): `get_price(coin_id, date)`
       returns `Option<String>` price decimal; `source_name()` for provenance.
