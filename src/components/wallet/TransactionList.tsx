@@ -591,7 +591,6 @@ export const TransactionList: React.FC<TransactionListProps> = ({
                             if (e.key === 'Escape') handleCancelPriceEdit()
                           }}
                           className="w-24 text-xs border border-[#5FE3C0] rounded px-1 py-0.5 bg-[#F7FAFA] dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2]"
-                          autoFocus
                           placeholder="e.g. 6.50"
                         />
                         <button

@@ -211,12 +211,12 @@ export function correlateXcmTransactions(
 export function filterForAccounting(
   txs: SubstrateTransaction[]
 ): SubstrateTransaction[] {
-  return txs.filter(tx => {
-    if (tx.type !== 'xcm') return true
-    if (tx.xcmRole === 'send') return true
-    // Unmatched receives: keep but flag as pending
-    if (tx.xcmRole === 'receive' && tx.xcmStatus !== 'matched') return true
-    // Matched receives: exclude (already captured by the send)
-    return false
-  })
+  return txs.filter(
+    tx =>
+      tx.type !== 'xcm' ||
+      tx.xcmRole === 'send' ||
+      // Unmatched receives: keep but flag as pending
+      (tx.xcmRole === 'receive' && tx.xcmStatus !== 'matched')
+    // Matched receives: excluded (already captured by the send)
+  )
 }
