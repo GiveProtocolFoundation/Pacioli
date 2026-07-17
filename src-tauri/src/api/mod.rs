@@ -1,5 +1,8 @@
 /// Accounting module for chart of accounts, journal entries, ledger queries, and transaction classification.
 pub mod accounting;
+/// Cost basis engine: FIFO lot tracking, realized gain/loss, and
+/// non-realizing own-wallet transfers (GIV-689, Phase 7).
+pub mod cost_basis;
 /// Authentication module containing functionality and types for user authentication and authorization.
 pub mod auth;
 /// Provides functionality for creating and restoring

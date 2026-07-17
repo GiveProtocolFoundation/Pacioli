@@ -4,10 +4,10 @@ Session constitution: `SCOPE.md` (repo root). Stage 1 mandate: GIV-668.
 Gate 1: CPA-reviewed statements from real imported transactions, manually
 classified through the approval queue.
 
-**Current phase: 6 (Financial statements v1) — Phases 1-5 landed;
-Phase 6 implemented by Engineer (GIV-688): income statement, balance
-sheet, trial balance with period filtering + comparative prior period,
-verify_ties assertion, CSV export, statement UI pages.**
+**Current phase: 7 (Cost basis engine) — Phases 1-6 landed;
+Phase 7 implemented by Engineer (GIV-689): FIFO lot tracking per wallet
+per asset, realized gain/loss on disposal, non-realizing own-wallet
+transfers, LotSelector trait for future LIFO/HIFO, 18 Rust tests.**
 
 ## Phase Checklist
 
@@ -38,7 +38,11 @@ verify_ties assertion, CSV export, statement UI pages.**
       filtering + comparative prior period, verify_ties assertion enforced
       before all statement returns, CSV export, statement UI pages with
       period selector and comparative columns — Engineer)
-- [ ] **Phase 7 — Cost basis engine (FIFO first)**
+- [x] **Phase 7 — Cost basis engine (FIFO first)**
+      (GIV-689: FIFO lot tracking per wallet per asset, realized gain/loss
+      on disposal, non-realizing own-wallet transfers preserving cost basis
+      and acquired date, LotSelector trait for method abstraction, M7
+      migration, 18 Rust tests including acceptance test — Engineer)
 - [ ] **Phase 8 — Fair-value measurement (ASU 2023-08)**
 - [ ] **Phase 9 — Invariant test suite (proptest)**
 - [ ] **Phase 10 — Gate 1 rehearsal**
@@ -640,3 +644,79 @@ WHERE status='approved'` (the M5 state machine explicitly allows
     calendar-aligned. Acceptable for v1; calendar-aligned comparatives
     (prior month/quarter/year via `accounting_periods`) are future
     polish.
+- **Session 12 (2026-07-17, Engineer — GIV-689):** Implemented Phase 7
+  (cost basis engine — FIFO lot tracking):
+  - **M7** (`20260717000001_cost_basis_lots.sql`): `cost_basis_lots` table
+    (per-wallet per-asset lots with TEXT decimal quantities — Inv-2, INTEGER
+    minor-unit cost basis, `journal_entry_id` FK, `is_closed` flag) and
+    `lot_consumptions` table (append-only consumption records with event
+    type `disposal`/`transfer`, proportional cost basis, proceeds,
+    realized gain/loss in minor units, holding period days, long-term flag,
+    `destination_lot_id` for transfers). Existing legacy `transaction_lots`
+    table untouched (different architecture, not wired to Phase 1–6 engine).
+  - **New Rust module** (`src-tauri/src/api/cost_basis.rs`): cost basis
+    engine with `LotSelector` trait (Send+Sync, parameterized ORDER BY) and
+    `FifoSelector` implementation (acquired_date ASC, id ASC). Internal
+    `proportional_cost_basis()` function: exact rust_decimal division ×
+    cost basis, MidpointAwayFromZero rounding (same convention as
+    `decimal_to_minor_units`). Proceeds allocation: proportional per lot
+    with last-lot remainder to prevent rounding drift.
+  - **Tauri commands (7 new):**
+    - `acquire_lot` — opens a lot, validates quantity > 0 and journal entry
+      is posted.
+    - `dispose_lots` — FIFO consumption with per-lot realized gain/loss;
+      one sqlx transaction for atomicity (no partial consumption on
+      insufficient lots). Returns `DisposalResult` with per-lot details.
+    - `transfer_lots` — consumes source lots in FIFO order, creates
+      destination lots preserving `acquired_date` and proportional cost
+      basis. Records `event_type='transfer'` with zero proceeds/gain.
+    - `get_open_lots` — returns open lots for asset+wallet.
+    - `get_lot_summary` — aggregates open lots per asset per wallet.
+    - `get_lot_consumptions` — returns consumption history for a lot.
+    - `get_realized_gains_losses` — returns disposal consumptions in a
+      date range.
+  - **Transfer treatment (documented in `docs/accounting-model.md` §10):**
+    transfers between own wallets move lots WITHOUT realization. Source lots
+    are consumed; destination lots are created with the same acquired_date
+    and proportional cost basis. Holding period continues from the original
+    acquisition.
+  - **Tests:** 18 Rust tests:
+    - 5 proportional_cost_basis unit tests (full lot, half, 1/3, 2/3
+      rounding, zero-lot error)
+    - 3 holding_period_days unit tests (same day, one year, short term)
+    - FIFO buy+buy+sell with hand-computed realized gain
+    - Insufficient lots error
+    - Transfer preserves cost basis and acquired_date
+    - Full acceptance test: buy, buy, transfer, sell with hand-computed
+      realized gain
+    - Long-term holding detection (366 days)
+    - Full lot disposal closes lot
+    - Multiple partial disposals
+    - Consumption records are append-only
+    - Transfer does not realize gain
+    - Sub-decimal quantity precision (18 decimal places)
+    264 lib tests green, clippy clean.
+  - **Decisions:**
+    - New `cost_basis_lots` / `lot_consumptions` tables rather than reusing
+      the pre-existing `transaction_lots` / `lot_disposals` tables. The
+      legacy tables use DECIMAL (float affinity) and reference
+      `accounting_transactions` (not wired to the Phase 1–6 journal
+      engine). The new tables use Phase-1 conventions: TEXT quantities,
+      INTEGER minor units, `journal_entry_id` FK.
+    - `LotSelector` trait is Send+Sync so Tauri commands can be async.
+      Only FIFO implemented; LIFO/HIFO/specific-ID are additive.
+    - Journal entry integration is caller-side: the cost basis engine
+      does NOT create or post entries. Callers create and post entries
+      through the normal lifecycle, then call acquire/dispose/transfer.
+  - **Documented debt:**
+    - No UI for cost basis reports yet (CostBasisReport.tsx is the legacy
+      frontend-JS FIFO calculator; not wired to the new engine). UI
+      deferred to a later phase.
+    - Automatic transfer detection (checking both from/to addresses against
+      `user_wallets`) is not implemented; transfers must be manually
+      classified. Automate in a future phase.
+    - The journal-entry lines for disposals (realized gain/loss) are not
+      auto-generated by the engine; the caller must construct them. This is
+      intentional (§5 approval gate: system never posts silently), but a
+      helper that drafts the gain/loss entry from the `DisposalResult`
+      would reduce manual work.
