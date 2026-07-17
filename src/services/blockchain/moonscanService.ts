@@ -1,10 +1,11 @@
 /**
- * Moonscan/Etherscan V2 API Service
- * Fetches EVM transaction history using Etherscan's unified V2 API
- * Used for Moonbeam, Moonriver, and other EVM-compatible chains
+ * Moonscan API Service
+ * Fetches EVM transaction history using direct Moonscan API endpoints
+ * Used for Moonbeam and Moonriver EVM-compatible chains
  *
- * Note: As of 2024, Moonscan uses Etherscan V2 API which requires an API key.
- * Get a free API key at: https://etherscan.io/myapikey
+ * Note: Moonscan requires its own API key (separate from Etherscan).
+ * Get a free API key at: https://moonscan.io/myapikey
+ * Without a key, requests are rate-limited to ~1 req/5s.
  */
 
 import { invoke } from '@tauri-apps/api/core'
@@ -12,11 +13,9 @@ import type { NetworkType, SubstrateTransaction } from '../wallet/types'
 
 interface MoonscanConfig {
   chainId: number
+  apiUrl: string
   apiKey?: string
 }
-
-// Etherscan V2 unified API base URL
-const ETHERSCAN_V2_BASE_URL = 'https://api.etherscan.io/v2/api'
 
 interface MoonscanTransaction {
   blockNumber: string
@@ -73,15 +72,18 @@ interface MoonscanResponse<T> {
  * Service for fetching EVM transaction history using Etherscan V2 API.
  */
 export class MoonscanService {
-  // Etherscan V2 uses chain IDs instead of separate base URLs
+  // Direct Moonscan API endpoints per chain (not Etherscan V2 — Moonbeam is
+  // not supported on the V2 unified endpoint and requires its own API key)
   private readonly NETWORK_CONFIGS: Partial<
     Record<NetworkType, MoonscanConfig>
   > = {
     moonbeam: {
       chainId: 1284,
+      apiUrl: 'https://api-moonbeam.moonscan.io/api',
     },
     moonriver: {
       chainId: 1285,
+      apiUrl: 'https://api-moonriver.moonscan.io/api',
     },
   }
 
@@ -90,7 +92,7 @@ export class MoonscanService {
     // Try Tauri keychain first (desktop app)
     try {
       const key = await invoke<string | null>('get_api_key', {
-        provider: 'etherscan',
+        provider: 'moonscan',
       })
       if (key) return key
     } catch {
@@ -98,15 +100,15 @@ export class MoonscanService {
     }
 
     // Check localStorage (browser dev mode, set via DataProviders page)
-    const storedKey = localStorage.getItem('pacioli_api_key_etherscan')
+    const storedKey = localStorage.getItem('pacioli_api_key_moonscan')
     if (storedKey) return storedKey
 
     // Check for environment variable (build-time configured)
     if (
       typeof import.meta !== 'undefined' &&
-      import.meta.env?.VITE_ETHERSCAN_API_KEY
+      import.meta.env?.VITE_MOONSCAN_API_KEY
     ) {
-      return import.meta.env.VITE_ETHERSCAN_API_KEY
+      return import.meta.env.VITE_MOONSCAN_API_KEY
     }
 
     return null
@@ -146,12 +148,6 @@ export class MoonscanService {
     }
 
     const apiKey = await MoonscanService.getApiKey()
-    if (!apiKey) {
-      throw new Error(
-        'Etherscan API key required for EVM transaction history. ' +
-          'Get a free key at https://etherscan.io/myapikey and add it in Settings > Data Providers.'
-      )
-    }
 
     const {
       startBlock = 0,
@@ -161,9 +157,8 @@ export class MoonscanService {
       sort = 'desc',
     } = options
 
-    // Build V2 API URL with chainid parameter
+    // Build direct Moonscan API URL (not Etherscan V2)
     const params = new URLSearchParams({
-      chainid: config.chainId.toString(),
       module: 'account',
       action: 'txlist',
       address,
@@ -172,10 +167,13 @@ export class MoonscanService {
       page: page.toString(),
       offset: offset.toString(),
       sort,
-      apikey: apiKey,
     })
+    // API key is optional — without it, Moonscan allows ~1 req/5s
+    if (apiKey) {
+      params.set('apikey', apiKey)
+    }
 
-    const url = `${ETHERSCAN_V2_BASE_URL}?${params.toString()}`
+    const url = `${config.apiUrl}?${params.toString()}`
 
     try {
       const response = await fetch(url)
@@ -203,9 +201,9 @@ export class MoonscanService {
         }
         // Handle specific error messages
         if (typeof data.result === 'string') {
-          throw new Error(`Etherscan API error: ${data.result}`)
+          throw new Error(`Moonscan API error: ${data.result}`)
         }
-        throw new Error(`Etherscan API error: ${data.message}`)
+        throw new Error(`Moonscan API error: ${data.message}`)
       }
 
       if (!Array.isArray(data.result)) {
@@ -241,10 +239,6 @@ export class MoonscanService {
     }
 
     const apiKey = await MoonscanService.getApiKey()
-    if (!apiKey) {
-      // Skip token transfers if no API key (already checked in fetchTransactions)
-      return []
-    }
 
     const {
       startBlock = 0,
@@ -255,7 +249,6 @@ export class MoonscanService {
     } = options
 
     const params = new URLSearchParams({
-      chainid: config.chainId.toString(),
       module: 'account',
       action: 'tokentx',
       address,
@@ -264,10 +257,12 @@ export class MoonscanService {
       page: page.toString(),
       offset: offset.toString(),
       sort,
-      apikey: apiKey,
     })
+    if (apiKey) {
+      params.set('apikey', apiKey)
+    }
 
-    const url = `${ETHERSCAN_V2_BASE_URL}?${params.toString()}`
+    const url = `${config.apiUrl}?${params.toString()}`
 
     try {
       const response = await fetch(url)

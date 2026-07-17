@@ -47,6 +47,8 @@ pub enum ApiProvider {
     Optimism,
     /// Subscan (Polkadot/Substrate).
     Subscan,
+    /// Moonscan (Moonbeam/Moonriver).
+    Moonscan,
     /// Covalent (multi-chain).
     Covalent,
     /// Alchemy (multi-chain RPC).
@@ -65,6 +67,7 @@ impl ApiProvider {
             ApiProvider::Basescan => "basescan_api_key",
             ApiProvider::Optimism => "optimism_api_key",
             ApiProvider::Subscan => "subscan_api_key",
+            ApiProvider::Moonscan => "moonscan_api_key",
             ApiProvider::Covalent => "covalent_api_key",
             ApiProvider::Alchemy => "alchemy_api_key",
             ApiProvider::Helius => "helius_api_key",
@@ -80,6 +83,7 @@ impl ApiProvider {
             ApiProvider::Basescan => "Basescan",
             ApiProvider::Optimism => "Optimistic Etherscan",
             ApiProvider::Subscan => "Subscan",
+            ApiProvider::Moonscan => "Moonscan",
             ApiProvider::Covalent => "Covalent",
             ApiProvider::Alchemy => "Alchemy",
             ApiProvider::Helius => "Helius",
@@ -95,6 +99,8 @@ impl ApiProvider {
             | ApiProvider::Arbiscan
             | ApiProvider::Basescan
             | ApiProvider::Optimism => 1,
+            // Moonscan (Etherscan-family): 1 req/5sec without key
+            ApiProvider::Moonscan => 1,
             // Subscan: 2 req/sec without key
             ApiProvider::Subscan => 2,
             // Covalent: requires key
@@ -115,6 +121,8 @@ impl ApiProvider {
             | ApiProvider::Arbiscan
             | ApiProvider::Basescan
             | ApiProvider::Optimism => 5,
+            // Moonscan (Etherscan-family): 5 req/sec with free key
+            ApiProvider::Moonscan => 5,
             // Subscan: 10 req/sec with key
             ApiProvider::Subscan => 10,
             // Covalent: 5 req/sec with key
@@ -135,6 +143,7 @@ impl ApiProvider {
             "basescan" => Some(ApiProvider::Basescan),
             "optimism" | "optimistic" => Some(ApiProvider::Optimism),
             "subscan" => Some(ApiProvider::Subscan),
+            "moonscan" => Some(ApiProvider::Moonscan),
             "covalent" => Some(ApiProvider::Covalent),
             "alchemy" => Some(ApiProvider::Alchemy),
             "helius" => Some(ApiProvider::Helius),
@@ -151,6 +160,7 @@ impl ApiProvider {
             ApiProvider::Basescan,
             ApiProvider::Optimism,
             ApiProvider::Subscan,
+            ApiProvider::Moonscan,
             ApiProvider::Covalent,
             ApiProvider::Alchemy,
             ApiProvider::Helius,
@@ -253,7 +263,7 @@ mod tests {
     #[test]
     fn test_all_providers() {
         let all = ApiProvider::all();
-        assert_eq!(all.len(), 9);
+        assert_eq!(all.len(), 10);
         assert!(all.contains(&ApiProvider::Etherscan));
         assert!(all.contains(&ApiProvider::Subscan));
         assert!(all.contains(&ApiProvider::Helius));
