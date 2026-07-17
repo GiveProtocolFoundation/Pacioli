@@ -9,6 +9,9 @@ pub mod backup;
 /// Cost basis engine: FIFO lot tracking, realized gain/loss, and
 /// non-realizing own-wallet transfers (GIV-689, Phase 7).
 pub mod cost_basis;
+/// Fair-value measurement engine: ASU 2023-08 remeasurement, PriceSource
+/// trait, and draft adjusting entries (GIV-690, Phase 8).
+pub mod fair_value;
 /// The `entities` module contains definitions for the core data entities used by the API.
 pub mod entities;
 /// Module responsible for handling export operations, including data serialization and file output.

@@ -4,10 +4,11 @@ Session constitution: `SCOPE.md` (repo root). Stage 1 mandate: GIV-668.
 Gate 1: CPA-reviewed statements from real imported transactions, manually
 classified through the approval queue.
 
-**Current phase: 7 (Cost basis engine) — Phases 1-6 landed;
-Phase 7 implemented by Engineer (GIV-689): FIFO lot tracking per wallet
-per asset, realized gain/loss on disposal, non-realizing own-wallet
-transfers, LotSelector trait for future LIFO/HIFO, 18 Rust tests.**
+**Current phase: 8 (Fair-value measurement) — Phases 1-7 landed;
+Phase 8 implemented by Engineer (GIV-690): ASU 2023-08 period-end
+remeasurement, PriceSource trait + CoinGecko provider, manual price
+overrides with append-only provenance, draft adjusting entries for
+unrealized gain/loss, 15 Rust tests with hand-computed fixtures.**
 
 ## Phase Checklist
 
@@ -43,7 +44,12 @@ transfers, LotSelector trait for future LIFO/HIFO, 18 Rust tests.**
       on disposal, non-realizing own-wallet transfers preserving cost basis
       and acquired date, LotSelector trait for method abstraction, M7
       migration, 18 Rust tests including acceptance test — Engineer)
-- [ ] **Phase 8 — Fair-value measurement (ASU 2023-08)**
+- [x] **Phase 8 — Fair-value measurement (ASU 2023-08)**
+      (GIV-690: PriceSource trait with CoinGecko provider, manual price
+      override with append-only provenance, remeasurement engine generating
+      draft adjusting entries (unrealized gain/loss through net income),
+      M8 migration with append-only triggers on all three tables,
+      15 Rust tests including hand-computed gain/loss fixtures — Engineer)
 - [ ] **Phase 9 — Invariant test suite (proptest)**
 - [ ] **Phase 10 — Gate 1 rehearsal**
 
@@ -755,3 +761,80 @@ WHERE status='approved'` (the M5 state machine explicitly allows
       where the read-check-write mandate was missed on a new write path —
       keep checking every multi-statement write for conditional UPDATE +
       rows_affected.
+- **Session 13 (2026-07-17, Engineer — GIV-690):** Implemented Phase 8
+  (fair-value measurement — ASU 2023-08):
+  - **M8** (`20260717000002_fair_value_measurement.sql`): three new tables:
+    - `price_observations` — append-only record of every price used
+      (API or manual), with asset_id, date, price in minor units + decimal
+      string, source, CoinGecko coin ID, recorded_by (real user), note.
+    - `remeasurement_runs` — audit trail per execution: date, initiator,
+      holdings count, entries generated, total unrealized gain/loss, status.
+    - `remeasurement_entries` — links each run to its generated draft
+      journal entries with carrying amount, fair value, unrealized gain/loss,
+      and the price observation used.
+    All three tables protected by UPDATE/DELETE triggers (Inv-7 append-only).
+  - **New Rust module** (`src-tauri/src/api/fair_value.rs`):
+    - `PriceSource` trait (async, Send+Sync): `get_price(coin_id, date)`
+      returns `Option<String>` price decimal; `source_name()` for provenance.
+    - `CoinGeckoPriceSource` — uses existing `CoinGeckoClient` from
+      `api::price_feeds::coingecko`. Reuses the historical-price API with
+      DD-MM-YYYY date format.
+    - `record_manual_price_impl` — inserts manual overrides with the real
+      user identity and optional note. Manual overrides take precedence
+      (ORDER BY source='manual' DESC, created_at DESC).
+    - `run_remeasurement_impl` — core engine in ONE sqlx transaction:
+      1. Fetches holdings (open lots) via `cost_basis_lots` aggregation.
+      2. For each holding, resolves price: existing observation first, then
+         CoinGecko API if asset-to-coin mapping is provided.
+      3. Computes fair_value = quantity × price (exact rust_decimal, rounded
+         MidpointAwayFromZero to minor units). No floats in the money path.
+      4. If unrealized gain/loss ≠ 0, creates a draft journal entry:
+         gain → Dr Digital Assets / Cr Unrealized Gain;
+         loss → Dr Unrealized Loss / Cr Digital Assets.
+      5. Records the run, entry linkage, and price observations atomically.
+    - GL account lookup is dynamic: finds the asset account from posted
+      journal entries that debited the asset, not a hard-coded mapping.
+  - **Tauri commands (6 new):**
+    - `record_manual_price` — manual price override.
+    - `get_price_observations` — price history for asset+date.
+    - `run_remeasurement` — period-end remeasurement engine.
+    - `list_remeasurement_runs` — audit trail.
+    - `get_remeasurement_entries` — per-run entry details.
+    - `get_latest_asset_price` — latest price for asset on date.
+  - **Tests:** 15 Rust tests:
+    - 3 `fair_value_to_minor` unit tests (basic, fractional, rounding)
+    - 1 `price_to_minor` unit test
+    - 2 manual-price tests (records observation, manual takes precedence)
+    - 2 append-only trigger tests (cannot update, cannot delete)
+    - 1 gain fixture: 10 ETH @ $3,000 → $3,500/ea = $5,000 gain
+    - 1 loss fixture: 5 DOT @ $8.00 → $6.50/ea = $7.50 loss
+    - 1 no-change test: price = carrying → 0 entries
+    - 1 multiple-holdings: two assets, one gain, one loss, net computed
+    - 1 no-holdings: empty DB → 0 entries
+    - 1 skipped-assets: no price available → partial status
+    - 1 immutability: remeasurement_runs cannot be updated
+  - **Documentation:** `docs/accounting-model.md` §11 filled in with full
+    ASU 2023-08 treatment, price source trait, float boundary handling,
+    adjusting entry format, and run audit trail.
+  - **Decisions:**
+    - Reused existing `CoinGeckoClient` rather than adding a new price
+      feed dependency. The PriceSource trait allows future providers
+      (e.g. CoinMarketCap, manual CSV import) without changing the engine.
+    - Draft entries use `origin='rule'` (system-generated) per Phase 4
+      convention, not 'manual'. The `created_by` field carries the real
+      user identity.
+    - The engine creates one draft entry per asset+wallet holding, not
+      one per lot. This matches accounting practice (one adjustment per
+      position per period).
+    - Asset GL account discovery is dynamic (queries posted entries) rather
+      than requiring configuration. This means remeasurement works for any
+      asset that has been acquired through the journal engine.
+  - **Documented debt:**
+    - No UI for remeasurement yet. The Tauri commands are wired; frontend
+      surfaces (price entry form, remeasurement trigger, run history) are
+      deferred.
+    - The remeasure → approve → post → close sequencing is manual in
+      Stage 1. Future phases may add a close-period workflow that
+      sequences these steps automatically.
+    - No automated CoinGecko coin-ID mapping per asset. The caller must
+      provide the mapping. A future asset metadata table could store this.

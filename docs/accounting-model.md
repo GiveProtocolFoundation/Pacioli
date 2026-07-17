@@ -373,7 +373,104 @@ Consistent with §2:
   with `MidpointAwayFromZero` (the existing `decimal_to_minor_units`
   convention).
 
-## 11. Fair-value measurement _(reserved — Phase 8)_
+## 11. Fair-value measurement (Phase 8, ASU 2023-08)
 
-ASU 2023-08 remeasurement conventions, price sources, and override policy
-will be documented with the measurement framework.
+ASU 2023-08 requires that in-scope digital assets (crypto assets that are
+not themselves financial instruments) be measured at fair value in each
+reporting period, with changes recognized in net income.
+
+### Remeasurement trigger
+
+Fair-value remeasurement is a **period-end step**: at each period close the
+engine remeasures all holdings to their fair value on the period-end date.
+The flow is: **remeasure → approve → post → close**.
+
+### Price source — trait-based, configurable
+
+Prices are obtained through the `PriceSource` trait. One concrete provider
+is shipped in Stage 1:
+
+- **CoinGeckoPriceSource** — uses the existing CoinGecko historical-price
+  API already in the codebase (`api::price_feeds::coingecko`). Accepts an
+  asset-to-coin-ID mapping at remeasurement time.
+
+A **manual price override** is always available and takes precedence over
+API-sourced prices. Manual overrides are recorded with the real authed
+user identity (never 'system') and an optional note explaining the source.
+
+### Price observations (append-only)
+
+Every price used in a remeasurement — API-fetched or manually entered —
+is recorded in the `price_observations` table with:
+
+- asset identifier, date, price in minor units and as a decimal string;
+- source (`'coingecko'`, `'manual'`);
+- the CoinGecko coin ID (for API sources);
+- who recorded it (real user identity);
+- optional note (for manual overrides).
+
+Observations are **append-only**: database triggers prevent UPDATE and
+DELETE (Invariant 7). A later observation for the same asset/date is a
+new row, not an overwrite.
+
+### Float boundary handling
+
+External price feeds (CoinGecko) return floating-point values. These are
+converted to exact `rust_decimal::Decimal` at the accounting boundary:
+
+1. The raw price string (e.g. `"3500.123456789012345678"`) is recorded
+   in `price_decimal` (TEXT, full precision).
+2. Fair value in minor units is computed as:
+   `quantity × price_per_unit × 100`, rounded with
+   `MidpointAwayFromZero` (the same convention as cost basis).
+3. The resulting `i64` minor-unit value is the number of record.
+   No float touches the ledger.
+
+### Adjusting entries — draft only
+
+Remeasurement generates **draft adjusting journal entries** into the
+approval queue (§5). The system never posts silently on its own behalf:
+
+- **Unrealized gain** (fair value > carrying amount):
+  Dr Digital Assets (asset account), Cr Unrealized Gain on Digital
+  Assets (income account).
+- **Unrealized loss** (fair value < carrying amount):
+  Dr Unrealized Loss on Digital Assets (expense account), Cr Digital
+  Assets (asset account).
+
+Each draft entry:
+- has `origin = 'rule'` (system-generated);
+- has `created_by` set to the real user who initiated the remeasurement;
+- references the specific price observation used;
+- is linked to a `remeasurement_runs` audit record.
+
+### Remeasurement run audit trail
+
+Each remeasurement execution creates:
+
+1. A `remeasurement_runs` record: date, who initiated it, holdings
+   count, entries generated, total unrealized gain/loss, status
+   (`'completed'` or `'partial'` if some assets had no price).
+2. A `remeasurement_entries` row per holding remeasured: links the run,
+   the draft journal entry, the asset, wallet, price observation,
+   carrying amount, fair value, and unrealized gain/loss.
+
+All three tables (`price_observations`, `remeasurement_runs`,
+`remeasurement_entries`) are protected by append-only triggers.
+
+### Integration with cost basis lots
+
+The carrying amount for an asset in a wallet is the sum of
+`cost_basis_minor` across open (non-closed) lots for that
+asset+wallet pair — the same aggregation as `get_lot_summary` (§10).
+Fair value is computed as `total_remaining_quantity × price_per_unit`.
+
+### Amount representation
+
+Consistent with §2:
+
+- Quantities: TEXT canonical decimals (`rust_decimal`).
+- Prices, fair values, carrying amounts, gain/loss: INTEGER minor
+  units (USD cents), exact arithmetic, no floats.
+- Proportional values use `rust_decimal` division and round with
+  `MidpointAwayFromZero`.
