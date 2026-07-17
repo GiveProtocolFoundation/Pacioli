@@ -295,6 +295,226 @@ fn holding_period_days(acquired_date: &str, event_date: &str) -> Result<i64, Str
     Ok((evt - acq).num_days())
 }
 
+/// Parses a lot's `remaining_quantity` and `quantity` into exact decimals.
+fn lot_quantities(lot: &CostBasisLot) -> Result<(Decimal, Decimal), String> {
+    let remaining = Decimal::from_str(&lot.remaining_quantity)
+        .map_err(|e| format!("Invalid remaining_quantity in lot {}: {e}", lot.id))?;
+    let quantity = Decimal::from_str(&lot.quantity)
+        .map_err(|e| format!("Invalid quantity in lot {}: {e}", lot.id))?;
+    Ok((remaining, quantity))
+}
+
+/// Parses and validates a positive decimal quantity from input.
+fn parse_positive_quantity(raw: &str) -> Result<Decimal, String> {
+    let qty = Decimal::from_str(raw).map_err(|e| format!("Invalid quantity '{raw}': {e}"))?;
+    if qty <= Decimal::ZERO {
+        return Err("Quantity must be positive".to_string());
+    }
+    Ok(qty)
+}
+
+/// Fetches open lots for an asset+wallet inside the transaction (in the
+/// given selection order) and verifies the total remaining quantity covers
+/// `needed`.
+async fn fetch_open_lots_checked(
+    tx: &mut sqlx::Transaction<'_, sqlx::Sqlite>,
+    asset_id: &str,
+    wallet_id: &str,
+    order: &str,
+    needed: Decimal,
+    op: &str,
+) -> Result<Vec<CostBasisLot>, String> {
+    let query = format!(
+        "SELECT * FROM cost_basis_lots WHERE asset_id = ? AND wallet_id = ? AND is_closed = 0 ORDER BY {order}"
+    );
+    let lots = sqlx::query_as::<_, CostBasisLot>(&query)
+        .bind(asset_id)
+        .bind(wallet_id)
+        .fetch_all(&mut **tx)
+        .await
+        .map_err(|e| e.to_string())?;
+
+    let mut total_available = Decimal::ZERO;
+    for lot in &lots {
+        total_available += lot_quantities(lot)?.0;
+    }
+    if total_available < needed {
+        return Err(format!(
+            "Insufficient lots for {op}: need {needed} but only {total_available} available for asset '{asset_id}' in wallet '{wallet_id}'"
+        ));
+    }
+    Ok(lots)
+}
+
+/// Applies the conditional consumption UPDATE to a source lot.
+///
+/// The UPDATE is keyed on the `remaining_quantity` that was read: if a
+/// concurrent writer consumed from this lot between our SELECT and this
+/// UPDATE, 0 rows match, we error, and the whole transaction rolls back
+/// (no read-check-write double-spend).
+async fn update_lot_remaining(
+    tx: &mut sqlx::Transaction<'_, sqlx::Sqlite>,
+    lot: &CostBasisLot,
+    new_remaining: Decimal,
+    op: &str,
+) -> Result<(), String> {
+    let is_closed = if new_remaining.is_zero() { 1 } else { 0 };
+    let updated = sqlx::query(
+        "UPDATE cost_basis_lots SET remaining_quantity = ?, is_closed = ? WHERE id = ? AND remaining_quantity = ? AND is_closed = 0",
+    )
+    .bind(new_remaining.to_string())
+    .bind(is_closed)
+    .bind(lot.id)
+    .bind(&lot.remaining_quantity)
+    .execute(&mut **tx)
+    .await
+    .map_err(|e| e.to_string())?;
+    if updated.rows_affected() != 1 {
+        return Err(format!(
+            "Lot {} was modified concurrently; {op} aborted and rolled back",
+            lot.id
+        ));
+    }
+    Ok(())
+}
+
+/// Allocates proceeds to a consumed portion: proportional
+/// `(take / total_qty) × total_proceeds` with MidpointAwayFromZero rounding.
+fn allocate_proceeds(
+    take: Decimal,
+    total_qty: Decimal,
+    total_proceeds: i64,
+) -> Result<i64, String> {
+    let proportion = take
+        .checked_div(total_qty)
+        .ok_or("Division overflow in proceeds allocation")?;
+    let alloc = proportion
+        .checked_mul(Decimal::from(total_proceeds))
+        .ok_or("Multiplication overflow in proceeds allocation")?;
+    alloc
+        .round_dp_with_strategy(0, rust_decimal::RoundingStrategy::MidpointAwayFromZero)
+        .to_i64()
+        .ok_or_else(|| "Proceeds allocation overflows i64".to_string())
+}
+
+/// Consumes `take` from a lot for a disposal: conditional lot update,
+/// consumption record insert, and the per-lot `DisposalDetail`.
+async fn consume_lot_for_disposal(
+    tx: &mut sqlx::Transaction<'_, sqlx::Sqlite>,
+    lot: &CostBasisLot,
+    take: Decimal,
+    lot_remaining: Decimal,
+    lot_quantity: Decimal,
+    portion_proceeds: i64,
+    input: &DisposeLotInput,
+) -> Result<DisposalDetail, String> {
+    let portion_cost = proportional_cost_basis(take, lot_quantity, lot.cost_basis_minor)?;
+    let realized = portion_proceeds - portion_cost;
+    let days = holding_period_days(&lot.acquired_date, &input.disposal_date)?;
+    let long_term = days >= 365;
+
+    update_lot_remaining(tx, lot, lot_remaining - take, "disposal").await?;
+
+    sqlx::query(
+        r#"
+        INSERT INTO lot_consumptions (
+            lot_id, quantity_consumed, cost_basis_minor, proceeds_minor,
+            realized_gain_loss_minor, event_type, journal_entry_id,
+            event_date, holding_period_days, is_long_term
+        )
+        VALUES (?, ?, ?, ?, ?, 'disposal', ?, ?, ?, ?)
+        "#,
+    )
+    .bind(lot.id)
+    .bind(take.to_string())
+    .bind(portion_cost)
+    .bind(portion_proceeds)
+    .bind(realized)
+    .bind(input.journal_entry_id)
+    .bind(&input.disposal_date)
+    .bind(days)
+    .bind(if long_term { 1 } else { 0 })
+    .execute(&mut **tx)
+    .await
+    .map_err(|e| e.to_string())?;
+
+    Ok(DisposalDetail {
+        lot_id: lot.id,
+        quantity_consumed: take.to_string(),
+        cost_basis_minor: portion_cost,
+        proceeds_minor: portion_proceeds,
+        realized_gain_loss_minor: realized,
+        holding_period_days: days,
+        is_long_term: long_term,
+    })
+}
+
+/// Moves `take` from a source lot to a destination wallet for a transfer:
+/// conditional source update, destination lot insert preserving
+/// acquired_date and proportional cost basis, and the transfer consumption
+/// record. Returns the destination lot id.
+async fn move_lot_portion(
+    tx: &mut sqlx::Transaction<'_, sqlx::Sqlite>,
+    lot: &CostBasisLot,
+    take: Decimal,
+    lot_remaining: Decimal,
+    lot_quantity: Decimal,
+    input: &TransferLotInput,
+) -> Result<i64, String> {
+    let portion_cost = proportional_cost_basis(take, lot_quantity, lot.cost_basis_minor)?;
+
+    update_lot_remaining(tx, lot, lot_remaining - take, "transfer").await?;
+
+    // Create destination lot preserving acquired_date and cost basis
+    let dest_result = sqlx::query(
+        r#"
+        INSERT INTO cost_basis_lots (
+            asset_id, wallet_id, acquired_date, quantity, remaining_quantity,
+            cost_basis_minor, cost_basis_method, journal_entry_id
+        )
+        VALUES (?, ?, ?, ?, ?, ?, 'FIFO', ?)
+        "#,
+    )
+    .bind(&input.asset_id)
+    .bind(&input.to_wallet_id)
+    .bind(&lot.acquired_date) // preserve original acquired_date
+    .bind(take.to_string())
+    .bind(take.to_string())
+    .bind(portion_cost) // preserve proportional cost basis
+    .bind(input.journal_entry_id)
+    .execute(&mut **tx)
+    .await
+    .map_err(|e| e.to_string())?;
+
+    let dest_lot_id = dest_result.last_insert_rowid();
+    let days = holding_period_days(&lot.acquired_date, &input.transfer_date)?;
+
+    // Record consumption (transfer type — no realization)
+    sqlx::query(
+        r#"
+        INSERT INTO lot_consumptions (
+            lot_id, quantity_consumed, cost_basis_minor, proceeds_minor,
+            realized_gain_loss_minor, event_type, destination_lot_id,
+            journal_entry_id, event_date, holding_period_days, is_long_term
+        )
+        VALUES (?, ?, ?, 0, 0, 'transfer', ?, ?, ?, ?, ?)
+        "#,
+    )
+    .bind(lot.id)
+    .bind(take.to_string())
+    .bind(portion_cost)
+    .bind(dest_lot_id)
+    .bind(input.journal_entry_id)
+    .bind(&input.transfer_date)
+    .bind(days)
+    .bind(if days >= 365 { 1 } else { 0 })
+    .execute(&mut **tx)
+    .await
+    .map_err(|e| e.to_string())?;
+
+    Ok(dest_lot_id)
+}
+
 // ============================================================================
 // Tauri Commands
 // ============================================================================
@@ -397,11 +617,7 @@ async fn dispose_lots_with_method(
     input: &DisposeLotInput,
     selector: &dyn LotSelector,
 ) -> Result<DisposalResult, String> {
-    let dispose_qty = Decimal::from_str(&input.quantity)
-        .map_err(|e| format!("Invalid quantity '{}': {e}", input.quantity))?;
-    if dispose_qty <= Decimal::ZERO {
-        return Err("Disposal quantity must be positive".to_string());
-    }
+    let dispose_qty = parse_positive_quantity(&input.quantity)?;
 
     NaiveDate::parse_from_str(&input.disposal_date, "%Y-%m-%d")
         .map_err(|e| format!("Invalid disposal_date '{}': {e}", input.disposal_date))?;
@@ -420,32 +636,15 @@ async fn dispose_lots_with_method(
         verify_journal_entry_posted(&mut *tx, je_id).await?;
     }
 
-    // Fetch open lots in method order
-    let order = selector.order_clause();
-    let query = format!(
-        "SELECT * FROM cost_basis_lots WHERE asset_id = ? AND wallet_id = ? AND is_closed = 0 ORDER BY {order}"
-    );
-    let lots = sqlx::query_as::<_, CostBasisLot>(&query)
-        .bind(&input.asset_id)
-        .bind(&input.wallet_id)
-        .fetch_all(&mut *tx)
-        .await
-        .map_err(|e| e.to_string())?;
-
-    // Compute total available quantity
-    let mut total_available = Decimal::ZERO;
-    for lot in &lots {
-        let remaining = Decimal::from_str(&lot.remaining_quantity)
-            .map_err(|e| format!("Invalid remaining_quantity in lot {}: {e}", lot.id))?;
-        total_available += remaining;
-    }
-
-    if total_available < dispose_qty {
-        return Err(format!(
-            "Insufficient lots: need {dispose_qty} but only {total_available} available for asset '{}' in wallet '{}'",
-            input.asset_id, input.wallet_id
-        ));
-    }
+    let lots = fetch_open_lots_checked(
+        &mut tx,
+        &input.asset_id,
+        &input.wallet_id,
+        selector.order_clause(),
+        dispose_qty,
+        "disposal",
+    )
+    .await?;
 
     let mut remaining_to_dispose = dispose_qty;
     let mut remaining_proceeds = input.proceeds_minor;
@@ -457,107 +656,34 @@ async fn dispose_lots_with_method(
             break;
         }
 
-        let lot_remaining = Decimal::from_str(&lot.remaining_quantity)
-            .map_err(|e| format!("Invalid remaining_quantity in lot {}: {e}", lot.id))?;
-        let lot_quantity = Decimal::from_str(&lot.quantity)
-            .map_err(|e| format!("Invalid quantity in lot {}: {e}", lot.id))?;
+        let (lot_remaining, lot_quantity) = lot_quantities(lot)?;
 
         // Take as much as we need or as much as the lot has
-        let take = if remaining_to_dispose >= lot_remaining {
-            lot_remaining
-        } else {
-            remaining_to_dispose
-        };
-
-        // Proportional cost basis for this portion
-        let portion_cost = proportional_cost_basis(take, lot_quantity, lot.cost_basis_minor)?;
-
-        // Proportional proceeds: distribute remaining proceeds proportionally
-        // to the quantity consumed. For the last lot, assign all remaining
-        // proceeds to avoid rounding drift.
+        let take = remaining_to_dispose.min(lot_remaining);
         let next_remaining = remaining_to_dispose - take;
+
+        // Proceeds allocation: proportional per lot; the LAST lot receives
+        // all remaining proceeds to avoid rounding drift.
         let portion_proceeds = if next_remaining.is_zero() {
-            // Last lot or exact match — take all remaining proceeds
             remaining_proceeds
         } else {
-            // Proportional: (take / dispose_qty) * total_proceeds
-            let proportion = take
-                .checked_div(dispose_qty)
-                .ok_or("Division overflow in proceeds allocation")?;
-            let proceeds_dec = Decimal::from(input.proceeds_minor);
-            let alloc = proportion
-                .checked_mul(proceeds_dec)
-                .ok_or("Multiplication overflow in proceeds allocation")?;
-            alloc
-                .round_dp_with_strategy(0, rust_decimal::RoundingStrategy::MidpointAwayFromZero)
-                .to_i64()
-                .ok_or_else(|| "Proceeds allocation overflows i64".to_string())?
+            allocate_proceeds(take, dispose_qty, input.proceeds_minor)?
         };
 
-        let realized = portion_proceeds - portion_cost;
-        let days = holding_period_days(&lot.acquired_date, &input.disposal_date)?;
-        let long_term = days >= 365;
-
-        // Update lot remaining quantity. Conditional UPDATE keyed on the
-        // remaining_quantity we read: if a concurrent writer consumed from
-        // this lot between our SELECT and this UPDATE, 0 rows match and the
-        // whole disposal rolls back (no read-check-write double-spend).
-        let new_remaining = lot_remaining - take;
-        let is_closed = if new_remaining.is_zero() { 1 } else { 0 };
-
-        let updated = sqlx::query(
-            "UPDATE cost_basis_lots SET remaining_quantity = ?, is_closed = ? WHERE id = ? AND remaining_quantity = ? AND is_closed = 0",
+        let detail = consume_lot_for_disposal(
+            &mut tx,
+            lot,
+            take,
+            lot_remaining,
+            lot_quantity,
+            portion_proceeds,
+            input,
         )
-        .bind(new_remaining.to_string())
-        .bind(is_closed)
-        .bind(lot.id)
-        .bind(&lot.remaining_quantity)
-        .execute(&mut *tx)
-        .await
-        .map_err(|e| e.to_string())?;
-        if updated.rows_affected() != 1 {
-            return Err(format!(
-                "Lot {} was modified concurrently; disposal aborted and rolled back",
-                lot.id
-            ));
-        }
+        .await?;
 
-        // Insert consumption record
-        sqlx::query(
-            r#"
-            INSERT INTO lot_consumptions (
-                lot_id, quantity_consumed, cost_basis_minor, proceeds_minor,
-                realized_gain_loss_minor, event_type, journal_entry_id,
-                event_date, holding_period_days, is_long_term
-            )
-            VALUES (?, ?, ?, ?, ?, 'disposal', ?, ?, ?, ?)
-            "#,
-        )
-        .bind(lot.id)
-        .bind(take.to_string())
-        .bind(portion_cost)
-        .bind(portion_proceeds)
-        .bind(realized)
-        .bind(input.journal_entry_id)
-        .bind(&input.disposal_date)
-        .bind(days)
-        .bind(if long_term { 1 } else { 0 })
-        .execute(&mut *tx)
-        .await
-        .map_err(|e| e.to_string())?;
-
-        details.push(DisposalDetail {
-            lot_id: lot.id,
-            quantity_consumed: take.to_string(),
-            cost_basis_minor: portion_cost,
-            proceeds_minor: portion_proceeds,
-            realized_gain_loss_minor: realized,
-            holding_period_days: days,
-            is_long_term: long_term,
-        });
-
-        total_cost_basis += portion_cost;
-        remaining_proceeds -= portion_proceeds;
+        total_cost_basis += detail.cost_basis_minor;
+        remaining_proceeds -= detail.proceeds_minor;
+        details.push(detail);
         remaining_to_dispose = next_remaining;
     }
 
@@ -591,11 +717,7 @@ async fn transfer_lots_impl(
     pool: &sqlx::SqlitePool,
     input: &TransferLotInput,
 ) -> Result<Vec<CostBasisLot>, String> {
-    let transfer_qty = Decimal::from_str(&input.quantity)
-        .map_err(|e| format!("Invalid quantity '{}': {e}", input.quantity))?;
-    if transfer_qty <= Decimal::ZERO {
-        return Err("Transfer quantity must be positive".to_string());
-    }
+    let transfer_qty = parse_positive_quantity(&input.quantity)?;
 
     NaiveDate::parse_from_str(&input.transfer_date, "%Y-%m-%d")
         .map_err(|e| format!("Invalid transfer_date '{}': {e}", input.transfer_date))?;
@@ -611,29 +733,15 @@ async fn transfer_lots_impl(
         verify_journal_entry_posted(&mut *tx, je_id).await?;
     }
 
-    // Fetch open lots in FIFO order from source wallet
-    let lots = sqlx::query_as::<_, CostBasisLot>(
-        "SELECT * FROM cost_basis_lots WHERE asset_id = ? AND wallet_id = ? AND is_closed = 0 ORDER BY acquired_date ASC, id ASC",
+    let lots = fetch_open_lots_checked(
+        &mut tx,
+        &input.asset_id,
+        &input.from_wallet_id,
+        FifoSelector.order_clause(),
+        transfer_qty,
+        "transfer",
     )
-    .bind(&input.asset_id)
-    .bind(&input.from_wallet_id)
-    .fetch_all(&mut *tx)
-    .await
-    .map_err(|e| e.to_string())?;
-
-    let mut total_available = Decimal::ZERO;
-    for lot in &lots {
-        let remaining = Decimal::from_str(&lot.remaining_quantity)
-            .map_err(|e| format!("Invalid remaining_quantity in lot {}: {e}", lot.id))?;
-        total_available += remaining;
-    }
-
-    if total_available < transfer_qty {
-        return Err(format!(
-            "Insufficient lots for transfer: need {transfer_qty} but only {total_available} available for asset '{}' in wallet '{}'",
-            input.asset_id, input.from_wallet_id
-        ));
-    }
+    .await?;
 
     let mut remaining_to_transfer = transfer_qty;
     let mut new_lot_ids = Vec::new();
@@ -643,89 +751,11 @@ async fn transfer_lots_impl(
             break;
         }
 
-        let lot_remaining = Decimal::from_str(&lot.remaining_quantity)
-            .map_err(|e| format!("Invalid remaining_quantity in lot {}: {e}", lot.id))?;
-        let lot_quantity = Decimal::from_str(&lot.quantity)
-            .map_err(|e| format!("Invalid quantity in lot {}: {e}", lot.id))?;
+        let (lot_remaining, lot_quantity) = lot_quantities(lot)?;
+        let take = remaining_to_transfer.min(lot_remaining);
 
-        let take = if remaining_to_transfer >= lot_remaining {
-            lot_remaining
-        } else {
-            remaining_to_transfer
-        };
-
-        // Proportional cost basis preserved for the destination lot
-        let portion_cost = proportional_cost_basis(take, lot_quantity, lot.cost_basis_minor)?;
-
-        // Update source lot (conditional — see dispose_lots_with_method).
-        let new_remaining = lot_remaining - take;
-        let is_closed = if new_remaining.is_zero() { 1 } else { 0 };
-
-        let updated = sqlx::query(
-            "UPDATE cost_basis_lots SET remaining_quantity = ?, is_closed = ? WHERE id = ? AND remaining_quantity = ? AND is_closed = 0",
-        )
-        .bind(new_remaining.to_string())
-        .bind(is_closed)
-        .bind(lot.id)
-        .bind(&lot.remaining_quantity)
-        .execute(&mut *tx)
-        .await
-        .map_err(|e| e.to_string())?;
-        if updated.rows_affected() != 1 {
-            return Err(format!(
-                "Lot {} was modified concurrently; transfer aborted and rolled back",
-                lot.id
-            ));
-        }
-
-        // Create destination lot preserving acquired_date and cost basis
-        let dest_result = sqlx::query(
-            r#"
-            INSERT INTO cost_basis_lots (
-                asset_id, wallet_id, acquired_date, quantity, remaining_quantity,
-                cost_basis_minor, cost_basis_method, journal_entry_id
-            )
-            VALUES (?, ?, ?, ?, ?, ?, 'FIFO', ?)
-            "#,
-        )
-        .bind(&input.asset_id)
-        .bind(&input.to_wallet_id)
-        .bind(&lot.acquired_date) // preserve original acquired_date
-        .bind(take.to_string())
-        .bind(take.to_string())
-        .bind(portion_cost) // preserve proportional cost basis
-        .bind(input.journal_entry_id)
-        .execute(&mut *tx)
-        .await
-        .map_err(|e| e.to_string())?;
-
-        let dest_lot_id = dest_result.last_insert_rowid();
-
-        // Compute holding period for the consumption record
-        let days = holding_period_days(&lot.acquired_date, &input.transfer_date)?;
-
-        // Record consumption (transfer type — no realization)
-        sqlx::query(
-            r#"
-            INSERT INTO lot_consumptions (
-                lot_id, quantity_consumed, cost_basis_minor, proceeds_minor,
-                realized_gain_loss_minor, event_type, destination_lot_id,
-                journal_entry_id, event_date, holding_period_days, is_long_term
-            )
-            VALUES (?, ?, ?, 0, 0, 'transfer', ?, ?, ?, ?, ?)
-            "#,
-        )
-        .bind(lot.id)
-        .bind(take.to_string())
-        .bind(portion_cost)
-        .bind(dest_lot_id)
-        .bind(input.journal_entry_id)
-        .bind(&input.transfer_date)
-        .bind(days)
-        .bind(if days >= 365 { 1 } else { 0 })
-        .execute(&mut *tx)
-        .await
-        .map_err(|e| e.to_string())?;
+        let dest_lot_id =
+            move_lot_portion(&mut tx, lot, take, lot_remaining, lot_quantity, input).await?;
 
         new_lot_ids.push(dest_lot_id);
         remaining_to_transfer -= take;
