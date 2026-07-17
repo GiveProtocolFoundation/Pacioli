@@ -695,7 +695,7 @@ WHERE status='approved'` (the M5 state machine explicitly allows
     - Consumption records are append-only
     - Transfer does not realize gain
     - Sub-decimal quantity precision (18 decimal places)
-    264 lib tests green, clippy clean.
+      264 lib tests green, clippy clean.
   - **Decisions:**
     - New `cost_basis_lots` / `lot_consumptions` tables rather than reusing
       the pre-existing `transaction_lots` / `lot_disposals` tables. The

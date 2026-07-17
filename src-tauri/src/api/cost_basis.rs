@@ -681,12 +681,11 @@ pub async fn transfer_lots(
     // Return the new destination lots
     let mut result = Vec::new();
     for lot_id in new_lot_ids {
-        let lot =
-            sqlx::query_as::<_, CostBasisLot>("SELECT * FROM cost_basis_lots WHERE id = ?")
-                .bind(lot_id)
-                .fetch_one(&state.pool)
-                .await
-                .map_err(|e| e.to_string())?;
+        let lot = sqlx::query_as::<_, CostBasisLot>("SELECT * FROM cost_basis_lots WHERE id = ?")
+            .bind(lot_id)
+            .fetch_one(&state.pool)
+            .await
+            .map_err(|e| e.to_string())?;
         result.push(lot);
     }
 
@@ -746,10 +745,7 @@ pub async fn get_lot_summary(
         q = q.bind(b);
     }
 
-    let rows = q
-        .fetch_all(&state.pool)
-        .await
-        .map_err(|e| e.to_string())?;
+    let rows = q.fetch_all(&state.pool).await.map_err(|e| e.to_string())?;
 
     // Aggregate in Rust with exact decimal
     let mut map: std::collections::BTreeMap<(String, String), (Decimal, i64, i64)> =
@@ -923,24 +919,14 @@ mod tests {
     #[test]
     fn proportional_cost_basis_one_third() {
         // 1/3 of a lot: cost basis $100.00 → $33.33 (rounds to 3333 cents)
-        let result = proportional_cost_basis(
-            Decimal::from(1),
-            Decimal::from(3),
-            10000,
-        )
-        .unwrap();
+        let result = proportional_cost_basis(Decimal::from(1), Decimal::from(3), 10000).unwrap();
         assert_eq!(result, 3333);
     }
 
     #[test]
     fn proportional_cost_basis_rounding() {
         // 2/3 of $100.00 = 6666.666... → rounds to 6667 (half away from zero)
-        let result = proportional_cost_basis(
-            Decimal::from(2),
-            Decimal::from(3),
-            10000,
-        )
-        .unwrap();
+        let result = proportional_cost_basis(Decimal::from(2), Decimal::from(3), 10000).unwrap();
         assert_eq!(result, 6667);
     }
 
@@ -1014,19 +1000,17 @@ mod tests {
         assert_eq!(result.total_realized_gain_loss_minor, 160000); // $1600 gain
 
         // Verify lot states
-        let lot1: CostBasisLot =
-            sqlx::query_as("SELECT * FROM cost_basis_lots WHERE id = 1")
-                .fetch_one(&pool)
-                .await
-                .unwrap();
+        let lot1: CostBasisLot = sqlx::query_as("SELECT * FROM cost_basis_lots WHERE id = 1")
+            .fetch_one(&pool)
+            .await
+            .unwrap();
         assert_eq!(lot1.remaining_quantity, "0");
         assert_eq!(lot1.is_closed, 1);
 
-        let lot2: CostBasisLot =
-            sqlx::query_as("SELECT * FROM cost_basis_lots WHERE id = 2")
-                .fetch_one(&pool)
-                .await
-                .unwrap();
+        let lot2: CostBasisLot = sqlx::query_as("SELECT * FROM cost_basis_lots WHERE id = 2")
+            .fetch_one(&pool)
+            .await
+            .unwrap();
         assert_eq!(lot2.remaining_quantity, "3");
         assert_eq!(lot2.is_closed, 0);
     }
@@ -1088,7 +1072,8 @@ mod tests {
             } else {
                 remaining
             };
-            let portion_cost = proportional_cost_basis(take, lot_quantity, lot.cost_basis_minor).unwrap();
+            let portion_cost =
+                proportional_cost_basis(take, lot_quantity, lot.cost_basis_minor).unwrap();
             let new_remaining = lot_remaining - take;
             let is_closed = if new_remaining.is_zero() { 1 } else { 0 };
 
@@ -1151,11 +1136,10 @@ mod tests {
         tx.commit().await.unwrap();
 
         // Verify source lot: 6 ETH remaining
-        let src_lot: CostBasisLot =
-            sqlx::query_as("SELECT * FROM cost_basis_lots WHERE id = 1")
-                .fetch_one(&pool)
-                .await
-                .unwrap();
+        let src_lot: CostBasisLot = sqlx::query_as("SELECT * FROM cost_basis_lots WHERE id = 1")
+            .fetch_one(&pool)
+            .await
+            .unwrap();
         assert_eq!(src_lot.remaining_quantity, "6");
         assert_eq!(src_lot.is_closed, 0);
 
@@ -1290,20 +1274,18 @@ mod tests {
         // wallet-A: lot1 has 2 ETH remaining (cost 2/10 * $1000 = $200 remaining basis)
         //           lot2 has 5 ETH remaining (cost $1000)
         // wallet-B: 8 ETH from lot1 (acquired Jan 1, cost 8/10 * $1000 = $800)
-        let src_lot1: CostBasisLot =
-            sqlx::query_as("SELECT * FROM cost_basis_lots WHERE id = ?")
-                .bind(lot1_id)
-                .fetch_one(&pool)
-                .await
-                .unwrap();
+        let src_lot1: CostBasisLot = sqlx::query_as("SELECT * FROM cost_basis_lots WHERE id = ?")
+            .bind(lot1_id)
+            .fetch_one(&pool)
+            .await
+            .unwrap();
         assert_eq!(src_lot1.remaining_quantity, "2");
 
-        let src_lot2: CostBasisLot =
-            sqlx::query_as("SELECT * FROM cost_basis_lots WHERE id = ?")
-                .bind(lot2_id)
-                .fetch_one(&pool)
-                .await
-                .unwrap();
+        let src_lot2: CostBasisLot = sqlx::query_as("SELECT * FROM cost_basis_lots WHERE id = ?")
+            .bind(lot2_id)
+            .fetch_one(&pool)
+            .await
+            .unwrap();
         assert_eq!(src_lot2.remaining_quantity, "5");
 
         let dest_lots: Vec<CostBasisLot> = sqlx::query_as(
@@ -1367,8 +1349,7 @@ mod tests {
         insert_lot(&pool, "token:ETH", "wallet-A", "2025-01-01", "10", 100000).await;
 
         // Sell on Jan 2 2026 (366 days later)
-        let result =
-            run_disposal(&pool, "token:ETH", "wallet-A", "2026-01-02", "5", 75000).await;
+        let result = run_disposal(&pool, "token:ETH", "wallet-A", "2026-01-02", "5", 75000).await;
 
         assert_eq!(result.details[0].holding_period_days, 366);
         assert!(result.details[0].is_long_term);
@@ -1380,18 +1361,16 @@ mod tests {
     async fn full_lot_disposal_closes_lot() {
         let pool = setup_test_db().await;
 
-        let lot_id =
-            insert_lot(&pool, "token:ETH", "wallet-A", "2025-01-01", "10", 100000).await;
+        let lot_id = insert_lot(&pool, "token:ETH", "wallet-A", "2025-01-01", "10", 100000).await;
 
         let _result =
             run_disposal(&pool, "token:ETH", "wallet-A", "2025-07-01", "10", 200000).await;
 
-        let lot: CostBasisLot =
-            sqlx::query_as("SELECT * FROM cost_basis_lots WHERE id = ?")
-                .bind(lot_id)
-                .fetch_one(&pool)
-                .await
-                .unwrap();
+        let lot: CostBasisLot = sqlx::query_as("SELECT * FROM cost_basis_lots WHERE id = ?")
+            .bind(lot_id)
+            .fetch_one(&pool)
+            .await
+            .unwrap();
         assert_eq!(lot.remaining_quantity, "0");
         assert_eq!(lot.is_closed, 1);
     }
@@ -1415,11 +1394,10 @@ mod tests {
         assert_eq!(r2.total_realized_gain_loss_minor, 40000); // $800 - $400
 
         // Remaining: 3 ETH
-        let lot: CostBasisLot =
-            sqlx::query_as("SELECT * FROM cost_basis_lots WHERE id = 1")
-                .fetch_one(&pool)
-                .await
-                .unwrap();
+        let lot: CostBasisLot = sqlx::query_as("SELECT * FROM cost_basis_lots WHERE id = 1")
+            .fetch_one(&pool)
+            .await
+            .unwrap();
         assert_eq!(lot.remaining_quantity, "3");
     }
 
@@ -1458,16 +1436,14 @@ mod tests {
         // Transfer via direct SQL (same logic as transfer_lots command)
         let mut tx = pool.begin().await.unwrap();
 
-        let lot: CostBasisLot =
-            sqlx::query_as("SELECT * FROM cost_basis_lots WHERE id = 1")
-                .fetch_one(&mut *tx)
-                .await
-                .unwrap();
+        let lot: CostBasisLot = sqlx::query_as("SELECT * FROM cost_basis_lots WHERE id = 1")
+            .fetch_one(&mut *tx)
+            .await
+            .unwrap();
 
         let take = Decimal::from(4);
         let lot_qty = Decimal::from_str(&lot.quantity).unwrap();
-        let portion_cost =
-            proportional_cost_basis(take, lot_qty, lot.cost_basis_minor).unwrap();
+        let portion_cost = proportional_cost_basis(take, lot_qty, lot.cost_basis_minor).unwrap();
         let new_remaining = Decimal::from_str(&lot.remaining_quantity).unwrap() - take;
 
         sqlx::query(
@@ -1523,12 +1499,11 @@ mod tests {
         assert_eq!(consumptions[0].proceeds_minor, 0);
 
         // Verify destination lot has correct cost basis
-        let dest_lot: CostBasisLot =
-            sqlx::query_as("SELECT * FROM cost_basis_lots WHERE id = ?")
-                .bind(dest_id)
-                .fetch_one(&pool)
-                .await
-                .unwrap();
+        let dest_lot: CostBasisLot = sqlx::query_as("SELECT * FROM cost_basis_lots WHERE id = ?")
+            .bind(dest_id)
+            .fetch_one(&pool)
+            .await
+            .unwrap();
         assert_eq!(dest_lot.cost_basis_minor, 40000); // 4/10 * $1000
         assert_eq!(dest_lot.acquired_date, "2025-01-01"); // preserved
     }
