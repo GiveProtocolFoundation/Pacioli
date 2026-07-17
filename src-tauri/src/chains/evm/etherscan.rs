@@ -62,13 +62,14 @@ struct ApiErrorResponse {
 /// Get the ApiProvider for a chain ID (for keychain lookup)
 fn get_api_provider_for_chain(chain_id: u64) -> ApiProvider {
     match chain_id {
-        1 => ApiProvider::Etherscan,     // Ethereum
-        137 => ApiProvider::Polygonscan, // Polygon
-        42161 => ApiProvider::Arbiscan,  // Arbitrum
-        8453 => ApiProvider::Basescan,   // Base
-        10 => ApiProvider::Optimism,     // Optimism
-        56 => ApiProvider::Etherscan,    // BSC (uses Etherscan V2 API)
-        _ => ApiProvider::Etherscan,     // Default to Etherscan for unknown chains
+        1 => ApiProvider::Etherscan,          // Ethereum
+        137 => ApiProvider::Polygonscan,      // Polygon
+        42161 => ApiProvider::Arbiscan,       // Arbitrum
+        8453 => ApiProvider::Basescan,        // Base
+        10 => ApiProvider::Optimism,          // Optimism
+        56 => ApiProvider::Etherscan,         // BSC (uses Etherscan V2 API)
+        1284 | 1285 => ApiProvider::Moonscan, // Moonbeam / Moonriver
+        _ => ApiProvider::Etherscan,          // Default to Etherscan for unknown chains
     }
 }
 

@@ -61,7 +61,7 @@ impl EVMIndexer {
                 chain_id: 1284,
                 rpc_url: "https://rpc.api.moonbeam.network".to_string(),
                 ws_url: Some("wss://wss.api.moonbeam.network".to_string()),
-                explorer_api: Some("https://api-moonbeam.moonscan.io/api".to_string()),
+                explorer_api: Some("https://api.etherscan.io/v2/api".to_string()),
                 native_token: Token {
                     symbol: "GLMR".to_string(),
                     decimals: 18,
@@ -81,7 +81,7 @@ impl EVMIndexer {
                 chain_id: 1285,
                 rpc_url: "https://rpc.api.moonriver.moonbeam.network".to_string(),
                 ws_url: Some("wss://wss.api.moonriver.moonbeam.network".to_string()),
-                explorer_api: Some("https://api-moonriver.moonscan.io/api".to_string()),
+                explorer_api: Some("https://api.etherscan.io/v2/api".to_string()),
                 native_token: Token {
                     symbol: "MOVR".to_string(),
                     decimals: 18,
