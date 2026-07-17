@@ -191,10 +191,10 @@ polish is logged, not chased.
 
 ## 5. Rehearsal findings (filled during the live run)
 
-_Pending — populated during the Phase 10 rehearsal._
-
 | # | Step | Observation | Severity (blocker / friction / note) | Disposition |
 |---|------|-------------|--------------------------------------|-------------|
+| 1 | §3 step 2 (import history) | Moonbeam wallet sync failed with "Etherscan API error: Invalid API Key" — `moonscanService` was calling the Etherscan V2 unified endpoint (`api.etherscan.io/v2/api?chainid=1284`), which does not serve Moonbeam; Moonbeam requires the direct Moonscan API with its own (optional) key. | blocker | **Fixed** — PR #227: direct per-chain Moonscan endpoints (`api-moonbeam.moonscan.io` / `api-moonriver.moonscan.io`), separate `moonscan` key namespace (Settings → Data Providers card added), keyless access permitted at ~1 req/5s, removed the sync-blocking no-key early return. |
+| 1a | §3 step 2 (import history) | Accompanying "Not connected to moonbeam" error — separate WS-RPC connection path (balances / recent-block scan), distinct from the Moonscan HTTP fix above. Watch on retest: if it persists, report as its own finding. | note | Monitoring — retest after finding #1 fix. |
 
 ## 6. Outcome
 
