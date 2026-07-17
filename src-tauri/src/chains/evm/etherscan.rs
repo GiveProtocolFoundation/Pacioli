@@ -139,7 +139,9 @@ impl EtherscanClient {
                 // Moonscan V1 deprecated; V2 runs through api.etherscan.io —
                 // fall back to the Etherscan key when no Moonscan-specific key exists
                 if provider == ApiProvider::Moonscan {
-                    ApiKeyManager::get_api_key(ApiProvider::Etherscan).ok().flatten()
+                    ApiKeyManager::get_api_key(ApiProvider::Etherscan)
+                        .ok()
+                        .flatten()
                 } else {
                     None
                 }
