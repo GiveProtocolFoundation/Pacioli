@@ -19,16 +19,19 @@ export const EVM_NETWORK_MAP: Record<string, NetworkType> = {
 interface BlockExplorerConfig {
   apiUrl: string
   apiKey?: string
+  chainId?: number // For Etherscan V2 unified endpoint
   rateLimit: number // ms between requests
 }
 
 const BLOCK_EXPLORER_APIS: Record<string, BlockExplorerConfig> = {
   moonbeam: {
-    apiUrl: 'https://api-moonbeam.moonscan.io/api',
+    apiUrl: 'https://api.etherscan.io/v2/api',
+    chainId: 1284,
     rateLimit: 200,
   },
   moonriver: {
-    apiUrl: 'https://api-moonriver.moonscan.io/api',
+    apiUrl: 'https://api.etherscan.io/v2/api',
+    chainId: 1285,
     rateLimit: 200,
   },
   astar: {
@@ -249,6 +252,9 @@ class EVMTransactionService {
         offset: limit.toString(),
         sort: 'desc',
       })
+      if (explorerConfig.chainId) {
+        params.set('chainid', explorerConfig.chainId.toString())
+      }
 
       const response = await fetch(`${explorerConfig.apiUrl}?${params}`)
       const data = await response.json()
@@ -293,6 +299,9 @@ class EVMTransactionService {
         offset: limit.toString(),
         sort: 'desc',
       })
+      if (explorerConfig.chainId) {
+        params.set('chainid', explorerConfig.chainId.toString())
+      }
 
       const response = await fetch(`${explorerConfig.apiUrl}?${params}`)
       const data = await response.json()

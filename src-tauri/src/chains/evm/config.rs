@@ -195,23 +195,25 @@ fn get_configs() -> &'static Vec<EvmChainConfig> {
                 3,     // ~3 second block time
             ),
             // Moonbeam (Polkadot parachain, EVM-compatible)
+            // Uses Etherscan V2 unified endpoint (Moonscan V1 deprecated)
             EvmChainConfig::new(
                 1284,
                 "moonbeam",
                 "GLMR",
                 "https://rpc.api.moonbeam.network",
-                "https://api-moonbeam.moonscan.io/api",
+                "https://api.etherscan.io/v2/api",
                 false, // Parachain
                 12,    // ~12 second block time
             )
             .with_explorer_key_env("MOONSCAN_API_KEY"),
             // Moonriver (Kusama parachain, EVM-compatible)
+            // Uses Etherscan V2 unified endpoint (Moonscan V1 deprecated)
             EvmChainConfig::new(
                 1285,
                 "moonriver",
                 "MOVR",
                 "https://rpc.api.moonriver.moonbeam.network",
-                "https://api-moonriver.moonscan.io/api",
+                "https://api.etherscan.io/v2/api",
                 false, // Parachain
                 12,    // ~12 second block time
             )

@@ -1,9 +1,9 @@
 /**
  * Moonscan API Service
- * Fetches EVM transaction history using direct Moonscan API endpoints
- * Used for Moonbeam and Moonriver EVM-compatible chains
+ * Fetches EVM transaction history for Moonbeam/Moonriver via the Etherscan V2
+ * unified API (per-chain V1 endpoints are deprecated).
  *
- * Note: Moonscan requires its own API key (separate from Etherscan).
+ * An Etherscan or Moonscan API key unlocks faster rate limits.
  * Get a free API key at: https://moonscan.io/myapikey
  * Without a key, requests are rate-limited to ~1 req/5s.
  */
@@ -72,18 +72,18 @@ interface MoonscanResponse<T> {
  * Service for fetching EVM transaction history using Etherscan V2 API.
  */
 export class MoonscanService {
-  // Direct Moonscan API endpoints per chain (not Etherscan V2 — Moonbeam is
-  // not supported on the V2 unified endpoint and requires its own API key)
+  // Etherscan V2 unified endpoint — Moonscan V1 per-chain endpoints are
+  // deprecated; V2 routes via the chainid query parameter instead.
   private readonly NETWORK_CONFIGS: Partial<
     Record<NetworkType, MoonscanConfig>
   > = {
     moonbeam: {
       chainId: 1284,
-      apiUrl: 'https://api-moonbeam.moonscan.io/api',
+      apiUrl: 'https://api.etherscan.io/v2/api',
     },
     moonriver: {
       chainId: 1285,
-      apiUrl: 'https://api-moonriver.moonscan.io/api',
+      apiUrl: 'https://api.etherscan.io/v2/api',
     },
   }
 
@@ -157,8 +157,9 @@ export class MoonscanService {
       sort = 'desc',
     } = options
 
-    // Build direct Moonscan API URL (not Etherscan V2)
+    // Build Etherscan V2 API URL with chainid parameter
     const params = new URLSearchParams({
+      chainid: config.chainId.toString(),
       module: 'account',
       action: 'txlist',
       address,
@@ -249,6 +250,7 @@ export class MoonscanService {
     } = options
 
     const params = new URLSearchParams({
+      chainid: config.chainId.toString(),
       module: 'account',
       action: 'tokentx',
       address,
