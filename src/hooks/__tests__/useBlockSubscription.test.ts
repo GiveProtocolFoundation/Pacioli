@@ -59,9 +59,8 @@ describe('useBlockSubscription — service contracts', () => {
   })
 
   it('subscribeNewBlocks returns an unsubscribe function', async () => {
-    const { polkadotService } = await import(
-      '../../services/blockchain/polkadotService'
-    )
+    const { polkadotService } =
+      await import('../../services/blockchain/polkadotService')
 
     const unsub = await polkadotService.subscribeNewBlocks(
       'polkadot' as never,
@@ -84,9 +83,8 @@ describe('useBlockSubscription — service contracts', () => {
       }
     )
 
-    const { polkadotService } = await import(
-      '../../services/blockchain/polkadotService'
-    )
+    const { polkadotService } =
+      await import('../../services/blockchain/polkadotService')
     const blockNumbers: number[] = []
 
     await polkadotService.subscribeNewBlocks(
@@ -110,9 +108,8 @@ describe('useBlockSubscription — service contracts', () => {
   })
 
   it('unsubscribe can be called multiple times safely', async () => {
-    const { polkadotService } = await import(
-      '../../services/blockchain/polkadotService'
-    )
+    const { polkadotService } =
+      await import('../../services/blockchain/polkadotService')
 
     const unsub = await polkadotService.subscribeNewBlocks(
       'polkadot' as never,
@@ -136,9 +133,8 @@ describe('useBlockSubscription — service contracts', () => {
       }
     )
 
-    const { polkadotService } = await import(
-      '../../services/blockchain/polkadotService'
-    )
+    const { polkadotService } =
+      await import('../../services/blockchain/polkadotService')
 
     // Simulates what the hook does: subscribe + debounce refresh
     let debounceTimer: ReturnType<typeof setTimeout> | null = null
@@ -171,12 +167,10 @@ describe('useBlockSubscription — service contracts', () => {
   })
 
   it('incremental refresh: fetches transactions from last synced block', async () => {
-    const { indexedDBService } = await import(
-      '../../services/database/indexedDBService'
-    )
-    const { polkadotService } = await import(
-      '../../services/blockchain/polkadotService'
-    )
+    const { indexedDBService } =
+      await import('../../services/database/indexedDBService')
+    const { polkadotService } =
+      await import('../../services/blockchain/polkadotService')
 
     // Simulate existing sync status
     mockLoadSyncStatus.mockResolvedValue({
