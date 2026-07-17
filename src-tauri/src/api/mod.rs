@@ -13,6 +13,9 @@ pub mod cost_basis;
 pub mod entities;
 /// Module responsible for handling export operations, including data serialization and file output.
 pub mod export;
+/// Fair-value measurement engine: ASU 2023-08 remeasurement, PriceSource
+/// trait, and draft adjusting entries (GIV-690, Phase 8).
+pub mod fair_value;
 /// Module for handling data persistence, including storing, retrieving, and managing application data.
 pub mod persistence;
 /// Module for fetching and managing price feeds from various data providers.

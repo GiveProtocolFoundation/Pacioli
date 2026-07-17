@@ -466,7 +466,14 @@ pub fn run() {
             api::cost_basis::get_open_lots,
             api::cost_basis::get_lot_summary,
             api::cost_basis::get_lot_consumptions,
-            api::cost_basis::get_realized_gains_losses
+            api::cost_basis::get_realized_gains_losses,
+            // Fair-value measurement commands (GIV-690, Phase 8)
+            api::fair_value::record_manual_price,
+            api::fair_value::get_price_observations,
+            api::fair_value::run_remeasurement,
+            api::fair_value::list_remeasurement_runs,
+            api::fair_value::get_remeasurement_entries,
+            api::fair_value::get_latest_asset_price
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
