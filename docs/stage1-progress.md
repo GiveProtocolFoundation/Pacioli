@@ -720,3 +720,38 @@ WHERE status='approved'` (the M5 state machine explicitly allows
       intentional (§5 approval gate: system never posts silently), but a
       helper that drafts the gain/loss entry from the `DisposalResult`
       would reduce manual work.
+  - **CTO review hardening (GIV-689, PR #222):** four gaps closed before
+    merge:
+    1. **Read-check-write race on lot consumption** — dispose/transfer
+       SELECTed lots then UPDATEd `remaining_quantity` unconditionally;
+       two concurrent consumers could both spend the same lot
+       (double-spend). Now a conditional UPDATE keyed on the
+       remaining_quantity that was read
+       (`WHERE id=? AND remaining_quantity=? AND is_closed=0`) with a
+       `rows_affected == 1` check; 0 rows → the whole operation errors
+       and the transaction rolls back.
+    2. **Production transfer path was untested** — tests re-implemented
+       the transfer SQL inline instead of calling the command logic.
+       Extracted `transfer_lots_impl` (and `acquire_lot_impl`) at pool
+       level (same pattern as `dispose_lots_with_method`); the three
+       transfer tests and the acceptance test now exercise the real
+       engine path.
+    3. **Posted-entry gate only on acquire** — dispose/transfer accepted
+       a `journal_entry_id` without verifying status. Shared
+       `verify_journal_entry_posted` helper now runs inside the
+       transaction for all three lot events (lots derive only from the
+       posted ledger).
+    4. **Inv-7 was Rust-only** — added DB-layer triggers in M7:
+       `lot_consumptions` rejects UPDATE/DELETE (strictly append-only);
+       `cost_basis_lots` rejects DELETE and rewrites of core columns
+       (asset_id, wallet_id, acquired_date, quantity, cost_basis_minor,
+       method, journal_entry_id, created_at) — only
+       remaining_quantity/is_closed/updated_at may change. Invariants
+       now hold against any writer, not just the engine.
+    - +5 tests (posted-gate rejection ×2, append-only triggers,
+      lot immutability/no-delete, stale conditional-UPDATE SQL
+      semantics). 269 lib tests green; CI clippy invocation clean.
+    - Recurring-defect note for future phases: this is the third phase
+      where the read-check-write mandate was missed on a new write path —
+      keep checking every multi-statement write for conditional UPDATE +
+      rows_affected.

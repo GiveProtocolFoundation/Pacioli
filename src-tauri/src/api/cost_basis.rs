@@ -262,6 +262,30 @@ fn proportional_cost_basis(
         .ok_or_else(|| "Proportional cost basis overflows i64".to_string())
 }
 
+/// Verifies that a journal entry exists and is `posted`.
+///
+/// Every lot event that references a journal entry must reference a POSTED
+/// entry — lots derive from the posted ledger, never from drafts (the
+/// draft → approved → posted lifecycle is the approval gate).
+async fn verify_journal_entry_posted<'e, E>(executor: E, je_id: i64) -> Result<(), String>
+where
+    E: sqlx::Executor<'e, Database = sqlx::Sqlite>,
+{
+    let status: Option<(String,)> =
+        sqlx::query_as("SELECT status FROM journal_entries WHERE id = ?")
+            .bind(je_id)
+            .fetch_optional(executor)
+            .await
+            .map_err(|e| e.to_string())?;
+    match status {
+        Some((s,)) if s == "posted" => Ok(()),
+        Some((s,)) => Err(format!(
+            "Journal entry {je_id} is '{s}', must be 'posted' to record a lot event"
+        )),
+        None => Err(format!("Journal entry {je_id} not found")),
+    }
+}
+
 /// Computes holding period in days between two ISO 8601 dates.
 fn holding_period_days(acquired_date: &str, event_date: &str) -> Result<i64, String> {
     let acq = NaiveDate::parse_from_str(acquired_date, "%Y-%m-%d")
@@ -285,6 +309,14 @@ pub async fn acquire_lot(
     state: State<'_, DatabaseState>,
     input: AcquireLotInput,
 ) -> Result<CostBasisLot, String> {
+    acquire_lot_impl(&state.pool, &input).await
+}
+
+/// Pool-level acquisition engine (testable without Tauri `State`).
+async fn acquire_lot_impl(
+    pool: &sqlx::SqlitePool,
+    input: &AcquireLotInput,
+) -> Result<CostBasisLot, String> {
     // Validate quantity
     let qty = Decimal::from_str(&input.quantity)
         .map_err(|e| format!("Invalid quantity '{}': {e}", input.quantity))?;
@@ -303,21 +335,7 @@ pub async fn acquire_lot(
 
     // If journal_entry_id provided, verify it is posted
     if let Some(je_id) = input.journal_entry_id {
-        let status: Option<(String,)> =
-            sqlx::query_as("SELECT status FROM journal_entries WHERE id = ?")
-                .bind(je_id)
-                .fetch_optional(&state.pool)
-                .await
-                .map_err(|e| e.to_string())?;
-        match status {
-            Some((s,)) if s == "posted" => { /* valid */ }
-            Some((s,)) => {
-                return Err(format!(
-                    "Journal entry {je_id} is '{s}', must be 'posted' to record a lot"
-                ))
-            }
-            None => return Err(format!("Journal entry {je_id} not found")),
-        }
+        verify_journal_entry_posted(pool, je_id).await?;
     }
 
     let qty_str = qty.to_string();
@@ -338,7 +356,7 @@ pub async fn acquire_lot(
     .bind(&qty_str)
     .bind(input.cost_basis_minor)
     .bind(input.journal_entry_id)
-    .execute(&state.pool)
+    .execute(pool)
     .await
     .map_err(|e| e.to_string())?;
 
@@ -346,7 +364,7 @@ pub async fn acquire_lot(
 
     sqlx::query_as::<_, CostBasisLot>("SELECT * FROM cost_basis_lots WHERE id = ?")
         .bind(lot_id)
-        .fetch_one(&state.pool)
+        .fetch_one(pool)
         .await
         .map_err(|e| e.to_string())
 }
@@ -359,9 +377,11 @@ pub async fn acquire_lot(
 /// 2. Consumes lots until the disposal quantity is fulfilled.
 /// 3. Records per-lot consumption with proportional cost basis.
 /// 4. Computes realized gain/loss = proceeds − cost basis per lot portion.
-/// 5. Generates the gain/loss journal entry lines (returned, not auto-posted).
 ///
-/// Returns the detailed consumption breakdown and total realized gain/loss.
+/// Returns the detailed consumption breakdown and total realized gain/loss,
+/// from which the caller builds the gain/loss journal entry lines. Those
+/// entries go through the normal draft → approved → posted lifecycle; the
+/// engine itself never writes to the ledger.
 #[tauri::command]
 pub async fn dispose_lots(
     state: State<'_, DatabaseState>,
@@ -394,6 +414,11 @@ async fn dispose_lots_with_method(
     // partial consumption if a later lot fails or there is insufficient
     // quantity.
     let mut tx = pool.begin().await.map_err(|e| e.to_string())?;
+
+    // Lots derive only from posted entries (approval gate).
+    if let Some(je_id) = input.journal_entry_id {
+        verify_journal_entry_posted(&mut *tx, je_id).await?;
+    }
 
     // Fetch open lots in method order
     let order = selector.order_clause();
@@ -473,19 +498,29 @@ async fn dispose_lots_with_method(
         let days = holding_period_days(&lot.acquired_date, &input.disposal_date)?;
         let long_term = days >= 365;
 
-        // Update lot remaining quantity
+        // Update lot remaining quantity. Conditional UPDATE keyed on the
+        // remaining_quantity we read: if a concurrent writer consumed from
+        // this lot between our SELECT and this UPDATE, 0 rows match and the
+        // whole disposal rolls back (no read-check-write double-spend).
         let new_remaining = lot_remaining - take;
         let is_closed = if new_remaining.is_zero() { 1 } else { 0 };
 
-        sqlx::query(
-            "UPDATE cost_basis_lots SET remaining_quantity = ?, is_closed = ? WHERE id = ?",
+        let updated = sqlx::query(
+            "UPDATE cost_basis_lots SET remaining_quantity = ?, is_closed = ? WHERE id = ? AND remaining_quantity = ? AND is_closed = 0",
         )
         .bind(new_remaining.to_string())
         .bind(is_closed)
         .bind(lot.id)
+        .bind(&lot.remaining_quantity)
         .execute(&mut *tx)
         .await
         .map_err(|e| e.to_string())?;
+        if updated.rows_affected() != 1 {
+            return Err(format!(
+                "Lot {} was modified concurrently; disposal aborted and rolled back",
+                lot.id
+            ));
+        }
 
         // Insert consumption record
         sqlx::query(
@@ -548,6 +583,14 @@ pub async fn transfer_lots(
     state: State<'_, DatabaseState>,
     input: TransferLotInput,
 ) -> Result<Vec<CostBasisLot>, String> {
+    transfer_lots_impl(&state.pool, &input).await
+}
+
+/// Pool-level transfer engine (testable without Tauri `State`).
+async fn transfer_lots_impl(
+    pool: &sqlx::SqlitePool,
+    input: &TransferLotInput,
+) -> Result<Vec<CostBasisLot>, String> {
     let transfer_qty = Decimal::from_str(&input.quantity)
         .map_err(|e| format!("Invalid quantity '{}': {e}", input.quantity))?;
     if transfer_qty <= Decimal::ZERO {
@@ -561,7 +604,12 @@ pub async fn transfer_lots(
         return Err("Source and destination wallets must be different".to_string());
     }
 
-    let mut tx = state.pool.begin().await.map_err(|e| e.to_string())?;
+    let mut tx = pool.begin().await.map_err(|e| e.to_string())?;
+
+    // Lots derive only from posted entries (approval gate).
+    if let Some(je_id) = input.journal_entry_id {
+        verify_journal_entry_posted(&mut *tx, je_id).await?;
+    }
 
     // Fetch open lots in FIFO order from source wallet
     let lots = sqlx::query_as::<_, CostBasisLot>(
@@ -609,19 +657,26 @@ pub async fn transfer_lots(
         // Proportional cost basis preserved for the destination lot
         let portion_cost = proportional_cost_basis(take, lot_quantity, lot.cost_basis_minor)?;
 
-        // Update source lot
+        // Update source lot (conditional — see dispose_lots_with_method).
         let new_remaining = lot_remaining - take;
         let is_closed = if new_remaining.is_zero() { 1 } else { 0 };
 
-        sqlx::query(
-            "UPDATE cost_basis_lots SET remaining_quantity = ?, is_closed = ? WHERE id = ?",
+        let updated = sqlx::query(
+            "UPDATE cost_basis_lots SET remaining_quantity = ?, is_closed = ? WHERE id = ? AND remaining_quantity = ? AND is_closed = 0",
         )
         .bind(new_remaining.to_string())
         .bind(is_closed)
         .bind(lot.id)
+        .bind(&lot.remaining_quantity)
         .execute(&mut *tx)
         .await
         .map_err(|e| e.to_string())?;
+        if updated.rows_affected() != 1 {
+            return Err(format!(
+                "Lot {} was modified concurrently; transfer aborted and rolled back",
+                lot.id
+            ));
+        }
 
         // Create destination lot preserving acquired_date and cost basis
         let dest_result = sqlx::query(
@@ -683,7 +738,7 @@ pub async fn transfer_lots(
     for lot_id in new_lot_ids {
         let lot = sqlx::query_as::<_, CostBasisLot>("SELECT * FROM cost_basis_lots WHERE id = ?")
             .bind(lot_id)
-            .fetch_one(&state.pool)
+            .fetch_one(pool)
             .await
             .map_err(|e| e.to_string())?;
         result.push(lot);
@@ -867,6 +922,28 @@ mod tests {
         result.last_insert_rowid()
     }
 
+    /// Helper: run a transfer through the real engine path.
+    async fn run_transfer(
+        pool: &SqlitePool,
+        asset_id: &str,
+        from_wallet_id: &str,
+        to_wallet_id: &str,
+        transfer_date: &str,
+        quantity: &str,
+    ) -> Vec<CostBasisLot> {
+        let input = TransferLotInput {
+            asset_id: asset_id.to_string(),
+            from_wallet_id: from_wallet_id.to_string(),
+            to_wallet_id: to_wallet_id.to_string(),
+            transfer_date: transfer_date.to_string(),
+            quantity: quantity.to_string(),
+            journal_entry_id: None,
+        };
+        transfer_lots_impl(pool, &input)
+            .await
+            .expect("Transfer should succeed")
+    }
+
     /// Helper: run a disposal directly against the pool.
     async fn run_disposal(
         pool: &SqlitePool,
@@ -1045,95 +1122,16 @@ mod tests {
         // Buy 10 ETH at $100 each on Jan 1 in wallet-A
         insert_lot(&pool, "token:ETH", "wallet-A", "2025-01-01", "10", 100000).await;
 
-        // Transfer 4 ETH from wallet-A to wallet-B on Mar 1
-        // (Use the internal SQL path directly since we don't have Tauri State)
-        let mut tx = pool.begin().await.unwrap();
-
-        let lots = sqlx::query_as::<_, CostBasisLot>(
-            "SELECT * FROM cost_basis_lots WHERE asset_id = ? AND wallet_id = ? AND is_closed = 0 ORDER BY acquired_date ASC, id ASC",
+        // Transfer 4 ETH from wallet-A to wallet-B on Mar 1 (real engine path)
+        run_transfer(
+            &pool,
+            "token:ETH",
+            "wallet-A",
+            "wallet-B",
+            "2025-03-01",
+            "4",
         )
-        .bind("token:ETH")
-        .bind("wallet-A")
-        .fetch_all(&mut *tx)
-        .await
-        .unwrap();
-
-        let transfer_qty = Decimal::from(4);
-        let mut remaining = transfer_qty;
-
-        for lot in &lots {
-            if remaining.is_zero() {
-                break;
-            }
-            let lot_remaining = Decimal::from_str(&lot.remaining_quantity).unwrap();
-            let lot_quantity = Decimal::from_str(&lot.quantity).unwrap();
-            let take = if remaining >= lot_remaining {
-                lot_remaining
-            } else {
-                remaining
-            };
-            let portion_cost =
-                proportional_cost_basis(take, lot_quantity, lot.cost_basis_minor).unwrap();
-            let new_remaining = lot_remaining - take;
-            let is_closed = if new_remaining.is_zero() { 1 } else { 0 };
-
-            sqlx::query(
-                "UPDATE cost_basis_lots SET remaining_quantity = ?, is_closed = ? WHERE id = ?",
-            )
-            .bind(new_remaining.to_string())
-            .bind(is_closed)
-            .bind(lot.id)
-            .execute(&mut *tx)
-            .await
-            .unwrap();
-
-            let dest_result = sqlx::query(
-                r#"
-                INSERT INTO cost_basis_lots (
-                    asset_id, wallet_id, acquired_date, quantity, remaining_quantity,
-                    cost_basis_minor, cost_basis_method, journal_entry_id
-                )
-                VALUES (?, ?, ?, ?, ?, ?, 'FIFO', NULL)
-                "#,
-            )
-            .bind("token:ETH")
-            .bind("wallet-B")
-            .bind(&lot.acquired_date)
-            .bind(take.to_string())
-            .bind(take.to_string())
-            .bind(portion_cost)
-            .execute(&mut *tx)
-            .await
-            .unwrap();
-
-            let dest_lot_id = dest_result.last_insert_rowid();
-            let days = holding_period_days(&lot.acquired_date, "2025-03-01").unwrap();
-
-            sqlx::query(
-                r#"
-                INSERT INTO lot_consumptions (
-                    lot_id, quantity_consumed, cost_basis_minor, proceeds_minor,
-                    realized_gain_loss_minor, event_type, destination_lot_id,
-                    journal_entry_id, event_date, holding_period_days, is_long_term
-                )
-                VALUES (?, ?, ?, 0, 0, 'transfer', ?, NULL, ?, ?, ?)
-                "#,
-            )
-            .bind(lot.id)
-            .bind(take.to_string())
-            .bind(portion_cost)
-            .bind(dest_lot_id)
-            .bind("2025-03-01")
-            .bind(days)
-            .bind(if days >= 365 { 1 } else { 0 })
-            .execute(&mut *tx)
-            .await
-            .unwrap();
-
-            remaining -= take;
-        }
-
-        tx.commit().await.unwrap();
+        .await;
 
         // Verify source lot: 6 ETH remaining
         let src_lot: CostBasisLot = sqlx::query_as("SELECT * FROM cost_basis_lots WHERE id = 1")
@@ -1180,95 +1178,16 @@ mod tests {
         let lot2_id = insert_lot(&pool, "token:ETH", "wallet-A", "2025-02-01", "5", 100000).await;
 
         // === Step 3: Transfer 8 ETH from wallet-A to wallet-B on Mar 1 ===
-        // FIFO: takes all 10 from lot1 → 8 from lot1 (partial), then remaining from lot2
-        // Actually: 8 ETH from lot1 (which has 10)
-        {
-            let mut tx = pool.begin().await.unwrap();
-
-            let lots = sqlx::query_as::<_, CostBasisLot>(
-                "SELECT * FROM cost_basis_lots WHERE asset_id = ? AND wallet_id = ? AND is_closed = 0 ORDER BY acquired_date ASC, id ASC",
-            )
-            .bind("token:ETH")
-            .bind("wallet-A")
-            .fetch_all(&mut *tx)
-            .await
-            .unwrap();
-
-            let mut remaining = Decimal::from(8);
-
-            for lot in &lots {
-                if remaining.is_zero() {
-                    break;
-                }
-                let lot_remaining = Decimal::from_str(&lot.remaining_quantity).unwrap();
-                let lot_quantity = Decimal::from_str(&lot.quantity).unwrap();
-                let take = if remaining >= lot_remaining {
-                    lot_remaining
-                } else {
-                    remaining
-                };
-                let portion_cost =
-                    proportional_cost_basis(take, lot_quantity, lot.cost_basis_minor).unwrap();
-                let new_remaining = lot_remaining - take;
-                let is_closed = if new_remaining.is_zero() { 1 } else { 0 };
-
-                sqlx::query(
-                    "UPDATE cost_basis_lots SET remaining_quantity = ?, is_closed = ? WHERE id = ?",
-                )
-                .bind(new_remaining.to_string())
-                .bind(is_closed)
-                .bind(lot.id)
-                .execute(&mut *tx)
-                .await
-                .unwrap();
-
-                let dest = sqlx::query(
-                    r#"
-                    INSERT INTO cost_basis_lots (
-                        asset_id, wallet_id, acquired_date, quantity, remaining_quantity,
-                        cost_basis_minor, cost_basis_method
-                    )
-                    VALUES (?, ?, ?, ?, ?, ?, 'FIFO')
-                    "#,
-                )
-                .bind("token:ETH")
-                .bind("wallet-B")
-                .bind(&lot.acquired_date)
-                .bind(take.to_string())
-                .bind(take.to_string())
-                .bind(portion_cost)
-                .execute(&mut *tx)
-                .await
-                .unwrap();
-
-                let dest_id = dest.last_insert_rowid();
-                let days = holding_period_days(&lot.acquired_date, "2025-03-01").unwrap();
-
-                sqlx::query(
-                    r#"
-                    INSERT INTO lot_consumptions (
-                        lot_id, quantity_consumed, cost_basis_minor, proceeds_minor,
-                        realized_gain_loss_minor, event_type, destination_lot_id,
-                        event_date, holding_period_days, is_long_term
-                    )
-                    VALUES (?, ?, ?, 0, 0, 'transfer', ?, '2025-03-01', ?, ?)
-                    "#,
-                )
-                .bind(lot.id)
-                .bind(take.to_string())
-                .bind(portion_cost)
-                .bind(dest_id)
-                .bind(days)
-                .bind(if days >= 365 { 1 } else { 0 })
-                .execute(&mut *tx)
-                .await
-                .unwrap();
-
-                remaining -= take;
-            }
-
-            tx.commit().await.unwrap();
-        }
+        // FIFO: 8 ETH taken from lot1 (which has 10) — real engine path.
+        run_transfer(
+            &pool,
+            "token:ETH",
+            "wallet-A",
+            "wallet-B",
+            "2025-03-01",
+            "8",
+        )
+        .await;
 
         // Verify after transfer:
         // wallet-A: lot1 has 2 ETH remaining (cost 2/10 * $1000 = $200 remaining basis)
@@ -1433,60 +1352,17 @@ mod tests {
 
         insert_lot(&pool, "token:ETH", "wallet-A", "2025-01-01", "10", 100000).await;
 
-        // Transfer via direct SQL (same logic as transfer_lots command)
-        let mut tx = pool.begin().await.unwrap();
-
-        let lot: CostBasisLot = sqlx::query_as("SELECT * FROM cost_basis_lots WHERE id = 1")
-            .fetch_one(&mut *tx)
-            .await
-            .unwrap();
-
-        let take = Decimal::from(4);
-        let lot_qty = Decimal::from_str(&lot.quantity).unwrap();
-        let portion_cost = proportional_cost_basis(take, lot_qty, lot.cost_basis_minor).unwrap();
-        let new_remaining = Decimal::from_str(&lot.remaining_quantity).unwrap() - take;
-
-        sqlx::query(
-            "UPDATE cost_basis_lots SET remaining_quantity = ?, is_closed = 0 WHERE id = 1",
+        // Transfer through the real engine path
+        let dest_lots = run_transfer(
+            &pool,
+            "token:ETH",
+            "wallet-A",
+            "wallet-B",
+            "2025-03-01",
+            "4",
         )
-        .bind(new_remaining.to_string())
-        .execute(&mut *tx)
-        .await
-        .unwrap();
-
-        let dest = sqlx::query(
-            r#"
-            INSERT INTO cost_basis_lots (
-                asset_id, wallet_id, acquired_date, quantity, remaining_quantity,
-                cost_basis_minor, cost_basis_method
-            )
-            VALUES ('token:ETH', 'wallet-B', '2025-01-01', '4', '4', ?, 'FIFO')
-            "#,
-        )
-        .bind(portion_cost)
-        .execute(&mut *tx)
-        .await
-        .unwrap();
-
-        let dest_id = dest.last_insert_rowid();
-
-        sqlx::query(
-            r#"
-            INSERT INTO lot_consumptions (
-                lot_id, quantity_consumed, cost_basis_minor, proceeds_minor,
-                realized_gain_loss_minor, event_type, destination_lot_id,
-                event_date, holding_period_days, is_long_term
-            )
-            VALUES (1, '4', ?, 0, 0, 'transfer', ?, '2025-03-01', 59, 0)
-            "#,
-        )
-        .bind(portion_cost)
-        .bind(dest_id)
-        .execute(&mut *tx)
-        .await
-        .unwrap();
-
-        tx.commit().await.unwrap();
+        .await;
+        let dest_id = dest_lots[0].id;
 
         // Verify NO realization
         let consumptions: Vec<LotConsumption> =
@@ -1539,5 +1415,139 @@ mod tests {
         assert_eq!(result.details[0].quantity_consumed, "0.000000000000000001");
         assert_eq!(result.details[0].cost_basis_minor, 100);
         assert_eq!(result.details[0].realized_gain_loss_minor, 100);
+    }
+
+    // ---- Lifecycle gate: lot events only reference POSTED journal entries ----
+
+    /// Helper: insert a journal entry with a given status.
+    async fn insert_journal_entry(pool: &SqlitePool, status: &str) -> i64 {
+        let result = sqlx::query(
+            "INSERT INTO journal_entries (entry_date, description, status, is_posted) VALUES ('2025-01-01', 'test', ?, 0)",
+        )
+        .bind(status)
+        .execute(pool)
+        .await
+        .expect("Failed to insert test journal entry");
+        result.last_insert_rowid()
+    }
+
+    #[tokio::test]
+    async fn dispose_rejects_unposted_journal_entry() {
+        let pool = setup_test_db().await;
+        insert_lot(&pool, "token:ETH", "wallet-A", "2025-01-01", "10", 100000).await;
+        let draft_je = insert_journal_entry(&pool, "draft").await;
+
+        let input = DisposeLotInput {
+            asset_id: "token:ETH".to_string(),
+            wallet_id: "wallet-A".to_string(),
+            disposal_date: "2025-07-01".to_string(),
+            quantity: "5".to_string(),
+            proceeds_minor: 100000,
+            journal_entry_id: Some(draft_je),
+        };
+        let err = dispose_lots_with_method(&pool, &input, &FifoSelector)
+            .await
+            .unwrap_err();
+        assert!(err.contains("must be 'posted'"), "unexpected error: {err}");
+
+        // Nothing consumed
+        let count: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM lot_consumptions")
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+        assert_eq!(count.0, 0);
+    }
+
+    #[tokio::test]
+    async fn transfer_rejects_unposted_journal_entry() {
+        let pool = setup_test_db().await;
+        insert_lot(&pool, "token:ETH", "wallet-A", "2025-01-01", "10", 100000).await;
+        let draft_je = insert_journal_entry(&pool, "draft").await;
+
+        let input = TransferLotInput {
+            asset_id: "token:ETH".to_string(),
+            from_wallet_id: "wallet-A".to_string(),
+            to_wallet_id: "wallet-B".to_string(),
+            transfer_date: "2025-03-01".to_string(),
+            quantity: "4".to_string(),
+            journal_entry_id: Some(draft_je),
+        };
+        let err = transfer_lots_impl(&pool, &input).await.unwrap_err();
+        assert!(err.contains("must be 'posted'"), "unexpected error: {err}");
+    }
+
+    // ---- DB-layer append-only / immutability enforcement (Inv-7) ----
+
+    #[tokio::test]
+    async fn lot_consumptions_are_append_only_at_db_layer() {
+        let pool = setup_test_db().await;
+        insert_lot(&pool, "token:ETH", "wallet-A", "2025-01-01", "10", 100000).await;
+        run_disposal(&pool, "token:ETH", "wallet-A", "2025-03-01", "3", 45000).await;
+
+        // UPDATE is rejected by trigger
+        let upd =
+            sqlx::query("UPDATE lot_consumptions SET realized_gain_loss_minor = 0 WHERE id = 1")
+                .execute(&pool)
+                .await;
+        assert!(upd.is_err());
+        assert!(upd.unwrap_err().to_string().contains("append-only"));
+
+        // DELETE is rejected by trigger
+        let del = sqlx::query("DELETE FROM lot_consumptions WHERE id = 1")
+            .execute(&pool)
+            .await;
+        assert!(del.is_err());
+        assert!(del.unwrap_err().to_string().contains("append-only"));
+    }
+
+    #[tokio::test]
+    async fn lots_cannot_be_deleted_and_core_columns_are_immutable() {
+        let pool = setup_test_db().await;
+        insert_lot(&pool, "token:ETH", "wallet-A", "2025-01-01", "10", 100000).await;
+
+        // DELETE rejected
+        let del = sqlx::query("DELETE FROM cost_basis_lots WHERE id = 1")
+            .execute(&pool)
+            .await;
+        assert!(del.is_err());
+
+        // Rewriting acquisition facts rejected
+        let upd = sqlx::query("UPDATE cost_basis_lots SET cost_basis_minor = 1 WHERE id = 1")
+            .execute(&pool)
+            .await;
+        assert!(upd.is_err());
+        assert!(upd.unwrap_err().to_string().contains("immutable"));
+
+        // Running-balance columns remain updatable (engine path)
+        let ok = sqlx::query(
+            "UPDATE cost_basis_lots SET remaining_quantity = '5', is_closed = 0 WHERE id = 1",
+        )
+        .execute(&pool)
+        .await;
+        assert!(ok.is_ok());
+    }
+
+    #[tokio::test]
+    async fn conditional_lot_update_rejects_stale_remaining_quantity() {
+        // SQL-semantics check for the anti-double-spend guard: an UPDATE keyed
+        // on a stale remaining_quantity must affect 0 rows.
+        let pool = setup_test_db().await;
+        insert_lot(&pool, "token:ETH", "wallet-A", "2025-01-01", "10", 100000).await;
+
+        let stale = sqlx::query(
+            "UPDATE cost_basis_lots SET remaining_quantity = '0', is_closed = 1 WHERE id = 1 AND remaining_quantity = '7' AND is_closed = 0",
+        )
+        .execute(&pool)
+        .await
+        .unwrap();
+        assert_eq!(stale.rows_affected(), 0);
+
+        let fresh = sqlx::query(
+            "UPDATE cost_basis_lots SET remaining_quantity = '0', is_closed = 1 WHERE id = 1 AND remaining_quantity = '10' AND is_closed = 0",
+        )
+        .execute(&pool)
+        .await
+        .unwrap();
+        assert_eq!(fresh.rows_affected(), 1);
     }
 }

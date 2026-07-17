@@ -122,3 +122,47 @@ AFTER UPDATE ON cost_basis_lots
 BEGIN
     UPDATE cost_basis_lots SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
 END;
+
+-- =============================================================================
+-- Append-only / provenance enforcement at the DB layer (Inv-7).
+-- Rust code is the primary gate; these triggers make the invariants hold
+-- against ANY writer (ad-hoc SQL, future code paths, bugs).
+-- =============================================================================
+
+-- lot_consumptions is strictly append-only: no UPDATE, no DELETE.
+CREATE TRIGGER IF NOT EXISTS lot_consumptions_no_update
+BEFORE UPDATE ON lot_consumptions
+BEGIN
+    SELECT RAISE(ABORT, 'lot_consumptions is append-only: UPDATE forbidden');
+END;
+
+CREATE TRIGGER IF NOT EXISTS lot_consumptions_no_delete
+BEFORE DELETE ON lot_consumptions
+BEGIN
+    SELECT RAISE(ABORT, 'lot_consumptions is append-only: DELETE forbidden');
+END;
+
+-- Lots may never be deleted (history must survive full consumption).
+CREATE TRIGGER IF NOT EXISTS cost_basis_lots_no_delete
+BEFORE DELETE ON cost_basis_lots
+BEGIN
+    SELECT RAISE(ABORT, 'cost_basis_lots rows may not be deleted');
+END;
+
+-- Lot identity and acquisition facts are immutable. Only the derived
+-- running-balance columns (remaining_quantity, is_closed) and updated_at
+-- may change after insert.
+CREATE TRIGGER IF NOT EXISTS cost_basis_lots_immutable_core
+BEFORE UPDATE ON cost_basis_lots
+WHEN OLD.asset_id != NEW.asset_id
+    OR OLD.wallet_id != NEW.wallet_id
+    OR OLD.acquired_date != NEW.acquired_date
+    OR OLD.quantity != NEW.quantity
+    OR OLD.cost_basis_minor != NEW.cost_basis_minor
+    OR OLD.cost_basis_method != NEW.cost_basis_method
+    OR OLD.journal_entry_id IS NOT NEW.journal_entry_id
+    OR OLD.created_at IS NOT NEW.created_at
+    OR OLD.id != NEW.id
+BEGIN
+    SELECT RAISE(ABORT, 'cost_basis_lots core columns are immutable; only remaining_quantity/is_closed may change');
+END;
