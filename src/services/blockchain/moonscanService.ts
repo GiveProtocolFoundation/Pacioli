@@ -3,9 +3,9 @@
  * Fetches EVM transaction history for Moonbeam/Moonriver via the Etherscan V2
  * unified API (per-chain V1 endpoints are deprecated).
  *
- * An Etherscan or Moonscan API key unlocks faster rate limits.
- * Get a free API key at: https://moonscan.io/myapikey
- * Without a key, requests are rate-limited to ~1 req/5s.
+ * Etherscan V2 requires an API key for all requests.
+ * A free Etherscan key (https://etherscan.io/myapikey) works for all V2 chains
+ * including Moonbeam/Moonriver. A Moonscan-specific key also works.
  */
 
 import { invoke } from '@tauri-apps/api/core'
@@ -87,14 +87,21 @@ export class MoonscanService {
     },
   }
 
-  // Retrieve API key: Tauri keychain → localStorage → env var
+  // Retrieve API key: Tauri keychain → localStorage → env var.
+  // Falls back to the Etherscan key because Moonscan V1 is deprecated and V2
+  // runs through api.etherscan.io — an Etherscan API key works for all V2 chains.
   private static async getApiKey(): Promise<string | null> {
-    // Try Tauri keychain first (desktop app)
+    // Try Tauri keychain first (desktop app): moonscan key, then etherscan key
     try {
       const key = await invoke<string | null>('get_api_key', {
         provider: 'moonscan',
       })
       if (key) return key
+      // Moonscan V1 deprecated; V2 runs through etherscan.io — etherscan key works
+      const ethKey = await invoke<string | null>('get_api_key', {
+        provider: 'etherscan',
+      })
+      if (ethKey) return ethKey
     } catch {
       // Tauri not available — fall through to browser fallbacks
     }
@@ -102,13 +109,15 @@ export class MoonscanService {
     // Check localStorage (browser dev mode, set via DataProviders page)
     const storedKey = localStorage.getItem('pacioli_api_key_moonscan')
     if (storedKey) return storedKey
+    const ethStoredKey = localStorage.getItem('pacioli_api_key_etherscan')
+    if (ethStoredKey) return ethStoredKey
 
     // Check for environment variable (build-time configured)
-    if (
-      typeof import.meta !== 'undefined' &&
-      import.meta.env?.VITE_MOONSCAN_API_KEY
-    ) {
-      return import.meta.env.VITE_MOONSCAN_API_KEY
+    if (typeof import.meta !== 'undefined') {
+      if (import.meta.env?.VITE_MOONSCAN_API_KEY)
+        return import.meta.env.VITE_MOONSCAN_API_KEY
+      if (import.meta.env?.VITE_ETHERSCAN_API_KEY)
+        return import.meta.env.VITE_ETHERSCAN_API_KEY
     }
 
     return null
@@ -169,7 +178,7 @@ export class MoonscanService {
       offset: offset.toString(),
       sort,
     })
-    // API key is optional — without it, Moonscan allows ~1 req/5s
+    // Etherscan V2 requires an API key; getApiKey() falls back to etherscan key
     if (apiKey) {
       params.set('apikey', apiKey)
     }

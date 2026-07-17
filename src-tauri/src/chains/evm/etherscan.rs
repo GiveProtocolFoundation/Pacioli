@@ -3,10 +3,13 @@
 //! Supports Etherscan and compatible block explorer APIs (Polygonscan, Arbiscan, etc.)
 //! Now uses the ResilientFetcher for Governor-based rate limiting and automatic retries.
 //!
-//! # "Batteries Included, Turbo Optional"
+//! # API Key Handling
 //!
-//! - **Default Mode**: Works out of the box with 1 req/sec (no API key required)
-//! - **Turbo Mode**: Add your API key in Settings to unlock 5 req/sec
+//! Etherscan V2 requires an API key. For chains that use the V2 unified endpoint
+//! (including Moonbeam/Moonriver), the client falls back to the Etherscan key
+//! when no chain-specific key is configured.
+//! - **Default Mode**: 1 req/sec with a free key
+//! - **Turbo Mode**: Add a paid/higher-tier API key for 5 req/sec
 
 use super::config::{get_chain_config, EvmChainConfig};
 use super::types::{
@@ -124,13 +127,23 @@ impl EtherscanClient {
     ///
     /// # API Key Priority
     /// 1. Explicitly provided `api_key` parameter
-    /// 2. Key from OS keychain (via ApiKeyManager)
-    /// 3. No key (Default Mode)
+    /// 2. Key from OS keychain for the chain's provider (via ApiKeyManager)
+    /// 3. Etherscan key fallback (for chains using V2 unified endpoint, e.g. Moonscan)
+    /// 4. No key (Default Mode — may fail on Etherscan V2 which requires a key)
     pub fn new(config: &EvmChainConfig, api_key: Option<String>) -> ChainResult<Self> {
-        // Determine the API key (explicit > keychain > none)
+        // Determine the API key (explicit > provider keychain > etherscan fallback > none)
         let provider = get_api_provider_for_chain(config.chain_id);
-        let effective_api_key =
-            api_key.or_else(|| ApiKeyManager::get_api_key(provider).ok().flatten());
+        let effective_api_key = api_key
+            .or_else(|| ApiKeyManager::get_api_key(provider).ok().flatten())
+            .or_else(|| {
+                // Moonscan V1 deprecated; V2 runs through api.etherscan.io —
+                // fall back to the Etherscan key when no Moonscan-specific key exists
+                if provider == ApiProvider::Moonscan {
+                    ApiKeyManager::get_api_key(ApiProvider::Etherscan).ok().flatten()
+                } else {
+                    None
+                }
+            });
 
         // Calculate rate limit based on API key presence
         let rate_limit = get_rate_limit_for_chain(config.chain_id, effective_api_key.is_some());
