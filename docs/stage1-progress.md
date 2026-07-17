@@ -4,10 +4,11 @@ Session constitution: `SCOPE.md` (repo root). Stage 1 mandate: GIV-668.
 Gate 1: CPA-reviewed statements from real imported transactions, manually
 classified through the approval queue.
 
-**Current phase: 9 (Invariant test suite) — Phases 1-8 landed;
-Phase 9 implemented by Engineer (GIV-691): 27 property-based tests
-via proptest pinning all 7 SCOPE.md invariants against real engine
-paths. 314 total tests green, clippy clean.**
+**Current phase: 10 (Gate 1 rehearsal) — Phases 1-9 landed and merged.
+Rehearsal package prepared (`docs/gate1-report.md`: CPA-facing overview,
+known limitations, 12-step rehearsal checklist, demo script). Awaiting
+the product owner's real-data rehearsal run; findings land in
+`docs/gate1-report.md` §5 and blockers-only fixes follow.**
 
 ## Phase Checklist
 
@@ -56,7 +57,12 @@ paths. 314 total tests green, clippy clean.**
       Inv-7 append-only provenance, cost basis conservation/transfer/FIFO/
       over-consumption, fair-value idempotency + unrealized=FV−cost,
       statements tie/TB/BS/IS/multi-period — Engineer)
-- [ ] **Phase 10 — Gate 1 rehearsal**
+- [ ] **Phase 10 — Gate 1 rehearsal** (in progress: rehearsal package
+      authored — `docs/gate1-report.md` with CPA-facing overview, plainly
+      stated known limitations, 12-step real-data rehearsal checklist, and
+      the CPA demo script. Remaining: product owner runs the rehearsal with
+      real wallets; findings captured in the report §5; blockers-only fixes;
+      statements delivered to the CPA)
 
 ---
 
@@ -956,3 +962,20 @@ WHERE status='approved'` (the M5 state machine explicitly allows
     inserts use `0.0` literals for the legacy REAL amount columns.
   - 28 proptest properties / 321 total lib tests green; clippy (CI
     flags) + rustfmt clean.
+- **Session 15 (2026-07-17, CTO — Phase 10 start):** Gate 1 rehearsal
+  package authored — no engine code touched (docs only):
+  - **New `docs/gate1-report.md`:** (1) CPA-facing overview of what the
+    review will see (four-layer model, provenance, structural balance in
+    integer minor units, append-only ledger with generated reversals,
+    period close/lock, tie-verified statements, FIFO cost basis,
+    ASU 2023-08 fair value through the approval queue, proptest invariant
+    suite); (2) known limitations stated plainly (desktop-only journal
+    path, no fair-value/cost-basis UI, CSV-only export, FIFO-only,
+    single entity/US GAAP, manual classification and period-end
+    sequencing, REAL-cast SQL quantity backstop fine print);
+    (3) 12-step real-data rehearsal checklist; (4) ~30-minute CPA demo
+    script; (5) empty findings table for the live run.
+  - Next step: product owner runs the rehearsal (checklist §3) with real
+    wallets; friction/defects captured in the report §5; fix blockers
+    only; then statements + `docs/accounting-model.md` + the report go
+    to the reviewing CPA. Gate verdict is the CPA's.
