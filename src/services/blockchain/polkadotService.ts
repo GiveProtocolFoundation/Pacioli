@@ -20,7 +20,7 @@ import type {
 } from '../wallet/types'
 import { ChainType } from '../wallet/types'
 import { subscanService } from './subscanService'
-import { moonscanService, MoonscanService } from './moonscanService'
+import { moonscanService } from './moonscanService'
 import { batchCalculateUsdValues, getCoinGeckoId } from './priceService'
 import {
   annotateXcmTransactions,
@@ -369,22 +369,6 @@ class PolkadotService {
       // Use Moonscan for EVM addresses on Moonbeam/Moonriver
       if (!moonscanService.isAvailable(network)) {
         throw new Error(`Moonscan not available for ${network}`)
-      }
-
-      // Check for API key before attempting fetch
-      const hasKey = await MoonscanService.hasApiKey()
-      if (!hasKey) {
-        onProgress?.({
-          stage: 'complete',
-          currentBlock: 0,
-          totalBlocks: 0,
-          blocksScanned: 0,
-          transactionsFound: 0,
-          message:
-            'EVM transaction sync requires an Etherscan API key. ' +
-            'Add a free key in Settings > Data Providers to enable transaction history.',
-        })
-        return []
       }
 
       try {

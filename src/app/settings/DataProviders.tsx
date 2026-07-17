@@ -100,6 +100,13 @@ const PROVIDER_CONFIGS: ProviderConfig[] = [
     chains: ['Optimism'],
   },
   {
+    id: 'moonscan',
+    name: 'Moonscan',
+    description: 'Moonbeam and Moonriver block explorer API',
+    docsUrl: 'https://moonscan.io/myapikey',
+    chains: ['Moonbeam', 'Moonriver'],
+  },
+  {
     id: 'subscan',
     name: 'Subscan',
     description: 'Polkadot ecosystem block explorer API',
@@ -111,7 +118,9 @@ const PROVIDER_CONFIGS: ProviderConfig[] = [
 // Browser-mode fallback: build ProviderStatus from localStorage + VITE_ defaults
 function getLocalStorageStatuses(): ProviderStatus[] {
   return PROVIDER_CONFIGS.map(config => {
-    const hasUserKey = Boolean(localStorage.getItem(`${LS_KEY_PREFIX}${config.id}`))
+    const hasUserKey = Boolean(
+      localStorage.getItem(`${LS_KEY_PREFIX}${config.id}`)
+    )
     const hasDefault = hasDefaultKey(config.id)
     const hasAnyKey = hasUserKey || hasDefault
     return {
@@ -187,9 +196,9 @@ const TurboInfoBox: React.FC = () => (
           Batteries Included, Turbo Optional
         </h3>
         <p className="text-sm text-[#294050] dark:text-[#9FB4BE]">
-          Pacioli works out of the box with conservative rate limits. Add your free API keys
-          from block explorers to unlock 5x faster sync speeds. API keys are free to obtain
-          from each provider.
+          Pacioli works out of the box with conservative rate limits. Add your
+          free API keys from block explorers to unlock 5x faster sync speeds.
+          API keys are free to obtain from each provider.
         </p>
         <div className="mt-3 flex items-center gap-4">
           <div className="flex items-center gap-2">
@@ -299,7 +308,11 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
   const rateLimit = status?.rate_limit ?? 1
   const turboLimit = status?.turbo_rate_limit ?? 5
   const defaultAvailable = hasDefaultKey(config.id)
-  const keyMode: KeyMode = isTurbo ? 'turbo' : hasKey || defaultAvailable ? 'default' : 'none'
+  const keyMode: KeyMode = isTurbo
+    ? 'turbo'
+    : hasKey || defaultAvailable
+      ? 'default'
+      : 'none'
 
   const toggleShowKey = useCallback(() => {
     setShowKey(prev => !prev)
@@ -421,7 +434,9 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
               <div className="flex items-center gap-1.5 text-sm text-[#2E9A82] dark:text-[#5FE3C0]">
                 <Check className="w-4 h-4" />
                 <span>
-                  {showSaveSuccess ? 'API key saved successfully!' : 'API key configured'}
+                  {showSaveSuccess
+                    ? 'API key saved successfully!'
+                    : 'API key configured'}
                 </span>
               </div>
               <button
@@ -581,7 +596,8 @@ const DataProviders: React.FC = () => {
             of {totalProviders} providers active
             {turboCount > 0 && (
               <span className="text-[#5FE3C0] dark:text-[#9CF1DC]">
-                {' '}({turboCount} Turbo)
+                {' '}
+                ({turboCount} Turbo)
               </span>
             )}
           </span>

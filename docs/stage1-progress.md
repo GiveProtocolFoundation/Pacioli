@@ -979,3 +979,16 @@ WHERE status='approved'` (the M5 state machine explicitly allows
     wallets; friction/defects captured in the report §5; fix blockers
     only; then statements + `docs/accounting-model.md` + the report go
     to the reviewing CPA. Gate verdict is the CPA's.
+- **Session 16 (2026-07-17, CTO — Phase 10 rehearsal, finding #1):** First
+  live-run finding triaged and fixed (blockers-only rule holds):
+  - **Finding #1 (blocker, fixed):** Moonbeam wallet sync failed —
+    `moonscanService` used the Etherscan V2 unified endpoint, which does
+    not serve Moonbeam (chainid 1284); Moonbeam needs the direct Moonscan
+    API with its own optional key. Fix merged via PR #227: per-chain
+    direct endpoints, `moonscan` key namespace + Settings card, keyless
+    access (~1 req/5s), removed the no-key sync block. Logged in
+    `gate1-report.md` §5.
+  - **Finding #1a (note, monitoring):** "Not connected to moonbeam" from
+    the WS-RPC path (balances/recent blocks) is distinct from the HTTP
+    fix; re-observe on retest before treating as a defect.
+  - Rehearsal continues with the product owner from checklist §3 step 2.
