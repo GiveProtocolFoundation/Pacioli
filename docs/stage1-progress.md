@@ -992,3 +992,19 @@ WHERE status='approved'` (the M5 state machine explicitly allows
     the WS-RPC path (balances/recent blocks) is distinct from the HTTP
     fix; re-observe on retest before treating as a defect.
   - Rehearsal continues with the product owner from checklist §3 step 2.
+- **Session 17 (2026-07-17, CTO — Phase 10 rehearsal, finding #2):**
+  Retest finding triaged and fixed (blockers-only rule holds):
+  - **Finding #2 (blocker, fixed):** Moonbeam sync failed again on retest —
+    Moonscan has deprecated its per-chain V1 endpoints (the very endpoints
+    PR #227 switched to); its error message directs callers to the
+    Etherscan V2 unified endpoint, meaning V2 now serves chainid 1284/1285.
+    Fix merged via PR #228 (main `63d67fd`): all five Moonscan URL sites
+    migrated to `api.etherscan.io/v2/api` with a `chainid` query parameter,
+    matching every other EVM chain; `moonscan` keychain namespace retained
+    (mapped in `etherscan.rs` for 1284/1285). Logged in `gate1-report.md`
+    §5 row #2.
+  - The finding #1 → #2 reversal is external-API drift, not churn: V2 did
+    not serve Moonbeam at the time of finding #1; the provider moved
+    underneath us between rehearsal runs.
+  - Rehearsal continues: product owner rebuilds from main ≥ `63d67fd` and
+    retests from checklist §3 step 2 (watch finding #1a on the WS-RPC path).
