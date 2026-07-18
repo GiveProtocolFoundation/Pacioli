@@ -445,21 +445,23 @@ use super::bitcoin::{
 
 /// Get Bitcoin transactions for an address
 ///
+/// Routes through `ChainManager::get_transactions` so the call inherits
+/// provider-fallback (Mempool.space → Blockstream), health tracking, and
+/// the unified `ChainTransaction` response shape.
+///
 /// # Arguments
 /// * `address` - Bitcoin address (legacy, SegWit, or Taproot)
 /// * `network` - Network name ("bitcoin", "testnet", "signet")
-/// * `max_pages` - Maximum pages to fetch (25 txs per page)
 #[tauri::command]
 pub async fn get_bitcoin_transactions(
+    state: State<'_, ChainManagerState>,
     address: String,
     network: Option<String>,
-    max_pages: Option<usize>,
-) -> Result<Vec<BitcoinTransaction>, String> {
+) -> Result<Vec<ChainTransaction>, String> {
     let network_name = network.as_deref().unwrap_or("bitcoin");
-    let adapter = BitcoinAdapter::from_network(network_name).map_err(|e| e.to_string())?;
-
-    adapter
-        .fetch_transactions(&address, max_pages)
+    let manager = state.read().await;
+    manager
+        .get_transactions(network_name, &address, None)
         .await
         .map_err(|e| e.to_string())
 }
@@ -515,25 +517,27 @@ pub async fn validate_bitcoin_address(address: String) -> Result<bool, String> {
 // SOLANA-SPECIFIC COMMANDS
 // =============================================================================
 
-use super::solana::{SolanaAdapter, SolanaBalance, SolanaTransaction};
+use super::solana::{SolanaAdapter, SolanaBalance};
 
 /// Get Solana transactions for an address
+///
+/// Routes through `ChainManager::get_transactions` so the call inherits
+/// provider-fallback (primary RPC → Helius → public endpoint), health
+/// tracking, and the unified `ChainTransaction` response shape.
 ///
 /// # Arguments
 /// * `address` - Solana address (base58 encoded)
 /// * `network` - Network name ("solana", "solana_devnet")
-/// * `max_pages` - Maximum pages to fetch (~100 txs per page)
 #[tauri::command]
 pub async fn get_solana_transactions(
+    state: State<'_, ChainManagerState>,
     address: String,
     network: Option<String>,
-    max_pages: Option<usize>,
-) -> Result<Vec<SolanaTransaction>, String> {
+) -> Result<Vec<ChainTransaction>, String> {
     let network_name = network.as_deref().unwrap_or("solana");
-    let adapter = SolanaAdapter::from_network(network_name).map_err(|e| e.to_string())?;
-
-    adapter
-        .fetch_transactions(&address, max_pages)
+    let manager = state.read().await;
+    manager
+        .get_transactions(network_name, &address, None)
         .await
         .map_err(|e| e.to_string())
 }
