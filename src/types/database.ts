@@ -302,13 +302,13 @@ export type ClassificationStatus =
 export interface RawTransaction {
   id: string
   chainId: string
-  hash: string
+  transactionHash: string
   fromAddress: string
   toAddress: string | null
-  value: string
-  fee: string | null
+  transferValue: string
+  transactionFee: string | null
   timestamp: number
-  txType: string
+  transactionType: string
   status: string
   classificationStatus: ClassificationStatus
 }

@@ -250,12 +250,11 @@ export const tauriPersistence: PersistenceService = {
     transactions: Transaction[]
   ): Promise<void> => {
     if (USE_PERSISTENCE_TX_PATH) {
-      // Serialize each transaction to JSON for SQLite raw_data storage.
-      // price_at_acquisition_usd is stored as a first-class column so the
-      // COALESCE upsert logic can preserve manually-entered prices on re-sync.
+      // Serialize each transaction to JSON for SQLite raw_json_data storage.
+      // Column names match the Phase 4a descriptive naming convention.
       const serialized = transactions.map(tx => ({
         id: tx.id,
-        hash: tx.hash,
+        transaction_hash: tx.hash,
         block_number: tx.blockNumber,
         timestamp:
           tx.timestamp instanceof Date
@@ -263,11 +262,11 @@ export const tauriPersistence: PersistenceService = {
             : 0,
         from_address: tx.from,
         to_address: tx.to,
-        value: tx.value,
-        fee: tx.fee,
+        transfer_value: tx.value,
+        transaction_fee: tx.fee,
         status: tx.status,
-        tx_type: tx.type,
-        raw_data: JSON.stringify(tx),
+        transaction_type: tx.type,
+        raw_json_data: JSON.stringify(tx),
         price_at_acquisition_usd:
           tx.pricePerUnitUsd != null ? tx.pricePerUnitUsd.toString() : null,
       }))
@@ -286,7 +285,7 @@ export const tauriPersistence: PersistenceService = {
     address: string
   ): Promise<Transaction[]> => {
     if (USE_PERSISTENCE_TX_PATH) {
-      const rows = await invoke<Array<{ raw_data: string }>>(
+      const rows = await invoke<Array<{ raw_json_data: string }>>(
         'get_chain_transactions',
         {
           network,
@@ -294,7 +293,7 @@ export const tauriPersistence: PersistenceService = {
         }
       )
       return rows.map(row => {
-        const tx = JSON.parse(row.raw_data) as Transaction
+        const tx = JSON.parse(row.raw_json_data) as Transaction
         // Restore Date object from serialized string
         if (typeof tx.timestamp === 'string') {
           tx.timestamp = new Date(tx.timestamp)
