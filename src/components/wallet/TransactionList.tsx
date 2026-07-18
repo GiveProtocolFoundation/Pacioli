@@ -73,12 +73,14 @@ export const TransactionList: React.FC<TransactionListProps> = ({
 
       // Search filter: match against hash, from, to, or method
       if (searchQuery) {
-        const q = searchQuery.toLowerCase()
-        const matchesHash = tx.hash?.toLowerCase().includes(q)
-        const matchesFrom = tx.from?.toLowerCase().includes(q)
-        const matchesTo = tx.to?.toLowerCase().includes(q)
-        const matchesMethod = substrateTx.method?.toLowerCase().includes(q)
-        const matchesSection = substrateTx.section?.toLowerCase().includes(q)
+        const needle = searchQuery.toLowerCase()
+        const matchesHash = tx.hash?.toLowerCase().includes(needle)
+        const matchesFrom = tx.from?.toLowerCase().includes(needle)
+        const matchesTo = tx.to?.toLowerCase().includes(needle)
+        const matchesMethod = substrateTx.method?.toLowerCase().includes(needle)
+        const matchesSection = substrateTx.section
+          ?.toLowerCase()
+          .includes(needle)
         if (
           !matchesHash &&
           !matchesFrom &&
