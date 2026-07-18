@@ -1008,3 +1008,23 @@ WHERE status='approved'` (the M5 state machine explicitly allows
     underneath us between rehearsal runs.
   - Rehearsal continues: product owner rebuilds from main ≥ `63d67fd` and
     retests from checklist §3 step 2 (watch finding #1a on the WS-RPC path).
+- **Session 18 (2026-07-17, CTO — Phase 10 rehearsal, finding #3):**
+  Retest finding diagnosed with a live API probe before fixing (three
+  consecutive endpoint/key failures warranted proof, not another guess):
+  - **Finding #3 (blocker, fixed in code + user action):** "Invalid API
+    Key (#err2)" on retest. Probe: keyless V2 returns "Missing/Invalid
+    API Key"; a rejected key returns exactly "Invalid API Key (#err2)" —
+    a key IS being sent and rejected. Root cause: the key saved under the
+    Moonscan provider during finding #1 is invalid on Etherscan V2, and
+    its presence shadowed PR #230's etherscan-key fallback (which only
+    fired when no moonscan key existed). Fix: `moonscanService` now tries
+    every configured key candidate in order (keychain moonscan →
+    etherscan → localStorage → env), skipping rejected ones, and when all
+    fail the error carries remediation steps. User action remains: a free
+    etherscan.io key saved under the Etherscan provider (legacy
+    moonscan.io keys do not work on V2). Logged in `gate1-report.md` §5
+    row #3.
+  - Strategic follow-up proposed to the board on GIV-668: single-provider
+    indexer dependence is a structural fragility class; options analysis
+    (key-UX hardening now, multi-provider fallback abstraction next, own
+    indexing later) posted for a decision.
