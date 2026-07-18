@@ -97,12 +97,12 @@ const PROVIDER_UNAVAILABLE_PREFIX = 'Provider temporarily unavailable'
  */
 export async function fetchTransactionsResilient(
   chainId: string,
-  address: string,
+  address: string
 ): Promise<SyncResult> {
   try {
     const transactions = await invoke<ChainTransaction[]>(
       'chain_fetch_transactions_resumable',
-      { chainId, address },
+      { chainId, address }
     )
 
     return {
@@ -135,7 +135,7 @@ export async function fetchTransactionsResilient(
  */
 export async function loadSyncStatus(
   chainId: string,
-  address: string,
+  address: string
 ): Promise<SyncStatus | null> {
   return invoke<SyncStatus | null>('load_chain_sync_status', {
     network: chainId,
@@ -153,7 +153,7 @@ export async function loadSyncStatus(
 export async function saveSyncStatus(
   chainId: string,
   address: string,
-  lastBlock: number,
+  lastBlock: number
 ): Promise<void> {
   return invoke('save_chain_sync_status', {
     network: chainId,
@@ -172,11 +172,11 @@ export async function saveSyncStatus(
  * @returns Array of SyncResult for each pair (same order)
  */
 export async function syncMultipleWallets(
-  pairs: Array<{ chainId: string; address: string }>,
+  pairs: Array<{ chainId: string; address: string }>
 ): Promise<SyncResult[]> {
   return Promise.all(
     pairs.map(({ chainId, address }) =>
-      fetchTransactionsResilient(chainId, address),
-    ),
+      fetchTransactionsResilient(chainId, address)
+    )
   )
 }

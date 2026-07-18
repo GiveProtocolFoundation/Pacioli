@@ -58,7 +58,7 @@ afterEach(() => {
 describe('Provider outage simulation', () => {
   it('should return graceful error on 5xx server error', async () => {
     mockInvoke.mockRejectedValueOnce(
-      'Provider temporarily unavailable for ethereum. Tried: Etherscan V2 (ethereum). Last error: API error: 500 Internal Server Error',
+      'Provider temporarily unavailable for ethereum. Tried: Etherscan V2 (ethereum). Last error: API error: 500 Internal Server Error'
     )
 
     const result = await fetchTransactionsResilient('ethereum', '0xabc')
@@ -73,7 +73,7 @@ describe('Provider outage simulation', () => {
 
   it('should return graceful error on timeout', async () => {
     mockInvoke.mockRejectedValueOnce(
-      'Provider temporarily unavailable for polygon. Tried: Etherscan V2 (polygon), Alchemy (polygon). Last error: Connection failed: request timed out',
+      'Provider temporarily unavailable for polygon. Tried: Etherscan V2 (polygon), Alchemy (polygon). Last error: Connection failed: request timed out'
     )
 
     const result = await fetchTransactionsResilient('polygon', '0xdef')
@@ -85,7 +85,7 @@ describe('Provider outage simulation', () => {
 
   it('should return graceful error on rate limit (429)', async () => {
     mockInvoke.mockRejectedValueOnce(
-      'Provider temporarily unavailable for arbitrum. Tried: Etherscan V2 (arbitrum). Last error: Rate limited',
+      'Provider temporarily unavailable for arbitrum. Tried: Etherscan V2 (arbitrum). Last error: Rate limited'
     )
 
     const result = await fetchTransactionsResilient('arbitrum', '0xghi')
@@ -98,7 +98,7 @@ describe('Provider outage simulation', () => {
 
   it('should return graceful error on partial response / parse failure', async () => {
     mockInvoke.mockRejectedValueOnce(
-      'Provider temporarily unavailable for moonbeam. Tried: Etherscan V2 (moonbeam). Last error: API error: unexpected end of JSON input',
+      'Provider temporarily unavailable for moonbeam. Tried: Etherscan V2 (moonbeam). Last error: API error: unexpected end of JSON input'
     )
 
     const result = await fetchTransactionsResilient('moonbeam', '0xjkl')
@@ -147,7 +147,7 @@ describe('Provider outage simulation', () => {
 describe('Chain-specific provider failures', () => {
   it('should handle Solana RPC failure gracefully', async () => {
     mockInvoke.mockRejectedValueOnce(
-      'Provider temporarily unavailable for solana. Tried: Solana RPC (solana), Solana Public RPC (solana). Last error: Connection failed: connection refused',
+      'Provider temporarily unavailable for solana. Tried: Solana RPC (solana), Solana Public RPC (solana). Last error: Connection failed: connection refused'
     )
 
     const result = await fetchTransactionsResilient('solana', 'SoL...')
@@ -159,7 +159,7 @@ describe('Chain-specific provider failures', () => {
 
   it('should handle Bitcoin Mempool.space failure gracefully', async () => {
     mockInvoke.mockRejectedValueOnce(
-      'Provider temporarily unavailable for bitcoin. Tried: Mempool.space (bitcoin), Blockstream (bitcoin). Last error: API error: 503 Service Unavailable',
+      'Provider temporarily unavailable for bitcoin. Tried: Mempool.space (bitcoin), Blockstream (bitcoin). Last error: API error: 503 Service Unavailable'
     )
 
     const result = await fetchTransactionsResilient('bitcoin', 'bc1q...')
@@ -171,7 +171,7 @@ describe('Chain-specific provider failures', () => {
 
   it('should handle Moonbeam Etherscan V2 key rejection gracefully', async () => {
     mockInvoke.mockRejectedValueOnce(
-      'Provider temporarily unavailable for moonbeam. Tried: Etherscan V2 (moonbeam). Last error: API error: Invalid API Key',
+      'Provider temporarily unavailable for moonbeam. Tried: Etherscan V2 (moonbeam). Last error: API error: Invalid API Key'
     )
 
     const result = await fetchTransactionsResilient('moonbeam', '0xglmr')
@@ -238,7 +238,7 @@ describe('Multi-wallet resilient sync', () => {
     mockInvoke.mockResolvedValueOnce([SAMPLE_TX])
     // Second wallet fails with transient error
     mockInvoke.mockRejectedValueOnce(
-      'Provider temporarily unavailable for polygon. Last error: timeout',
+      'Provider temporarily unavailable for polygon. Last error: timeout'
     )
 
     const results = await syncMultipleWallets([
@@ -260,7 +260,7 @@ describe('Multi-wallet resilient sync', () => {
 
   it('should handle all wallets failing', async () => {
     mockInvoke.mockRejectedValue(
-      'Provider temporarily unavailable for all. Last error: server down',
+      'Provider temporarily unavailable for all. Last error: server down'
     )
 
     const results = await syncMultipleWallets([
@@ -324,7 +324,7 @@ describe('Edge cases', () => {
 
     expect(mockInvoke).toHaveBeenCalledWith(
       'chain_fetch_transactions_resumable',
-      { chainId: 'ethereum', address: '0xabc' },
+      { chainId: 'ethereum', address: '0xabc' }
     )
   })
 })

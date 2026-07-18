@@ -327,10 +327,7 @@ where
                     return Err(e);
                 }
                 last_error = e;
-                let delay = std::cmp::min(
-                    base_delay * 2u32.pow(attempt),
-                    max_delay,
-                );
+                let delay = std::cmp::min(base_delay * 2u32.pow(attempt), max_delay);
                 tokio::time::sleep(delay).await;
             }
         }
@@ -410,9 +407,7 @@ pub fn build_solana_registry(
 
     // Tertiary: public fallback
     let fallback = match network {
-        "solana_devnet" | "sol_devnet" | "devnet" => {
-            "https://api.devnet.solana.com"
-        }
+        "solana_devnet" | "sol_devnet" | "devnet" => "https://api.devnet.solana.com",
         _ => "https://api.mainnet-beta.solana.com",
     };
     // Only add fallback if it differs from primary
@@ -442,9 +437,7 @@ pub fn build_bitcoin_registry(network: &str, primary_url: &str) -> ProviderRegis
 
     // Secondary: Blockstream.info
     let blockstream_url = match network {
-        "bitcoin_testnet" | "btc_testnet" | "testnet" => {
-            "https://blockstream.info/testnet/api"
-        }
+        "bitcoin_testnet" | "btc_testnet" | "testnet" => "https://blockstream.info/testnet/api",
         "bitcoin_signet" | "btc_signet" | "signet" => {
             // Blockstream doesn't support signet, skip
             return ProviderRegistry::new(network, endpoints);
@@ -554,8 +547,7 @@ mod tests {
 
     #[test]
     fn test_build_evm_registry_no_alchemy() {
-        let reg =
-            build_evm_registry("moonbeam", "https://api.etherscan.io/v2/api", None, None);
+        let reg = build_evm_registry("moonbeam", "https://api.etherscan.io/v2/api", None, None);
         assert_eq!(reg.len(), 1);
     }
 
@@ -572,11 +564,7 @@ mod tests {
 
     #[test]
     fn test_build_solana_registry_custom_primary() {
-        let reg = build_solana_registry(
-            "solana",
-            "https://my-custom-rpc.example.com",
-            None,
-        );
+        let reg = build_solana_registry("solana", "https://my-custom-rpc.example.com", None);
         // custom primary + public fallback
         assert_eq!(reg.len(), 2);
     }
@@ -764,9 +752,7 @@ mod tests {
 
         // Fail once
         let _r: Result<i32, _> = reg
-            .execute_with_fallback(|_url| async move {
-                Err(ChainError::ApiError("503".into()))
-            })
+            .execute_with_fallback(|_url| async move { Err(ChainError::ApiError("503".into())) })
             .await;
         assert_eq!(reg.endpoints[0].health(), HealthState::Degraded);
 
@@ -817,9 +803,7 @@ mod tests {
     #[tokio::test]
     async fn test_retry_with_backoff_permanent_error() {
         let result: Result<i32, _> = retry_with_backoff(
-            || async {
-                Err(ChainError::InvalidAddress("bad".into()))
-            },
+            || async { Err(ChainError::InvalidAddress("bad".into())) },
             3,
             Duration::from_millis(1),
             Duration::from_millis(10),
@@ -831,9 +815,7 @@ mod tests {
     #[tokio::test]
     async fn test_retry_with_backoff_exhausted() {
         let result: Result<i32, _> = retry_with_backoff(
-            || async {
-                Err(ChainError::ApiError("always fails".into()))
-            },
+            || async { Err(ChainError::ApiError("always fails".into())) },
             2,
             Duration::from_millis(1),
             Duration::from_millis(10),

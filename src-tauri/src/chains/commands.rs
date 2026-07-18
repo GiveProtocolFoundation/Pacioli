@@ -105,8 +105,7 @@ pub async fn chain_fetch_transactions_resumable(
     // 3. Update sync cursor with the highest block number seen
     if !txs.is_empty() {
         let max_block = txs.iter().map(|tx| tx.block_number).max().unwrap_or(0);
-        update_sync_cursor(&db_state, &chain_id, &address, max_block as i64)
-            .await?;
+        update_sync_cursor(&db_state, &chain_id, &address, max_block as i64).await?;
     }
 
     Ok(txs)

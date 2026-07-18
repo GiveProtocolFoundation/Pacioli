@@ -22,10 +22,10 @@ pub mod commands;
 /// Provides types and functions to interact with EVM-based blockchains, including
 /// transaction creation, signing, sending, and querying state.
 pub mod evm;
-/// Module for interacting with the Solana blockchain.
-pub mod solana;
 /// Provider fallback registry with health tracking and ordered retry.
 pub mod provider_fallback;
+/// Module for interacting with the Solana blockchain.
+pub mod solana;
 /// Module containing functionality for interacting with Substrate-based chains.
 pub mod substrate;
 
@@ -477,10 +477,7 @@ impl ChainManager {
     }
 
     /// Get the provider registry for a chain (if any).
-    pub async fn get_provider_registry(
-        &self,
-        chain_id: &str,
-    ) -> Option<()> {
+    pub async fn get_provider_registry(&self, chain_id: &str) -> Option<()> {
         let registries = self.provider_registries.read().await;
         registries.get(chain_id).map(|_| ())
     }
