@@ -354,6 +354,7 @@ pub fn run() {
             chains::chain_is_supported,
             chains::chain_validate_address,
             chains::chain_fetch_transactions,
+            chains::chain_fetch_transactions_resumable,
             chains::chain_fetch_balances,
             chains::chain_fetch_transaction,
             chains::chain_fetch_all_balances,
