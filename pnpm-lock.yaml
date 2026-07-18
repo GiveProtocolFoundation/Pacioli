@@ -24,6 +24,7 @@ overrides:
   '@babel/core': ^7.29.6
   undici: ^6.27.0
   uuid: ^11.1.1
+  adm-zip: ^0.6.0
 
 importers:
 
@@ -149,7 +150,7 @@ importers:
         version: 9.38.0
       '@nomicfoundation/hardhat-toolbox':
         specifier: ^5.0.0
-        version: 5.0.0(33165889d9d8943b3d870c1e908bdf46)
+        version: 5.0.0(ewmcm2s33r3565cgz6uewwz4sq)
       '@parity/hardhat-polkadot':
         specifier: ^0.1.7
         version: 0.1.10(hardhat@2.28.6(bufferutil@4.1.0)(ts-node@10.9.2(@types/node@24.9.1)(typescript@5.8.3))(typescript@5.8.3)(utf-8-validate@5.0.10))
@@ -2067,9 +2068,9 @@ packages:
     engines: {node: '>=0.4.0'}
     hasBin: true
 
-  adm-zip@0.4.16:
-    resolution: {integrity: sha512-TFi4HBKSGfIKsK5YCkKaaFG2m4PEDyViZmEwof3MTIgzimHLto6muaHVpbrljdIvIrFZzEq/p4nafOeLcYegrg==}
-    engines: {node: '>=0.3.0'}
+  adm-zip@0.6.0:
+    resolution: {integrity: sha512-XleryMhbuksdKtofnWZ9Sk+4CUTbms4Mb/EU32SZwToAyZ5RgVos/ki8n+yr0LWHOGKuakbXTuuYNHLQjhddgg==}
+    engines: {node: '>=14.0'}
 
   aes-js@3.0.0:
     resolution: {integrity: sha512-H7wUZRn8WpTq9jocdxQ2c8x2sKo9ZVmzfRE13GiNJXfp7NcKYEdvl3vspKjXox6RIG2VtaRe4JFvxG4rqp2Zuw==}
@@ -6016,7 +6017,7 @@ snapshots:
       ethereumjs-util: 7.1.5
       hardhat: 2.28.6(bufferutil@4.1.0)(ts-node@10.9.2(@types/node@24.9.1)(typescript@5.8.3))(typescript@5.8.3)(utf-8-validate@5.0.10)
 
-  '@nomicfoundation/hardhat-toolbox@5.0.0(33165889d9d8943b3d870c1e908bdf46)':
+  '@nomicfoundation/hardhat-toolbox@5.0.0(ewmcm2s33r3565cgz6uewwz4sq)':
     dependencies:
       '@nomicfoundation/hardhat-chai-matchers': 2.1.0(@nomicfoundation/hardhat-ethers@3.1.0(ethers@6.15.0(bufferutil@4.1.0)(utf-8-validate@5.0.10))(hardhat@2.28.6(bufferutil@4.1.0)(ts-node@10.9.2(@types/node@24.9.1)(typescript@5.8.3))(typescript@5.8.3)(utf-8-validate@5.0.10)))(chai@6.2.2)(ethers@6.15.0(bufferutil@4.1.0)(utf-8-validate@5.0.10))(hardhat@2.28.6(bufferutil@4.1.0)(ts-node@10.9.2(@types/node@24.9.1)(typescript@5.8.3))(typescript@5.8.3)(utf-8-validate@5.0.10))
       '@nomicfoundation/hardhat-ethers': 3.1.0(ethers@6.15.0(bufferutil@4.1.0)(utf-8-validate@5.0.10))(hardhat@2.28.6(bufferutil@4.1.0)(ts-node@10.9.2(@types/node@24.9.1)(typescript@5.8.3))(typescript@5.8.3)(utf-8-validate@5.0.10))
@@ -7583,7 +7584,7 @@ snapshots:
 
   acorn@8.17.0: {}
 
-  adm-zip@0.4.16: {}
+  adm-zip@0.6.0: {}
 
   aes-js@3.0.0: {}
 
@@ -8864,7 +8865,7 @@ snapshots:
       '@nomicfoundation/edr': 0.12.0-next.23
       '@nomicfoundation/solidity-analyzer': 0.1.2
       '@sentry/node': 5.30.0
-      adm-zip: 0.4.16
+      adm-zip: 0.6.0
       aggregate-error: 3.1.0
       ansi-escapes: 4.3.2
       boxen: 5.1.2
