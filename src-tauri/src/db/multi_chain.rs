@@ -197,30 +197,32 @@ impl WalletType {
 /// Multi-chain transaction record.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Transaction {
-    /// Composite ID: chain_id + "_" + hash
+    /// Composite ID: chain_id + "_" + transaction_hash
     pub id: String,
     /// Chain identifier (e.g., "ethereum", "polygon", "1", "137")
     pub chain_id: String,
     /// Transaction hash
-    pub hash: String,
+    pub transaction_hash: String,
     /// Sender address
     pub from_address: String,
     /// Recipient address (None for contract creation)
     pub to_address: Option<String>,
     /// Transaction value in native units (string for precision)
-    pub value: String,
+    pub transfer_value: String,
     /// Transaction fee in native units
-    pub fee: Option<String>,
+    pub transaction_fee: Option<String>,
     /// Unix timestamp
     pub timestamp: i64,
     /// Block number
     pub block_number: Option<i64>,
     /// Transaction type classification
-    pub tx_type: TxType,
+    pub transaction_type: TxType,
     /// Transaction status
     pub status: TxStatus,
     /// Raw transaction data as JSON
-    pub raw_data: Option<String>,
+    pub raw_json_data: Option<String>,
+    /// Wallet address that imported this transaction
+    pub wallet_address: String,
     /// Record creation timestamp
     pub created_at: Option<i64>,
     /// Record update timestamp
@@ -232,31 +234,33 @@ impl Transaction {
     #[allow(clippy::too_many_arguments)]
     pub fn new(
         chain_id: String,
-        hash: String,
+        transaction_hash: String,
         from_address: String,
         to_address: Option<String>,
-        value: String,
-        fee: Option<String>,
+        transfer_value: String,
+        transaction_fee: Option<String>,
         timestamp: i64,
         block_number: Option<i64>,
-        tx_type: TxType,
+        transaction_type: TxType,
         status: TxStatus,
-        raw_data: Option<String>,
+        raw_json_data: Option<String>,
+        wallet_address: String,
     ) -> Self {
-        let id = format!("{}_{}", chain_id, hash);
+        let id = format!("{}_{}", chain_id, transaction_hash);
         Self {
             id,
             chain_id,
-            hash,
+            transaction_hash,
             from_address,
             to_address,
-            value,
-            fee,
+            transfer_value,
+            transaction_fee,
             timestamp,
             block_number,
-            tx_type,
+            transaction_type,
             status,
-            raw_data,
+            raw_json_data,
+            wallet_address,
             created_at: None,
             updated_at: None,
         }
@@ -268,16 +272,17 @@ impl Transaction {
 struct TransactionRow {
     id: String,
     chain_id: String,
-    hash: String,
+    transaction_hash: String,
     from_address: String,
     to_address: Option<String>,
-    value: String,
-    fee: Option<String>,
+    transfer_value: String,
+    transaction_fee: Option<String>,
     timestamp: i64,
     block_number: Option<i64>,
-    tx_type: String,
+    transaction_type: String,
     status: String,
-    raw_data: Option<String>,
+    raw_json_data: Option<String>,
+    wallet_address: String,
     created_at: Option<i64>,
     updated_at: Option<i64>,
 }
@@ -287,16 +292,17 @@ impl From<TransactionRow> for Transaction {
         Transaction {
             id: row.id,
             chain_id: row.chain_id,
-            hash: row.hash,
+            transaction_hash: row.transaction_hash,
             from_address: row.from_address,
             to_address: row.to_address,
-            value: row.value,
-            fee: row.fee,
+            transfer_value: row.transfer_value,
+            transaction_fee: row.transaction_fee,
             timestamp: row.timestamp,
             block_number: row.block_number,
-            tx_type: TxType::from_str(&row.tx_type),
+            transaction_type: TxType::from_str(&row.transaction_type),
             status: TxStatus::from_str(&row.status),
-            raw_data: row.raw_data,
+            raw_json_data: row.raw_json_data,
+            wallet_address: row.wallet_address,
             created_at: row.created_at,
             updated_at: row.updated_at,
         }
@@ -322,8 +328,8 @@ pub struct TokenTransfer {
     pub from_address: String,
     /// Recipient address
     pub to_address: String,
-    /// Transfer value (string for precision)
-    pub value: String,
+    /// Transfer amount (string for precision)
+    pub transfer_amount: String,
     /// Log index in transaction
     pub log_index: Option<i32>,
     /// Token type/standard
@@ -345,7 +351,7 @@ struct TokenTransferRow {
     token_decimals: Option<i32>,
     from_address: String,
     to_address: String,
-    value: String,
+    transfer_amount: String,
     log_index: Option<i32>,
     token_type: Option<String>,
     token_id: Option<String>,
@@ -363,7 +369,7 @@ impl From<TokenTransferRow> for TokenTransfer {
             token_decimals: row.token_decimals,
             from_address: row.from_address,
             to_address: row.to_address,
-            value: row.value,
+            transfer_amount: row.transfer_amount,
             log_index: row.log_index,
             token_type: row.token_type.map(|s| TokenType::from_str(&s)),
             token_id: row.token_id,
@@ -469,48 +475,49 @@ impl MultiChainRepository {
 
     /// Inserts multiple transactions with upsert semantics.
     ///
-    /// Returns the number of successfully inserted/updated transactions.
+    /// Returns the number of inserted/updated transactions. Propagates the
+    /// first per-row error instead of silently swallowing failures — callers
+    /// must know when a wallet's history is incomplete.
     pub async fn insert_transactions(&self, txs: &[Transaction]) -> Result<usize, sqlx::Error> {
         let mut count = 0;
 
         for tx in txs {
-            let result = sqlx::query(
+            sqlx::query(
                 r#"
                 INSERT INTO multi_chain_transactions (
-                    id, chain_id, hash, from_address, to_address,
-                    value, fee, timestamp, block_number, tx_type,
-                    status, raw_data
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ON CONFLICT(chain_id, hash) DO UPDATE SET
+                    id, chain_id, transaction_hash, from_address, to_address,
+                    transfer_value, transaction_fee, timestamp, block_number,
+                    transaction_type, status, raw_json_data, wallet_address
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(chain_id, transaction_hash) DO UPDATE SET
                     from_address = excluded.from_address,
                     to_address = excluded.to_address,
-                    value = excluded.value,
-                    fee = excluded.fee,
+                    transfer_value = excluded.transfer_value,
+                    transaction_fee = excluded.transaction_fee,
                     timestamp = excluded.timestamp,
                     block_number = excluded.block_number,
-                    tx_type = excluded.tx_type,
+                    transaction_type = excluded.transaction_type,
                     status = excluded.status,
-                    raw_data = excluded.raw_data
+                    raw_json_data = excluded.raw_json_data
                 "#,
             )
             .bind(&tx.id)
             .bind(&tx.chain_id)
-            .bind(&tx.hash)
+            .bind(&tx.transaction_hash)
             .bind(&tx.from_address)
             .bind(&tx.to_address)
-            .bind(&tx.value)
-            .bind(&tx.fee)
+            .bind(&tx.transfer_value)
+            .bind(&tx.transaction_fee)
             .bind(tx.timestamp)
             .bind(tx.block_number)
-            .bind(tx.tx_type.as_str())
+            .bind(tx.transaction_type.as_str())
             .bind(tx.status.as_str())
-            .bind(&tx.raw_data)
+            .bind(&tx.raw_json_data)
+            .bind(&tx.wallet_address)
             .execute(&self.pool)
-            .await;
+            .await?;
 
-            if result.is_ok() {
-                count += 1;
-            }
+            count += 1;
         }
 
         Ok(count)
@@ -617,12 +624,12 @@ impl MultiChainRepository {
     /// Retrieves transactions by hash across all chains.
     pub async fn get_transactions_by_hash(
         &self,
-        hash: &str,
+        transaction_hash: &str,
     ) -> Result<Vec<Transaction>, sqlx::Error> {
         let rows = sqlx::query_as::<_, TransactionRow>(
-            "SELECT * FROM multi_chain_transactions WHERE hash = ? ORDER BY chain_id",
+            "SELECT * FROM multi_chain_transactions WHERE transaction_hash = ? ORDER BY chain_id",
         )
-        .bind(hash)
+        .bind(transaction_hash)
         .fetch_all(&self.pool)
         .await?;
 
@@ -658,6 +665,8 @@ impl MultiChainRepository {
     // =========================================================================
 
     /// Inserts token transfers for a transaction.
+    ///
+    /// Propagates per-row errors instead of silently swallowing them.
     pub async fn insert_token_transfers(
         &self,
         transfers: &[TokenTransfer],
@@ -665,11 +674,11 @@ impl MultiChainRepository {
         let mut count = 0;
 
         for transfer in transfers {
-            let result = sqlx::query(
+            sqlx::query(
                 r#"
                 INSERT INTO token_transfers (
                     transaction_id, contract_address, token_symbol, token_name,
-                    token_decimals, from_address, to_address, value,
+                    token_decimals, from_address, to_address, transfer_amount,
                     log_index, token_type, token_id
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 "#,
@@ -681,16 +690,14 @@ impl MultiChainRepository {
             .bind(transfer.token_decimals)
             .bind(&transfer.from_address)
             .bind(&transfer.to_address)
-            .bind(&transfer.value)
+            .bind(&transfer.transfer_amount)
             .bind(transfer.log_index)
             .bind(transfer.token_type.as_ref().map(|t| t.as_str()))
             .bind(&transfer.token_id)
             .execute(&self.pool)
-            .await;
+            .await?;
 
-            if result.is_ok() {
-                count += 1;
-            }
+            count += 1;
         }
 
         Ok(count)
@@ -982,6 +989,7 @@ mod tests {
             TxType::Transfer,
             TxStatus::Success,
             None,
+            "0xwallet".to_string(),
         );
 
         assert_eq!(tx.id, "ethereum_0x123");
