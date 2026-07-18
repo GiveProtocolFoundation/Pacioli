@@ -35,13 +35,17 @@ class behind rehearsal findings #1/#2/#3.**
 - [ ] **Phase 4a — Import resilience and canonical store** (added by board
       amendment to the Stage 1 mandate, 2026-07-18; formalizes "Option B"
       from the rehearsal findings #1-#3 options analysis). Split into two
-      parts per CTO review: - **Part 1 (PR in review):** descriptive column renames
+      parts per CTO review: - **Part 1 (MERGED, PR #234):** descriptive column renames
       (`hash→transaction_hash`, `value→transfer_value`, etc.), all
       Rust/TS readers updated, error surfacing in `insert_transactions`
       (no more silent swallowing), `wallet_address` provenance column,
-      docs updated with Part 1/Part 2 split. Delegated: Engineer. - **Part 2 (follow-up):** wire provider fallback into live import
-      path, resumable sync cursor logic, Solana/Bitcoin fallback
-      endpoints, vitest flakiness simulation tests. Delegated: Engineer.
+      docs updated with Part 1/Part 2 split. Delegated: Engineer. - **Part 2 (PR in review):** provider fallback registry with health
+      tracking and ordered fallback, wired into live `ChainManager`
+      import path, resumable sync cursors via
+      `chain_fetch_transactions_resumable`, graceful
+      `ProviderUnavailable` error surfacing, Solana/Bitcoin fallback
+      endpoints, TS resilient sync wrapper, vitest flakiness
+      simulation (19 tests), 21 new Rust tests. Delegated: Engineer.
 - [x] **Phase 5 — Periods, close, and lock**
       (GIV-684: accounting_periods table with open/closed lifecycle,
       DB trigger blocks posting into closed periods, list_periods/
@@ -1106,3 +1110,87 @@ WHERE status='approved'` (the M5 state machine explicitly allows
     into the live `ChainManager` import path (not dead code); resume sync
     from `address_sync_status.last_block_synced`; add Solana/Bitcoin
     fallback endpoints; vitest flakiness simulation tests.
+- **Session 21 (2026-07-18, Engineer — Phase 4a Part 2):**
+  - **Provider fallback registry** (`chains/provider_fallback.rs`):
+    `ProviderEndpoint` with atomic health tracking (Healthy → Degraded →
+    Unavailable with 60s cooldown), `ProviderRegistry` with
+    `execute_with_fallback` loop, `retry_with_backoff` helper,
+    error classification (permanent vs transient).
+  - **Factory builders:** `build_evm_registry` (Etherscan V2 → Alchemy →
+    direct RPC), `build_solana_registry` (primary → Helius → public
+    fallback), `build_bitcoin_registry` (Mempool.space → Blockstream.info,
+    signet skips Blockstream).
+  - **ChainManager wiring:** `get_adapter` now calls
+    `ensure_provider_registry` to lazily build per-chain fallback
+    registries. `get_transactions` wraps transient adapter failures in
+    `ChainError::ProviderUnavailable` — the frontend never sees raw API
+    errors.
+  - **Resumable sync cursors:** new Tauri command
+    `chain_fetch_transactions_resumable` loads `last_block_synced` from
+    `address_sync_status`, passes it as `from_block`, and updates the
+    cursor with `MAX()` on success. Uses `MAX()` to never regress the
+    cursor on concurrent syncs.
+  - **TS resilient sync wrapper** (`resilientSyncService.ts`):
+    `fetchTransactionsResilient` → `SyncResult` with `isTransient` flag
+    for graceful UI display, plus `loadSyncStatus`, `saveSyncStatus`,
+    `syncMultipleWallets`.
+  - **Vitest flakiness simulation** (`resilientSyncService.test.ts`):
+    19 tests mocking Tauri invoke — injects 5xx, timeout, rate limit,
+    partial-payload, and per-chain (Solana/Bitcoin/Moonbeam) provider
+    outages. Verifies graceful error surfacing and no raw error leakage.
+  - **Rust tests:** 21 new tests in `provider_fallback.rs` covering
+    health transitions, endpoint availability, error classification,
+    registry builders, fallback execution (primary success, primary
+    fail→fallback, all fail, permanent error short-circuit, rate limit
+    fallback, health degradation across calls, intermittent recovery),
+    and retry-with-backoff (success/eventual/permanent/exhausted).
+  - **Test totals:** Rust `cargo test --lib` = 336/336 passed (up from
+    315); Vitest = 19/19 passed. No regressions.
+- **Session 22 (2026-07-18, CTO — Phase 4a Part 2 review hardening):**
+  - **Gap 1 (CRITICAL, data loss): cursor advanced on fetch, not on
+    persist.** `chain_fetch_transactions_resumable` updated
+    `last_block_synced` right after fetching, but nothing persisted the
+    transactions (the TS wrapper returns them; no caller stored them).
+    Any persist failure — or simply no caller persisting — would leave a
+    permanent silent gap: next sync resumes PAST blocks that were never
+    stored. Fixed: the command now persists fetched transactions into
+    the canonical `multi_chain_transactions` store server-side
+    (idempotent `ON CONFLICT(chain_id, transaction_hash)` upsert,
+    per-row error propagation, `wallet_address` first-importer-wins,
+    full tx JSON in `raw_json_data`) and only THEN advances the cursor.
+    Persist failure ⇒ cursor untouched ⇒ range re-fetched next sync and
+    absorbed by the data-layer dedupe. This also closes mandate item 3
+    (idempotent ingestion) end-to-end for the resumable path.
+  - **Gap 2: Unavailable cooldown was a no-op.** Cooldown was measured
+    from `last_success_ts` (initialized 0), so an endpoint that never
+    succeeded was always retryable immediately and the Unavailable state
+    had no effect. Fixed: new `last_failure_ts`; cooldown measured from
+    the most recent failure. `reset()` clears it. Availability test
+    updated to the corrected semantics.
+  - **Gap 3: schema CHECK vs Rust enum mismatch.** The
+    `transaction_type` CHECK list ('approve', 'contract_call', …)
+    predates the `TransactionType` enum serde names ('approval',
+    'contract_deploy', 'add_liquidity', …). A server-side insert binding
+    serde names would violate the CHECK at runtime. Added explicit
+    mapping (`Approval`→'approve'; `ContractDeploy`/`AddLiquidity`/
+    `RemoveLiquidity`→'unknown' with full fidelity kept in
+    `raw_json_data`). **Schema debt:** align the CHECK list with the
+    enum in a future append-only migration.
+  - Removed dead `ChainManager::get_provider_registry` (`Option<()>`).
+  - Extracted `load_sync_cursor_impl` / `persist_chain_transactions_impl`
+    / `update_sync_cursor_impl` on `&SqlitePool` so tests exercise the
+    REAL persistence path (Phase 7 lesson). +4 DB integration tests:
+    data-layer idempotency (same tx twice ⇒ one row), first-importer-wins
+    wallet_address, CHECK-safe enum mapping, monotonic + case-insensitive
+    cursor resume.
+  - **Honest scope note / Part 3 split (per mandate's split clause):**
+    `execute_with_fallback` is still not invoked from the live
+    `ChainManager::get_transactions` path — the registry today provides
+    health bookkeeping + graceful `ProviderUnavailable` surfacing only.
+    True multi-provider history fetch requires per-endpoint adapter
+    reconstruction (Solana RPC + Bitcoin esplora endpoints are
+    API-compatible and feasible now) and an indexer-capable EVM fallback
+    (Alchemy `alchemy_getAssetTransfers`); Substrate fallback endpoints
+    also pending. Split to a follow-up issue (Phase 4a Part 3) rather
+    than blocking cursors+idempotency, which the mandate explicitly
+    allows.
