@@ -46,14 +46,22 @@ class behind rehearsal findings #1/#2/#3.**
       `ProviderUnavailable` error surfacing, TS resilient sync wrapper,
       vitest flakiness simulation (19 tests), CHECK-safe enum mapping,
       4 DB integration tests. CTO hardening: 3 gaps fixed. Delegated:
-      Engineer + CTO review. - **Part 3 (PR in review):** `execute_with_fallback` wired into the
+      Engineer + CTO review. - **Part 3 (MERGED, PR #236):** `execute_with_fallback` wired into the
       live `ChainManager::get_transactions` path for Bitcoin (Mempool→
       Blockstream Esplora fallback) and Solana (primary RPC→Helius→
       public fallback). Substrate registry infrastructure with community
       fallback RPC (Polkadot→Dwellir, Kusama→Dwellir). EVM keeps
       single-attempt with graceful wrapping (Alchemy `alchemy_getAssetTransfers`
       needs separate API). `resilientSyncService` wired into
-      `useEVMService.syncTransactions` UI flow. Delegated: Engineer.
+      `useEVMService.syncTransactions` UI flow. CTO hardening: registry
+      alias mismatch + RwLock deadlock fix, substrate placeholder claim
+      fix, Helius key preservation fix. Delegated: Engineer. - **Part 4 (PR in review, GIV-713):** path convergence — routed the
+      direct `get_bitcoin_transactions` and `get_solana_transactions`
+      Tauri commands through `ChainManager::get_transactions` so they
+      inherit provider fallback + health tracking instead of constructing
+      bare adapters. TS wrappers updated to unified `ChainTransaction`
+      shape. Moonscan hybrid path preserved (Gate-1 rehearsal). Delegated:
+      Engineer.
 - [x] **Phase 5 — Periods, close, and lock**
       (GIV-684: accounting_periods table with open/closed lifecycle,
       DB trigger blocks posting into closed periods, list_periods/
@@ -1272,3 +1280,27 @@ WHERE status='approved'` (the M5 state machine explicitly allows
     `chain_fetch_transactions_resumable` is follow-up work (relates to
     the pre-existing GIV-467 path-convergence scope) — tracked as a
     Phase 4a follow-up issue.
+- **Session 25 (2026-07-18, Engineer — Phase 4a Part 4 / GIV-713
+  path convergence):**
+  - **Converged `get_bitcoin_transactions` and `get_solana_transactions`
+    Tauri commands onto the resilient `ChainManager::get_transactions`
+    pipeline.** Both commands previously constructed bare adapters
+    (no fallback, no health tracking, no resumable cursors). Now they
+    accept `State<ChainManagerState>` and delegate to
+    `manager.get_transactions()`, inheriting:
+    - Bitcoin: Mempool.space → Blockstream Esplora fallback
+    - Solana: primary RPC → Helius → public endpoint fallback
+    - Per-endpoint health tracking + 60 s cooldown for Unavailable
+    - Graceful `ProviderUnavailable` wrapping (no raw API errors)
+  - **Return type converged** from chain-specific types
+    (`BitcoinTransaction`, `SolanaTransaction`) to the unified
+    `ChainTransaction` shape, matching the canonical store schema.
+    TS wrappers updated accordingly (both were orphaned — no live
+    UI consumers broken).
+  - **Unused import cleanup:** removed `SolanaTransaction` from the
+    Rust `commands.rs` import list (no longer referenced after
+    convergence).
+  - **Moonscan hybrid path preserved.** The TS
+    `polkadotService.fetchTransactionHistoryHybrid` → `moonscanService`
+    path for Moonbeam/Moonriver EVM addresses is untouched (Gate-1
+    rehearsal path — do NOT regress).

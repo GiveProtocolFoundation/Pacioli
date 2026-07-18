@@ -6,6 +6,7 @@
  */
 
 import { invoke } from '@tauri-apps/api/core'
+import type { ChainTransaction } from '../../types/chains'
 
 // =============================================================================
 // TYPES
@@ -100,7 +101,7 @@ export interface SolanaTransaction {
  * @param address Solana address (base58 encoded)
  * @param network Network name ("solana" or "solana_devnet")
  */
-export async function getSolanaBalance(
+export function getSolanaBalance(
   address: string,
   network = 'solana'
 ): Promise<SolanaBalance> {
@@ -108,28 +109,30 @@ export async function getSolanaBalance(
 }
 
 /**
- * Get transactions for a Solana address
+ * Get transactions for a Solana address via the resilient pipeline.
+ *
+ * Routes through ChainManager::get_transactions (primary RPC → Helius →
+ * public endpoint fallback, health tracking). Returns unified
+ * ChainTransaction shape.
  *
  * @param address Solana address
  * @param network Network name ("solana" or "solana_devnet")
- * @param maxPages Maximum pages to fetch (~100 txs per page)
+ * @returns Unified chain transactions with provider fallback
  */
-export async function getSolanaTransactions(
+export function getSolanaTransactions(
   address: string,
-  network = 'solana',
-  maxPages?: number
-): Promise<SolanaTransaction[]> {
-  return invoke<SolanaTransaction[]>('get_solana_transactions', {
+  network = 'solana'
+): Promise<ChainTransaction[]> {
+  return invoke<ChainTransaction[]>('get_solana_transactions', {
     address,
     network,
-    maxPages,
   })
 }
 
 /**
  * Validate a Solana address
  */
-export async function validateSolanaAddress(address: string): Promise<boolean> {
+export function validateSolanaAddress(address: string): Promise<boolean> {
   return invoke<boolean>('validate_solana_address', { address })
 }
 

@@ -6,6 +6,7 @@
  */
 
 import { invoke } from '@tauri-apps/api/core'
+import type { ChainTransaction } from '../../types/chains'
 
 // =============================================================================
 // TYPES
@@ -279,21 +280,22 @@ export function getBitcoinBalance(
 }
 
 /**
- * Get transactions for a Bitcoin address
+ * Get transactions for a Bitcoin address via the resilient pipeline.
+ *
+ * Routes through ChainManager::get_transactions (Mempool.space → Blockstream
+ * fallback, health tracking). Returns unified ChainTransaction shape.
  *
  * @param address Bitcoin address
  * @param network Network name ("bitcoin", "testnet", "signet")
- * @param maxPages Maximum pages to fetch (25 txs per page)
+ * @returns Unified chain transactions with provider fallback
  */
 export function getBitcoinTransactions(
   address: string,
-  network = 'bitcoin',
-  maxPages?: number
-): Promise<BitcoinTransaction[]> {
-  return invoke<BitcoinTransaction[]>('get_bitcoin_transactions', {
+  network = 'bitcoin'
+): Promise<ChainTransaction[]> {
+  return invoke<ChainTransaction[]>('get_bitcoin_transactions', {
     address,
     network,
-    maxPages,
   })
 }
 
