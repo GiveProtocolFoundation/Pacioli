@@ -1234,7 +1234,7 @@ WHERE status='approved'` (the M5 state machine explicitly allows
     fallback RPC, all configs list). Registry builder test for
     substrate (with/without fallback).
   - **`is_chain_supported` updated** to include substrate chains
-    (polkadot, kusama, etc.). *(Reverted in CTO review — see Session 24.)*
+    (polkadot, kusama, etc.). _(Reverted in CTO review — see Session 24.)_
 
 - **Session 24 (2026-07-18, CTO — Phase 4a Part 3 review hardening):**
   - **Registry-key alias mismatch (latent deadlock).** The fallback
