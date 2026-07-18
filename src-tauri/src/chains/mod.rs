@@ -631,10 +631,12 @@ impl ChainManager {
             return true;
         }
 
-        // Check Substrate
-        if substrate::get_config_by_name(chain_id).is_some() {
-            return true;
-        }
+        // Substrate is intentionally NOT claimed here: the adapter is a
+        // placeholder whose get_transactions returns an EMPTY list, and
+        // create_adapter() cannot build it. Claiming support would let a
+        // future wiring produce silently incomplete wallet history
+        // (violates the Phase 4a mandate). The provider registry plumbing
+        // (ensure_provider_registry) is ready for when the adapter lands.
 
         false
     }
@@ -680,16 +682,18 @@ impl ChainManager {
         let _ = self.get_adapter(chain_id).await?;
 
         // Bitcoin: all providers use Esplora API — full fallback
+        // NOTE: pass the caller's chain_id (may be an alias like "btc") —
+        // the registry is keyed by the id used at get_adapter() time.
         if let Some(base_config) = bitcoin::get_config_by_name(chain_id) {
             return self
-                .get_transactions_with_bitcoin_fallback(&base_config, address, from_block)
+                .get_transactions_with_bitcoin_fallback(chain_id, &base_config, address, from_block)
                 .await;
         }
 
         // Solana: all providers use JSON-RPC — full fallback
         if let Some(base_config) = solana::get_config_by_name(chain_id) {
             return self
-                .get_transactions_with_solana_fallback(&base_config, address, from_block)
+                .get_transactions_with_solana_fallback(chain_id, &base_config, address, from_block)
                 .await;
         }
 
@@ -724,13 +728,13 @@ impl ChainManager {
     /// each endpoint in the registry.
     async fn get_transactions_with_bitcoin_fallback(
         &self,
+        chain_id: &str,
         base_config: &bitcoin::BitcoinConfig,
         address: &str,
         from_block: Option<u64>,
     ) -> ChainResult<Vec<ChainTransaction>> {
         let registries = self.provider_registries.read().await;
-        let chain_id = &base_config.name;
-        if let Some(registry) = registries.get(chain_id.as_str()) {
+        if let Some(registry) = registries.get(chain_id) {
             let addr = address.to_string();
             let cfg = base_config.clone();
             registry
@@ -745,7 +749,11 @@ impl ChainManager {
                 })
                 .await
         } else {
-            // No registry — use standard adapter (should not happen after get_adapter)
+            // No registry — use standard adapter (should not happen after
+            // get_adapter). Drop the registries guard BEFORE calling
+            // get_adapter: it may take a write lock on provider_registries
+            // (ensure_provider_registry), which would deadlock otherwise.
+            drop(registries);
             let adapter = self.get_adapter(chain_id).await?;
             let adapter = adapter.read().await;
             adapter.get_transactions(address, from_block, None).await
@@ -756,13 +764,21 @@ impl ChainManager {
     /// protocol, so we construct a per-URL adapter for each endpoint.
     async fn get_transactions_with_solana_fallback(
         &self,
+        chain_id: &str,
         base_config: &solana::SolanaConfig,
         address: &str,
         from_block: Option<u64>,
     ) -> ChainResult<Vec<ChainTransaction>> {
+        // Preserve any configured Helius API key: the per-URL adapters
+        // below are constructed fresh, so without this the fallback path
+        // would silently downgrade keyed users to plain RPC.
+        let helius_key = {
+            let keys = self.explorer_api_keys.read().await;
+            keys.get(chain_id).cloned()
+        };
+
         let registries = self.provider_registries.read().await;
-        let chain_id = &base_config.name;
-        if let Some(registry) = registries.get(chain_id.as_str()) {
+        if let Some(registry) = registries.get(chain_id) {
             let addr = address.to_string();
             let cfg = base_config.clone();
             registry
@@ -770,13 +786,20 @@ impl ChainManager {
                     let mut config = cfg.clone();
                     config.rpc_url = provider_url;
                     let address = addr.clone();
+                    let key = helius_key.clone();
                     async move {
-                        let adapter = solana::SolanaAdapter::new(config)?;
+                        let mut adapter = solana::SolanaAdapter::new(config)?;
+                        if let Some(key) = key {
+                            adapter = adapter.with_helius_api_key(key);
+                        }
                         adapter.get_transactions(&address, from_block, None).await
                     }
                 })
                 .await
         } else {
+            // See bitcoin fallback: drop the guard before get_adapter to
+            // avoid a read/write deadlock on provider_registries.
+            drop(registries);
             let adapter = self.get_adapter(chain_id).await?;
             let adapter = adapter.read().await;
             adapter.get_transactions(address, from_block, None).await
@@ -948,9 +971,11 @@ mod tests {
         // Solana
         assert!(ChainManager::is_chain_supported("solana"));
 
-        // Substrate
-        assert!(ChainManager::is_chain_supported("polkadot"));
-        assert!(ChainManager::is_chain_supported("kusama"));
+        // Substrate: NOT supported until the adapter is implemented —
+        // the placeholder returns empty history, which would be silently
+        // incomplete if wired (see is_chain_supported).
+        assert!(!ChainManager::is_chain_supported("polkadot"));
+        assert!(!ChainManager::is_chain_supported("kusama"));
 
         // Unsupported
         assert!(!ChainManager::is_chain_supported("unsupported_chain"));
@@ -1022,6 +1047,20 @@ mod tests {
         assert_eq!(registry.len(), 2);
         assert!(registry.endpoints[0].name.contains("Mempool"));
         assert!(registry.endpoints[1].name.contains("Blockstream"));
+    }
+
+    #[tokio::test]
+    async fn test_provider_registry_keyed_by_caller_chain_id_alias() {
+        // The registry is keyed by the id the CALLER used at get_adapter()
+        // time — e.g. the "btc" alias, NOT the canonical config name.
+        // The fallback helpers must therefore look up with the caller's
+        // chain_id; looking up base_config.name would miss the registry
+        // and (before the fix) deadlock on get_adapter under a held guard.
+        let manager = ChainManager::new();
+        let _adapter = manager.get_adapter("btc").await.unwrap();
+        let registries = manager.provider_registries.read().await;
+        assert!(registries.get("btc").is_some());
+        assert!(registries.get("bitcoin").is_none());
     }
 
     #[tokio::test]

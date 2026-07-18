@@ -1234,4 +1234,41 @@ WHERE status='approved'` (the M5 state machine explicitly allows
     fallback RPC, all configs list). Registry builder test for
     substrate (with/without fallback).
   - **`is_chain_supported` updated** to include substrate chains
-    (polkadot, kusama, etc.).
+    (polkadot, kusama, etc.). *(Reverted in CTO review — see Session 24.)*
+
+- **Session 24 (2026-07-18, CTO — Phase 4a Part 3 review hardening):**
+  - **Registry-key alias mismatch (latent deadlock).** The fallback
+    helpers looked the registry up under `base_config.name`
+    (`"bitcoin"`/`"solana"`), but registries are keyed by the id the
+    caller used at `get_adapter()` time — e.g. the `"btc"` alias. On a
+    miss, the else-branch called `get_adapter` **while still holding the
+    `provider_registries` read guard**; `ensure_provider_registry` then
+    needs the write lock → tokio RwLock deadlock. Fixed: helpers take
+    the caller's `chain_id`, and the else-branch drops the guard first.
+    Regression test `test_provider_registry_keyed_by_caller_chain_id_alias`
+    pins the key convention.
+  - **`is_chain_supported` substrate claim reverted.** The substrate
+    adapter is a placeholder whose `get_transactions` returns an EMPTY
+    list. Claiming support means that as soon as `create_adapter` gets
+    wired, a polkadot "sync" would succeed with silently incomplete
+    (empty) history — the exact failure mode the Phase 4a mandate
+    forbids. The registry plumbing (`ensure_provider_registry` substrate
+    branch, `build_substrate_registry`, config helpers) is kept; the
+    support claim returns when a real adapter lands.
+  - **Solana fallback dropped the Helius API key.** Per-URL adapters
+    were built with `SolanaAdapter::new` (key = None), and the fallback
+    path always supersedes the stored keyed adapter — keyed users were
+    silently downgraded to plain RPC on every attempt. Fixed: the
+    configured explorer key is read and applied to each per-URL adapter.
+  - **Known live-path gap (carried forward):** the Rust resilient
+    pipeline's only frontend entry is `fetchTransactionsResilient` →
+    `useEVMService.syncTransactions`, and `useEVMService` currently has
+    **no consumers**. The live WalletManager sync (incl. Moonbeam) still
+    goes through the TS `polkadotService`/`moonscanService` hybrid path
+    (which has its own key-candidate resilience from PR #231), and the
+    Bitcoin/Solana Tauri commands (`get_bitcoin_transactions`,
+    `get_solana_transactions`) construct adapters directly, bypassing
+    the registry. Converging the live UI sync paths onto
+    `chain_fetch_transactions_resumable` is follow-up work (relates to
+    the pre-existing GIV-467 path-convergence scope) — tracked as a
+    Phase 4a follow-up issue.
