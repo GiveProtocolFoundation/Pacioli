@@ -4,11 +4,14 @@ Session constitution: `SCOPE.md` (repo root). Stage 1 mandate: GIV-668.
 Gate 1: CPA-reviewed statements from real imported transactions, manually
 classified through the approval queue.
 
-**Current phase: 10 (Gate 1 rehearsal) — Phases 1-9 landed and merged.
-Rehearsal package prepared (`docs/gate1-report.md`: CPA-facing overview,
-known limitations, 12-step rehearsal checklist, demo script). Awaiting
-the product owner's real-data rehearsal run; findings land in
-`docs/gate1-report.md` §5 and blockers-only fixes follow.**
+**Current phase: 10 (Gate 1 rehearsal) in flight, plus Phase 4a (import
+resilience — board amendment 2026-07-18) newly opened. Phases 1-9 landed
+and merged. Rehearsal package prepared (`docs/gate1-report.md`: CPA-facing
+overview, known limitations, 12-step rehearsal checklist, demo script).
+Awaiting the product owner's real-data rehearsal run; findings land in
+`docs/gate1-report.md` §5 and blockers-only fixes follow. Phase 4a
+delegated to Engineer — it is the durable fix for the provider-failure
+class behind rehearsal findings #1/#2/#3.**
 
 ## Phase Checklist
 
@@ -29,6 +32,18 @@ the product owner's real-data rehearsal run; findings land in
       (GIV-683: classification queue view with auto/manual/skip actions,
       rust_decimal precision at boundary, provenance: origin=rule for
       auto-classified entries, classification_status flip — Engineer)
+- [ ] **Phase 4a — Import resilience and canonical store** (added by board
+      amendment to the Stage 1 mandate, 2026-07-18; formalizes "Option B"
+      from the rehearsal findings #1-#3 options analysis): per-chain
+      provider registry with fallback (Etherscan V2 → Alchemy → direct RPC
+      for EVM chains; Polkadot.js with fallback endpoints for Substrate;
+      dedicated fallbacks for the existing Solana/Bitcoin services) with
+      retry/backoff and graceful "provider temporarily unavailable" errors;
+      resumable sync cursors (per wallet/chain high-water mark, no
+      duplicate ingestion on re-sync); idempotent ingestion enforced at the
+      data layer; descriptive human-legible raw-transaction column names;
+      provider-flakiness simulation in tests (5xx/timeout/partial data).
+      Runs in parallel with the Phase 10 rehearsal. Delegated: Engineer.
 - [x] **Phase 5 — Periods, close, and lock**
       (GIV-684: accounting_periods table with open/closed lifecycle,
       DB trigger blocks posting into closed periods, list_periods/
@@ -229,6 +244,18 @@ persistence path; `f64` removed from accounting money structs.
   Q4 = void → generated reversing entries (Phase 2); Q5 = web/IndexedDB
   journal path deferred past Gate 1, SQLite is the system of record.
   Conventions written up in `docs/accounting-model.md`.
+- 2026-07-18 — **Board amended the Stage 1 mandate (GIV-668): new
+  Phase 4a — Import Resilience and Canonical Store.** This resolves the
+  strategic options question posted after rehearsal finding #3: the board
+  chose the multi-provider fallback abstraction ("Option B") and elevated
+  it into Stage 1 proper, together with resumable sync cursors, idempotent
+  ingestion, human-legible raw-transaction column names, and
+  provider-flakiness simulation tests. Phase ordering is otherwise
+  unchanged; the only other mandate edits are cosmetic (Phase 0 heading,
+  trailing delegation sentence). Option A (save-time key validation with a
+  Test-connection button) already landed via GIV-702 / PR #232
+  (main `d99ef72`). Option C (own indexing) remains deferred per the
+  standing CEO pacioli-cloud decision.
 
 ### 8. Session log
 
@@ -1028,3 +1055,21 @@ WHERE status='approved'` (the M5 state machine explicitly allows
     indexer dependence is a structural fragility class; options analysis
     (key-UX hardening now, multi-provider fallback abstraction next, own
     indexing later) posted for a decision.
+- **Session 19 (2026-07-18, CTO — mandate amendment triage):**
+  - Diffed the board's updated Stage 1 instructions against the original
+    mandate. One substantive change: **new Phase 4a — Import Resilience
+    and Canonical Store** (provider registry + fallback, resumable sync
+    cursors, idempotent ingestion, descriptive column naming, flakiness
+    simulation). Two cosmetic changes (Phase 0 heading, removed trailing
+    delegation sentence). No conflict with `SCOPE.md`: Solana/Bitcoin
+    fallbacks reference services that already exist in the codebase
+    (`solanaService.ts`, `bitcoinService.ts`), so no new chain
+    integrations are implied.
+  - Tracker updated: Phase 4a inserted into the checklist; decisions log
+    records the amendment as the board's "Option B" decision.
+  - Phase 4a implementation delegated to Engineer (child issue under
+    GIV-668) to run in parallel with the Phase 10 rehearsal; the
+    rehearsal's remaining user action (etherscan.io key, checklist §3
+    step 2) is unchanged.
+  - Bookkeeping: GIV-702 (Option A, save-time key validation) PR #232 is
+    merged on main (`d99ef72`); issue closed.
