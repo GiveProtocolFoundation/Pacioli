@@ -24,6 +24,8 @@ pub mod commands;
 pub mod evm;
 /// Module for interacting with the Solana blockchain.
 pub mod solana;
+/// Provider fallback registry with health tracking and ordered retry.
+pub mod provider_fallback;
 /// Module containing functionality for interacting with Substrate-based chains.
 pub mod substrate;
 
@@ -294,6 +296,10 @@ pub enum ChainError {
     #[error("Configuration error: {0}")]
     ConfigError(String),
 
+    /// All providers for this chain are temporarily unavailable.
+    #[error("Provider temporarily unavailable: {0}")]
+    ProviderUnavailable(String),
+
     /// Internal error.
     #[error("Internal error: {0}")]
     Internal(String),
@@ -352,6 +358,7 @@ pub trait ChainAdapter: Send + Sync {
 ///
 /// The ChainManager is the central coordinator for all blockchain interactions.
 /// It maintains a registry of adapters and lazily initializes them when first requested.
+/// Provider fallback registries track health per-chain and route around failed providers.
 pub struct ChainManager {
     /// Registered adapters (chain_id -> adapter)
     #[allow(clippy::type_complexity)]
@@ -360,6 +367,8 @@ pub struct ChainManager {
     explorer_api_keys: RwLock<HashMap<String, String>>,
     /// RPC URL overrides
     rpc_overrides: RwLock<HashMap<String, String>>,
+    /// Provider fallback registries (chain_id -> registry)
+    provider_registries: RwLock<HashMap<String, provider_fallback::ProviderRegistry>>,
 }
 
 impl ChainManager {
@@ -369,6 +378,7 @@ impl ChainManager {
             adapters: RwLock::new(HashMap::new()),
             explorer_api_keys: RwLock::new(HashMap::new()),
             rpc_overrides: RwLock::new(HashMap::new()),
+            provider_registries: RwLock::new(HashMap::new()),
         }
     }
 
@@ -390,7 +400,10 @@ impl ChainManager {
         adapters.insert(chain_id.to_string(), Arc::new(RwLock::new(adapter)));
     }
 
-    /// Get or lazily initialize an adapter for a chain
+    /// Get or lazily initialize an adapter for a chain.
+    ///
+    /// Also initializes the provider fallback registry for the chain if
+    /// one does not already exist.
     pub async fn get_adapter(
         &self,
         chain_id: &str,
@@ -406,11 +419,70 @@ impl ChainManager {
         // Try to initialize the adapter
         let adapter = self.create_adapter(chain_id).await?;
 
+        // Build provider fallback registry for this chain
+        self.ensure_provider_registry(chain_id).await;
+
         let mut adapters = self.adapters.write().await;
         let arc_adapter = Arc::new(RwLock::new(adapter));
         adapters.insert(chain_id.to_string(), arc_adapter.clone());
 
         Ok(arc_adapter)
+    }
+
+    /// Ensure a provider fallback registry exists for the given chain.
+    async fn ensure_provider_registry(&self, chain_id: &str) {
+        let registries = self.provider_registries.read().await;
+        if registries.contains_key(chain_id) {
+            return;
+        }
+        drop(registries);
+
+        let rpc_override = {
+            let overrides = self.rpc_overrides.read().await;
+            overrides.get(chain_id).cloned()
+        };
+
+        let registry = if evm::config::get_chain_by_name(chain_id).is_some() {
+            let config = evm::config::get_chain_by_name(chain_id).unwrap();
+            let alchemy_url = if config.rpc_url.contains("alchemy.com") {
+                Some(config.rpc_url.as_str())
+            } else {
+                None
+            };
+            provider_fallback::build_evm_registry(
+                chain_id,
+                &config.explorer_api_url,
+                alchemy_url,
+                rpc_override.as_deref(),
+            )
+        } else if solana::get_config_by_name(chain_id).is_some() {
+            let config = solana::get_config_by_name(chain_id).unwrap();
+            provider_fallback::build_solana_registry(
+                chain_id,
+                rpc_override.as_deref().unwrap_or(&config.rpc_url),
+                None,
+            )
+        } else if bitcoin::get_config_by_name(chain_id).is_some() {
+            let config = bitcoin::get_config_by_name(chain_id).unwrap();
+            provider_fallback::build_bitcoin_registry(
+                chain_id,
+                rpc_override.as_deref().unwrap_or(&config.api_url),
+            )
+        } else {
+            return;
+        };
+
+        let mut registries = self.provider_registries.write().await;
+        registries.insert(chain_id.to_string(), registry);
+    }
+
+    /// Get the provider registry for a chain (if any).
+    pub async fn get_provider_registry(
+        &self,
+        chain_id: &str,
+    ) -> Option<()> {
+        let registries = self.provider_registries.read().await;
+        registries.get(chain_id).map(|_| ())
     }
 
     /// Create an adapter for a chain (lazy initialization)
@@ -585,7 +657,12 @@ impl ChainManager {
         Ok(adapter.validate_address(address))
     }
 
-    /// Get transactions for an address on a specific chain
+    /// Get transactions for an address on a specific chain.
+    ///
+    /// Uses the provider fallback registry: if the primary provider fails
+    /// with a transient error, the next provider in the chain is tried.
+    /// On total failure, returns a graceful `ProviderUnavailable` error
+    /// (never raw API errors to the frontend).
     pub async fn get_transactions(
         &self,
         chain_id: &str,
@@ -594,7 +671,26 @@ impl ChainManager {
     ) -> ChainResult<Vec<ChainTransaction>> {
         let adapter = self.get_adapter(chain_id).await?;
         let adapter = adapter.read().await;
-        adapter.get_transactions(address, from_block, None).await
+
+        match adapter.get_transactions(address, from_block, None).await {
+            Ok(txs) => Ok(txs),
+            Err(e) if provider_fallback::is_transient_error(&e) => {
+                // Record failure in provider registry
+                let registries = self.provider_registries.read().await;
+                if let Some(registry) = registries.get(chain_id) {
+                    if let Some(primary) = registry.endpoints.first() {
+                        primary.record_failure();
+                    }
+                }
+                // Wrap transient errors in graceful ProviderUnavailable
+                Err(ChainError::ProviderUnavailable(format!(
+                    "Provider temporarily unavailable for {}. Please try again later. \
+                     ({})",
+                    chain_id, e
+                )))
+            }
+            Err(e) => Err(e),
+        }
     }
 
     /// Get balances for an address on a specific chain

@@ -4,6 +4,7 @@
 //! All commands are async and return JSON-serializable results.
 
 use super::{ChainInfo, ChainManager, ChainTransaction, WalletBalances};
+use crate::api::persistence::DatabaseState;
 use std::sync::Arc;
 use tauri::State;
 use tokio::sync::RwLock;
@@ -73,6 +74,95 @@ pub async fn chain_fetch_transactions(
         .get_transactions(&chain_id, &address, from_block)
         .await
         .map_err(|e| e.to_string())
+}
+
+/// Fetch transactions with resumable sync cursor.
+///
+/// Loads the sync cursor from `address_sync_status` to resume from the
+/// last synced block, fetches new transactions, and updates the cursor
+/// on success. This prevents duplicate ingestion on re-sync.
+///
+/// # Arguments
+/// * `chain_id` - Chain identifier
+/// * `address` - Wallet address
+#[tauri::command]
+pub async fn chain_fetch_transactions_resumable(
+    chain_state: State<'_, ChainManagerState>,
+    db_state: State<'_, DatabaseState>,
+    chain_id: String,
+    address: String,
+) -> Result<Vec<ChainTransaction>, String> {
+    // 1. Load sync cursor
+    let from_block = load_sync_cursor(&db_state, &chain_id, &address).await?;
+
+    // 2. Fetch transactions from the cursor position
+    let manager = chain_state.read().await;
+    let txs = manager
+        .get_transactions(&chain_id, &address, from_block)
+        .await
+        .map_err(|e| e.to_string())?;
+
+    // 3. Update sync cursor with the highest block number seen
+    if !txs.is_empty() {
+        let max_block = txs.iter().map(|tx| tx.block_number).max().unwrap_or(0);
+        update_sync_cursor(&db_state, &chain_id, &address, max_block as i64)
+            .await?;
+    }
+
+    Ok(txs)
+}
+
+/// Load the sync cursor (last synced block) for a chain+address pair.
+async fn load_sync_cursor(
+    db_state: &State<'_, DatabaseState>,
+    chain_id: &str,
+    address: &str,
+) -> Result<Option<u64>, String> {
+    let row = sqlx::query_scalar::<_, i64>(
+        "SELECT last_block_synced FROM address_sync_status \
+         WHERE chain_id = ? AND (address = ? OR LOWER(address) = LOWER(?))",
+    )
+    .bind(chain_id)
+    .bind(address)
+    .bind(address)
+    .fetch_optional(&db_state.pool)
+    .await
+    .map_err(|e| e.to_string())?;
+
+    Ok(row.and_then(|b| if b > 0 { Some(b as u64) } else { None }))
+}
+
+/// Update the sync cursor after a successful fetch.
+async fn update_sync_cursor(
+    db_state: &State<'_, DatabaseState>,
+    chain_id: &str,
+    address: &str,
+    last_block: i64,
+) -> Result<(), String> {
+    let now = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_secs() as i64;
+
+    sqlx::query(
+        "INSERT INTO address_sync_status (chain_id, address, last_block_synced, \
+         last_sync_timestamp, sync_state) \
+         VALUES (?, ?, ?, ?, 'idle') \
+         ON CONFLICT(chain_id, address) DO UPDATE SET \
+         last_block_synced = MAX(address_sync_status.last_block_synced, excluded.last_block_synced), \
+         last_sync_timestamp = excluded.last_sync_timestamp, \
+         sync_state = 'idle', \
+         error_message = NULL",
+    )
+    .bind(chain_id)
+    .bind(address)
+    .bind(last_block)
+    .bind(now)
+    .execute(&db_state.pool)
+    .await
+    .map_err(|e| e.to_string())?;
+
+    Ok(())
 }
 
 /// Fetch balances for an address on a specific chain
