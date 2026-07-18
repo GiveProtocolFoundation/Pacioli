@@ -87,40 +87,110 @@ export class MoonscanService {
     },
   }
 
-  // Retrieve API key: Tauri keychain → localStorage → env var.
-  // Falls back to the Etherscan key because Moonscan V1 is deprecated and V2
-  // runs through api.etherscan.io — an Etherscan API key works for all V2 chains.
-  private static async getApiKey(): Promise<string | null> {
-    // Try Tauri keychain first (desktop app): moonscan key, then etherscan key
+  /**
+   * User-facing remediation guidance appended when every configured key is
+   * rejected by Etherscan V2. Legacy moonscan.io keys are NOT valid on the
+   * V2 unified endpoint — only keys issued by etherscan.io work.
+   */
+  private static readonly KEY_HELP =
+    'Moonbeam/Moonriver sync uses the Etherscan V2 API, which requires a free ' +
+    'Etherscan API key (legacy moonscan.io keys no longer work). Create a key ' +
+    'at https://etherscan.io/myapikey, then save it in Settings → Data ' +
+    'Providers under "Etherscan" and retry the sync.'
+
+  /**
+   * Collect every configured API key, in preference order:
+   * Tauri keychain (moonscan, then etherscan) → localStorage → env vars.
+   * All candidates are tried in order because a stored legacy Moonscan key
+   * may be rejected by Etherscan V2 while the Etherscan key is valid.
+   */
+  private static async getApiKeyCandidates(): Promise<string[]> {
+    const candidates: string[] = []
+
+    // Tauri keychain first (desktop app)
     try {
       const key = await invoke<string | null>('get_api_key', {
         provider: 'moonscan',
       })
-      if (key) return key
-      // Moonscan V1 deprecated; V2 runs through etherscan.io — etherscan key works
+      if (key) candidates.push(key)
       const ethKey = await invoke<string | null>('get_api_key', {
         provider: 'etherscan',
       })
-      if (ethKey) return ethKey
+      if (ethKey) candidates.push(ethKey)
     } catch {
       // Tauri not available — fall through to browser fallbacks
     }
 
-    // Check localStorage (browser dev mode, set via DataProviders page)
+    // localStorage (browser dev mode, set via DataProviders page)
     const storedKey = localStorage.getItem('pacioli_api_key_moonscan')
-    if (storedKey) return storedKey
+    if (storedKey) candidates.push(storedKey)
     const ethStoredKey = localStorage.getItem('pacioli_api_key_etherscan')
-    if (ethStoredKey) return ethStoredKey
+    if (ethStoredKey) candidates.push(ethStoredKey)
 
-    // Check for environment variable (build-time configured)
+    // Environment variables (build-time configured)
     if (typeof import.meta !== 'undefined') {
       if (import.meta.env?.VITE_MOONSCAN_API_KEY)
-        return import.meta.env.VITE_MOONSCAN_API_KEY
+        candidates.push(import.meta.env.VITE_MOONSCAN_API_KEY)
       if (import.meta.env?.VITE_ETHERSCAN_API_KEY)
-        return import.meta.env.VITE_ETHERSCAN_API_KEY
+        candidates.push(import.meta.env.VITE_ETHERSCAN_API_KEY)
     }
 
-    return null
+    return [...new Set(candidates)]
+  }
+
+  /**
+   * True when the response is Etherscan V2's key-rejection error
+   * ("Invalid API Key" / "Missing/Invalid API Key").
+   */
+  private static isKeyRejection(data: MoonscanResponse<unknown>): boolean {
+    return (
+      data.status !== '1' &&
+      typeof data.result === 'string' &&
+      data.result.toLowerCase().includes('api key')
+    )
+  }
+
+  /**
+   * Fetch from the Etherscan V2 API, retrying with each configured key
+   * candidate if the current one is rejected. Throws an actionable error
+   * (including remediation steps) when no configured key is accepted.
+   */
+  private static async fetchWithKeyFallback<T>(
+    apiUrl: string,
+    params: URLSearchParams
+  ): Promise<MoonscanResponse<T>> {
+    const candidates = await MoonscanService.getApiKeyCandidates()
+    // With no keys configured, still attempt once so the server's own
+    // "Missing/Invalid API Key" surfaces through the same error path.
+    const attempts = candidates.length > 0 ? candidates : ['']
+    let lastRejection: string | null = null
+
+    for (const key of attempts) {
+      if (key) params.set('apikey', key)
+      else params.delete('apikey')
+
+      const response = await fetch(`${apiUrl}?${params.toString()}`)
+      const responseText = await response.text()
+
+      let data: MoonscanResponse<T>
+      try {
+        data = JSON.parse(responseText)
+      } catch (parseError) {
+        console.error('Failed to parse Etherscan V2 JSON:', parseError)
+        throw new Error(
+          `Invalid JSON response from Etherscan API: ${responseText.substring(0, 200)}`
+        )
+      }
+
+      if (!MoonscanService.isKeyRejection(data)) {
+        return data
+      }
+      lastRejection = data.result as string
+    }
+
+    throw new Error(
+      `Moonscan API error: ${lastRejection ?? 'Invalid API Key'}. ${MoonscanService.KEY_HELP}`
+    )
   }
 
   /**
@@ -134,7 +204,7 @@ export class MoonscanService {
    * Check if API key is configured
    */
   static async hasApiKey(): Promise<boolean> {
-    return Boolean(await MoonscanService.getApiKey())
+    return (await MoonscanService.getApiKeyCandidates()).length > 0
   }
 
   /**
@@ -156,8 +226,6 @@ export class MoonscanService {
       throw new Error(`Moonscan not configured for ${network}`)
     }
 
-    const apiKey = await MoonscanService.getApiKey()
-
     const {
       startBlock = 0,
       endBlock = 99999999,
@@ -178,26 +246,13 @@ export class MoonscanService {
       offset: offset.toString(),
       sort,
     })
-    // Etherscan V2 requires an API key; getApiKey() falls back to etherscan key
-    if (apiKey) {
-      params.set('apikey', apiKey)
-    }
-
-    const url = `${config.apiUrl}?${params.toString()}`
 
     try {
-      const response = await fetch(url)
-      const responseText = await response.text()
-
-      let data: MoonscanResponse<MoonscanTransaction>
-      try {
-        data = JSON.parse(responseText)
-      } catch (parseError) {
-        console.error('Failed to parse Moonscan JSON:', parseError)
-        throw new Error(
-          `Invalid JSON response from Etherscan API: ${responseText.substring(0, 200)}`
+      const data =
+        await MoonscanService.fetchWithKeyFallback<MoonscanTransaction>(
+          config.apiUrl,
+          params
         )
-      }
 
       if (data.status !== '1') {
         // Status '0' with "No transactions found" is not an error
@@ -248,8 +303,6 @@ export class MoonscanService {
       throw new Error(`Moonscan not configured for ${network}`)
     }
 
-    const apiKey = await MoonscanService.getApiKey()
-
     const {
       startBlock = 0,
       endBlock = 99999999,
@@ -269,16 +322,13 @@ export class MoonscanService {
       offset: offset.toString(),
       sort,
     })
-    if (apiKey) {
-      params.set('apikey', apiKey)
-    }
-
-    const url = `${config.apiUrl}?${params.toString()}`
 
     try {
-      const response = await fetch(url)
-      const data: MoonscanResponse<MoonscanTokenTransfer> =
-        await response.json()
+      const data =
+        await MoonscanService.fetchWithKeyFallback<MoonscanTokenTransfer>(
+          config.apiUrl,
+          params
+        )
 
       if (data.status !== '1') {
         // No transactions found or other non-error status - return empty
