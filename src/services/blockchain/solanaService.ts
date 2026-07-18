@@ -101,7 +101,7 @@ export interface SolanaTransaction {
  * @param address Solana address (base58 encoded)
  * @param network Network name ("solana" or "solana_devnet")
  */
-export async function getSolanaBalance(
+export function getSolanaBalance(
   address: string,
   network = 'solana'
 ): Promise<SolanaBalance> {
@@ -119,7 +119,7 @@ export async function getSolanaBalance(
  * @param network Network name ("solana" or "solana_devnet")
  * @returns Unified chain transactions with provider fallback
  */
-export async function getSolanaTransactions(
+export function getSolanaTransactions(
   address: string,
   network = 'solana'
 ): Promise<ChainTransaction[]> {
@@ -132,7 +132,7 @@ export async function getSolanaTransactions(
 /**
  * Validate a Solana address
  */
-export async function validateSolanaAddress(address: string): Promise<boolean> {
+export function validateSolanaAddress(address: string): Promise<boolean> {
   return invoke<boolean>('validate_solana_address', { address })
 }
 
