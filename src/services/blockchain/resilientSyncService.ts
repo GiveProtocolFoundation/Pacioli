@@ -136,7 +136,7 @@ export async function fetchTransactionsResilient(
  * @param address - Wallet address
  * @returns SyncStatus or null if never synced
  */
-export async function loadSyncStatus(
+export function loadSyncStatus(
   chainId: string,
   address: string
 ): Promise<SyncStatus | null> {
@@ -153,7 +153,7 @@ export async function loadSyncStatus(
  * @param address - Wallet address
  * @param lastBlock - Last synced block number
  */
-export async function saveSyncStatus(
+export function saveSyncStatus(
   chainId: string,
   address: string,
   lastBlock: number
@@ -174,7 +174,7 @@ export async function saveSyncStatus(
  * @param pairs - Array of { chainId, address } pairs to sync
  * @returns Array of SyncResult for each pair (same order)
  */
-export async function syncMultipleWallets(
+export function syncMultipleWallets(
   pairs: Array<{ chainId: string; address: string }>
 ): Promise<SyncResult[]> {
   return Promise.all(

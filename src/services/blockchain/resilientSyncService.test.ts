@@ -216,7 +216,7 @@ describe('Sync cursor operations', () => {
   })
 
   it('should save sync status', async () => {
-    mockInvoke.mockResolvedValueOnce(undefined)
+    mockInvoke.mockImplementationOnce(() => Promise.resolve())
 
     await saveSyncStatus('ethereum', '0xabc', 19500000)
 
