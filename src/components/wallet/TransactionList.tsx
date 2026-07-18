@@ -11,6 +11,8 @@ import {
   Trash2,
   Pencil,
   X,
+  Search,
+  Filter,
 } from 'lucide-react'
 import { formatBalance } from '@polkadot/util'
 import type {
@@ -45,10 +47,107 @@ export const TransactionList: React.FC<TransactionListProps> = ({
   const [editingPriceId, setEditingPriceId] = useState<string | null>(null)
   const [draftPrice, setDraftPrice] = useState<string>('')
 
+  // Selection state: track which transaction IDs are selected for import
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+
+  // Filter state
+  const [typeFilter, setTypeFilter] = useState<string>('all')
+  const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [searchQuery, setSearchQuery] = useState<string>('')
+
   // Sort transactions by block number (newest first)
   const sortedTransactions = useMemo(() => {
     return [...transactions].sort((a, b) => b.blockNumber - a.blockNumber)
   }, [transactions])
+
+  // Apply filters to sorted transactions
+  const filteredTransactions = useMemo(() => {
+    return sortedTransactions.filter(tx => {
+      const substrateTx = tx as SubstrateTransaction
+
+      // Type filter
+      if (typeFilter !== 'all' && tx.type !== typeFilter) return false
+
+      // Status filter
+      if (statusFilter !== 'all' && tx.status !== statusFilter) return false
+
+      // Search filter: match against hash, from, to, or method
+      if (searchQuery) {
+        const needle = searchQuery.toLowerCase()
+        const matchesHash = tx.hash?.toLowerCase().includes(needle)
+        const matchesFrom = tx.from?.toLowerCase().includes(needle)
+        const matchesTo = tx.to?.toLowerCase().includes(needle)
+        const matchesMethod = substrateTx.method?.toLowerCase().includes(needle)
+        const matchesSection = substrateTx.section
+          ?.toLowerCase()
+          .includes(needle)
+        if (
+          !matchesHash &&
+          !matchesFrom &&
+          !matchesTo &&
+          !matchesMethod &&
+          !matchesSection
+        )
+          return false
+      }
+
+      return true
+    })
+  }, [sortedTransactions, typeFilter, statusFilter, searchQuery])
+
+  // Distinct transaction types for the filter dropdown
+  const availableTypes = useMemo(() => {
+    const types = new Set(sortedTransactions.map(tx => tx.type))
+    return Array.from(types).sort()
+  }, [sortedTransactions])
+
+  // Selection helpers
+  const allFilteredSelected =
+    filteredTransactions.length > 0 &&
+    filteredTransactions.every(tx => selectedIds.has(tx.id))
+
+  const someFilteredSelected =
+    filteredTransactions.some(tx => selectedIds.has(tx.id)) &&
+    !allFilteredSelected
+
+  const handleToggleSelectAll = useCallback(() => {
+    setSelectedIds(prev => {
+      const next = new Set(prev)
+      if (allFilteredSelected) {
+        // Deselect all filtered
+        for (const tx of filteredTransactions) next.delete(tx.id)
+      } else {
+        // Select all filtered
+        for (const tx of filteredTransactions) next.add(tx.id)
+      }
+      return next
+    })
+  }, [allFilteredSelected, filteredTransactions])
+
+  const handleToggleSelect = useCallback((txId: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev)
+      if (next.has(txId)) {
+        next.delete(txId)
+      } else {
+        next.add(txId)
+      }
+      return next
+    })
+  }, [])
+
+  const selectedCount = filteredTransactions.filter(tx =>
+    selectedIds.has(tx.id)
+  ).length
+
+  const hasActiveFilters =
+    typeFilter !== 'all' || statusFilter !== 'all' || searchQuery !== ''
+
+  const clearFilters = useCallback(() => {
+    setTypeFilter('all')
+    setStatusFilter('all')
+    setSearchQuery('')
+  }, [])
 
   // Helper: Get network decimals
   const getNetworkDecimals = useCallback((network: string): number => {
@@ -112,14 +211,22 @@ export const TransactionList: React.FC<TransactionListProps> = ({
     [getTokenSymbol]
   )
 
-  // Import wallet transactions to accounting ledger
+  // Import selected (or all visible) wallet transactions to accounting ledger
   const importToLedger = useCallback(async () => {
+    // Import selected transactions, or all filtered if none selected
+    const toImport =
+      selectedCount > 0
+        ? filteredTransactions.filter(tx => selectedIds.has(tx.id))
+        : filteredTransactions
+
+    if (toImport.length === 0) return
+
     setImporting(true)
     setImportSuccess(false)
     setImportError(null)
 
     try {
-      for (const tx of sortedTransactions) {
+      for (const tx of toImport) {
         const substrateTx = tx as SubstrateTransaction
 
         // Convert wallet transaction to accounting format
@@ -159,6 +266,8 @@ export const TransactionList: React.FC<TransactionListProps> = ({
       }
 
       setImportSuccess(true)
+      // Clear selection after successful import
+      setSelectedIds(new Set())
       setTimeout(() => setImportSuccess(false), 3000)
     } catch (err) {
       console.error('Failed to import transactions:', err)
@@ -166,7 +275,14 @@ export const TransactionList: React.FC<TransactionListProps> = ({
     } finally {
       setImporting(false)
     }
-  }, [sortedTransactions, addTransaction, getNetworkDecimals, getTokenSymbol])
+  }, [
+    filteredTransactions,
+    selectedIds,
+    selectedCount,
+    addTransaction,
+    getNetworkDecimals,
+    getTokenSymbol,
+  ])
 
   // Handle purge confirmation
   const handlePurge = useCallback(() => {
@@ -438,8 +554,10 @@ export const TransactionList: React.FC<TransactionListProps> = ({
               Transaction History
             </h3>
             <p className="text-sm text-[#294050] dark:text-[#9FB4BE] mt-1">
-              {transactions.length} transaction
-              {transactions.length !== 1 ? 's' : ''} found
+              {filteredTransactions.length === transactions.length
+                ? `${transactions.length} transaction${transactions.length !== 1 ? 's' : ''} found`
+                : `${filteredTransactions.length} of ${transactions.length} transactions shown`}
+              {selectedCount > 0 && ` \u00B7 ${selectedCount} selected`}
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -452,7 +570,9 @@ export const TransactionList: React.FC<TransactionListProps> = ({
             </button>
             <button
               onClick={importToLedger}
-              disabled={importing || importSuccess}
+              disabled={
+                importing || importSuccess || filteredTransactions.length === 0
+              }
               className="text-sm px-3 py-1.5 bg-[#294050] dark:bg-[#F09988] text-white hover:opacity-90 font-medium transition-opacity inline-flex items-center gap-1.5 rounded disabled:opacity-50"
             >
               {importing ? (
@@ -468,7 +588,9 @@ export const TransactionList: React.FC<TransactionListProps> = ({
               ) : (
                 <>
                   <Upload className="w-4 h-4" />
-                  Import to Ledger
+                  {selectedCount > 0
+                    ? `Import ${selectedCount} Selected`
+                    : 'Import All to Ledger'}
                 </>
               )}
             </button>
@@ -481,6 +603,61 @@ export const TransactionList: React.FC<TransactionListProps> = ({
             </button>
           </div>
         </div>
+      </div>
+
+      {/* Filter Bar */}
+      <div className="px-6 py-3 border-b border-[rgba(95,227,192,0.15)] flex flex-wrap items-center gap-3">
+        {/* Search */}
+        <div className="relative flex-1 min-w-[200px] max-w-sm">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#647D8B]" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            placeholder="Search by address, hash, or method..."
+            className="w-full pl-8 pr-3 py-1.5 text-sm border border-[rgba(95,227,192,0.3)] rounded bg-[#F7FAFA] dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] placeholder-[#647D8B] focus:outline-none focus:border-[#5FE3C0] focus:ring-1 focus:ring-[#5FE3C0]"
+          />
+        </div>
+
+        {/* Type filter */}
+        <div className="inline-flex items-center gap-1.5">
+          <Filter className="w-3.5 h-3.5 text-[#647D8B]" />
+          <select
+            value={typeFilter}
+            onChange={e => setTypeFilter(e.target.value)}
+            className="text-sm border border-[rgba(95,227,192,0.3)] rounded bg-[#F7FAFA] dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] px-2 py-1.5 focus:outline-none focus:border-[#5FE3C0] focus:ring-1 focus:ring-[#5FE3C0]"
+          >
+            <option value="all">All Types</option>
+            {availableTypes.map(t => (
+              <option key={t} value={t}>
+                {t.charAt(0).toUpperCase() + t.slice(1)}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Status filter */}
+        <select
+          value={statusFilter}
+          onChange={e => setStatusFilter(e.target.value)}
+          className="text-sm border border-[rgba(95,227,192,0.3)] rounded bg-[#F7FAFA] dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] px-2 py-1.5 focus:outline-none focus:border-[#5FE3C0] focus:ring-1 focus:ring-[#5FE3C0]"
+        >
+          <option value="all">All Statuses</option>
+          <option value="success">Success</option>
+          <option value="failed">Failed</option>
+          <option value="pending">Pending</option>
+        </select>
+
+        {/* Clear filters */}
+        {hasActiveFilters && (
+          <button
+            onClick={clearFilters}
+            className="text-xs text-[#E8836F] dark:text-[#F09988] hover:opacity-80 font-medium inline-flex items-center gap-1"
+          >
+            <X className="w-3 h-3" />
+            Clear Filters
+          </button>
+        )}
       </div>
 
       {/* Import error banner */}
@@ -509,6 +686,20 @@ export const TransactionList: React.FC<TransactionListProps> = ({
         <table className="ledger-table">
           <thead className="ledger-table-header">
             <tr>
+              <th className="ledger-table-cell-text text-center w-10">
+                <input
+                  type="checkbox"
+                  checked={allFilteredSelected}
+                  ref={el => {
+                    if (el) el.indeterminate = someFilteredSelected
+                  }}
+                  onChange={handleToggleSelectAll}
+                  className="w-4 h-4 text-[#294050] border-[rgba(95,227,192,0.3)] rounded focus:ring-[#5FE3C0] cursor-pointer"
+                  title={
+                    allFilteredSelected ? 'Deselect all' : 'Select all visible'
+                  }
+                />
+              </th>
               <th className="ledger-table-cell-text text-left">Time</th>
               <th className="ledger-table-cell-text text-left">Type</th>
               <th className="ledger-table-cell-text text-left">From</th>
@@ -525,7 +716,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
             </tr>
           </thead>
           <tbody>
-            {sortedTransactions.map(tx => {
+            {filteredTransactions.map(tx => {
               const isSubstrate = 'method' in tx
               const substrateTx = tx as SubstrateTransaction
               const txWithPrice = tx as Transaction & {
@@ -534,7 +725,20 @@ export const TransactionList: React.FC<TransactionListProps> = ({
               const isEditing = editingPriceId === tx.id
 
               return (
-                <tr key={tx.id} className="ledger-table-row">
+                <tr
+                  key={tx.id}
+                  className={`ledger-table-row${selectedIds.has(tx.id) ? ' bg-[#5FE3C0]/5 dark:bg-[#5FE3C0]/10' : ''}`}
+                >
+                  {/* Selection Checkbox */}
+                  <td className="ledger-table-cell-text text-center w-10">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.has(tx.id)}
+                      onChange={() => handleToggleSelect(tx.id)}
+                      className="w-4 h-4 text-[#294050] border-[rgba(95,227,192,0.3)] rounded focus:ring-[#5FE3C0] cursor-pointer"
+                    />
+                  </td>
+
                   {/* Timestamp */}
                   <td className="ledger-table-cell-text whitespace-nowrap text-sm text-[#294050] dark:text-[#9FB4BE]">
                     {formatTimestamp(tx.timestamp)}
@@ -668,15 +872,22 @@ export const TransactionList: React.FC<TransactionListProps> = ({
       </div>
 
       {/* Footer */}
-      {transactions.length > 10 && (
+      {filteredTransactions.length > 10 && (
         <div className="px-6 py-4 border-t border-[rgba(95,227,192,0.15)] flex items-center justify-between">
           <p className="text-sm text-[#294050] dark:text-[#9FB4BE]">
-            Showing {Math.min(10, transactions.length)} of {transactions.length}{' '}
-            transactions
+            Showing {filteredTransactions.length} transaction
+            {filteredTransactions.length !== 1 ? 's' : ''}
+            {hasActiveFilters &&
+              ` (filtered from ${transactions.length} total)`}
           </p>
-          <button className="text-sm text-[#294050] dark:text-[#F09988] hover:opacity-90 font-medium">
-            Load More
-          </button>
+          {selectedCount > 0 && (
+            <button
+              onClick={() => setSelectedIds(new Set())}
+              className="text-sm text-[#294050] dark:text-[#F09988] hover:opacity-90 font-medium"
+            >
+              Clear Selection
+            </button>
+          )}
         </div>
       )}
     </div>
