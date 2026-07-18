@@ -58,18 +58,18 @@ const QueueRow: React.FC<QueueRowProps> = ({
       {tx.chainId}
     </td>
     <td className="px-4 py-3 whitespace-nowrap text-sm font-mono text-[#294050] dark:text-[#9FB4BE]">
-      <span title={tx.hash}>{truncateHash(tx.hash)}</span>
+      <span title={tx.transactionHash}>{truncateHash(tx.transactionHash)}</span>
     </td>
     <td className="px-4 py-3 whitespace-nowrap">
       <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[#294050]/10 text-[#294050] dark:bg-[#294050]/20 dark:text-[#9FB4BE]">
-        {displayTxType(tx.txType)}
+        {displayTxType(tx.transactionType)}
       </span>
     </td>
     <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-mono text-[#11202B] dark:text-[#EAF3F2]">
-      {tx.value}
+      {tx.transferValue}
     </td>
     <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-mono text-[#647D8B]">
-      {tx.fee ?? '—'}
+      {tx.transactionFee ?? '—'}
     </td>
     <td className="px-4 py-3 whitespace-nowrap text-sm text-[#294050] dark:text-[#9FB4BE]">
       {formatTimestampFull(tx.timestamp)}
@@ -214,9 +214,9 @@ const ClassificationQueue: React.FC = () => {
     const needle = searchQuery.toLowerCase()
     return transactions.filter(
       tx =>
-        tx.hash.toLowerCase().includes(needle) ||
+        tx.transactionHash.toLowerCase().includes(needle) ||
         tx.chainId.toLowerCase().includes(needle) ||
-        tx.txType.toLowerCase().includes(needle) ||
+        tx.transactionType.toLowerCase().includes(needle) ||
         tx.fromAddress.toLowerCase().includes(needle) ||
         (tx.toAddress?.toLowerCase().includes(needle) ?? false)
     )
@@ -259,7 +259,7 @@ const ClassificationQueue: React.FC = () => {
       if (!txId) return
       const tx = transactions.find(t => t.id === txId)
       if (tx) {
-        setIgnoreModal({ transactionId: tx.id, hash: tx.hash })
+        setIgnoreModal({ transactionId: tx.id, hash: tx.transactionHash })
         setIgnoreReason('')
       }
     },
@@ -432,9 +432,9 @@ const ClassificationQueue: React.FC = () => {
       {drawerTx !== null && (
         <JournalEntryDrawer
           accounts={accounts}
-          transactionRef={drawerTx.hash}
+          transactionRef={drawerTx.transactionHash}
           rawTransactionId={drawerTx.id}
-          initialDescription={`${displayTxType(drawerTx.txType)} on ${drawerTx.chainId} (${truncateHash(drawerTx.hash)})`}
+          initialDescription={`${displayTxType(drawerTx.transactionType)} on ${drawerTx.chainId} (${truncateHash(drawerTx.transactionHash)})`}
           onClose={handleDrawerClose}
           onSaved={handleDrawerSaved}
         />

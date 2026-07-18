@@ -1238,7 +1238,7 @@ pub async fn auto_classify_transaction(
 ) -> Result<JournalEntryWithLines, String> {
     // Fetch the raw transaction
     let tx = sqlx::query_as::<_, MultiChainTx>(
-        "SELECT id, chain_id, hash, from_address, to_address, value, fee, timestamp, tx_type, status FROM multi_chain_transactions WHERE id = ? AND classification_status = 'unclassified'",
+        "SELECT id, chain_id, transaction_hash, from_address, to_address, transfer_value, transaction_fee, timestamp, transaction_type, status FROM multi_chain_transactions WHERE id = ? AND classification_status = 'unclassified'",
     )
     .bind(&transaction_id)
     .fetch_optional(&state.pool)
@@ -1257,22 +1257,22 @@ pub async fn auto_classify_transaction(
     // Rounding is explicit half-away-from-zero: Decimal::round() defaults to
     // banker's rounding (10000.5 -> 10000), which is not the money convention
     // used elsewhere in this codebase.
-    let amount_dec = Decimal::from_str(&tx.value)
-        .map_err(|e| format!("Cannot parse value '{}': {e}", tx.value))?;
+    let amount_dec = Decimal::from_str(&tx.transfer_value)
+        .map_err(|e| format!("Cannot parse value '{}': {e}", tx.transfer_value))?;
     let amount_minor: i64 = decimal_to_minor_units(amount_dec)
-        .ok_or_else(|| format!("Value out of range: {}", tx.value))?;
+        .ok_or_else(|| format!("Value out of range: {}", tx.transfer_value))?;
     let fee_dec = tx
-        .fee
+        .transaction_fee
         .as_deref()
         .unwrap_or("0")
         .parse::<Decimal>()
         .unwrap_or(Decimal::ZERO);
     let fee_minor: i64 =
-        decimal_to_minor_units(fee_dec).ok_or_else(|| format!("Fee out of range: {:?}", tx.fee))?;
+        decimal_to_minor_units(fee_dec).ok_or_else(|| format!("Fee out of range: {:?}", tx.transaction_fee))?;
 
-    // Build lines based on tx_type heuristics
+    // Build lines based on transaction_type heuristics
     let mut lines = Vec::new();
-    let description = match tx.tx_type.as_str() {
+    let description = match tx.transaction_type.as_str() {
         "claim" | "stake" => {
             // Staking reward: DR Crypto Assets / CR Staking Income
             if amount_minor > 0 {
@@ -1322,7 +1322,7 @@ pub async fn auto_classify_transaction(
             format!(
                 "Transfer on {} ({})",
                 tx.chain_id,
-                &tx.hash[..8.min(tx.hash.len())]
+                &tx.transaction_hash[..8.min(tx.transaction_hash.len())]
             )
         }
         _ => {
@@ -1349,9 +1349,9 @@ pub async fn auto_classify_transaction(
             }
             format!(
                 "{} on {} ({})",
-                tx.tx_type,
+                tx.transaction_type,
                 tx.chain_id,
-                &tx.hash[..8.min(tx.hash.len())]
+                &tx.transaction_hash[..8.min(tx.transaction_hash.len())]
             )
         }
     };
@@ -1386,7 +1386,7 @@ pub async fn auto_classify_transaction(
     let input = NewJournalEntryInput {
         entry_date,
         description,
-        reference_number: Some(tx.hash.clone()),
+        reference_number: Some(tx.transaction_hash.clone()),
         raw_transaction_id: Some(transaction_id),
         origin: Some("rule".to_string()),
         lines,
@@ -1404,7 +1404,7 @@ struct MultiChainTx {
     /// Blockchain identifier.
     chain_id: String,
     /// Transaction hash.
-    hash: String,
+    transaction_hash: String,
     /// Sender address.
     #[allow(dead_code)]
     from_address: String,
@@ -1412,13 +1412,13 @@ struct MultiChainTx {
     #[allow(dead_code)]
     to_address: Option<String>,
     /// Transaction value as string.
-    value: String,
+    transfer_value: String,
     /// Transaction fee as string.
-    fee: Option<String>,
+    transaction_fee: Option<String>,
     /// Unix timestamp.
     timestamp: i64,
     /// Transaction type classification.
-    tx_type: String,
+    transaction_type: String,
     /// Transaction status.
     #[allow(dead_code)]
     status: String,
@@ -1453,24 +1453,24 @@ async fn get_account_id_by_number(pool: &sqlx::SqlitePool, number: &str) -> Resu
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
 #[serde(rename_all = "camelCase")]
 pub struct MultiChainTransaction {
-    /// Composite ID: chain_id + "_" + hash.
+    /// Composite ID: chain_id + "_" + transaction_hash.
     pub id: String,
     /// Blockchain identifier.
     pub chain_id: String,
     /// Transaction hash.
-    pub hash: String,
+    pub transaction_hash: String,
     /// Sender address.
     pub from_address: String,
     /// Recipient address.
     pub to_address: Option<String>,
     /// Transaction value as string (raw, never mutated — Inv-5).
-    pub value: String,
+    pub transfer_value: String,
     /// Transaction fee as string.
-    pub fee: Option<String>,
+    pub transaction_fee: Option<String>,
     /// Unix timestamp.
     pub timestamp: i64,
     /// Transaction type.
-    pub tx_type: String,
+    pub transaction_type: String,
     /// Transaction status (success/failed/pending).
     pub status: String,
     /// Classification status.
@@ -1483,7 +1483,7 @@ pub async fn get_unclassified_transactions(
     state: State<'_, DatabaseState>,
 ) -> Result<Vec<MultiChainTransaction>, String> {
     sqlx::query_as::<_, MultiChainTransaction>(
-        "SELECT id, chain_id, hash, from_address, to_address, value, fee, timestamp, tx_type, status, classification_status FROM multi_chain_transactions WHERE classification_status = 'unclassified' ORDER BY timestamp DESC",
+        "SELECT id, chain_id, transaction_hash, from_address, to_address, transfer_value, transaction_fee, timestamp, transaction_type, status, classification_status FROM multi_chain_transactions WHERE classification_status = 'unclassified' ORDER BY timestamp DESC",
     )
     .fetch_all(&state.pool)
     .await
@@ -3356,23 +3356,23 @@ mod tests {
         pool: &SqlitePool,
         id: &str,
         chain: &str,
-        hash: &str,
-        value: &str,
-        fee: Option<&str>,
-        tx_type: &str,
+        transaction_hash: &str,
+        transfer_value: &str,
+        transaction_fee: Option<&str>,
+        transaction_type: &str,
         timestamp: i64,
     ) {
         sqlx::query(
-            r#"INSERT INTO multi_chain_transactions (id, chain_id, hash, from_address, to_address, value, fee, timestamp, tx_type, status)
+            r#"INSERT INTO multi_chain_transactions (id, chain_id, transaction_hash, from_address, to_address, transfer_value, transaction_fee, timestamp, transaction_type, status)
                VALUES (?, ?, ?, '0xSender', '0xReceiver', ?, ?, ?, ?, 'success')"#,
         )
         .bind(id)
         .bind(chain)
-        .bind(hash)
-        .bind(value)
-        .bind(fee)
+        .bind(transaction_hash)
+        .bind(transfer_value)
+        .bind(transaction_fee)
         .bind(timestamp)
-        .bind(tx_type)
+        .bind(transaction_type)
         .execute(pool)
         .await
         .expect("Insert raw tx");
@@ -3684,17 +3684,17 @@ mod tests {
         .await
         .expect("Classify");
 
-        // Verify value and fee are untouched
-        let (value, fee): (String, Option<String>) =
-            sqlx::query_as("SELECT value, fee FROM multi_chain_transactions WHERE id = ?")
+        // Verify transfer_value and transaction_fee are untouched
+        let (transfer_value, transaction_fee): (String, Option<String>) =
+            sqlx::query_as("SELECT transfer_value, transaction_fee FROM multi_chain_transactions WHERE id = ?")
                 .bind(tx_id)
                 .fetch_one(&pool)
                 .await
                 .expect("Fetch raw tx");
 
-        assert_eq!(value, "25.50", "Raw value must be untouched (Inv-5)");
+        assert_eq!(transfer_value, "25.50", "Raw value must be untouched (Inv-5)");
         assert_eq!(
-            fee.as_deref(),
+            transaction_fee.as_deref(),
             Some("0.01"),
             "Raw fee must be untouched (Inv-5)"
         );

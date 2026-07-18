@@ -34,16 +34,16 @@ class behind rehearsal findings #1/#2/#3.**
       auto-classified entries, classification_status flip — Engineer)
 - [ ] **Phase 4a — Import resilience and canonical store** (added by board
       amendment to the Stage 1 mandate, 2026-07-18; formalizes "Option B"
-      from the rehearsal findings #1-#3 options analysis): per-chain
-      provider registry with fallback (Etherscan V2 → Alchemy → direct RPC
-      for EVM chains; Polkadot.js with fallback endpoints for Substrate;
-      dedicated fallbacks for the existing Solana/Bitcoin services) with
-      retry/backoff and graceful "provider temporarily unavailable" errors;
-      resumable sync cursors (per wallet/chain high-water mark, no
-      duplicate ingestion on re-sync); idempotent ingestion enforced at the
-      data layer; descriptive human-legible raw-transaction column names;
-      provider-flakiness simulation in tests (5xx/timeout/partial data).
-      Runs in parallel with the Phase 10 rehearsal. Delegated: Engineer.
+      from the rehearsal findings #1-#3 options analysis). Split into two
+      parts per CTO review:
+      - **Part 1 (PR in review):** descriptive column renames
+        (`hash→transaction_hash`, `value→transfer_value`, etc.), all
+        Rust/TS readers updated, error surfacing in `insert_transactions`
+        (no more silent swallowing), `wallet_address` provenance column,
+        docs updated with Part 1/Part 2 split. Delegated: Engineer.
+      - **Part 2 (follow-up):** wire provider fallback into live import
+        path, resumable sync cursor logic, Solana/Bitcoin fallback
+        endpoints, vitest flakiness simulation tests. Delegated: Engineer.
 - [x] **Phase 5 — Periods, close, and lock**
       (GIV-684: accounting_periods table with open/closed lifecycle,
       DB trigger blocks posting into closed periods, list_periods/
@@ -1073,3 +1073,38 @@ WHERE status='approved'` (the M5 state machine explicitly allows
     step 2) is unchanged.
   - Bookkeeping: GIV-702 (Option A, save-time key validation) PR #232 is
     merged on main (`d99ef72`); issue closed.
+- **Session 20 (2026-07-18, Engineer — Phase 4a Part 1):**
+  - **Scope split (CTO-recommended):** Phase 4a split into two parts per
+    CTO review of PR #234. Part 1 (this PR): descriptive column renames,
+    all Rust/TS reader updates, error surfacing in `insert_transactions`.
+    Part 2 (follow-up): provider fallback wiring into live import path,
+    sync cursor resume logic, vitest flakiness simulation tests.
+  - **Rebased onto current main** (`8c73359`, post Phases 4-10 + Gate 1
+    rehearsal + Moonscan fixes) — clean stack, no stale parent.
+  - **Migration `20260718000001_phase4a_descriptive_columns.sql`:**
+    `hash→transaction_hash`, `tx_type→transaction_type`,
+    `value→transfer_value`, `fee→transaction_fee`,
+    `raw_data→raw_json_data`, `token_transfers.value→transfer_amount`,
+    new `wallet_address` column with index.
+  - **All Rust readers updated:** `db/multi_chain.rs` (Transaction,
+    TransactionRow, TokenTransfer, TokenTransferRow structs + all SQL),
+    `api/persistence.rs` (ChainTransactionInput, ChainTransactionRow +
+    save/get SQL), `api/accounting.rs` (MultiChainTx, MultiChainTransaction
+    + all SQL queries + test helper `insert_raw_tx`).
+  - **Error surfacing:** `insert_transactions` and `insert_token_transfers`
+    in `db/multi_chain.rs`, `save_chain_transactions` and
+    `save_transactions` in `api/persistence.rs` now propagate per-row
+    errors via `?` instead of silently swallowing with `if result.is_ok()`.
+    This eliminates the "silently incomplete history" failure class.
+  - **TS consumers updated:** `tauriPersistence.ts` serialization mapping,
+    `database.ts` `RawTransaction` interface, `ClassificationQueue.tsx`
+    all field references.
+  - **Idempotency note:** the existing `UNIQUE(chain_id, hash)` constraint
+    (now `UNIQUE(chain_id, transaction_hash)` post-rename) predates this
+    PR — it was part of the original `20260118000001` migration. The
+    one-row-per-tx + first-importer `wallet_address` design is documented
+    here rather than claimed as new work.
+  - **Part 2 remaining (follow-up PR):** wire `provider_fallback` module
+    into the live `ChainManager` import path (not dead code); resume sync
+    from `address_sync_status.last_block_synced`; add Solana/Bitcoin
+    fallback endpoints; vitest flakiness simulation tests.

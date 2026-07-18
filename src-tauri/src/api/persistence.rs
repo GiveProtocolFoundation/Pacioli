@@ -353,7 +353,7 @@ pub async fn save_transactions(
             .and_then(|t| DateTime::parse_from_rfc3339(t).ok())
             .map(|t| t.with_timezone(&Utc));
 
-        let result = sqlx::query(
+        sqlx::query(
             r#"
             INSERT INTO transactions (
                 id, wallet_id, hash, block_number, timestamp, from_address, to_address,
@@ -387,11 +387,10 @@ pub async fn save_transactions(
         .bind(now)
         .bind(&tx.price_at_acquisition_usd)
         .execute(&state.pool)
-        .await;
+        .await
+        .map_err(|e| e.to_string())?;
 
-        if result.is_ok() {
-            saved_count += 1;
-        }
+        saved_count += 1;
     }
 
     Ok(saved_count)
@@ -551,21 +550,21 @@ pub async fn get_all_settings(
 // ============================================================================
 
 /// Input for chain-level transaction saving. The frontend serializes the full
-/// Transaction object into raw_data so it can be reconstructed on read.
+/// Transaction object into raw_json_data so it can be reconstructed on read.
 #[derive(Debug, Clone, Deserialize)]
 pub struct ChainTransactionInput {
     #[allow(dead_code)]
     pub id: String,
-    pub hash: String,
+    pub transaction_hash: String,
     pub block_number: Option<i64>,
     pub timestamp: i64,
     pub from_address: String,
     pub to_address: Option<String>,
-    pub value: String,
-    pub fee: Option<String>,
+    pub transfer_value: String,
+    pub transaction_fee: Option<String>,
     pub status: String,
-    pub tx_type: String,
-    pub raw_data: String,
+    pub transaction_type: String,
+    pub raw_json_data: String,
 }
 
 /// Row type for reading chain transactions back.
@@ -573,16 +572,16 @@ pub struct ChainTransactionInput {
 pub struct ChainTransactionRow {
     pub id: String,
     pub chain_id: String,
-    pub hash: String,
+    pub transaction_hash: String,
     pub from_address: String,
     pub to_address: Option<String>,
-    pub value: String,
-    pub fee: Option<String>,
+    pub transfer_value: String,
+    pub transaction_fee: Option<String>,
     pub timestamp: i64,
     pub block_number: Option<i64>,
-    pub tx_type: String,
+    pub transaction_type: String,
     pub status: String,
-    pub raw_data: Option<String>,
+    pub raw_json_data: Option<String>,
 }
 
 /// Row type for sync status.
@@ -596,7 +595,10 @@ pub struct ChainSyncStatusRow {
 }
 
 /// Saves chain transactions into multi_chain_transactions with upsert semantics.
-/// The full frontend Transaction object is preserved in raw_data for lossless round-trips.
+/// The full frontend Transaction object is preserved in raw_json_data for lossless round-trips.
+///
+/// Propagates per-row errors instead of silently swallowing them — callers
+/// must know when a wallet's history is incomplete.
 #[tauri::command]
 pub async fn save_chain_transactions(
     state: State<'_, DatabaseState>,
@@ -604,49 +606,48 @@ pub async fn save_chain_transactions(
     address: String,
     transactions: Vec<ChainTransactionInput>,
 ) -> Result<usize, String> {
-    let _ = &address; // address captured for context; chain_id from network
     let mut saved = 0;
 
     for tx in &transactions {
-        let composite_id = format!("{}_{}", network, tx.hash);
+        let composite_id = format!("{}_{}", network, tx.transaction_hash);
 
-        let result = sqlx::query(
+        sqlx::query(
             r#"
             INSERT INTO multi_chain_transactions (
-                id, chain_id, hash, from_address, to_address,
-                value, fee, timestamp, block_number, tx_type,
-                status, raw_data
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ON CONFLICT(chain_id, hash) DO UPDATE SET
+                id, chain_id, transaction_hash, from_address, to_address,
+                transfer_value, transaction_fee, timestamp, block_number,
+                transaction_type, status, raw_json_data, wallet_address
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(chain_id, transaction_hash) DO UPDATE SET
                 from_address = excluded.from_address,
                 to_address = excluded.to_address,
-                value = excluded.value,
-                fee = excluded.fee,
+                transfer_value = excluded.transfer_value,
+                transaction_fee = excluded.transaction_fee,
                 timestamp = excluded.timestamp,
                 block_number = excluded.block_number,
-                tx_type = excluded.tx_type,
+                transaction_type = excluded.transaction_type,
                 status = excluded.status,
-                raw_data = excluded.raw_data
+                raw_json_data = excluded.raw_json_data
             "#,
         )
         .bind(&composite_id)
         .bind(&network)
-        .bind(&tx.hash)
+        .bind(&tx.transaction_hash)
         .bind(&tx.from_address)
         .bind(&tx.to_address)
-        .bind(&tx.value)
-        .bind(&tx.fee)
+        .bind(&tx.transfer_value)
+        .bind(&tx.transaction_fee)
         .bind(tx.timestamp)
         .bind(tx.block_number)
-        .bind(&tx.tx_type)
+        .bind(&tx.transaction_type)
         .bind(&tx.status)
-        .bind(&tx.raw_data)
+        .bind(&tx.raw_json_data)
+        .bind(&address)
         .execute(&state.pool)
-        .await;
+        .await
+        .map_err(|e| e.to_string())?;
 
-        if result.is_ok() {
-            saved += 1;
-        }
+        saved += 1;
     }
 
     Ok(saved)
@@ -662,8 +663,9 @@ pub async fn get_chain_transactions(
 ) -> Result<Vec<ChainTransactionRow>, String> {
     let rows = sqlx::query_as::<_, ChainTransactionRow>(
         r#"
-        SELECT id, chain_id, hash, from_address, to_address, value, fee,
-               timestamp, block_number, tx_type, status, raw_data
+        SELECT id, chain_id, transaction_hash, from_address, to_address,
+               transfer_value, transaction_fee, timestamp, block_number,
+               transaction_type, status, raw_json_data
         FROM multi_chain_transactions
         WHERE chain_id = ?
         AND (from_address = ? OR to_address = ?
