@@ -3,7 +3,7 @@
 //! Exposes API key management and rate limit status to the frontend.
 
 use super::api_keys::{ApiKeyManager, ApiProvider};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 // =============================================================================
 // RESPONSE TYPES
@@ -35,6 +35,30 @@ pub struct SaveApiKeyResult {
     pub new_rate_limit: u32,
     /// Error message if failed.
     pub error: Option<String>,
+}
+
+/// Result of validating an API key against its provider.
+#[derive(Debug, Serialize)]
+pub struct ValidateApiKeyResult {
+    /// Validation outcome: "valid", "invalid", "network_error", or "not_verifiable".
+    pub status: String,
+    /// Human-readable message.
+    pub message: String,
+}
+
+/// Raw Etherscan V2 API response for validation calls.
+#[derive(Debug, Deserialize)]
+struct EtherscanValidationResponse {
+    status: String,
+    message: String,
+    result: serde_json::Value,
+}
+
+/// Raw Subscan API response for validation calls.
+#[derive(Debug, Deserialize)]
+struct SubscanValidationResponse {
+    code: i32,
+    message: String,
 }
 
 // =============================================================================
@@ -91,6 +115,178 @@ pub async fn delete_api_key(provider: String) -> SaveApiKeyResult {
             error: Some(e.to_string()),
         },
     }
+}
+
+/// Validate an API key by making a cheap test call to the provider.
+///
+/// For Etherscan-family providers, calls the `ethsupply` stats endpoint.
+/// For Subscan, calls the `/api/now` timestamp endpoint.
+/// Other providers return "not_verifiable".
+#[tauri::command]
+pub async fn validate_api_key(provider: String, api_key: String) -> ValidateApiKeyResult {
+    let Some(api_provider) = ApiProvider::from_str(&provider) else {
+        return ValidateApiKeyResult {
+            status: "invalid".to_string(),
+            message: format!("Unknown provider: {provider}"),
+        };
+    };
+
+    match api_provider {
+        ApiProvider::Etherscan
+        | ApiProvider::Polygonscan
+        | ApiProvider::Arbiscan
+        | ApiProvider::Basescan
+        | ApiProvider::Optimism
+        | ApiProvider::Moonscan => validate_etherscan_key(&api_key).await,
+        ApiProvider::Subscan => validate_subscan_key(&api_key).await,
+        _ => ValidateApiKeyResult {
+            status: "not_verifiable".to_string(),
+            message: format!(
+                "{} key validation is not available — key will be saved as-is",
+                api_provider.display_name()
+            ),
+        },
+    }
+}
+
+/// Validate an Etherscan-family API key via the V2 unified endpoint.
+async fn validate_etherscan_key(api_key: &str) -> ValidateApiKeyResult {
+    let url = format!(
+        "https://api.etherscan.io/v2/api?chainid=1&module=stats&action=ethsupply&apikey={}",
+        api_key
+    );
+
+    let client = match reqwest::Client::builder()
+        .timeout(std::time::Duration::from_secs(10))
+        .build()
+    {
+        Ok(c) => c,
+        Err(e) => {
+            return ValidateApiKeyResult {
+                status: "network_error".to_string(),
+                message: format!("Failed to create HTTP client: {e}"),
+            }
+        }
+    };
+
+    match client.get(&url).send().await {
+        Ok(resp) => match resp.json::<EtherscanValidationResponse>().await {
+            Ok(body) => {
+                if body.status == "1" || body.message == "OK" {
+                    ValidateApiKeyResult {
+                        status: "valid".to_string(),
+                        message: "API key is valid".to_string(),
+                    }
+                } else {
+                    let detail = body.result.as_str().unwrap_or("Unknown error");
+                    ValidateApiKeyResult {
+                        status: "invalid".to_string(),
+                        message: format!("Provider rejected the key: {detail}"),
+                    }
+                }
+            }
+            Err(e) => ValidateApiKeyResult {
+                status: "network_error".to_string(),
+                message: format!("Failed to parse provider response: {e}"),
+            },
+        },
+        Err(e) => ValidateApiKeyResult {
+            status: "network_error".to_string(),
+            message: format!("Network error: {e}"),
+        },
+    }
+}
+
+/// Validate a Subscan API key via the `/api/now` timestamp endpoint.
+async fn validate_subscan_key(api_key: &str) -> ValidateApiKeyResult {
+    let url = "https://polkadot.api.subscan.io/api/now";
+
+    let client = match reqwest::Client::builder()
+        .timeout(std::time::Duration::from_secs(10))
+        .build()
+    {
+        Ok(c) => c,
+        Err(e) => {
+            return ValidateApiKeyResult {
+                status: "network_error".to_string(),
+                message: format!("Failed to create HTTP client: {e}"),
+            }
+        }
+    };
+
+    match client
+        .post(url)
+        .header("X-API-Key", api_key)
+        .header("Content-Type", "application/json")
+        .body("{}")
+        .send()
+        .await
+    {
+        Ok(resp) => {
+            let status_code = resp.status().as_u16();
+            if status_code == 401 || status_code == 403 {
+                return ValidateApiKeyResult {
+                    status: "invalid".to_string(),
+                    message: "Provider rejected the key".to_string(),
+                };
+            }
+            match resp.json::<SubscanValidationResponse>().await {
+                Ok(body) => {
+                    if body.code == 0 {
+                        ValidateApiKeyResult {
+                            status: "valid".to_string(),
+                            message: "API key is valid".to_string(),
+                        }
+                    } else {
+                        ValidateApiKeyResult {
+                            status: "invalid".to_string(),
+                            message: format!("Provider rejected the key: {}", body.message),
+                        }
+                    }
+                }
+                Err(e) => ValidateApiKeyResult {
+                    status: "network_error".to_string(),
+                    message: format!("Failed to parse provider response: {e}"),
+                },
+            }
+        }
+        Err(e) => ValidateApiKeyResult {
+            status: "network_error".to_string(),
+            message: format!("Network error: {e}"),
+        },
+    }
+}
+
+/// Test the stored API key for a provider without exposing it to the frontend.
+///
+/// Reads the key from the OS keychain, validates it against the provider, and
+/// returns the result. The key never leaves the Rust layer.
+#[tauri::command]
+pub async fn test_stored_api_key(provider: String) -> ValidateApiKeyResult {
+    let Some(api_provider) = ApiProvider::from_str(&provider) else {
+        return ValidateApiKeyResult {
+            status: "invalid".to_string(),
+            message: format!("Unknown provider: {provider}"),
+        };
+    };
+
+    let key = match ApiKeyManager::get_api_key(api_provider) {
+        Ok(Some(k)) => k,
+        Ok(None) => {
+            return ValidateApiKeyResult {
+                status: "invalid".to_string(),
+                message: "No API key stored for this provider".to_string(),
+            }
+        }
+        Err(e) => {
+            return ValidateApiKeyResult {
+                status: "network_error".to_string(),
+                message: format!("Failed to read keychain: {e}"),
+            }
+        }
+    };
+
+    validate_api_key(provider, key).await
 }
 
 /// Retrieve an API key for a provider from the system keychain.
