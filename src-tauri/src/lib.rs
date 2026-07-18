@@ -414,6 +414,8 @@ pub fn run() {
             // Fetcher commands (resilient API access)
             fetchers::commands::save_api_key,
             fetchers::commands::delete_api_key,
+            fetchers::commands::validate_api_key,
+            fetchers::commands::test_stored_api_key,
             fetchers::commands::get_api_key,
             fetchers::commands::has_api_key,
             fetchers::commands::get_provider_status,

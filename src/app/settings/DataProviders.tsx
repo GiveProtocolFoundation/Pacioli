@@ -11,6 +11,9 @@ import {
   Loader2,
   AlertCircle,
   Gauge,
+  ShieldCheck,
+  ShieldAlert,
+  RefreshCw,
 } from 'lucide-react'
 import { isTauriAvailable } from '../../utils/tauri'
 
@@ -33,6 +36,11 @@ interface SaveApiKeyResult {
   error: string | null
 }
 
+interface ValidateApiKeyResult {
+  status: 'valid' | 'invalid' | 'network_error' | 'not_verifiable'
+  message: string
+}
+
 interface ProviderConfig {
   id: string
   name: string
@@ -43,6 +51,9 @@ interface ProviderConfig {
 
 // localStorage key prefix for browser-mode API key storage
 const LS_KEY_PREFIX = 'pacioli_api_key_'
+
+// localStorage key prefix for last-verified timestamps
+const LS_VERIFIED_PREFIX = 'pacioli_key_verified_'
 
 // Map provider IDs to their VITE_ env var names for default key detection
 const VITE_KEY_MAP: Record<string, string> = {
@@ -56,6 +67,22 @@ function hasDefaultKey(providerId: string): boolean {
   if (!envVar) return false
   const val = import.meta.env?.[envVar]
   return Boolean(val) && !val.startsWith('your_')
+}
+
+/** Format a stored ISO timestamp as a relative or short date */
+function formatVerifiedTime(iso: string): string {
+  const date = new Date(iso)
+  if (isNaN(date.getTime())) return 'Unknown'
+  const now = Date.now()
+  const diffMs = now - date.getTime()
+  const diffMin = Math.floor(diffMs / 60000)
+  if (diffMin < 1) return 'Just now'
+  if (diffMin < 60) return `${diffMin}m ago`
+  const diffHrs = Math.floor(diffMin / 60)
+  if (diffHrs < 24) return `${diffHrs}h ago`
+  const diffDays = Math.floor(diffHrs / 24)
+  if (diffDays < 7) return `${diffDays}d ago`
+  return date.toLocaleDateString()
 }
 
 // Provider metadata with documentation links
@@ -219,6 +246,63 @@ const TurboInfoBox: React.FC = () => (
   </div>
 )
 
+/** Shows validation result as an inline banner */
+const ValidationBanner: React.FC<{
+  result: ValidateApiKeyResult
+  isValidating: boolean
+  onSaveAnyway?: () => void
+  onCancel?: () => void
+}> = ({ result, isValidating, onSaveAnyway, onCancel }) => {
+  if (isValidating) {
+    return (
+      <div className="flex items-center gap-2 text-sm text-[#294050] dark:text-[#9FB4BE] mb-3 p-2 bg-[#294050]/5 dark:bg-[#294050]/10 rounded">
+        <Loader2 className="w-4 h-4 animate-spin flex-shrink-0" />
+        Validating API key...
+      </div>
+    )
+  }
+
+  if (result.status === 'valid') {
+    return (
+      <div className="flex items-center gap-2 text-sm text-[#2E9A82] dark:text-[#5FE3C0] mb-3 p-2 bg-[#2E9A82]/10 dark:bg-[#5FE3C0]/10 rounded">
+        <ShieldCheck className="w-4 h-4 flex-shrink-0" />
+        {result.message}
+      </div>
+    )
+  }
+
+  const isWarning =
+    result.status === 'invalid' || result.status === 'network_error'
+  if (!isWarning) return null
+
+  return (
+    <div className="mb-3 p-2 bg-[#294050]/10 dark:bg-[#294050]/20 rounded space-y-2">
+      <div className="flex items-center gap-2 text-sm text-[#294050] dark:text-[#F09988]">
+        <ShieldAlert className="w-4 h-4 flex-shrink-0" />
+        {result.message}
+      </div>
+      {onSaveAnyway && (
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onSaveAnyway}
+            className="px-3 py-1 text-xs font-medium text-[#294050] dark:text-[#F09988] border border-[#294050]/30 dark:border-[#294050]/40 rounded hover:bg-[#294050]/10 dark:hover:bg-[#294050]/20"
+          >
+            Save Anyway
+          </button>
+          {onCancel && (
+            <button
+              onClick={onCancel}
+              className="px-3 py-1 text-xs font-medium text-[#294050] dark:text-[#9FB4BE] hover:text-[#11202B] dark:hover:text-[#EAF3F2]"
+            >
+              Cancel
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
 interface ProviderApiKeyFormProps {
   apiKey: string
   showKey: boolean
@@ -282,6 +366,19 @@ const ProviderApiKeyForm: React.FC<ProviderApiKeyFormProps> = ({
   </div>
 )
 
+/** Displays the last-verified timestamp for a provider */
+const VerifiedTimestamp: React.FC<{ providerId: string }> = ({
+  providerId,
+}) => {
+  const stored = localStorage.getItem(`${LS_VERIFIED_PREFIX}${providerId}`)
+  if (!stored) return null
+  return (
+    <span className="text-xs text-[#647D8B] dark:text-[#647D8B]">
+      Verified {formatVerifiedTime(stored)}
+    </span>
+  )
+}
+
 interface ProviderCardProps {
   config: ProviderConfig
   status: ProviderStatus | undefined
@@ -302,6 +399,14 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showSaveSuccess, setShowSaveSuccess] = useState(false)
+  const [isValidating, setIsValidating] = useState(false)
+  const [validationResult, setValidationResult] =
+    useState<ValidateApiKeyResult | null>(null)
+  const [awaitingOverride, setAwaitingOverride] = useState(false)
+  const [isTesting, setIsTesting] = useState(false)
+  const [testResult, setTestResult] = useState<ValidateApiKeyResult | null>(
+    null
+  )
 
   const hasKey = status?.has_api_key ?? false
   const isTurbo = status?.is_turbo_mode ?? false
@@ -320,36 +425,94 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
 
   const startEditing = useCallback(() => {
     setIsEditing(true)
+    setValidationResult(null)
+    setAwaitingOverride(false)
+    setTestResult(null)
   }, [])
 
   const handleApiKeyChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       setApiKey(e.target.value)
+      setValidationResult(null)
+      setAwaitingOverride(false)
     },
     []
   )
 
+  /** Persist the key (bypassing validation) */
+  const doSave = useCallback(
+    async (key: string) => {
+      setIsSaving(true)
+      setError(null)
+      try {
+        await onSave(config.id, key)
+        localStorage.setItem(
+          `${LS_VERIFIED_PREFIX}${config.id}`,
+          new Date().toISOString()
+        )
+        setApiKey('')
+        setIsEditing(false)
+        setAwaitingOverride(false)
+        setValidationResult(null)
+        setShowSaveSuccess(true)
+        setTimeout(() => setShowSaveSuccess(false), 3000)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to save API key')
+      } finally {
+        setIsSaving(false)
+      }
+    },
+    [config.id, onSave]
+  )
+
+  /** Validate-then-save flow */
   const handleSave = useCallback(async () => {
-    if (!apiKey.trim()) {
+    const trimmed = apiKey.trim()
+    if (!trimmed) {
       setError('API key cannot be empty')
       return
     }
 
-    setIsSaving(true)
+    setIsValidating(true)
     setError(null)
+    setValidationResult(null)
 
     try {
-      await onSave(config.id, apiKey.trim())
-      setApiKey('')
-      setIsEditing(false)
-      setShowSaveSuccess(true)
-      setTimeout(() => setShowSaveSuccess(false), 3000)
+      let result: ValidateApiKeyResult
+      if (isTauriAvailable()) {
+        result = await invoke<ValidateApiKeyResult>('validate_api_key', {
+          provider: config.id,
+          apiKey: trimmed,
+        })
+      } else {
+        // Browser mode: skip validation
+        result = {
+          status: 'not_verifiable',
+          message: 'Validation unavailable in browser mode',
+        }
+      }
+
+      setValidationResult(result)
+
+      if (result.status === 'valid' || result.status === 'not_verifiable') {
+        await doSave(trimmed)
+      } else {
+        // invalid or network_error — show warning, let user override
+        setAwaitingOverride(true)
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save API key')
+      // Invoke itself failed — treat as network error, allow override
+      const msg = err instanceof Error ? err.message : 'Validation call failed'
+      setValidationResult({ status: 'network_error', message: msg })
+      setAwaitingOverride(true)
     } finally {
-      setIsSaving(false)
+      setIsValidating(false)
     }
-  }, [apiKey, config.id, onSave])
+  }, [apiKey, config.id, doSave])
+
+  const handleSaveAnyway = useCallback(() => {
+    doSave(apiKey.trim())
+  }, [apiKey, doSave])
 
   const handleDelete = useCallback(async () => {
     setIsSaving(true)
@@ -357,6 +520,8 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
 
     try {
       await onDelete(config.id)
+      localStorage.removeItem(`${LS_VERIFIED_PREFIX}${config.id}`)
+      setTestResult(null)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to remove API key')
     } finally {
@@ -368,7 +533,35 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
     setApiKey('')
     setIsEditing(false)
     setError(null)
+    setValidationResult(null)
+    setAwaitingOverride(false)
   }, [])
+
+  /** Test the stored key without exposing it */
+  const handleTest = useCallback(async () => {
+    if (!isTauriAvailable()) return
+    setIsTesting(true)
+    setTestResult(null)
+    try {
+      const result = await invoke<ValidateApiKeyResult>('test_stored_api_key', {
+        provider: config.id,
+      })
+      setTestResult(result)
+      if (result.status === 'valid') {
+        localStorage.setItem(
+          `${LS_VERIFIED_PREFIX}${config.id}`,
+          new Date().toISOString()
+        )
+      }
+    } catch (err) {
+      setTestResult({
+        status: 'network_error',
+        message: err instanceof Error ? err.message : 'Test connection failed',
+      })
+    } finally {
+      setIsTesting(false)
+    }
+  }, [config.id])
 
   return (
     <div className="border border-[rgba(95,227,192,0.15)] rounded-lg p-4 hover:border-[rgba(95,227,192,0.3)] transition-colors">
@@ -417,11 +610,28 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
         </div>
       )}
 
+      {/* Validation banner during save flow */}
+      {(isValidating || (validationResult && awaitingOverride)) && (
+        <ValidationBanner
+          result={
+            validationResult ?? { status: 'valid', message: 'Validating...' }
+          }
+          isValidating={isValidating}
+          onSaveAnyway={awaitingOverride ? handleSaveAnyway : undefined}
+          onCancel={awaitingOverride ? handleCancel : undefined}
+        />
+      )}
+
+      {/* Test result banner (for existing keys) */}
+      {testResult && !isEditing && (
+        <ValidationBanner result={testResult} isValidating={isTesting} />
+      )}
+
       {isEditing ? (
         <ProviderApiKeyForm
           apiKey={apiKey}
           showKey={showKey}
-          isSaving={isSaving}
+          isSaving={isSaving || isValidating}
           onApiKeyChange={handleApiKeyChange}
           onToggleShowKey={toggleShowKey}
           onSave={handleSave}
@@ -439,6 +649,21 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
                     : 'API key configured'}
                 </span>
               </div>
+              <VerifiedTimestamp providerId={config.id} />
+              {isTauriAvailable() && (
+                <button
+                  onClick={handleTest}
+                  disabled={isTesting}
+                  className="px-3 py-1.5 text-sm font-medium text-[#294050] dark:text-[#9FB4BE] hover:text-[#11202B] dark:hover:text-[#EAF3F2] border border-[rgba(95,227,192,0.15)] rounded-lg hover:bg-[#EAF3F2] dark:hover:bg-[#16242F] flex items-center gap-1"
+                >
+                  {isTesting ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <RefreshCw className="w-4 h-4" />
+                  )}
+                  Test
+                </button>
+              )}
               <button
                 onClick={startEditing}
                 className="px-3 py-1.5 text-sm font-medium text-[#294050] dark:text-[#9FB4BE] hover:text-[#11202B] dark:hover:text-[#EAF3F2] border border-[rgba(95,227,192,0.15)] rounded-lg hover:bg-[#EAF3F2] dark:hover:bg-[#16242F]"
