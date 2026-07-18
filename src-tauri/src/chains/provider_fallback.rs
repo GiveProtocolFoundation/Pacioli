@@ -466,6 +466,35 @@ pub fn build_bitcoin_registry(network: &str, primary_url: &str) -> ProviderRegis
     ProviderRegistry::new(network, endpoints)
 }
 
+/// Build a Substrate provider registry.
+///
+/// Fallback order: primary RPC → community fallback RPC.
+pub fn build_substrate_registry(
+    chain_name: &str,
+    primary_url: &str,
+    fallback_url: Option<&str>,
+) -> ProviderRegistry {
+    let mut endpoints = Vec::with_capacity(2);
+
+    // Primary: configured RPC
+    endpoints.push(ProviderEndpoint::new(
+        format!("Substrate RPC ({})", chain_name),
+        primary_url,
+        3,
+    ));
+
+    // Secondary: community fallback
+    if let Some(url) = fallback_url {
+        endpoints.push(ProviderEndpoint::new(
+            format!("Substrate Fallback ({})", chain_name),
+            url,
+            5,
+        ));
+    }
+
+    ProviderRegistry::new(chain_name, endpoints)
+}
+
 // =============================================================================
 // TESTS
 // =============================================================================
@@ -839,5 +868,24 @@ mod tests {
         )
         .await;
         assert!(matches!(result, Err(ChainError::ApiError(_))));
+    }
+
+    #[test]
+    fn test_build_substrate_registry() {
+        let reg = build_substrate_registry(
+            "polkadot",
+            "wss://rpc.polkadot.io",
+            Some("wss://polkadot-rpc.dwellir.com"),
+        );
+        assert_eq!(reg.chain_id, "polkadot");
+        assert_eq!(reg.len(), 2);
+        assert_eq!(reg.endpoints[0].name, "Substrate RPC (polkadot)");
+        assert_eq!(reg.endpoints[1].name, "Substrate Fallback (polkadot)");
+    }
+
+    #[test]
+    fn test_build_substrate_registry_no_fallback() {
+        let reg = build_substrate_registry("westend", "wss://westend-rpc.polkadot.io", None);
+        assert_eq!(reg.len(), 1);
     }
 }

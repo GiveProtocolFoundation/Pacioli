@@ -87,6 +87,41 @@ impl SubstrateConfig {
     }
 }
 
+/// Get all supported Substrate network configs.
+pub fn get_all_configs() -> Vec<SubstrateConfig> {
+    vec![
+        SubstrateConfig::polkadot(),
+        SubstrateConfig::kusama(),
+        SubstrateConfig::westend(),
+        SubstrateConfig::acala(),
+        SubstrateConfig::astar_substrate(),
+    ]
+}
+
+/// Get Substrate config by network name.
+pub fn get_config_by_name(name: &str) -> Option<SubstrateConfig> {
+    match name.to_lowercase().as_str() {
+        "polkadot" | "dot" => Some(SubstrateConfig::polkadot()),
+        "kusama" | "ksm" => Some(SubstrateConfig::kusama()),
+        "westend" | "wnd" => Some(SubstrateConfig::westend()),
+        "acala" | "aca" => Some(SubstrateConfig::acala()),
+        "astar-substrate" | "astar_substrate" | "astr" => Some(SubstrateConfig::astar_substrate()),
+        _ => None,
+    }
+}
+
+/// Get a community fallback RPC URL for a substrate chain.
+///
+/// Only available for major networks (Polkadot, Kusama) where
+/// well-known third-party endpoints exist.
+pub fn get_fallback_rpc(name: &str) -> Option<&'static str> {
+    match name {
+        "polkadot" | "dot" => Some("wss://polkadot-rpc.dwellir.com"),
+        "kusama" | "ksm" => Some("wss://kusama-rpc.dwellir.com"),
+        _ => None,
+    }
+}
+
 /// Substrate Chain Adapter
 ///
 /// Provides access to Substrate-based chains via RPC and Subscan API.
@@ -220,5 +255,35 @@ mod tests {
         // Invalid addresses
         assert!(!adapter.validate_address(""));
         assert!(!adapter.validate_address("0x123")); // EVM format
+    }
+
+    #[test]
+    fn test_get_config_by_name() {
+        assert!(get_config_by_name("polkadot").is_some());
+        assert!(get_config_by_name("dot").is_some());
+        assert!(get_config_by_name("kusama").is_some());
+        assert!(get_config_by_name("westend").is_some());
+        assert!(get_config_by_name("acala").is_some());
+        assert!(get_config_by_name("astar-substrate").is_some());
+        assert!(get_config_by_name("invalid").is_none());
+        assert!(get_config_by_name("bitcoin").is_none());
+    }
+
+    #[test]
+    fn test_get_fallback_rpc() {
+        assert!(get_fallback_rpc("polkadot").is_some());
+        assert!(get_fallback_rpc("kusama").is_some());
+        assert!(get_fallback_rpc("westend").is_none());
+        assert!(get_fallback_rpc("acala").is_none());
+    }
+
+    #[test]
+    fn test_get_all_configs() {
+        let configs = get_all_configs();
+        assert_eq!(configs.len(), 5);
+        let names: Vec<&str> = configs.iter().map(|c| c.name.as_str()).collect();
+        assert!(names.contains(&"polkadot"));
+        assert!(names.contains(&"kusama"));
+        assert!(names.contains(&"westend"));
     }
 }
