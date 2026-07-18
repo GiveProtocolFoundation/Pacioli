@@ -590,7 +590,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
                   <Upload className="w-4 h-4" />
                   {selectedCount > 0
                     ? `Import ${selectedCount} Selected`
-                    : 'Import All to Ledger'}
+                    : 'Import to Transactions'}
                 </>
               )}
             </button>
