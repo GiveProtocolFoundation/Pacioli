@@ -476,12 +476,6 @@ impl ChainManager {
         registries.insert(chain_id.to_string(), registry);
     }
 
-    /// Get the provider registry for a chain (if any).
-    pub async fn get_provider_registry(&self, chain_id: &str) -> Option<()> {
-        let registries = self.provider_registries.read().await;
-        registries.get(chain_id).map(|_| ())
-    }
-
     /// Create an adapter for a chain (lazy initialization)
     async fn create_adapter(&self, chain_id: &str) -> ChainResult<Box<dyn ChainAdapter>> {
         // Get any configured API keys or RPC overrides

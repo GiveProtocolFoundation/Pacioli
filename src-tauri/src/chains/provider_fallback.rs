@@ -77,6 +77,9 @@ pub struct ProviderEndpoint {
     failure_count: AtomicU32,
     /// Unix timestamp (seconds) of the last successful request.
     last_success_ts: AtomicI64,
+    /// Unix timestamp (seconds) of the last failed request.
+    /// The Unavailable cooldown is measured from this instant.
+    last_failure_ts: AtomicI64,
     /// Consecutive failures before marking unavailable.
     max_failures: u32,
 }
@@ -90,6 +93,7 @@ impl ProviderEndpoint {
             health: AtomicU8::new(HealthState::Healthy as u8),
             failure_count: AtomicU32::new(0),
             last_success_ts: AtomicI64::new(0),
+            last_failure_ts: AtomicI64::new(0),
             max_failures,
         }
     }
@@ -119,6 +123,11 @@ impl ProviderEndpoint {
     /// Record a failed request — increments failure count and
     /// transitions health from Healthy→Degraded→Unavailable.
     pub fn record_failure(&self) {
+        let now = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_secs() as i64;
+        self.last_failure_ts.store(now, Ordering::Relaxed);
         let new_count = self.failure_count.fetch_add(1, Ordering::Relaxed) + 1;
         if new_count >= self.max_failures {
             self.health
@@ -136,8 +145,10 @@ impl ProviderEndpoint {
         match state {
             HealthState::Healthy | HealthState::Degraded => true,
             HealthState::Unavailable => {
-                // Allow retry after 60s cooldown
-                let last = self.last_success_ts.load(Ordering::Relaxed);
+                // Allow retry after a 60s cooldown measured from the LAST
+                // FAILURE (not last success — an endpoint that never
+                // succeeded would otherwise bypass the cooldown entirely).
+                let last = self.last_failure_ts.load(Ordering::Relaxed);
                 let now = std::time::SystemTime::now()
                     .duration_since(std::time::UNIX_EPOCH)
                     .unwrap_or_default()
@@ -150,6 +161,7 @@ impl ProviderEndpoint {
     /// Reset health to Healthy (for tests or manual recovery).
     pub fn reset(&self) {
         self.failure_count.store(0, Ordering::Relaxed);
+        self.last_failure_ts.store(0, Ordering::Relaxed);
         self.health
             .store(HealthState::Healthy as u8, Ordering::Relaxed);
     }
@@ -498,8 +510,13 @@ mod tests {
         assert!(ep.is_available()); // Degraded is still available
 
         ep.record_failure();
-        // Unavailable, but cooldown check may pass if last_success_ts is 0 (> 60s ago)
-        // Since last_success_ts is 0, now - 0 > 60 → still "available" for retry
+        // Unavailable with a fresh failure timestamp → inside the 60s
+        // cooldown window → NOT available for retry.
+        assert_eq!(ep.health(), HealthState::Unavailable);
+        assert!(!ep.is_available());
+
+        // reset() clears the failure timestamp and restores availability.
+        ep.reset();
         assert!(ep.is_available());
     }
 

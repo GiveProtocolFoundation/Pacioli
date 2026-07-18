@@ -1146,3 +1146,51 @@ WHERE status='approved'` (the M5 state machine explicitly allows
     and retry-with-backoff (success/eventual/permanent/exhausted).
   - **Test totals:** Rust `cargo test --lib` = 336/336 passed (up from
     315); Vitest = 19/19 passed. No regressions.
+- **Session 22 (2026-07-18, CTO — Phase 4a Part 2 review hardening):**
+  - **Gap 1 (CRITICAL, data loss): cursor advanced on fetch, not on
+    persist.** `chain_fetch_transactions_resumable` updated
+    `last_block_synced` right after fetching, but nothing persisted the
+    transactions (the TS wrapper returns them; no caller stored them).
+    Any persist failure — or simply no caller persisting — would leave a
+    permanent silent gap: next sync resumes PAST blocks that were never
+    stored. Fixed: the command now persists fetched transactions into
+    the canonical `multi_chain_transactions` store server-side
+    (idempotent `ON CONFLICT(chain_id, transaction_hash)` upsert,
+    per-row error propagation, `wallet_address` first-importer-wins,
+    full tx JSON in `raw_json_data`) and only THEN advances the cursor.
+    Persist failure ⇒ cursor untouched ⇒ range re-fetched next sync and
+    absorbed by the data-layer dedupe. This also closes mandate item 3
+    (idempotent ingestion) end-to-end for the resumable path.
+  - **Gap 2: Unavailable cooldown was a no-op.** Cooldown was measured
+    from `last_success_ts` (initialized 0), so an endpoint that never
+    succeeded was always retryable immediately and the Unavailable state
+    had no effect. Fixed: new `last_failure_ts`; cooldown measured from
+    the most recent failure. `reset()` clears it. Availability test
+    updated to the corrected semantics.
+  - **Gap 3: schema CHECK vs Rust enum mismatch.** The
+    `transaction_type` CHECK list ('approve', 'contract_call', …)
+    predates the `TransactionType` enum serde names ('approval',
+    'contract_deploy', 'add_liquidity', …). A server-side insert binding
+    serde names would violate the CHECK at runtime. Added explicit
+    mapping (`Approval`→'approve'; `ContractDeploy`/`AddLiquidity`/
+    `RemoveLiquidity`→'unknown' with full fidelity kept in
+    `raw_json_data`). **Schema debt:** align the CHECK list with the
+    enum in a future append-only migration.
+  - Removed dead `ChainManager::get_provider_registry` (`Option<()>`).
+  - Extracted `load_sync_cursor_impl` / `persist_chain_transactions_impl`
+    / `update_sync_cursor_impl` on `&SqlitePool` so tests exercise the
+    REAL persistence path (Phase 7 lesson). +4 DB integration tests:
+    data-layer idempotency (same tx twice ⇒ one row), first-importer-wins
+    wallet_address, CHECK-safe enum mapping, monotonic + case-insensitive
+    cursor resume.
+  - **Honest scope note / Part 3 split (per mandate's split clause):**
+    `execute_with_fallback` is still not invoked from the live
+    `ChainManager::get_transactions` path — the registry today provides
+    health bookkeeping + graceful `ProviderUnavailable` surfacing only.
+    True multi-provider history fetch requires per-endpoint adapter
+    reconstruction (Solana RPC + Bitcoin esplora endpoints are
+    API-compatible and feasible now) and an indexer-capable EVM fallback
+    (Alchemy `alchemy_getAssetTransfers`); Substrate fallback endpoints
+    also pending. Split to a follow-up issue (Phase 4a Part 3) rather
+    than blocking cursors+idempotency, which the mandate explicitly
+    allows.

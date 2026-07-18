@@ -5,7 +5,10 @@
  * Uses the Tauri `chain_fetch_transactions_resumable` command which:
  * 1. Loads the sync cursor from `address_sync_status`
  * 2. Fetches only new transactions (from last synced block)
- * 3. Updates the cursor on success
+ * 3. Persists them into the canonical `multi_chain_transactions` store
+ *    (idempotent at the data layer via UNIQUE(chain_id, transaction_hash))
+ * 4. Advances the cursor ONLY after the transactions are durably stored —
+ *    a persistence failure leaves the cursor untouched, so no silent gaps
  *
  * Provider failures are surfaced as graceful "provider temporarily unavailable"
  * messages — never raw API errors.
