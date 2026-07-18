@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from 'react'
 import { EVMService, EVM_CHAINS } from '../services/evmService'
+import { fetchTransactionsResilient } from '../services/blockchain/resilientSyncService'
 import toast from 'react-hot-toast'
 import { getErrorMessage } from '../types/errors'
 
@@ -130,14 +131,15 @@ export const useEVMService = () => {
         address = currentAccount.address
       }
 
-      try {
-        const result = await EVMService.syncEVMTransactions(chain, address)
-        toast.success(result)
+      const result = await fetchTransactionsResilient(chain, address)
+      if (result.success) {
+        toast.success(`Synced ${result.count} transactions`)
         return result
-      } catch (error: unknown) {
-        toast.error(getErrorMessage(error) || 'Failed to sync transactions')
-        throw error
       }
+      toast.error(
+        result.error || 'Failed to sync transactions'
+      )
+      return result
     },
     [currentAccount]
   )

@@ -34,18 +34,29 @@ class behind rehearsal findings #1/#2/#3.**
       auto-classified entries, classification_status flip — Engineer)
 - [ ] **Phase 4a — Import resilience and canonical store** (added by board
       amendment to the Stage 1 mandate, 2026-07-18; formalizes "Option B"
-      from the rehearsal findings #1-#3 options analysis). Split into two
-      parts per CTO review: - **Part 1 (MERGED, PR #234):** descriptive column renames
-      (`hash→transaction_hash`, `value→transfer_value`, etc.), all
-      Rust/TS readers updated, error surfacing in `insert_transactions`
-      (no more silent swallowing), `wallet_address` provenance column,
-      docs updated with Part 1/Part 2 split. Delegated: Engineer. - **Part 2 (PR in review):** provider fallback registry with health
-      tracking and ordered fallback, wired into live `ChainManager`
-      import path, resumable sync cursors via
-      `chain_fetch_transactions_resumable`, graceful
-      `ProviderUnavailable` error surfacing, Solana/Bitcoin fallback
-      endpoints, TS resilient sync wrapper, vitest flakiness
-      simulation (19 tests), 21 new Rust tests. Delegated: Engineer.
+      from the rehearsal findings #1-#3 options analysis). Split into three
+      parts per CTO review:
+      - **Part 1 (MERGED, PR #234):** descriptive column renames
+        (`hash→transaction_hash`, `value→transfer_value`, etc.), all
+        Rust/TS readers updated, error surfacing in `insert_transactions`
+        (no more silent swallowing), `wallet_address` provenance column,
+        docs updated with Part 1/Part 2 split. Delegated: Engineer.
+      - **Part 2 (MERGED, PR #235, squash `525c3d2`):** provider fallback
+        registry with health tracking and ordered fallback, resumable sync
+        cursors via `chain_fetch_transactions_resumable`, persist-before-cursor
+        (cursor never advances past unpersisted transactions), graceful
+        `ProviderUnavailable` error surfacing, TS resilient sync wrapper,
+        vitest flakiness simulation (19 tests), CHECK-safe enum mapping,
+        4 DB integration tests. CTO hardening: 3 gaps fixed. Delegated:
+        Engineer + CTO review.
+      - **Part 3 (PR in review):** `execute_with_fallback` wired into the
+        live `ChainManager::get_transactions` path for Bitcoin (Mempool→
+        Blockstream Esplora fallback) and Solana (primary RPC→Helius→
+        public fallback). Substrate registry infrastructure with community
+        fallback RPC (Polkadot→Dwellir, Kusama→Dwellir). EVM keeps
+        single-attempt with graceful wrapping (Alchemy `alchemy_getAssetTransfers`
+        needs separate API). `resilientSyncService` wired into
+        `useEVMService.syncTransactions` UI flow. Delegated: Engineer.
 - [x] **Phase 5 — Periods, close, and lock**
       (GIV-684: accounting_periods table with open/closed lifecycle,
       DB trigger blocks posting into closed periods, list_periods/
@@ -1194,3 +1205,36 @@ WHERE status='approved'` (the M5 state machine explicitly allows
     also pending. Split to a follow-up issue (Phase 4a Part 3) rather
     than blocking cursors+idempotency, which the mandate explicitly
     allows.
+- **Session 23 (2026-07-18, Engineer — Phase 4a Part 3):**
+  - **Wired `execute_with_fallback` into the live import path** for
+    Bitcoin and Solana. `ChainManager::get_transactions` now routes
+    through the provider registry for these chains:
+    - **Bitcoin:** the closure constructs a per-URL `BitcoinAdapter`
+      (all providers use the same Esplora REST API), so Mempool.space
+      primary → Blockstream fallback happens automatically.
+    - **Solana:** the closure constructs a per-URL `SolanaAdapter` (all
+      providers use standard JSON-RPC), so primary RPC → Helius →
+      public fallback works seamlessly.
+    - **EVM:** keeps single-attempt through the adapter with graceful
+      `ProviderUnavailable` wrapping. Alchemy fallback requires
+      `alchemy_getAssetTransfers` (different API) — deferred to a
+      follow-up.
+  - **Substrate registry infrastructure.** Added `build_substrate_registry`
+    factory, `get_config_by_name` / `get_fallback_rpc` for substrate
+    chains, and wired `ensure_provider_registry` to create substrate
+    registries (Polkadot→Dwellir, Kusama→Dwellir community fallbacks).
+    The adapter is still a placeholder; the registry is ready for when
+    the adapter is implemented.
+  - **`resilientSyncService` wired into UI.**
+    `useEVMService.syncTransactions` now calls
+    `fetchTransactionsResilient` (→ `chain_fetch_transactions_resumable`)
+    instead of the legacy `sync_evm_transactions` command. This gives
+    the sync button: resumable cursors, idempotent ingestion,
+    provider fallback, graceful error messages.
+  - **Test coverage:** +6 Rust tests (registry created for bitcoin/
+    solana/substrate, health state tracking in fallback, substrate
+    config resolution). Substrate helper tests (config by name,
+    fallback RPC, all configs list). Registry builder test for
+    substrate (with/without fallback).
+  - **`is_chain_supported` updated** to include substrate chains
+    (polkadot, kusama, etc.).
