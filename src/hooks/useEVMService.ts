@@ -136,9 +136,7 @@ export const useEVMService = () => {
         toast.success(`Synced ${result.count} transactions`)
         return result
       }
-      toast.error(
-        result.error || 'Failed to sync transactions'
-      )
+      toast.error(result.error || 'Failed to sync transactions')
       return result
     },
     [currentAccount]
