@@ -35,15 +35,13 @@ class behind rehearsal findings #1/#2/#3.**
 - [ ] **Phase 4a — Import resilience and canonical store** (added by board
       amendment to the Stage 1 mandate, 2026-07-18; formalizes "Option B"
       from the rehearsal findings #1-#3 options analysis). Split into two
-      parts per CTO review:
-      - **Part 1 (PR in review):** descriptive column renames
-        (`hash→transaction_hash`, `value→transfer_value`, etc.), all
-        Rust/TS readers updated, error surfacing in `insert_transactions`
-        (no more silent swallowing), `wallet_address` provenance column,
-        docs updated with Part 1/Part 2 split. Delegated: Engineer.
-      - **Part 2 (follow-up):** wire provider fallback into live import
-        path, resumable sync cursor logic, Solana/Bitcoin fallback
-        endpoints, vitest flakiness simulation tests. Delegated: Engineer.
+      parts per CTO review: - **Part 1 (PR in review):** descriptive column renames
+      (`hash→transaction_hash`, `value→transfer_value`, etc.), all
+      Rust/TS readers updated, error surfacing in `insert_transactions`
+      (no more silent swallowing), `wallet_address` provenance column,
+      docs updated with Part 1/Part 2 split. Delegated: Engineer. - **Part 2 (follow-up):** wire provider fallback into live import
+      path, resumable sync cursor logic, Solana/Bitcoin fallback
+      endpoints, vitest flakiness simulation tests. Delegated: Engineer.
 - [x] **Phase 5 — Periods, close, and lock**
       (GIV-684: accounting_periods table with open/closed lifecycle,
       DB trigger blocks posting into closed periods, list_periods/
@@ -1090,7 +1088,7 @@ WHERE status='approved'` (the M5 state machine explicitly allows
     TransactionRow, TokenTransfer, TokenTransferRow structs + all SQL),
     `api/persistence.rs` (ChainTransactionInput, ChainTransactionRow +
     save/get SQL), `api/accounting.rs` (MultiChainTx, MultiChainTransaction
-    + all SQL queries + test helper `insert_raw_tx`).
+    - all SQL queries + test helper `insert_raw_tx`).
   - **Error surfacing:** `insert_transactions` and `insert_token_transfers`
     in `db/multi_chain.rs`, `save_chain_transactions` and
     `save_transactions` in `api/persistence.rs` now propagate per-row

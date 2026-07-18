@@ -1267,8 +1267,8 @@ pub async fn auto_classify_transaction(
         .unwrap_or("0")
         .parse::<Decimal>()
         .unwrap_or(Decimal::ZERO);
-    let fee_minor: i64 =
-        decimal_to_minor_units(fee_dec).ok_or_else(|| format!("Fee out of range: {:?}", tx.transaction_fee))?;
+    let fee_minor: i64 = decimal_to_minor_units(fee_dec)
+        .ok_or_else(|| format!("Fee out of range: {:?}", tx.transaction_fee))?;
 
     // Build lines based on transaction_type heuristics
     let mut lines = Vec::new();
@@ -3685,14 +3685,18 @@ mod tests {
         .expect("Classify");
 
         // Verify transfer_value and transaction_fee are untouched
-        let (transfer_value, transaction_fee): (String, Option<String>) =
-            sqlx::query_as("SELECT transfer_value, transaction_fee FROM multi_chain_transactions WHERE id = ?")
-                .bind(tx_id)
-                .fetch_one(&pool)
-                .await
-                .expect("Fetch raw tx");
+        let (transfer_value, transaction_fee): (String, Option<String>) = sqlx::query_as(
+            "SELECT transfer_value, transaction_fee FROM multi_chain_transactions WHERE id = ?",
+        )
+        .bind(tx_id)
+        .fetch_one(&pool)
+        .await
+        .expect("Fetch raw tx");
 
-        assert_eq!(transfer_value, "25.50", "Raw value must be untouched (Inv-5)");
+        assert_eq!(
+            transfer_value, "25.50",
+            "Raw value must be untouched (Inv-5)"
+        );
         assert_eq!(
             transaction_fee.as_deref(),
             Some("0.01"),
