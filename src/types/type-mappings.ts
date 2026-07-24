@@ -264,7 +264,6 @@ export function isUIDigitalAssetType(
   )
 }
 
-
 /**
  * Determines if the provided value is a valid DBAccountType.
  *

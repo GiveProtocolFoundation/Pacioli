@@ -41,14 +41,14 @@ interface WalletConnectionModalProps {
   }) => void
 }
 
-  /**
-   * WalletConnectionModal component
-   * Displays a modal for connecting wallets manually or via WalletConnect.
-   * @param {boolean} isOpen - Whether the modal is open.
-   * @param {() => void} onClose - Callback when closing the modal.
-   * @param {function} [onWalletAdded] - Callback when a wallet is added, receives wallet details.
-   * @returns {JSX.Element} The rendered WalletConnectionModal component.
-   */
+/**
+ * WalletConnectionModal component
+ * Displays a modal for connecting wallets manually or via WalletConnect.
+ * @param {boolean} isOpen - Whether the modal is open.
+ * @param {() => void} onClose - Callback when closing the modal.
+ * @param {function} [onWalletAdded] - Callback when a wallet is added, receives wallet details.
+ * @returns {JSX.Element} The rendered WalletConnectionModal component.
+ */
 const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
   isOpen,
   onClose,
@@ -496,7 +496,7 @@ const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
                     <p className="text-sm text-[#294050] dark:text-[#9FB4BE]">
                       Select accounts to add to Pacioli:
                     </p>
-                    {wcSession.accounts.map((account) => (
+                    {wcSession.accounts.map(account => (
                       <div
                         key={`${account.chain}-${account.address}`}
                         className="p-3 bg-[#EAF3F2] dark:bg-[#11202B] rounded-lg border border-[rgba(95,227,192,0.15)]"

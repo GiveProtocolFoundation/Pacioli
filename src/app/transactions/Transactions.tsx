@@ -15,7 +15,11 @@ import ExportDropdown from './ExportDropdown'
 import { useTransactions } from '../../contexts/TransactionContext'
 import { useCurrency } from '../../contexts/CurrencyContext'
 import { useTokens } from '../../contexts/TokenContext'
-import { Transaction, TransactionType, TransactionStatus } from '../../types/transaction'
+import {
+  Transaction,
+  TransactionType,
+  TransactionStatus,
+} from '../../types/transaction'
 import type { ClassificationStatus } from '../../types/database'
 import type { Token, Chain } from '../../types/digitalAssets'
 
@@ -40,17 +44,22 @@ const FilterTabs = ({
         {
           key: 'unclassified',
           label: 'Unclassified',
-          count: transactions.filter(t => t.classificationStatus === 'unclassified').length,
+          count: transactions.filter(
+            t => t.classificationStatus === 'unclassified'
+          ).length,
         },
         {
           key: 'classified',
           label: 'Classified',
-          count: transactions.filter(t => t.classificationStatus === 'classified').length,
+          count: transactions.filter(
+            t => t.classificationStatus === 'classified'
+          ).length,
         },
         {
           key: 'ignored',
           label: 'Ignored',
-          count: transactions.filter(t => t.classificationStatus === 'ignored').length,
+          count: transactions.filter(t => t.classificationStatus === 'ignored')
+            .length,
         },
       ].map(tab => (
         <Link
@@ -81,10 +90,14 @@ const FilterTabs = ({
 )
 
 const classificationStyles: Record<ClassificationStatus, string> = {
-  unclassified: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300',
-  classified: 'bg-[#5FE3C0]/10 text-[#5FE3C0] dark:bg-[#5FE3C0]/20 dark:text-[#9CF1DC]',
-  ignored: 'bg-[#294050]/10 text-[#294050] dark:bg-[#294050]/20 dark:text-[#9FB4BE]',
-  split: 'bg-[#5FE3C0]/10 text-[#5FE3C0] dark:bg-[#5FE3C0]/20 dark:text-[#5FE3C0]',
+  unclassified:
+    'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300',
+  classified:
+    'bg-[#5FE3C0]/10 text-[#5FE3C0] dark:bg-[#5FE3C0]/20 dark:text-[#9CF1DC]',
+  ignored:
+    'bg-[#294050]/10 text-[#294050] dark:bg-[#294050]/20 dark:text-[#9FB4BE]',
+  split:
+    'bg-[#5FE3C0]/10 text-[#5FE3C0] dark:bg-[#5FE3C0]/20 dark:text-[#5FE3C0]',
 }
 
 const classificationLabels: Record<ClassificationStatus, string> = {
@@ -100,7 +113,9 @@ const classificationLabels: Record<ClassificationStatus, string> = {
  * @param {ClassificationStatus} props.status - The classification status to display.
  * @returns {JSX.Element} The badge element corresponding to the status.
  */
-const ClassificationBadge: React.FC<{ status: ClassificationStatus }> = ({ status }) => (
+const ClassificationBadge: React.FC<{ status: ClassificationStatus }> = ({
+  status,
+}) => (
   <span
     className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${classificationStyles[status]}`}
   >
@@ -151,13 +166,11 @@ const TransactionAmountCell: React.FC<TransactionAmountCellProps> = ({
             : transaction.type === 'expense'
               ? '-'
               : ''}
-          {transaction.amount}{' '}
-          {token?.symbol || transaction.crypto}
+          {transaction.amount} {token?.symbol || transaction.crypto}
         </div>
       </div>
       <div className="text-xs text-[#647D8B] dark:text-[#647D8B]">
-        {transaction.fiatCurrency ||
-          currencySettings.primaryCurrency}{' '}
+        {transaction.fiatCurrency || currencySettings.primaryCurrency}{' '}
         {transaction.fiatValue.toLocaleString()}
       </div>
       {chain && (
@@ -181,7 +194,8 @@ const Transactions: React.FC = () => {
   const params = new URLSearchParams(location.search)
   const urlFilter = params.get('filter') as FilterType
   const filter: FilterType =
-    urlFilter && ['all', 'unclassified', 'classified', 'ignored'].includes(urlFilter)
+    urlFilter &&
+    ['all', 'unclassified', 'classified', 'ignored'].includes(urlFilter)
       ? urlFilter
       : 'all'
 
@@ -470,7 +484,9 @@ const Transactions: React.FC = () => {
                       )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center">
-                    <ClassificationBadge status={transaction.classificationStatus} />
+                    <ClassificationBadge
+                      status={transaction.classificationStatus}
+                    />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex items-center justify-end gap-2">

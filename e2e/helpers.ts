@@ -22,15 +22,45 @@ import { expect } from '@playwright/test'
  */
 export async function mockBlockchainRpc(page: Page): Promise<void> {
   // Ethereum / EVM JSON-RPC
-  await page.route('**/*.infura.io/**', route => route.fulfill({ status: 200, body: JSON.stringify({ jsonrpc: '2.0', id: 1, result: '0x0' }) }))
-  await page.route('**/*.alchemy.com/**', route => route.fulfill({ status: 200, body: JSON.stringify({ jsonrpc: '2.0', id: 1, result: '0x0' }) }))
-  await page.route('**/api.etherscan.io/**', route => route.fulfill({ status: 200, body: JSON.stringify({ status: '1', message: 'OK', result: [] }) }))
-  await page.route('**/api.polygonscan.com/**', route => route.fulfill({ status: 200, body: JSON.stringify({ status: '1', message: 'OK', result: [] }) }))
+  await page.route('**/*.infura.io/**', route =>
+    route.fulfill({
+      status: 200,
+      body: JSON.stringify({ jsonrpc: '2.0', id: 1, result: '0x0' }),
+    })
+  )
+  await page.route('**/*.alchemy.com/**', route =>
+    route.fulfill({
+      status: 200,
+      body: JSON.stringify({ jsonrpc: '2.0', id: 1, result: '0x0' }),
+    })
+  )
+  await page.route('**/api.etherscan.io/**', route =>
+    route.fulfill({
+      status: 200,
+      body: JSON.stringify({ status: '1', message: 'OK', result: [] }),
+    })
+  )
+  await page.route('**/api.polygonscan.com/**', route =>
+    route.fulfill({
+      status: 200,
+      body: JSON.stringify({ status: '1', message: 'OK', result: [] }),
+    })
+  )
   // Polkadot WSS (ws://) — Playwright can't intercept WebSocket frames but we
   // prevent the initial HTTP upgrade from reaching the network.
-  await page.route('**subscan.io**', route => route.fulfill({ status: 200, body: JSON.stringify({ code: 0, data: { list: [], count: 0 } }) }))
+  await page.route('**subscan.io**', route =>
+    route.fulfill({
+      status: 200,
+      body: JSON.stringify({ code: 0, data: { list: [], count: 0 } }),
+    })
+  )
   // Solana RPC
-  await page.route('**/mainnet-beta.solana.com/**', route => route.fulfill({ status: 200, body: JSON.stringify({ jsonrpc: '2.0', id: 1, result: { value: [] } }) }))
+  await page.route('**/mainnet-beta.solana.com/**', route =>
+    route.fulfill({
+      status: 200,
+      body: JSON.stringify({ jsonrpc: '2.0', id: 1, result: { value: [] } }),
+    })
+  )
 }
 
 // ---------------------------------------------------------------------------
@@ -66,10 +96,15 @@ export async function setupApp(page: Page): Promise<void> {
     await easyRadio.click()
   }
   // Click Continue on the security step
-  await page.getByRole('button', { name: /continue/i }).first().click()
+  await page
+    .getByRole('button', { name: /continue/i })
+    .first()
+    .click()
 
   // Step 3: Completion step — click "Get Started" or "Continue"
-  const doneBtn = page.getByRole('button', { name: /get started|continue|finish|done/i }).first()
+  const doneBtn = page
+    .getByRole('button', { name: /get started|continue|finish|done/i })
+    .first()
   await expect(doneBtn).toBeVisible({ timeout: 8_000 })
   await doneBtn.click()
 
