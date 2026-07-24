@@ -94,6 +94,12 @@ const classificationLabels: Record<ClassificationStatus, string> = {
   split: 'Split',
 }
 
+/**
+ * Renders a badge representing the given classification status with appropriate styling.
+ * @param {{ status: ClassificationStatus }} props - The properties object.
+ * @param {ClassificationStatus} props.status - The classification status to display.
+ * @returns {JSX.Element} The badge element corresponding to the status.
+ */
 const ClassificationBadge: React.FC<{ status: ClassificationStatus }> = ({ status }) => (
   <span
     className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${classificationStyles[status]}`}
@@ -242,6 +248,12 @@ const Transactions: React.FC = () => {
     }
   }
 
+  /**
+   * Returns a human-readable label for a transaction status.
+   *
+   * @param status - The transaction status.
+   * @returns The corresponding status label string.
+   */
   const getStatusLabel = (status: TransactionStatus) => {
     switch (status) {
       case 'pending_approval':
@@ -261,6 +273,12 @@ const Transactions: React.FC = () => {
     }
   }
 
+  /**
+   * Handles the change event for the search input.
+   *
+   * @param e - The input change event.
+   * @returns void
+   */
   const handleSearchChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       setSearchQuery(e.target.value)

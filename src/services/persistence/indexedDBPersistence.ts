@@ -41,7 +41,17 @@ const STORES = {
 } as const
 
 // Utility functions (standalone to avoid 'this' requirement)
+
+/**
+ * Generates a unique identifier using the crypto API.
+ * @returns A random UUID as a string.
+ */
 const generateId = (): string => crypto.randomUUID()
+
+/**
+ * Gets the current timestamp in ISO 8601 format.
+ * @returns The current date and time as an ISO string.
+ */
 const getNow = (): string => new Date().toISOString()
 
 /**
@@ -162,6 +172,10 @@ class IndexedDBPersistenceService implements PersistenceService {
     return this.initPromise
   }
 
+  /**
+   * Ensures the database is initialized and returns the database instance.
+   * @returns {Promise<IDBDatabase>} The initialized IDBDatabase instance.
+   */
   private async ensureDB(): Promise<IDBDatabase> {
     await this.init()
     if (!this.db) throw new Error('Database not initialized')
@@ -192,6 +206,10 @@ class IndexedDBPersistenceService implements PersistenceService {
     })
   }
 
+  /**
+   * Retrieves all profiles from the database, sorted by creation date in descending order.
+   * @returns {Promise<Profile[]>} A promise that resolves with an array of Profile objects sorted by creation date descending.
+   */
   async getProfiles(): Promise<Profile[]> {
     const db = await this.ensureDB()
     return new Promise((resolve, reject) => {
@@ -210,6 +228,12 @@ class IndexedDBPersistenceService implements PersistenceService {
     })
   }
 
+  /**
+   * Updates the profile with the given id and new name in the database.
+   * @param id - The unique identifier of the profile to update.
+   * @param name - The new name to assign to the profile.
+   * @returns A Promise that resolves to the updated Profile object.
+   */
   async updateProfile(id: string, name: string): Promise<Profile> {
     const db = await this.ensureDB()
     return new Promise((resolve, reject) => {
@@ -235,6 +259,12 @@ class IndexedDBPersistenceService implements PersistenceService {
     })
   }
 
+  /**
+   * Deletes a profile and all associated wallets and entities.
+   *
+   * @param id - The ID of the profile to delete.
+   * @returns A promise that resolves when the profile and its related data have been deleted.
+   */
   async deleteProfile(id: string): Promise<void> {
     const db = await this.ensureDB()
 
@@ -309,6 +339,12 @@ class IndexedDBPersistenceService implements PersistenceService {
     })
   }
 
+  /**
+   * Retrieves all wallets for a given profile ID from the IndexedDB.
+   *
+   * @param profileId - The ID of the profile whose wallets are to be fetched.
+   * @returns A promise that resolves to an array of Wallet objects sorted by creation date in descending order.
+   */
   async getWallets(profileId: string): Promise<Wallet[]> {
     const db = await this.ensureDB()
     return new Promise((resolve, reject) => {
@@ -328,6 +364,11 @@ class IndexedDBPersistenceService implements PersistenceService {
     })
   }
 
+  /**
+   * Retrieves a wallet by its ID from the IndexedDB.
+   * @param id The unique identifier of the wallet.
+   * @returns A promise that resolves to the Wallet object if found, or null if not found.
+   */
   async getWalletById(id: string): Promise<Wallet | null> {
     const db = await this.ensureDB()
     return new Promise((resolve, reject) => {
@@ -339,6 +380,11 @@ class IndexedDBPersistenceService implements PersistenceService {
     })
   }
 
+  /**
+   * Deletes a wallet and all associated transactions from the database.
+   * @param id The identifier of the wallet to delete.
+   * @returns Promise<void> Resolves when the wallet and its transactions have been deleted.
+   */
   async deleteWallet(id: string): Promise<void> {
     const db = await this.ensureDB()
 
@@ -411,6 +457,12 @@ class IndexedDBPersistenceService implements PersistenceService {
     return savedCount
   }
 
+  /**
+   * Retrieves transactions for a given wallet, sorted by timestamp in descending order, and supports pagination.
+   * @param walletId - The ID of the wallet to fetch transactions for.
+   * @param options - Optional pagination options including limit and offset.
+   * @returns A promise that resolves to an array of stored transactions.
+   */
   async getTransactions(
     walletId: string,
     options?: PaginationOptions
@@ -438,6 +490,13 @@ class IndexedDBPersistenceService implements PersistenceService {
     })
   }
 
+  /**
+   * Retrieves all transactions across wallets for a given profile, sorted by timestamp descending, with pagination.
+   *
+   * @param profileId - The ID of the profile whose transactions are to be retrieved.
+   * @param options - Optional pagination settings including limit and offset.
+   * @returns A promise that resolves to an array of stored transactions.
+   */
   async getAllTransactions(
     profileId: string,
     options?: PaginationOptions
@@ -464,6 +523,11 @@ class IndexedDBPersistenceService implements PersistenceService {
     return allTransactions.slice(offset, offset + limit)
   }
 
+  /**
+   * Deletes all transactions for the specified wallet ID from the IndexedDB.
+   * @param walletId - The ID of the wallet whose transactions should be deleted.
+   * @returns The number of transactions deleted.
+   */
   async deleteTransactions(walletId: string): Promise<number> {
     const db = await this.ensureDB()
     return new Promise((resolve, reject) => {
@@ -507,6 +571,12 @@ class IndexedDBPersistenceService implements PersistenceService {
     })
   }
 
+  /**
+   * Stores a setting with the given key and value in the database.
+   * @param {string} key - The setting key to store.
+   * @param {string} value - The setting value to store.
+   * @returns {Promise<void>} A promise that resolves when the setting is stored.
+   */
   async setSetting(key: string, value: string): Promise<void> {
     const db = await this.ensureDB()
     return new Promise((resolve, reject) => {
@@ -518,6 +588,11 @@ class IndexedDBPersistenceService implements PersistenceService {
     })
   }
 
+  /**
+   * Deletes a setting from the persistence store by key.
+   * @param key The key of the setting to delete.
+   * @returns A promise that resolves when the setting has been deleted.
+   */
   async deleteSetting(key: string): Promise<void> {
     const db = await this.ensureDB()
     return new Promise((resolve, reject) => {
@@ -529,6 +604,11 @@ class IndexedDBPersistenceService implements PersistenceService {
     })
   }
 
+  /**
+   * Retrieves all settings from the IndexedDB settings store.
+   *
+   * @returns {Promise<Array<[string, string]>>} A promise that resolves to an array of [key, value] string pairs representing all stored settings.
+   */
   async getAllSettings(): Promise<Array<[string, string]>> {
     const db = await this.ensureDB()
     return new Promise((resolve, reject) => {
@@ -589,6 +669,12 @@ class IndexedDBPersistenceService implements PersistenceService {
     })
   }
 
+  /**
+   * Retrieves entities for a given profile, applying optional filters and sorting by name.
+   * @param profileId The ID of the profile whose entities to retrieve.
+   * @param filter Optional filter criteria to apply to the entities.
+   * @returns A promise that resolves to an array of Entity objects.
+   */
   async getEntities(
     profileId: string,
     filter?: EntityFilter
@@ -619,17 +705,33 @@ class IndexedDBPersistenceService implements PersistenceService {
     })
   }
 
+  /**
+   * Retrieves an entity by its ID.
+   * @param id The unique identifier of the entity.
+   * @returns A promise that resolves to the Entity object or null if not found.
+   */
   async getEntityById(id: string): Promise<Entity | null> {
     const db = await this.ensureDB()
     return new Promise((resolve, reject) => {
       const tx = db.transaction(STORES.ENTITIES, 'readonly')
       const store = tx.objectStore(STORES.ENTITIES)
       const request = store.get(id)
+  /**
+   * Retrieves an entity by its ID from the IndexedDB store.
+   * @param id The unique identifier of the entity to retrieve.
+   * @returns A promise that resolves to the Entity object if found, or null if not found.
+   */
       request.onsuccess = () => resolve((request.result as Entity) || null)
       request.onerror = () => reject(request.error)
     })
   }
 
+  /**
+   * Updates an existing entity with the provided values.
+   * @param id The unique identifier of the entity to update.
+   * @param update An object containing the properties to update on the entity.
+   * @returns A promise that resolves to the updated Entity object.
+   */
   async updateEntity(id: string, update: EntityUpdate): Promise<Entity> {
     const db = await this.ensureDB()
     return new Promise((resolve, reject) => {
@@ -689,6 +791,11 @@ class IndexedDBPersistenceService implements PersistenceService {
     })
   }
 
+  /**
+   * Deletes an entity by its ID, including all associated addresses.
+   * @param id - The unique identifier of the entity to delete.
+   * @returns A promise that resolves when deletion is complete.
+   */
   async deleteEntity(id: string): Promise<void> {
     const db = await this.ensureDB()
 
@@ -707,6 +814,14 @@ class IndexedDBPersistenceService implements PersistenceService {
     })
   }
 
+  /**
+   * Searches a profile's entities by matching the query against entity fields.
+   *
+   * @param profileId The ID of the profile whose entities to search.
+   * @param query The search string to match against entity fields.
+   * @param limit Optional maximum number of results to return. Defaults to 20.
+   * @returns A promise that resolves to an array of entities matching the search criteria.
+   */
   async searchEntities(
     profileId: string,
     query: string,
@@ -728,6 +843,13 @@ class IndexedDBPersistenceService implements PersistenceService {
     return filtered.slice(0, maxResults)
   }
 
+  /**
+   * Finds an entity by its address for a given profile and optional chain.
+   * @param profileId - The ID of the profile to which the entity belongs.
+   * @param address - The address of the entity to find.
+   * @param chain - (Optional) The blockchain chain to filter the entity address.
+   * @returns A Promise that resolves to the Entity if found, or null if not.
+   */
   async findEntityByAddress(
     profileId: string,
     address: string,
@@ -799,6 +921,11 @@ class IndexedDBPersistenceService implements PersistenceService {
     })
   }
 
+  /**
+   * Retrieves all addresses for a given entity from the database, sorted by creation date descending.
+   * @param entityId The ID of the entity whose addresses are to be retrieved.
+   * @returns A promise that resolves to an array of EntityAddress objects sorted by creation date.
+   */
   async getEntityAddresses(entityId: string): Promise<EntityAddress[]> {
     const db = await this.ensureDB()
     return new Promise((resolve, reject) => {
@@ -819,6 +946,12 @@ class IndexedDBPersistenceService implements PersistenceService {
     })
   }
 
+  /**
+   * Deletes an entity address from the IndexedDB by its id.
+   *
+   * @param id - The unique identifier of the entity address to delete.
+   * @returns A promise that resolves when the delete operation completes.
+   */
   async deleteEntityAddress(id: string): Promise<void> {
     const db = await this.ensureDB()
     return new Promise((resolve, reject) => {
@@ -883,6 +1016,13 @@ class IndexedDBPersistenceService implements PersistenceService {
     return null
   }
 
+  /**
+   * Looks up multiple addresses and returns their address matches.
+   *
+   * @param profileId - The identifier for the profile.
+   * @param addresses - An array of tuples containing an address and its chain identifier.
+   * @returns A promise that resolves to an array of address matches.
+   */
   async batchLookupAddresses(
     profileId: string,
     addresses: Array<[string, string]>
@@ -899,6 +1039,13 @@ class IndexedDBPersistenceService implements PersistenceService {
     return matches
   }
 
+  /**
+   * Retrieves known addresses from the IndexedDB, optionally filtered by chain and entity type.
+   *
+   * @param chain - (Optional) The blockchain chain to filter the known addresses by.
+   * @param entityType - (Optional) The entity type to filter the known addresses by.
+   * @returns A promise that resolves to an array of KnownAddress objects matching the filters.
+   */
   async getKnownAddresses(
     chain?: string,
     entityType?: string
@@ -927,6 +1074,13 @@ class IndexedDBPersistenceService implements PersistenceService {
     })
   }
 
+  /**
+   * Creates an entity using data from a known address record in the database.
+   * @param profileId The ID of the profile to associate with the new entity.
+   * @param address The blockchain address to use for the entity.
+   * @param chain The blockchain network identifier for the address.
+   * @returns A Promise that resolves to the created Entity.
+   */
   async createEntityFromKnown(
     profileId: string,
     address: string,
@@ -982,6 +1136,14 @@ class IndexedDBPersistenceService implements PersistenceService {
     await indexedDBService.init()
   }
 
+  /**
+   * Saves an array of chain transactions for a specific network and address to IndexedDB.
+   *
+   * @param {string} network - The blockchain network identifier.
+   * @param {string} address - The address associated with the transactions.
+   * @param {Transaction[]} transactions - The array of transactions to save.
+   * @returns {Promise<void>} A promise that resolves when the transactions have been saved.
+   */
   async saveChainTransactions(
     network: string,
     address: string,
@@ -1008,10 +1170,21 @@ class IndexedDBPersistenceService implements PersistenceService {
     return indexedDBService.loadSyncStatus(network, address)
   }
 
+  /**
+   * Saves the chain synchronization status to IndexedDB.
+   *
+   * @param status The ChainSyncStatus object representing the sync status to save.
+   * @returns A Promise that resolves when the status has been saved.
+   */
   async saveChainSyncStatus(status: ChainSyncStatus): Promise<void> {
     await indexedDBService.saveSyncStatus(status)
   }
 
+  /**
+   * Clears all chain transactions stored in IndexedDB.
+   *
+   * @returns {Promise<void>} A promise that resolves when the transactions are cleared.
+   */
   async clearChainTransactions(): Promise<void> {
     await indexedDBService.clearTransactions()
   }

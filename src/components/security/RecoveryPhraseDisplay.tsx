@@ -12,6 +12,14 @@ interface RecoveryPhraseDisplayProps {
   onBack?: () => void
 }
 
+/**
+ * RecoveryPhraseDisplay
+ * Renders the recovery phrase split into numbered words, with copy and confirmation functionality.
+ * @param {string} phrase - The recovery phrase to display.
+ * @param {() => void} onConfirm - Callback invoked when the user confirms the phrase.
+ * @param {() => void} [onBack] - Optional callback to navigate back.
+ * @returns {JSX.Element} The rendered RecoveryPhraseDisplay component.
+ */
 export const RecoveryPhraseDisplay: React.FC<RecoveryPhraseDisplayProps> = ({
   phrase,
   onConfirm,
@@ -26,6 +34,12 @@ export const RecoveryPhraseDisplay: React.FC<RecoveryPhraseDisplayProps> = ({
     position: i + 1,
   }))
 
+  /**
+   * handleConfirmedChange
+   * Handles changes to the confirmation checkbox.
+   * @param {React.ChangeEvent<HTMLInputElement>} e - The change event from the checkbox.
+   * @returns {void}
+   */
   const handleConfirmedChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       setConfirmed(e.target.checked)
@@ -33,6 +47,11 @@ export const RecoveryPhraseDisplay: React.FC<RecoveryPhraseDisplayProps> = ({
     []
   )
 
+  /**
+   * handleCopy
+   * Copies the recovery phrase to the clipboard and shows a temporary copied indicator.
+   * @returns {Promise<void>} A promise that resolves when the phrase has been copied.
+   */
   const handleCopy = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(phrase)

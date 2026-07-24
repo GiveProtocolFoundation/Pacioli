@@ -175,6 +175,10 @@ const AddPortfolioModal: React.FC<AddPortfolioModalProps> = ({
     let cancelled = false
     setIsValidatingXpub(true)
 
+    /**
+     * Validates the provided extended public key (xPub), updates state based on validity.
+     * @returns {Promise<void>} A promise that resolves when validation is complete.
+     */
     const validateXpub = async () => {
       try {
         // First quick check with the fast function

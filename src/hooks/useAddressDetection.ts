@@ -31,7 +31,6 @@ interface AddressDetectionResult {
   detectAddresses: (
     addresses: Array<{ address: string; chain: string }>
   ) => Promise<void>
-
   /**
    * Detect entity for a single address
    */
@@ -56,6 +55,13 @@ interface AddressDetectionResult {
   clearMatches: () => void
 }
 
+/**
+ * React hook for detecting entities associated with blockchain addresses.
+ *
+ * @param options Configuration options for address detection.
+ * @param options.autoDetect Whether to automatically detect addresses. Defaults to true.
+ * @returns AddressDetectionResult containing detection methods and state.
+ */
 export function useAddressDetection(
   options: UseAddressDetectionOptions = {}
 ): AddressDetectionResult {

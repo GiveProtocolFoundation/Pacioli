@@ -276,6 +276,11 @@ const FilterTabs: React.FC<{
   onWorkflow,
   onApproval,
 }) => {
+  /**
+   * Returns the CSS class string for a button based on its active state.
+   * @param {boolean} isActive - Whether the button is active.
+   * @returns {string} The computed class names for the button.
+   */
   const getButtonClass = (isActive: boolean) =>
     `px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
       isActive
@@ -558,17 +563,57 @@ const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
     () => markAllAsRead(),
     [markAllAsRead]
   )
+  /**
+   * Handles the refresh action.
+   *
+   * @returns void
+   */
   const handleRefresh = useCallback(() => refresh(), [refresh])
 
+  /**
+   * Sets the notification filter to all notifications.
+   *
+   * @returns void
+   */
   const handleFilterAll = useCallback(() => setFilter('all'), [])
+
+  /**
+   * Sets the notification filter to financial notifications.
+   *
+   * @returns void
+   */
   const handleFilterFinancial = useCallback(() => setFilter('financial'), [])
+
+  /**
+   * Sets the notification filter to transactional notifications.
+   *
+   * @returns void
+   */
   const handleFilterTransactional = useCallback(
     () => setFilter('transactional'),
     []
   )
+
+  /**
+   * Sets the notification filter to workflow notifications.
+   *
+   * @returns void
+   */
   const handleFilterWorkflow = useCallback(() => setFilter('workflow'), [])
+
+  /**
+   * Sets the notification filter to approval notifications.
+   *
+   * @returns void
+   */
   const handleFilterApproval = useCallback(() => setFilter('approval'), [])
 
+  /**
+   * Handles key down events on the backdrop to close the panel on Enter or Space key press.
+   *
+   * @param e React.KeyboardEvent keyboard event
+   * @returns void
+   */
   const handleBackdropKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       if (e.key === 'Enter' || e.key === ' ') {
@@ -581,6 +626,11 @@ const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
 
   if (!isOpen) return null
 
+  /**
+   * Renders the content of the notifications panel based on loading state and filtered notifications.
+   *
+   * @returns JSX.Element|null The appropriate state component or notification list.
+   */
   const renderContent = () => {
     if (isLoading) return <LoadingState />
     if (filteredNotifications.length === 0) return <EmptyState />

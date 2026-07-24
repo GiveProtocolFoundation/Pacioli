@@ -65,6 +65,12 @@ type ConnectionState = 'disconnected' | 'connecting' | 'connected' | 'error'
 type StateChangeCallback = (state: ConnectionState, error?: string) => void
 type SessionCallback = (session: WalletConnectSession | null) => void
 
+/**
+ * Service for managing WalletConnect sessions and connection state.
+ *
+ * Provides methods to configure the SignClient, establish and terminate connections,
+ * and subscribe to state and session changes.
+ */
 class WalletConnectService {
   private signClient: SignClient | null = null
   private modal: WalletConnectModal | null = null
@@ -88,7 +94,7 @@ class WalletConnectService {
   }
 
   /**
-   * Get the current session
+   * Get the current WalletConnect session
    */
   getSession(): WalletConnectSession | null {
     return this.currentSession
@@ -110,21 +116,26 @@ class WalletConnectService {
     return () => this.sessionCallbacks.delete(callback)
   }
 
+  /**
+   * Notifies subscribers of a change in the connection state.
+   * @param state - The new connection state.
+   * @param error - Optional error message if the state change is due to an error.
+   */
   private notifyStateChange(state: ConnectionState, error?: string) {
     this.connectionState = state
     this.stateCallbacks.forEach(cb => cb(state, error))
   }
 
+  /**
+   * Notifies all registered session callbacks of a session change.
+   * Updates the currentSession and invokes each callback with the new session.
+   *
+   * @param session - The new WalletConnectSession or null if the session is cleared.
+   */
   private notifySessionChange(session: WalletConnectSession | null) {
     this.currentSession = session
     this.sessionCallbacks.forEach(cb => cb(session))
   }
-
-  /**
-   * Initialize WalletConnect SignClient
-   */
-  async initialize(): Promise<void> {
-    if (!PROJECT_ID) {
       throw new Error(
         'WalletConnect Project ID not configured. Set VITE_WALLETCONNECT_PROJECT_ID in your environment.'
       )
@@ -165,6 +176,9 @@ class WalletConnectService {
     }
   }
 
+  /**
+   * Sets up WalletConnect event listeners on the signClient to handle session events, updates, and deletions.
+   */
   private setupEventListeners() {
     if (!this.signClient) return
 
@@ -194,6 +208,9 @@ class WalletConnectService {
     })
   }
 
+  /**
+   * Restores the most recent WalletConnect session if available.
+   */
   private restoreSession(): void {
     if (!this.signClient) return
 

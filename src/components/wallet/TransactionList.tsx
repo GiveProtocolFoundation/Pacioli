@@ -31,6 +31,16 @@ interface TransactionListProps {
   onPriceUpdate?: (txId: string, pricePerUnitUsd: string) => void
 }
 
+/**
+ * Renders a list of transactions with controls for loading, error handling, filtering, searching, and importing.
+ *
+ * @param {Transaction[]} transactions - Array of transaction objects to display.
+ * @param {boolean} [isLoading] - Whether the transaction list is currently loading.
+ * @param {string | null} [error] - Error message to display if loading fails.
+ * @param {() => void} [onPurge] - Callback when the user triggers a purge of all transactions.
+ * @param {(txId: string, pricePerUnitUsd: string) => void} [onPriceUpdate] - Callback when a transaction's price is manually updated.
+ * @returns {JSX.Element} The rendered transaction list component.
+ */
 export const TransactionList: React.FC<TransactionListProps> = ({
   transactions,
   isLoading,

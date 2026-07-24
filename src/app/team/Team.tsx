@@ -20,6 +20,11 @@ const getRoleBadgeColor = (role: string): string => {
   }
 }
 
+/**
+ * Formats a role name for display by converting kebab-case strings into title case.
+ * @param {string} role - The role string in kebab-case.
+ * @returns {string} The formatted role name in title case.
+ */
 // Format role name for display
 const formatRoleName = (role: string): string => {
   return role
@@ -28,6 +33,11 @@ const formatRoleName = (role: string): string => {
     .join(' ')
 }
 
+/**
+ * Extracts initials from a given name string.
+ * @param {string} name - The full name string.
+ * @returns {string} A string of up to two uppercase initials.
+ */
 // Get initials from name
 const getInitials = (name: string): string => {
   return name
@@ -42,6 +52,12 @@ interface TeamMemberCardProps {
   member: ProfileUser
 }
 
+/**
+ * Renders a card displaying a team member's avatar, name, and role.
+ * @param {TeamMemberCardProps} props - The props for the component.
+ * @param {ProfileUser} props.member - The team member object.
+ * @returns {JSX.Element} A React element representing the team member card.
+ */
 const TeamMemberCard: React.FC<TeamMemberCardProps> = ({ member }) => {
   return (
     <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow">
@@ -94,6 +110,11 @@ const TeamMemberCard: React.FC<TeamMemberCardProps> = ({ member }) => {
   )
 }
 
+/**
+ * Team component renders and manages the display of team members.
+ *
+ * @returns JSX.Element containing the team member list UI.
+ */
 const Team: React.FC = () => {
   const navigate = useNavigate()
   const { isBusinessAccount, userProfiles } = useAuth()
@@ -106,6 +127,12 @@ const Team: React.FC = () => {
     localStorage.getItem('currentProfileId') || userProfiles[0]?.profile_id
 
   // Load team members
+  /**
+   * Loads team members for the current profile ID.
+   *
+   * @async
+   * @returns {Promise<void>} Promise resolving when members are loaded or error is handled.
+   */
   const loadMembers = useCallback(async () => {
     if (!currentProfileId) {
       setIsLoading(false)

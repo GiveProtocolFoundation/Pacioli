@@ -465,6 +465,15 @@ const Dashboard: React.FC = () => {
   // Load recent transactions from persistence
   useEffect(() => {
     let cancelled = false
+
+    /**
+     * Loads recent transactions from persistence for the current profile.
+     * Fetches up to 10 transactions, sorts them by timestamp,
+     * slices to the latest 5, maps them to include calculated amount
+     * and USD value, and updates state accordingly.
+     *
+     * @returns {Promise<void>}
+     */
     const loadTransactions = async () => {
       if (!currentProfile) {
         setRecentTransactions([])
@@ -522,6 +531,11 @@ const Dashboard: React.FC = () => {
     }
   }, [currentProfile])
 
+  /**
+   * Returns a CSS badge class name based on the transaction type.
+   * @param type The type of the transaction.
+   * @returns The CSS class representing the badge color.
+   */
   const getTypeColor = (type: string) => {
     switch (type) {
       case 'donation':

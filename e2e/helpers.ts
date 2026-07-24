@@ -86,21 +86,43 @@ export async function goToTransactions(page: Page): Promise<void> {
   await page.waitForLoadState('networkidle')
 }
 
+/**
+ * Navigates to the reports page and waits until the network is idle.
+ * @param page - The Playwright Page object used for navigation.
+ * @returns A promise that resolves when the reports page is fully loaded.
+ */
 export async function goToReports(page: Page): Promise<void> {
   await page.goto('/reports')
   await page.waitForLoadState('networkidle')
 }
 
+/**
+ * Navigates to the settings page and waits until the network is idle.
+ *
+ * @param page The Playwright Page object used to interact with the browser.
+ * @returns A promise that resolves when the settings page is fully loaded.
+ */
 export async function goToSettings(page: Page): Promise<void> {
   await page.goto('/settings')
   await page.waitForLoadState('networkidle')
 }
 
+/**
+ * Navigates the given page to the wallet manager page and waits for the network to be idle.
+ *
+ * @param page - The Playwright Page object to perform navigation on.
+ * @returns A promise that resolves when the navigation and load complete.
+ */
 export async function goToWalletManager(page: Page): Promise<void> {
   await page.goto('/wallet-manager')
   await page.waitForLoadState('networkidle')
 }
 
+/**
+ * Navigates to the '/entities' page and waits until the network is idle.
+ * @param page Playwright Page instance used for navigation.
+ * @returns Promise that resolves when the page has fully loaded.
+ */
 export async function goToEntities(page: Page): Promise<void> {
   await page.goto('/entities')
   await page.waitForLoadState('networkidle')

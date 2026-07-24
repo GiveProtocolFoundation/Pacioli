@@ -143,6 +143,11 @@ const PROVIDER_CONFIGS: ProviderConfig[] = [
 ]
 
 // Browser-mode fallback: build ProviderStatus from localStorage + VITE_ defaults
+/**
+ * Constructs an array of ProviderStatus objects from localStorage and default settings.
+ *
+ * @returns {ProviderStatus[]} An array of provider status objects.
+ */
 function getLocalStorageStatuses(): ProviderStatus[] {
   return PROVIDER_CONFIGS.map(config => {
     const hasUserKey = Boolean(
@@ -167,6 +172,13 @@ function getLocalStorageStatuses(): ProviderStatus[] {
 
 type KeyMode = 'none' | 'default' | 'turbo'
 
+/**
+ * Renders an indicator badge showing the current key mode with styled visuals.
+ *
+ * @param {{ mode: KeyMode }} props - The props object.
+ * @param {KeyMode} props.mode - The current key mode ('none', 'default', or 'turbo').
+ * @returns {JSX.Element} The rendered badge element for the key mode.
+ */
 const TurboModeIndicator: React.FC<{ mode: KeyMode }> = ({ mode }) => {
   const styles: Record<KeyMode, string> = {
     none: 'bg-[#294050]/10 text-[#294050] dark:bg-[#294050]/20 dark:text-[#9FB4BE]',

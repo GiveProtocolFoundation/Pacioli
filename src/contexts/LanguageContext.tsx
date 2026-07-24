@@ -34,6 +34,11 @@ const LanguageContext = createContext<LanguageContextValue | null>(null)
 
 const LANGUAGE_SETTING_KEY = 'app_language'
 
+/**
+ * Provides language context to the application, managing current language state, translations, and loading status.
+ * @param {{ children: React.ReactNode }} props - The child components that will have access to the language context.
+ * @returns {JSX.Element} The LanguageProvider component wrapping its children with language context.
+ */
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
@@ -42,6 +47,10 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // Load saved language on mount
   useEffect(() => {
+    /**
+     * Loads the saved language from storage or detects the browser language for first-time users.
+     * @returns {Promise<void>} A promise that resolves when the language has been loaded and the loading state updated.
+     */
     const loadLanguage = async () => {
       try {
         const savedLanguage = await storage.getSetting(LANGUAGE_SETTING_KEY)
@@ -93,6 +102,11 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({
   )
 }
 
+/**
+ * Custom hook to access the current language context.
+ * Throws an error if used outside of a LanguageProvider.
+ * @returns The LanguageContextValue from the nearest LanguageProvider.
+ */
 export function useLanguage(): LanguageContextValue {
   const context = useContext(LanguageContext)
   if (!context) {
@@ -101,6 +115,12 @@ export function useLanguage(): LanguageContextValue {
   return context
 }
 
+/**
+ * Checks if the given language code is a supported language.
+ *
+ * @param lang - The language code to validate.
+ * @returns True if the language code corresponds to a supported language; otherwise, false.
+ */
 function isValidLanguage(lang: string): lang is SupportedLanguage {
   return SUPPORTED_LANGUAGES.some(l => l.code === lang)
 }

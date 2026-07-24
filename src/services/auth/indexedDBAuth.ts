@@ -56,6 +56,11 @@ async function hashPassword(password: string): Promise<string> {
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
 }
 
+/**
+ * Generates a secure random token.
+ *
+ * @returns {string} A 64-character hexadecimal string representing the token.
+ */
 function generateToken(): string {
   const array = new Uint8Array(32)
   crypto.getRandomValues(array)
@@ -64,14 +69,28 @@ function generateToken(): string {
     .join('')
 }
 
+/**
+ * Generates a unique identifier string using crypto.randomUUID.
+ * @returns {string} A unique UUID string.
+ */
 function generateId(): string {
   return crypto.randomUUID()
 }
 
+/**
+ * Returns the current date and time as an ISO 8601 formatted string.
+ * @returns {string} The current date/time in ISO format.
+ */
 function getNow(): string {
   return new Date().toISOString()
 }
 
+/**
+ * Calculates the expiration time as an ISO string by adding the specified number of hours to the current time.
+ *
+ * @param hours - Number of hours to add to the current time.
+ * @returns ISO string representation of the expiration date/time.
+ */
 function getExpiresAt(hours: number): string {
   const date = new Date()
   date.setHours(date.getHours() + hours)
@@ -107,6 +126,10 @@ interface StoredRefreshToken {
   created_at: string
 }
 
+/**
+ * AuthService implementation using IndexedDB for storage.
+ * Provides methods to register users, authenticate, and manage sessions and tokens.
+ */
 class IndexedDBAuthService implements AuthService {
   private db: IDBDatabase | null = null
   private initPromise: Promise<void> | null = null
@@ -182,6 +205,12 @@ class IndexedDBAuthService implements AuthService {
     return this.initPromise
   }
 
+  /**
+   * Retrieves an object store from the IndexedDB database.
+   * @param storeName The name of the object store.
+   * @param mode The transaction mode to use ("readonly" or "readwrite"). Defaults to 'readonly'.
+   * @returns A promise that resolves to the IDBObjectStore for the specified store.
+   */
   private async getStore(
     storeName: string,
     mode: IDBTransactionMode = 'readonly'
@@ -194,6 +223,11 @@ class IndexedDBAuthService implements AuthService {
     return transaction.objectStore(storeName)
   }
 
+  /**
+   * Wraps an IDBRequest in a Promise, resolving with the result on success or rejecting with the error on failure.
+   * @param request - The IndexedDB request to be promisified.
+   * @returns A Promise that resolves with the request result or rejects with the request error.
+   */
   private static promisifyRequest<T>(request: IDBRequest<T>): Promise<T> {
     return new Promise((resolve, reject) => {
       request.onsuccess = () => resolve(request.result)
@@ -269,6 +303,12 @@ class IndexedDBAuthService implements AuthService {
     return this.createSession(newUser)
   }
 
+  /**
+   * Logs in a user with the provided credentials. Performs initialization, looks up the user by email, verifies the password,
+   * checks user status, updates last login timestamp, and creates a session with tokens.
+   * @param {LoginCredentials} credentials - The login credentials including email, password, and device name.
+   * @returns {Promise<AuthResponse>} A promise that resolves to an authentication response containing session and tokens.
+   */
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     await this.init()
 

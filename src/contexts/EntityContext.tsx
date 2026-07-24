@@ -49,31 +49,15 @@ interface EntityContextType {
   ) => Promise<EntityAddress>
   removeEntityAddress: (id: string) => Promise<void>
 
-  // Address detection
-  lookupAddress: (
-    address: string,
-    chain: string
-  ) => Promise<AddressMatch | null>
-  batchLookupAddresses: (
-    addresses: Array<[string, string]>
-  ) => Promise<AddressMatch[]>
-  findEntityByAddress: (
-    address: string,
-    chain?: string
-  ) => Promise<Entity | null>
-
-  // Known addresses
-  knownAddresses: KnownAddress[]
-  knownAddressesLoading: boolean
-  getKnownAddresses: (
-    chain?: string,
-    entityType?: string
-  ) => Promise<KnownAddress[]>
-  createEntityFromKnown: (address: string, chain: string) => Promise<Entity>
-}
-
 const EntityContext = createContext<EntityContextType | undefined>(undefined)
 
+/**
+ * Provides the EntityContext to its child components.
+ *
+ * @param {object} props - The component props.
+ * @param {React.ReactNode} props.children - The children nodes to render within the provider.
+ * @returns {JSX.Element} The provider component wrapping its children.
+ */
 export const EntityProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
@@ -85,7 +69,11 @@ export const EntityProvider: React.FC<{ children: React.ReactNode }> = ({
   const [knownAddressesLoading, setKnownAddressesLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Load entities when profile changes
+  /**
+   * Loads entities for the current profile.
+   *
+   * @returns {Promise<void>} A promise that resolves when the entities are loaded.
+   */
   const loadEntities = useCallback(async () => {
     if (!currentProfile) {
       setEntities([])
@@ -307,6 +295,10 @@ export const EntityProvider: React.FC<{ children: React.ReactNode }> = ({
   )
 }
 
+/**
+ * Custom hook to access the EntityContext.
+ * @returns The context value containing entity operations and state.
+ */
 export const useEntity = () => {
   const context = useContext(EntityContext)
   if (context === undefined) {
@@ -316,6 +308,11 @@ export const useEntity = () => {
 }
 
 // Convenience hooks for specific entity types
+
+/**
+ * Custom hook to retrieve active vendor entities.
+ * @returns An object containing the vendors array and other context methods.
+ */
 export const useVendors = () => {
   const { getFilteredEntities, ...rest } = useEntity()
   const vendors = getFilteredEntities({
@@ -325,6 +322,10 @@ export const useVendors = () => {
   return { vendors, ...rest }
 }
 
+/**
+ * Custom hook to retrieve active customer entities.
+ * @returns An object containing the customers array and other context methods.
+ */
 export const useCustomers = () => {
   const { getFilteredEntities, ...rest } = useEntity()
   const customers = getFilteredEntities({

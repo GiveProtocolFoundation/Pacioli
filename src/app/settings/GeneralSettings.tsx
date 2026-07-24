@@ -52,6 +52,13 @@ interface OrganizationInformationSectionProps {
   onLogoUpload: (e: React.ChangeEvent<HTMLInputElement>) => void
 }
 
+/**
+ * Renders the organization logo upload component.
+ * @param {Object} props - Component props.
+ * @param {string|null} props.logo - Current organization logo URL or null.
+ * @param {React.ChangeEvent<HTMLInputElement>} props.onLogoUpload - Handler invoked when a new logo is selected.
+ * @returns {JSX.Element} The rendered logo upload component.
+ */
 const LogoUpload: React.FC<{
   logo: string | null
   onLogoUpload: (e: React.ChangeEvent<HTMLInputElement>) => void

@@ -76,22 +76,6 @@ interface AuthContextType {
   accountType: AccountType | null
   isBusinessAccount: boolean
 
-  // Authentication actions
-  login: (credentials: LoginCredentials) => Promise<void>
-  register: (input: RegisterInput) => Promise<void>
-  logout: () => Promise<void>
-  refreshAuth: () => Promise<void>
-  setAuthFromWallet: (response: AuthResponse) => Promise<void>
-
-  // User management
-  updateUser: (input: UpdateUserInput) => Promise<void>
-  changePassword: (input: ChangePasswordInput) => Promise<void>
-
-  // Permission helpers
-  hasPermission: (permission: Permission) => boolean
-  canAccessProfile: (profileId: string) => boolean
-  getProfileRole: (profileId: string) => UserRole | null
-
   // Clear error
   clearError: () => void
 }
@@ -101,6 +85,12 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 // Session ID storage key
 const SESSION_ID_KEY = 'pacioli_session_id'
 
+/**
+ * Provides authentication context to its children.
+ *
+ * @param children React nodes that will receive the authentication context.
+ * @returns A React element that wraps children with AuthContext.Provider.
+ */
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
@@ -284,6 +274,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // Update current profile role when profile selection changes
   useEffect(() => {
+    /**
+     * Handles storage change events to update the current profile role when the currentProfileId changes.
+     * @param e StorageEvent object containing the key and newValue information.
+     */
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'currentProfileId' && e.newValue) {
         const profile = userProfiles.find(p => p.profile_id === e.newValue)
@@ -538,6 +532,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   )
 }
 
+/**
+ * Custom hook for accessing authentication context.
+ *
+ * @returns The AuthContext value containing authentication state and methods.
+ */
 export const useAuth = () => {
   const context = useContext(AuthContext)
   if (context === undefined) {

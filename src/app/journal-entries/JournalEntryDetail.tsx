@@ -75,6 +75,11 @@ const JournalEntryDetail: React.FC<JournalEntryDetailProps> = ({
     return m
   }, [accounts])
 
+  /**
+   * Resolves the display name for a given GL account ID.
+   * @param glAccountId - The GL account ID to resolve.
+   * @returns A string in the format "accountNumber · accountName" if found, otherwise a fallback string.
+   */
   const resolveAccountName = (glAccountId: number) => {
     const acct = accountMap.get(glAccountId)
     return acct

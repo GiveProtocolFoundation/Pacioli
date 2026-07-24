@@ -89,6 +89,11 @@ const quickLinks: QuickLink[] = [
   { title: 'FAQ', url: '/docs/faq/', icon: HelpCircle },
 ]
 
+/**
+ * Support component that renders the help topics and quick links for support.
+ *
+ * @returns JSX.Element - The rendered Support component.
+ */
 const Support: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<
@@ -104,6 +109,11 @@ const Support: React.FC = () => {
     return matchesSearch && matchesCategory
   })
 
+  /**
+   * Handles the change event for the search input.
+   *
+   * @param e - The change event from the search input.
+   */
   const handleSearchChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       setSearchQuery(e.target.value)
@@ -111,10 +121,18 @@ const Support: React.FC = () => {
     []
   )
 
+  /**
+   * Sets the selected category to 'all' to show all help topics.
+   */
   const handleCategoryAll = useCallback(() => setSelectedCategory('all'), [])
+
+  /**
+   * Sets the selected category to 'guide' to filter help topics to guides.
+   */
   const handleCategoryGuide = useCallback(
     () => setSelectedCategory('guide'),
     []
+  )
   )
   const handleCategoryCrypto = useCallback(
     () => setSelectedCategory('crypto'),

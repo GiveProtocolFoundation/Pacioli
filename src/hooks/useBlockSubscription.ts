@@ -64,6 +64,17 @@ export interface UseBlockSubscriptionOptions {
 /** Debounce interval for block events (ms). Substrate produces blocks every 6s. */
 const DEBOUNCE_MS = 12_000
 
+/**
+ * Subscribes to new blocks for a given network and address, managing live updates and incremental transaction refresh.
+ *
+ * @param options - Configuration options for block subscription.
+ * @param options.network - Network to subscribe to.
+ * @param options.address - Address to refresh transactions for.
+ * @param options.enabled - Whether real-time sync is enabled (user toggle).
+ * @param options.dbReady - Whether the DB is initialized.
+ * @param options.onTransactionsUpdated - Callback when new transactions are fetched.
+ * @returns The state object for block subscription including live status, latest block, and refresh progress.
+ */
 export function useBlockSubscription(
   options: UseBlockSubscriptionOptions
 ): BlockSubscriptionState {
@@ -176,6 +187,12 @@ export function useBlockSubscription(
 
     let cancelled = false
 
+    /**
+     * Subscribes to new block headers from the Polkadot service for the current network.
+     * Upon receiving a new header, updates latest block, sets live state, and triggers an incremental refresh after debounce.
+     * @async
+     * @returns {Function} A function to unsubscribe from block updates.
+     */
     const subscribe = async () => {
       try {
         const unsub = await polkadotService.subscribeNewBlocks(
