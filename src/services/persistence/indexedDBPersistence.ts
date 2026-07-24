@@ -716,11 +716,11 @@ class IndexedDBPersistenceService implements PersistenceService {
       const tx = db.transaction(STORES.ENTITIES, 'readonly')
       const store = tx.objectStore(STORES.ENTITIES)
       const request = store.get(id)
-  /**
-   * Retrieves an entity by its ID from the IndexedDB store.
-   * @param id The unique identifier of the entity to retrieve.
-   * @returns A promise that resolves to the Entity object if found, or null if not found.
-   */
+      /**
+       * Retrieves an entity by its ID from the IndexedDB store.
+       * @param id The unique identifier of the entity to retrieve.
+       * @returns A promise that resolves to the Entity object if found, or null if not found.
+       */
       request.onsuccess = () => resolve((request.result as Entity) || null)
       request.onerror = () => reject(request.error)
     })
