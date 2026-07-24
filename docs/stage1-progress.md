@@ -4,14 +4,17 @@ Session constitution: `SCOPE.md` (repo root). Stage 1 mandate: GIV-668.
 Gate 1: CPA-reviewed statements from real imported transactions, manually
 classified through the approval queue.
 
-**Current phase: 10 (Gate 1 rehearsal) in flight, plus Phase 4a (import
-resilience — board amendment 2026-07-18) newly opened. Phases 1-9 landed
-and merged. Rehearsal package prepared (`docs/gate1-report.md`: CPA-facing
-overview, known limitations, 12-step rehearsal checklist, demo script).
-Awaiting the product owner's real-data rehearsal run; findings land in
-`docs/gate1-report.md` §5 and blockers-only fixes follow. Phase 4a
-delegated to Engineer — it is the durable fix for the provider-failure
-class behind rehearsal findings #1/#2/#3.**
+**Current phase: 10 (Gate 1 rehearsal) — the ONLY remaining Stage 1 gate.
+Phases 1-9 AND Phase 4a (import resilience, board amendment 2026-07-18)
+are fully landed and merged as of 2026-07-24 (main `c60af5a`+; GIV-712
+closed done, Parts 1-4 + GIV-716 import selection merged). Rehearsal
+package prepared (`docs/gate1-report.md`: CPA-facing overview, known
+limitations, 12-step rehearsal checklist, demo script). The engine side
+is unblocked. The gate now waits solely on the product owner's real-data
+rehearsal run, which requires ONE external input from the board: a free
+Etherscan V2 API key entered in Settings → Data Providers → Etherscan
+(rehearsal finding #3). Findings land in `docs/gate1-report.md` §5;
+blockers-only fixes follow.**
 
 ## Phase Checklist
 
@@ -32,7 +35,7 @@ class behind rehearsal findings #1/#2/#3.**
       (GIV-683: classification queue view with auto/manual/skip actions,
       rust_decimal precision at boundary, provenance: origin=rule for
       auto-classified entries, classification_status flip — Engineer)
-- [ ] **Phase 4a — Import resilience and canonical store** (added by board
+- [x] **Phase 4a — Import resilience and canonical store** (added by board
       amendment to the Stage 1 mandate, 2026-07-18; formalizes "Option B"
       from the rehearsal findings #1-#3 options analysis). Split into three
       parts per CTO review: - **Part 1 (MERGED, PR #234):** descriptive column renames
@@ -55,7 +58,7 @@ class behind rehearsal findings #1/#2/#3.**
       needs separate API). `resilientSyncService` wired into
       `useEVMService.syncTransactions` UI flow. CTO hardening: registry
       alias mismatch + RwLock deadlock fix, substrate placeholder claim
-      fix, Helius key preservation fix. Delegated: Engineer. - **Part 4 (PR in review, GIV-713):** path convergence — routed the
+      fix, Helius key preservation fix. Delegated: Engineer. - **Part 4 (MERGED, PR #237, squash `c60af5a`, GIV-713):** path convergence — routed the
       direct `get_bitcoin_transactions` and `get_solana_transactions`
       Tauri commands through `ChainManager::get_transactions` so they
       inherit provider fallback + health tracking instead of constructing
@@ -1304,3 +1307,26 @@ WHERE status='approved'` (the M5 state machine explicitly allows
     `polkadotService.fetchTransactionHistoryHybrid` → `moonscanService`
     path for Moonbeam/Moonriver EVM addresses is untouched (Gate-1
     rehearsal path — do NOT regress).
+- **Session 26 (2026-07-24, CTO — Phase 4a closeout):**
+  - **Phase 4a is DONE.** GIV-713 Part 4 merged (PR #237, squash
+    `c60af5a`); GIV-712 (Phase 4a parent) closed done on the board.
+    All four parts (canonical store + column renames, provider fallback
+    registry + resumable cursors, live-path wiring, Tauri-command path
+    convergence) are on `main`. Checkbox flipped to `[x]`.
+  - **Also merged since Session 25** (rehearsal-adjacent, not new Stage-1
+    scope): GIV-716 transaction selection & filter for import (PR #239,
+    `4b839f2`) + import-button label fix (PR #240, `4a9644a`) — lets the
+    product owner pick which imported transactions flow to the ledger
+    during the rehearsal; GIV-714 Dependabot remediation (PR #238,
+    `05bcbbd`). All merged with green CI.
+  - **Engine side of Stage 1 is now fully unblocked.** Phases 1–9 + 4a
+    complete. The single remaining gate item is Phase 10, which is by
+    definition owned by the product owner / CPA, not the engine.
+  - **Sole external dependency for the rehearsal:** finding #3's user
+    action — a free Etherscan V2 API key
+    (<https://etherscan.io/myapikey>) saved in Settings → Data Providers
+    → **Etherscan** (legacy moonscan.io keys do NOT work on V2). With
+    that key, the 12-step `docs/gate1-report.md` §3 checklist runs
+    end-to-end; findings + blocker-only fixes follow.
+  - **No code changed this session** — docs-only tracker closeout. Main
+    is CI-green (every Phase 4a part merged through required checks).
