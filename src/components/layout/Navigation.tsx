@@ -51,6 +51,12 @@ interface NavItem {
   subItems?: SubItem[]
 }
 
+/**
+ * Renders a list of sub-navigation items.
+ * @param subItems - Array of sub-navigation items to display.
+ * @param location - Current location from React Router.
+ * @param onLinkClick - Optional callback invoked when a link is clicked.
+ */
 const SubNavItems: React.FC<{
   subItems: SubItem[]
   expandedItems: string[]
@@ -87,6 +93,15 @@ const SubNavItems: React.FC<{
   </ul>
 )
 
+/**
+ * Renders a list of navigation items, supporting desktop and mobile variants.
+ * @param navItems - Array of navigation items to display.
+ * @param expandedItems - Array of names of expanded navigation items.
+ * @param location - Current location from React Router.
+ * @param variant - View variant, either 'desktop' or 'mobile'.
+ * @param onToggleExpanded - Callback to toggle expansion of a navigation item.
+ * @param onLinkClick - Optional callback invoked when a link is clicked.
+ */
 const NavItemList: React.FC<{
   navItems: NavItem[]
   expandedItems: string[]
@@ -104,6 +119,11 @@ const NavItemList: React.FC<{
 }) => {
   const isDesktop = variant === 'desktop'
 
+  /**
+   * Returns the CSS class string for a navigation button based on its active state and view variant.
+   * @param isActive - Indicates whether the button is in the active state.
+   * @returns A string of CSS classes.
+   */
   const getButtonClass = (isActive: boolean) => {
     const base = isDesktop
       ? 'w-full flex items-center justify-between px-3 py-2.5 text-sm rounded-lg transition-colors'
@@ -117,6 +137,11 @@ const NavItemList: React.FC<{
     return `${base} ${isActive ? active : inactive}`
   }
 
+  /**
+   * Returns the CSS class string for a navigation link based on its active state and view variant.
+   * @param isActive - Indicates whether the link is in the active state.
+   * @returns A string of CSS classes.
+   */
   const getLinkClass = (isActive: boolean) => {
     const base = isDesktop
       ? 'w-full flex items-center justify-between px-3 py-2.5 text-sm rounded-lg transition-colors'
@@ -197,6 +222,15 @@ const NavItemList: React.FC<{
   )
 }
 
+/**
+ * Displays a user's avatar or organization logo.
+ * @param {Object} props - Component props.
+ * @param {string|null|undefined} props.userAvatar - URL of user's avatar image.
+ * @param {string|null|undefined} [props.organizationLogo] - URL of organization logo.
+ * @param {'individual'|'organization'} [props.userType] - Type of user.
+ * @param {'sm'|'lg'} [props.size='lg'] - Size of the avatar.
+ * @returns {JSX.Element} Avatar image or placeholder.
+ */
 const UserAvatar: React.FC<{
   userAvatar: string | null | undefined
   organizationLogo?: string | null | undefined
@@ -231,6 +265,14 @@ const UserAvatar: React.FC<{
   )
 }
 
+/**
+ * Renders a dropdown menu for user actions.
+ * @param {Object} props - Component props.
+ * @param {string} props.displayName - Display name of the user.
+ * @param {string} props.userEmail - Email address of the user.
+ * @param {function} props.onLogout - Callback for logout action.
+ * @returns {JSX.Element} Dropdown menu component.
+ */
 const UserMenuDropdown: React.FC<{
   displayName: string
   userEmail: string
@@ -277,6 +319,21 @@ const UserMenuDropdown: React.FC<{
   </div>
 )
 
+/**
+ * Renders the desktop sidebar navigation with user info and navigation items.
+ * @param {Object} props - Component props.
+ * @param {string} props.theme - Current theme.
+ * @param {NavItem[]} props.navItems - List of navigation items.
+ * @param {string[]} props.expandedItems - Currently expanded nav item names.
+ * @param {ReturnType<typeof useLocation>} props.location - React Router location object.
+ * @param {function} props.onToggleExpanded - Callback to toggle expanded nav items.
+ * @param {string|null|undefined} props.userAvatar - URL of user's avatar.
+ * @param {string|null|undefined} props.organizationLogo - URL of organization logo.
+ * @param {'individual'|'organization'} props.userType - Type of the user.
+ * @param {string} props.displayName - Display name of the user.
+ * @param {string} props.userEmail - Email address of the user.
+ * @returns {JSX.Element} Sidebar component.
+ */
 const DesktopSidebar: React.FC<{
   theme: string
   navItems: NavItem[]
@@ -332,31 +389,25 @@ const DesktopSidebar: React.FC<{
         variant="desktop"
         onToggleExpanded={onToggleExpanded}
       />
-    </nav>
-
-    {/* User section at bottom */}
-    <div className="border-t border-[rgba(95,227,192,0.1)] dark:border-[rgba(95,227,192,0.1)] p-4">
-      <div className="flex items-center">
-        <UserAvatar
-          userAvatar={userAvatar}
-          organizationLogo={organizationLogo}
-          userType={userType}
-          size="lg"
-        />
-        <div className="ml-3 flex-1">
-          <p className="text-sm font-medium text-[#11202B] dark:text-[#EAF3F2]">
-            {displayName}
-          </p>
-          <p className="text-xs text-[#647D8B] dark:text-[#647D8B]">
-            {userEmail ||
-              (userType === 'organization' ? 'Admin' : 'Personal Account')}
-          </p>
-        </div>
-      </div>
-    </div>
-  </aside>
+    </aside>
 )
 
+/**
+ * MobileSidebar component renders a sidebar navigation for mobile view.
+ * @param theme - Theme string for styling ('light' or 'dark').
+ * @param navItems - Array of navigation items to display.
+ * @param expandedItems - Array of item names that are currently expanded.
+ * @param location - Location object from react-router's useLocation hook.
+ * @param onToggleExpanded - Callback to toggle the expanded state of a navigation item.
+ * @param onClose - Callback to close the sidebar.
+ * @param onBackdropKeyDown - Keyboard event handler for backdrop keydown events.
+ * @param userAvatar - URL or identifier for the user's avatar image.
+ * @param organizationLogo - URL or identifier for the organization logo.
+ * @param userType - User type, either 'individual' or 'organization'.
+ * @param displayName - Display name of the user.
+ * @param userEmail - Email of the user, if available.
+ * @returns JSX.Element representing the mobile sidebar.
+ */
 const MobileSidebar: React.FC<{
   theme: string
   navItems: NavItem[]
@@ -436,7 +487,6 @@ const MobileSidebar: React.FC<{
           onLinkClick={onClose}
         />
       </nav>
-
       {/* User section */}
       <div className="border-t border-[rgba(95,227,192,0.1)] dark:border-[rgba(95,227,192,0.1)] p-4">
         <div className="flex items-center">
@@ -461,6 +511,21 @@ const MobileSidebar: React.FC<{
   </div>
 )
 
+/**
+ * TopBar component displays the application's top navigation bar, including user info, notifications, theme toggling, and logout.
+ * @param {string} theme - The current theme ('light' or 'dark').
+ * @param {string|null|undefined} userAvatar - URL of the user's avatar image, or null/undefined if not available.
+ * @param {boolean} userMenuOpen - Indicates whether the user menu is open.
+ * @param {string} displayName - The name of the currently logged-in user.
+ * @param {string} userEmail - The email of the currently logged-in user.
+ * @param {number} unreadNotificationCount - The number of unread notifications.
+ * @param {() => void} onOpenSidebar - Callback to open the sidebar.
+ * @param {() => void} onToggleUserMenu - Callback to toggle the user menu.
+ * @param {() => void} onOpenNotifications - Callback to open the notifications panel.
+ * @param {() => void} onToggleTheme - Callback to toggle between light and dark themes.
+ * @param {() => void} onLogout - Callback to log out the user.
+ * @returns {JSX.Element} The rendered TopBar component.
+ */
 const TopBar: React.FC<{
   theme: string
   userAvatar: string | null | undefined

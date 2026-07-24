@@ -45,6 +45,10 @@ const BlockchainSelector: React.FC<BlockchainSelectorProps> = ({
 
   // Close dropdown when clicking outside
   useEffect(() => {
+    /**
+     * Handles clicks outside the dropdown to close it and reset the search query.
+     * @param {MouseEvent} event - The mouse event triggered by clicking outside the dropdown.
+     */
     const handleClickOutside = (event: MouseEvent) => {
       if (
         dropdownRef.current &&

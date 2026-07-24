@@ -46,6 +46,13 @@ const ProfileContext = createContext<ProfileContextType | undefined>(undefined)
 
 const CURRENT_PROFILE_KEY = 'currentProfileId'
 
+/**
+ * ProfileProvider is a context provider component that supplies profile and wallet state and actions to its children.
+ *
+ * @param {object} props - The component props.
+ * @param {React.ReactNode} props.children - Child components that will receive the context.
+ * @returns {JSX.Element} The provider wrapping its children with profile context.
+ */
 export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
@@ -209,7 +216,6 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({
   const refreshWallets = useCallback(async () => {
     await loadWallets()
   }, [loadWallets])
-
   return (
     <ProfileContext.Provider
       value={{
@@ -234,6 +240,11 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({
   )
 }
 
+/**
+ * Hook to access the profile context.
+ * Provides profiles, the current profile, loading and error state, and actions to manage profiles and wallets.
+ * @returns The profile context value containing state and action methods.
+ */
 export const useProfile = () => {
   const context = useContext(ProfileContext)
   if (context === undefined) {

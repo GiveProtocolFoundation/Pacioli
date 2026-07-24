@@ -689,7 +689,6 @@ const EntityForm: React.FC<EntityFormProps> = ({
       setNewAddress({ address: '', chain: 'ethereum', label: '' })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to add address')
-    }
   }, [entity, newAddress, addEntityAddress])
 
   const handleRemoveAddress = useCallback(
@@ -714,6 +713,11 @@ const EntityForm: React.FC<EntityFormProps> = ({
     return handlers
   }, [addresses, handleRemoveAddress])
 
+  /**
+   * Renders the body section of the form, including error messages and various sub-sections.
+   *
+   * @returns JSX.Element representing the form's body section.
+   */
   const BodySection = () => (
     <div className="p-6 space-y-6">
       {error && (

@@ -573,6 +573,11 @@ const CompleteStep: React.FC<CompleteStepProps> = ({
   onComplete,
   t,
 }) => {
+  /**
+   * Retrieves the label for the current security mode.
+   *
+   * @returns {string} Localized label for the current security mode, including session timeout for securePlus.
+   */
   const getSecurityModeLabel = () => {
     if (securityMode === 'easy') return t.firstLaunch.easyAccess
     if (securityMode === 'secure') return t.firstLaunch.secureUse
@@ -580,25 +585,24 @@ const CompleteStep: React.FC<CompleteStepProps> = ({
   }
 
   return (
-    <>
-      <StepHeader
-        icon={
-          <svg
-            className="w-8 h-8 text-[#2E9A82] dark:text-[#8faf84]"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M5 13l4 4L19 7"
-            />
-          </svg>
-        }
-        iconBgClass="bg-[#2E9A82]/20 dark:bg-[#2E9A82]/30"
-        title={t.firstLaunch.setupComplete}
+    <StepHeader
+      icon={
+        <svg
+          className="w-8 h-8 text-[#2E9A82] dark:text-[#8faf84]"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M5 13l4 4L19 7"
+          />
+        </svg>
+      }
+      iconBgClass="bg-[#2E9A82]/20 dark:bg-[#2E9A82]/30"
+      title={t.firstLaunch.setupComplete}
         description={t.firstLaunch.setupCompleteDesc}
       />
       <div className="bg-[#EAF3F2] dark:bg-[#16242F]/50 rounded-lg p-4 mb-8">

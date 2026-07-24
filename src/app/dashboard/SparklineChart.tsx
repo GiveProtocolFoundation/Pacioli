@@ -7,6 +7,13 @@ interface SparklineChartProps {
   height?: number
 }
 
+/**
+ * SparklineChart component renders a small line chart (sparkline) using Recharts.
+ * @param data Array of numeric data points for the sparkline.
+ * @param color Stroke and gradient color for the chart. Default is '#2E9A82'.
+ * @param height Height of the chart container. Default is 48.
+ * @returns A responsive sparkline chart component.
+ */
 const SparklineChart: React.FC<SparklineChartProps> = ({
   data,
   color = '#2E9A82',

@@ -32,6 +32,12 @@ interface TokenContextType {
 
 const TokenContext = createContext<TokenContextType | undefined>(undefined)
 
+/**
+ * Provides token context with chains, tokens, balances, and prices.
+ * @param {object} props - The component props.
+ * @param {ReactNode} props.children - The child components.
+ * @returns {JSX.Element} The TokenProvider component.
+ */
 export const TokenProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
@@ -47,10 +53,18 @@ export const TokenProvider: React.FC<{ children: ReactNode }> = ({
   const getTokensByChainFn = useMemo(() => getTokensByChain, [])
   const searchTokensFn = useMemo(() => searchTokensUtil, [])
 
+  /**
+   * Adds a custom token to the token list.
+   * @param {Token} token - The token to add.
+   */
   const addCustomToken = (token: Token) => {
     setTokens(prev => [...prev, token])
   }
 
+  /**
+   * Updates or adds a token balance in the state.
+   * @param {TokenBalance} balance - The token balance to update.
+   */
   const updateTokenBalance = (balance: TokenBalance) => {
     setTokenBalances(prev => {
       const index = prev.findIndex(
@@ -65,6 +79,10 @@ export const TokenProvider: React.FC<{ children: ReactNode }> = ({
     })
   }
 
+  /**
+   * Updates the price of a token in the state.
+   * @param {TokenPrice} price - The token price to update.
+   */
   const updateTokenPrice = (price: TokenPrice) => {
     setTokenPrices(prev => {
       const updated = new Map(prev)
@@ -94,6 +112,11 @@ export const TokenProvider: React.FC<{ children: ReactNode }> = ({
   )
 }
 
+/**
+ * Custom hook to access the token context.
+ * @throws {Error} If used outside a TokenProvider.
+ * @returns {TokenContextType} The token context.
+ */
 export const useTokens = () => {
   const context = useContext(TokenContext)
   if (context === undefined) {

@@ -67,6 +67,17 @@ interface TokenSelectorProps {
   error?: string
 }
 
+/**
+ * Renders a dropdown selector for choosing a token and its associated chain.
+ *
+ * @param selectedTokenId - The ID of the currently selected token.
+ * @param selectedChainId - The ID of the currently selected chain.
+ * @param onTokenSelect - Callback invoked when a token is selected, receiving the token and chain.
+ * @param label - The label displayed for the selector input.
+ * @param required - Flag indicating if selection is required.
+ * @param error - Error message to display if selection is invalid.
+ * @returns A React functional component rendering the token selector UI.
+ */
 const TokenSelector: React.FC<TokenSelectorProps> = ({
   selectedTokenId,
   selectedChainId,

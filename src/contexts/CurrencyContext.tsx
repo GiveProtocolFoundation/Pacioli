@@ -40,6 +40,11 @@ const CurrencyContext = createContext<CurrencyContextType | undefined>(
   undefined
 )
 
+/**
+ * CurrencyProvider component that provides currency settings context to its children.
+ * @param children The child React nodes that will have access to the currency context.
+ * @returns JSX element wrapping children with CurrencyContext provider.
+ */
 export const CurrencyProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
@@ -61,10 +66,17 @@ export const CurrencyProvider: React.FC<{ children: React.ReactNode }> = ({
     localStorage.setItem('currencySettings', JSON.stringify(settings))
   }, [settings])
 
+  /**
+   * Updates the current currency settings by merging new settings with previous settings.
+   * @param newSettings Partial currency settings to update.
+   */
   const updateSettings = (newSettings: Partial<CurrencySettings>) => {
     setSettings(prev => ({ ...prev, ...newSettings }))
   }
 
+  /**
+   * Resets currency settings to default values.
+   */
   const resetSettings = () => {
     setSettings(defaultSettings)
   }
@@ -78,6 +90,10 @@ export const CurrencyProvider: React.FC<{ children: React.ReactNode }> = ({
   )
 }
 
+/**
+ * Hook for accessing the currency context, including settings and update/reset functions.
+ * @returns CurrencyContextType object containing current settings and updateSettings, resetSettings functions.
+ */
 export const useCurrency = () => {
   const context = useContext(CurrencyContext)
   if (context === undefined) {

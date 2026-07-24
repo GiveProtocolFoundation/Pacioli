@@ -63,12 +63,24 @@ export const DIGITAL_ASSET_TYPE_REVERSE_MAP: Record<
   [DBDigitalAssetType.OtherDigitalAsset]: 'other-digital-assets',
 }
 
+/**
+ * Converts a UI digital asset type to its corresponding DB digital asset type.
+ *
+ * @param uiType - The digital asset type from the UI.
+ * @returns The corresponding digital asset type for the database.
+ */
 export function uiToDbDigitalAssetType(
   uiType: UIDigitalAssetType
 ): DBDigitalAssetType {
   return DIGITAL_ASSET_TYPE_MAP[uiType]
 }
 
+/**
+ * Converts a database digital asset type to a UI digital asset type.
+ *
+ * @param {DBDigitalAssetType} dbType - The digital asset type used in the database.
+ * @returns {UIDigitalAssetType} The corresponding UI digital asset type.
+ */
 export function dbToUiDigitalAssetType(
   dbType: DBDigitalAssetType
 ): UIDigitalAssetType {
@@ -96,16 +108,24 @@ export const CHAIN_TYPE_REVERSE_MAP: Partial<Record<DBChainType, UIChainType>> =
     [DBChainType.Other]: 'sidechain',
   }
 
+/**
+ * Maps a UIChainType to its corresponding DBChainType.
+ *
+ * @param uiType - The UIChainType to convert.
+ * @returns The corresponding DBChainType.
+ */
 export function uiToDbChainType(uiType: UIChainType): DBChainType {
   return CHAIN_TYPE_MAP[uiType]
 }
 
+/**
+ * Converts a database chain type to its corresponding UI chain type.
+ * @param dbType - The chain type as stored in the database.
+ * @returns The corresponding chain type for the UI, defaults to 'standalone' if not found.
+ */
 export function dbToUiChainType(dbType: DBChainType): UIChainType {
   return CHAIN_TYPE_REVERSE_MAP[dbType] || 'standalone'
 }
-
-// =============================================================================
-// ACCOUNT TYPE MAPPINGS
 // =============================================================================
 
 export const ACCOUNT_TYPE_MAP: Record<AccountTypeValue, DBAccountType> = {
@@ -125,12 +145,23 @@ export const ACCOUNT_TYPE_REVERSE_MAP: Record<DBAccountType, AccountTypeValue> =
     [DBAccountType.Expense]: 'Expense',
   }
 
+/**
+ * Converts a chart account type value to its corresponding database account type.
+ * @param chartType - The account type value from chart representation.
+ * @returns The corresponding database account type.
+ */
 export function chartToDbAccountType(
   chartType: AccountTypeValue
 ): DBAccountType {
   return ACCOUNT_TYPE_MAP[chartType]
 }
 
+/**
+ * Converts a database account type to a chart account type.
+ *
+ * @param dbType - The database account type to convert.
+ * @returns The corresponding chart account type value.
+ */
 export function dbToChartAccountType(dbType: DBAccountType): AccountTypeValue {
   return ACCOUNT_TYPE_REVERSE_MAP[dbType]
 }
@@ -178,6 +209,11 @@ export function uiToDbTransactionType(
   }
 }
 
+/**
+ * Converts a database transaction type to a UI transaction type.
+ * @param dbType - The database transaction type to convert.
+ * @returns The corresponding UI transaction type ('revenue', 'expense', or 'transfer').
+ */
 export function dbToUiTransactionType(
   dbType: DBTransactionType
 ): UITransactionType {
@@ -213,6 +249,12 @@ export function isDBDigitalAssetType(
   )
 }
 
+/**
+ * Checks if the given value is a valid UIDigitalAssetType.
+ *
+ * @param value - The value to check.
+ * @returns True if the value is a UIDigitalAssetType, false otherwise.
+ */
 export function isUIDigitalAssetType(
   value: unknown
 ): value is UIDigitalAssetType {
@@ -222,6 +264,13 @@ export function isUIDigitalAssetType(
   )
 }
 
+
+/**
+ * Determines if the provided value is a valid DBAccountType.
+ *
+ * @param value - The value to validate as DBAccountType.
+ * @returns True if the value is a DBAccountType, false otherwise.
+ */
 export function isDBAccountType(value: unknown): value is DBAccountType {
   return (
     typeof value === 'string' &&
@@ -229,6 +278,11 @@ export function isDBAccountType(value: unknown): value is DBAccountType {
   )
 }
 
+/**
+ * Checks if the given value is a valid DBTransactionType.
+ * @param value - The value to check.
+ * @returns True if the value is a valid DBTransactionType, false otherwise.
+ */
 export function isDBTransactionType(
   value: unknown
 ): value is DBTransactionType {

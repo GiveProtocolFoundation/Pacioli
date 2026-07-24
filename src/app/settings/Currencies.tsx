@@ -40,6 +40,14 @@ interface ChangeActionsProps {
   onSave: () => void
 }
 
+/**
+ * Displays action buttons for resetting and saving changes when changes exist.
+ *
+ * @param {boolean} hasChanges - Indicates if there are unsaved changes.
+ * @param {() => void} onReset - Callback to reset changes.
+ * @param {() => void} onSave - Callback to save changes.
+ * @returns {JSX.Element | null} Buttons to cancel or save changes, or null if no changes.
+ */
 const ChangeActions: React.FC<ChangeActionsProps> = ({
   hasChanges,
   onReset,
@@ -71,6 +79,13 @@ interface PrimaryCurrencySectionProps {
   onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void
 }
 
+/**
+ * Renders a section for selecting the primary reporting currency.
+ *
+ * @param {string} value - The currently selected currency value.
+ * @param {(e: React.ChangeEvent<HTMLSelectElement>) => void} onChange - Handler for currency selection changes.
+ * @returns {JSX.Element} The rendered primary currency selection section.
+ */
 const PrimaryCurrencySection: React.FC<PrimaryCurrencySectionProps> = ({
   value,
   onChange,
@@ -120,6 +135,11 @@ const PrimaryCurrencySection: React.FC<PrimaryCurrencySectionProps> = ({
   </div>
 )
 
+/**
+ * Manages currency settings, including primary and secondary currencies, and API key configurations.
+ *
+ * @returns {JSX.Element} The UI for configuring currency settings.
+ */
 const Currencies: React.FC = () => {
   const { settings: contextSettings, updateSettings: updateContextSettings } =
     useCurrency()
@@ -137,6 +157,11 @@ const Currencies: React.FC = () => {
   // Load persisted price-feed settings on mount
   useEffect(() => {
     let cancelled = false
+    /**
+     * Loads the persisted price feed settings (API key, provider, base URL) from persistence service.
+     *
+     * @returns {Promise<void>} A promise that resolves when settings are loaded and applied.
+     */
     const load = async () => {
       try {
         const [apiKey, provider, baseUrl] = await Promise.all([

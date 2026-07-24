@@ -99,6 +99,11 @@ interface SettingsProps {
   userType?: 'individual' | 'organization'
 }
 
+/**
+ * Renders the header section for the settings page, displaying title and description.
+ *
+ * @returns JSX.Element representing the settings header.
+ */
 const SettingsHeader: React.FC = () => (
   <header className="bg-[#F7FAFA] dark:bg-[#0C141B] border-b border-[rgba(95,227,192,0.15)]">
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -112,6 +117,14 @@ const SettingsHeader: React.FC = () => (
   </header>
 )
 
+/**
+ * Renders the sidebar navigation for settings, allowing section selection.
+ *
+ * @param items - Navigation items to display.
+ * @param activeSection - Currently selected section ID.
+ * @param onSectionChange - Callback fired when a section is selected.
+ * @returns JSX.Element representing the sidebar navigation.
+ */
 const SidebarNavigation: React.FC<{
   items: typeof navigationItems
   activeSection: SettingsSection
@@ -192,6 +205,12 @@ const SidebarNavigation: React.FC<{
   )
 }
 
+/**
+ * Settings component renders the settings UI and manages navigation between different settings sections.
+ *
+ * @param {string} userType The type of user, determines available settings sections. Defaults to 'organization'.
+ * @returns {JSX.Element} The rendered Settings component.
+ */
 const Settings: React.FC<SettingsProps> = ({ userType = 'organization' }) => {
   const location = useLocation()
   const navigate = useNavigate()

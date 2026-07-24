@@ -64,6 +64,15 @@ export const NETWORK_CONFIGS: Record<string, NetworkConfig> = {
   },
 }
 
+/**
+ * React hook for managing and switching Ethereum networks via MetaMask.
+ *
+ * @returns {{
+ *   currentNetwork: string;
+ *   isConnected: boolean;
+ *   switchNetwork: (networkName: string) => Promise<void>;
+ * }} An object containing the current network name, connection status, and a function to switch networks.
+ */
 export const useNetworkConfig = () => {
   const [currentNetwork, setCurrentNetwork] = useState<string>('paseo')
   const [isConnected, setIsConnected] = useState(false)

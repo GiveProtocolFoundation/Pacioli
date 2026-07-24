@@ -56,6 +56,13 @@ interface PersonalInfoProps {
   showPhone?: boolean
 }
 
+/**
+ * Component to render personal information form fields.
+ * @param profile User profile containing personal details.
+ * @param createProfileInputHandler Function to create onChange handlers for input fields.
+ * @param showPhone Optional flag to show or hide the phone number field.
+ * @returns JSX.Element rendering the personal information fields.
+ */
 const PersonalInfo: React.FC<PersonalInfoProps> = ({
   profile,
   createProfileInputHandler,
@@ -102,24 +109,6 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({
             htmlFor="phone"
             className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] mb-2"
           >
-            Phone Number
-          </label>
-          <div className="relative">
-            <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#647D8B]" />
-            <input
-              id="phone"
-              type="tel"
-              value={profile.phone}
-              onChange={createProfileInputHandler('phone')}
-              className="w-full pl-10 pr-3 py-2 border border-[rgba(95,227,192,0.15)] rounded-lg bg-[#F7FAFA] dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]"
-            />
-          </div>
-        </div>
-      )}
-    </div>
-  </>
-)
-
 interface WorkInfoProps {
   profile: UserProfile
   createProfileInputHandler: (
@@ -127,6 +116,13 @@ interface WorkInfoProps {
   ) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void
 }
 
+/**
+ * WorkInfo component displays the user's work information section.
+ *
+ * @param profile - The user profile containing work details.
+ * @param createProfileInputHandler - Handler to update work-related profile fields.
+ * @returns JSX element representing the work information form section.
+ */
 const WorkInfo: React.FC<WorkInfoProps> = ({
   profile,
   createProfileInputHandler,

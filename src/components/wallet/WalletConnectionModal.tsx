@@ -41,6 +41,14 @@ interface WalletConnectionModalProps {
   }) => void
 }
 
+  /**
+   * WalletConnectionModal component
+   * Displays a modal for connecting wallets manually or via WalletConnect.
+   * @param {boolean} isOpen - Whether the modal is open.
+   * @param {() => void} onClose - Callback when closing the modal.
+   * @param {function} [onWalletAdded] - Callback when a wallet is added, receives wallet details.
+   * @returns {JSX.Element} The rendered WalletConnectionModal component.
+   */
 const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
   isOpen,
   onClose,

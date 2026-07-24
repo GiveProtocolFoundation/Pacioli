@@ -26,10 +26,45 @@ const translations: Record<SupportedLanguage, Translations> = {
   eo,
 }
 
+/**
+ * Retrieves the translation mappings for the specified language.
+ * @param language - The language code to retrieve translations for.
+ * @returns The translation object for the given language, defaulting to English if not available.
+ */
 export function getTranslations(language: SupportedLanguage): Translations {
   return translations[language] || translations.en
 }
 
+/code/b16279e6-fd92-4756-b6f0-8dc46e1cef99/new_code/src/i18n/index.ts
+
+export interface SupportedLanguageMap {
+  [key: string]: Record<string, string>
+}
+
+export type SupportedLanguage = keyof SupportedLanguageMap
+
+const translations: SupportedLanguageMap = {
+  en: {
+    greeting: "Hello",
+  },
+  es: {
+    greeting: "Hola",
+  },
+  zh: {
+    greeting: "你好",
+  },
+  "zh-CN": {
+    greeting: "你好",
+  },
+  "zh-TW": {
+    greeting: "你好",
+  },
+}
+
+/**
+ * Detects the user's browser language and returns a supported language code.
+ * @returns {SupportedLanguage} The detected or default supported language code.
+ */
 export function detectBrowserLanguage(): SupportedLanguage {
   if (typeof navigator === 'undefined') return 'en'
 

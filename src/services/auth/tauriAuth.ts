@@ -47,6 +47,11 @@ interface TauriAuthResponse {
   expires_in: number
 }
 
+/**
+ * Computes the expiration timestamp as an ISO string by adding the specified number of seconds to the current time.
+ * @param {number} expiresInSeconds - The number of seconds until expiration.
+ * @returns {string} The expiration timestamp in ISO 8601 format.
+ */
 function computeExpiresAt(expiresInSeconds: number): string {
   return new Date(Date.now() + expiresInSeconds * 1000).toISOString()
 }

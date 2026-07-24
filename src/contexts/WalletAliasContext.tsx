@@ -22,6 +22,14 @@ const WalletAliasContext = createContext<WalletAliasContextType | undefined>(
   undefined
 )
 
+/**
+ * Provider component for WalletAliasContext.
+ * Provides wallet alias state and operations to child components.
+ *
+ * @param {Object} props - Component props.
+ * @param {ReactNode} props.children - Children elements to be wrapped by the provider.
+ * @returns {JSX.Element} The WalletAliasContext provider component.
+ */
 export const WalletAliasProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
@@ -30,6 +38,12 @@ export const WalletAliasProvider: React.FC<{ children: ReactNode }> = ({
 
   // Load aliases from IndexedDB on mount
   useEffect(() => {
+    /**
+     * Loads wallet aliases from IndexedDB into the context state.
+     *
+     * @async
+     * @returns {Promise<void>} Resolves when the aliases have been loaded.
+     */
     const loadAliases = async () => {
       try {
         await indexedDBService.init()
@@ -86,7 +100,6 @@ export const WalletAliasProvider: React.FC<{ children: ReactNode }> = ({
     (address: string, fallbackName?: string): string => {
       const alias = aliases[address.toLowerCase()]
       const displayName = alias || fallbackName || 'Unnamed'
-
       // Format address: first 6 chars + ... + last 4 chars
       const shortAddress = `${address.slice(0, 6)}...${address.slice(-4)}`
 
@@ -111,6 +124,11 @@ export const WalletAliasProvider: React.FC<{ children: ReactNode }> = ({
   )
 }
 
+/**
+ * Custom React hook to access the WalletAliasContext.
+ *
+ * @returns {object} The wallet alias context containing aliases, loading state, and alias management functions.
+ */
 export const useWalletAliases = () => {
   const context = useContext(WalletAliasContext)
   if (context === undefined) {

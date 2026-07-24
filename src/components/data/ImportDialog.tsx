@@ -342,6 +342,11 @@ export const ImportDialog: React.FC<ImportDialogProps> = ({
     }
   }, [])
 
+  /**
+   * Handles importing data from the selected file path, manages step state, and invokes the onImportComplete callback.
+   * @async
+   * @returns {Promise<void>} Resolves when import process completes or errors out.
+   */
   const handleImport = useCallback(async () => {
     if (!filePath) return
 
@@ -364,6 +369,10 @@ export const ImportDialog: React.FC<ImportDialogProps> = ({
     }
   }, [filePath, preview, password, onImportComplete])
 
+  /**
+   * Renders the content component corresponding to the current import step.
+   * @returns {JSX.Element | null} The React component for the current step, or null if no step matches.
+   */
   const renderStepContent = () => {
     switch (step) {
       case 'select':

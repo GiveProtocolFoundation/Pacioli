@@ -12,6 +12,13 @@ interface SetPasswordDialogProps {
   mode: 'set' | 'change' | 'remove'
 }
 
+/**
+ * Renders a dialog for setting, changing, or removing the app password.
+ * @param props.isOpen - Controls whether the dialog is open.
+ * @param props.onClose - Callback function invoked to close the dialog.
+ * @param props.mode - Mode of the dialog: 'set', 'change', or 'remove'.
+ * @returns A React element representing the password dialog.
+ */
 export const SetPasswordDialog: React.FC<SetPasswordDialogProps> = ({
   isOpen,
   onClose,
@@ -26,6 +33,10 @@ export const SetPasswordDialog: React.FC<SetPasswordDialogProps> = ({
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
+  /**
+   * Updates the current password state when the input changes.
+   * @param e - The change event from the current password input.
+   */
   const handleCurrentPasswordChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       setCurrentPassword(e.target.value)
@@ -33,11 +44,16 @@ export const SetPasswordDialog: React.FC<SetPasswordDialogProps> = ({
     []
   )
 
+  /**
+   * Updates the new password state when the input changes.
+   * @param e - The change event from the new password input.
+   */
   const handleNewPasswordChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       setNewPassword(e.target.value)
     },
     []
+  )
   )
 
   const handleConfirmPasswordChange = useCallback(
@@ -143,6 +159,10 @@ export const SetPasswordDialog: React.FC<SetPasswordDialogProps> = ({
 
   if (!isOpen) return null
 
+  /**
+   * Returns the dialog title based on the current password mode.
+   * @returns {string} The title string for the dialog.
+   */
   const getTitle = () => {
     switch (mode) {
       case 'set':
@@ -156,6 +176,10 @@ export const SetPasswordDialog: React.FC<SetPasswordDialogProps> = ({
     }
   }
 
+  /**
+   * Returns the dialog description based on the current password mode.
+   * @returns {string} The description string for the dialog.
+   */
   const getDescription = () => {
     switch (mode) {
       case 'set':
