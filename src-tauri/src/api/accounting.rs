@@ -662,16 +662,27 @@ pub async fn get_journal_entry(
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
 #[serde(rename_all = "camelCase")]
 pub struct SourceTransactionSummary {
+    /// Unique row identifier from multi_chain_transactions.
     pub id: String,
+    /// Blockchain network identifier (e.g. "polkadot", "kusama").
     pub chain_id: String,
+    /// On-chain transaction hash.
     pub transaction_hash: String,
+    /// Sender address.
     pub from_address: String,
+    /// Recipient address (None for contract-creation transactions).
     pub to_address: Option<String>,
+    /// Transfer value in the chain's smallest unit.
     pub transfer_value: String,
+    /// Network fee paid for the transaction, if available.
     pub transaction_fee: Option<String>,
+    /// Unix timestamp of the block containing this transaction.
     pub timestamp: i64,
+    /// Classification of the transaction (e.g. "transfer", "staking").
     pub transaction_type: String,
+    /// On-chain finality status.
     pub status: String,
+    /// Address of the wallet that owns this transaction.
     pub wallet_address: String,
 }
 

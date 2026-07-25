@@ -19,6 +19,7 @@ import {
 } from './journalEntryUtils'
 import { isTauriAvailable } from '../../utils/tauri'
 
+/** On-chain source transaction summary returned by the Tauri backend. */
 interface SourceTransactionSummary {
   id: string
   chainId: string
@@ -33,6 +34,7 @@ interface SourceTransactionSummary {
   walletAddress: string
 }
 
+/** Props for the journal-entry detail overlay panel. */
 interface JournalEntryDetailProps {
   entry: JournalEntryWithLines
   accounts: GLAccount[]
@@ -73,11 +75,13 @@ const originLabels: Record<string, string> = {
   model: 'Model',
 }
 
+/** Shorten a blockchain address to first 8 + last 6 characters with an ellipsis. */
 function truncateAddress(addr: string): string {
   if (addr.length <= 14) return addr
   return `${addr.slice(0, 8)}…${addr.slice(-6)}`
 }
 
+/** Format a Unix-seconds timestamp into a localised medium-date + short-time string. */
 function formatTxTimestamp(unixSec: number): string {
   return new Date(unixSec * 1000).toLocaleString(undefined, {
     dateStyle: 'medium',
@@ -85,6 +89,7 @@ function formatTxTimestamp(unixSec: number): string {
   })
 }
 
+/** Slide-over panel showing a journal entry's lines, metadata, and linked source transaction. */
 const JournalEntryDetail: React.FC<JournalEntryDetailProps> = ({
   entry,
   accounts,
