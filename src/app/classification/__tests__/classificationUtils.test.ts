@@ -6,7 +6,9 @@ import {
   displayTxType,
   txTypeLabels,
   rulePreview,
+  findMatchingRule,
 } from '../classificationUtils'
+import type { ClassificationRuleMatch } from '../classificationUtils'
 
 describe('formatTimestamp', () => {
   it('should format a Unix timestamp to a date string', () => {
@@ -109,5 +111,72 @@ describe('rulePreview', () => {
 
   it('should return generic description for unknown types', () => {
     expect(rulePreview('some_new_type')).toContain('Heuristic')
+  })
+})
+
+describe('findMatchingRule', () => {
+  const rules: ClassificationRuleMatch[] = [
+    {
+      id: 'r1',
+      name: 'Staking Reward',
+      matchTxTypes: 'claim,stake',
+      matchChains: '',
+      matchSelfTransfer: 'any',
+      enabled: true,
+    },
+    {
+      id: 'r2',
+      name: 'Polkadot Transfer',
+      matchTxTypes: 'transfer',
+      matchChains: 'polkadot,kusama',
+      matchSelfTransfer: 'any',
+      enabled: true,
+    },
+    {
+      id: 'r3',
+      name: 'Disabled Rule',
+      matchTxTypes: 'swap',
+      matchChains: '',
+      matchSelfTransfer: 'any',
+      enabled: false,
+    },
+    {
+      id: 'r4',
+      name: 'Generic Swap',
+      matchTxTypes: 'swap',
+      matchChains: '',
+      matchSelfTransfer: 'any',
+      enabled: true,
+    },
+  ]
+
+  it('should match first enabled rule by tx type', () => {
+    const match = findMatchingRule(rules, 'claim', 'polkadot')
+    expect(match?.name).toBe('Staking Reward')
+  })
+
+  it('should match chain-specific rules', () => {
+    const match = findMatchingRule(rules, 'transfer', 'polkadot')
+    expect(match?.name).toBe('Polkadot Transfer')
+  })
+
+  it('should not match chain-specific rules for other chains', () => {
+    const match = findMatchingRule(rules, 'transfer', 'ethereum')
+    expect(match).toBeUndefined()
+  })
+
+  it('should skip disabled rules', () => {
+    const match = findMatchingRule(rules, 'swap', 'ethereum')
+    expect(match?.name).toBe('Generic Swap')
+  })
+
+  it('should return undefined when no rule matches', () => {
+    const match = findMatchingRule(rules, 'burn', 'ethereum')
+    expect(match).toBeUndefined()
+  })
+
+  it('should match chain case-insensitively', () => {
+    const match = findMatchingRule(rules, 'transfer', 'Polkadot')
+    expect(match?.name).toBe('Polkadot Transfer')
   })
 })

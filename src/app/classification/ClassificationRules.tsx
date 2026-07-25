@@ -389,28 +389,25 @@ const RuleDisplayRow: React.FC<RuleDisplayRowProps> = ({
         <p className="text-xs text-[#647D8B] mb-2">{rule.description}</p>
       )}
       <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-[#294050] dark:text-[#9FB4BE]">
-        <span>
-          <strong>Match:</strong>{' '}
+        <span className="font-semibold">
+          Match:{' '}
           {rule.matchTxTypes
             .split(',')
             .map(typeStr => typeStr.trim())
             .join(', ')}
         </span>
-        {rule.matchChains && (
-          <span>
-            <strong>Chains:</strong> {rule.matchChains}
-          </span>
+        {Boolean(rule.matchChains) && (
+          <span className="font-semibold">Chains: {rule.matchChains}</span>
         )}
         {rule.matchSelfTransfer !== 'any' && (
-          <span>
-            <strong>Self-xfer:</strong> {rule.matchSelfTransfer}
+          <span className="font-semibold">
+            Self-xfer: {rule.matchSelfTransfer}
           </span>
         )}
-        <span>
-          <strong>DR</strong> {rule.debitAccount} / <strong>CR</strong>{' '}
-          {rule.creditAccount}
+        <span className="font-semibold">
+          DR {rule.debitAccount} / CR {rule.creditAccount}
         </span>
-        {rule.useFeeAmount && (
+        {Boolean(rule.useFeeAmount) && (
           <span className="text-amber-600 dark:text-amber-400">Fee amount</span>
         )}
       </div>
@@ -478,9 +475,24 @@ const ClassificationRules: React.FC = () => {
     }
   }, [])
 
+  const [autoInstallDone, setAutoInstallDone] = useState(false)
+
   useEffect(() => {
     fetchRules()
   }, [fetchRules])
+
+  useEffect(() => {
+    if (!loading && rules.length === 0 && !autoInstallDone) {
+      setAutoInstallDone(true)
+      invoke<number>('install_starter_rules')
+        .then(count => {
+          if (count > 0) fetchRules()
+        })
+        .catch(() => {
+          // Silently skip auto-install failure; user can install manually
+        })
+    }
+  }, [loading, rules.length, autoInstallDone, fetchRules])
 
   const handleInstallStarterPack = useCallback(async () => {
     setInstallingPack(true)

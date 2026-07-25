@@ -1,3 +1,30 @@
+export interface ClassificationRuleMatch {
+  id: string
+  name: string
+  matchTxTypes: string
+  matchChains: string
+  matchSelfTransfer: string
+  enabled: boolean
+}
+
+/** Finds the first enabled rule matching a transaction's type and chain. */
+export function findMatchingRule(
+  rules: ClassificationRuleMatch[],
+  txType: string,
+  chainId: string
+): ClassificationRuleMatch | undefined {
+  return rules.find(rule => {
+    if (!rule.enabled) return false
+    const types = rule.matchTxTypes.split(',').map(s => s.trim())
+    if (!types.includes(txType)) return false
+    if (rule.matchChains) {
+      const chains = rule.matchChains.split(',').map(s => s.trim().toLowerCase())
+      if (!chains.includes(chainId.toLowerCase())) return false
+    }
+    return true
+  })
+}
+
 /** Formats a Unix timestamp to a localized date string. */
 export function formatTimestamp(timestampSecs: number): string {
   return new Date(timestampSecs * 1000).toLocaleDateString()
