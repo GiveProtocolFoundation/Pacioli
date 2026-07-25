@@ -140,45 +140,63 @@ const ClassificationRules: React.FC = () => {
     }
   }, [fetchRules])
 
-  const handleToggle = useCallback(async (id: string, enabled: boolean) => {
-    setActionError(null)
-    try {
-      await invoke('toggle_classification_rule', { id, enabled: !enabled })
-      setRules(prev =>
-        prev.map(r => (r.id === id ? { ...r, enabled: !enabled } : r))
-      )
-    } catch (err) {
-      setActionError(typeof err === 'string' ? err : 'Failed to toggle rule')
-    }
-  }, [])
+  const handleToggle = useCallback(
+    async (event: React.MouseEvent<HTMLButtonElement>) => {
+      const id = event.currentTarget.dataset.ruleid
+      const enabled = event.currentTarget.dataset.enabled === 'true'
+      if (!id) return
+      setActionError(null)
+      try {
+        await invoke('toggle_classification_rule', { id, enabled: !enabled })
+        setRules(prev =>
+          prev.map(r => (r.id === id ? { ...r, enabled: !enabled } : r))
+        )
+      } catch (err) {
+        setActionError(typeof err === 'string' ? err : 'Failed to toggle rule')
+      }
+    },
+    []
+  )
 
-  const handleDelete = useCallback(async (id: string) => {
-    setActionError(null)
-    try {
-      await invoke('delete_classification_rule', { id })
-      setRules(prev => prev.filter(r => r.id !== id))
-    } catch (err) {
-      setActionError(typeof err === 'string' ? err : 'Failed to delete rule')
-    }
-  }, [])
+  const handleDelete = useCallback(
+    async (event: React.MouseEvent<HTMLButtonElement>) => {
+      const id = event.currentTarget.dataset.ruleid
+      if (!id) return
+      setActionError(null)
+      try {
+        await invoke('delete_classification_rule', { id })
+        setRules(prev => prev.filter(r => r.id !== id))
+      } catch (err) {
+        setActionError(typeof err === 'string' ? err : 'Failed to delete rule')
+      }
+    },
+    []
+  )
 
-  const handleEdit = useCallback((rule: ClassificationRule) => {
-    setEditingId(rule.id)
-    setShowNewForm(false)
-    setFormData({
-      name: rule.name,
-      description: rule.description,
-      matchTxTypes: rule.matchTxTypes,
-      matchChains: rule.matchChains,
-      matchSelfTransfer: rule.matchSelfTransfer,
-      debitAccount: rule.debitAccount,
-      creditAccount: rule.creditAccount,
-      debitLineDesc: rule.debitLineDesc,
-      creditLineDesc: rule.creditLineDesc,
-      jeDescription: rule.jeDescription,
-      useFeeAmount: rule.useFeeAmount,
-    })
-  }, [])
+  const handleEdit = useCallback(
+    (event: React.MouseEvent<HTMLButtonElement>) => {
+      const id = event.currentTarget.dataset.ruleid
+      if (!id) return
+      const rule = rules.find(r => r.id === id)
+      if (!rule) return
+      setEditingId(rule.id)
+      setShowNewForm(false)
+      setFormData({
+        name: rule.name,
+        description: rule.description,
+        matchTxTypes: rule.matchTxTypes,
+        matchChains: rule.matchChains,
+        matchSelfTransfer: rule.matchSelfTransfer,
+        debitAccount: rule.debitAccount,
+        creditAccount: rule.creditAccount,
+        debitLineDesc: rule.debitLineDesc,
+        creditLineDesc: rule.creditLineDesc,
+        jeDescription: rule.jeDescription,
+        useFeeAmount: rule.useFeeAmount,
+      })
+    },
+    [rules]
+  )
 
   const handleNewRule = useCallback(() => {
     setShowNewForm(true)
@@ -242,8 +260,9 @@ const ClassificationRules: React.FC = () => {
   }, [editingId, formData, fetchRules])
 
   const handleMoveUp = useCallback(
-    async (index: number) => {
-      if (index === 0) return
+    async (event: React.MouseEvent<HTMLButtonElement>) => {
+      const index = Number(event.currentTarget.dataset.index)
+      if (Number.isNaN(index) || index === 0) return
       const newRules = [...rules]
       const temp = newRules[index]
       newRules[index] = newRules[index - 1]
@@ -264,8 +283,9 @@ const ClassificationRules: React.FC = () => {
   )
 
   const handleMoveDown = useCallback(
-    async (index: number) => {
-      if (index >= rules.length - 1) return
+    async (event: React.MouseEvent<HTMLButtonElement>) => {
+      const index = Number(event.currentTarget.dataset.index)
+      if (Number.isNaN(index) || index >= rules.length - 1) return
       const newRules = [...rules]
       const temp = newRules[index]
       newRules[index] = newRules[index + 1]
@@ -285,14 +305,16 @@ const ClassificationRules: React.FC = () => {
     [rules, fetchRules]
   )
 
-  const handleDragStart = useCallback((index: number) => {
-    setDragIndex(index)
+  const handleDragStart = useCallback((event: React.DragEvent<HTMLDivElement>) => {
+    const index = Number(event.currentTarget.dataset.index)
+    if (!Number.isNaN(index)) setDragIndex(index)
   }, [])
 
   const handleDragOver = useCallback(
-    (e: React.DragEvent, index: number) => {
-      e.preventDefault()
-      if (dragIndex === null || dragIndex === index) return
+    (event: React.DragEvent<HTMLDivElement>) => {
+      event.preventDefault()
+      const index = Number(event.currentTarget.dataset.index)
+      if (Number.isNaN(index) || dragIndex === null || dragIndex === index) return
       const newRules = [...rules]
       const dragged = newRules.splice(dragIndex, 1)[0]
       newRules.splice(index, 0, dragged)
@@ -396,9 +418,10 @@ const ClassificationRules: React.FC = () => {
           {rules.map((rule, index) => (
             <div
               key={rule.id}
+              data-index={index}
               draggable
-              onDragStart={() => handleDragStart(index)}
-              onDragOver={e => handleDragOver(e, index)}
+              onDragStart={handleDragStart}
+              onDragOver={handleDragOver}
               onDragEnd={handleDragEnd}
               className={`bg-[#F7FAFA] dark:bg-[#0C141B] rounded-lg border transition-all ${
                 dragIndex === index
@@ -423,14 +446,16 @@ const ClassificationRules: React.FC = () => {
                     <GripVertical className="w-4 h-4 text-[#647D8B] cursor-grab" />
                     <div className="flex flex-col gap-0.5">
                       <button
-                        onClick={() => handleMoveUp(index)}
+                        data-index={index}
+                        onClick={handleMoveUp}
                         disabled={index === 0}
                         className="p-0.5 hover:bg-[#294050]/10 rounded disabled:opacity-30 transition-colors"
                       >
                         <ChevronUp className="w-3 h-3 text-[#647D8B]" />
                       </button>
                       <button
-                        onClick={() => handleMoveDown(index)}
+                        data-index={index}
+                        onClick={handleMoveDown}
                         disabled={index === rules.length - 1}
                         className="p-0.5 hover:bg-[#294050]/10 rounded disabled:opacity-30 transition-colors"
                       >
@@ -492,7 +517,9 @@ const ClassificationRules: React.FC = () => {
                   {/* Actions */}
                   <div className="flex items-center gap-1">
                     <button
-                      onClick={() => handleToggle(rule.id, rule.enabled)}
+                      data-ruleid={rule.id}
+                      data-enabled={String(rule.enabled)}
+                      onClick={handleToggle}
                       className="p-1.5 hover:bg-[#294050]/10 dark:hover:bg-[#294050]/20 rounded transition-colors"
                       title={rule.enabled ? 'Disable rule' : 'Enable rule'}
                     >
@@ -503,14 +530,16 @@ const ClassificationRules: React.FC = () => {
                       )}
                     </button>
                     <button
-                      onClick={() => handleEdit(rule)}
+                      data-ruleid={rule.id}
+                      onClick={handleEdit}
                       className="p-1.5 hover:bg-[#294050]/10 dark:hover:bg-[#294050]/20 rounded transition-colors"
                       title="Edit rule"
                     >
                       <Pencil className="w-4 h-4 text-[#647D8B]" />
                     </button>
                     <button
-                      onClick={() => handleDelete(rule.id)}
+                      data-ruleid={rule.id}
+                      onClick={handleDelete}
                       className="p-1.5 hover:bg-red-100 dark:hover:bg-red-900/20 rounded transition-colors"
                       title="Delete rule"
                     >
@@ -561,8 +590,47 @@ const RuleForm: React.FC<RuleFormProps> = ({
   onCancel,
   saving,
 }) => {
-  const set = (field: keyof RuleFormData, value: string | boolean) =>
-    onChange({ ...data, [field]: value })
+  const handleFieldChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+      const field = event.currentTarget.dataset.field as
+        | keyof RuleFormData
+        | undefined
+      if (!field) return
+      onChange({ ...data, [field]: event.target.value })
+    },
+    [data, onChange]
+  )
+
+  const handleCheckboxChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const field = event.currentTarget.dataset.field as
+        | keyof RuleFormData
+        | undefined
+      if (!field) return
+      onChange({ ...data, [field]: event.target.checked })
+    },
+    [data, onChange]
+  )
+
+  const handleToggleTxType = useCallback(
+    (event: React.MouseEvent<HTMLButtonElement>) => {
+      const t = event.currentTarget.dataset.txtype
+      if (!t) return
+      const types = data.matchTxTypes
+        .split(',')
+        .map(s => s.trim())
+        .filter(Boolean)
+      if (types.includes(t)) {
+        onChange({
+          ...data,
+          matchTxTypes: types.filter(x => x !== t).join(','),
+        })
+      } else {
+        onChange({ ...data, matchTxTypes: [...types, t].join(',') })
+      }
+    },
+    [data, onChange]
+  )
 
   const valid =
     data.name.trim() !== '' &&
@@ -577,8 +645,9 @@ const RuleForm: React.FC<RuleFormProps> = ({
           <label className={LABEL_CLASS}>Name *</label>
           <input
             className={INPUT_CLASS}
+            data-field="name"
             value={data.name}
-            onChange={e => set('name', e.target.value)}
+            onChange={handleFieldChange}
             placeholder="e.g. Staking Reward"
           />
         </div>
@@ -586,8 +655,9 @@ const RuleForm: React.FC<RuleFormProps> = ({
           <label className={LABEL_CLASS}>Description</label>
           <input
             className={INPUT_CLASS}
+            data-field="description"
             value={data.description}
-            onChange={e => set('description', e.target.value)}
+            onChange={handleFieldChange}
             placeholder="Optional description"
           />
         </div>
@@ -599,8 +669,9 @@ const RuleForm: React.FC<RuleFormProps> = ({
           </label>
           <input
             className={INPUT_CLASS}
+            data-field="matchTxTypes"
             value={data.matchTxTypes}
-            onChange={e => set('matchTxTypes', e.target.value)}
+            onChange={handleFieldChange}
             placeholder="e.g. claim,stake"
           />
           <div className="mt-1 flex flex-wrap gap-1">
@@ -608,17 +679,8 @@ const RuleForm: React.FC<RuleFormProps> = ({
               <button
                 key={t}
                 type="button"
-                onClick={() => {
-                  const types = data.matchTxTypes
-                    .split(',')
-                    .map(s => s.trim())
-                    .filter(Boolean)
-                  if (types.includes(t)) {
-                    set('matchTxTypes', types.filter(x => x !== t).join(','))
-                  } else {
-                    set('matchTxTypes', [...types, t].join(','))
-                  }
-                }}
+                data-txtype={t}
+                onClick={handleToggleTxType}
                 className={`px-1.5 py-0.5 text-[10px] rounded border transition-colors ${
                   data.matchTxTypes
                     .split(',')
@@ -637,8 +699,9 @@ const RuleForm: React.FC<RuleFormProps> = ({
           <label className={LABEL_CLASS}>Match Chains (empty = all)</label>
           <input
             className={INPUT_CLASS}
+            data-field="matchChains"
             value={data.matchChains}
-            onChange={e => set('matchChains', e.target.value)}
+            onChange={handleFieldChange}
             placeholder="e.g. polkadot,kusama"
           />
         </div>
@@ -646,8 +709,9 @@ const RuleForm: React.FC<RuleFormProps> = ({
           <label className={LABEL_CLASS}>Self-Transfer Filter</label>
           <select
             className={INPUT_CLASS}
+            data-field="matchSelfTransfer"
             value={data.matchSelfTransfer}
-            onChange={e => set('matchSelfTransfer', e.target.value)}
+            onChange={handleFieldChange}
           >
             {SELF_TRANSFER_OPTIONS.map(o => (
               <option key={o.value} value={o.value}>
@@ -662,8 +726,9 @@ const RuleForm: React.FC<RuleFormProps> = ({
           <label className={LABEL_CLASS}>Debit Account # *</label>
           <input
             className={INPUT_CLASS}
+            data-field="debitAccount"
             value={data.debitAccount}
-            onChange={e => set('debitAccount', e.target.value)}
+            onChange={handleFieldChange}
             placeholder="e.g. 1200"
           />
         </div>
@@ -671,8 +736,9 @@ const RuleForm: React.FC<RuleFormProps> = ({
           <label className={LABEL_CLASS}>Credit Account # *</label>
           <input
             className={INPUT_CLASS}
+            data-field="creditAccount"
             value={data.creditAccount}
-            onChange={e => set('creditAccount', e.target.value)}
+            onChange={handleFieldChange}
             placeholder="e.g. 4100"
           />
         </div>
@@ -682,8 +748,9 @@ const RuleForm: React.FC<RuleFormProps> = ({
           <label className={LABEL_CLASS}>Debit Line Description</label>
           <input
             className={INPUT_CLASS}
+            data-field="debitLineDesc"
             value={data.debitLineDesc}
-            onChange={e => set('debitLineDesc', e.target.value)}
+            onChange={handleFieldChange}
             placeholder="e.g. Staking reward received"
           />
         </div>
@@ -691,8 +758,9 @@ const RuleForm: React.FC<RuleFormProps> = ({
           <label className={LABEL_CLASS}>Credit Line Description</label>
           <input
             className={INPUT_CLASS}
+            data-field="creditLineDesc"
             value={data.creditLineDesc}
-            onChange={e => set('creditLineDesc', e.target.value)}
+            onChange={handleFieldChange}
             placeholder="e.g. Staking reward income"
           />
         </div>
@@ -704,8 +772,9 @@ const RuleForm: React.FC<RuleFormProps> = ({
           </label>
           <input
             className={INPUT_CLASS}
+            data-field="jeDescription"
             value={data.jeDescription}
-            onChange={e => set('jeDescription', e.target.value)}
+            onChange={handleFieldChange}
             placeholder="e.g. Staking reward on {chain}"
           />
         </div>
@@ -713,8 +782,9 @@ const RuleForm: React.FC<RuleFormProps> = ({
           <label className="flex items-center gap-2 text-sm text-[#294050] dark:text-[#9FB4BE] cursor-pointer">
             <input
               type="checkbox"
+              data-field="useFeeAmount"
               checked={data.useFeeAmount}
-              onChange={e => set('useFeeAmount', e.target.checked)}
+              onChange={handleCheckboxChange}
               className="rounded border-[rgba(95,227,192,0.3)] text-[#5FE3C0] focus:ring-[#5FE3C0]"
             />
             Use fee amount (instead of transfer value)
