@@ -1395,6 +1395,189 @@ async fn classify_transfer_lines(
     }
 }
 
+/// Applies a matched classification rule to produce journal entry lines and
+/// a description string. Extracted from auto_classify_transaction to reduce
+/// cyclomatic complexity (RS-R1000).
+async fn apply_matched_rule(
+    pool: &sqlx::SqlitePool,
+    rule: &super::rules::ClassificationRule,
+    tx: &MultiChainTx,
+    short_hash: &str,
+    amount_minor: i64,
+    fee_minor: i64,
+    qty_str: &Option<String>,
+    fee_qty_str: &Option<String>,
+    asset_id: &str,
+) -> Result<(Vec<JournalEntryLineInput>, String), String> {
+    let debit_id = get_account_id_by_number(pool, &rule.debit_account).await?;
+    let credit_id = get_account_id_by_number(pool, &rule.credit_account).await?;
+
+    let (amt, q_str) = if rule.use_fee_amount {
+        (fee_minor, fee_qty_str)
+    } else {
+        (amount_minor, qty_str)
+    };
+
+    let mut lines = Vec::new();
+    if amt > 0 {
+        let dr_desc = if rule.debit_line_desc.is_empty() {
+            None
+        } else {
+            Some(rule.debit_line_desc.clone())
+        };
+        let cr_desc = if rule.credit_line_desc.is_empty() {
+            None
+        } else {
+            Some(rule.credit_line_desc.clone())
+        };
+
+        lines.push(JournalEntryLineInput {
+            gl_account_id: debit_id,
+            token_id: None,
+            debit_minor: amt,
+            credit_minor: 0,
+            quantity: q_str.clone(),
+            asset_id: Some(asset_id.to_string()),
+            description: dr_desc,
+        });
+        lines.push(JournalEntryLineInput {
+            gl_account_id: credit_id,
+            token_id: None,
+            debit_minor: 0,
+            credit_minor: amt,
+            quantity: q_str.clone(),
+            asset_id: Some(asset_id.to_string()),
+            description: cr_desc,
+        });
+    }
+
+    let je_desc = if rule.je_description.is_empty() {
+        format!(
+            "{} on {} ({})",
+            tx.transaction_type, tx.chain_id, short_hash
+        )
+    } else {
+        rule.je_description
+            .replace("{chain}", &tx.chain_id)
+            .replace("{hash}", short_hash)
+            .replace("{type}", &tx.transaction_type)
+    };
+
+    Ok((lines, je_desc))
+}
+
+/// Applies fallback heuristic classification when no classification rule
+/// matches. Extracted from auto_classify_transaction to reduce cyclomatic
+/// complexity (RS-R1000).
+async fn apply_fallback_heuristics(
+    pool: &sqlx::SqlitePool,
+    tx: &MultiChainTx,
+    short_hash: &str,
+    amount_minor: i64,
+    fee_minor: i64,
+    qty_str: &Option<String>,
+    fee_qty_str: &Option<String>,
+    asset_id: &str,
+    crypto_assets_id: i64,
+    staking_income_id: i64,
+    network_fees_id: i64,
+    income_id: i64,
+) -> Result<(Vec<JournalEntryLineInput>, String), String> {
+    let mut lines = Vec::new();
+
+    let description = match tx.transaction_type.as_str() {
+        "claim" | "stake" => {
+            if amount_minor > 0 {
+                lines.push(JournalEntryLineInput {
+                    gl_account_id: crypto_assets_id,
+                    token_id: None,
+                    debit_minor: amount_minor,
+                    credit_minor: 0,
+                    quantity: qty_str.clone(),
+                    asset_id: Some(asset_id.to_string()),
+                    description: Some("Staking reward received".to_string()),
+                });
+                lines.push(JournalEntryLineInput {
+                    gl_account_id: staking_income_id,
+                    token_id: None,
+                    debit_minor: 0,
+                    credit_minor: amount_minor,
+                    quantity: qty_str.clone(),
+                    asset_id: Some(asset_id.to_string()),
+                    description: Some("Staking reward income".to_string()),
+                });
+            }
+            format!("Staking reward on {}", tx.chain_id)
+        }
+        "transfer" => {
+            let (transfer_lines, transfer_desc) = classify_transfer_lines(
+                pool,
+                tx,
+                amount_minor,
+                qty_str,
+                asset_id,
+                crypto_assets_id,
+                income_id,
+            )
+            .await?;
+            lines.extend(transfer_lines);
+            transfer_desc
+        }
+        _ => {
+            if fee_minor > 0 {
+                lines.push(JournalEntryLineInput {
+                    gl_account_id: network_fees_id,
+                    token_id: None,
+                    debit_minor: fee_minor,
+                    credit_minor: 0,
+                    quantity: fee_qty_str.clone(),
+                    asset_id: Some(asset_id.to_string()),
+                    description: Some("Network/gas fee".to_string()),
+                });
+                lines.push(JournalEntryLineInput {
+                    gl_account_id: crypto_assets_id,
+                    token_id: None,
+                    debit_minor: 0,
+                    credit_minor: fee_minor,
+                    quantity: fee_qty_str.clone(),
+                    asset_id: Some(asset_id.to_string()),
+                    description: Some("Fee paid from crypto assets".to_string()),
+                });
+            }
+            format!(
+                "{} on {} ({})",
+                tx.transaction_type, tx.chain_id, short_hash
+            )
+        }
+    };
+
+    Ok((lines, description))
+}
+
+/// Checks whether a classification rule matches a given transaction.
+fn rule_matches(
+    rule: &super::rules::ClassificationRule,
+    tx_type: &str,
+    chain_id: &str,
+    self_xfer: bool,
+) -> bool {
+    let types: Vec<&str> = rule.match_tx_types.split(',').map(|s| s.trim()).collect();
+    if !types.iter().any(|t| *t == tx_type) {
+        return false;
+    }
+    if !rule.match_chains.is_empty() {
+        let chains: Vec<&str> = rule.match_chains.split(',').map(|s| s.trim()).collect();
+        if !chains.iter().any(|c| c.eq_ignore_ascii_case(chain_id)) {
+            return false;
+        }
+    }
+    match rule.match_self_transfer.as_str() {
+        "true" => self_xfer,
+        "false" => !self_xfer,
+        _ => true,
+    }
+}
+
 /// Auto-classifies a raw multi_chain_transaction into a draft journal entry
 /// using basic heuristics based on the transaction type.
 #[tauri::command]
@@ -1402,7 +1585,6 @@ pub async fn auto_classify_transaction(
     state: State<'_, DatabaseState>,
     transaction_id: String,
 ) -> Result<JournalEntryWithLines, String> {
-    // Fetch the raw transaction
     let tx = sqlx::query_as::<_, MultiChainTx>(
         "SELECT id, chain_id, transaction_hash, from_address, to_address, transfer_value, transaction_fee, timestamp, transaction_type, status, price_at_acquisition_usd, valuation_status FROM multi_chain_transactions WHERE id = ? AND classification_status = 'unclassified'",
     )
@@ -1412,13 +1594,11 @@ pub async fn auto_classify_transaction(
     .map_err(|e| e.to_string())?
     .ok_or_else(|| "Transaction not found or already classified/ignored".to_string())?;
 
-    // Resolve GL account IDs
     let crypto_assets_id = get_account_id_by_number(&state.pool, "1200").await?;
     let staking_income_id = get_account_id_by_number(&state.pool, "4100").await?;
     let network_fees_id = get_account_id_by_number(&state.pool, "5100").await?;
     let income_id = get_account_id_by_number(&state.pool, "4000").await?;
 
-    // Parse the raw token quantity — the source row is never modified (Inv-5).
     let token_qty = Decimal::from_str(&tx.transfer_value)
         .map_err(|e| format!("Cannot parse value '{}': {e}", tx.transfer_value))?;
     let fee_qty = tx
@@ -1428,9 +1608,6 @@ pub async fn auto_classify_transaction(
         .parse::<Decimal>()
         .unwrap_or(Decimal::ZERO);
 
-    // Fail closed: if this transaction has not been enriched with a USD price,
-    // return an explicit error so the caller knows to run Enrich Prices first.
-    // Booking $0 lines silently would produce misleading journal entries.
     let price = tx
         .price_at_acquisition_usd
         .as_deref()
@@ -1440,13 +1617,11 @@ pub async fn auto_classify_transaction(
     let amount_usd = token_qty.checked_mul(price).unwrap_or(Decimal::ZERO);
     let fee_usd = fee_qty.checked_mul(price).unwrap_or(Decimal::ZERO);
 
-    // Rounding: explicit half-away-from-zero (Inv-2), no f64 in the money path.
     let amount_minor: i64 = decimal_to_minor_units(amount_usd)
         .ok_or_else(|| format!("USD value out of range: {}", amount_usd))?;
     let fee_minor: i64 = decimal_to_minor_units(fee_usd)
         .ok_or_else(|| format!("USD fee out of range: {}", fee_usd))?;
 
-    // Token quantity as canonical string for the JE line's quantity field.
     let qty_str = Some(token_qty.normalize().to_string());
     let fee_qty_str = if fee_qty > Decimal::ZERO {
         Some(fee_qty.normalize().to_string())
@@ -1454,13 +1629,9 @@ pub async fn auto_classify_transaction(
         None
     };
 
-    // Derive a token-style asset_id from chain_id for lot tracking.
     let asset_id = chain_id_to_native_symbol(&tx.chain_id)
         .map_or_else(|| "USD".to_string(), |s| format!("token:{}", s));
 
-    // Build lines using classification rules from the DB (falls back to
-    // hardcoded heuristics when no rules are installed yet).
-    let mut lines = Vec::new();
     let short_hash = &tx.transaction_hash[..8.min(tx.transaction_hash.len())];
 
     let self_xfer =
@@ -1476,148 +1647,41 @@ pub async fn auto_classify_transaction(
     .await
     .map_err(|e| e.to_string())?;
 
-    let matched_rule = rules.iter().find(|r| {
-        let types: Vec<&str> = r.match_tx_types.split(',').map(|s| s.trim()).collect();
-        if !types.iter().any(|t| *t == tx.transaction_type) {
-            return false;
-        }
-        if !r.match_chains.is_empty() {
-            let chains: Vec<&str> = r.match_chains.split(',').map(|s| s.trim()).collect();
-            if !chains.iter().any(|c| c.eq_ignore_ascii_case(&tx.chain_id)) {
-                return false;
-            }
-        }
-        match r.match_self_transfer.as_str() {
-            "true" => self_xfer,
-            "false" => !self_xfer,
-            _ => true,
-        }
-    });
+    let matched_rule = rules
+        .iter()
+        .find(|r| rule_matches(r, &tx.transaction_type, &tx.chain_id, self_xfer));
 
-    let description = if let Some(rule) = matched_rule {
-        let debit_id = get_account_id_by_number(&state.pool, &rule.debit_account).await?;
-        let credit_id = get_account_id_by_number(&state.pool, &rule.credit_account).await?;
-
-        let (amt, q_str) = if rule.use_fee_amount {
-            (fee_minor, &fee_qty_str)
-        } else {
-            (amount_minor, &qty_str)
-        };
-
-        if amt > 0 {
-            let dr_desc = if rule.debit_line_desc.is_empty() {
-                None
-            } else {
-                Some(rule.debit_line_desc.clone())
-            };
-            let cr_desc = if rule.credit_line_desc.is_empty() {
-                None
-            } else {
-                Some(rule.credit_line_desc.clone())
-            };
-
-            lines.push(JournalEntryLineInput {
-                gl_account_id: debit_id,
-                token_id: None,
-                debit_minor: amt,
-                credit_minor: 0,
-                quantity: q_str.clone(),
-                asset_id: Some(asset_id.clone()),
-                description: dr_desc,
-            });
-            lines.push(JournalEntryLineInput {
-                gl_account_id: credit_id,
-                token_id: None,
-                debit_minor: 0,
-                credit_minor: amt,
-                quantity: q_str.clone(),
-                asset_id: Some(asset_id.clone()),
-                description: cr_desc,
-            });
-        }
-
-        let je_desc = if rule.je_description.is_empty() {
-            format!(
-                "{} on {} ({})",
-                tx.transaction_type, tx.chain_id, short_hash
-            )
-        } else {
-            rule.je_description
-                .replace("{chain}", &tx.chain_id)
-                .replace("{hash}", short_hash)
-                .replace("{type}", &tx.transaction_type)
-        };
-        je_desc
+    let (mut lines, description) = if let Some(rule) = matched_rule {
+        apply_matched_rule(
+            &state.pool,
+            rule,
+            &tx,
+            short_hash,
+            amount_minor,
+            fee_minor,
+            &qty_str,
+            &fee_qty_str,
+            &asset_id,
+        )
+        .await?
     } else {
-        // Fallback: hardcoded heuristics (pre-rules-engine compat)
-        match tx.transaction_type.as_str() {
-            "claim" | "stake" => {
-                if amount_minor > 0 {
-                    lines.push(JournalEntryLineInput {
-                        gl_account_id: crypto_assets_id,
-                        token_id: None,
-                        debit_minor: amount_minor,
-                        credit_minor: 0,
-                        quantity: qty_str.clone(),
-                        asset_id: Some(asset_id.clone()),
-                        description: Some("Staking reward received".to_string()),
-                    });
-                    lines.push(JournalEntryLineInput {
-                        gl_account_id: staking_income_id,
-                        token_id: None,
-                        debit_minor: 0,
-                        credit_minor: amount_minor,
-                        quantity: qty_str.clone(),
-                        asset_id: Some(asset_id.clone()),
-                        description: Some("Staking reward income".to_string()),
-                    });
-                }
-                format!("Staking reward on {}", tx.chain_id)
-            }
-            "transfer" => {
-                let (transfer_lines, transfer_desc) = classify_transfer_lines(
-                    &state.pool,
-                    &tx,
-                    amount_minor,
-                    &qty_str,
-                    &asset_id,
-                    crypto_assets_id,
-                    income_id,
-                )
-                .await?;
-                lines.extend(transfer_lines);
-                transfer_desc
-            }
-            _ => {
-                if fee_minor > 0 {
-                    lines.push(JournalEntryLineInput {
-                        gl_account_id: network_fees_id,
-                        token_id: None,
-                        debit_minor: fee_minor,
-                        credit_minor: 0,
-                        quantity: fee_qty_str.clone(),
-                        asset_id: Some(asset_id.clone()),
-                        description: Some("Network/gas fee".to_string()),
-                    });
-                    lines.push(JournalEntryLineInput {
-                        gl_account_id: crypto_assets_id,
-                        token_id: None,
-                        debit_minor: 0,
-                        credit_minor: fee_minor,
-                        quantity: fee_qty_str.clone(),
-                        asset_id: Some(asset_id.clone()),
-                        description: Some("Fee paid from crypto assets".to_string()),
-                    });
-                }
-                format!(
-                    "{} on {} ({})",
-                    tx.transaction_type, tx.chain_id, short_hash
-                )
-            }
-        }
+        apply_fallback_heuristics(
+            &state.pool,
+            &tx,
+            short_hash,
+            amount_minor,
+            fee_minor,
+            &qty_str,
+            &fee_qty_str,
+            &asset_id,
+            crypto_assets_id,
+            staking_income_id,
+            network_fees_id,
+            income_id,
+        )
+        .await?
     };
 
-    // If we have no lines at all, create a placeholder
     if lines.is_empty() {
         lines.push(JournalEntryLineInput {
             gl_account_id: crypto_assets_id,
@@ -1639,7 +1703,6 @@ pub async fn auto_classify_transaction(
         });
     }
 
-    // Format timestamp
     let entry_date = chrono::DateTime::from_timestamp(tx.timestamp, 0).map_or_else(
         || chrono::Utc::now().format("%Y-%m-%d").to_string(),
         |dt| dt.format("%Y-%m-%d").to_string(),
