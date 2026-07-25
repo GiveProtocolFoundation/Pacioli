@@ -20,8 +20,12 @@ import type {
   SubstrateTransaction,
 } from '../../services/wallet/types'
 import { useTransactions } from '../../contexts/TransactionContext'
+import { useProfile } from '../../contexts/ProfileContext'
+import { persistence } from '../../services/persistence'
+import type { TransactionInput } from '../../services/persistence/types'
 import type { TransactionFormData } from '../../types/transaction'
 
+/** Props for the wallet transaction list with import, filtering, and inline price editing. */
 interface TransactionListProps {
   transactions: Transaction[]
   isLoading?: boolean
@@ -29,16 +33,24 @@ interface TransactionListProps {
   onPurge?: () => void
   /** Called when the user manually sets or overrides the acquisition price for a transaction. */
   onPriceUpdate?: (txId: string, pricePerUnitUsd: string) => void
+  /** The synced wallet's own address — used for correct wallet attribution on import. */
+  walletAddress?: string
+  /** The synced wallet's network/chain — used for correct wallet attribution on import. */
+  walletNetwork?: string
 }
 
+/** Renders synced wallet transactions with selection, filtering, and import-to-ledger. */
 export const TransactionList: React.FC<TransactionListProps> = ({
   transactions,
   isLoading,
   error,
   onPurge,
   onPriceUpdate,
+  walletAddress,
+  walletNetwork,
 }) => {
-  const { addTransaction } = useTransactions()
+  const { reloadTransactions } = useTransactions()
+  const { currentProfile } = useProfile()
   const [importing, setImporting] = useState(false)
   const [importSuccess, setImportSuccess] = useState(false)
   const [importError, setImportError] = useState<string | null>(null)
@@ -213,7 +225,6 @@ export const TransactionList: React.FC<TransactionListProps> = ({
 
   // Import selected (or all visible) wallet transactions to accounting ledger
   const importToLedger = useCallback(async () => {
-    // Import selected transactions, or all filtered if none selected
     const toImport =
       selectedCount > 0
         ? filteredTransactions.filter(tx => selectedIds.has(tx.id))
@@ -226,47 +237,89 @@ export const TransactionList: React.FC<TransactionListProps> = ({
     setImportError(null)
 
     try {
-      for (const tx of toImport) {
-        const substrateTx = tx as SubstrateTransaction
-
-        // Convert wallet transaction to accounting format
-        // Format date as YYYY-MM-DDTHH:MM for datetime-local input compatibility
-        const txDate = new Date(tx.timestamp)
-        const formattedDate = txDate.toISOString().slice(0, 16) // "YYYY-MM-DDTHH:MM"
-        const accountingTx: TransactionFormData = {
-          date: formattedDate,
-          description: `${substrateTx.section}.${substrateTx.method} - ${substrateTx.network}`,
-          type: 'transfer', // Blockchain transactions are transfers
-          category: substrateTx.section, // e.g., "balances", "staking"
-          wallet: tx.from,
-
-          // Token information
-          tokenId: getTokenSymbol(tx), // DOT, KSM, etc.
-          chainId: substrateTx.network,
-          amount: parseFloat(
-            formatBalance(tx.value, {
-              decimals: getNetworkDecimals(substrateTx.network),
-              withUnit: false,
-              forceUnit: '-',
-            })
-          ),
-
-          // Fiat valuation (placeholder - you'd need price API)
-          fiatValue: 0,
-          fiatCurrency: 'USD',
-
-          // Blockchain details
-          hash: tx.hash,
-
-          // Additional metadata
-          memo: `Block #${tx.blockNumber} - Status: ${tx.status}`,
-        }
-
-        await addTransaction(accountingTx)
+      if (!currentProfile) {
+        throw new Error('No profile available — cannot persist transactions')
       }
 
+      const network =
+        walletNetwork ||
+        (toImport[0] as SubstrateTransaction).network ||
+        'unknown'
+      const address = walletAddress || toImport[0].to || 'unknown'
+
+      const wallets = await persistence.getWallets(currentProfile.id)
+      let wallet = wallets.find(
+        w => w.address === address && w.chain === network
+      )
+      if (!wallet) {
+        wallet = await persistence.saveWallet({
+          profile_id: currentProfile.id,
+          address,
+          chain: network,
+          name: `${network} synced wallet`,
+          wallet_type: 'imported',
+        })
+      }
+
+      const MARKER = '__pacioli_accounting'
+      const inputs: TransactionInput[] = toImport.map(tx => {
+        const substrateTx = tx as SubstrateTransaction
+        const decimals = getNetworkDecimals(substrateTx.network)
+        const tokenSym = getTokenSymbol(tx)
+        const humanValue = formatBalance(tx.value, {
+          decimals,
+          withUnit: false,
+          forceUnit: '-',
+        })
+        const txDate = new Date(tx.timestamp)
+
+        const accountingPayload: TransactionFormData & Record<string, unknown> =
+          {
+            date: txDate.toISOString().slice(0, 16),
+            description: `${substrateTx.section}.${substrateTx.method} - ${substrateTx.network}`,
+            type: 'transfer',
+            category: substrateTx.section,
+            wallet: walletAddress || tx.to || tx.from,
+            tokenId: tokenSym,
+            chainId: substrateTx.network,
+            amount: parseFloat(humanValue),
+            fiatValue: 0,
+            fiatCurrency: 'USD',
+            hash: tx.hash,
+            memo: `Block #${tx.blockNumber} - Status: ${tx.status}`,
+            [MARKER]: true,
+            id: `txn_${txDate.getTime()}_${tx.hash.slice(-9)}`,
+            status: 'completed',
+            classificationStatus: 'unclassified',
+            createdBy: 'wallet-import',
+            createdByName: 'Wallet Import',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          }
+
+        return {
+          hash: tx.hash,
+          block_number: tx.blockNumber,
+          timestamp: txDate.toISOString(),
+          from_address: tx.from,
+          to_address: tx.to,
+          value: humanValue,
+          fee: tx.fee,
+          status: tx.status,
+          tx_type: 'transfer',
+          token_symbol: tokenSym,
+          chain: substrateTx.network,
+          raw_data: JSON.stringify(accountingPayload),
+          ...(tx.pricePerUnitUsd != null && {
+            price_at_acquisition_usd: tx.pricePerUnitUsd.toString(),
+          }),
+        }
+      })
+
+      await persistence.saveTransactions(wallet.id, inputs)
+      await reloadTransactions()
+
       setImportSuccess(true)
-      // Clear selection after successful import
       setSelectedIds(new Set())
       setTimeout(() => setImportSuccess(false), 3000)
     } catch (err) {
@@ -279,9 +332,12 @@ export const TransactionList: React.FC<TransactionListProps> = ({
     filteredTransactions,
     selectedIds,
     selectedCount,
-    addTransaction,
+    currentProfile,
+    reloadTransactions,
     getNetworkDecimals,
     getTokenSymbol,
+    walletAddress,
+    walletNetwork,
   ])
 
   // Handle purge confirmation
