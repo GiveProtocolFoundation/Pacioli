@@ -411,9 +411,7 @@ const RuleDisplayRow: React.FC<RuleDisplayRowProps> = ({
           {rule.creditAccount}
         </span>
         {rule.useFeeAmount && (
-          <span className="text-amber-600 dark:text-amber-400">
-            Fee amount
-          </span>
+          <span className="text-amber-600 dark:text-amber-400">Fee amount</span>
         )}
       </div>
     </div>
