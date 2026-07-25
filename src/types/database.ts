@@ -206,6 +206,8 @@ export interface JournalEntry {
   approvedAt?: Date
   /** When this entry was posted to the ledger. */
   postedAt?: Date
+  /** FK to multi_chain_transactions — on-chain source tx, null for manual entries. */
+  sourceTxId?: string
 }
 
 export interface JournalEntryLine {
