@@ -908,17 +908,23 @@ mod tests {
 
     #[test]
     fn test_build_url_no_api_key() {
-        let config = EvmChainConfig::new(
-            1,
-            "ethereum",
-            "ETH",
-            "https://eth-mainnet.g.alchemy.com/v2",
-            "https://api.etherscan.io/api",
-            false,
-            12,
-        );
+        let fetcher_config = FetcherConfig {
+            base_url: "https://api.etherscan.io/api".to_string(),
+            api_key: None,
+            requests_per_second: 1,
+            timeout_secs: 30,
+            max_retries: 3,
+        };
+        let fetcher = ResilientFetcher::new(fetcher_config).unwrap();
 
-        let client = EtherscanClient::new(&config, None).unwrap();
+        let client = EtherscanClient {
+            fetcher,
+            base_url: "https://api.etherscan.io/api".to_string(),
+            api_key: None,
+            chain_id: 1,
+            chain_name: "ethereum".to_string(),
+        };
+
         let url = client.build_url("account", "balance", &[("address", "0x123")]);
 
         assert!(!url.contains("apikey="));

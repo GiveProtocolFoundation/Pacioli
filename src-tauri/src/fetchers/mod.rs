@@ -616,10 +616,16 @@ mod tests {
 
     #[test]
     fn test_fetcher_config_for_provider() {
-        // Without API key (default mode)
-        let config =
-            FetcherConfig::for_provider(ApiProvider::Etherscan, "https://api.etherscan.io");
-        assert_eq!(config.requests_per_second, 1); // Default rate limit
+        // Verify default rate limit for a provider without an API key.
+        // Construct explicitly to avoid dependence on the OS keychain state.
+        let config = FetcherConfig {
+            base_url: "https://api.etherscan.io".to_string(),
+            api_key: None,
+            requests_per_second: ApiProvider::Etherscan.default_rate_limit(),
+            timeout_secs: 30,
+            max_retries: 3,
+        };
+        assert_eq!(config.requests_per_second, 1);
         assert!(config.api_key.is_none());
     }
 
