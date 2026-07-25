@@ -89,6 +89,104 @@ function formatTxTimestamp(unixSec: number): string {
   })
 }
 
+/** Displays the linked on-chain source transaction for a journal entry. */
+const SourceTransactionSection: React.FC<{ sourceTxId: string }> = ({
+  sourceTxId,
+}) => {
+  const [sourceTx, setSourceTx] = useState<SourceTransactionSummary | null>(
+    null
+  )
+  const [fetched, setFetched] = useState(false)
+
+  const loading = isTauriAvailable() && !fetched
+
+  useEffect(() => {
+    if (!isTauriAvailable()) return
+    invoke<SourceTransactionSummary | null>('get_source_transaction', {
+      sourceTxId,
+    })
+      .then(result => setSourceTx(result ?? null))
+      .catch(() => setSourceTx(null))
+      .finally(() => setFetched(true))
+  }, [sourceTxId])
+
+  return (
+    <div>
+      <h3 className="text-xs font-semibold text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider mb-3 flex items-center gap-1.5">
+        <Link2 className="w-3.5 h-3.5" />
+        Source Transaction
+      </h3>
+      {loading && (
+        <p className="text-sm text-[#647D8B]">Loading&hellip;</p>
+      )}
+      {!loading && sourceTx && (
+        <div className="p-3 rounded-lg bg-[#EAF3F2]/60 dark:bg-[#16242F]/60 border border-[rgba(95,227,192,0.15)] space-y-2">
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <div>
+              <span className="text-xs text-[#647D8B] uppercase">Chain</span>
+              <p className="font-mono text-[#11202B] dark:text-[#EAF3F2]">
+                {sourceTx.chainId}
+              </p>
+            </div>
+            <div>
+              <span className="text-xs text-[#647D8B] uppercase">Type</span>
+              <p className="text-[#11202B] dark:text-[#EAF3F2] capitalize">
+                {sourceTx.transactionType.replace('_', ' ')}
+              </p>
+            </div>
+            <div className="col-span-2">
+              <span className="text-xs text-[#647D8B] uppercase">Tx Hash</span>
+              <p className="font-mono text-[#11202B] dark:text-[#EAF3F2] break-all flex items-center gap-1.5">
+                {sourceTx.transactionHash}
+                <ExternalLink className="w-3 h-3 text-[#647D8B] flex-shrink-0" />
+              </p>
+            </div>
+            <div>
+              <span className="text-xs text-[#647D8B] uppercase">From</span>
+              <p
+                className="font-mono text-[#11202B] dark:text-[#EAF3F2]"
+                title={sourceTx.fromAddress}
+              >
+                {truncateAddress(sourceTx.fromAddress)}
+              </p>
+            </div>
+            <div>
+              <span className="text-xs text-[#647D8B] uppercase">To</span>
+              <p
+                className="font-mono text-[#11202B] dark:text-[#EAF3F2]"
+                title={sourceTx.toAddress ?? ''}
+              >
+                {sourceTx.toAddress
+                  ? truncateAddress(sourceTx.toAddress)
+                  : '—'}
+              </p>
+            </div>
+            <div>
+              <span className="text-xs text-[#647D8B] uppercase">
+                Timestamp
+              </span>
+              <p className="text-[#11202B] dark:text-[#EAF3F2]">
+                {formatTxTimestamp(sourceTx.timestamp)}
+              </p>
+            </div>
+            <div>
+              <span className="text-xs text-[#647D8B] uppercase">Value</span>
+              <p className="font-mono text-[#11202B] dark:text-[#EAF3F2]">
+                {sourceTx.transferValue}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+      {!loading && !sourceTx && (
+        <p className="text-sm text-[#647D8B] italic">
+          Source transaction not found (ID: {sourceTxId})
+        </p>
+      )}
+    </div>
+  )
+}
+
 /** Slide-over panel showing a journal entry's lines, metadata, and linked source transaction. */
 const JournalEntryDetail: React.FC<JournalEntryDetailProps> = ({
   entry,
@@ -96,24 +194,6 @@ const JournalEntryDetail: React.FC<JournalEntryDetailProps> = ({
   entries,
   onClose,
 }) => {
-  const [sourceTx, setSourceTx] = useState<SourceTransactionSummary | null>(
-    null
-  )
-  const [sourceTxFetched, setSourceTxFetched] = useState(false)
-
-  const sourceTxLoading =
-    Boolean(entry.sourceTxId) && isTauriAvailable() && !sourceTxFetched
-
-  useEffect(() => {
-    if (!entry.sourceTxId || !isTauriAvailable()) return
-    invoke<SourceTransactionSummary | null>('get_source_transaction', {
-      sourceTxId: entry.sourceTxId,
-    })
-      .then(result => setSourceTx(result ?? null))
-      .catch(() => setSourceTx(null))
-      .finally(() => setSourceTxFetched(true))
-  }, [entry.sourceTxId])
-
   const accountMap = useMemo(() => {
     const m = new Map<number, GLAccount>()
     accounts.forEach(a => m.set(a.id, a))
@@ -269,91 +349,7 @@ const JournalEntryDetail: React.FC<JournalEntryDetailProps> = ({
 
           {/* Source on-chain transaction */}
           {entry.sourceTxId && (
-            <div>
-              <h3 className="text-xs font-semibold text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                <Link2 className="w-3.5 h-3.5" />
-                Source Transaction
-              </h3>
-              {sourceTxLoading && (
-                <p className="text-sm text-[#647D8B]">Loading&hellip;</p>
-              )}
-              {!sourceTxLoading && sourceTx && (
-                <div className="p-3 rounded-lg bg-[#EAF3F2]/60 dark:bg-[#16242F]/60 border border-[rgba(95,227,192,0.15)] space-y-2">
-                  <div className="grid grid-cols-2 gap-3 text-sm">
-                    <div>
-                      <span className="text-xs text-[#647D8B] uppercase">
-                        Chain
-                      </span>
-                      <p className="font-mono text-[#11202B] dark:text-[#EAF3F2]">
-                        {sourceTx.chainId}
-                      </p>
-                    </div>
-                    <div>
-                      <span className="text-xs text-[#647D8B] uppercase">
-                        Type
-                      </span>
-                      <p className="text-[#11202B] dark:text-[#EAF3F2] capitalize">
-                        {sourceTx.transactionType.replace('_', ' ')}
-                      </p>
-                    </div>
-                    <div className="col-span-2">
-                      <span className="text-xs text-[#647D8B] uppercase">
-                        Tx Hash
-                      </span>
-                      <p className="font-mono text-[#11202B] dark:text-[#EAF3F2] break-all flex items-center gap-1.5">
-                        {sourceTx.transactionHash}
-                        <ExternalLink className="w-3 h-3 text-[#647D8B] flex-shrink-0" />
-                      </p>
-                    </div>
-                    <div>
-                      <span className="text-xs text-[#647D8B] uppercase">
-                        From
-                      </span>
-                      <p
-                        className="font-mono text-[#11202B] dark:text-[#EAF3F2]"
-                        title={sourceTx.fromAddress}
-                      >
-                        {truncateAddress(sourceTx.fromAddress)}
-                      </p>
-                    </div>
-                    <div>
-                      <span className="text-xs text-[#647D8B] uppercase">
-                        To
-                      </span>
-                      <p
-                        className="font-mono text-[#11202B] dark:text-[#EAF3F2]"
-                        title={sourceTx.toAddress ?? ''}
-                      >
-                        {sourceTx.toAddress
-                          ? truncateAddress(sourceTx.toAddress)
-                          : '—'}
-                      </p>
-                    </div>
-                    <div>
-                      <span className="text-xs text-[#647D8B] uppercase">
-                        Timestamp
-                      </span>
-                      <p className="text-[#11202B] dark:text-[#EAF3F2]">
-                        {formatTxTimestamp(sourceTx.timestamp)}
-                      </p>
-                    </div>
-                    <div>
-                      <span className="text-xs text-[#647D8B] uppercase">
-                        Value
-                      </span>
-                      <p className="font-mono text-[#11202B] dark:text-[#EAF3F2]">
-                        {sourceTx.transferValue}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-              {!sourceTxLoading && !sourceTx && (
-                <p className="text-sm text-[#647D8B] italic">
-                  Source transaction not found (ID: {entry.sourceTxId})
-                </p>
-              )}
-            </div>
+            <SourceTransactionSection sourceTxId={entry.sourceTxId} />
           )}
 
           {/* Lifecycle timestamps */}
