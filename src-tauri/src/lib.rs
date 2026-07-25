@@ -478,7 +478,15 @@ pub fn run() {
             api::fair_value::run_remeasurement,
             api::fair_value::list_remeasurement_runs,
             api::fair_value::get_remeasurement_entries,
-            api::fair_value::get_latest_asset_price
+            api::fair_value::get_latest_asset_price,
+            // Classification rules commands (GIV-726, Phase 1.5)
+            api::rules::list_classification_rules,
+            api::rules::create_classification_rule,
+            api::rules::update_classification_rule,
+            api::rules::toggle_classification_rule,
+            api::rules::reorder_classification_rules,
+            api::rules::delete_classification_rule,
+            api::rules::install_starter_rules
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

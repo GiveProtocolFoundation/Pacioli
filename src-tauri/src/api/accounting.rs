@@ -1458,75 +1458,165 @@ pub async fn auto_classify_transaction(
     let asset_id = chain_id_to_native_symbol(&tx.chain_id)
         .map_or_else(|| "USD".to_string(), |s| format!("token:{}", s));
 
-    // Build lines based on transaction_type heuristics
+    // Build lines using classification rules from the DB (falls back to
+    // hardcoded heuristics when no rules are installed yet).
     let mut lines = Vec::new();
-    let description = match tx.transaction_type.as_str() {
-        "claim" | "stake" => {
-            // Staking reward: DR Crypto Assets / CR Staking Income
-            if amount_minor > 0 {
-                lines.push(JournalEntryLineInput {
-                    gl_account_id: crypto_assets_id,
-                    token_id: None,
-                    debit_minor: amount_minor,
-                    credit_minor: 0,
-                    quantity: qty_str.clone(),
-                    asset_id: Some(asset_id.clone()),
-                    description: Some("Staking reward received".to_string()),
-                });
-                lines.push(JournalEntryLineInput {
-                    gl_account_id: staking_income_id,
-                    token_id: None,
-                    debit_minor: 0,
-                    credit_minor: amount_minor,
-                    quantity: qty_str.clone(),
-                    asset_id: Some(asset_id.clone()),
-                    description: Some("Staking reward income".to_string()),
-                });
-            }
-            format!("Staking reward on {}", tx.chain_id)
+    let short_hash = &tx.transaction_hash[..8.min(tx.transaction_hash.len())];
+
+    let self_xfer = is_self_transfer(
+        &state.pool,
+        &tx.from_address,
+        tx.to_address.as_deref(),
+    )
+    .await?;
+
+    let rules = sqlx::query_as::<_, super::rules::ClassificationRule>(
+        "SELECT id, name, description, match_tx_types, match_chains, match_self_transfer, \
+         debit_account, credit_account, debit_line_desc, credit_line_desc, je_description, \
+         use_fee_amount, priority, enabled, source, created_at, updated_at \
+         FROM classification_rules WHERE enabled = 1 ORDER BY priority ASC",
+    )
+    .fetch_all(&state.pool)
+    .await
+    .map_err(|e| e.to_string())?;
+
+    let matched_rule = rules.iter().find(|r| {
+        let types: Vec<&str> = r.match_tx_types.split(',').map(|s| s.trim()).collect();
+        if !types.iter().any(|t| *t == tx.transaction_type) {
+            return false;
         }
-        "transfer" => {
-            let (transfer_lines, transfer_desc) = classify_transfer_lines(
-                &state.pool,
-                &tx,
-                amount_minor,
-                &qty_str,
-                &asset_id,
-                crypto_assets_id,
-                income_id,
-            )
-            .await?;
-            lines.extend(transfer_lines);
-            transfer_desc
-        }
-        _ => {
-            // Default: if there's a fee, record it as an expense
-            if fee_minor > 0 {
-                lines.push(JournalEntryLineInput {
-                    gl_account_id: network_fees_id,
-                    token_id: None,
-                    debit_minor: fee_minor,
-                    credit_minor: 0,
-                    quantity: fee_qty_str.clone(),
-                    asset_id: Some(asset_id.clone()),
-                    description: Some("Network/gas fee".to_string()),
-                });
-                lines.push(JournalEntryLineInput {
-                    gl_account_id: crypto_assets_id,
-                    token_id: None,
-                    debit_minor: 0,
-                    credit_minor: fee_minor,
-                    quantity: fee_qty_str.clone(),
-                    asset_id: Some(asset_id.clone()),
-                    description: Some("Fee paid from crypto assets".to_string()),
-                });
+        if !r.match_chains.is_empty() {
+            let chains: Vec<&str> = r.match_chains.split(',').map(|s| s.trim()).collect();
+            if !chains.iter().any(|c| c.eq_ignore_ascii_case(&tx.chain_id)) {
+                return false;
             }
-            format!(
-                "{} on {} ({})",
-                tx.transaction_type,
-                tx.chain_id,
-                &tx.transaction_hash[..8.min(tx.transaction_hash.len())]
-            )
+        }
+        match r.match_self_transfer.as_str() {
+            "true" => self_xfer,
+            "false" => !self_xfer,
+            _ => true,
+        }
+    });
+
+    let description = if let Some(rule) = matched_rule {
+        let debit_id = get_account_id_by_number(&state.pool, &rule.debit_account).await?;
+        let credit_id = get_account_id_by_number(&state.pool, &rule.credit_account).await?;
+
+        let (amt, q_str) = if rule.use_fee_amount {
+            (fee_minor, &fee_qty_str)
+        } else {
+            (amount_minor, &qty_str)
+        };
+
+        if amt > 0 {
+            let dr_desc = if rule.debit_line_desc.is_empty() {
+                None
+            } else {
+                Some(rule.debit_line_desc.clone())
+            };
+            let cr_desc = if rule.credit_line_desc.is_empty() {
+                None
+            } else {
+                Some(rule.credit_line_desc.clone())
+            };
+
+            lines.push(JournalEntryLineInput {
+                gl_account_id: debit_id,
+                token_id: None,
+                debit_minor: amt,
+                credit_minor: 0,
+                quantity: q_str.clone(),
+                asset_id: Some(asset_id.clone()),
+                description: dr_desc,
+            });
+            lines.push(JournalEntryLineInput {
+                gl_account_id: credit_id,
+                token_id: None,
+                debit_minor: 0,
+                credit_minor: amt,
+                quantity: q_str.clone(),
+                asset_id: Some(asset_id.clone()),
+                description: cr_desc,
+            });
+        }
+
+        let je_desc = if rule.je_description.is_empty() {
+            format!("{} on {} ({})", tx.transaction_type, tx.chain_id, short_hash)
+        } else {
+            rule.je_description
+                .replace("{chain}", &tx.chain_id)
+                .replace("{hash}", short_hash)
+                .replace("{type}", &tx.transaction_type)
+        };
+        je_desc
+    } else {
+        // Fallback: hardcoded heuristics (pre-rules-engine compat)
+        match tx.transaction_type.as_str() {
+            "claim" | "stake" => {
+                if amount_minor > 0 {
+                    lines.push(JournalEntryLineInput {
+                        gl_account_id: crypto_assets_id,
+                        token_id: None,
+                        debit_minor: amount_minor,
+                        credit_minor: 0,
+                        quantity: qty_str.clone(),
+                        asset_id: Some(asset_id.clone()),
+                        description: Some("Staking reward received".to_string()),
+                    });
+                    lines.push(JournalEntryLineInput {
+                        gl_account_id: staking_income_id,
+                        token_id: None,
+                        debit_minor: 0,
+                        credit_minor: amount_minor,
+                        quantity: qty_str.clone(),
+                        asset_id: Some(asset_id.clone()),
+                        description: Some("Staking reward income".to_string()),
+                    });
+                }
+                format!("Staking reward on {}", tx.chain_id)
+            }
+            "transfer" => {
+                let (transfer_lines, transfer_desc) = classify_transfer_lines(
+                    &state.pool,
+                    &tx,
+                    amount_minor,
+                    &qty_str,
+                    &asset_id,
+                    crypto_assets_id,
+                    income_id,
+                )
+                .await?;
+                lines.extend(transfer_lines);
+                transfer_desc
+            }
+            _ => {
+                if fee_minor > 0 {
+                    lines.push(JournalEntryLineInput {
+                        gl_account_id: network_fees_id,
+                        token_id: None,
+                        debit_minor: fee_minor,
+                        credit_minor: 0,
+                        quantity: fee_qty_str.clone(),
+                        asset_id: Some(asset_id.clone()),
+                        description: Some("Network/gas fee".to_string()),
+                    });
+                    lines.push(JournalEntryLineInput {
+                        gl_account_id: crypto_assets_id,
+                        token_id: None,
+                        debit_minor: 0,
+                        credit_minor: fee_minor,
+                        quantity: fee_qty_str.clone(),
+                        asset_id: Some(asset_id.clone()),
+                        description: Some("Fee paid from crypto assets".to_string()),
+                    });
+                }
+                format!(
+                    "{} on {} ({})",
+                    tx.transaction_type,
+                    tx.chain_id,
+                    short_hash
+                )
+            }
         }
     };
 

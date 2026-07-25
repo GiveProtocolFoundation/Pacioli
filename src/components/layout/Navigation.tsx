@@ -625,6 +625,7 @@ const Navigation: React.FC<NavigationProps> = ({
         },
         { name: 'Classified', href: '/transactions?filter=classified' },
         { name: 'Ignored', href: '/transactions?filter=ignored' },
+        { name: 'Rules', href: '/classification-rules' },
       ],
     },
     {
@@ -696,6 +697,7 @@ const Navigation: React.FC<NavigationProps> = ({
         },
         { name: 'Classified', href: '/transactions?filter=classified' },
         { name: 'Ignored', href: '/transactions?filter=ignored' },
+        { name: 'Rules', href: '/classification-rules' },
       ],
     },
     {
