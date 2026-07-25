@@ -192,6 +192,72 @@ const CategoryBadge: React.FC<{ category: string; description: string }> = ({
 const shortenAddress = (address: string): string =>
   address.length > 16 ? `${address.slice(0, 6)}…${address.slice(-8)}` : address
 
+/** Returns the appropriate directional arrow icon for a given transaction type */
+const getTypeIcon = (type: TransactionType) => {
+  switch (type) {
+    case 'revenue':
+      return <ArrowDownRight className="w-5 h-5 text-[#5FE3C0]" />
+    case 'expense':
+      return <ArrowUpRight className="w-5 h-5 text-[#E8836F]" />
+    case 'transfer':
+      return <ArrowLeftRight className="w-5 h-5 text-[#5FE3C0]" />
+    default:
+      return null
+  }
+}
+
+/** Returns the unified brand badge class for a transaction type */
+const getTypeColor = (type: TransactionType) => {
+  switch (type) {
+    case 'revenue':
+      return 'badge-revenue'
+    case 'expense':
+      return 'badge-expense'
+    case 'transfer':
+      return 'badge-transfer'
+    default:
+      return 'badge-neutral'
+  }
+}
+
+/** Returns the unified brand badge class for a transaction status */
+const getStatusColor = (status: TransactionStatus) => {
+  switch (status) {
+    case 'completed':
+    case 'approved':
+      return 'badge-approved'
+    case 'pending_approval':
+      return 'badge-pending-approval'
+    case 'draft':
+      return 'badge-draft'
+    case 'rejected':
+      return 'badge-rejected'
+    case 'failed':
+      return 'badge-failed'
+    default:
+      return 'badge-neutral'
+  }
+}
+
+const getStatusLabel = (status: TransactionStatus) => {
+  switch (status) {
+    case 'pending_approval':
+      return 'Pending Approval'
+    case 'completed':
+      return 'Completed'
+    case 'approved':
+      return 'Approved'
+    case 'rejected':
+      return 'Rejected'
+    case 'draft':
+      return 'Draft'
+    case 'failed':
+      return 'Failed'
+    default:
+      return status
+  }
+}
+
 interface TransactionAmountCellProps {
   transaction: Transaction
   getToken: (id: string) => Token | undefined
@@ -253,6 +319,176 @@ const TransactionAmountCell: React.FC<TransactionAmountCellProps> = ({
   )
 }
 
+/** Edit + Classify actions cell shared by every transaction row */
+const TransactionActionsCell: React.FC<{
+  transaction: Transaction
+  onEditClick: (e: React.MouseEvent<HTMLButtonElement>) => void
+  onClassifyClick: (e: React.MouseEvent<HTMLButtonElement>) => void
+}> = ({ transaction, onEditClick, onClassifyClick }) => (
+  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+    <div className="flex items-center justify-end gap-2">
+      <button
+        data-id={transaction.id}
+        onClick={onEditClick}
+        className="text-[#294050] hover:text-[#1E2F3C] dark:text-[#F09988] dark:hover:text-[#F09988]"
+      >
+        <Edit2 className="w-5 h-5" />
+      </button>
+      <button
+        onClick={onClassifyClick}
+        className="px-2 py-1 text-xs font-medium rounded bg-[#294050]/10 text-[#294050] hover:bg-[#294050]/20 transition-colors"
+      >
+        Classify &rarr;
+      </button>
+    </div>
+  </td>
+)
+
+interface TransactionSummaryRowProps {
+  transaction: Transaction
+  isExpanded: boolean
+  walletLabel: string
+  getToken: (id: string) => Token | undefined
+  getChain: (id: string) => Chain | undefined
+  currencySettings: { primaryCurrency: string }
+  handleImageError: (e: React.SyntheticEvent<HTMLImageElement>) => void
+  onRowClick: (e: React.MouseEvent<HTMLTableRowElement>) => void
+  onToggleExpand: (e: React.MouseEvent<HTMLButtonElement>) => void
+  onEditClick: (e: React.MouseEvent<HTMLButtonElement>) => void
+  onClassifyClick: (e: React.MouseEvent<HTMLButtonElement>) => void
+}
+
+/** Single-line transaction summary row: chevron, type icon, date, category badge, wallet label, amount, status, classification, actions */
+const TransactionSummaryRow: React.FC<TransactionSummaryRowProps> = ({
+  transaction,
+  isExpanded,
+  walletLabel,
+  getToken,
+  getChain,
+  currencySettings,
+  handleImageError,
+  onRowClick,
+  onToggleExpand,
+  onEditClick,
+  onClassifyClick,
+}) => (
+  <tr
+    data-id={transaction.id}
+    className="hover:bg-[#EAF3F2] dark:hover:bg-[#11202B] cursor-pointer"
+    onClick={onRowClick}
+  >
+    <td className="px-4 py-4 whitespace-nowrap">
+      <button
+        data-id={transaction.id}
+        onClick={onToggleExpand}
+        aria-expanded={isExpanded}
+        aria-label="Toggle transaction details"
+        className="p-1 rounded hover:bg-[#294050]/10 dark:hover:bg-[#5FE3C0]/10"
+      >
+        {isExpanded ? (
+          <ChevronDown className="w-4 h-4 text-[#294050] dark:text-[#9FB4BE]" />
+        ) : (
+          <ChevronRight className="w-4 h-4 text-[#294050] dark:text-[#9FB4BE]" />
+        )}
+      </button>
+    </td>
+    <td className="px-6 py-4 whitespace-nowrap">
+      <div
+        className={`inline-flex items-center justify-center w-10 h-10 rounded-lg ${getTypeColor(transaction.type)}`}
+      >
+        {getTypeIcon(transaction.type)}
+      </div>
+    </td>
+    <td className="px-6 py-4 whitespace-nowrap">
+      <div className="text-sm text-[#11202B] dark:text-[#EAF3F2]">
+        {new Date(transaction.date).toLocaleString()}
+      </div>
+    </td>
+    <td className="px-6 py-4 whitespace-nowrap">
+      <CategoryBadge
+        category={transaction.category}
+        description={transaction.description}
+      />
+    </td>
+    <td className="px-6 py-4 whitespace-nowrap">
+      <span
+        title={transaction.wallet}
+        className="text-sm text-[#294050] dark:text-[#9FB4BE]"
+      >
+        {walletLabel}
+      </span>
+    </td>
+    <td className="px-6 py-4 whitespace-nowrap text-right">
+      <TransactionAmountCell
+        transaction={transaction}
+        getToken={getToken}
+        getChain={getChain}
+        currencySettings={currencySettings}
+        handleImageError={handleImageError}
+      />
+    </td>
+    <td className="px-6 py-4 whitespace-nowrap">
+      <span
+        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(transaction.status)}`}
+      >
+        {getStatusLabel(transaction.status)}
+      </span>
+      {transaction.approvalStatus === 'rejected' &&
+        transaction.rejectionReason && (
+          <div className="text-xs text-[#E8836F] dark:text-[#F09988] mt-1">
+            {transaction.rejectionReason}
+          </div>
+        )}
+    </td>
+    <td className="px-6 py-4 whitespace-nowrap text-center">
+      <ClassificationBadge status={transaction.classificationStatus} />
+    </td>
+    <TransactionActionsCell
+      transaction={transaction}
+      onEditClick={onEditClick}
+      onClassifyClick={onClassifyClick}
+    />
+  </tr>
+)
+
+/** Label/value line inside the expanded transaction detail panel */
+const DetailField: React.FC<{
+  label: string
+  value: string
+  mono?: boolean
+}> = ({ label, value, mono }) => (
+  <div>
+    <span className="font-medium uppercase tracking-wider text-[#294050] dark:text-[#9FB4BE] mr-2">
+      {label}
+    </span>
+    <span
+      className={`${mono ? 'font-mono break-all ' : ''}text-[#11202B] dark:text-[#EAF3F2]`}
+    >
+      {value}
+    </span>
+  </div>
+)
+
+/** Expanded detail panel row: full description, hash, block/status memo, and wallet address */
+const TransactionDetailRow: React.FC<{ transaction: Transaction }> = ({
+  transaction,
+}) => (
+  <tr className="bg-[#EAF3F2]/60 dark:bg-[#11202B]/60">
+    <td colSpan={9} className="px-6 py-4">
+      <div className="space-y-1.5 text-xs">
+        <DetailField label="Description" value={transaction.description} />
+        {transaction.hash && (
+          <DetailField label="Hash" value={transaction.hash} mono />
+        )}
+        {transaction.memo && (
+          <DetailField label="Details" value={transaction.memo} />
+        )}
+        <DetailField label="Wallet" value={transaction.wallet} mono />
+      </div>
+    </td>
+  </tr>
+)
+
 /** Transactions list page with search, filtering, and tabular display of all crypto transactions */
 const Transactions: React.FC = () => {
   const location = useLocation()
@@ -287,72 +523,6 @@ const Transactions: React.FC = () => {
         )
       })
   }, [transactions, filter, searchQuery])
-
-  /** Returns the appropriate directional arrow icon for a given transaction type */
-  const getTypeIcon = (type: TransactionType) => {
-    switch (type) {
-      case 'revenue':
-        return <ArrowDownRight className="w-5 h-5 text-[#5FE3C0]" />
-      case 'expense':
-        return <ArrowUpRight className="w-5 h-5 text-[#E8836F]" />
-      case 'transfer':
-        return <ArrowLeftRight className="w-5 h-5 text-[#5FE3C0]" />
-      default:
-        return null
-    }
-  }
-
-  /** Returns the unified brand badge class for a transaction type */
-  const getTypeColor = (type: TransactionType) => {
-    switch (type) {
-      case 'revenue':
-        return 'badge-revenue'
-      case 'expense':
-        return 'badge-expense'
-      case 'transfer':
-        return 'badge-transfer'
-      default:
-        return 'badge-neutral'
-    }
-  }
-
-  /** Returns the unified brand badge class for a transaction status */
-  const getStatusColor = (status: TransactionStatus) => {
-    switch (status) {
-      case 'completed':
-      case 'approved':
-        return 'badge-approved'
-      case 'pending_approval':
-        return 'badge-pending-approval'
-      case 'draft':
-        return 'badge-draft'
-      case 'rejected':
-        return 'badge-rejected'
-      case 'failed':
-        return 'badge-failed'
-      default:
-        return 'badge-neutral'
-    }
-  }
-
-  const getStatusLabel = (status: TransactionStatus) => {
-    switch (status) {
-      case 'pending_approval':
-        return 'Pending Approval'
-      case 'completed':
-        return 'Completed'
-      case 'approved':
-        return 'Approved'
-      case 'rejected':
-        return 'Rejected'
-      case 'draft':
-        return 'Draft'
-      case 'failed':
-        return 'Failed'
-      default:
-        return status
-    }
-  }
 
   const handleSearchChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -402,6 +572,14 @@ const Transactions: React.FC = () => {
       }
     },
     []
+  )
+
+  const handleClassifyClick = useCallback(
+    (e: React.MouseEvent<HTMLButtonElement>) => {
+      e.stopPropagation()
+      navigate('/journal-entries?new=true')
+    },
+    [navigate]
   )
 
   return (
@@ -459,9 +637,7 @@ const Transactions: React.FC = () => {
           <table className="w-full">
             <thead className="bg-[#EAF3F2] dark:bg-[#11202B] border-b border-[rgba(95,227,192,0.15)]">
               <tr>
-                <th className="w-10 px-4 py-3">
-                  <span className="sr-only">Expand</span>
-                </th>
+                <th className="w-10 px-4 py-3" aria-label="Expand" />
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
                   Type
                 </th>
@@ -491,144 +667,24 @@ const Transactions: React.FC = () => {
             <tbody className="bg-[#F7FAFA] dark:bg-[#0C141B] divide-y divide-[rgba(95,227,192,0.1)]">
               {filteredTransactions.map(transaction => (
                 <React.Fragment key={transaction.id}>
-                  <tr
-                    data-id={transaction.id}
-                    className="hover:bg-[#EAF3F2] dark:hover:bg-[#11202B] cursor-pointer"
-                    onClick={handleRowClick}
-                  >
-                    <td className="px-4 py-4 whitespace-nowrap">
-                      <button
-                        data-id={transaction.id}
-                        onClick={handleToggleExpand}
-                        aria-expanded={expandedId === transaction.id}
-                        aria-label="Toggle transaction details"
-                        className="p-1 rounded hover:bg-[#294050]/10 dark:hover:bg-[#5FE3C0]/10"
-                      >
-                        {expandedId === transaction.id ? (
-                          <ChevronDown className="w-4 h-4 text-[#294050] dark:text-[#9FB4BE]" />
-                        ) : (
-                          <ChevronRight className="w-4 h-4 text-[#294050] dark:text-[#9FB4BE]" />
-                        )}
-                      </button>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div
-                        className={`inline-flex items-center justify-center w-10 h-10 rounded-lg ${getTypeColor(transaction.type)}`}
-                      >
-                        {getTypeIcon(transaction.type)}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-[#11202B] dark:text-[#EAF3F2]">
-                        {new Date(transaction.date).toLocaleString()}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <CategoryBadge
-                        category={transaction.category}
-                        description={transaction.description}
-                      />
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        title={transaction.wallet}
-                        className="text-sm text-[#294050] dark:text-[#9FB4BE]"
-                      >
-                        {getAlias(transaction.wallet) ??
-                          shortenAddress(transaction.wallet)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right">
-                      <TransactionAmountCell
-                        transaction={transaction}
-                        getToken={getToken}
-                        getChain={getChain}
-                        currencySettings={currencySettings}
-                        handleImageError={handleImageError}
-                      />
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(transaction.status)}`}
-                      >
-                        {getStatusLabel(transaction.status)}
-                      </span>
-                      {transaction.approvalStatus === 'rejected' &&
-                        transaction.rejectionReason && (
-                          <div className="text-xs text-[#E8836F] dark:text-[#F09988] mt-1">
-                            {transaction.rejectionReason}
-                          </div>
-                        )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-center">
-                      <ClassificationBadge
-                        status={transaction.classificationStatus}
-                      />
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center justify-end gap-2">
-                        <button
-                          data-id={transaction.id}
-                          onClick={handleEditButtonClick}
-                          className="text-[#294050] hover:text-[#1E2F3C] dark:text-[#F09988] dark:hover:text-[#F09988]"
-                        >
-                          <Edit2 className="w-5 h-5" />
-                        </button>
-                        <button
-                          onClick={e => {
-                            e.stopPropagation()
-                            navigate('/journal-entries?new=true')
-                          }}
-                          className="px-2 py-1 text-xs font-medium rounded bg-[#294050]/10 text-[#294050] hover:bg-[#294050]/20 transition-colors"
-                        >
-                          Classify &rarr;
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
+                  <TransactionSummaryRow
+                    transaction={transaction}
+                    isExpanded={expandedId === transaction.id}
+                    walletLabel={
+                      getAlias(transaction.wallet) ??
+                      shortenAddress(transaction.wallet)
+                    }
+                    getToken={getToken}
+                    getChain={getChain}
+                    currencySettings={currencySettings}
+                    handleImageError={handleImageError}
+                    onRowClick={handleRowClick}
+                    onToggleExpand={handleToggleExpand}
+                    onEditClick={handleEditButtonClick}
+                    onClassifyClick={handleClassifyClick}
+                  />
                   {expandedId === transaction.id && (
-                    <tr className="bg-[#EAF3F2]/60 dark:bg-[#11202B]/60">
-                      <td colSpan={9} className="px-6 py-4">
-                        <div className="space-y-1.5 text-xs">
-                          <div>
-                            <span className="font-medium uppercase tracking-wider text-[#294050] dark:text-[#9FB4BE] mr-2">
-                              Description
-                            </span>
-                            <span className="text-[#11202B] dark:text-[#EAF3F2]">
-                              {transaction.description}
-                            </span>
-                          </div>
-                          {transaction.hash && (
-                            <div>
-                              <span className="font-medium uppercase tracking-wider text-[#294050] dark:text-[#9FB4BE] mr-2">
-                                Hash
-                              </span>
-                              <span className="font-mono break-all text-[#11202B] dark:text-[#EAF3F2]">
-                                {transaction.hash}
-                              </span>
-                            </div>
-                          )}
-                          {transaction.memo && (
-                            <div>
-                              <span className="font-medium uppercase tracking-wider text-[#294050] dark:text-[#9FB4BE] mr-2">
-                                Details
-                              </span>
-                              <span className="text-[#11202B] dark:text-[#EAF3F2]">
-                                {transaction.memo}
-                              </span>
-                            </div>
-                          )}
-                          <div>
-                            <span className="font-medium uppercase tracking-wider text-[#294050] dark:text-[#9FB4BE] mr-2">
-                              Wallet
-                            </span>
-                            <span className="font-mono break-all text-[#11202B] dark:text-[#EAF3F2]">
-                              {transaction.wallet}
-                            </span>
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
+                    <TransactionDetailRow transaction={transaction} />
                   )}
                 </React.Fragment>
               ))}
