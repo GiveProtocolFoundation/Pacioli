@@ -435,6 +435,7 @@ pub fn run() {
             api::accounting::deactivate_gl_account,
             api::accounting::get_journal_entries,
             api::accounting::get_journal_entry,
+            api::accounting::get_source_transaction,
             api::accounting::create_journal_entry,
             api::accounting::approve_journal_entry,
             api::accounting::post_journal_entry,

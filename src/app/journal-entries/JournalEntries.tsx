@@ -11,6 +11,7 @@ import {
   ShieldCheck,
   ChevronDown,
   ChevronRight,
+  Link2,
 } from 'lucide-react'
 import { useNavBadges } from '../../contexts/NavBadgeContext'
 import { useAuth } from '../../contexts/AuthContext'
@@ -582,9 +583,12 @@ const JournalEntries: React.FC = () => {
                             )}
                             {entry.referenceNumber && (
                               <span
-                                className="font-mono"
+                                className="font-mono inline-flex items-center gap-1"
                                 title={entry.referenceNumber}
                               >
+                                {entry.sourceTxId && (
+                                  <Link2 className="w-3 h-3 text-emerald-500" />
+                                )}
                                 Ref:{' '}
                                 {entry.referenceNumber.length > 20
                                   ? `${entry.referenceNumber.slice(0, 20)}\u2026`
