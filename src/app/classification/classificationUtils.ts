@@ -47,6 +47,7 @@ const ruleDescriptions: Record<string, string> = {
   contract_call: 'Contract interaction → fee-only entry',
 }
 
+/** @returns Short description of the classification heuristic for a given tx type. */
 export function rulePreview(txType: string): string {
   return ruleDescriptions[txType] ?? 'Heuristic classification based on tx type'
 }

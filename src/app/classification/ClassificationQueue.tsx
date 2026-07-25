@@ -47,6 +47,7 @@ interface BatchResult {
 const HEADER_CELL =
   'px-4 py-3 text-xs font-medium text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider'
 
+/** @returns Header row with select-all checkbox for the classification queue table. */
 const QueueHeaderRow: React.FC<{
   allSelected: boolean
   someSelected: boolean
@@ -90,6 +91,7 @@ interface QueueRowProps {
   onIgnore: (event: React.MouseEvent<HTMLButtonElement>) => void
 }
 
+/** @returns Single transaction row with action buttons (auto, manual, skip). */
 const QueueRow: React.FC<QueueRowProps> = ({
   tx,
   selected,
@@ -207,6 +209,7 @@ interface IgnoreDialogProps {
   onCancel: () => void
 }
 
+/** @returns Confirmation modal for skipping/ignoring a transaction. */
 const IgnoreDialog: React.FC<IgnoreDialogProps> = ({
   hash,
   reason,
@@ -251,6 +254,108 @@ const IgnoreDialog: React.FC<IgnoreDialogProps> = ({
   </div>
 )
 
+interface BatchResultBannerProps {
+  result: BatchResult
+  processing: boolean
+  onApprove: () => void
+  onNavigateDrafts: () => void
+  onDismiss: () => void
+}
+
+/** @returns Success banner after batch classify/skip with approve + navigate actions. */
+const BatchResultBanner: React.FC<BatchResultBannerProps> = ({
+  result,
+  processing,
+  onApprove,
+  onNavigateDrafts,
+  onDismiss,
+}) => {
+  if (result.classified === 0 && result.skipped === 0) return null
+  return (
+    <div className="mb-4 p-4 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
+      <div className="flex items-center justify-between">
+        <div className="text-sm text-emerald-800 dark:text-emerald-300">
+          {result.classified > 0 && (
+            <span>
+              {result.classified} transaction
+              {result.classified !== 1 ? 's' : ''} classified into draft journal{' '}
+              {result.classified !== 1 ? 'entries' : 'entry'}.
+            </span>
+          )}
+          {result.skipped > 0 && (
+            <span>
+              {result.skipped} transaction
+              {result.skipped !== 1 ? 's' : ''} skipped.
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          {result.journalEntryIds.length > 0 && (
+            <button
+              onClick={onApprove}
+              disabled={processing}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition-colors"
+            >
+              <ShieldCheck className="w-4 h-4" />
+              Approve {result.journalEntryIds.length} Draft
+              {result.journalEntryIds.length !== 1 ? 's' : ''}
+            </button>
+          )}
+          <button
+            onClick={onNavigateDrafts}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg border border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-colors"
+          >
+            View Drafts
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+          <button
+            onClick={onDismiss}
+            className="text-emerald-500 hover:text-emerald-700 dark:hover:text-emerald-200 text-sm font-medium"
+          >
+            Dismiss
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/** @returns Inline summary of priced/unpriced/unavailable counts. */
+const ValuationSummary: React.FC<{ transactions: RawTransaction[] }> = ({
+  transactions,
+}) => {
+  const priced = transactions.filter(
+    t => t.valuationStatus === 'priced'
+  ).length
+  const unpriced = transactions.filter(
+    t => t.valuationStatus === 'unpriced'
+  ).length
+  const unavail = transactions.filter(
+    t => t.valuationStatus === 'unavailable'
+  ).length
+  return (
+    <span className="ml-2">
+      ({priced} priced
+      {unpriced > 0 && (
+        <>
+          ,{' '}
+          <span className="text-[#647D8B]">{unpriced} awaiting prices</span>
+        </>
+      )}
+      {unavail > 0 && (
+        <>
+          ,{' '}
+          <span className="text-amber-600 dark:text-amber-400">
+            {unavail} price unavailable
+          </span>
+        </>
+      )}
+      )
+    </span>
+  )
+}
+
+/** @returns Main classification queue page with batch operations and filtering. */
 const ClassificationQueue: React.FC = () => {
   const navigate = useNavigate()
   const { refreshCounts } = useNavBadges()
@@ -714,55 +819,15 @@ const ClassificationQueue: React.FC = () => {
       )}
 
       {/* Batch result banner */}
-      {batchResult !== null &&
-        (batchResult.classified > 0 || batchResult.skipped > 0) && (
-          <div className="mb-4 p-4 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
-            <div className="flex items-center justify-between">
-              <div className="text-sm text-emerald-800 dark:text-emerald-300">
-                {batchResult.classified > 0 && (
-                  <span>
-                    {batchResult.classified} transaction
-                    {batchResult.classified !== 1 ? 's' : ''} classified into
-                    draft journal{' '}
-                    {batchResult.classified !== 1 ? 'entries' : 'entry'}.
-                  </span>
-                )}
-                {batchResult.skipped > 0 && (
-                  <span>
-                    {batchResult.skipped} transaction
-                    {batchResult.skipped !== 1 ? 's' : ''} skipped.
-                  </span>
-                )}
-              </div>
-              <div className="flex items-center gap-2">
-                {batchResult.journalEntryIds.length > 0 && (
-                  <button
-                    onClick={handleBatchApprove}
-                    disabled={batchProcessing}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition-colors"
-                  >
-                    <ShieldCheck className="w-4 h-4" />
-                    Approve {batchResult.journalEntryIds.length} Draft
-                    {batchResult.journalEntryIds.length !== 1 ? 's' : ''}
-                  </button>
-                )}
-                <button
-                  onClick={handleNavigateToDrafts}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg border border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-colors"
-                >
-                  View Drafts
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  onClick={handleDismissBatchResult}
-                  className="text-emerald-500 hover:text-emerald-700 dark:hover:text-emerald-200 text-sm font-medium"
-                >
-                  Dismiss
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+      {batchResult !== null && (
+        <BatchResultBanner
+          result={batchResult}
+          processing={batchProcessing}
+          onApprove={handleBatchApprove}
+          onNavigateDrafts={handleNavigateToDrafts}
+          onDismiss={handleDismissBatchResult}
+        />
+      )}
 
       {/* Search + filter row */}
       <div className="mb-6 flex items-center gap-3">
@@ -898,40 +963,9 @@ const ClassificationQueue: React.FC = () => {
       <div className="mb-4 text-sm text-[#294050] dark:text-[#9FB4BE]">
         {filtered.length} unclassified transaction
         {filtered.length !== 1 ? 's' : ''}
-        {filtered.length > 0 &&
-          (() => {
-            const priced = filtered.filter(
-              t => t.valuationStatus === 'priced'
-            ).length
-            const unpriced = filtered.filter(
-              t => t.valuationStatus === 'unpriced'
-            ).length
-            const unavail = filtered.filter(
-              t => t.valuationStatus === 'unavailable'
-            ).length
-            return (
-              <span className="ml-2">
-                ({priced} priced
-                {unpriced > 0 && (
-                  <>
-                    ,{' '}
-                    <span className="text-[#647D8B]">
-                      {unpriced} awaiting prices
-                    </span>
-                  </>
-                )}
-                {unavail > 0 && (
-                  <>
-                    ,{' '}
-                    <span className="text-amber-600 dark:text-amber-400">
-                      {unavail} price unavailable
-                    </span>
-                  </>
-                )}
-                )
-              </span>
-            )
-          })()}
+        {filtered.length > 0 && (
+          <ValuationSummary transactions={filtered} />
+        )}
       </div>
 
       {/* Table */}
