@@ -491,10 +491,9 @@ const TransactionDetailRow: React.FC<{ transaction: Transaction }> = ({
   </tr>
 )
 
-interface TransactionsTablePanelProps {
+interface TransactionsTableProps {
   filteredTransactions: Transaction[]
   expandedId: string | null
-  searchQuery: string
   getAlias: (address: string) => string | null
   getToken: (id: string) => Token | undefined
   getChain: (id: string) => Chain | undefined
@@ -504,14 +503,17 @@ interface TransactionsTablePanelProps {
   handleToggleExpand: (e: React.MouseEvent<HTMLButtonElement>) => void
   handleEditButtonClick: (e: React.MouseEvent<HTMLButtonElement>) => void
   handleClassifyClick: (e: React.MouseEvent<HTMLButtonElement>) => void
+}
+
+interface TransactionsTablePanelProps extends TransactionsTableProps {
+  searchQuery: string
   handleNewTransaction: () => void
 }
 
-/** Table panel showing transaction rows with expand/collapse, or an empty-state prompt */
-const TransactionsTablePanel: React.FC<TransactionsTablePanelProps> = ({
+/** Transactions table with header row and expandable transaction rows */
+const TransactionsTable: React.FC<TransactionsTableProps> = ({
   filteredTransactions,
   expandedId,
-  searchQuery,
   getAlias,
   getToken,
   getChain,
@@ -521,67 +523,74 @@ const TransactionsTablePanel: React.FC<TransactionsTablePanelProps> = ({
   handleToggleExpand,
   handleEditButtonClick,
   handleClassifyClick,
+}) => (
+  <table className="w-full">
+    <thead className="bg-[#EAF3F2] dark:bg-[#11202B] border-b border-[rgba(95,227,192,0.15)]">
+      <tr>
+        <th className="w-10 px-4 py-3" aria-label="Expand" />
+        <th className="px-6 py-3 text-left text-xs font-medium text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
+          Type
+        </th>
+        <th className="px-6 py-3 text-left text-xs font-medium text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
+          Date & Time
+        </th>
+        <th className="px-6 py-3 text-left text-xs font-medium text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
+          Category
+        </th>
+        <th className="px-6 py-3 text-left text-xs font-medium text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
+          Wallet
+        </th>
+        <th className="px-6 py-3 text-right text-xs font-medium text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
+          Amount
+        </th>
+        <th className="px-6 py-3 text-left text-xs font-medium text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
+          Status
+        </th>
+        <th className="px-6 py-3 text-center text-xs font-medium text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
+          Classification
+        </th>
+        <th className="px-6 py-3 text-left text-xs font-medium text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
+          Actions
+        </th>
+      </tr>
+    </thead>
+    <tbody className="bg-[#F7FAFA] dark:bg-[#0C141B] divide-y divide-[rgba(95,227,192,0.1)]">
+      {filteredTransactions.map(transaction => (
+        <React.Fragment key={transaction.id}>
+          <TransactionSummaryRow
+            transaction={transaction}
+            isExpanded={expandedId === transaction.id}
+            walletLabel={
+              getAlias(transaction.wallet) ?? shortenAddress(transaction.wallet)
+            }
+            getToken={getToken}
+            getChain={getChain}
+            currencySettings={currencySettings}
+            handleImageError={handleImageError}
+            onRowClick={handleRowClick}
+            onToggleExpand={handleToggleExpand}
+            onEditClick={handleEditButtonClick}
+            onClassifyClick={handleClassifyClick}
+          />
+          {expandedId === transaction.id && (
+            <TransactionDetailRow transaction={transaction} />
+          )}
+        </React.Fragment>
+      ))}
+    </tbody>
+  </table>
+)
+
+/** Table panel showing transaction rows with expand/collapse, or an empty-state prompt */
+const TransactionsTablePanel: React.FC<TransactionsTablePanelProps> = ({
+  searchQuery,
   handleNewTransaction,
+  ...tableProps
 }) => (
   <div className="bg-[#F7FAFA] dark:bg-[#0C141B] rounded-lg border border-[rgba(95,227,192,0.15)] overflow-x-auto">
-    <table className="w-full">
-      <thead className="bg-[#EAF3F2] dark:bg-[#11202B] border-b border-[rgba(95,227,192,0.15)]">
-        <tr>
-          <th className="w-10 px-4 py-3" aria-label="Expand" />
-          <th className="px-6 py-3 text-left text-xs font-medium text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
-            Type
-          </th>
-          <th className="px-6 py-3 text-left text-xs font-medium text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
-            Date & Time
-          </th>
-          <th className="px-6 py-3 text-left text-xs font-medium text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
-            Category
-          </th>
-          <th className="px-6 py-3 text-left text-xs font-medium text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
-            Wallet
-          </th>
-          <th className="px-6 py-3 text-right text-xs font-medium text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
-            Amount
-          </th>
-          <th className="px-6 py-3 text-left text-xs font-medium text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
-            Status
-          </th>
-          <th className="px-6 py-3 text-center text-xs font-medium text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
-            Classification
-          </th>
-          <th className="px-6 py-3 text-left text-xs font-medium text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
-            Actions
-          </th>
-        </tr>
-      </thead>
-      <tbody className="bg-[#F7FAFA] dark:bg-[#0C141B] divide-y divide-[rgba(95,227,192,0.1)]">
-        {filteredTransactions.map(transaction => (
-          <React.Fragment key={transaction.id}>
-            <TransactionSummaryRow
-              transaction={transaction}
-              isExpanded={expandedId === transaction.id}
-              walletLabel={
-                getAlias(transaction.wallet) ??
-                shortenAddress(transaction.wallet)
-              }
-              getToken={getToken}
-              getChain={getChain}
-              currencySettings={currencySettings}
-              handleImageError={handleImageError}
-              onRowClick={handleRowClick}
-              onToggleExpand={handleToggleExpand}
-              onEditClick={handleEditButtonClick}
-              onClassifyClick={handleClassifyClick}
-            />
-            {expandedId === transaction.id && (
-              <TransactionDetailRow transaction={transaction} />
-            )}
-          </React.Fragment>
-        ))}
-      </tbody>
-    </table>
+    <TransactionsTable {...tableProps} />
 
-    {filteredTransactions.length === 0 && (
+    {tableProps.filteredTransactions.length === 0 && (
       <div className="text-center py-12">
         <Receipt className="mx-auto h-12 w-12 text-[#647D8B]" />
         <h3 className="mt-2 text-sm font-medium text-[#11202B] dark:text-[#EAF3F2]">
