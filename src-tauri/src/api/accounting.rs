@@ -1312,16 +1312,16 @@ pub async fn auto_classify_transaction(
         .and_then(|s| Decimal::from_str(s).ok());
 
     let (amount_usd, fee_usd, price_note) = if let Some(price) = price_per_unit {
-        let amt = token_qty
-            .checked_mul(price)
-            .unwrap_or(Decimal::ZERO);
-        let fee = fee_qty
-            .checked_mul(price)
-            .unwrap_or(Decimal::ZERO);
+        let amt = token_qty.checked_mul(price).unwrap_or(Decimal::ZERO);
+        let fee = fee_qty.checked_mul(price).unwrap_or(Decimal::ZERO);
         (amt, fee, None)
     } else {
         // No price — create the JE with $0 amounts and flag it.
-        (Decimal::ZERO, Decimal::ZERO, Some("Price unavailable at time of transaction — review and set USD amounts manually"))
+        (
+            Decimal::ZERO,
+            Decimal::ZERO,
+            Some("Price unavailable at time of transaction — review and set USD amounts manually"),
+        )
     };
 
     // Rounding: explicit half-away-from-zero (Inv-2), no f64 in the money path.
@@ -1385,9 +1385,7 @@ pub async fn auto_classify_transaction(
                         credit_minor: 0,
                         quantity: qty_str.clone(),
                         asset_id: Some(asset_id.clone()),
-                        description: Some(
-                            "Intra-entity transfer in — own wallet".to_string(),
-                        ),
+                        description: Some("Intra-entity transfer in — own wallet".to_string()),
                     });
                     lines.push(JournalEntryLineInput {
                         gl_account_id: crypto_assets_id,
@@ -1396,9 +1394,7 @@ pub async fn auto_classify_transaction(
                         credit_minor: amount_minor,
                         quantity: qty_str.clone(),
                         asset_id: Some(asset_id.clone()),
-                        description: Some(
-                            "Intra-entity transfer out — own wallet".to_string(),
-                        ),
+                        description: Some("Intra-entity transfer out — own wallet".to_string()),
                     });
                 }
                 format!(
@@ -1514,13 +1510,12 @@ pub async fn auto_classify_transaction(
     // If price was unavailable, record a classification_note so the UI surfaces it.
     // Must run before create_journal_entry since it consumes the State.
     if let Some(note) = price_note {
-        let _ = sqlx::query(
-            "UPDATE multi_chain_transactions SET classification_note = ? WHERE id = ?",
-        )
-        .bind(note)
-        .bind(&transaction_id)
-        .execute(&state.pool)
-        .await;
+        let _ =
+            sqlx::query("UPDATE multi_chain_transactions SET classification_note = ? WHERE id = ?")
+                .bind(note)
+                .bind(&transaction_id)
+                .execute(&state.pool)
+                .await;
     }
 
     create_journal_entry(state, input).await
@@ -4530,7 +4525,12 @@ mod tests {
     // ========================================================================
 
     /// Inserts a wallet into user_wallets for a given profile.
-    async fn insert_user_wallet(pool: &SqlitePool, address: &str, chain_id: &str, profile_id: Option<&str>) {
+    async fn insert_user_wallet(
+        pool: &SqlitePool,
+        address: &str,
+        chain_id: &str,
+        profile_id: Option<&str>,
+    ) {
         sqlx::query(
             "INSERT INTO user_wallets (address, chain_id, wallet_type, profile_id) VALUES (?, ?, 'substrate', ?)",
         )
@@ -4669,7 +4669,10 @@ mod tests {
 
         // Detect self-transfer and build the JE (mirrors auto_classify_transaction logic).
         let is_st = is_self_transfer(&pool, addr_a, Some(addr_b)).await;
-        assert!(is_st, "Must detect self-transfer for same-entity DOT wallets");
+        assert!(
+            is_st,
+            "Must detect self-transfer for same-entity DOT wallets"
+        );
 
         // Simulate the JE that auto_classify_transaction would produce
         let entry_id = {
@@ -4718,7 +4721,11 @@ mod tests {
         .await
         .expect("Fetch lines");
 
-        assert_eq!(lines.len(), 2, "Self-transfer JE must have exactly two lines");
+        assert_eq!(
+            lines.len(),
+            2,
+            "Self-transfer JE must have exactly two lines"
+        );
         for (gl_id, _, _) in &lines {
             assert_eq!(
                 *gl_id, crypto_id,
@@ -4788,14 +4795,7 @@ mod tests {
         // Insert a DOT staking reward: 10.5 DOT, pre-enriched to $8/DOT.
         let tx_id = "polkadot_0xdot001";
         insert_raw_tx(
-            &pool,
-            tx_id,
-            "polkadot",
-            "0xdot001",
-            "10.5",
-            None,
-            "claim",
-            1700000000,
+            &pool, tx_id, "polkadot", "0xdot001", "10.5", None, "claim", 1700000000,
         )
         .await;
 

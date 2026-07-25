@@ -1,6 +1,14 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { invoke } from '@tauri-apps/api/core'
-import { Search, Zap, FileEdit, EyeOff, Inbox, RefreshCw, DollarSign } from 'lucide-react'
+import {
+  Search,
+  Zap,
+  FileEdit,
+  EyeOff,
+  Inbox,
+  RefreshCw,
+  DollarSign,
+} from 'lucide-react'
 import { useNavBadges } from '../../contexts/NavBadgeContext'
 import type {
   RawTransaction,
@@ -72,14 +80,22 @@ const QueueRow: React.FC<QueueRowProps> = ({
     <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-mono">
       {tx.valuationStatus === 'priced' && tx.priceAtAcquisitionUsd ? (
         <span className="text-[#11202B] dark:text-[#EAF3F2]">
-          ${(parseFloat(tx.transferValue) * parseFloat(tx.priceAtAcquisitionUsd)).toFixed(2)}
+          $
+          {(
+            parseFloat(tx.transferValue) * parseFloat(tx.priceAtAcquisitionUsd)
+          ).toFixed(2)}
         </span>
       ) : tx.valuationStatus === 'unavailable' ? (
-        <span className="text-amber-600 dark:text-amber-400" title="Price unavailable for this token/date">
+        <span
+          className="text-amber-600 dark:text-amber-400"
+          title="Price unavailable for this token/date"
+        >
           N/A
         </span>
       ) : (
-        <span className="text-[#647D8B]" title="Price not yet fetched">—</span>
+        <span className="text-[#647D8B]" title="Price not yet fetched">
+          —
+        </span>
       )}
     </td>
     <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-mono text-[#647D8B]">
@@ -420,18 +436,40 @@ const ClassificationQueue: React.FC = () => {
       <div className="mb-4 text-sm text-[#294050] dark:text-[#9FB4BE]">
         {filtered.length} unclassified transaction
         {filtered.length !== 1 ? 's' : ''}
-        {filtered.length > 0 && (() => {
-          const priced = filtered.filter(t => t.valuationStatus === 'priced').length
-          const unpriced = filtered.filter(t => t.valuationStatus === 'unpriced').length
-          const unavail = filtered.filter(t => t.valuationStatus === 'unavailable').length
-          return (
-            <span className="ml-2">
-              ({priced} priced
-              {unpriced > 0 && <>, <span className="text-[#647D8B]">{unpriced} awaiting prices</span></>}
-              {unavail > 0 && <>, <span className="text-amber-600 dark:text-amber-400">{unavail} price unavailable</span></>})
-            </span>
-          )
-        })()}
+        {filtered.length > 0 &&
+          (() => {
+            const priced = filtered.filter(
+              t => t.valuationStatus === 'priced'
+            ).length
+            const unpriced = filtered.filter(
+              t => t.valuationStatus === 'unpriced'
+            ).length
+            const unavail = filtered.filter(
+              t => t.valuationStatus === 'unavailable'
+            ).length
+            return (
+              <span className="ml-2">
+                ({priced} priced
+                {unpriced > 0 && (
+                  <>
+                    ,{' '}
+                    <span className="text-[#647D8B]">
+                      {unpriced} awaiting prices
+                    </span>
+                  </>
+                )}
+                {unavail > 0 && (
+                  <>
+                    ,{' '}
+                    <span className="text-amber-600 dark:text-amber-400">
+                      {unavail} price unavailable
+                    </span>
+                  </>
+                )}
+                )
+              </span>
+            )
+          })()}
       </div>
 
       {/* Table */}
