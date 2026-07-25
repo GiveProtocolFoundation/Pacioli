@@ -441,6 +441,7 @@ pub fn run() {
             api::accounting::void_journal_entry,
             api::accounting::demote_journal_entry,
             api::accounting::update_journal_entry,
+            api::accounting::enrich_transaction_prices,
             api::accounting::auto_classify_transaction,
             api::accounting::update_transaction_classification,
             api::accounting::get_unclassified_transactions,

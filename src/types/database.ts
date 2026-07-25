@@ -298,6 +298,9 @@ export type ClassificationStatus =
   | 'ignored'
   | 'split'
 
+/** Valuation enrichment status for multi-chain transactions. */
+export type ValuationStatus = 'unpriced' | 'priced' | 'unavailable'
+
 /** Raw multi-chain transaction row from the Rust backend (camelCase via serde). */
 export interface RawTransaction {
   id: string
@@ -311,6 +314,8 @@ export interface RawTransaction {
   transactionType: string
   status: string
   classificationStatus: ClassificationStatus
+  priceAtAcquisitionUsd: string | null
+  valuationStatus: ValuationStatus
 }
 
 // =============================================================================
