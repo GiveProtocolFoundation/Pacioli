@@ -16,6 +16,7 @@ import {
   Landmark,
   Repeat,
   HelpCircle,
+  Loader,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import ExportDropdown from './ExportDropdown'
@@ -239,6 +240,7 @@ const getStatusColor = (status: TransactionStatus) => {
   }
 }
 
+/** Map a TransactionStatus enum value to a human-readable label. */
 const getStatusLabel = (status: TransactionStatus) => {
   switch (status) {
     case 'pending_approval':
@@ -489,11 +491,124 @@ const TransactionDetailRow: React.FC<{ transaction: Transaction }> = ({
   </tr>
 )
 
+interface TransactionsTablePanelProps {
+  filteredTransactions: Transaction[]
+  expandedId: string | null
+  searchQuery: string
+  getAlias: (address: string) => string | null
+  getToken: (id: string) => Token | undefined
+  getChain: (id: string) => Chain | undefined
+  currencySettings: { primaryCurrency: string }
+  handleImageError: (e: React.SyntheticEvent<HTMLImageElement>) => void
+  handleRowClick: (e: React.MouseEvent<HTMLTableRowElement>) => void
+  handleToggleExpand: (e: React.MouseEvent<HTMLButtonElement>) => void
+  handleEditButtonClick: (e: React.MouseEvent<HTMLButtonElement>) => void
+  handleClassifyClick: (e: React.MouseEvent<HTMLButtonElement>) => void
+  handleNewTransaction: () => void
+}
+
+/** Table panel showing transaction rows with expand/collapse, or an empty-state prompt */
+const TransactionsTablePanel: React.FC<TransactionsTablePanelProps> = ({
+  filteredTransactions,
+  expandedId,
+  searchQuery,
+  getAlias,
+  getToken,
+  getChain,
+  currencySettings,
+  handleImageError,
+  handleRowClick,
+  handleToggleExpand,
+  handleEditButtonClick,
+  handleClassifyClick,
+  handleNewTransaction,
+}) => (
+  <div className="bg-[#F7FAFA] dark:bg-[#0C141B] rounded-lg border border-[rgba(95,227,192,0.15)] overflow-x-auto">
+    <table className="w-full">
+      <thead className="bg-[#EAF3F2] dark:bg-[#11202B] border-b border-[rgba(95,227,192,0.15)]">
+        <tr>
+          <th className="w-10 px-4 py-3" aria-label="Expand" />
+          <th className="px-6 py-3 text-left text-xs font-medium text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
+            Type
+          </th>
+          <th className="px-6 py-3 text-left text-xs font-medium text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
+            Date & Time
+          </th>
+          <th className="px-6 py-3 text-left text-xs font-medium text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
+            Category
+          </th>
+          <th className="px-6 py-3 text-left text-xs font-medium text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
+            Wallet
+          </th>
+          <th className="px-6 py-3 text-right text-xs font-medium text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
+            Amount
+          </th>
+          <th className="px-6 py-3 text-left text-xs font-medium text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
+            Status
+          </th>
+          <th className="px-6 py-3 text-center text-xs font-medium text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
+            Classification
+          </th>
+          <th className="px-6 py-3 text-left text-xs font-medium text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
+            Actions
+          </th>
+        </tr>
+      </thead>
+      <tbody className="bg-[#F7FAFA] dark:bg-[#0C141B] divide-y divide-[rgba(95,227,192,0.1)]">
+        {filteredTransactions.map(transaction => (
+          <React.Fragment key={transaction.id}>
+            <TransactionSummaryRow
+              transaction={transaction}
+              isExpanded={expandedId === transaction.id}
+              walletLabel={
+                getAlias(transaction.wallet) ??
+                shortenAddress(transaction.wallet)
+              }
+              getToken={getToken}
+              getChain={getChain}
+              currencySettings={currencySettings}
+              handleImageError={handleImageError}
+              onRowClick={handleRowClick}
+              onToggleExpand={handleToggleExpand}
+              onEditClick={handleEditButtonClick}
+              onClassifyClick={handleClassifyClick}
+            />
+            {expandedId === transaction.id && (
+              <TransactionDetailRow transaction={transaction} />
+            )}
+          </React.Fragment>
+        ))}
+      </tbody>
+    </table>
+
+    {filteredTransactions.length === 0 && (
+      <div className="text-center py-12">
+        <Receipt className="mx-auto h-12 w-12 text-[#647D8B]" />
+        <h3 className="mt-2 text-sm font-medium text-[#11202B] dark:text-[#EAF3F2]">
+          No transactions found
+        </h3>
+        <p className="mt-1 text-sm text-[#294050] dark:text-[#9FB4BE]">
+          {searchQuery
+            ? 'Try adjusting your search'
+            : 'Get started by creating a new transaction'}
+        </p>
+        <button
+          onClick={handleNewTransaction}
+          className="mt-6 inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-[#294050] hover:bg-[#1E2F3C]"
+        >
+          <Plus className="w-5 h-5 mr-2" />
+          New Transaction
+        </button>
+      </div>
+    )}
+  </div>
+)
+
 /** Transactions list page with search, filtering, and tabular display of all crypto transactions */
 const Transactions: React.FC = () => {
   const location = useLocation()
   const navigate = useNavigate()
-  const { transactions } = useTransactions()
+  const { transactions, loading } = useTransactions()
   const { settings: currencySettings } = useCurrency()
   const { getToken, getChain } = useTokens()
   const { getAlias } = useWalletAliases()
@@ -618,104 +733,43 @@ const Transactions: React.FC = () => {
           />
         </div>
 
-        <div className="flex gap-3">
-          <button className="flex items-center gap-2 px-4 py-2 border border-[rgba(95,227,192,0.15)] rounded-lg bg-[#F7FAFA] dark:bg-[#11202B] hover:bg-[#EAF3F2] dark:hover:bg-[#16242F] text-[#294050] dark:text-[#9FB4BE]">
-            <Calendar className="w-5 h-5" />
-            <span className="hidden sm:inline">Date Range</span>
-          </button>
-          <button className="flex items-center gap-2 px-4 py-2 border border-[rgba(95,227,192,0.15)] rounded-lg bg-[#F7FAFA] dark:bg-[#11202B] hover:bg-[#EAF3F2] dark:hover:bg-[#16242F] text-[#294050] dark:text-[#9FB4BE]">
-            <Filter className="w-5 h-5" />
-            <span className="hidden sm:inline">Filters</span>
-          </button>
-          <ExportDropdown transactions={filteredTransactions} />
-        </div>
+        <button className="flex items-center gap-2 px-4 py-2 border border-[rgba(95,227,192,0.15)] rounded-lg bg-[#F7FAFA] dark:bg-[#11202B] hover:bg-[#EAF3F2] dark:hover:bg-[#16242F] text-[#294050] dark:text-[#9FB4BE]">
+          <Calendar className="w-5 h-5" />
+          <span className="hidden sm:inline">Date Range</span>
+        </button>
+        <button className="flex items-center gap-2 px-4 py-2 border border-[rgba(95,227,192,0.15)] rounded-lg bg-[#F7FAFA] dark:bg-[#11202B] hover:bg-[#EAF3F2] dark:hover:bg-[#16242F] text-[#294050] dark:text-[#9FB4BE]">
+          <Filter className="w-5 h-5" />
+          <span className="hidden sm:inline">Filters</span>
+        </button>
+        <ExportDropdown transactions={filteredTransactions} />
       </div>
 
       {/* Transactions Table */}
-      <div className="bg-[#F7FAFA] dark:bg-[#0C141B] rounded-lg border border-[rgba(95,227,192,0.15)] overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-[#EAF3F2] dark:bg-[#11202B] border-b border-[rgba(95,227,192,0.15)]">
-              <tr>
-                <th className="w-10 px-4 py-3" aria-label="Expand" />
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
-                  Type
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
-                  Date & Time
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
-                  Category
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
-                  Wallet
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
-                  Amount
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-center text-xs font-medium text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
-                  Classification
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-[#F7FAFA] dark:bg-[#0C141B] divide-y divide-[rgba(95,227,192,0.1)]">
-              {filteredTransactions.map(transaction => (
-                <React.Fragment key={transaction.id}>
-                  <TransactionSummaryRow
-                    transaction={transaction}
-                    isExpanded={expandedId === transaction.id}
-                    walletLabel={
-                      getAlias(transaction.wallet) ??
-                      shortenAddress(transaction.wallet)
-                    }
-                    getToken={getToken}
-                    getChain={getChain}
-                    currencySettings={currencySettings}
-                    handleImageError={handleImageError}
-                    onRowClick={handleRowClick}
-                    onToggleExpand={handleToggleExpand}
-                    onEditClick={handleEditButtonClick}
-                    onClassifyClick={handleClassifyClick}
-                  />
-                  {expandedId === transaction.id && (
-                    <TransactionDetailRow transaction={transaction} />
-                  )}
-                </React.Fragment>
-              ))}
-            </tbody>
-          </table>
+      {loading && (
+        <div className="flex items-center justify-center py-12">
+          <Loader className="w-6 h-6 animate-spin text-[#5FE3C0]" />
+          <span className="ml-2 text-sm text-[#294050] dark:text-[#9FB4BE]">
+            Loading transactions…
+          </span>
         </div>
-
-        {/* Empty State */}
-        {filteredTransactions.length === 0 && (
-          <div className="text-center py-12">
-            <Receipt className="mx-auto h-12 w-12 text-[#647D8B]" />
-            <h3 className="mt-2 text-sm font-medium text-[#11202B] dark:text-[#EAF3F2]">
-              No transactions found
-            </h3>
-            <p className="mt-1 text-sm text-[#294050] dark:text-[#9FB4BE]">
-              {searchQuery
-                ? 'Try adjusting your search'
-                : 'Get started by creating a new transaction'}
-            </p>
-            <div className="mt-6">
-              <button
-                onClick={handleNewTransaction}
-                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-[#294050] hover:bg-[#1E2F3C]"
-              >
-                <Plus className="w-5 h-5 mr-2" />
-                New Transaction
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
+      )}
+      {!loading && (
+        <TransactionsTablePanel
+          filteredTransactions={filteredTransactions}
+          expandedId={expandedId}
+          searchQuery={searchQuery}
+          getAlias={getAlias}
+          getToken={getToken}
+          getChain={getChain}
+          currencySettings={currencySettings}
+          handleImageError={handleImageError}
+          handleRowClick={handleRowClick}
+          handleToggleExpand={handleToggleExpand}
+          handleEditButtonClick={handleEditButtonClick}
+          handleClassifyClick={handleClassifyClick}
+          handleNewTransaction={handleNewTransaction}
+        />
+      )}
 
       {/* Pagination */}
       {filteredTransactions.length > 0 && (
