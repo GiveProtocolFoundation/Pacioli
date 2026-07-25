@@ -491,13 +491,13 @@ const ClassificationQueue: React.FC = () => {
     setActionError(null)
     const approver = user?.email ?? user?.display_name ?? 'unknown'
 
-    let approved = 0
+    let approvedCount = 0
     let failed = 0
 
     for (const id of batchResult.journalEntryIds) {
       try {
         await invoke('approve_journal_entry', { id, approver })
-        approved++
+        approvedCount++
       } catch {
         failed++
       }
@@ -516,7 +516,7 @@ const ClassificationQueue: React.FC = () => {
 
     if (failed > 0) {
       setActionError(
-        `${failed} journal entr${failed !== 1 ? 'ies' : 'y'} failed to approve`
+        `${approvedCount} approved, ${failed} failed`
       )
     } else {
       setActionError(null)

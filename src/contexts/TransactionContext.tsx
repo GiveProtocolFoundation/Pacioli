@@ -171,7 +171,7 @@ export const TransactionProvider: React.FC<{
     if (initRef.current && !currentProfile) return
     initRef.current = true
     loadTransactions()
-  }, [loadTransactions])
+  }, [loadTransactions, currentProfile])
 
   const addTransaction = useCallback(
     async (
