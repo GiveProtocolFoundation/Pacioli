@@ -994,9 +994,7 @@ const ClassificationQueue: React.FC = () => {
                       key={tx.id}
                       tx={tx}
                       ruleLabel={
-                        matched
-                          ? matched.name
-                          : rulePreview(tx.transactionType)
+                        matched ? matched.name : rulePreview(tx.transactionType)
                       }
                       selected={selectedIds.has(tx.id)}
                       busy={processingId === tx.id || batchProcessing}
