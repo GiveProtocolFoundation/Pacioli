@@ -515,9 +515,7 @@ const ClassificationQueue: React.FC = () => {
     )
 
     if (failed > 0) {
-      setActionError(
-        `${approvedCount} approved, ${failed} failed`
-      )
+      setActionError(`${approvedCount} approved, ${failed} failed`)
     } else {
       setActionError(null)
     }
