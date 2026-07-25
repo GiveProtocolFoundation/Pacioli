@@ -20,6 +20,8 @@ use crate::fetchers::{ApiKeyManager, ApiProvider, FetcherConfig, ResilientFetche
 use chrono::Utc;
 use serde::de::DeserializeOwned;
 use serde::Deserialize;
+use std::collections::HashSet;
+use std::future::Future;
 use std::time::Duration;
 use tokio::time::sleep;
 
@@ -38,6 +40,9 @@ const MAX_RETRIES: u32 = 5;
 
 /// Base delay for exponential backoff (milliseconds)
 const BASE_RETRY_DELAY_MS: u64 = 200;
+
+/// Safety cap on windowed fetches to prevent infinite loops
+const MAX_WINDOW_FETCHES: u32 = 100;
 
 const MOONBEAM_SUNSET_MESSAGE: &str = "The Moonbeam network ceased operations on 31 July 2026. \
      New transactions can no longer be synced; your previously synced \
@@ -94,6 +99,60 @@ fn get_rate_limit_for_chain(chain_id: u64, has_api_key: bool) -> u32 {
         provider.turbo_rate_limit()
     } else {
         provider.default_rate_limit()
+    }
+}
+
+// =============================================================================
+// BLOCK-RANGE WINDOWED PAGINATION TRAIT
+// =============================================================================
+
+trait HasBlockAndHash {
+    fn block_num(&self) -> u64;
+    fn dedup_key(&self) -> String;
+}
+
+impl HasBlockAndHash for EvmTransaction {
+    fn block_num(&self) -> u64 {
+        self.block_number.parse().unwrap_or(0)
+    }
+    fn dedup_key(&self) -> String {
+        self.hash.clone()
+    }
+}
+
+impl HasBlockAndHash for InternalTransaction {
+    fn block_num(&self) -> u64 {
+        self.block_number.parse().unwrap_or(0)
+    }
+    fn dedup_key(&self) -> String {
+        format!("{}:{}", self.hash, self.trace_id)
+    }
+}
+
+impl HasBlockAndHash for Erc20Transfer {
+    fn block_num(&self) -> u64 {
+        self.block_number.parse().unwrap_or(0)
+    }
+    fn dedup_key(&self) -> String {
+        format!("{}:{}", self.hash, self.log_index)
+    }
+}
+
+impl HasBlockAndHash for Erc721Transfer {
+    fn block_num(&self) -> u64 {
+        self.block_number.parse().unwrap_or(0)
+    }
+    fn dedup_key(&self) -> String {
+        format!("{}:{}", self.hash, self.log_index)
+    }
+}
+
+impl HasBlockAndHash for Erc1155Transfer {
+    fn block_num(&self) -> u64 {
+        self.block_number.parse().unwrap_or(0)
+    }
+    fn dedup_key(&self) -> String {
+        format!("{}:{}:{}", self.hash, self.token_id, self.token_value)
     }
 }
 
@@ -392,44 +451,239 @@ impl EtherscanClient {
         }
     }
 
-    /// Get all normal transactions with automatic pagination
+    /// Get all normal transactions using block-range windowing.
+    ///
+    /// Etherscan V2 rejects page × offset > 10 000, so deep history cannot
+    /// be paged by incrementing the page number.  Instead we keep page=1
+    /// with sort=asc and advance `startBlock` past each full window.
+    /// Boundary-block overlap is removed by tx-hash dedup.
     pub async fn get_all_normal_transactions(
         &self,
         address: &str,
         start_block: Option<u64>,
         end_block: Option<u64>,
     ) -> ChainResult<Vec<EvmTransaction>> {
-        let mut all_txs = Vec::new();
-        let mut page = 1u32;
+        self.fetch_all_windowed(start_block, end_block, |sb, eb| {
+            let start = sb.to_string();
+            let end = eb.map_or_else(|| "99999999".to_string(), |b| b.to_string());
+            let url = self.build_url(
+                "account",
+                "txlist",
+                &[
+                    ("address", address),
+                    ("startblock", &start),
+                    ("endblock", &end),
+                    ("page", "1"),
+                    ("offset", &MAX_RESULTS_PER_PAGE.to_string()),
+                    ("sort", "asc"),
+                ],
+            );
+            async move {
+                match self.request::<Vec<EvmTransaction>>(&url).await {
+                    Ok(txs) => Ok(txs),
+                    Err(ChainError::ApiError(msg)) if msg == "No results" => Ok(Vec::new()),
+                    Err(e) => Err(e),
+                }
+            }
+        })
+        .await
+    }
 
-        loop {
-            let txs = self
-                .get_normal_transactions_paginated(
-                    address,
-                    start_block,
-                    end_block,
-                    page,
-                    MAX_RESULTS_PER_PAGE,
-                )
-                .await?;
+    /// Get all internal transactions using block-range windowing.
+    pub async fn get_all_internal_transactions(
+        &self,
+        address: &str,
+        start_block: Option<u64>,
+        end_block: Option<u64>,
+    ) -> ChainResult<Vec<InternalTransaction>> {
+        self.fetch_all_windowed(start_block, end_block, |sb, eb| {
+            let start = sb.to_string();
+            let end = eb.map_or_else(|| "99999999".to_string(), |b| b.to_string());
+            let url = self.build_url(
+                "account",
+                "txlistinternal",
+                &[
+                    ("address", address),
+                    ("startblock", &start),
+                    ("endblock", &end),
+                    ("page", "1"),
+                    ("offset", &MAX_RESULTS_PER_PAGE.to_string()),
+                    ("sort", "asc"),
+                ],
+            );
+            async move {
+                match self.request::<Vec<InternalTransaction>>(&url).await {
+                    Ok(txs) => Ok(txs),
+                    Err(ChainError::ApiError(msg)) if msg == "No results" => Ok(Vec::new()),
+                    Err(e) => Err(e),
+                }
+            }
+        })
+        .await
+    }
 
-            let count = txs.len();
-            all_txs.extend(txs);
+    /// Get all ERC-20 token transfers using block-range windowing.
+    pub async fn get_all_token_transfers(
+        &self,
+        address: &str,
+        contract_address: Option<&str>,
+        start_block: Option<u64>,
+        end_block: Option<u64>,
+    ) -> ChainResult<Vec<Erc20Transfer>> {
+        self.fetch_all_windowed(start_block, end_block, |sb, eb| {
+            let start = sb.to_string();
+            let end = eb.map_or_else(|| "99999999".to_string(), |b| b.to_string());
+            let offset_str = MAX_RESULTS_PER_PAGE.to_string();
+            let mut params = vec![
+                ("address", address),
+                ("startblock", start.as_str()),
+                ("endblock", end.as_str()),
+                ("page", "1"),
+                ("offset", offset_str.as_str()),
+                ("sort", "asc"),
+            ];
+            let contract_str;
+            if let Some(c) = contract_address {
+                contract_str = c.to_string();
+                params.push(("contractaddress", contract_str.as_str()));
+            }
+            let url = self.build_url("account", "tokentx", &params);
+            async move {
+                match self.request::<Vec<Erc20Transfer>>(&url).await {
+                    Ok(txs) => Ok(txs),
+                    Err(ChainError::ApiError(msg)) if msg == "No results" => Ok(Vec::new()),
+                    Err(e) => Err(e),
+                }
+            }
+        })
+        .await
+    }
 
-            // If we got less than max, we've reached the end
+    /// Get all ERC-721 (NFT) transfers using block-range windowing.
+    pub async fn get_all_nft_transfers(
+        &self,
+        address: &str,
+        contract_address: Option<&str>,
+        start_block: Option<u64>,
+        end_block: Option<u64>,
+    ) -> ChainResult<Vec<Erc721Transfer>> {
+        self.fetch_all_windowed(start_block, end_block, |sb, eb| {
+            let start = sb.to_string();
+            let end = eb.map_or_else(|| "99999999".to_string(), |b| b.to_string());
+            let offset_str = MAX_RESULTS_PER_PAGE.to_string();
+            let mut params = vec![
+                ("address", address),
+                ("startblock", start.as_str()),
+                ("endblock", end.as_str()),
+                ("page", "1"),
+                ("offset", offset_str.as_str()),
+                ("sort", "asc"),
+            ];
+            let contract_str;
+            if let Some(c) = contract_address {
+                contract_str = c.to_string();
+                params.push(("contractaddress", contract_str.as_str()));
+            }
+            let url = self.build_url("account", "tokennfttx", &params);
+            async move {
+                match self.request::<Vec<Erc721Transfer>>(&url).await {
+                    Ok(txs) => Ok(txs),
+                    Err(ChainError::ApiError(msg)) if msg == "No results" => Ok(Vec::new()),
+                    Err(e) => Err(e),
+                }
+            }
+        })
+        .await
+    }
+
+    /// Get all ERC-1155 transfers using block-range windowing.
+    pub async fn get_all_erc1155_transfers(
+        &self,
+        address: &str,
+        contract_address: Option<&str>,
+        start_block: Option<u64>,
+        end_block: Option<u64>,
+    ) -> ChainResult<Vec<Erc1155Transfer>> {
+        self.fetch_all_windowed(start_block, end_block, |sb, eb| {
+            let start = sb.to_string();
+            let end = eb.map_or_else(|| "99999999".to_string(), |b| b.to_string());
+            let offset_str = MAX_RESULTS_PER_PAGE.to_string();
+            let mut params = vec![
+                ("address", address),
+                ("startblock", start.as_str()),
+                ("endblock", end.as_str()),
+                ("page", "1"),
+                ("offset", offset_str.as_str()),
+                ("sort", "asc"),
+            ];
+            let contract_str;
+            if let Some(c) = contract_address {
+                contract_str = c.to_string();
+                params.push(("contractaddress", contract_str.as_str()));
+            }
+            let url = self.build_url("account", "token1155tx", &params);
+            async move {
+                match self.request::<Vec<Erc1155Transfer>>(&url).await {
+                    Ok(txs) => Ok(txs),
+                    Err(ChainError::ApiError(msg)) if msg == "No results" => Ok(Vec::new()),
+                    Err(e) => Err(e),
+                }
+            }
+        })
+        .await
+    }
+
+    // =========================================================================
+    // BLOCK-RANGE WINDOWED PAGINATION (private)
+    // =========================================================================
+
+    /// Generic block-range windowed fetcher.
+    ///
+    /// Keeps page=1 and advances `start_block` past each full window
+    /// (sort=asc on the caller side).  Deduplicates boundary-block overlap
+    /// by tx hash.
+    async fn fetch_all_windowed<T, F, Fut>(
+        &self,
+        start_block: Option<u64>,
+        end_block: Option<u64>,
+        fetch_window: F,
+    ) -> ChainResult<Vec<T>>
+    where
+        T: HasBlockAndHash,
+        F: Fn(u64, Option<u64>) -> Fut,
+        Fut: Future<Output = ChainResult<Vec<T>>>,
+    {
+        let mut all: Vec<T> = Vec::new();
+        let mut seen: HashSet<String> = HashSet::new();
+        let mut current_start = start_block.unwrap_or(0);
+
+        for _ in 0..MAX_WINDOW_FETCHES {
+            let window = fetch_window(current_start, end_block).await?;
+            let count = window.len();
+
+            for item in window {
+                let key = item.dedup_key();
+                if seen.insert(key) {
+                    all.push(item);
+                }
+            }
+
             if count < MAX_RESULTS_PER_PAGE as usize {
                 break;
             }
 
-            page += 1;
-
-            // Safety limit to prevent infinite loops
-            if page > 100 {
-                break;
-            }
+            let last_block = all
+                .last()
+                .map(|t| t.block_num())
+                .unwrap_or(current_start);
+            current_start = if last_block > current_start {
+                last_block
+            } else {
+                current_start + 1
+            };
         }
 
-        Ok(all_txs)
+        Ok(all)
     }
 
     /// Get internal transactions for an address
@@ -1035,5 +1289,176 @@ mod tests {
         assert_eq!(oracle.safe_gas_price, "20");
         assert_eq!(oracle.propose_gas_price, "22");
         assert_eq!(oracle.fast_gas_price, "25");
+    }
+
+    fn make_evm_tx(hash: &str, block: &str) -> EvmTransaction {
+        EvmTransaction {
+            hash: hash.to_string(),
+            block_number: block.to_string(),
+            time_stamp: "0".to_string(),
+            from: String::new(),
+            to: String::new(),
+            value: "0".to_string(),
+            gas: "0".to_string(),
+            gas_price: "0".to_string(),
+            gas_used: "0".to_string(),
+            nonce: String::new(),
+            is_error: "0".to_string(),
+            tx_receipt_status: "1".to_string(),
+            input: String::new(),
+            contract_address: String::new(),
+            function_name: String::new(),
+            method_id: String::new(),
+            confirmations: String::new(),
+            cumulative_gas_used: String::new(),
+            max_fee_per_gas: String::new(),
+            max_priority_fee_per_gas: String::new(),
+        }
+    }
+
+    #[test]
+    fn test_has_block_and_hash_evm_tx() {
+        let tx = make_evm_tx("0xabc", "12345");
+        assert_eq!(tx.block_num(), 12345);
+        assert_eq!(tx.dedup_key(), "0xabc");
+    }
+
+    #[test]
+    fn test_has_block_and_hash_internal_tx() {
+        let tx = InternalTransaction {
+            hash: "0xabc".to_string(),
+            block_number: "100".to_string(),
+            time_stamp: "0".to_string(),
+            from: String::new(),
+            to: String::new(),
+            value: "0".to_string(),
+            contract_address: String::new(),
+            trace_type: "call".to_string(),
+            gas: String::new(),
+            gas_used: String::new(),
+            is_error: "0".to_string(),
+            err_code: String::new(),
+            trace_id: "0_1".to_string(),
+        };
+        assert_eq!(tx.block_num(), 100);
+        assert_eq!(tx.dedup_key(), "0xabc:0_1");
+    }
+
+    #[test]
+    fn test_has_block_and_hash_erc20() {
+        let tx = Erc20Transfer {
+            hash: "0xdef".to_string(),
+            block_number: "200".to_string(),
+            time_stamp: "0".to_string(),
+            from: String::new(),
+            to: String::new(),
+            value: "0".to_string(),
+            contract_address: String::new(),
+            token_name: String::new(),
+            token_symbol: String::new(),
+            token_decimal: "18".to_string(),
+            log_index: "3".to_string(),
+            transaction_index: String::new(),
+            gas_used: String::new(),
+            gas_price: String::new(),
+            nonce: String::new(),
+        };
+        assert_eq!(tx.block_num(), 200);
+        assert_eq!(tx.dedup_key(), "0xdef:3");
+    }
+
+    #[tokio::test]
+    async fn test_fetch_all_windowed_dedup() {
+        let client = create_test_client();
+        let call_count = std::sync::atomic::AtomicU32::new(0);
+
+        let result: ChainResult<Vec<EvmTransaction>> =
+            client.fetch_all_windowed(Some(0), None, |_sb, _eb| {
+                let n = call_count.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+                async move {
+                    if n == 0 {
+                        // Return 3 txs (< MAX_RESULTS_PER_PAGE so it stops)
+                        Ok(vec![
+                            make_evm_tx("0x1", "100"),
+                            make_evm_tx("0x2", "100"),
+                            make_evm_tx("0x1", "100"), // duplicate
+                        ])
+                    } else {
+                        Ok(Vec::new())
+                    }
+                }
+            }).await;
+
+        let txs = result.unwrap();
+        assert_eq!(txs.len(), 2);
+        assert_eq!(txs[0].hash, "0x1");
+        assert_eq!(txs[1].hash, "0x2");
+        assert_eq!(call_count.load(std::sync::atomic::Ordering::SeqCst), 1);
+    }
+
+    #[tokio::test]
+    async fn test_fetch_all_windowed_advances_start_block() {
+        let client = create_test_client();
+        let starts = std::sync::Arc::new(std::sync::Mutex::new(Vec::<u64>::new()));
+        let starts_clone = starts.clone();
+
+        let result: ChainResult<Vec<EvmTransaction>> =
+            client.fetch_all_windowed(Some(0), None, |sb, _eb| {
+                starts_clone.lock().unwrap().push(sb);
+                let n = starts_clone.lock().unwrap().len();
+                async move {
+                    if n == 1 {
+                        // Return full page: len == MAX_RESULTS_PER_PAGE
+                        let mut txs = Vec::new();
+                        for i in 0..MAX_RESULTS_PER_PAGE {
+                            txs.push(make_evm_tx(
+                                &format!("0x{:04x}", i),
+                                &(100 + i / 100).to_string(),
+                            ));
+                        }
+                        Ok(txs)
+                    } else {
+                        // Second call returns partial page → stop
+                        Ok(vec![make_evm_tx("0xfinal", "200")])
+                    }
+                }
+            }).await;
+
+        result.unwrap();
+        let recorded = starts.lock().unwrap();
+        assert_eq!(recorded.len(), 2);
+        assert_eq!(recorded[0], 0);
+        assert!(recorded[1] > 0, "start_block should advance past 0");
+    }
+
+    #[tokio::test]
+    async fn test_fetch_all_windowed_same_block_guard() {
+        let client = create_test_client();
+        let call_count = std::sync::atomic::AtomicU32::new(0);
+        let starts = std::sync::Arc::new(std::sync::Mutex::new(Vec::<u64>::new()));
+        let starts_clone = starts.clone();
+
+        let _result: ChainResult<Vec<EvmTransaction>> =
+            client.fetch_all_windowed(Some(50), None, |sb, _eb| {
+                starts_clone.lock().unwrap().push(sb);
+                let n = call_count.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+                async move {
+                    if n == 0 {
+                        // Full window, all in block 50 → triggers same-block guard
+                        let txs: Vec<EvmTransaction> = (0..MAX_RESULTS_PER_PAGE)
+                            .map(|i| make_evm_tx(&format!("0x{:04x}", i), "50"))
+                            .collect();
+                        Ok(txs)
+                    } else {
+                        Ok(Vec::new())
+                    }
+                }
+            }).await;
+
+        let recorded = starts.lock().unwrap();
+        assert_eq!(recorded.len(), 2);
+        // First call: start=50, last_block=50 → same → next start=51
+        assert_eq!(recorded[0], 50);
+        assert_eq!(recorded[1], 51);
     }
 }
