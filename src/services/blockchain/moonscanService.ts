@@ -111,6 +111,11 @@ export class MoonscanService {
     'NOTE: Moonbeam/Moonriver networks shut down on 31 July 2026 — complete ' +
     'a full sync before that date to preserve your complete transaction history.'
 
+  /**
+   * True once the Moonbeam/Moonriver networks have ceased operations
+   * (after 2026-07-31 23:59:59 UTC) and the Etherscan V2 API no longer
+   * serves chainids 1284/1285.
+   */
   static isSunset(): boolean {
     return Date.now() > MOONBEAM_SUNSET_UTC
   }
@@ -167,6 +172,10 @@ export class MoonscanService {
     )
   }
 
+  /**
+   * True when the response is an Etherscan V2 chain-deprecation error,
+   * i.e. the API has stopped serving Moonbeam/Moonriver post-sunset.
+   */
   private static isChainDeprecationError(
     data: MoonscanResponse<unknown>
   ): boolean {
@@ -411,54 +420,57 @@ export class MoonscanService {
 
     const { limit = 10000, fullArchive = true, onProgress } = options
     const PAGE_SIZE = 10000
-    const MAX_PAGES = 100
+    const MAX_FETCHES = 100
     const allTransactions: SubstrateTransaction[] = []
 
-    // 1. Paginate normal transactions
+    // Etherscan V2 rejects page × offset > 10000 ("Result window is too
+    // large"), so deep history cannot be paged by incrementing the page
+    // number. Instead keep page=1 and advance startBlock (sort=asc) past
+    // each full window. The boundary block is re-fetched on each advance;
+    // the hash dedup below removes the overlap.
+    const fetchWindowed = async (
+      label: string,
+      fetchPage: (startBlock: number) => Promise<SubstrateTransaction[]>
+    ): Promise<void> => {
+      let startBlock = 0
+      for (let fetches = 1; fetches <= MAX_FETCHES; fetches++) {
+        const txs = await fetchPage(startBlock)
+        allTransactions.push(...txs)
+        onProgress?.(`${label} (${fetches})...`, allTransactions.length, 0)
+        if (!fullArchive || txs.length < PAGE_SIZE) return
+        const lastBlock = txs[txs.length - 1].blockNumber
+        // Guard against a full window contained in a single block, which
+        // would otherwise re-fetch the same window forever.
+        startBlock = lastBlock > startBlock ? lastBlock : startBlock + 1
+        await new Promise(resolve => setTimeout(resolve, 250))
+      }
+    }
+
+    // 1. Fetch normal transactions (full history via block windows)
     onProgress?.('Fetching EVM transactions from Moonscan...', 0, 0)
-    let page = 1
-    while (page <= MAX_PAGES) {
-      const txs = await this.fetchTransactions(network, address, {
-        page,
+    await fetchWindowed('Fetching EVM transactions', startBlock =>
+      this.fetchTransactions(network, address, {
+        startBlock,
         offset: PAGE_SIZE,
         sort: 'asc',
       })
-      allTransactions.push(...txs)
-      onProgress?.(
-        `Fetching EVM transactions (page ${page})...`,
-        allTransactions.length,
-        0
-      )
-      if (!fullArchive || txs.length < PAGE_SIZE) break
-      page++
-      await new Promise(resolve => setTimeout(resolve, 250))
-    }
+    )
 
     await new Promise(resolve => setTimeout(resolve, 250))
 
-    // 2. Paginate token transfers
+    // 2. Fetch token transfers (full history via block windows)
     onProgress?.(
       'Fetching token transfers from Moonscan...',
       allTransactions.length,
       0
     )
-    page = 1
-    while (page <= MAX_PAGES) {
-      const txs = await this.fetchTokenTransfers(network, address, {
-        page,
+    await fetchWindowed('Fetching token transfers', startBlock =>
+      this.fetchTokenTransfers(network, address, {
+        startBlock,
         offset: PAGE_SIZE,
         sort: 'asc',
       })
-      allTransactions.push(...txs)
-      onProgress?.(
-        `Fetching token transfers (page ${page})...`,
-        allTransactions.length,
-        0
-      )
-      if (!fullArchive || txs.length < PAGE_SIZE) break
-      page++
-      await new Promise(resolve => setTimeout(resolve, 250))
-    }
+    )
 
     // Sort by block number (newest first)
     allTransactions.sort((a, b) => b.blockNumber - a.blockNumber)
