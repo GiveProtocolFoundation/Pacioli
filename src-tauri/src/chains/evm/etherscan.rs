@@ -17,6 +17,7 @@ use super::types::{
 };
 use crate::chains::{ChainError, ChainResult};
 use crate::fetchers::{ApiKeyManager, ApiProvider, FetcherConfig, ResilientFetcher};
+use chrono::Utc;
 use serde::de::DeserializeOwned;
 use serde::Deserialize;
 use std::time::Duration;
@@ -37,6 +38,14 @@ const MAX_RETRIES: u32 = 5;
 
 /// Base delay for exponential backoff (milliseconds)
 const BASE_RETRY_DELAY_MS: u64 = 200;
+
+const MOONBEAM_SUNSET_MESSAGE: &str = "The Moonbeam network ceased operations on 31 July 2026. \
+     New transactions can no longer be synced; your previously synced \
+     history remains available in Pacioli.";
+
+fn is_moonbeam_sunset(chain_id: u64) -> bool {
+    matches!(chain_id, 1284 | 1285) && Utc::now().timestamp() > 1_785_331_199
+}
 
 // =============================================================================
 // API RESPONSE TYPES
@@ -225,6 +234,10 @@ impl EtherscanClient {
     /// - Proactive rate limiting (waits before request to prevent 429s)
     /// - Exponential backoff retries for transient failures
     async fn request<T: DeserializeOwned>(&self, url: &str) -> ChainResult<T> {
+        if is_moonbeam_sunset(self.chain_id) {
+            return Err(ChainError::ApiError(MOONBEAM_SUNSET_MESSAGE.to_string()));
+        }
+
         // Wait for rate limiter (Governor GCRA algorithm)
         self.fetcher.wait_for_permit().await;
 
@@ -297,6 +310,17 @@ impl EtherscanClient {
                 || error_response.result.contains("Invalid address")
             {
                 return Err(ChainError::InvalidAddress(error_response.result));
+            }
+
+            // Detect Moonbeam/Moonriver chain deprecation errors
+            if matches!(self.chain_id, 1284 | 1285) {
+                let lower = error_response.result.to_lowercase();
+                if lower.contains("chain")
+                    || lower.contains("not supported")
+                    || lower.contains("deprecated")
+                {
+                    return Err(ChainError::ApiError(MOONBEAM_SUNSET_MESSAGE.to_string()));
+                }
             }
 
             return Err(ChainError::ApiError(format!(
