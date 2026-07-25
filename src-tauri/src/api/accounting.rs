@@ -125,6 +125,9 @@ pub struct JournalEntry {
     pub approved_at: Option<NaiveDateTime>,
     /// When this entry was posted to the ledger.
     pub posted_at: Option<NaiveDateTime>,
+    /// FK to multi_chain_transactions(id) — the on-chain source tx.
+    /// NULL for manual entries with no wallet source.
+    pub source_tx_id: Option<String>,
 }
 
 /// A single debit or credit line within a journal entry.
@@ -655,6 +658,52 @@ pub async fn get_journal_entry(
     Ok(JournalEntryWithLines { entry, lines })
 }
 
+/// Summary of the on-chain source transaction linked to a journal entry.
+#[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
+#[serde(rename_all = "camelCase")]
+pub struct SourceTransactionSummary {
+    /// Unique row identifier from multi_chain_transactions.
+    pub id: String,
+    /// Blockchain network identifier (e.g. "polkadot", "kusama").
+    pub chain_id: String,
+    /// On-chain transaction hash.
+    pub transaction_hash: String,
+    /// Sender address.
+    pub from_address: String,
+    /// Recipient address (None for contract-creation transactions).
+    pub to_address: Option<String>,
+    /// Transfer value in the chain's smallest unit.
+    pub transfer_value: String,
+    /// Network fee paid for the transaction, if available.
+    pub transaction_fee: Option<String>,
+    /// Unix timestamp of the block containing this transaction.
+    pub timestamp: i64,
+    /// Classification of the transaction (e.g. "transfer", "staking").
+    pub transaction_type: String,
+    /// On-chain finality status.
+    pub status: String,
+    /// Address of the wallet that owns this transaction.
+    pub wallet_address: String,
+}
+
+/// Fetches the on-chain source transaction linked to a journal entry.
+/// Returns None (null) if the entry has no source_tx_id or the row is missing.
+#[tauri::command]
+pub async fn get_source_transaction(
+    state: State<'_, DatabaseState>,
+    source_tx_id: String,
+) -> Result<Option<SourceTransactionSummary>, String> {
+    let row = sqlx::query_as::<_, SourceTransactionSummary>(
+        "SELECT id, chain_id, transaction_hash, from_address, to_address, transfer_value, transaction_fee, timestamp, transaction_type, status, wallet_address FROM multi_chain_transactions WHERE id = ?",
+    )
+    .bind(&source_tx_id)
+    .fetch_optional(&state.pool)
+    .await
+    .map_err(|e| e.to_string())?;
+
+    Ok(row)
+}
+
 /// Creates a new journal entry as a draft with the given lines.
 #[tauri::command]
 pub async fn create_journal_entry(
@@ -706,8 +755,8 @@ pub async fn create_journal_entry(
 
     let result = sqlx::query(
         r#"
-        INSERT INTO journal_entries (entry_date, entry_number, description, reference_number, is_posted, status, origin, created_by)
-        VALUES (?, ?, ?, ?, 0, 'draft', ?, 'system')
+        INSERT INTO journal_entries (entry_date, entry_number, description, reference_number, is_posted, status, origin, created_by, source_tx_id)
+        VALUES (?, ?, ?, ?, 0, 'draft', ?, 'system', ?)
         "#,
     )
     .bind(entry_date)
@@ -715,6 +764,7 @@ pub async fn create_journal_entry(
     .bind(&input.description)
     .bind(&input.reference_number)
     .bind(origin)
+    .bind(&input.raw_transaction_id)
     .execute(&mut *tx)
     .await
     .map_err(|e| e.to_string())?;
