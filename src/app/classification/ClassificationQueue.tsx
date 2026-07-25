@@ -84,7 +84,7 @@ interface QueueRowProps {
   tx: RawTransaction
   selected: boolean
   busy: boolean
-  onToggleSelect: (id: string) => void
+  onToggleSelect: (event: React.MouseEvent<HTMLButtonElement>) => void
   onAutoClassify: (event: React.MouseEvent<HTMLButtonElement>) => void
   onManualClassify: (event: React.MouseEvent<HTMLButtonElement>) => void
   onIgnore: (event: React.MouseEvent<HTMLButtonElement>) => void
@@ -104,7 +104,8 @@ const QueueRow: React.FC<QueueRowProps> = ({
   >
     <td className="px-4 py-3 text-center">
       <button
-        onClick={() => onToggleSelect(tx.id)}
+        data-txid={tx.id}
+        onClick={onToggleSelect}
         className="p-0.5 hover:bg-[#294050]/10 rounded transition-colors"
       >
         {selected ? (
@@ -356,17 +357,24 @@ const ClassificationQueue: React.FC = () => {
     })
   }, [filtered])
 
-  const handleToggleSelect = useCallback((id: string) => {
-    setSelectedIds(prev => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
-    })
-  }, [])
+  const handleToggleSelect = useCallback(
+    (event: React.MouseEvent<HTMLButtonElement>) => {
+      const id = event.currentTarget.dataset.txid
+      if (!id) return
+      setSelectedIds(prev => {
+        const next = new Set(prev)
+        if (next.has(id)) next.delete(id)
+        else next.add(id)
+        return next
+      })
+    },
+    []
+  )
 
   const handleSelectByChain = useCallback(
-    (chain: string) => {
+    (event: React.MouseEvent<HTMLButtonElement>) => {
+      const chain = event.currentTarget.dataset.chain
+      if (!chain) return
       setSelectedIds(prev => {
         const next = new Set(prev)
         filtered
@@ -380,7 +388,9 @@ const ClassificationQueue: React.FC = () => {
   )
 
   const handleSelectByType = useCallback(
-    (txType: string) => {
+    (event: React.MouseEvent<HTMLButtonElement>) => {
+      const txType = event.currentTarget.dataset.txtype
+      if (!txType) return
       setSelectedIds(prev => {
         const next = new Set(prev)
         filtered
@@ -533,6 +543,22 @@ const ClassificationQueue: React.FC = () => {
 
   const handleDismissBatchResult = useCallback(() => {
     setBatchResult(null)
+  }, [])
+
+  const handleNavigateToDrafts = useCallback(() => {
+    navigate('/journal-entries?filter=draft')
+  }, [navigate])
+
+  const handleNavigateToReports = useCallback(() => {
+    navigate('/reports')
+  }, [navigate])
+
+  const handleToggleFilterMenu = useCallback(() => {
+    setFilterMenuOpen(prev => !prev)
+  }, [])
+
+  const handleCloseFilterMenu = useCallback(() => {
+    setFilterMenuOpen(false)
   }, [])
 
   const handleAutoClassify = useCallback(
@@ -721,7 +747,7 @@ const ClassificationQueue: React.FC = () => {
                   </button>
                 )}
                 <button
-                  onClick={() => navigate('/journal-entries?filter=draft')}
+                  onClick={handleNavigateToDrafts}
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg border border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-colors"
                 >
                   View Drafts
@@ -753,7 +779,7 @@ const ClassificationQueue: React.FC = () => {
         {filtered.length > 0 && (
           <div className="relative">
             <button
-              onClick={() => setFilterMenuOpen(prev => !prev)}
+              onClick={handleToggleFilterMenu}
               className="inline-flex items-center gap-1.5 px-3 py-2 text-sm border border-[rgba(95,227,192,0.15)] rounded-lg bg-[#F7FAFA] dark:bg-[#11202B] text-[#294050] dark:text-[#9FB4BE] hover:bg-[#EAF3F2] dark:hover:bg-[#16242F] transition-colors"
             >
               <Filter className="w-4 h-4" />
@@ -763,7 +789,7 @@ const ClassificationQueue: React.FC = () => {
               <>
                 <div
                   className="fixed inset-0 z-40"
-                  onClick={() => setFilterMenuOpen(false)}
+                  onClick={handleCloseFilterMenu}
                 />
                 <div className="absolute right-0 top-full mt-1 z-50 w-56 bg-[#F7FAFA] dark:bg-[#11202B] border border-[rgba(95,227,192,0.15)] rounded-lg shadow-lg py-1">
                   {uniqueChains.length > 1 && (
@@ -774,7 +800,8 @@ const ClassificationQueue: React.FC = () => {
                       {uniqueChains.map(chain => (
                         <button
                           key={chain}
-                          onClick={() => handleSelectByChain(chain)}
+                          data-chain={chain}
+                          onClick={handleSelectByChain}
                           className="w-full text-left px-3 py-1.5 text-sm text-[#11202B] dark:text-[#EAF3F2] hover:bg-[#EAF3F2] dark:hover:bg-[#16242F]"
                         >
                           {chain} (
@@ -791,7 +818,8 @@ const ClassificationQueue: React.FC = () => {
                       {uniqueTypes.map(txType => (
                         <button
                           key={txType}
-                          onClick={() => handleSelectByType(txType)}
+                          data-txtype={txType}
+                          onClick={handleSelectByType}
                           className="w-full text-left px-3 py-1.5 text-sm text-[#11202B] dark:text-[#EAF3F2] hover:bg-[#EAF3F2] dark:hover:bg-[#16242F]"
                         >
                           {displayTxType(txType)} (
@@ -948,14 +976,14 @@ const ClassificationQueue: React.FC = () => {
           </p>
           <div className="mt-5 flex items-center justify-center gap-3">
             <button
-              onClick={() => navigate('/journal-entries?filter=draft')}
+              onClick={handleNavigateToDrafts}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#294050] text-white hover:bg-[#1E2F3C] transition-colors text-sm font-medium"
             >
               <ShieldCheck className="w-4 h-4" />
               Review Drafts
             </button>
             <button
-              onClick={() => navigate('/reports')}
+              onClick={handleNavigateToReports}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[rgba(95,227,192,0.15)] text-[#294050] dark:text-[#9FB4BE] hover:bg-[#EAF3F2] dark:hover:bg-[#16242F] transition-colors text-sm font-medium"
             >
               <BarChart3 className="w-4 h-4" />

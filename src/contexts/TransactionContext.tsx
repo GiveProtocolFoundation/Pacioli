@@ -4,6 +4,7 @@ import React, {
   useContext,
   useState,
   useEffect,
+  useMemo,
   ReactNode,
   useCallback,
   useRef,
@@ -326,25 +327,44 @@ export const TransactionProvider: React.FC<{
     []
   )
 
-  const pendingApprovals = transactions.filter(
-    txn => txn.status === 'pending_approval' && txn.approvalStatus === 'pending'
+  const pendingApprovals = useMemo(
+    () =>
+      transactions.filter(
+        txn =>
+          txn.status === 'pending_approval' && txn.approvalStatus === 'pending'
+      ),
+    [transactions]
+  )
+
+  const contextValue = useMemo(
+    () => ({
+      transactions,
+      loading,
+      addTransaction,
+      updateTransaction,
+      deleteTransaction,
+      getTransaction,
+      approveTransaction,
+      rejectTransaction,
+      reloadTransactions: loadTransactions,
+      pendingApprovals,
+    }),
+    [
+      transactions,
+      loading,
+      addTransaction,
+      updateTransaction,
+      deleteTransaction,
+      getTransaction,
+      approveTransaction,
+      rejectTransaction,
+      loadTransactions,
+      pendingApprovals,
+    ]
   )
 
   return (
-    <TransactionContext.Provider
-      value={{
-        transactions,
-        loading,
-        addTransaction,
-        updateTransaction,
-        deleteTransaction,
-        getTransaction,
-        approveTransaction,
-        rejectTransaction,
-        reloadTransactions: loadTransactions,
-        pendingApprovals,
-      }}
-    >
+    <TransactionContext.Provider value={contextValue}>
       {children}
     </TransactionContext.Provider>
   )

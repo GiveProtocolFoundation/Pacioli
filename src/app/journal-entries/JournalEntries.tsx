@@ -188,16 +188,23 @@ const JournalEntries: React.FC = () => {
   }, [entries, searchQuery, filterParam])
 
   const handleTabChange = useCallback(
-    (tab: StatusFilter) => {
+    (event: React.MouseEvent<HTMLButtonElement>) => {
+      const tab = event.currentTarget.dataset.tab as StatusFilter | undefined
+      if (!tab) return
       setSearchParams({ filter: tab })
       setSelectedIds(new Set())
     },
     [setSearchParams]
   )
 
-  const handleToggleExpand = useCallback((id: number) => {
-    setExpandedId(prev => (prev === id ? null : id))
-  }, [])
+  const handleToggleExpand = useCallback(
+    (event: React.MouseEvent<HTMLTableRowElement>) => {
+      const id = Number(event.currentTarget.dataset.entryid)
+      if (Number.isNaN(id)) return
+      setExpandedId(prev => (prev === id ? null : id))
+    },
+    []
+  )
 
   // skipcq: JS-W1042 — undefined is the required value (React setState), not a trailing optional
   const clearEditingEntry = useCallback(() => setEditingEntry(undefined), [])
@@ -224,22 +231,27 @@ const JournalEntries: React.FC = () => {
     refreshCounts()
   }, [clearEditingEntry, fetchEntries, refreshCounts])
 
-  const handleViewDetail = useCallback((entry: JournalEntryWithLines) => {
-    setDetailEntry(entry)
-  }, [])
+  const handleViewDetail = useCallback(
+    (event: React.MouseEvent<HTMLButtonElement>) => {
+      const id = Number(event.currentTarget.dataset.entryid)
+      if (Number.isNaN(id)) return
+      const entry = entries.find(e => e.id === id)
+      if (entry) setDetailEntry(entry)
+    },
+    [entries]
+  )
 
   const handleCloseDetail = useCallback(() => {
     // skipcq: JS-W1042 — undefined is the required value (React setState), not a trailing optional
     setDetailEntry(undefined)
   }, [])
 
-  /** Approve a draft entry */
   const handleApprove = useCallback(
-    async (id: number) => {
+    async (event: React.MouseEvent<HTMLButtonElement>) => {
+      const id = Number(event.currentTarget.dataset.entryid)
+      if (Number.isNaN(id)) return
       setActionError(null)
       try {
-        // Record the real approver identity (Inv-7 provenance), not a
-        // placeholder string.
         await invoke('approve_journal_entry', {
           id,
           approver: user?.email ?? user?.display_name ?? 'unknown',
@@ -254,9 +266,10 @@ const JournalEntries: React.FC = () => {
     [fetchEntries, refreshCounts, user]
   )
 
-  /** Post an approved entry */
   const handlePost = useCallback(
-    async (id: number) => {
+    async (event: React.MouseEvent<HTMLButtonElement>) => {
+      const id = Number(event.currentTarget.dataset.entryid)
+      if (Number.isNaN(id)) return
       setActionError(null)
       try {
         await invoke('post_journal_entry', { id })
@@ -270,7 +283,6 @@ const JournalEntries: React.FC = () => {
     [fetchEntries, refreshCounts]
   )
 
-  /** Void a posted entry (with confirmation) */
   const handleVoid = useCallback(
     async (id: number) => {
       setActionError(null)
@@ -295,12 +307,14 @@ const JournalEntries: React.FC = () => {
    * approved entry.)
    */
   const handleDemote = useCallback(
-    async (entry: JournalEntryWithLines) => {
+    async (event: React.MouseEvent<HTMLButtonElement>) => {
+      const id = Number(event.currentTarget.dataset.entryid)
+      if (Number.isNaN(id)) return
       setActionError(null)
       try {
         const demoted = await invoke<JournalEntryWithLines>(
           'demote_journal_entry',
-          { id: entry.id }
+          { id }
         )
         fetchEntries()
         refreshCounts()
@@ -316,6 +330,25 @@ const JournalEntries: React.FC = () => {
   const handleDismissError = useCallback(() => setActionError(null), [])
 
   const handleDismissVoidConfirm = useCallback(() => setVoidConfirmId(null), [])
+
+  const handleStopPropagation = useCallback(
+    (event: React.MouseEvent<HTMLTableCellElement | HTMLDivElement>) => {
+      event.stopPropagation()
+    },
+    []
+  )
+
+  const handleVoidClick = useCallback(
+    (event: React.MouseEvent<HTMLButtonElement>) => {
+      const id = Number(event.currentTarget.dataset.entryid)
+      if (!Number.isNaN(id)) setVoidConfirmId(id)
+    },
+    []
+  )
+
+  const handleConfirmVoid = useCallback(() => {
+    if (voidConfirmId !== null) handleVoid(voidConfirmId)
+  }, [voidConfirmId, handleVoid])
 
   const selectableEntries = useMemo(
     () =>
@@ -364,14 +397,19 @@ const JournalEntries: React.FC = () => {
     })
   }, [selectableEntries])
 
-  const handleToggleSelect = useCallback((id: number) => {
-    setSelectedIds(prev => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
-    })
-  }, [])
+  const handleToggleSelect = useCallback(
+    (event: React.MouseEvent<HTMLButtonElement>) => {
+      const id = Number(event.currentTarget.dataset.entryid)
+      if (Number.isNaN(id)) return
+      setSelectedIds(prev => {
+        const next = new Set(prev)
+        if (next.has(id)) next.delete(id)
+        else next.add(id)
+        return next
+      })
+    },
+    []
+  )
 
   const handleClearSelection = useCallback(() => setSelectedIds(new Set()), [])
 
@@ -479,7 +517,7 @@ const JournalEntries: React.FC = () => {
           <button
             key={tab.key}
             data-tab={tab.key}
-            onClick={() => handleTabChange(tab.key)}
+            onClick={handleTabChange}
             className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px ${
               filterParam === tab.key
                 ? 'border-[#294050] text-[#294050] dark:text-[#5FE3C0]'
@@ -520,7 +558,7 @@ const JournalEntries: React.FC = () => {
               Cancel
             </button>
             <button
-              onClick={() => handleVoid(voidConfirmId)}
+              onClick={handleConfirmVoid}
               className="px-3 py-1 text-xs font-medium rounded bg-red-600 text-white hover:bg-red-700 transition-colors"
             >
               Void Entry
@@ -663,16 +701,18 @@ const JournalEntries: React.FC = () => {
                 return (
                   <React.Fragment key={entry.id}>
                     <tr
+                      data-entryid={entry.id}
                       className={`bg-white dark:bg-[#11202B] hover:bg-[#EAF3F2]/50 dark:hover:bg-[#16242F]/50 cursor-pointer transition-colors ${selectedIds.has(entry.id) ? 'bg-[#5FE3C0]/5 dark:bg-[#5FE3C0]/5' : ''}`}
-                      onClick={() => handleToggleExpand(entry.id)}
+                      onClick={handleToggleExpand}
                     >
                       <td
                         className="px-4 py-3 text-center"
-                        onClick={e => e.stopPropagation()}
+                        onClick={handleStopPropagation}
                       >
                         {(status === 'draft' || status === 'approved') && (
                           <button
-                            onClick={() => handleToggleSelect(entry.id)}
+                            data-entryid={entry.id}
+                            onClick={handleToggleSelect}
                             className="p-0.5 hover:bg-[#294050]/10 rounded transition-colors"
                           >
                             {selectedIds.has(entry.id) ? (
@@ -714,46 +754,47 @@ const JournalEntries: React.FC = () => {
                       <td className="px-4 py-3 text-right">
                         <div
                           className="flex items-center justify-end gap-2"
-                          onClick={e => e.stopPropagation()}
+                          onClick={handleStopPropagation}
                         >
-                          {/* Draft actions: Approve */}
                           {status === 'draft' && (
                             <button
-                              onClick={() => handleApprove(entry.id)}
+                              data-entryid={entry.id}
+                              onClick={handleApprove}
                               className="px-2 py-1 text-xs font-medium rounded bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors"
                             >
                               Approve
                             </button>
                           )}
-                          {/* Approved actions: Post, Demote */}
                           {status === 'approved' && (
                             <>
                               <button
-                                onClick={() => handlePost(entry.id)}
+                                data-entryid={entry.id}
+                                onClick={handlePost}
                                 className="px-2 py-1 text-xs font-medium rounded bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300 hover:bg-emerald-200 dark:hover:bg-emerald-900/50 transition-colors"
                               >
                                 Post
                               </button>
                               <button
-                                onClick={() => handleDemote(entry)}
+                                data-entryid={entry.id}
+                                onClick={handleDemote}
                                 className="px-2 py-1 text-xs font-medium rounded bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-900/50 transition-colors"
                               >
                                 Demote
                               </button>
                             </>
                           )}
-                          {/* Posted actions: Void */}
                           {status === 'posted' && (
                             <button
-                              onClick={() => setVoidConfirmId(entry.id)}
+                              data-entryid={entry.id}
+                              onClick={handleVoidClick}
                               className="px-2 py-1 text-xs font-medium rounded bg-gray-100 text-gray-600 dark:bg-gray-800/50 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700/50 transition-colors"
                             >
                               Void
                             </button>
                           )}
-                          {/* Detail view for all */}
                           <button
-                            onClick={() => handleViewDetail(entry)}
+                            data-entryid={entry.id}
+                            onClick={handleViewDetail}
                             className="px-2 py-1 text-xs font-medium rounded border border-[rgba(95,227,192,0.2)] text-[#294050] dark:text-[#9FB4BE] hover:bg-[#EAF3F2] dark:hover:bg-[#16242F] transition-colors"
                           >
                             Detail
