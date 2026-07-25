@@ -328,6 +328,130 @@ const RuleForm: React.FC<RuleFormProps> = ({
   )
 }
 
+interface RuleDisplayRowProps {
+  rule: ClassificationRule
+  index: number
+  rulesCount: number
+  onToggle: (event: React.MouseEvent<HTMLButtonElement>) => void
+  onEdit: (event: React.MouseEvent<HTMLButtonElement>) => void
+  onDelete: (event: React.MouseEvent<HTMLButtonElement>) => void
+  onMoveUp: (event: React.MouseEvent<HTMLButtonElement>) => void
+  onMoveDown: (event: React.MouseEvent<HTMLButtonElement>) => void
+}
+
+/** @returns Read-only display of a single classification rule with actions. */
+const RuleDisplayRow: React.FC<RuleDisplayRowProps> = ({
+  rule,
+  index,
+  rulesCount,
+  onToggle,
+  onEdit,
+  onDelete,
+  onMoveUp,
+  onMoveDown,
+}) => (
+  <div className="p-4 flex items-start gap-3">
+    <div className="flex flex-col items-center gap-0.5 pt-1">
+      <GripVertical className="w-4 h-4 text-[#647D8B] cursor-grab mb-0.5" />
+      <button
+        data-index={index}
+        onClick={onMoveUp}
+        disabled={index === 0}
+        className="p-0.5 hover:bg-[#294050]/10 rounded disabled:opacity-30 transition-colors"
+      >
+        <ChevronUp className="w-3 h-3 text-[#647D8B]" />
+      </button>
+      <button
+        data-index={index}
+        onClick={onMoveDown}
+        disabled={index === rulesCount - 1}
+        className="p-0.5 hover:bg-[#294050]/10 rounded disabled:opacity-30 transition-colors"
+      >
+        <ChevronDown className="w-3 h-3 text-[#647D8B]" />
+      </button>
+    </div>
+
+    <div className="flex-1 min-w-0">
+      <div className="flex items-center gap-2 mb-1">
+        <h3 className="text-sm font-semibold text-[#11202B] dark:text-[#EAF3F2]">
+          {rule.name}
+        </h3>
+        {rule.source === 'builtin' && (
+          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-[#5FE3C0]/15 text-[#294050] dark:text-[#5FE3C0]">
+            Built-in
+          </span>
+        )}
+        <span className="text-[10px] font-mono text-[#647D8B]">
+          #{index + 1}
+        </span>
+      </div>
+      {rule.description && (
+        <p className="text-xs text-[#647D8B] mb-2">{rule.description}</p>
+      )}
+      <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-[#294050] dark:text-[#9FB4BE]">
+        <span>
+          <strong>Match:</strong>{' '}
+          {rule.matchTxTypes
+            .split(',')
+            .map(typeStr => typeStr.trim())
+            .join(', ')}
+        </span>
+        {rule.matchChains && (
+          <span>
+            <strong>Chains:</strong> {rule.matchChains}
+          </span>
+        )}
+        {rule.matchSelfTransfer !== 'any' && (
+          <span>
+            <strong>Self-xfer:</strong> {rule.matchSelfTransfer}
+          </span>
+        )}
+        <span>
+          <strong>DR</strong> {rule.debitAccount} / <strong>CR</strong>{' '}
+          {rule.creditAccount}
+        </span>
+        {rule.useFeeAmount && (
+          <span className="text-amber-600 dark:text-amber-400">
+            Fee amount
+          </span>
+        )}
+      </div>
+    </div>
+
+    <div className="flex items-center gap-1">
+      <button
+        data-ruleid={rule.id}
+        data-enabled={String(rule.enabled)}
+        onClick={onToggle}
+        className="p-1.5 hover:bg-[#294050]/10 dark:hover:bg-[#294050]/20 rounded transition-colors"
+        title={rule.enabled ? 'Disable rule' : 'Enable rule'}
+      >
+        {rule.enabled ? (
+          <ToggleRight className="w-5 h-5 text-[#5FE3C0]" />
+        ) : (
+          <ToggleLeft className="w-5 h-5 text-[#647D8B]" />
+        )}
+      </button>
+      <button
+        data-ruleid={rule.id}
+        onClick={onEdit}
+        className="p-1.5 hover:bg-[#294050]/10 dark:hover:bg-[#294050]/20 rounded transition-colors"
+        title="Edit rule"
+      >
+        <Pencil className="w-4 h-4 text-[#647D8B]" />
+      </button>
+      <button
+        data-ruleid={rule.id}
+        onClick={onDelete}
+        className="p-1.5 hover:bg-red-100 dark:hover:bg-red-900/20 rounded transition-colors"
+        title="Delete rule"
+      >
+        <Trash2 className="w-4 h-4 text-red-500" />
+      </button>
+    </div>
+  </div>
+)
+
 /** @returns Classification rules management page with CRUD, drag-reorder, and starter packs. */
 const ClassificationRules: React.FC = () => {
   const [rules, setRules] = useState<ClassificationRule[]>([])
@@ -683,111 +807,16 @@ const ClassificationRules: React.FC = () => {
                   />
                 </div>
               ) : (
-                <div className="p-4 flex items-start gap-3">
-                  {/* Drag handle + priority */}
-                  <div className="flex flex-col items-center gap-0.5 pt-1">
-                    <GripVertical className="w-4 h-4 text-[#647D8B] cursor-grab mb-0.5" />
-                    <button
-                      data-index={index}
-                      onClick={handleMoveUp}
-                      disabled={index === 0}
-                      className="p-0.5 hover:bg-[#294050]/10 rounded disabled:opacity-30 transition-colors"
-                    >
-                      <ChevronUp className="w-3 h-3 text-[#647D8B]" />
-                    </button>
-                    <button
-                      data-index={index}
-                      onClick={handleMoveDown}
-                      disabled={index === rules.length - 1}
-                      className="p-0.5 hover:bg-[#294050]/10 rounded disabled:opacity-30 transition-colors"
-                    >
-                      <ChevronDown className="w-3 h-3 text-[#647D8B]" />
-                    </button>
-                  </div>
-
-                  {/* Rule details */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="text-sm font-semibold text-[#11202B] dark:text-[#EAF3F2]">
-                        {rule.name}
-                      </h3>
-                      {rule.source === 'builtin' && (
-                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-[#5FE3C0]/15 text-[#294050] dark:text-[#5FE3C0]">
-                          Built-in
-                        </span>
-                      )}
-                      <span className="text-[10px] font-mono text-[#647D8B]">
-                        #{index + 1}
-                      </span>
-                    </div>
-                    {rule.description && (
-                      <p className="text-xs text-[#647D8B] mb-2">
-                        {rule.description}
-                      </p>
-                    )}
-                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-[#294050] dark:text-[#9FB4BE]">
-                      <span>
-                        <strong>Match:</strong>{' '}
-                        {rule.matchTxTypes
-                          .split(',')
-                          .map(t => t.trim())
-                          .join(', ')}
-                      </span>
-                      {rule.matchChains && (
-                        <span>
-                          <strong>Chains:</strong> {rule.matchChains}
-                        </span>
-                      )}
-                      {rule.matchSelfTransfer !== 'any' && (
-                        <span>
-                          <strong>Self-xfer:</strong> {rule.matchSelfTransfer}
-                        </span>
-                      )}
-                      <span>
-                        <strong>DR</strong> {rule.debitAccount} /{' '}
-                        <strong>CR</strong> {rule.creditAccount}
-                      </span>
-                      {rule.useFeeAmount && (
-                        <span className="text-amber-600 dark:text-amber-400">
-                          Fee amount
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex items-center gap-1">
-                    <button
-                      data-ruleid={rule.id}
-                      data-enabled={String(rule.enabled)}
-                      onClick={handleToggle}
-                      className="p-1.5 hover:bg-[#294050]/10 dark:hover:bg-[#294050]/20 rounded transition-colors"
-                      title={rule.enabled ? 'Disable rule' : 'Enable rule'}
-                    >
-                      {rule.enabled ? (
-                        <ToggleRight className="w-5 h-5 text-[#5FE3C0]" />
-                      ) : (
-                        <ToggleLeft className="w-5 h-5 text-[#647D8B]" />
-                      )}
-                    </button>
-                    <button
-                      data-ruleid={rule.id}
-                      onClick={handleEdit}
-                      className="p-1.5 hover:bg-[#294050]/10 dark:hover:bg-[#294050]/20 rounded transition-colors"
-                      title="Edit rule"
-                    >
-                      <Pencil className="w-4 h-4 text-[#647D8B]" />
-                    </button>
-                    <button
-                      data-ruleid={rule.id}
-                      onClick={handleDelete}
-                      className="p-1.5 hover:bg-red-100 dark:hover:bg-red-900/20 rounded transition-colors"
-                      title="Delete rule"
-                    >
-                      <Trash2 className="w-4 h-4 text-red-500" />
-                    </button>
-                  </div>
-                </div>
+                <RuleDisplayRow
+                  rule={rule}
+                  index={index}
+                  rulesCount={rules.length}
+                  onToggle={handleToggle}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                  onMoveUp={handleMoveUp}
+                  onMoveDown={handleMoveDown}
+                />
               )}
             </div>
           ))}
