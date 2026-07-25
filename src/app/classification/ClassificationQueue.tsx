@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { invoke } from '@tauri-apps/api/core'
-import { Search, Zap, FileEdit, EyeOff, Inbox, RefreshCw } from 'lucide-react'
+import { Search, Zap, FileEdit, EyeOff, Inbox, RefreshCw, DollarSign } from 'lucide-react'
 import { useNavBadges } from '../../contexts/NavBadgeContext'
 import type {
   RawTransaction,
@@ -29,7 +29,8 @@ const QueueHeaderRow: React.FC = () => (
     <th className={`${HEADER_CELL} text-left`}>Chain</th>
     <th className={`${HEADER_CELL} text-left`}>Hash</th>
     <th className={`${HEADER_CELL} text-left`}>Type</th>
-    <th className={`${HEADER_CELL} text-right`}>Value</th>
+    <th className={`${HEADER_CELL} text-right`}>Qty</th>
+    <th className={`${HEADER_CELL} text-right`}>USD Value</th>
     <th className={`${HEADER_CELL} text-right`}>Fee</th>
     <th className={`${HEADER_CELL} text-left`}>Timestamp</th>
     <th className={`${HEADER_CELL} text-center`}>Actions</th>
@@ -67,6 +68,19 @@ const QueueRow: React.FC<QueueRowProps> = ({
     </td>
     <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-mono text-[#11202B] dark:text-[#EAF3F2]">
       {tx.transferValue}
+    </td>
+    <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-mono">
+      {tx.valuationStatus === 'priced' && tx.priceAtAcquisitionUsd ? (
+        <span className="text-[#11202B] dark:text-[#EAF3F2]">
+          ${(parseFloat(tx.transferValue) * parseFloat(tx.priceAtAcquisitionUsd)).toFixed(2)}
+        </span>
+      ) : tx.valuationStatus === 'unavailable' ? (
+        <span className="text-amber-600 dark:text-amber-400" title="Price unavailable for this token/date">
+          N/A
+        </span>
+      ) : (
+        <span className="text-[#647D8B]" title="Price not yet fetched">—</span>
+      )}
     </td>
     <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-mono text-[#647D8B]">
       {tx.transactionFee ?? '—'}
@@ -188,6 +202,8 @@ const ClassificationQueue: React.FC = () => {
   const [ignoreModal, setIgnoreModal] = useState<IgnoreModal | null>(null)
   const [ignoreReason, setIgnoreReason] = useState('')
 
+  const [enriching, setEnriching] = useState(false)
+
   const fetchData = useCallback(async () => {
     setLoading(true)
     setError(null)
@@ -204,6 +220,19 @@ const ClassificationQueue: React.FC = () => {
       setLoading(false)
     }
   }, [])
+
+  const handleEnrichPrices = useCallback(async () => {
+    setEnriching(true)
+    setActionError(null)
+    try {
+      await invoke('enrich_transaction_prices')
+      await fetchData()
+    } catch (err) {
+      setActionError(typeof err === 'string' ? err : 'Price enrichment failed')
+    } finally {
+      setEnriching(false)
+    }
+  }, [fetchData])
 
   useEffect(() => {
     fetchData()
@@ -342,13 +371,25 @@ const ClassificationQueue: React.FC = () => {
             Classify raw blockchain transactions into draft journal entries
           </p>
         </div>
-        <button
-          onClick={handleRefresh}
-          className="flex items-center gap-2 px-4 py-2 border border-[rgba(95,227,192,0.15)] rounded-lg bg-[#F7FAFA] dark:bg-[#11202B] hover:bg-[#EAF3F2] dark:hover:bg-[#16242F] text-[#294050] dark:text-[#9FB4BE]"
-        >
-          <RefreshCw className="w-4 h-4" />
-          Refresh
-        </button>
+        <div className="flex items-center gap-2">
+          {transactions.some(tx => tx.valuationStatus === 'unpriced') && (
+            <button
+              onClick={handleEnrichPrices}
+              disabled={enriching}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#5FE3C0]/10 text-[#294050] dark:text-[#5FE3C0] hover:bg-[#5FE3C0]/20 disabled:opacity-50 transition-colors"
+            >
+              <DollarSign className="w-4 h-4" />
+              {enriching ? 'Fetching prices...' : 'Enrich Prices'}
+            </button>
+          )}
+          <button
+            onClick={handleRefresh}
+            className="flex items-center gap-2 px-4 py-2 border border-[rgba(95,227,192,0.15)] rounded-lg bg-[#F7FAFA] dark:bg-[#11202B] hover:bg-[#EAF3F2] dark:hover:bg-[#16242F] text-[#294050] dark:text-[#9FB4BE]"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Refresh
+          </button>
+        </div>
       </div>
 
       {/* Error banners */}
@@ -379,6 +420,18 @@ const ClassificationQueue: React.FC = () => {
       <div className="mb-4 text-sm text-[#294050] dark:text-[#9FB4BE]">
         {filtered.length} unclassified transaction
         {filtered.length !== 1 ? 's' : ''}
+        {filtered.length > 0 && (() => {
+          const priced = filtered.filter(t => t.valuationStatus === 'priced').length
+          const unpriced = filtered.filter(t => t.valuationStatus === 'unpriced').length
+          const unavail = filtered.filter(t => t.valuationStatus === 'unavailable').length
+          return (
+            <span className="ml-2">
+              ({priced} priced
+              {unpriced > 0 && <>, <span className="text-[#647D8B]">{unpriced} awaiting prices</span></>}
+              {unavail > 0 && <>, <span className="text-amber-600 dark:text-amber-400">{unavail} price unavailable</span></>})
+            </span>
+          )
+        })()}
       </div>
 
       {/* Table */}
