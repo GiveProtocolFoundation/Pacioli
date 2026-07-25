@@ -5,63 +5,109 @@ use uuid::Uuid;
 
 use super::persistence::DatabaseState;
 
+/// A classification rule stored in the database.
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
 #[serde(rename_all = "camelCase")]
 pub struct ClassificationRule {
+    /// Unique identifier.
     pub id: String,
+    /// Human-readable rule name.
     pub name: String,
+    /// Rule description.
     pub description: String,
+    /// Comma-separated transaction types to match.
     pub match_tx_types: String,
+    /// Comma-separated chain IDs to match.
     pub match_chains: String,
+    /// Self-transfer match mode: "yes", "no", or "any".
     pub match_self_transfer: String,
+    /// GL account to debit.
     pub debit_account: String,
+    /// GL account to credit.
     pub credit_account: String,
+    /// Description for the debit line.
     pub debit_line_desc: String,
+    /// Description for the credit line.
     pub credit_line_desc: String,
+    /// Description for the generated journal entry.
     pub je_description: String,
+    /// Whether to use the transaction fee as the entry amount.
     pub use_fee_amount: bool,
+    /// Evaluation priority (lower = higher priority).
     pub priority: i64,
+    /// Whether this rule is active.
     pub enabled: bool,
+    /// Origin: "builtin" or "user".
     pub source: String,
+    /// ISO 8601 creation timestamp.
     pub created_at: String,
+    /// ISO 8601 last-update timestamp.
     pub updated_at: String,
 }
 
+/// Input for creating a new classification rule.
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct NewRuleInput {
+    /// Human-readable rule name.
     pub name: String,
+    /// Optional rule description.
     pub description: Option<String>,
+    /// Comma-separated transaction types to match.
     pub match_tx_types: String,
+    /// Comma-separated chain IDs to match.
     pub match_chains: Option<String>,
+    /// Self-transfer match mode.
     pub match_self_transfer: Option<String>,
+    /// GL account to debit.
     pub debit_account: String,
+    /// GL account to credit.
     pub credit_account: String,
+    /// Description for the debit line.
     pub debit_line_desc: Option<String>,
+    /// Description for the credit line.
     pub credit_line_desc: Option<String>,
+    /// Description for the generated journal entry.
     pub je_description: Option<String>,
+    /// Whether to use the transaction fee as the entry amount.
     pub use_fee_amount: Option<bool>,
+    /// Evaluation priority (lower = higher priority).
     pub priority: Option<i64>,
 }
 
+/// Input for updating an existing classification rule (all fields optional).
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct UpdateRuleInput {
+    /// Human-readable rule name.
     pub name: Option<String>,
+    /// Rule description.
     pub description: Option<String>,
+    /// Comma-separated transaction types to match.
     pub match_tx_types: Option<String>,
+    /// Comma-separated chain IDs to match.
     pub match_chains: Option<String>,
+    /// Self-transfer match mode.
     pub match_self_transfer: Option<String>,
+    /// GL account to debit.
     pub debit_account: Option<String>,
+    /// GL account to credit.
     pub credit_account: Option<String>,
+    /// Description for the debit line.
     pub debit_line_desc: Option<String>,
+    /// Description for the credit line.
     pub credit_line_desc: Option<String>,
+    /// Description for the generated journal entry.
     pub je_description: Option<String>,
+    /// Whether to use the transaction fee as the entry amount.
     pub use_fee_amount: Option<bool>,
+    /// Evaluation priority.
     pub priority: Option<i64>,
+    /// Whether this rule is active.
     pub enabled: Option<bool>,
 }
 
+/// List all classification rules ordered by priority.
 #[tauri::command]
 pub async fn list_classification_rules(
     state: State<'_, DatabaseState>,
@@ -77,6 +123,7 @@ pub async fn list_classification_rules(
     .map_err(|e| e.to_string())
 }
 
+/// Create a new user classification rule and return the persisted row.
 #[tauri::command]
 pub async fn create_classification_rule(
     state: State<'_, DatabaseState>,
@@ -121,6 +168,7 @@ pub async fn create_classification_rule(
     .map_err(|e| e.to_string())
 }
 
+/// Update an existing classification rule by ID.
 #[tauri::command]
 pub async fn update_classification_rule(
     state: State<'_, DatabaseState>,
@@ -222,6 +270,7 @@ pub async fn update_classification_rule(
     .map_err(|e| e.to_string())
 }
 
+/// Enable or disable a classification rule.
 #[tauri::command]
 pub async fn toggle_classification_rule(
     state: State<'_, DatabaseState>,
@@ -243,6 +292,7 @@ pub async fn toggle_classification_rule(
     Ok(())
 }
 
+/// Reorder classification rules by setting priorities from the given ID list.
 #[tauri::command]
 pub async fn reorder_classification_rules(
     state: State<'_, DatabaseState>,
@@ -265,6 +315,7 @@ pub async fn reorder_classification_rules(
     Ok(())
 }
 
+/// Delete a classification rule by ID.
 #[tauri::command]
 pub async fn delete_classification_rule(
     state: State<'_, DatabaseState>,
@@ -282,6 +333,7 @@ pub async fn delete_classification_rule(
     Ok(())
 }
 
+/// Install the built-in starter rule pack (idempotent — skips if already installed).
 #[tauri::command]
 pub async fn install_starter_rules(state: State<'_, DatabaseState>) -> Result<i64, String> {
     let count: (i64,) =
