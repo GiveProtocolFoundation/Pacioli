@@ -128,9 +128,10 @@ const PROVIDER_CONFIGS: ProviderConfig[] = [
   },
   {
     id: 'moonscan',
-    name: 'Moonscan',
-    description: 'Moonbeam and Moonriver block explorer API',
-    docsUrl: 'https://moonscan.io/myapikey',
+    name: 'Moonscan (Etherscan V2)',
+    description:
+      'Moonbeam/Moonriver via Etherscan V2. Networks shut down 31 Jul 2026 — sync history before then.',
+    docsUrl: 'https://etherscan.io/myapikey',
     chains: ['Moonbeam', 'Moonriver'],
   },
   {
