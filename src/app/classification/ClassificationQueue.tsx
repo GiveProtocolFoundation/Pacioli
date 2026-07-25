@@ -324,9 +324,7 @@ const BatchResultBanner: React.FC<BatchResultBannerProps> = ({
 const ValuationSummary: React.FC<{ transactions: RawTransaction[] }> = ({
   transactions,
 }) => {
-  const priced = transactions.filter(
-    t => t.valuationStatus === 'priced'
-  ).length
+  const priced = transactions.filter(t => t.valuationStatus === 'priced').length
   const unpriced = transactions.filter(
     t => t.valuationStatus === 'unpriced'
   ).length
@@ -338,8 +336,7 @@ const ValuationSummary: React.FC<{ transactions: RawTransaction[] }> = ({
       ({priced} priced
       {unpriced > 0 && (
         <>
-          ,{' '}
-          <span className="text-[#647D8B]">{unpriced} awaiting prices</span>
+          , <span className="text-[#647D8B]">{unpriced} awaiting prices</span>
         </>
       )}
       {unavail > 0 && (
@@ -963,9 +960,7 @@ const ClassificationQueue: React.FC = () => {
       <div className="mb-4 text-sm text-[#294050] dark:text-[#9FB4BE]">
         {filtered.length} unclassified transaction
         {filtered.length !== 1 ? 's' : ''}
-        {filtered.length > 0 && (
-          <ValuationSummary transactions={filtered} />
-        )}
+        {filtered.length > 0 && <ValuationSummary transactions={filtered} />}
       </div>
 
       {/* Table */}
