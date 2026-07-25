@@ -1395,6 +1395,17 @@ async fn classify_transfer_lines(
     }
 }
 
+/// Shared context for classification helper functions, bundling parsed
+/// amounts and quantity strings to stay within clippy's argument limit.
+struct ClassifyCtx {
+    amount_minor: i64,
+    fee_minor: i64,
+    qty_str: Option<String>,
+    fee_qty_str: Option<String>,
+    asset_id: String,
+    short_hash: String,
+}
+
 /// Applies a matched classification rule to produce journal entry lines and
 /// a description string. Extracted from auto_classify_transaction to reduce
 /// cyclomatic complexity (RS-R1000).
@@ -1402,20 +1413,15 @@ async fn apply_matched_rule(
     pool: &sqlx::SqlitePool,
     rule: &super::rules::ClassificationRule,
     tx: &MultiChainTx,
-    short_hash: &str,
-    amount_minor: i64,
-    fee_minor: i64,
-    qty_str: &Option<String>,
-    fee_qty_str: &Option<String>,
-    asset_id: &str,
+    ctx: &ClassifyCtx,
 ) -> Result<(Vec<JournalEntryLineInput>, String), String> {
     let debit_id = get_account_id_by_number(pool, &rule.debit_account).await?;
     let credit_id = get_account_id_by_number(pool, &rule.credit_account).await?;
 
     let (amt, q_str) = if rule.use_fee_amount {
-        (fee_minor, fee_qty_str)
+        (ctx.fee_minor, &ctx.fee_qty_str)
     } else {
-        (amount_minor, qty_str)
+        (ctx.amount_minor, &ctx.qty_str)
     };
 
     let mut lines = Vec::new();
@@ -1437,7 +1443,7 @@ async fn apply_matched_rule(
             debit_minor: amt,
             credit_minor: 0,
             quantity: q_str.clone(),
-            asset_id: Some(asset_id.to_string()),
+            asset_id: Some(ctx.asset_id.clone()),
             description: dr_desc,
         });
         lines.push(JournalEntryLineInput {
@@ -1446,7 +1452,7 @@ async fn apply_matched_rule(
             debit_minor: 0,
             credit_minor: amt,
             quantity: q_str.clone(),
-            asset_id: Some(asset_id.to_string()),
+            asset_id: Some(ctx.asset_id.clone()),
             description: cr_desc,
         });
     }
@@ -1454,16 +1460,24 @@ async fn apply_matched_rule(
     let je_desc = if rule.je_description.is_empty() {
         format!(
             "{} on {} ({})",
-            tx.transaction_type, tx.chain_id, short_hash
+            tx.transaction_type, tx.chain_id, ctx.short_hash
         )
     } else {
         rule.je_description
             .replace("{chain}", &tx.chain_id)
-            .replace("{hash}", short_hash)
+            .replace("{hash}", &ctx.short_hash)
             .replace("{type}", &tx.transaction_type)
     };
 
     Ok((lines, je_desc))
+}
+
+/// Resolved GL account IDs used by the fallback heuristic classifier.
+struct FallbackAccounts {
+    crypto_assets_id: i64,
+    staking_income_id: i64,
+    network_fees_id: i64,
+    income_id: i64,
 }
 
 /// Applies fallback heuristic classification when no classification rule
@@ -1472,38 +1486,30 @@ async fn apply_matched_rule(
 async fn apply_fallback_heuristics(
     pool: &sqlx::SqlitePool,
     tx: &MultiChainTx,
-    short_hash: &str,
-    amount_minor: i64,
-    fee_minor: i64,
-    qty_str: &Option<String>,
-    fee_qty_str: &Option<String>,
-    asset_id: &str,
-    crypto_assets_id: i64,
-    staking_income_id: i64,
-    network_fees_id: i64,
-    income_id: i64,
+    ctx: &ClassifyCtx,
+    accts: &FallbackAccounts,
 ) -> Result<(Vec<JournalEntryLineInput>, String), String> {
     let mut lines = Vec::new();
 
     let description = match tx.transaction_type.as_str() {
         "claim" | "stake" => {
-            if amount_minor > 0 {
+            if ctx.amount_minor > 0 {
                 lines.push(JournalEntryLineInput {
-                    gl_account_id: crypto_assets_id,
+                    gl_account_id: accts.crypto_assets_id,
                     token_id: None,
-                    debit_minor: amount_minor,
+                    debit_minor: ctx.amount_minor,
                     credit_minor: 0,
-                    quantity: qty_str.clone(),
-                    asset_id: Some(asset_id.to_string()),
+                    quantity: ctx.qty_str.clone(),
+                    asset_id: Some(ctx.asset_id.clone()),
                     description: Some("Staking reward received".to_string()),
                 });
                 lines.push(JournalEntryLineInput {
-                    gl_account_id: staking_income_id,
+                    gl_account_id: accts.staking_income_id,
                     token_id: None,
                     debit_minor: 0,
-                    credit_minor: amount_minor,
-                    quantity: qty_str.clone(),
-                    asset_id: Some(asset_id.to_string()),
+                    credit_minor: ctx.amount_minor,
+                    quantity: ctx.qty_str.clone(),
+                    asset_id: Some(ctx.asset_id.clone()),
                     description: Some("Staking reward income".to_string()),
                 });
             }
@@ -1513,40 +1519,40 @@ async fn apply_fallback_heuristics(
             let (transfer_lines, transfer_desc) = classify_transfer_lines(
                 pool,
                 tx,
-                amount_minor,
-                qty_str,
-                asset_id,
-                crypto_assets_id,
-                income_id,
+                ctx.amount_minor,
+                &ctx.qty_str,
+                &ctx.asset_id,
+                accts.crypto_assets_id,
+                accts.income_id,
             )
             .await?;
             lines.extend(transfer_lines);
             transfer_desc
         }
         _ => {
-            if fee_minor > 0 {
+            if ctx.fee_minor > 0 {
                 lines.push(JournalEntryLineInput {
-                    gl_account_id: network_fees_id,
+                    gl_account_id: accts.network_fees_id,
                     token_id: None,
-                    debit_minor: fee_minor,
+                    debit_minor: ctx.fee_minor,
                     credit_minor: 0,
-                    quantity: fee_qty_str.clone(),
-                    asset_id: Some(asset_id.to_string()),
+                    quantity: ctx.fee_qty_str.clone(),
+                    asset_id: Some(ctx.asset_id.clone()),
                     description: Some("Network/gas fee".to_string()),
                 });
                 lines.push(JournalEntryLineInput {
-                    gl_account_id: crypto_assets_id,
+                    gl_account_id: accts.crypto_assets_id,
                     token_id: None,
                     debit_minor: 0,
-                    credit_minor: fee_minor,
-                    quantity: fee_qty_str.clone(),
-                    asset_id: Some(asset_id.to_string()),
+                    credit_minor: ctx.fee_minor,
+                    quantity: ctx.fee_qty_str.clone(),
+                    asset_id: Some(ctx.asset_id.clone()),
                     description: Some("Fee paid from crypto assets".to_string()),
                 });
             }
             format!(
                 "{} on {} ({})",
-                tx.transaction_type, tx.chain_id, short_hash
+                tx.transaction_type, tx.chain_id, ctx.short_hash
             )
         }
     };
@@ -1562,7 +1568,7 @@ fn rule_matches(
     self_xfer: bool,
 ) -> bool {
     let types: Vec<&str> = rule.match_tx_types.split(',').map(|s| s.trim()).collect();
-    if !types.iter().any(|t| *t == tx_type) {
+    if !types.contains(&tx_type) {
         return false;
     }
     if !rule.match_chains.is_empty() {
@@ -1632,7 +1638,16 @@ pub async fn auto_classify_transaction(
     let asset_id = chain_id_to_native_symbol(&tx.chain_id)
         .map_or_else(|| "USD".to_string(), |s| format!("token:{}", s));
 
-    let short_hash = &tx.transaction_hash[..8.min(tx.transaction_hash.len())];
+    let short_hash = tx.transaction_hash[..8.min(tx.transaction_hash.len())].to_string();
+
+    let ctx = ClassifyCtx {
+        amount_minor,
+        fee_minor,
+        qty_str,
+        fee_qty_str,
+        asset_id,
+        short_hash,
+    };
 
     let self_xfer =
         is_self_transfer(&state.pool, &tx.from_address, tx.to_address.as_deref()).await?;
@@ -1651,35 +1666,17 @@ pub async fn auto_classify_transaction(
         .iter()
         .find(|r| rule_matches(r, &tx.transaction_type, &tx.chain_id, self_xfer));
 
+    let accts = FallbackAccounts {
+        crypto_assets_id,
+        staking_income_id,
+        network_fees_id,
+        income_id,
+    };
+
     let (mut lines, description) = if let Some(rule) = matched_rule {
-        apply_matched_rule(
-            &state.pool,
-            rule,
-            &tx,
-            short_hash,
-            amount_minor,
-            fee_minor,
-            &qty_str,
-            &fee_qty_str,
-            &asset_id,
-        )
-        .await?
+        apply_matched_rule(&state.pool, rule, &tx, &ctx).await?
     } else {
-        apply_fallback_heuristics(
-            &state.pool,
-            &tx,
-            short_hash,
-            amount_minor,
-            fee_minor,
-            &qty_str,
-            &fee_qty_str,
-            &asset_id,
-            crypto_assets_id,
-            staking_income_id,
-            network_fees_id,
-            income_id,
-        )
-        .await?
+        apply_fallback_heuristics(&state.pool, &tx, &ctx, &accts).await?
     };
 
     if lines.is_empty() {

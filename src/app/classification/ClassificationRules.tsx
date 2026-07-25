@@ -90,6 +90,245 @@ const emptyForm: RuleFormData = {
   useFeeAmount: false,
 }
 
+interface RuleFormProps {
+  data: RuleFormData
+  onChange: (data: RuleFormData) => void
+  onSave: () => void
+  onCancel: () => void
+  saving: boolean
+}
+
+/** @returns Form for creating or editing a single classification rule. */
+const RuleForm: React.FC<RuleFormProps> = ({
+  data,
+  onChange,
+  onSave,
+  onCancel,
+  saving,
+}) => {
+  const handleFieldChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+      const field = event.currentTarget.dataset.field as
+        | keyof RuleFormData
+        | undefined
+      if (!field) return
+      onChange({ ...data, [field]: event.target.value })
+    },
+    [data, onChange]
+  )
+
+  const handleCheckboxChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const field = event.currentTarget.dataset.field as
+        | keyof RuleFormData
+        | undefined
+      if (!field) return
+      onChange({ ...data, [field]: event.target.checked })
+    },
+    [data, onChange]
+  )
+
+  const handleToggleTxType = useCallback(
+    (event: React.MouseEvent<HTMLButtonElement>) => {
+      const txType = event.currentTarget.dataset.txtype
+      if (!txType) return
+      const types = data.matchTxTypes
+        .split(',')
+        .map(s => s.trim())
+        .filter(Boolean)
+      if (types.includes(txType)) {
+        onChange({
+          ...data,
+          matchTxTypes: types.filter(x => x !== txType).join(','),
+        })
+      } else {
+        onChange({ ...data, matchTxTypes: [...types, txType].join(',') })
+      }
+    },
+    [data, onChange]
+  )
+
+  const valid =
+    data.name.trim() !== '' &&
+    data.matchTxTypes.trim() !== '' &&
+    data.debitAccount.trim() !== '' &&
+    data.creditAccount.trim() !== ''
+
+  return (
+    <div className="space-y-3">
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className={LABEL_CLASS}>Name *</label>
+          <input
+            className={INPUT_CLASS}
+            data-field="name"
+            value={data.name}
+            onChange={handleFieldChange}
+            placeholder="e.g. Staking Reward"
+          />
+        </div>
+        <div>
+          <label className={LABEL_CLASS}>Description</label>
+          <input
+            className={INPUT_CLASS}
+            data-field="description"
+            value={data.description}
+            onChange={handleFieldChange}
+            placeholder="Optional description"
+          />
+        </div>
+      </div>
+      <div className="grid grid-cols-3 gap-3">
+        <div>
+          <label className={LABEL_CLASS}>
+            Match Tx Types * (comma-separated)
+          </label>
+          <input
+            className={INPUT_CLASS}
+            data-field="matchTxTypes"
+            value={data.matchTxTypes}
+            onChange={handleFieldChange}
+            placeholder="e.g. claim,stake"
+          />
+          <div className="mt-1 flex flex-wrap gap-1">
+            {TX_TYPES.map(txTypeOption => (
+              <button
+                key={txTypeOption}
+                type="button"
+                data-txtype={txTypeOption}
+                onClick={handleToggleTxType}
+                className={`px-1.5 py-0.5 text-[10px] rounded border transition-colors ${
+                  data.matchTxTypes
+                    .split(',')
+                    .map(s => s.trim())
+                    .includes(txTypeOption)
+                    ? 'bg-[#5FE3C0]/20 border-[#5FE3C0]/40 text-[#294050] dark:text-[#5FE3C0]'
+                    : 'border-[rgba(95,227,192,0.15)] text-[#647D8B] hover:bg-[#294050]/5'
+                }`}
+              >
+                {txTypeOption}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div>
+          <label className={LABEL_CLASS}>Match Chains (empty = all)</label>
+          <input
+            className={INPUT_CLASS}
+            data-field="matchChains"
+            value={data.matchChains}
+            onChange={handleFieldChange}
+            placeholder="e.g. polkadot,kusama"
+          />
+        </div>
+        <div>
+          <label className={LABEL_CLASS}>Self-Transfer Filter</label>
+          <select
+            className={INPUT_CLASS}
+            data-field="matchSelfTransfer"
+            value={data.matchSelfTransfer}
+            onChange={handleFieldChange}
+          >
+            {SELF_TRANSFER_OPTIONS.map(o => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className={LABEL_CLASS}>Debit Account # *</label>
+          <input
+            className={INPUT_CLASS}
+            data-field="debitAccount"
+            value={data.debitAccount}
+            onChange={handleFieldChange}
+            placeholder="e.g. 1200"
+          />
+        </div>
+        <div>
+          <label className={LABEL_CLASS}>Credit Account # *</label>
+          <input
+            className={INPUT_CLASS}
+            data-field="creditAccount"
+            value={data.creditAccount}
+            onChange={handleFieldChange}
+            placeholder="e.g. 4100"
+          />
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className={LABEL_CLASS}>Debit Line Description</label>
+          <input
+            className={INPUT_CLASS}
+            data-field="debitLineDesc"
+            value={data.debitLineDesc}
+            onChange={handleFieldChange}
+            placeholder="e.g. Staking reward received"
+          />
+        </div>
+        <div>
+          <label className={LABEL_CLASS}>Credit Line Description</label>
+          <input
+            className={INPUT_CLASS}
+            data-field="creditLineDesc"
+            value={data.creditLineDesc}
+            onChange={handleFieldChange}
+            placeholder="e.g. Staking reward income"
+          />
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className={LABEL_CLASS}>
+            JE Description Template ({'{chain}'}, {'{hash}'}, {'{type}'})
+          </label>
+          <input
+            className={INPUT_CLASS}
+            data-field="jeDescription"
+            value={data.jeDescription}
+            onChange={handleFieldChange}
+            placeholder="e.g. Staking reward on {chain}"
+          />
+        </div>
+        <div className="flex items-end pb-2">
+          <label className="flex items-center gap-2 text-sm text-[#294050] dark:text-[#9FB4BE] cursor-pointer">
+            <input
+              type="checkbox"
+              data-field="useFeeAmount"
+              checked={data.useFeeAmount}
+              onChange={handleCheckboxChange}
+              className="rounded border-[rgba(95,227,192,0.3)] text-[#5FE3C0] focus:ring-[#5FE3C0]"
+            />
+            Use fee amount (instead of transfer value)
+          </label>
+        </div>
+      </div>
+      <div className="flex justify-end gap-2 pt-1">
+        <button
+          onClick={onCancel}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm border border-[rgba(95,227,192,0.15)] rounded-lg text-[#294050] dark:text-[#9FB4BE] hover:bg-[#EAF3F2] dark:hover:bg-[#16242F] transition-colors"
+        >
+          <X className="w-3.5 h-3.5" />
+          Cancel
+        </button>
+        <button
+          onClick={onSave}
+          disabled={!valid || saving}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg bg-[#294050] text-white hover:bg-[#1E2F3C] disabled:opacity-50 transition-colors"
+        >
+          <Check className="w-3.5 h-3.5" />
+          {saving ? 'Saving...' : 'Save Rule'}
+        </button>
+      </div>
+    </div>
+  )
+}
+
+/** @returns Classification rules management page with CRUD, drag-reorder, and starter packs. */
 const ClassificationRules: React.FC = () => {
   const [rules, setRules] = useState<ClassificationRule[]>([])
   const [loading, setLoading] = useState(true)
@@ -446,26 +685,24 @@ const ClassificationRules: React.FC = () => {
               ) : (
                 <div className="p-4 flex items-start gap-3">
                   {/* Drag handle + priority */}
-                  <div className="flex flex-col items-center gap-1 pt-1">
-                    <GripVertical className="w-4 h-4 text-[#647D8B] cursor-grab" />
-                    <div className="flex flex-col gap-0.5">
-                      <button
-                        data-index={index}
-                        onClick={handleMoveUp}
-                        disabled={index === 0}
-                        className="p-0.5 hover:bg-[#294050]/10 rounded disabled:opacity-30 transition-colors"
-                      >
-                        <ChevronUp className="w-3 h-3 text-[#647D8B]" />
-                      </button>
-                      <button
-                        data-index={index}
-                        onClick={handleMoveDown}
-                        disabled={index === rules.length - 1}
-                        className="p-0.5 hover:bg-[#294050]/10 rounded disabled:opacity-30 transition-colors"
-                      >
-                        <ChevronDown className="w-3 h-3 text-[#647D8B]" />
-                      </button>
-                    </div>
+                  <div className="flex flex-col items-center gap-0.5 pt-1">
+                    <GripVertical className="w-4 h-4 text-[#647D8B] cursor-grab mb-0.5" />
+                    <button
+                      data-index={index}
+                      onClick={handleMoveUp}
+                      disabled={index === 0}
+                      className="p-0.5 hover:bg-[#294050]/10 rounded disabled:opacity-30 transition-colors"
+                    >
+                      <ChevronUp className="w-3 h-3 text-[#647D8B]" />
+                    </button>
+                    <button
+                      data-index={index}
+                      onClick={handleMoveDown}
+                      disabled={index === rules.length - 1}
+                      className="p-0.5 hover:bg-[#294050]/10 rounded disabled:opacity-30 transition-colors"
+                    >
+                      <ChevronDown className="w-3 h-3 text-[#647D8B]" />
+                    </button>
                   </div>
 
                   {/* Rule details */}
@@ -575,243 +812,6 @@ const ClassificationRules: React.FC = () => {
           </button>
         </div>
       )}
-    </div>
-  )
-}
-
-interface RuleFormProps {
-  data: RuleFormData
-  onChange: (data: RuleFormData) => void
-  onSave: () => void
-  onCancel: () => void
-  saving: boolean
-}
-
-const RuleForm: React.FC<RuleFormProps> = ({
-  data,
-  onChange,
-  onSave,
-  onCancel,
-  saving,
-}) => {
-  const handleFieldChange = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-      const field = event.currentTarget.dataset.field as
-        | keyof RuleFormData
-        | undefined
-      if (!field) return
-      onChange({ ...data, [field]: event.target.value })
-    },
-    [data, onChange]
-  )
-
-  const handleCheckboxChange = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      const field = event.currentTarget.dataset.field as
-        | keyof RuleFormData
-        | undefined
-      if (!field) return
-      onChange({ ...data, [field]: event.target.checked })
-    },
-    [data, onChange]
-  )
-
-  const handleToggleTxType = useCallback(
-    (event: React.MouseEvent<HTMLButtonElement>) => {
-      const t = event.currentTarget.dataset.txtype
-      if (!t) return
-      const types = data.matchTxTypes
-        .split(',')
-        .map(s => s.trim())
-        .filter(Boolean)
-      if (types.includes(t)) {
-        onChange({
-          ...data,
-          matchTxTypes: types.filter(x => x !== t).join(','),
-        })
-      } else {
-        onChange({ ...data, matchTxTypes: [...types, t].join(',') })
-      }
-    },
-    [data, onChange]
-  )
-
-  const valid =
-    data.name.trim() !== '' &&
-    data.matchTxTypes.trim() !== '' &&
-    data.debitAccount.trim() !== '' &&
-    data.creditAccount.trim() !== ''
-
-  return (
-    <div className="space-y-3">
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className={LABEL_CLASS}>Name *</label>
-          <input
-            className={INPUT_CLASS}
-            data-field="name"
-            value={data.name}
-            onChange={handleFieldChange}
-            placeholder="e.g. Staking Reward"
-          />
-        </div>
-        <div>
-          <label className={LABEL_CLASS}>Description</label>
-          <input
-            className={INPUT_CLASS}
-            data-field="description"
-            value={data.description}
-            onChange={handleFieldChange}
-            placeholder="Optional description"
-          />
-        </div>
-      </div>
-      <div className="grid grid-cols-3 gap-3">
-        <div>
-          <label className={LABEL_CLASS}>
-            Match Tx Types * (comma-separated)
-          </label>
-          <input
-            className={INPUT_CLASS}
-            data-field="matchTxTypes"
-            value={data.matchTxTypes}
-            onChange={handleFieldChange}
-            placeholder="e.g. claim,stake"
-          />
-          <div className="mt-1 flex flex-wrap gap-1">
-            {TX_TYPES.map(t => (
-              <button
-                key={t}
-                type="button"
-                data-txtype={t}
-                onClick={handleToggleTxType}
-                className={`px-1.5 py-0.5 text-[10px] rounded border transition-colors ${
-                  data.matchTxTypes
-                    .split(',')
-                    .map(s => s.trim())
-                    .includes(t)
-                    ? 'bg-[#5FE3C0]/20 border-[#5FE3C0]/40 text-[#294050] dark:text-[#5FE3C0]'
-                    : 'border-[rgba(95,227,192,0.15)] text-[#647D8B] hover:bg-[#294050]/5'
-                }`}
-              >
-                {t}
-              </button>
-            ))}
-          </div>
-        </div>
-        <div>
-          <label className={LABEL_CLASS}>Match Chains (empty = all)</label>
-          <input
-            className={INPUT_CLASS}
-            data-field="matchChains"
-            value={data.matchChains}
-            onChange={handleFieldChange}
-            placeholder="e.g. polkadot,kusama"
-          />
-        </div>
-        <div>
-          <label className={LABEL_CLASS}>Self-Transfer Filter</label>
-          <select
-            className={INPUT_CLASS}
-            data-field="matchSelfTransfer"
-            value={data.matchSelfTransfer}
-            onChange={handleFieldChange}
-          >
-            {SELF_TRANSFER_OPTIONS.map(o => (
-              <option key={o.value} value={o.value}>
-                {o.label}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className={LABEL_CLASS}>Debit Account # *</label>
-          <input
-            className={INPUT_CLASS}
-            data-field="debitAccount"
-            value={data.debitAccount}
-            onChange={handleFieldChange}
-            placeholder="e.g. 1200"
-          />
-        </div>
-        <div>
-          <label className={LABEL_CLASS}>Credit Account # *</label>
-          <input
-            className={INPUT_CLASS}
-            data-field="creditAccount"
-            value={data.creditAccount}
-            onChange={handleFieldChange}
-            placeholder="e.g. 4100"
-          />
-        </div>
-      </div>
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className={LABEL_CLASS}>Debit Line Description</label>
-          <input
-            className={INPUT_CLASS}
-            data-field="debitLineDesc"
-            value={data.debitLineDesc}
-            onChange={handleFieldChange}
-            placeholder="e.g. Staking reward received"
-          />
-        </div>
-        <div>
-          <label className={LABEL_CLASS}>Credit Line Description</label>
-          <input
-            className={INPUT_CLASS}
-            data-field="creditLineDesc"
-            value={data.creditLineDesc}
-            onChange={handleFieldChange}
-            placeholder="e.g. Staking reward income"
-          />
-        </div>
-      </div>
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className={LABEL_CLASS}>
-            JE Description Template ({'{chain}'}, {'{hash}'}, {'{type}'})
-          </label>
-          <input
-            className={INPUT_CLASS}
-            data-field="jeDescription"
-            value={data.jeDescription}
-            onChange={handleFieldChange}
-            placeholder="e.g. Staking reward on {chain}"
-          />
-        </div>
-        <div className="flex items-end pb-2">
-          <label className="flex items-center gap-2 text-sm text-[#294050] dark:text-[#9FB4BE] cursor-pointer">
-            <input
-              type="checkbox"
-              data-field="useFeeAmount"
-              checked={data.useFeeAmount}
-              onChange={handleCheckboxChange}
-              className="rounded border-[rgba(95,227,192,0.3)] text-[#5FE3C0] focus:ring-[#5FE3C0]"
-            />
-            Use fee amount (instead of transfer value)
-          </label>
-        </div>
-      </div>
-      <div className="flex justify-end gap-2 pt-1">
-        <button
-          onClick={onCancel}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm border border-[rgba(95,227,192,0.15)] rounded-lg text-[#294050] dark:text-[#9FB4BE] hover:bg-[#EAF3F2] dark:hover:bg-[#16242F] transition-colors"
-        >
-          <X className="w-3.5 h-3.5" />
-          Cancel
-        </button>
-        <button
-          onClick={onSave}
-          disabled={!valid || saving}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg bg-[#294050] text-white hover:bg-[#1E2F3C] disabled:opacity-50 transition-colors"
-        >
-          <Check className="w-3.5 h-3.5" />
-          {saving ? 'Saving...' : 'Save Rule'}
-        </button>
-      </div>
     </div>
   )
 }
