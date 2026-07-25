@@ -93,13 +93,13 @@ pub async fn create_classification_rule(
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 'user')",
     )
     .bind(&id)
-    .bind(&input.name)
+    .bind(input.name)
     .bind(input.description.as_deref().unwrap_or(""))
-    .bind(&input.match_tx_types)
+    .bind(input.match_tx_types)
     .bind(input.match_chains.as_deref().unwrap_or(""))
     .bind(input.match_self_transfer.as_deref().unwrap_or("any"))
-    .bind(&input.debit_account)
-    .bind(&input.credit_account)
+    .bind(input.debit_account)
+    .bind(input.credit_account)
     .bind(input.debit_line_desc.as_deref().unwrap_or(""))
     .bind(input.credit_line_desc.as_deref().unwrap_or(""))
     .bind(input.je_description.as_deref().unwrap_or(""))
@@ -115,7 +115,7 @@ pub async fn create_classification_rule(
          use_fee_amount, priority, enabled, source, created_at, updated_at \
          FROM classification_rules WHERE id = ?",
     )
-    .bind(&id)
+    .bind(id)
     .fetch_one(&state.pool)
     .await
     .map_err(|e| e.to_string())
@@ -216,7 +216,7 @@ pub async fn update_classification_rule(
          use_fee_amount, priority, enabled, source, created_at, updated_at \
          FROM classification_rules WHERE id = ?",
     )
-    .bind(&id)
+    .bind(id)
     .fetch_one(&state.pool)
     .await
     .map_err(|e| e.to_string())
@@ -305,17 +305,17 @@ pub async fn install_starter_rules(state: State<'_, DatabaseState>) -> Result<i6
               use_fee_amount, priority, enabled, source) \
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 'builtin')",
         )
-        .bind(&r.id)
-        .bind(&r.name)
-        .bind(&r.description)
-        .bind(&r.match_tx_types)
-        .bind(&r.match_chains)
-        .bind(&r.match_self_transfer)
-        .bind(&r.debit_account)
-        .bind(&r.credit_account)
-        .bind(&r.debit_line_desc)
-        .bind(&r.credit_line_desc)
-        .bind(&r.je_description)
+        .bind(r.id)
+        .bind(r.name)
+        .bind(r.description)
+        .bind(r.match_tx_types)
+        .bind(r.match_chains)
+        .bind(r.match_self_transfer)
+        .bind(r.debit_account)
+        .bind(r.credit_account)
+        .bind(r.debit_line_desc)
+        .bind(r.credit_line_desc)
+        .bind(r.je_description)
         .bind(r.use_fee_amount)
         .bind(r.priority)
         .execute(&state.pool)
