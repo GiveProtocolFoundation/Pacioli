@@ -672,10 +672,7 @@ impl EtherscanClient {
                 break;
             }
 
-            let last_block = all
-                .last()
-                .map(|t| t.block_num())
-                .unwrap_or(current_start);
+            let last_block = all.last().map(|t| t.block_num()).unwrap_or(current_start);
             current_start = if last_block > current_start {
                 last_block
             } else {
@@ -1372,8 +1369,8 @@ mod tests {
         let client = create_test_client();
         let call_count = std::sync::atomic::AtomicU32::new(0);
 
-        let result: ChainResult<Vec<EvmTransaction>> =
-            client.fetch_all_windowed(Some(0), None, |_sb, _eb| {
+        let result: ChainResult<Vec<EvmTransaction>> = client
+            .fetch_all_windowed(Some(0), None, |_sb, _eb| {
                 let n = call_count.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
                 async move {
                     if n == 0 {
@@ -1387,7 +1384,8 @@ mod tests {
                         Ok(Vec::new())
                     }
                 }
-            }).await;
+            })
+            .await;
 
         let txs = result.unwrap();
         assert_eq!(txs.len(), 2);
@@ -1402,8 +1400,8 @@ mod tests {
         let starts = std::sync::Arc::new(std::sync::Mutex::new(Vec::<u64>::new()));
         let starts_clone = starts.clone();
 
-        let result: ChainResult<Vec<EvmTransaction>> =
-            client.fetch_all_windowed(Some(0), None, |sb, _eb| {
+        let result: ChainResult<Vec<EvmTransaction>> = client
+            .fetch_all_windowed(Some(0), None, |sb, _eb| {
                 starts_clone.lock().unwrap().push(sb);
                 let n = starts_clone.lock().unwrap().len();
                 async move {
@@ -1422,7 +1420,8 @@ mod tests {
                         Ok(vec![make_evm_tx("0xfinal", "200")])
                     }
                 }
-            }).await;
+            })
+            .await;
 
         result.unwrap();
         let recorded = starts.lock().unwrap();
@@ -1438,8 +1437,8 @@ mod tests {
         let starts = std::sync::Arc::new(std::sync::Mutex::new(Vec::<u64>::new()));
         let starts_clone = starts.clone();
 
-        let _result: ChainResult<Vec<EvmTransaction>> =
-            client.fetch_all_windowed(Some(50), None, |sb, _eb| {
+        let _result: ChainResult<Vec<EvmTransaction>> = client
+            .fetch_all_windowed(Some(50), None, |sb, _eb| {
                 starts_clone.lock().unwrap().push(sb);
                 let n = call_count.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
                 async move {
@@ -1453,7 +1452,8 @@ mod tests {
                         Ok(Vec::new())
                     }
                 }
-            }).await;
+            })
+            .await;
 
         let recorded = starts.lock().unwrap();
         assert_eq!(recorded.len(), 2);
