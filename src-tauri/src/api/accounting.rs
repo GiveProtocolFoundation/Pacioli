@@ -1283,8 +1283,7 @@ async fn classify_transfer_lines(
     crypto_assets_id: i64,
     income_id: i64,
 ) -> Result<(Vec<JournalEntryLineInput>, String), String> {
-    let self_xfer =
-        is_self_transfer(pool, &tx.from_address, tx.to_address.as_deref()).await?;
+    let self_xfer = is_self_transfer(pool, &tx.from_address, tx.to_address.as_deref()).await?;
     let mut lines = Vec::new();
     let short_hash = &tx.transaction_hash[..8.min(tx.transaction_hash.len())];
 
