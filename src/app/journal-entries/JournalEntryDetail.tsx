@@ -116,9 +116,7 @@ const SourceTransactionSection: React.FC<{ sourceTxId: string }> = ({
         <Link2 className="w-3.5 h-3.5" />
         Source Transaction
       </h3>
-      {loading && (
-        <p className="text-sm text-[#647D8B]">Loading&hellip;</p>
-      )}
+      {loading && <p className="text-sm text-[#647D8B]">Loading&hellip;</p>}
       {!loading && sourceTx && (
         <div className="p-3 rounded-lg bg-[#EAF3F2]/60 dark:bg-[#16242F]/60 border border-[rgba(95,227,192,0.15)] space-y-2">
           <div className="grid grid-cols-2 gap-3 text-sm">
@@ -156,9 +154,7 @@ const SourceTransactionSection: React.FC<{ sourceTxId: string }> = ({
                 className="font-mono text-[#11202B] dark:text-[#EAF3F2]"
                 title={sourceTx.toAddress ?? ''}
               >
-                {sourceTx.toAddress
-                  ? truncateAddress(sourceTx.toAddress)
-                  : '—'}
+                {sourceTx.toAddress ? truncateAddress(sourceTx.toAddress) : '—'}
               </p>
             </div>
             <div>
