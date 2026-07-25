@@ -12,6 +12,10 @@ import {
   ChevronDown,
   ChevronRight,
   Link2,
+  CheckSquare,
+  Square,
+  MinusSquare,
+  Undo2,
 } from 'lucide-react'
 import { useNavBadges } from '../../contexts/NavBadgeContext'
 import { useAuth } from '../../contexts/AuthContext'
@@ -115,6 +119,8 @@ const JournalEntries: React.FC = () => {
     JournalEntryWithLines | undefined
   >()
   const [voidConfirmId, setVoidConfirmId] = useState<number | null>(null)
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
+  const [batchProcessing, setBatchProcessing] = useState(false)
   const { refreshCounts } = useNavBadges()
   const { user } = useAuth()
 
@@ -184,6 +190,7 @@ const JournalEntries: React.FC = () => {
   const handleTabChange = useCallback(
     (tab: StatusFilter) => {
       setSearchParams({ filter: tab })
+      setSelectedIds(new Set())
     },
     [setSearchParams]
   )
@@ -310,6 +317,123 @@ const JournalEntries: React.FC = () => {
 
   const handleDismissVoidConfirm = useCallback(() => setVoidConfirmId(null), [])
 
+  const selectableEntries = useMemo(
+    () =>
+      filteredEntries.filter(
+        e => displayStatus(e) === 'draft' || displayStatus(e) === 'approved'
+      ),
+    [filteredEntries]
+  )
+
+  const draftEntries = useMemo(
+    () => filteredEntries.filter(e => displayStatus(e) === 'draft'),
+    [filteredEntries]
+  )
+
+  const approvedEntries = useMemo(
+    () => filteredEntries.filter(e => displayStatus(e) === 'approved'),
+    [filteredEntries]
+  )
+
+  const selectedDraftCount = draftEntries.filter(e =>
+    selectedIds.has(e.id)
+  ).length
+  const selectedApprovedCount = approvedEntries.filter(e =>
+    selectedIds.has(e.id)
+  ).length
+  const selectedCount = filteredEntries.filter(e =>
+    selectedIds.has(e.id)
+  ).length
+
+  const allSelectableSelected =
+    selectableEntries.length > 0 &&
+    selectableEntries.every(e => selectedIds.has(e.id))
+  const someSelected =
+    selectableEntries.some(e => selectedIds.has(e.id)) && !allSelectableSelected
+
+  const handleToggleSelectAll = useCallback(() => {
+    setSelectedIds(prev => {
+      if (selectableEntries.every(e => prev.has(e.id))) {
+        const next = new Set(prev)
+        selectableEntries.forEach(e => next.delete(e.id))
+        return next
+      }
+      const next = new Set(prev)
+      selectableEntries.forEach(e => next.add(e.id))
+      return next
+    })
+  }, [selectableEntries])
+
+  const handleToggleSelect = useCallback((id: number) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }, [])
+
+  const handleClearSelection = useCallback(() => setSelectedIds(new Set()), [])
+
+  const handleBatchApprove = useCallback(async () => {
+    const ids = draftEntries.filter(e => selectedIds.has(e.id)).map(e => e.id)
+    if (ids.length === 0) return
+
+    setBatchProcessing(true)
+    setActionError(null)
+    const approver = user?.email ?? user?.display_name ?? 'unknown'
+
+    let failed = 0
+    for (const id of ids) {
+      try {
+        await invoke('approve_journal_entry', { id, approver })
+      } catch {
+        failed++
+      }
+    }
+
+    setSelectedIds(new Set())
+    setBatchProcessing(false)
+    fetchEntries()
+    refreshCounts()
+
+    if (failed > 0) {
+      setActionError(
+        `${failed} entr${failed !== 1 ? 'ies' : 'y'} failed to approve`
+      )
+    }
+  }, [draftEntries, selectedIds, user, fetchEntries, refreshCounts])
+
+  const handleBatchDemote = useCallback(async () => {
+    const ids = approvedEntries
+      .filter(e => selectedIds.has(e.id))
+      .map(e => e.id)
+    if (ids.length === 0) return
+
+    setBatchProcessing(true)
+    setActionError(null)
+
+    let failed = 0
+    for (const id of ids) {
+      try {
+        await invoke('demote_journal_entry', { id })
+      } catch {
+        failed++
+      }
+    }
+
+    setSelectedIds(new Set())
+    setBatchProcessing(false)
+    fetchEntries()
+    refreshCounts()
+
+    if (failed > 0) {
+      setActionError(
+        `${failed} entr${failed !== 1 ? 'ies' : 'y'} failed to revert`
+      )
+    }
+  }, [approvedEntries, selectedIds, fetchEntries, refreshCounts])
+
   const resolveAccountName = useCallback(
     (glAccountId: number) => {
       const acct = accountMap.get(glAccountId)
@@ -417,6 +541,44 @@ const JournalEntries: React.FC = () => {
         />
       </div>
 
+      {/* Batch action toolbar */}
+      {selectedCount > 0 && (
+        <div className="mb-4 flex items-center justify-between p-3 rounded-lg bg-[#294050]/5 dark:bg-[#294050]/20 border border-[rgba(95,227,192,0.15)]">
+          <span className="text-sm font-medium text-[#11202B] dark:text-[#EAF3F2]">
+            {selectedCount} selected
+          </span>
+          <div className="flex items-center gap-2">
+            {selectedDraftCount > 0 && (
+              <button
+                onClick={handleBatchApprove}
+                disabled={batchProcessing}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/50 disabled:opacity-50 transition-colors"
+              >
+                <ShieldCheck className="w-4 h-4" />
+                Approve {selectedDraftCount} Draft
+                {selectedDraftCount !== 1 ? 's' : ''}
+              </button>
+            )}
+            {selectedApprovedCount > 0 && (
+              <button
+                onClick={handleBatchDemote}
+                disabled={batchProcessing}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-900/50 disabled:opacity-50 transition-colors"
+              >
+                <Undo2 className="w-4 h-4" />
+                Revert {selectedApprovedCount} to Draft
+              </button>
+            )}
+            <button
+              onClick={handleClearSelection}
+              className="px-3 py-1.5 text-sm text-[#647D8B] hover:text-[#11202B] dark:hover:text-[#EAF3F2] transition-colors"
+            >
+              Clear
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Table */}
       {loading ? (
         <div className="flex items-center justify-center py-16">
@@ -437,6 +599,27 @@ const JournalEntries: React.FC = () => {
           <table className="min-w-full">
             <thead>
               <tr className="bg-[#EAF3F2] dark:bg-[#16242F]">
+                <th className="w-10 px-4 py-3 text-center">
+                  {selectableEntries.length > 0 && (
+                    <button
+                      onClick={handleToggleSelectAll}
+                      className="p-0.5 hover:bg-[#294050]/10 dark:hover:bg-[#294050]/20 rounded transition-colors"
+                      title={
+                        allSelectableSelected
+                          ? 'Deselect all'
+                          : 'Select all drafts & approved'
+                      }
+                    >
+                      {allSelectableSelected ? (
+                        <CheckSquare className="w-4 h-4 text-[#5FE3C0]" />
+                      ) : someSelected ? (
+                        <MinusSquare className="w-4 h-4 text-[#5FE3C0]" />
+                      ) : (
+                        <Square className="w-4 h-4 text-[#294050] dark:text-[#9FB4BE]" />
+                      )}
+                    </button>
+                  )}
+                </th>
                 <th className="w-8 px-4 py-3" />
                 <th className="px-4 py-3 text-left text-xs font-semibold text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
                   Date
@@ -480,9 +663,26 @@ const JournalEntries: React.FC = () => {
                 return (
                   <React.Fragment key={entry.id}>
                     <tr
-                      className="bg-white dark:bg-[#11202B] hover:bg-[#EAF3F2]/50 dark:hover:bg-[#16242F]/50 cursor-pointer transition-colors"
+                      className={`bg-white dark:bg-[#11202B] hover:bg-[#EAF3F2]/50 dark:hover:bg-[#16242F]/50 cursor-pointer transition-colors ${selectedIds.has(entry.id) ? 'bg-[#5FE3C0]/5 dark:bg-[#5FE3C0]/5' : ''}`}
                       onClick={() => handleToggleExpand(entry.id)}
                     >
+                      <td
+                        className="px-4 py-3 text-center"
+                        onClick={e => e.stopPropagation()}
+                      >
+                        {(status === 'draft' || status === 'approved') && (
+                          <button
+                            onClick={() => handleToggleSelect(entry.id)}
+                            className="p-0.5 hover:bg-[#294050]/10 rounded transition-colors"
+                          >
+                            {selectedIds.has(entry.id) ? (
+                              <CheckSquare className="w-4 h-4 text-[#5FE3C0]" />
+                            ) : (
+                              <Square className="w-4 h-4 text-[#647D8B]" />
+                            )}
+                          </button>
+                        )}
+                      </td>
                       <td className="px-4 py-3">
                         {isExpanded ? (
                           <ChevronDown className="w-4 h-4 text-[#294050]" />
@@ -564,7 +764,7 @@ const JournalEntries: React.FC = () => {
                     {/* Expanded line items */}
                     {isExpanded && entry.lines.length > 0 && (
                       <tr className="bg-[#F7FAFA] dark:bg-[#0C141B]">
-                        <td colSpan={9} className="px-8 py-3">
+                        <td colSpan={10} className="px-8 py-3">
                           {/* Provenance info */}
                           <div className="flex flex-wrap gap-4 mb-3 text-xs text-[#294050] dark:text-[#9FB4BE]">
                             <span>
