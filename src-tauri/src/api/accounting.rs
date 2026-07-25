@@ -1406,8 +1406,7 @@ pub async fn auto_classify_transaction(
 
     // Derive a token-style asset_id from chain_id for lot tracking.
     let asset_id = chain_id_to_native_symbol(&tx.chain_id)
-        .map(|s| format!("token:{}", s))
-        .unwrap_or_else(|| "USD".to_string());
+        .map_or_else(|| "USD".to_string(), |s| format!("token:{}", s));
 
     // Build lines based on transaction_type heuristics
     let mut lines = Vec::new();
@@ -1504,9 +1503,10 @@ pub async fn auto_classify_transaction(
     }
 
     // Format timestamp
-    let entry_date = chrono::DateTime::from_timestamp(tx.timestamp, 0)
-        .map(|dt| dt.format("%Y-%m-%d").to_string())
-        .unwrap_or_else(|| chrono::Utc::now().format("%Y-%m-%d").to_string());
+    let entry_date = chrono::DateTime::from_timestamp(tx.timestamp, 0).map_or_else(
+        || chrono::Utc::now().format("%Y-%m-%d").to_string(),
+        |dt| dt.format("%Y-%m-%d").to_string(),
+    );
 
     let input = NewJournalEntryInput {
         entry_date,
@@ -1631,8 +1631,11 @@ struct EnrichRow {
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct EnrichmentResult {
+    /// Number of transactions successfully priced.
     pub priced: u32,
+    /// Number of transactions whose chain is unsupported (no price available).
     pub unavailable: u32,
+    /// Number of transactions that were already priced (idempotent skip).
     pub already_priced: u32,
 }
 
@@ -1662,8 +1665,9 @@ pub async fn enrich_transaction_prices(
         });
     }
 
-    // Load API key from env.
-    let api_key = std::env::var("COINGECKO_API_KEY").ok();
+    // Load API key from env — use a named constant to avoid spelling errors (RS-W1015).
+    static COINGECKO_API_KEY_ENV: &str = "COINGECKO_API_KEY";
+    let api_key = std::env::var(COINGECKO_API_KEY_ENV).ok();
     let client = CoinGeckoClient::new(api_key);
 
     // Group transactions by (coingecko_id, date) → vec of tx IDs.
@@ -1681,8 +1685,7 @@ pub async fn enrich_transaction_prices(
         };
 
         let date = chrono::DateTime::from_timestamp(row.timestamp, 0)
-            .map(|dt| dt.format("%d-%m-%Y").to_string())
-            .unwrap_or_default();
+            .map_or_else(String::new, |dt| dt.format("%d-%m-%Y").to_string());
 
         if date.is_empty() {
             unsupported_ids.push(row.id.clone());
