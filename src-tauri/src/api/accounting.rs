@@ -1463,12 +1463,8 @@ pub async fn auto_classify_transaction(
     let mut lines = Vec::new();
     let short_hash = &tx.transaction_hash[..8.min(tx.transaction_hash.len())];
 
-    let self_xfer = is_self_transfer(
-        &state.pool,
-        &tx.from_address,
-        tx.to_address.as_deref(),
-    )
-    .await?;
+    let self_xfer =
+        is_self_transfer(&state.pool, &tx.from_address, tx.to_address.as_deref()).await?;
 
     let rules = sqlx::query_as::<_, super::rules::ClassificationRule>(
         "SELECT id, name, description, match_tx_types, match_chains, match_self_transfer, \
@@ -1541,7 +1537,10 @@ pub async fn auto_classify_transaction(
         }
 
         let je_desc = if rule.je_description.is_empty() {
-            format!("{} on {} ({})", tx.transaction_type, tx.chain_id, short_hash)
+            format!(
+                "{} on {} ({})",
+                tx.transaction_type, tx.chain_id, short_hash
+            )
         } else {
             rule.je_description
                 .replace("{chain}", &tx.chain_id)
@@ -1612,9 +1611,7 @@ pub async fn auto_classify_transaction(
                 }
                 format!(
                     "{} on {} ({})",
-                    tx.transaction_type,
-                    tx.chain_id,
-                    short_hash
+                    tx.transaction_type, tx.chain_id, short_hash
                 )
             }
         }

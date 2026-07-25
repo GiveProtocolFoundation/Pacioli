@@ -148,15 +148,60 @@ pub async fn update_classification_rule(
          WHERE id = ?",
     )
     .bind(input.name.as_deref().unwrap_or(&existing.name))
-    .bind(input.description.as_deref().unwrap_or(&existing.description))
-    .bind(input.match_tx_types.as_deref().unwrap_or(&existing.match_tx_types))
-    .bind(input.match_chains.as_deref().unwrap_or(&existing.match_chains))
-    .bind(input.match_self_transfer.as_deref().unwrap_or(&existing.match_self_transfer))
-    .bind(input.debit_account.as_deref().unwrap_or(&existing.debit_account))
-    .bind(input.credit_account.as_deref().unwrap_or(&existing.credit_account))
-    .bind(input.debit_line_desc.as_deref().unwrap_or(&existing.debit_line_desc))
-    .bind(input.credit_line_desc.as_deref().unwrap_or(&existing.credit_line_desc))
-    .bind(input.je_description.as_deref().unwrap_or(&existing.je_description))
+    .bind(
+        input
+            .description
+            .as_deref()
+            .unwrap_or(&existing.description),
+    )
+    .bind(
+        input
+            .match_tx_types
+            .as_deref()
+            .unwrap_or(&existing.match_tx_types),
+    )
+    .bind(
+        input
+            .match_chains
+            .as_deref()
+            .unwrap_or(&existing.match_chains),
+    )
+    .bind(
+        input
+            .match_self_transfer
+            .as_deref()
+            .unwrap_or(&existing.match_self_transfer),
+    )
+    .bind(
+        input
+            .debit_account
+            .as_deref()
+            .unwrap_or(&existing.debit_account),
+    )
+    .bind(
+        input
+            .credit_account
+            .as_deref()
+            .unwrap_or(&existing.credit_account),
+    )
+    .bind(
+        input
+            .debit_line_desc
+            .as_deref()
+            .unwrap_or(&existing.debit_line_desc),
+    )
+    .bind(
+        input
+            .credit_line_desc
+            .as_deref()
+            .unwrap_or(&existing.credit_line_desc),
+    )
+    .bind(
+        input
+            .je_description
+            .as_deref()
+            .unwrap_or(&existing.je_description),
+    )
     .bind(input.use_fee_amount.unwrap_or(existing.use_fee_amount))
     .bind(input.priority.unwrap_or(existing.priority))
     .bind(input.enabled.unwrap_or(existing.enabled))
@@ -238,9 +283,7 @@ pub async fn delete_classification_rule(
 }
 
 #[tauri::command]
-pub async fn install_starter_rules(
-    state: State<'_, DatabaseState>,
-) -> Result<i64, String> {
+pub async fn install_starter_rules(state: State<'_, DatabaseState>) -> Result<i64, String> {
     let count: (i64,) =
         sqlx::query_as("SELECT COUNT(*) FROM classification_rules WHERE source = 'builtin'")
             .fetch_one(&state.pool)
@@ -526,8 +569,14 @@ mod tests {
     #[test]
     fn self_transfer_has_highest_priority() {
         let rules = starter_rules();
-        let st = rules.iter().find(|r| r.id == "builtin-self-transfer").unwrap();
-        let external = rules.iter().find(|r| r.id == "builtin-transfer-in").unwrap();
+        let st = rules
+            .iter()
+            .find(|r| r.id == "builtin-self-transfer")
+            .unwrap();
+        let external = rules
+            .iter()
+            .find(|r| r.id == "builtin-transfer-in")
+            .unwrap();
         assert!(st.priority < external.priority);
     }
 }
