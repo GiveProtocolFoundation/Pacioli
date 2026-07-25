@@ -385,7 +385,8 @@ class PolkadotService {
           network,
           address,
           {
-            limit,
+            limit: 0,
+            fullArchive: true,
             onProgress: (stage, current, total) => {
               onProgress?.({
                 stage: 'fetching',
