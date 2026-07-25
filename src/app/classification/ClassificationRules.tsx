@@ -305,16 +305,20 @@ const ClassificationRules: React.FC = () => {
     [rules, fetchRules]
   )
 
-  const handleDragStart = useCallback((event: React.DragEvent<HTMLDivElement>) => {
-    const index = Number(event.currentTarget.dataset.index)
-    if (!Number.isNaN(index)) setDragIndex(index)
-  }, [])
+  const handleDragStart = useCallback(
+    (event: React.DragEvent<HTMLDivElement>) => {
+      const index = Number(event.currentTarget.dataset.index)
+      if (!Number.isNaN(index)) setDragIndex(index)
+    },
+    []
+  )
 
   const handleDragOver = useCallback(
     (event: React.DragEvent<HTMLDivElement>) => {
       event.preventDefault()
       const index = Number(event.currentTarget.dataset.index)
-      if (Number.isNaN(index) || dragIndex === null || dragIndex === index) return
+      if (Number.isNaN(index) || dragIndex === null || dragIndex === index)
+        return
       const newRules = [...rules]
       const dragged = newRules.splice(dragIndex, 1)[0]
       newRules.splice(index, 0, dragged)
