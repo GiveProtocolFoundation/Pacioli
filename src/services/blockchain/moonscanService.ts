@@ -6,10 +6,21 @@
  * Etherscan V2 requires an API key for all requests.
  * A free Etherscan key (https://etherscan.io/myapikey) works for all V2 chains
  * including Moonbeam/Moonriver. A Moonscan-specific key also works.
+ *
+ * SUNSET NOTICE: Moonbeam and Moonriver cease operations on 2026-07-31.
+ * After this date the Etherscan V2 API will reject chainids 1284/1285.
+ * Previously synced history remains available locally.
  */
 
 import { invoke } from '@tauri-apps/api/core'
 import type { NetworkType, SubstrateTransaction } from '../wallet/types'
+
+const MOONBEAM_SUNSET_UTC = Date.UTC(2026, 6, 31, 23, 59, 59)
+
+const SUNSET_MESSAGE =
+  'The Moonbeam network ceased operations on 31 July 2026. ' +
+  'New transactions can no longer be synced; your previously synced ' +
+  'history remains available in Pacioli.'
 
 interface MoonscanConfig {
   chainId: number
@@ -96,7 +107,18 @@ export class MoonscanService {
     'Moonbeam/Moonriver sync uses the Etherscan V2 API, which requires a free ' +
     'Etherscan API key (legacy moonscan.io keys no longer work). Create a key ' +
     'at https://etherscan.io/myapikey, then save it in Settings → Data ' +
-    'Providers under "Etherscan" and retry the sync.'
+    'Providers under "Etherscan" and retry the sync. ' +
+    'NOTE: Moonbeam/Moonriver networks shut down on 31 July 2026 — complete ' +
+    'a full sync before that date to preserve your complete transaction history.'
+
+  /**
+   * True once the Moonbeam/Moonriver networks have ceased operations
+   * (after 2026-07-31 23:59:59 UTC) and the Etherscan V2 API no longer
+   * serves chainids 1284/1285.
+   */
+  static isSunset(): boolean {
+    return Date.now() > MOONBEAM_SUNSET_UTC
+  }
 
   /**
    * Collect every configured API key, in preference order:
@@ -151,6 +173,22 @@ export class MoonscanService {
   }
 
   /**
+   * True when the response is an Etherscan V2 chain-deprecation error,
+   * i.e. the API has stopped serving Moonbeam/Moonriver post-sunset.
+   */
+  private static isChainDeprecationError(
+    data: MoonscanResponse<unknown>
+  ): boolean {
+    if (data.status === '1') return false
+    const msg = typeof data.result === 'string' ? data.result.toLowerCase() : ''
+    return (
+      msg.includes('chain') ||
+      msg.includes('not supported') ||
+      msg.includes('deprecated')
+    )
+  }
+
+  /**
    * Fetch from the Etherscan V2 API, retrying with each configured key
    * candidate if the current one is rejected. Throws an actionable error
    * (including remediation steps) when no configured key is accepted.
@@ -159,9 +197,11 @@ export class MoonscanService {
     apiUrl: string,
     params: URLSearchParams
   ): Promise<MoonscanResponse<T>> {
+    if (MoonscanService.isSunset()) {
+      throw new Error(SUNSET_MESSAGE)
+    }
+
     const candidates = await MoonscanService.getApiKeyCandidates()
-    // With no keys configured, still attempt once so the server's own
-    // "Missing/Invalid API Key" surfaces through the same error path.
     const attempts = candidates.length > 0 ? candidates : ['']
     let lastRejection: string | null = null
 
@@ -180,6 +220,10 @@ export class MoonscanService {
         throw new Error(
           `Invalid JSON response from Etherscan API: ${responseText.substring(0, 200)}`
         )
+      }
+
+      if (MoonscanService.isChainDeprecationError(data)) {
+        throw new Error(SUNSET_MESSAGE)
       }
 
       if (!MoonscanService.isKeyRejection(data)) {
@@ -323,88 +367,123 @@ export class MoonscanService {
       sort,
     })
 
-    try {
-      const data =
-        await MoonscanService.fetchWithKeyFallback<MoonscanTokenTransfer>(
-          config.apiUrl,
-          params
-        )
-
-      if (data.status !== '1') {
-        // No transactions found or other non-error status - return empty
-        return []
-      }
-
-      if (!Array.isArray(data.result)) {
-        return []
-      }
-
-      return data.result.map(tx =>
-        MoonscanService.mapTokenTransferToSubstrateTransaction(
-          tx,
-          network,
-          address
-        )
+    const data =
+      await MoonscanService.fetchWithKeyFallback<MoonscanTokenTransfer>(
+        config.apiUrl,
+        params
       )
-    } catch (error) {
-      console.error('Moonscan token transfer fetch error:', error)
-      // Don't throw - token transfers are optional
+
+    if (data.status !== '1') {
+      if (
+        data.message === 'No transactions found' ||
+        (typeof data.result === 'string' &&
+          data.result.includes('No transactions'))
+      ) {
+        return []
+      }
+      if (typeof data.result === 'string') {
+        throw new Error(`Moonscan token transfer API error: ${data.result}`)
+      }
+      throw new Error(`Moonscan token transfer API error: ${data.message}`)
+    }
+
+    if (!Array.isArray(data.result)) {
       return []
     }
+
+    return data.result.map(tx =>
+      MoonscanService.mapTokenTransferToSubstrateTransaction(
+        tx,
+        network,
+        address
+      )
+    )
   }
 
   /**
-   * Fetch all transactions (normal + token transfers)
+   * Fetch all transactions (normal + token transfers) with full pagination.
+   * When fullArchive is true (default after sunset announcement), fetches
+   * every page to ensure complete history before API shutdown.
    */
   async fetchAllTransactions(
     network: NetworkType,
     address: string,
     options: {
       limit?: number
+      fullArchive?: boolean
       onProgress?: (stage: string, current: number, total: number) => void
     } = {}
   ): Promise<SubstrateTransaction[]> {
-    const { limit = 100, onProgress } = options
+    if (MoonscanService.isSunset()) {
+      throw new Error(SUNSET_MESSAGE)
+    }
+
+    const { limit = 10000, fullArchive = true, onProgress } = options
+    const PAGE_SIZE = 10000
+    const MAX_FETCHES = 100
     const allTransactions: SubstrateTransaction[] = []
 
-    try {
-      // 1. Fetch normal transactions
-      onProgress?.('Fetching EVM transactions from Moonscan...', 0, limit)
-      const normalTxs = await this.fetchTransactions(network, address, {
-        offset: limit,
-      })
-      allTransactions.push(...normalTxs)
-
-      // Small delay to avoid rate limiting
-      await new Promise(resolve => setTimeout(resolve, 250))
-
-      // 2. Fetch token transfers
-      onProgress?.(
-        'Fetching token transfers from Moonscan...',
-        normalTxs.length,
-        limit
-      )
-      const tokenTxs = await this.fetchTokenTransfers(network, address, {
-        offset: limit,
-      })
-      allTransactions.push(...tokenTxs)
-
-      // Sort by block number (newest first)
-      allTransactions.sort((a, b) => b.blockNumber - a.blockNumber)
-
-      // Deduplicate by hash (token transfers might duplicate normal txs)
-      const seen = new Set<string>()
-      const deduplicated = allTransactions.filter(tx => {
-        if (seen.has(tx.hash)) return false
-        seen.add(tx.hash)
-        return true
-      })
-
-      return deduplicated.slice(0, limit)
-    } catch (error) {
-      console.error('Moonscan fetchAllTransactions error:', error)
-      throw error
+    // Etherscan V2 rejects page × offset > 10000 ("Result window is too
+    // large"), so deep history cannot be paged by incrementing the page
+    // number. Instead keep page=1 and advance startBlock (sort=asc) past
+    // each full window. The boundary block is re-fetched on each advance;
+    // the hash dedup below removes the overlap.
+    const fetchWindowed = async (
+      label: string,
+      fetchPage: (startBlock: number) => Promise<SubstrateTransaction[]>
+    ): Promise<void> => {
+      let startBlock = 0
+      for (let fetches = 1; fetches <= MAX_FETCHES; fetches++) {
+        const txs = await fetchPage(startBlock)
+        allTransactions.push(...txs)
+        onProgress?.(`${label} (${fetches})...`, allTransactions.length, 0)
+        if (!fullArchive || txs.length < PAGE_SIZE) return
+        const lastBlock = txs[txs.length - 1].blockNumber
+        // Guard against a full window contained in a single block, which
+        // would otherwise re-fetch the same window forever.
+        startBlock = lastBlock > startBlock ? lastBlock : startBlock + 1
+        await new Promise(resolve => setTimeout(resolve, 250))
+      }
     }
+
+    // 1. Fetch normal transactions (full history via block windows)
+    onProgress?.('Fetching EVM transactions from Moonscan...', 0, 0)
+    await fetchWindowed('Fetching EVM transactions', startBlock =>
+      this.fetchTransactions(network, address, {
+        startBlock,
+        offset: PAGE_SIZE,
+        sort: 'asc',
+      })
+    )
+
+    await new Promise(resolve => setTimeout(resolve, 250))
+
+    // 2. Fetch token transfers (full history via block windows)
+    onProgress?.(
+      'Fetching token transfers from Moonscan...',
+      allTransactions.length,
+      0
+    )
+    await fetchWindowed('Fetching token transfers', startBlock =>
+      this.fetchTokenTransfers(network, address, {
+        startBlock,
+        offset: PAGE_SIZE,
+        sort: 'asc',
+      })
+    )
+
+    // Sort by block number (newest first)
+    allTransactions.sort((a, b) => b.blockNumber - a.blockNumber)
+
+    // Deduplicate by hash (token transfers might duplicate normal txs)
+    const seen = new Set<string>()
+    const deduplicated = allTransactions.filter(tx => {
+      if (seen.has(tx.hash)) return false
+      seen.add(tx.hash)
+      return true
+    })
+
+    return limit ? deduplicated.slice(0, limit) : deduplicated
   }
 
   /**
