@@ -1229,17 +1229,18 @@ pub async fn update_journal_entry(
 // Self-Transfer Detection
 // ============================================================================
 
-/// Returns `true` when both `from_address` and `to_address` exist in
+/// Returns `Ok(true)` when both `from_address` and `to_address` exist in
 /// `user_wallets` under the same entity (same non-null `profile_id`, or both
 /// `NULL` which means the single-entity default). A `None` `to_address`
-/// (contract-creation txns) is never a self-transfer.
+/// (contract-creation txns) is never a self-transfer. Propagates DB errors
+/// so a transient failure cannot silently book an intra-wallet move as income.
 async fn is_self_transfer(
     pool: &sqlx::SqlitePool,
     from_address: &str,
     to_address: Option<&str>,
-) -> bool {
+) -> Result<bool, String> {
     let Some(to) = to_address else {
-        return false;
+        return Ok(false);
     };
 
     let result: Option<(i64,)> = sqlx::query_as(
@@ -1260,15 +1261,90 @@ async fn is_self_transfer(
     .bind(to)
     .fetch_optional(pool)
     .await
-    .ok()
-    .flatten();
+    .map_err(|e| e.to_string())?;
 
-    result.is_some()
+    Ok(result.is_some())
 }
 
 // ============================================================================
 // Auto-Classify Command
 // ============================================================================
+
+/// Builds journal entry lines and a description for the "transfer" transaction
+/// type, branching on whether the move is between own wallets (self-transfer)
+/// or an external incoming transfer. Extracted from auto_classify_transaction
+/// to reduce function complexity (RS-R1000).
+async fn classify_transfer_lines(
+    pool: &sqlx::SqlitePool,
+    tx: &MultiChainTx,
+    amount_minor: i64,
+    qty_str: &Option<String>,
+    asset_id: &str,
+    crypto_assets_id: i64,
+    income_id: i64,
+) -> Result<(Vec<JournalEntryLineInput>, String), String> {
+    let self_xfer =
+        is_self_transfer(pool, &tx.from_address, tx.to_address.as_deref()).await?;
+    let mut lines = Vec::new();
+    let short_hash = &tx.transaction_hash[..8.min(tx.transaction_hash.len())];
+
+    if self_xfer {
+        // Intra-entity rebalance: both legs are asset accounts — no P&L impact.
+        if amount_minor > 0 {
+            lines.push(JournalEntryLineInput {
+                gl_account_id: crypto_assets_id,
+                token_id: None,
+                debit_minor: amount_minor,
+                credit_minor: 0,
+                quantity: qty_str.clone(),
+                asset_id: Some(asset_id.to_string()),
+                description: Some("Intra-entity transfer in — own wallet".to_string()),
+            });
+            lines.push(JournalEntryLineInput {
+                gl_account_id: crypto_assets_id,
+                token_id: None,
+                debit_minor: 0,
+                credit_minor: amount_minor,
+                quantity: qty_str.clone(),
+                asset_id: Some(asset_id.to_string()),
+                description: Some("Intra-entity transfer out — own wallet".to_string()),
+            });
+        }
+        Ok((
+            lines,
+            format!(
+                "self-transfer on {} ({}) — own-wallet move, no P&L",
+                tx.chain_id, short_hash
+            ),
+        ))
+    } else {
+        // Incoming transfer from an external address: DR Crypto Assets / CR Income.
+        if amount_minor > 0 {
+            lines.push(JournalEntryLineInput {
+                gl_account_id: crypto_assets_id,
+                token_id: None,
+                debit_minor: amount_minor,
+                credit_minor: 0,
+                quantity: qty_str.clone(),
+                asset_id: Some(asset_id.to_string()),
+                description: Some("Transfer received".to_string()),
+            });
+            lines.push(JournalEntryLineInput {
+                gl_account_id: income_id,
+                token_id: None,
+                debit_minor: 0,
+                credit_minor: amount_minor,
+                quantity: qty_str.clone(),
+                asset_id: Some(asset_id.to_string()),
+                description: Some("Uncategorized income — review and reclassify".to_string()),
+            });
+        }
+        Ok((
+            lines,
+            format!("Transfer on {} ({})", tx.chain_id, short_hash),
+        ))
+    }
+}
 
 /// Auto-classifies a raw multi_chain_transaction into a draft journal entry
 /// using basic heuristics based on the transaction type.
@@ -1303,26 +1379,17 @@ pub async fn auto_classify_transaction(
         .parse::<Decimal>()
         .unwrap_or(Decimal::ZERO);
 
-    // Compute USD amounts using the enriched price (GIV-722).
-    // If price is available: USD = token_qty × price_per_unit.
-    // If unavailable: flag the JE with a "price unavailable" note.
-    let price_per_unit = tx
+    // Fail closed: if this transaction has not been enriched with a USD price,
+    // return an explicit error so the caller knows to run Enrich Prices first.
+    // Booking $0 lines silently would produce misleading journal entries.
+    let price = tx
         .price_at_acquisition_usd
         .as_deref()
-        .and_then(|s| Decimal::from_str(s).ok());
+        .and_then(|s| Decimal::from_str(s).ok())
+        .ok_or_else(|| "USD price unavailable — run Enrich Prices".to_string())?;
 
-    let (amount_usd, fee_usd, price_note) = if let Some(price) = price_per_unit {
-        let amt = token_qty.checked_mul(price).unwrap_or(Decimal::ZERO);
-        let fee = fee_qty.checked_mul(price).unwrap_or(Decimal::ZERO);
-        (amt, fee, None)
-    } else {
-        // No price — create the JE with $0 amounts and flag it.
-        (
-            Decimal::ZERO,
-            Decimal::ZERO,
-            Some("Price unavailable at time of transaction — review and set USD amounts manually"),
-        )
-    };
+    let amount_usd = token_qty.checked_mul(price).unwrap_or(Decimal::ZERO);
+    let fee_usd = fee_qty.checked_mul(price).unwrap_or(Decimal::ZERO);
 
     // Rounding: explicit half-away-from-zero (Inv-2), no f64 in the money path.
     let amount_minor: i64 = decimal_to_minor_units(amount_usd)
@@ -1339,8 +1406,7 @@ pub async fn auto_classify_transaction(
     };
 
     // Derive a token-style asset_id from chain_id for lot tracking.
-    let token_symbol = chain_id_to_native_symbol(&tx.chain_id);
-    let asset_id = token_symbol
+    let asset_id = chain_id_to_native_symbol(&tx.chain_id)
         .map(|s| format!("token:{}", s))
         .unwrap_or_else(|| "USD".to_string());
 
@@ -1349,7 +1415,7 @@ pub async fn auto_classify_transaction(
     let description = match tx.transaction_type.as_str() {
         "claim" | "stake" => {
             // Staking reward: DR Crypto Assets / CR Staking Income
-            if amount_minor > 0 || price_note.is_some() {
+            if amount_minor > 0 {
                 lines.push(JournalEntryLineInput {
                     gl_account_id: crypto_assets_id,
                     token_id: None,
@@ -1372,70 +1438,22 @@ pub async fn auto_classify_transaction(
             format!("Staking reward on {}", tx.chain_id)
         }
         "transfer" => {
-            let self_xfer =
-                is_self_transfer(&state.pool, &tx.from_address, tx.to_address.as_deref()).await;
-            if self_xfer {
-                // Intra-entity rebalance: both legs are asset accounts — no P&L.
-                // self-transfer: both addresses are own wallets
-                if amount_minor > 0 || price_note.is_some() {
-                    lines.push(JournalEntryLineInput {
-                        gl_account_id: crypto_assets_id,
-                        token_id: None,
-                        debit_minor: amount_minor,
-                        credit_minor: 0,
-                        quantity: qty_str.clone(),
-                        asset_id: Some(asset_id.clone()),
-                        description: Some("Intra-entity transfer in — own wallet".to_string()),
-                    });
-                    lines.push(JournalEntryLineInput {
-                        gl_account_id: crypto_assets_id,
-                        token_id: None,
-                        debit_minor: 0,
-                        credit_minor: amount_minor,
-                        quantity: qty_str.clone(),
-                        asset_id: Some(asset_id.clone()),
-                        description: Some("Intra-entity transfer out — own wallet".to_string()),
-                    });
-                }
-                format!(
-                    "Self-transfer on {} ({}) — self-transfer: both addresses are own wallets, no P&L",
-                    tx.chain_id,
-                    &tx.transaction_hash[..8.min(tx.transaction_hash.len())]
-                )
-            } else {
-                // Incoming transfer: DR Crypto Assets / CR Income (uncategorized)
-                if amount_minor > 0 || price_note.is_some() {
-                    lines.push(JournalEntryLineInput {
-                        gl_account_id: crypto_assets_id,
-                        token_id: None,
-                        debit_minor: amount_minor,
-                        credit_minor: 0,
-                        quantity: qty_str.clone(),
-                        asset_id: Some(asset_id.clone()),
-                        description: Some("Transfer received".to_string()),
-                    });
-                    lines.push(JournalEntryLineInput {
-                        gl_account_id: income_id,
-                        token_id: None,
-                        debit_minor: 0,
-                        credit_minor: amount_minor,
-                        quantity: qty_str.clone(),
-                        asset_id: Some(asset_id.clone()),
-                        description: Some(
-                            "Uncategorized income — review and reclassify".to_string(),
-                        ),
-                    });
-                }
-                format!(
-                    "Transfer on {} ({})",
-                    tx.chain_id,
-                    &tx.transaction_hash[..8.min(tx.transaction_hash.len())]
-                )
-            }
+            let (transfer_lines, transfer_desc) = classify_transfer_lines(
+                &state.pool,
+                &tx,
+                amount_minor,
+                &qty_str,
+                &asset_id,
+                crypto_assets_id,
+                income_id,
+            )
+            .await?;
+            lines.extend(transfer_lines);
+            transfer_desc
         }
         _ => {
             // Default: if there's a fee, record it as an expense
-            if fee_minor > 0 || (price_note.is_some() && fee_qty > Decimal::ZERO) {
+            if fee_minor > 0 {
                 lines.push(JournalEntryLineInput {
                     gl_account_id: network_fees_id,
                     token_id: None,
@@ -1491,32 +1509,14 @@ pub async fn auto_classify_transaction(
         .map(|dt| dt.format("%Y-%m-%d").to_string())
         .unwrap_or_else(|| chrono::Utc::now().format("%Y-%m-%d").to_string());
 
-    // Append price info to description when price was used.
-    let desc_with_price = if let Some(price) = price_per_unit {
-        format!("{description} (@ ${price}/unit)")
-    } else {
-        description
-    };
-
     let input = NewJournalEntryInput {
         entry_date,
-        description: desc_with_price,
+        description: format!("{description} (@ ${price}/unit)"),
         reference_number: Some(tx.transaction_hash.clone()),
         raw_transaction_id: Some(transaction_id.clone()),
         origin: Some("rule".to_string()),
         lines,
     };
-
-    // If price was unavailable, record a classification_note so the UI surfaces it.
-    // Must run before create_journal_entry since it consumes the State.
-    if let Some(note) = price_note {
-        let _ =
-            sqlx::query("UPDATE multi_chain_transactions SET classification_note = ? WHERE id = ?")
-                .bind(note)
-                .bind(&transaction_id)
-                .execute(&state.pool)
-                .await;
-    }
 
     create_journal_entry(state, input).await
 }
@@ -4584,7 +4584,7 @@ mod tests {
         insert_user_wallet(&pool, addr_b, "polkadot", Some("profile-1")).await;
 
         assert!(
-            is_self_transfer(&pool, addr_a, Some(addr_b)).await,
+            is_self_transfer(&pool, addr_a, Some(addr_b)).await.unwrap(),
             "Two wallets under the same profile should be detected as a self-transfer"
         );
     }
@@ -4599,7 +4599,7 @@ mod tests {
         insert_user_wallet(&pool, addr_b, "polkadot", Some("profile-2")).await;
 
         assert!(
-            !is_self_transfer(&pool, addr_a, Some(addr_b)).await,
+            !is_self_transfer(&pool, addr_a, Some(addr_b)).await.unwrap(),
             "Wallets under different profiles must not match as self-transfer"
         );
     }
@@ -4611,7 +4611,7 @@ mod tests {
         insert_user_wallet(&pool, addr, "polkadot", Some("profile-1")).await;
 
         assert!(
-            !is_self_transfer(&pool, addr, None).await,
+            !is_self_transfer(&pool, addr, None).await.unwrap(),
             "None to_address (contract creation) must never be a self-transfer"
         );
     }
@@ -4626,7 +4626,7 @@ mod tests {
         insert_user_wallet(&pool, addr_b, "polkadot", None).await;
 
         assert!(
-            is_self_transfer(&pool, addr_a, Some(addr_b)).await,
+            is_self_transfer(&pool, addr_a, Some(addr_b)).await.unwrap(),
             "Two wallets with NULL profile_id (default entity) should match"
         );
     }
@@ -4668,7 +4668,7 @@ mod tests {
         .expect("Set price");
 
         // Detect self-transfer and build the JE (mirrors auto_classify_transaction logic).
-        let is_st = is_self_transfer(&pool, addr_a, Some(addr_b)).await;
+        let is_st = is_self_transfer(&pool, addr_a, Some(addr_b)).await.unwrap();
         assert!(
             is_st,
             "Must detect self-transfer for same-entity DOT wallets"
@@ -4677,7 +4677,7 @@ mod tests {
         // Simulate the JE that auto_classify_transaction would produce
         let entry_id = {
             let r = sqlx::query(
-                "INSERT INTO journal_entries (entry_date, entry_number, description, is_posted, status, origin, created_by) VALUES ('2023-11-14', 'ST-DOT-001', 'Self-transfer on polkadot (0xdot001) — self-transfer: both addresses are own wallets, no P&L', 0, 'draft', 'rule', 'system')",
+                "INSERT INTO journal_entries (entry_date, entry_number, description, is_posted, status, origin, created_by) VALUES ('2023-11-14', 'ST-DOT-001', 'self-transfer on polkadot (0xdot001) — own-wallet move, no P&L', 0, 'draft', 'rule', 'system')",
             )
             .execute(&pool)
             .await
@@ -4842,10 +4842,10 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn auto_classify_without_price_flags_unavailable() {
+    async fn auto_classify_without_price_fails_closed() {
         let pool = setup_test_db().await;
 
-        // Insert a DOT transfer WITHOUT enrichment (valuation_status = 'unpriced').
+        // Insert a DOT claim WITHOUT enrichment (valuation_status = 'unpriced').
         let tx_id = "polkadot_0xnoprice";
         insert_raw_tx(
             &pool,
@@ -4870,22 +4870,21 @@ mod tests {
 
         assert!(tx.price_at_acquisition_usd.is_none());
 
-        // Without price, USD amounts should be zero.
-        let token_qty = Decimal::from_str(&tx.transfer_value).unwrap();
-        let price_per_unit = tx
+        // Fail-closed: attempting classification without a price must return an
+        // explicit error rather than silently booking $0 journal entry lines.
+        let price_result: Result<rust_decimal::Decimal, String> = tx
             .price_at_acquisition_usd
             .as_deref()
-            .and_then(|s| Decimal::from_str(s).ok());
+            .and_then(|s| Decimal::from_str(s).ok())
+            .ok_or_else(|| "USD price unavailable — run Enrich Prices".to_string());
 
-        let usd_amount = match price_per_unit {
-            Some(p) => token_qty * p,
-            None => Decimal::ZERO,
-        };
-        let usd_minor = decimal_to_minor_units(usd_amount).unwrap();
-
-        assert_eq!(
-            usd_minor, 0,
-            "Unpriced tx should produce $0 JE amounts (not raw token qty)"
+        assert!(
+            price_result.is_err(),
+            "Unpriced tx must fail classification with an explicit error, not produce $0 lines"
+        );
+        assert!(
+            price_result.unwrap_err().contains("USD price unavailable"),
+            "Error must mention 'USD price unavailable'"
         );
     }
 }
