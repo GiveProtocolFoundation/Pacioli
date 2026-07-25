@@ -43,8 +43,10 @@ const MOONBEAM_SUNSET_MESSAGE: &str = "The Moonbeam network ceased operations on
      New transactions can no longer be synced; your previously synced \
      history remains available in Pacioli.";
 
+/// Moonbeam/Moonriver ceased operations after 2026-07-31 23:59:59 UTC
+/// (unix epoch 1785542399, matching MOONBEAM_SUNSET_UTC in moonscanService.ts).
 fn is_moonbeam_sunset(chain_id: u64) -> bool {
-    matches!(chain_id, 1284 | 1285) && Utc::now().timestamp() > 1_785_331_199
+    matches!(chain_id, 1284 | 1285) && Utc::now().timestamp() > 1_785_542_399
 }
 
 // =============================================================================
