@@ -94,17 +94,19 @@ const JournalEntryDetail: React.FC<JournalEntryDetailProps> = ({
   const [sourceTx, setSourceTx] = useState<SourceTransactionSummary | null>(
     null
   )
-  const [sourceTxLoading, setSourceTxLoading] = useState(false)
+  const [sourceTxFetched, setSourceTxFetched] = useState(false)
+
+  const sourceTxLoading =
+    Boolean(entry.sourceTxId) && isTauriAvailable() && !sourceTxFetched
 
   useEffect(() => {
     if (!entry.sourceTxId || !isTauriAvailable()) return
-    setSourceTxLoading(true)
     invoke<SourceTransactionSummary | null>('get_source_transaction', {
       sourceTxId: entry.sourceTxId,
     })
       .then(result => setSourceTx(result ?? null))
       .catch(() => setSourceTx(null))
-      .finally(() => setSourceTxLoading(false))
+      .finally(() => setSourceTxFetched(true))
   }, [entry.sourceTxId])
 
   const accountMap = useMemo(() => {
