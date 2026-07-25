@@ -10,12 +10,24 @@ import {
   Receipt,
   Edit2,
   Plus,
+  ChevronDown,
+  ChevronRight,
+  Users,
+  Landmark,
+  Repeat,
+  HelpCircle,
 } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import ExportDropdown from './ExportDropdown'
 import { useTransactions } from '../../contexts/TransactionContext'
 import { useCurrency } from '../../contexts/CurrencyContext'
 import { useTokens } from '../../contexts/TokenContext'
-import { Transaction, TransactionType, TransactionStatus } from '../../types/transaction'
+import { useWalletAliases } from '../../contexts/WalletAliasContext'
+import {
+  Transaction,
+  TransactionType,
+  TransactionStatus,
+} from '../../types/transaction'
 import type { ClassificationStatus } from '../../types/database'
 import type { Token, Chain } from '../../types/digitalAssets'
 
@@ -40,17 +52,22 @@ const FilterTabs = ({
         {
           key: 'unclassified',
           label: 'Unclassified',
-          count: transactions.filter(t => t.classificationStatus === 'unclassified').length,
+          count: transactions.filter(
+            t => t.classificationStatus === 'unclassified'
+          ).length,
         },
         {
           key: 'classified',
           label: 'Classified',
-          count: transactions.filter(t => t.classificationStatus === 'classified').length,
+          count: transactions.filter(
+            t => t.classificationStatus === 'classified'
+          ).length,
         },
         {
           key: 'ignored',
           label: 'Ignored',
-          count: transactions.filter(t => t.classificationStatus === 'ignored').length,
+          count: transactions.filter(t => t.classificationStatus === 'ignored')
+            .length,
         },
       ].map(tab => (
         <Link
@@ -81,10 +98,14 @@ const FilterTabs = ({
 )
 
 const classificationStyles: Record<ClassificationStatus, string> = {
-  unclassified: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300',
-  classified: 'bg-[#5FE3C0]/10 text-[#5FE3C0] dark:bg-[#5FE3C0]/20 dark:text-[#9CF1DC]',
-  ignored: 'bg-[#294050]/10 text-[#294050] dark:bg-[#294050]/20 dark:text-[#9FB4BE]',
-  split: 'bg-[#5FE3C0]/10 text-[#5FE3C0] dark:bg-[#5FE3C0]/20 dark:text-[#5FE3C0]',
+  unclassified:
+    'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300',
+  classified:
+    'bg-[#5FE3C0]/10 text-[#5FE3C0] dark:bg-[#5FE3C0]/20 dark:text-[#9CF1DC]',
+  ignored:
+    'bg-[#294050]/10 text-[#294050] dark:bg-[#294050]/20 dark:text-[#9FB4BE]',
+  split:
+    'bg-[#5FE3C0]/10 text-[#5FE3C0] dark:bg-[#5FE3C0]/20 dark:text-[#5FE3C0]',
 }
 
 const classificationLabels: Record<ClassificationStatus, string> = {
@@ -94,13 +115,148 @@ const classificationLabels: Record<ClassificationStatus, string> = {
   split: 'Split',
 }
 
-const ClassificationBadge: React.FC<{ status: ClassificationStatus }> = ({ status }) => (
+const ClassificationBadge: React.FC<{ status: ClassificationStatus }> = ({
+  status,
+}) => (
   <span
     className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${classificationStyles[status]}`}
   >
     {classificationLabels[status]}
   </span>
 )
+
+interface CategoryBadgeConfig {
+  label: string
+  badgeClass: string
+  Icon: LucideIcon
+}
+
+/** Maps known transaction categories (Substrate pallet sections, keyed lowercase) to existing semantic badge slots — no new hues. */
+const categoryBadgeConfigs: Record<string, CategoryBadgeConfig> = {
+  balances: {
+    label: 'Transfer',
+    badgeClass: 'badge-transfer',
+    Icon: ArrowLeftRight,
+  },
+  staking: { label: 'Staking', badgeClass: 'badge-approved', Icon: Users },
+  nominationpools: {
+    label: 'Staking',
+    badgeClass: 'badge-approved',
+    Icon: Users,
+  },
+  xcm: { label: 'XCM', badgeClass: 'badge-exchange', Icon: Repeat },
+  xcmpallet: { label: 'XCM', badgeClass: 'badge-exchange', Icon: Repeat },
+  polkadotxcm: { label: 'XCM', badgeClass: 'badge-exchange', Icon: Repeat },
+  xtokens: { label: 'XCM', badgeClass: 'badge-exchange', Icon: Repeat },
+  governance: {
+    label: 'Governance',
+    badgeClass: 'badge-neutral',
+    Icon: Landmark,
+  },
+  democracy: {
+    label: 'Governance',
+    badgeClass: 'badge-neutral',
+    Icon: Landmark,
+  },
+  convictionvoting: {
+    label: 'Governance',
+    badgeClass: 'badge-neutral',
+    Icon: Landmark,
+  },
+  referenda: {
+    label: 'Governance',
+    badgeClass: 'badge-neutral',
+    Icon: Landmark,
+  },
+}
+
+/** Icon + label pill for a transaction category; unknown categories fall back to a neutral badge with the raw category text */
+const CategoryBadge: React.FC<{ category: string; description: string }> = ({
+  category,
+  description,
+}) => {
+  const config = categoryBadgeConfigs[category.toLowerCase()]
+  const Icon = config?.Icon ?? HelpCircle
+  return (
+    <span
+      title={description}
+      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap ${config?.badgeClass ?? 'badge-neutral'}`}
+    >
+      <Icon className="w-3.5 h-3.5" />
+      {config?.label ?? (category || 'Uncategorized')}
+    </span>
+  )
+}
+
+/** Truncates a wallet address for table display; full address is kept in the cell's title attribute */
+const shortenAddress = (address: string): string =>
+  address.length > 16 ? `${address.slice(0, 6)}…${address.slice(-8)}` : address
+
+/** Returns the appropriate directional arrow icon for a given transaction type */
+const getTypeIcon = (type: TransactionType) => {
+  switch (type) {
+    case 'revenue':
+      return <ArrowDownRight className="w-5 h-5 text-[#5FE3C0]" />
+    case 'expense':
+      return <ArrowUpRight className="w-5 h-5 text-[#E8836F]" />
+    case 'transfer':
+      return <ArrowLeftRight className="w-5 h-5 text-[#5FE3C0]" />
+    default:
+      return null
+  }
+}
+
+/** Returns the unified brand badge class for a transaction type */
+const getTypeColor = (type: TransactionType) => {
+  switch (type) {
+    case 'revenue':
+      return 'badge-revenue'
+    case 'expense':
+      return 'badge-expense'
+    case 'transfer':
+      return 'badge-transfer'
+    default:
+      return 'badge-neutral'
+  }
+}
+
+/** Returns the unified brand badge class for a transaction status */
+const getStatusColor = (status: TransactionStatus) => {
+  switch (status) {
+    case 'completed':
+    case 'approved':
+      return 'badge-approved'
+    case 'pending_approval':
+      return 'badge-pending-approval'
+    case 'draft':
+      return 'badge-draft'
+    case 'rejected':
+      return 'badge-rejected'
+    case 'failed':
+      return 'badge-failed'
+    default:
+      return 'badge-neutral'
+  }
+}
+
+const getStatusLabel = (status: TransactionStatus) => {
+  switch (status) {
+    case 'pending_approval':
+      return 'Pending Approval'
+    case 'completed':
+      return 'Completed'
+    case 'approved':
+      return 'Approved'
+    case 'rejected':
+      return 'Rejected'
+    case 'draft':
+      return 'Draft'
+    case 'failed':
+      return 'Failed'
+    default:
+      return status
+  }
+}
 
 interface TransactionAmountCellProps {
   transaction: Transaction
@@ -122,7 +278,7 @@ const TransactionAmountCell: React.FC<TransactionAmountCellProps> = ({
   const chain = getChain(transaction.chainId)
   return (
     <>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center justify-end gap-2">
         {token?.iconUrl && (
           <img
             src={token.iconUrl}
@@ -145,23 +301,193 @@ const TransactionAmountCell: React.FC<TransactionAmountCellProps> = ({
             : transaction.type === 'expense'
               ? '-'
               : ''}
-          {transaction.amount}{' '}
-          {token?.symbol || transaction.crypto}
+          {transaction.amount} {token?.symbol || transaction.crypto}
         </div>
       </div>
-      <div className="text-xs text-[#647D8B] dark:text-[#647D8B]">
-        {transaction.fiatCurrency ||
-          currencySettings.primaryCurrency}{' '}
-        {transaction.fiatValue.toLocaleString()}
-      </div>
+      {transaction.fiatValue > 0 && (
+        <div className="text-xs text-right text-[#647D8B] dark:text-[#647D8B]">
+          {transaction.fiatCurrency || currencySettings.primaryCurrency}{' '}
+          {transaction.fiatValue.toLocaleString()}
+        </div>
+      )}
       {chain && (
-        <div className="text-xs text-[#647D8B] dark:text-[#647D8B]">
+        <div className="text-xs text-right text-[#647D8B] dark:text-[#647D8B]">
           on {chain.chainName}
         </div>
       )}
     </>
   )
 }
+
+/** Edit + Classify actions cell shared by every transaction row */
+const TransactionActionsCell: React.FC<{
+  transaction: Transaction
+  onEditClick: (e: React.MouseEvent<HTMLButtonElement>) => void
+  onClassifyClick: (e: React.MouseEvent<HTMLButtonElement>) => void
+}> = ({ transaction, onEditClick, onClassifyClick }) => (
+  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+    <div className="flex items-center justify-end gap-2">
+      <button
+        data-id={transaction.id}
+        onClick={onEditClick}
+        className="text-[#294050] hover:text-[#1E2F3C] dark:text-[#F09988] dark:hover:text-[#F09988]"
+      >
+        <Edit2 className="w-5 h-5" />
+      </button>
+      <button
+        onClick={onClassifyClick}
+        className="px-2 py-1 text-xs font-medium rounded bg-[#294050]/10 text-[#294050] hover:bg-[#294050]/20 transition-colors"
+      >
+        Classify &rarr;
+      </button>
+    </div>
+  </td>
+)
+
+interface TransactionSummaryRowProps {
+  transaction: Transaction
+  isExpanded: boolean
+  walletLabel: string
+  getToken: (id: string) => Token | undefined
+  getChain: (id: string) => Chain | undefined
+  currencySettings: { primaryCurrency: string }
+  handleImageError: (e: React.SyntheticEvent<HTMLImageElement>) => void
+  onRowClick: (e: React.MouseEvent<HTMLTableRowElement>) => void
+  onToggleExpand: (e: React.MouseEvent<HTMLButtonElement>) => void
+  onEditClick: (e: React.MouseEvent<HTMLButtonElement>) => void
+  onClassifyClick: (e: React.MouseEvent<HTMLButtonElement>) => void
+}
+
+/** Single-line transaction summary row: chevron, type icon, date, category badge, wallet label, amount, status, classification, actions */
+const TransactionSummaryRow: React.FC<TransactionSummaryRowProps> = ({
+  transaction,
+  isExpanded,
+  walletLabel,
+  getToken,
+  getChain,
+  currencySettings,
+  handleImageError,
+  onRowClick,
+  onToggleExpand,
+  onEditClick,
+  onClassifyClick,
+}) => (
+  <tr
+    data-id={transaction.id}
+    className="hover:bg-[#EAF3F2] dark:hover:bg-[#11202B] cursor-pointer"
+    onClick={onRowClick}
+  >
+    <td className="px-4 py-4 whitespace-nowrap">
+      <button
+        data-id={transaction.id}
+        onClick={onToggleExpand}
+        aria-expanded={isExpanded}
+        aria-label="Toggle transaction details"
+        className="p-1 rounded hover:bg-[#294050]/10 dark:hover:bg-[#5FE3C0]/10"
+      >
+        {isExpanded ? (
+          <ChevronDown className="w-4 h-4 text-[#294050] dark:text-[#9FB4BE]" />
+        ) : (
+          <ChevronRight className="w-4 h-4 text-[#294050] dark:text-[#9FB4BE]" />
+        )}
+      </button>
+    </td>
+    <td className="px-6 py-4 whitespace-nowrap">
+      <div
+        className={`inline-flex items-center justify-center w-10 h-10 rounded-lg ${getTypeColor(transaction.type)}`}
+      >
+        {getTypeIcon(transaction.type)}
+      </div>
+    </td>
+    <td className="px-6 py-4 whitespace-nowrap">
+      <div className="text-sm text-[#11202B] dark:text-[#EAF3F2]">
+        {new Date(transaction.date).toLocaleString()}
+      </div>
+    </td>
+    <td className="px-6 py-4 whitespace-nowrap">
+      <CategoryBadge
+        category={transaction.category}
+        description={transaction.description}
+      />
+    </td>
+    <td className="px-6 py-4 whitespace-nowrap">
+      <span
+        title={transaction.wallet}
+        className="text-sm text-[#294050] dark:text-[#9FB4BE]"
+      >
+        {walletLabel}
+      </span>
+    </td>
+    <td className="px-6 py-4 whitespace-nowrap text-right">
+      <TransactionAmountCell
+        transaction={transaction}
+        getToken={getToken}
+        getChain={getChain}
+        currencySettings={currencySettings}
+        handleImageError={handleImageError}
+      />
+    </td>
+    <td className="px-6 py-4 whitespace-nowrap">
+      <span
+        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(transaction.status)}`}
+      >
+        {getStatusLabel(transaction.status)}
+      </span>
+      {transaction.approvalStatus === 'rejected' &&
+        transaction.rejectionReason && (
+          <div className="text-xs text-[#E8836F] dark:text-[#F09988] mt-1">
+            {transaction.rejectionReason}
+          </div>
+        )}
+    </td>
+    <td className="px-6 py-4 whitespace-nowrap text-center">
+      <ClassificationBadge status={transaction.classificationStatus} />
+    </td>
+    <TransactionActionsCell
+      transaction={transaction}
+      onEditClick={onEditClick}
+      onClassifyClick={onClassifyClick}
+    />
+  </tr>
+)
+
+/** Label/value line inside the expanded transaction detail panel */
+const DetailField: React.FC<{
+  label: string
+  value: string
+  mono?: boolean
+}> = ({ label, value, mono }) => (
+  <div>
+    <span className="font-medium uppercase tracking-wider text-[#294050] dark:text-[#9FB4BE] mr-2">
+      {label}
+    </span>
+    <span
+      className={`${mono ? 'font-mono break-all ' : ''}text-[#11202B] dark:text-[#EAF3F2]`}
+    >
+      {value}
+    </span>
+  </div>
+)
+
+/** Expanded detail panel row: full description, hash, block/status memo, and wallet address */
+const TransactionDetailRow: React.FC<{ transaction: Transaction }> = ({
+  transaction,
+}) => (
+  <tr className="bg-[#EAF3F2]/60 dark:bg-[#11202B]/60">
+    <td colSpan={9} className="px-6 py-4">
+      <div className="space-y-1.5 text-xs">
+        <DetailField label="Description" value={transaction.description} />
+        {transaction.hash && (
+          <DetailField label="Hash" value={transaction.hash} mono />
+        )}
+        {transaction.memo && (
+          <DetailField label="Details" value={transaction.memo} />
+        )}
+        <DetailField label="Wallet" value={transaction.wallet} mono />
+      </div>
+    </td>
+  </tr>
+)
 
 /** Transactions list page with search, filtering, and tabular display of all crypto transactions */
 const Transactions: React.FC = () => {
@@ -170,12 +496,15 @@ const Transactions: React.FC = () => {
   const { transactions } = useTransactions()
   const { settings: currencySettings } = useCurrency()
   const { getToken, getChain } = useTokens()
+  const { getAlias } = useWalletAliases()
   const [searchQuery, setSearchQuery] = useState('')
+  const [expandedId, setExpandedId] = useState<string | null>(null)
 
   const params = new URLSearchParams(location.search)
   const urlFilter = params.get('filter') as FilterType
   const filter: FilterType =
-    urlFilter && ['all', 'unclassified', 'classified', 'ignored'].includes(urlFilter)
+    urlFilter &&
+    ['all', 'unclassified', 'classified', 'ignored'].includes(urlFilter)
       ? urlFilter
       : 'all'
 
@@ -194,72 +523,6 @@ const Transactions: React.FC = () => {
         )
       })
   }, [transactions, filter, searchQuery])
-
-  /** Returns the appropriate directional arrow icon for a given transaction type */
-  const getTypeIcon = (type: TransactionType) => {
-    switch (type) {
-      case 'revenue':
-        return <ArrowDownRight className="w-5 h-5 text-[#5FE3C0]" />
-      case 'expense':
-        return <ArrowUpRight className="w-5 h-5 text-[#E8836F]" />
-      case 'transfer':
-        return <ArrowLeftRight className="w-5 h-5 text-[#5FE3C0]" />
-      default:
-        return null
-    }
-  }
-
-  /** Returns the unified brand badge class for a transaction type */
-  const getTypeColor = (type: TransactionType) => {
-    switch (type) {
-      case 'revenue':
-        return 'badge-revenue'
-      case 'expense':
-        return 'badge-expense'
-      case 'transfer':
-        return 'badge-transfer'
-      default:
-        return 'badge-neutral'
-    }
-  }
-
-  /** Returns the unified brand badge class for a transaction status */
-  const getStatusColor = (status: TransactionStatus) => {
-    switch (status) {
-      case 'completed':
-      case 'approved':
-        return 'badge-approved'
-      case 'pending_approval':
-        return 'badge-pending-approval'
-      case 'draft':
-        return 'badge-draft'
-      case 'rejected':
-        return 'badge-rejected'
-      case 'failed':
-        return 'badge-failed'
-      default:
-        return 'badge-neutral'
-    }
-  }
-
-  const getStatusLabel = (status: TransactionStatus) => {
-    switch (status) {
-      case 'pending_approval':
-        return 'Pending Approval'
-      case 'completed':
-        return 'Completed'
-      case 'approved':
-        return 'Approved'
-      case 'rejected':
-        return 'Rejected'
-      case 'draft':
-        return 'Draft'
-      case 'failed':
-        return 'Failed'
-      default:
-        return status
-    }
-  }
 
   const handleSearchChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -298,6 +561,25 @@ const Transactions: React.FC = () => {
       e.currentTarget.style.display = 'none'
     },
     []
+  )
+
+  const handleToggleExpand = useCallback(
+    (e: React.MouseEvent<HTMLButtonElement>) => {
+      e.stopPropagation()
+      const id = e.currentTarget.dataset.id
+      if (id) {
+        setExpandedId(prev => (prev === id ? null : id))
+      }
+    },
+    []
+  )
+
+  const handleClassifyClick = useCallback(
+    (e: React.MouseEvent<HTMLButtonElement>) => {
+      e.stopPropagation()
+      navigate('/journal-entries?new=true')
+    },
+    [navigate]
   )
 
   return (
@@ -355,6 +637,7 @@ const Transactions: React.FC = () => {
           <table className="w-full">
             <thead className="bg-[#EAF3F2] dark:bg-[#11202B] border-b border-[rgba(95,227,192,0.15)]">
               <tr>
+                <th className="w-10 px-4 py-3" aria-label="Expand" />
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
                   Type
                 </th>
@@ -362,15 +645,12 @@ const Transactions: React.FC = () => {
                   Date & Time
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
-                  Description
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
                   Category
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
                   Wallet
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-medium text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
                   Amount
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
@@ -386,95 +666,27 @@ const Transactions: React.FC = () => {
             </thead>
             <tbody className="bg-[#F7FAFA] dark:bg-[#0C141B] divide-y divide-[rgba(95,227,192,0.1)]">
               {filteredTransactions.map(transaction => (
-                <tr
-                  key={transaction.id}
-                  data-id={transaction.id}
-                  className="hover:bg-[#EAF3F2] dark:hover:bg-[#11202B] cursor-pointer"
-                  onClick={handleRowClick}
-                >
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div
-                      className={`inline-flex items-center justify-center w-10 h-10 rounded-lg ${getTypeColor(transaction.type)}`}
-                    >
-                      {getTypeIcon(transaction.type)}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-[#11202B] dark:text-[#EAF3F2]">
-                      {new Date(transaction.date).toLocaleString()}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="text-sm font-medium text-[#11202B] dark:text-[#EAF3F2]">
-                      {transaction.description}
-                    </div>
-                    {transaction.hash && (
-                      <div className="text-xs text-[#647D8B] dark:text-[#647D8B]">
-                        {transaction.hash}
-                      </div>
-                    )}
-                    {transaction.memo && (
-                      <div className="text-xs text-[#647D8B] dark:text-[#647D8B] mt-1">
-                        {transaction.memo}
-                      </div>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm text-[#11202B] dark:text-[#EAF3F2]">
-                      {transaction.category}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm text-[#294050] dark:text-[#9FB4BE]">
-                      {transaction.wallet}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <TransactionAmountCell
-                      transaction={transaction}
-                      getToken={getToken}
-                      getChain={getChain}
-                      currencySettings={currencySettings}
-                      handleImageError={handleImageError}
-                    />
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(transaction.status)}`}
-                    >
-                      {getStatusLabel(transaction.status)}
-                    </span>
-                    {transaction.approvalStatus === 'rejected' &&
-                      transaction.rejectionReason && (
-                        <div className="text-xs text-[#E8836F] dark:text-[#F09988] mt-1">
-                          {transaction.rejectionReason}
-                        </div>
-                      )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-center">
-                    <ClassificationBadge status={transaction.classificationStatus} />
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div className="flex items-center justify-end gap-2">
-                      <button
-                        data-id={transaction.id}
-                        onClick={handleEditButtonClick}
-                        className="text-[#294050] hover:text-[#1E2F3C] dark:text-[#F09988] dark:hover:text-[#F09988]"
-                      >
-                        <Edit2 className="w-5 h-5" />
-                      </button>
-                      <button
-                        onClick={e => {
-                          e.stopPropagation()
-                          navigate('/journal-entries?new=true')
-                        }}
-                        className="px-2 py-1 text-xs font-medium rounded bg-[#294050]/10 text-[#294050] hover:bg-[#294050]/20 transition-colors"
-                      >
-                        Classify &rarr;
-                      </button>
-                    </div>
-                  </td>
-                </tr>
+                <React.Fragment key={transaction.id}>
+                  <TransactionSummaryRow
+                    transaction={transaction}
+                    isExpanded={expandedId === transaction.id}
+                    walletLabel={
+                      getAlias(transaction.wallet) ??
+                      shortenAddress(transaction.wallet)
+                    }
+                    getToken={getToken}
+                    getChain={getChain}
+                    currencySettings={currencySettings}
+                    handleImageError={handleImageError}
+                    onRowClick={handleRowClick}
+                    onToggleExpand={handleToggleExpand}
+                    onEditClick={handleEditButtonClick}
+                    onClassifyClick={handleClassifyClick}
+                  />
+                  {expandedId === transaction.id && (
+                    <TransactionDetailRow transaction={transaction} />
+                  )}
+                </React.Fragment>
               ))}
             </tbody>
           </table>
