@@ -5,6 +5,7 @@ import {
   truncateHash,
   displayTxType,
   txTypeLabels,
+  rulePreview,
 } from '../classificationUtils'
 
 describe('formatTimestamp', () => {
@@ -94,5 +95,19 @@ describe('txTypeLabels', () => {
     for (const t of expectedTypes) {
       expect(txTypeLabels[t]).toBeDefined()
     }
+  })
+})
+
+describe('rulePreview', () => {
+  it('should return rule description for known tx types', () => {
+    expect(rulePreview('claim')).toContain('Staking reward')
+    expect(rulePreview('stake')).toContain('Staking reward')
+    expect(rulePreview('transfer')).toContain('Transfer')
+    expect(rulePreview('swap')).toContain('swap')
+    expect(rulePreview('approve')).toContain('approval')
+  })
+
+  it('should return generic description for unknown types', () => {
+    expect(rulePreview('some_new_type')).toContain('Heuristic')
   })
 })

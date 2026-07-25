@@ -33,3 +33,21 @@ export const txTypeLabels: Record<string, string> = {
 export function displayTxType(txType: string): string {
   return txTypeLabels[txType] ?? txType
 }
+
+const ruleDescriptions: Record<string, string> = {
+  claim: 'Staking reward → DR Crypto Assets / CR Staking Income',
+  stake: 'Staking reward → DR Crypto Assets / CR Staking Income',
+  transfer: 'Transfer → self-transfer detection or external income',
+  swap: 'Token swap → DR new asset / CR disposed asset',
+  bridge: 'Bridge transfer → inter-chain rebalance',
+  unstake: 'Unstake → return of staked principal',
+  mint: 'Mint → DR Crypto Assets / CR Income',
+  burn: 'Burn → DR Expense / CR Crypto Assets',
+  approve: 'Contract approval → fee-only entry',
+  contract_call: 'Contract interaction → fee-only entry',
+}
+
+/** @returns Short description of the classification heuristic for a given tx type. */
+export function rulePreview(txType: string): string {
+  return ruleDescriptions[txType] ?? 'Heuristic classification based on tx type'
+}
