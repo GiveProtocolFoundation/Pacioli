@@ -19,7 +19,7 @@ pub struct ClassificationRule {
     pub match_tx_types: String,
     /// Comma-separated chain IDs to match.
     pub match_chains: String,
-    /// Self-transfer match mode: "yes", "no", or "any".
+    /// Self-transfer match mode: "true", "false", or "any".
     pub match_self_transfer: String,
     /// GL account to debit.
     pub debit_account: String,

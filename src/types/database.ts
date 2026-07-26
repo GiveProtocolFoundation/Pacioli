@@ -318,6 +318,7 @@ export interface RawTransaction {
   classificationStatus: ClassificationStatus
   priceAtAcquisitionUsd: string | null
   valuationStatus: ValuationStatus
+  isSelfTransfer: boolean
 }
 
 // =============================================================================

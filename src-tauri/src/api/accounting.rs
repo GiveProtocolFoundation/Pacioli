@@ -1984,6 +1984,10 @@ pub struct MultiChainTransaction {
     pub price_at_acquisition_usd: Option<String>,
     /// Valuation enrichment status: unpriced, priced, or unavailable.
     pub valuation_status: String,
+    /// Whether the from and to addresses both belong to wallets under the same
+    /// profile (self-transfer detection for the classification queue preview).
+    #[serde(default)]
+    pub is_self_transfer: bool,
 }
 
 /// Returns all unclassified multi-chain transactions for the classification queue.
@@ -1992,7 +1996,21 @@ pub async fn get_unclassified_transactions(
     state: State<'_, DatabaseState>,
 ) -> Result<Vec<MultiChainTransaction>, String> {
     sqlx::query_as::<_, MultiChainTransaction>(
-        "SELECT id, chain_id, transaction_hash, from_address, to_address, transfer_value, transaction_fee, timestamp, transaction_type, status, classification_status, price_at_acquisition_usd, valuation_status FROM multi_chain_transactions WHERE classification_status = 'unclassified' ORDER BY timestamp DESC",
+        r#"SELECT
+             t.id, t.chain_id, t.transaction_hash, t.from_address, t.to_address,
+             t.transfer_value, t.transaction_fee, t.timestamp, t.transaction_type,
+             t.status, t.classification_status, t.price_at_acquisition_usd,
+             t.valuation_status,
+             CASE WHEN t.to_address IS NOT NULL AND EXISTS (
+               SELECT 1 FROM user_wallets a
+               JOIN user_wallets b
+                 ON (a.profile_id IS NOT NULL AND a.profile_id = b.profile_id)
+                 OR (a.profile_id IS NULL AND b.profile_id IS NULL)
+               WHERE a.address = t.from_address AND b.address = t.to_address
+             ) THEN 1 ELSE 0 END AS is_self_transfer
+           FROM multi_chain_transactions t
+           WHERE t.classification_status = 'unclassified'
+           ORDER BY t.timestamp DESC"#,
     )
     .fetch_all(&state.pool)
     .await

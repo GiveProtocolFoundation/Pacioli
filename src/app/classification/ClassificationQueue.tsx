@@ -987,7 +987,8 @@ const ClassificationQueue: React.FC = () => {
                   const matched = findMatchingRule(
                     classificationRules,
                     tx.transactionType,
-                    tx.chainId
+                    tx.chainId,
+                    tx.isSelfTransfer
                   )
                   return (
                     <QueueRow

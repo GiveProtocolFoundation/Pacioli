@@ -7,11 +7,12 @@ export interface ClassificationRuleMatch {
   enabled: boolean
 }
 
-/** Finds the first enabled rule matching a transaction's type and chain. */
+/** Finds the first enabled rule matching a transaction's type, chain, and self-transfer status. */
 export function findMatchingRule(
   rules: ClassificationRuleMatch[],
   txType: string,
-  chainId: string
+  chainId: string,
+  isSelfTransfer: boolean
 ): ClassificationRuleMatch | undefined {
   return rules.find(rule => {
     if (!rule.enabled) return false
@@ -23,6 +24,9 @@ export function findMatchingRule(
         .map(s => s.trim().toLowerCase())
       if (!chains.includes(chainId.toLowerCase())) return false
     }
+    const mode = rule.matchSelfTransfer
+    if (mode === 'true' && !isSelfTransfer) return false
+    if (mode === 'false' && isSelfTransfer) return false
     return true
   })
 }
