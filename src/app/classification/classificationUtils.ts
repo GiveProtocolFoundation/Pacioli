@@ -1,3 +1,35 @@
+export interface ClassificationRuleMatch {
+  id: string
+  name: string
+  matchTxTypes: string
+  matchChains: string
+  matchSelfTransfer: string
+  enabled: boolean
+}
+
+/** Finds the first enabled rule matching a transaction's type, chain, and self-transfer status. */
+export function findMatchingRule(
+  rules: ClassificationRuleMatch[],
+  txType: string,
+  chainId: string,
+  isSelfTransfer: boolean
+): ClassificationRuleMatch | undefined {
+  return rules.find(rule => {
+    const types = rule.matchTxTypes.split(',').map(s => s.trim())
+    const chains = rule.matchChains
+      ? rule.matchChains.split(',').map(s => s.trim().toLowerCase())
+      : null
+    const mode = rule.matchSelfTransfer
+    return (
+      rule.enabled &&
+      types.includes(txType) &&
+      (!chains || chains.includes(chainId.toLowerCase())) &&
+      (mode !== 'true' || isSelfTransfer) &&
+      (mode !== 'false' || !isSelfTransfer)
+    )
+  })
+}
+
 /** Formats a Unix timestamp to a localized date string. */
 export function formatTimestamp(timestampSecs: number): string {
   return new Date(timestampSecs * 1000).toLocaleDateString()

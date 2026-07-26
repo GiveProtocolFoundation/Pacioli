@@ -30,7 +30,9 @@ import {
   truncateHash,
   displayTxType,
   rulePreview,
+  findMatchingRule,
 } from './classificationUtils'
+import type { ClassificationRuleMatch } from './classificationUtils'
 
 interface IgnoreModal {
   transactionId: string
@@ -83,6 +85,7 @@ const QueueHeaderRow: React.FC<{
 
 interface QueueRowProps {
   tx: RawTransaction
+  ruleLabel: string
   selected: boolean
   busy: boolean
   onToggleSelect: (event: React.MouseEvent<HTMLButtonElement>) => void
@@ -94,6 +97,7 @@ interface QueueRowProps {
 /** @returns Single transaction row with action buttons (auto, manual, skip). */
 const QueueRow: React.FC<QueueRowProps> = ({
   tx,
+  ruleLabel,
   selected,
   busy,
   onToggleSelect,
@@ -129,9 +133,7 @@ const QueueRow: React.FC<QueueRowProps> = ({
       </span>
     </td>
     <td className="px-4 py-3 whitespace-nowrap text-xs text-[#647D8B] dark:text-[#647D8B] max-w-[200px] truncate">
-      <span title={rulePreview(tx.transactionType)}>
-        {rulePreview(tx.transactionType)}
-      </span>
+      <span title={ruleLabel}>{ruleLabel}</span>
     </td>
     <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-mono text-[#11202B] dark:text-[#EAF3F2]">
       {tx.transferValue}
@@ -359,6 +361,9 @@ const ClassificationQueue: React.FC = () => {
   const { user } = useAuth()
   const [transactions, setTransactions] = useState<RawTransaction[]>([])
   const [accounts, setAccounts] = useState<GLAccount[]>([])
+  const [classificationRules, setClassificationRules] = useState<
+    ClassificationRuleMatch[]
+  >([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
@@ -385,12 +390,14 @@ const ClassificationQueue: React.FC = () => {
     setLoading(true)
     setError(null)
     try {
-      const [txs, accts] = await Promise.all([
+      const [txs, accts, rules] = await Promise.all([
         invoke<RawTransaction[]>('get_unclassified_transactions'),
         invoke<GLAccount[]>('get_chart_of_accounts'),
+        invoke<ClassificationRuleMatch[]>('list_classification_rules'),
       ])
       setTransactions(txs)
       setAccounts(accts)
+      setClassificationRules(rules)
       setSelectedIds(new Set())
       setBatchResult(null)
     } catch (err) {
@@ -976,18 +983,29 @@ const ClassificationQueue: React.FC = () => {
                 />
               </thead>
               <tbody className="divide-y divide-[rgba(95,227,192,0.1)]">
-                {filtered.map(tx => (
-                  <QueueRow
-                    key={tx.id}
-                    tx={tx}
-                    selected={selectedIds.has(tx.id)}
-                    busy={processingId === tx.id || batchProcessing}
-                    onToggleSelect={handleToggleSelect}
-                    onAutoClassify={handleAutoClassify}
-                    onManualClassify={handleManualClassify}
-                    onIgnore={handleIgnoreClick}
-                  />
-                ))}
+                {filtered.map(tx => {
+                  const matched = findMatchingRule(
+                    classificationRules,
+                    tx.transactionType,
+                    tx.chainId,
+                    tx.isSelfTransfer
+                  )
+                  return (
+                    <QueueRow
+                      key={tx.id}
+                      tx={tx}
+                      ruleLabel={
+                        matched ? matched.name : rulePreview(tx.transactionType)
+                      }
+                      selected={selectedIds.has(tx.id)}
+                      busy={processingId === tx.id || batchProcessing}
+                      onToggleSelect={handleToggleSelect}
+                      onAutoClassify={handleAutoClassify}
+                      onManualClassify={handleManualClassify}
+                      onIgnore={handleIgnoreClick}
+                    />
+                  )
+                })}
               </tbody>
             </table>
           </div>
