@@ -488,9 +488,7 @@ const ClassificationRules: React.FC = () => {
         .then(count => {
           if (count > 0) fetchRules()
         })
-        .catch(() => {
-          // Silently skip auto-install failure; user can install manually
-        })
+        .catch(() => { /* skipcq: JS-0321 — auto-install is best-effort */ })
     }
   }, [loading, rules.length, autoInstallDone, fetchRules])
 

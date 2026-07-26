@@ -33,9 +33,7 @@ function storedToTransaction(st: StoredTransaction): Transaction {
       if (parsed[ACCOUNTING_MARKER]) {
         return { ...parsed, id: st.id }
       }
-    } catch {
-      /* fall through */
-    }
+    } catch { /* skipcq: JS-0321 — unparseable raw_data treated as non-accounting tx */ }
   }
 
   const txType =
