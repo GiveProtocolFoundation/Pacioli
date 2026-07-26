@@ -199,7 +199,12 @@ describe('findMatchingRule', () => {
         enabled: true,
       },
     ]
-    const match = findMatchingRule(selfTransferRules, 'transfer', 'polkadot', false)
+    const match = findMatchingRule(
+      selfTransferRules,
+      'transfer',
+      'polkadot',
+      false
+    )
     expect(match?.name).toBe('Transfer Received (External)')
   })
 
@@ -222,7 +227,12 @@ describe('findMatchingRule', () => {
         enabled: true,
       },
     ]
-    const match = findMatchingRule(selfTransferRules, 'transfer', 'polkadot', true)
+    const match = findMatchingRule(
+      selfTransferRules,
+      'transfer',
+      'polkadot',
+      true
+    )
     expect(match?.name).toBe('Self-Transfer (Own Wallets)')
   })
 
