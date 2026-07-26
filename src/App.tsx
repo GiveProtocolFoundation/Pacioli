@@ -51,6 +51,9 @@ const Reconciliation = React.lazy(() => import('./app/ledger/Reconciliation'))
 const ClassificationQueue = React.lazy(
   () => import('./app/classification/ClassificationQueue')
 )
+const ClassificationRules = React.lazy(
+  () => import('./app/classification/ClassificationRules')
+)
 const AccountingPeriods = React.lazy(
   () => import('./app/accounting-periods/AccountingPeriods')
 )
@@ -187,6 +190,7 @@ const MainRoutes: React.FC = () => (
       <Route path="/support" element={<Support />} />
       <Route path="/profile" element={<Profile />} />
       <Route path="/classification" element={<ClassificationQueue />} />
+      <Route path="/classification-rules" element={<ClassificationRules />} />
       <Route path="/journal-entries" element={<JournalEntries />} />
       <Route path="/chart-of-accounts" element={<ChartOfAccounts />} />
       <Route path="/trial-balance" element={<TrialBalance />} />

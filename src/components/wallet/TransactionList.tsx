@@ -136,17 +136,22 @@ export const TransactionList: React.FC<TransactionListProps> = ({
     })
   }, [allFilteredSelected, filteredTransactions])
 
-  const handleToggleSelect = useCallback((txId: string) => {
-    setSelectedIds(prev => {
-      const next = new Set(prev)
-      if (next.has(txId)) {
-        next.delete(txId)
-      } else {
-        next.add(txId)
-      }
-      return next
-    })
-  }, [])
+  const handleToggleSelect = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const txId = e.currentTarget.dataset.txid
+      if (!txId) return
+      setSelectedIds(prev => {
+        const next = new Set(prev)
+        if (next.has(txId)) {
+          next.delete(txId)
+        } else {
+          next.add(txId)
+        }
+        return next
+      })
+    },
+    []
+  )
 
   const selectedCount = filteredTransactions.filter(tx =>
     selectedIds.has(tx.id)
@@ -160,6 +165,38 @@ export const TransactionList: React.FC<TransactionListProps> = ({
     setStatusFilter('all')
     setSearchQuery('')
   }, [])
+
+  const handleSearchChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setSearchQuery(e.target.value)
+    },
+    []
+  )
+
+  const handleTypeFilterChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      setTypeFilter(e.target.value)
+    },
+    []
+  )
+
+  const handleStatusFilterChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      setStatusFilter(e.target.value)
+    },
+    []
+  )
+
+  const handleClearSelection = useCallback(() => {
+    setSelectedIds(new Set())
+  }, [])
+
+  const indeterminateRef = useCallback(
+    (el: HTMLInputElement | null) => {
+      if (el) el.indeterminate = someFilteredSelected
+    },
+    [someFilteredSelected]
+  )
 
   // Helper: Get network decimals
   const getNetworkDecimals = useCallback((network: string): number => {
@@ -669,7 +706,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
           <input
             type="text"
             value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
+            onChange={handleSearchChange}
             placeholder="Search by address, hash, or method..."
             className="w-full pl-8 pr-3 py-1.5 text-sm border border-[rgba(95,227,192,0.3)] rounded bg-[#F7FAFA] dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] placeholder-[#647D8B] focus:outline-none focus:border-[#5FE3C0] focus:ring-1 focus:ring-[#5FE3C0]"
           />
@@ -680,7 +717,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
           <Filter className="w-3.5 h-3.5 text-[#647D8B]" />
           <select
             value={typeFilter}
-            onChange={e => setTypeFilter(e.target.value)}
+            onChange={handleTypeFilterChange}
             className="text-sm border border-[rgba(95,227,192,0.3)] rounded bg-[#F7FAFA] dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] px-2 py-1.5 focus:outline-none focus:border-[#5FE3C0] focus:ring-1 focus:ring-[#5FE3C0]"
           >
             <option value="all">All Types</option>
@@ -695,7 +732,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
         {/* Status filter */}
         <select
           value={statusFilter}
-          onChange={e => setStatusFilter(e.target.value)}
+          onChange={handleStatusFilterChange}
           className="text-sm border border-[rgba(95,227,192,0.3)] rounded bg-[#F7FAFA] dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] px-2 py-1.5 focus:outline-none focus:border-[#5FE3C0] focus:ring-1 focus:ring-[#5FE3C0]"
         >
           <option value="all">All Statuses</option>
@@ -746,9 +783,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
                 <input
                   type="checkbox"
                   checked={allFilteredSelected}
-                  ref={el => {
-                    if (el) el.indeterminate = someFilteredSelected
-                  }}
+                  ref={indeterminateRef}
                   onChange={handleToggleSelectAll}
                   className="w-4 h-4 text-[#294050] border-[rgba(95,227,192,0.3)] rounded focus:ring-[#5FE3C0] cursor-pointer"
                   title={
@@ -790,7 +825,8 @@ export const TransactionList: React.FC<TransactionListProps> = ({
                     <input
                       type="checkbox"
                       checked={selectedIds.has(tx.id)}
-                      onChange={() => handleToggleSelect(tx.id)}
+                      data-txid={tx.id}
+                      onChange={handleToggleSelect}
                       className="w-4 h-4 text-[#294050] border-[rgba(95,227,192,0.3)] rounded focus:ring-[#5FE3C0] cursor-pointer"
                     />
                   </td>
@@ -938,7 +974,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
           </p>
           {selectedCount > 0 && (
             <button
-              onClick={() => setSelectedIds(new Set())}
+              onClick={handleClearSelection}
               className="text-sm text-[#294050] dark:text-[#F09988] hover:opacity-90 font-medium"
             >
               Clear Selection

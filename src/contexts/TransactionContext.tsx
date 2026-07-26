@@ -34,7 +34,7 @@ function storedToTransaction(st: StoredTransaction): Transaction {
         return { ...parsed, id: st.id }
       }
     } catch {
-      /* fall through */
+      /* skipcq: JS-0321 — unparseable raw_data treated as non-accounting tx */
     }
   }
 
