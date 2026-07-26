@@ -150,7 +150,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
         return next
       })
     },
-    [],
+    []
   )
 
   const selectedCount = filteredTransactions.filter(tx =>
@@ -170,21 +170,21 @@ export const TransactionList: React.FC<TransactionListProps> = ({
     (e: React.ChangeEvent<HTMLInputElement>) => {
       setSearchQuery(e.target.value)
     },
-    [],
+    []
   )
 
   const handleTypeFilterChange = useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
       setTypeFilter(e.target.value)
     },
-    [],
+    []
   )
 
   const handleStatusFilterChange = useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
       setStatusFilter(e.target.value)
     },
-    [],
+    []
   )
 
   const handleClearSelection = useCallback(() => {
@@ -195,7 +195,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
     (el: HTMLInputElement | null) => {
       if (el) el.indeterminate = someFilteredSelected
     },
-    [someFilteredSelected],
+    [someFilteredSelected]
   )
 
   // Helper: Get network decimals
