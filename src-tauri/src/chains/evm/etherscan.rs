@@ -672,7 +672,7 @@ impl EtherscanClient {
                 break;
             }
 
-            let last_block = all.last().map(|t| t.block_num()).unwrap_or(current_start);
+            let last_block = all.last().map_or(current_start, |t| t.block_num());
             current_start = if last_block > current_start {
                 last_block
             } else {
@@ -1293,23 +1293,23 @@ mod tests {
             hash: hash.to_string(),
             block_number: block.to_string(),
             time_stamp: "0".to_string(),
-            from: String::new(),
-            to: String::new(),
+            from: String::default(),
+            to: String::default(),
             value: "0".to_string(),
             gas: "0".to_string(),
             gas_price: "0".to_string(),
             gas_used: "0".to_string(),
-            nonce: String::new(),
+            nonce: String::default(),
             is_error: "0".to_string(),
             tx_receipt_status: "1".to_string(),
-            input: String::new(),
-            contract_address: String::new(),
-            function_name: String::new(),
-            method_id: String::new(),
-            confirmations: String::new(),
-            cumulative_gas_used: String::new(),
-            max_fee_per_gas: String::new(),
-            max_priority_fee_per_gas: String::new(),
+            input: String::default(),
+            contract_address: String::default(),
+            function_name: String::default(),
+            method_id: String::default(),
+            confirmations: String::default(),
+            cumulative_gas_used: String::default(),
+            max_fee_per_gas: String::default(),
+            max_priority_fee_per_gas: String::default(),
         }
     }
 
@@ -1326,15 +1326,15 @@ mod tests {
             hash: "0xabc".to_string(),
             block_number: "100".to_string(),
             time_stamp: "0".to_string(),
-            from: String::new(),
-            to: String::new(),
+            from: String::default(),
+            to: String::default(),
             value: "0".to_string(),
-            contract_address: String::new(),
+            contract_address: String::default(),
             trace_type: "call".to_string(),
-            gas: String::new(),
-            gas_used: String::new(),
+            gas: String::default(),
+            gas_used: String::default(),
             is_error: "0".to_string(),
-            err_code: String::new(),
+            err_code: String::default(),
             trace_id: "0_1".to_string(),
         };
         assert_eq!(tx.block_num(), 100);

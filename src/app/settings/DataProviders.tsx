@@ -168,6 +168,7 @@ function getLocalStorageStatuses(): ProviderStatus[] {
 
 type KeyMode = 'none' | 'default' | 'turbo'
 
+/** @param props - contains `mode` indicating key status (none/default/turbo). @returns Badge showing API key mode. */
 const TurboModeIndicator: React.FC<{ mode: KeyMode }> = ({ mode }) => {
   const styles: Record<KeyMode, string> = {
     none: 'bg-[#294050]/10 text-[#294050] dark:bg-[#294050]/20 dark:text-[#9FB4BE]',
@@ -228,21 +229,17 @@ const TurboInfoBox: React.FC = () => (
           free API keys from block explorers to unlock 5x faster sync speeds.
           API keys are free to obtain from each provider.
         </p>
-        <div className="mt-3 flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-[#294050]" />
-            <span className="text-sm text-[#294050] dark:text-[#9FB4BE]">
-              Default: ~1 req/sec
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-[#5FE3C0]" />
-            <span className="text-sm text-[#294050] dark:text-[#9FB4BE]">
-              Turbo: ~5-10 req/sec
-            </span>
-          </div>
-        </div>
       </div>
+    </div>
+    <div className="mt-3 ml-8 flex items-center gap-4">
+      <span className="flex items-center gap-2 text-sm text-[#294050] dark:text-[#9FB4BE]">
+        <span className="inline-block w-2 h-2 rounded-full bg-[#294050]" />
+        Default: ~1 req/sec
+      </span>
+      <span className="flex items-center gap-2 text-sm text-[#294050] dark:text-[#9FB4BE]">
+        <span className="inline-block w-2 h-2 rounded-full bg-[#5FE3C0]" />
+        Turbo: ~5-10 req/sec
+      </span>
     </div>
   </div>
 )
@@ -568,12 +565,10 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
     <div className="border border-[rgba(95,227,192,0.15)] rounded-lg p-4 hover:border-[rgba(95,227,192,0.3)] transition-colors">
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1">
-          <div className="flex items-center gap-2 mb-1">
-            <h4 className="font-medium text-[#11202B] dark:text-[#EAF3F2]">
-              {config.name}
-            </h4>
+          <h4 className="flex items-center gap-2 mb-1 font-medium text-[#11202B] dark:text-[#EAF3F2]">
+            {config.name}
             <TurboModeIndicator mode={keyMode} />
-          </div>
+          </h4>
           <p className="text-sm text-[#294050] dark:text-[#9FB4BE]">
             {config.description}
           </p>
@@ -583,14 +578,14 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
               turboLimit={turboLimit}
               isTurbo={isTurbo}
             />
-            <div className="flex items-center gap-1 text-xs text-[#647D8B] dark:text-[#647D8B]">
+            <span className="flex items-center gap-1 text-xs text-[#647D8B] dark:text-[#647D8B]">
               {config.chains.map((chain, i) => (
                 <span key={chain}>
                   {chain}
                   {i < config.chains.length - 1 && ', '}
                 </span>
               ))}
-            </div>
+            </span>
           </div>
         </div>
         <a
