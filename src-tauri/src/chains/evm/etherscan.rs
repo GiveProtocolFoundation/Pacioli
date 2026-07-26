@@ -134,7 +134,10 @@ impl HasBlockAndHash for Erc20Transfer {
         self.block_number.parse().unwrap_or(0)
     }
     fn dedup_key(&self) -> String {
-        format!("{}:{}", self.hash, self.log_index)
+        format!(
+            "{}:{}:{}:{}:{}:{}",
+            self.hash, self.log_index, self.from, self.to, self.contract_address, self.value
+        )
     }
 }
 
@@ -152,7 +155,10 @@ impl HasBlockAndHash for Erc1155Transfer {
         self.block_number.parse().unwrap_or(0)
     }
     fn dedup_key(&self) -> String {
-        format!("{}:{}:{}", self.hash, self.token_id, self.token_value)
+        format!(
+            "{}:{}:{}:{}:{}:{}",
+            self.hash, self.token_id, self.token_value, self.from, self.to, self.contract_address
+        )
     }
 }
 
@@ -657,7 +663,7 @@ impl EtherscanClient {
         let mut seen: HashSet<String> = HashSet::new();
         let mut current_start = start_block.unwrap_or(0);
 
-        for _ in 0..MAX_WINDOW_FETCHES {
+        for window_idx in 0..MAX_WINDOW_FETCHES {
             let window = fetch_window(current_start, end_block).await?;
             let count = window.len();
 
@@ -678,6 +684,14 @@ impl EtherscanClient {
             } else {
                 current_start + 1
             };
+
+            if window_idx == MAX_WINDOW_FETCHES - 1 {
+                eprintln!(
+                    "fetch_all_windowed: hit {} window cap with {} items — archive may be truncated",
+                    MAX_WINDOW_FETCHES,
+                    all.len()
+                );
+            }
         }
 
         Ok(all)
@@ -1347,21 +1361,54 @@ mod tests {
             hash: "0xdef".to_string(),
             block_number: "200".to_string(),
             time_stamp: "0".to_string(),
-            from: String::new(),
-            to: String::new(),
-            value: "0".to_string(),
-            contract_address: String::new(),
-            token_name: String::new(),
-            token_symbol: String::new(),
+            from: "0xAlice".to_string(),
+            to: "0xBob".to_string(),
+            value: "1000".to_string(),
+            contract_address: "0xToken".to_string(),
+            token_name: String::default(),
+            token_symbol: String::default(),
             token_decimal: "18".to_string(),
             log_index: "3".to_string(),
-            transaction_index: String::new(),
-            gas_used: String::new(),
-            gas_price: String::new(),
-            nonce: String::new(),
+            transaction_index: String::default(),
+            gas_used: String::default(),
+            gas_price: String::default(),
+            nonce: String::default(),
         };
         assert_eq!(tx.block_num(), 200);
-        assert_eq!(tx.dedup_key(), "0xdef:3");
+        assert_eq!(tx.dedup_key(), "0xdef:3:0xAlice:0xBob:0xToken:1000");
+    }
+
+    #[test]
+    fn test_erc1155_dedup_key_distinguishes_recipients() {
+        let transfer_a = Erc1155Transfer {
+            hash: "0xabc".to_string(),
+            block_number: "300".to_string(),
+            time_stamp: "0".to_string(),
+            from: "0xSender".to_string(),
+            to: "0xRecipientA".to_string(),
+            contract_address: "0xNFT".to_string(),
+            token_id: "42".to_string(),
+            token_value: "1".to_string(),
+            token_name: String::default(),
+            token_symbol: String::default(),
+        };
+        let transfer_b = Erc1155Transfer {
+            hash: "0xabc".to_string(),
+            block_number: "300".to_string(),
+            time_stamp: "0".to_string(),
+            from: "0xSender".to_string(),
+            to: "0xRecipientB".to_string(),
+            contract_address: "0xNFT".to_string(),
+            token_id: "42".to_string(),
+            token_value: "1".to_string(),
+            token_name: String::default(),
+            token_symbol: String::default(),
+        };
+        assert_ne!(
+            transfer_a.dedup_key(),
+            transfer_b.dedup_key(),
+            "TransferBatch to different recipients must produce distinct dedup keys"
+        );
     }
 
     #[tokio::test]
