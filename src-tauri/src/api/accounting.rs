@@ -2544,11 +2544,7 @@ fn account_type_to_context(account_type: &str) -> &'static str {
 
 fn is_shared_account(acct: &TemplateAccount) -> bool {
     match acct.subcategory.as_deref() {
-        Some(s)
-            if s.starts_with("Digital")
-                || s.starts_with("DeFi")
-                || s.starts_with("Crypto") =>
-        {
+        Some(s) if s.starts_with("Digital") || s.starts_with("DeFi") || s.starts_with("Crypto") => {
             true
         }
         _ => false,
@@ -5335,30 +5331,26 @@ mod tests {
         let pool = setup_test_db().await;
         create_test_profile(&pool, "profile-1").await;
 
-        let first =
-            import_coa_template_raw(&pool, "us-gaap", "individual", "profile-1")
-                .await
-                .expect("First import should succeed");
+        let first = import_coa_template_raw(&pool, "us-gaap", "individual", "profile-1")
+            .await
+            .expect("First import should succeed");
         assert!(first > 0, "Should insert at least one row");
 
-        let count_after_first: (i64,) = sqlx::query_as(
-            "SELECT COUNT(*) FROM gl_accounts WHERE profile_id = 'profile-1'",
-        )
-        .fetch_one(&pool)
-        .await
-        .unwrap();
-
-        let _second =
-            import_coa_template_raw(&pool, "us-gaap", "individual", "profile-1")
+        let count_after_first: (i64,) =
+            sqlx::query_as("SELECT COUNT(*) FROM gl_accounts WHERE profile_id = 'profile-1'")
+                .fetch_one(&pool)
                 .await
-                .expect("Second import should succeed");
+                .unwrap();
 
-        let count_after_second: (i64,) = sqlx::query_as(
-            "SELECT COUNT(*) FROM gl_accounts WHERE profile_id = 'profile-1'",
-        )
-        .fetch_one(&pool)
-        .await
-        .unwrap();
+        let _second = import_coa_template_raw(&pool, "us-gaap", "individual", "profile-1")
+            .await
+            .expect("Second import should succeed");
+
+        let count_after_second: (i64,) =
+            sqlx::query_as("SELECT COUNT(*) FROM gl_accounts WHERE profile_id = 'profile-1'")
+                .fetch_one(&pool)
+                .await
+                .unwrap();
 
         assert_eq!(
             count_after_first.0, count_after_second.0,
@@ -5402,18 +5394,16 @@ mod tests {
                 .await;
         assert!(bs_result.is_ok(), "v_balance_sheet must be queryable");
 
-        let is_result = sqlx::query_as::<_, (String,)>(
-            "SELECT account_type FROM v_income_statement LIMIT 1",
-        )
-        .fetch_optional(&pool)
-        .await;
+        let is_result =
+            sqlx::query_as::<_, (String,)>("SELECT account_type FROM v_income_statement LIMIT 1")
+                .fetch_optional(&pool)
+                .await;
         assert!(is_result.is_ok(), "v_income_statement must be queryable");
 
-        let tb_result = sqlx::query_as::<_, (String,)>(
-            "SELECT account_type FROM v_trial_balance LIMIT 1",
-        )
-        .fetch_optional(&pool)
-        .await;
+        let tb_result =
+            sqlx::query_as::<_, (String,)>("SELECT account_type FROM v_trial_balance LIMIT 1")
+                .fetch_optional(&pool)
+                .await;
         assert!(tb_result.is_ok(), "v_trial_balance must be queryable");
     }
 
