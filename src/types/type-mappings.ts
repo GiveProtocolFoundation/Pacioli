@@ -122,6 +122,7 @@ export const ACCOUNT_TYPE_REVERSE_MAP: Record<DBAccountType, AccountTypeValue> =
     [DBAccountType.Liability]: 'Liability',
     [DBAccountType.Equity]: 'Equity',
     [DBAccountType.Income]: 'Revenue', // Note: Income maps to Revenue
+    [DBAccountType.Revenue]: 'Revenue',
     [DBAccountType.Expense]: 'Expense',
   }
 
