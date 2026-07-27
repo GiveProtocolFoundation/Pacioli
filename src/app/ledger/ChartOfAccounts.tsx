@@ -4,6 +4,7 @@ import { Plus, Search, ChevronDown, ChevronRight, Scale } from 'lucide-react'
 import type { GLAccount } from '../../types/database'
 import { persistence } from '../../services/persistence'
 
+/** Maps persisted accountType setting to the CoA template context key. */
 function accountTypeToContext(accountType: string | null): string {
   switch (accountType) {
     case 'individual':
@@ -168,8 +169,8 @@ const AddAccountForm: React.FC<AddAccountFormProps> = ({
         },
       })
       onSaved()
-    } catch (err) {
-      setError(typeof err === 'string' ? err : 'Failed to create account')
+    } catch (error) {
+      setError(typeof error === 'string' ? error : 'Failed to create account')
     } finally {
       setSaving(false)
     }
@@ -305,8 +306,8 @@ const ChartOfAccounts: React.FC = () => {
     try {
       const result = await invoke<GLAccount[]>('get_chart_of_accounts')
       setAccounts(result)
-    } catch (err) {
-      console.error('Failed to fetch chart of accounts:', err)
+    } catch (error) {
+      console.error('Failed to fetch chart of accounts:', error)
     } finally {
       setLoading(false)
     }
