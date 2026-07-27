@@ -120,10 +120,15 @@ const SubtotalRow: React.FC<{
         : 'bg-[#EAF3F2] dark:bg-[#16242F] border-t border-[rgba(95,227,192,0.2)]'
     }
   >
-    <td colSpan={2} className={`px-5 py-2 text-sm text-[#11202B] dark:text-[#EAF3F2] ${bold ? 'font-bold' : 'font-medium'}`}>
+    <td
+      colSpan={2}
+      className={`px-5 py-2 text-sm text-[#11202B] dark:text-[#EAF3F2] ${bold ? 'font-bold' : 'font-medium'}`}
+    >
       {label}
     </td>
-    <td className={`px-5 py-2 text-sm text-right font-mono text-[#11202B] dark:text-[#EAF3F2] ${bold ? 'font-bold' : 'font-medium'}`}>
+    <td
+      className={`px-5 py-2 text-sm text-right font-mono text-[#11202B] dark:text-[#EAF3F2] ${bold ? 'font-bold' : 'font-medium'}`}
+    >
       {formatMinorAsDollars(amount)}
     </td>
   </tr>
@@ -156,7 +161,11 @@ const ExpenseSectionBlock: React.FC<{
         </td>
       </tr>
       {section.items.map((item, i) => (
-        <SectionRow key={item.accountNumber} item={item} even={(startIdx + i) % 2 === 0} />
+        <SectionRow
+          key={item.accountNumber}
+          item={item}
+          even={(startIdx + i) % 2 === 0}
+        />
       ))}
       <SubtotalRow
         label={`Total ${section.label}`}
@@ -288,7 +297,11 @@ const StatementOfActivities: React.FC = () => {
               {/* Revenue — Without Donor Restrictions */}
               <SectionHeader label="Revenue — Without Donor Restrictions" />
               {data.revenueWithoutRestrictions.map((item, i) => (
-                <SectionRow key={item.accountNumber} item={item} even={i % 2 === 0} />
+                <SectionRow
+                  key={item.accountNumber}
+                  item={item}
+                  even={i % 2 === 0}
+                />
               ))}
               <SubtotalRow
                 label="Subtotal Without Restrictions"
@@ -298,7 +311,11 @@ const StatementOfActivities: React.FC = () => {
               {/* Revenue — With Donor Restrictions */}
               <SectionHeader label="Revenue — With Donor Restrictions" />
               {data.revenueWithRestrictions.map((item, i) => (
-                <SectionRow key={item.accountNumber} item={item} even={i % 2 === 0} />
+                <SectionRow
+                  key={item.accountNumber}
+                  item={item}
+                  even={i % 2 === 0}
+                />
               ))}
               <SubtotalRow
                 label="Subtotal With Restrictions"
@@ -310,7 +327,11 @@ const StatementOfActivities: React.FC = () => {
                 <>
                   <SectionHeader label="Net Assets Released from Restrictions" />
                   {data.releasedFromRestrictions.map((item, i) => (
-                    <SectionRow key={item.accountNumber} item={item} even={i % 2 === 0} />
+                    <SectionRow
+                      key={item.accountNumber}
+                      item={item}
+                      even={i % 2 === 0}
+                    />
                   ))}
                 </>
               )}
@@ -323,7 +344,10 @@ const StatementOfActivities: React.FC = () => {
 
               {/* Expenses by Functional Classification */}
               <SectionHeader label="Expenses by Functional Classification" />
-              <ExpenseSectionBlock section={data.expensesProgram} startIdx={0} />
+              <ExpenseSectionBlock
+                section={data.expensesProgram}
+                startIdx={0}
+              />
               <ExpenseSectionBlock
                 section={data.expensesManagement}
                 startIdx={data.expensesProgram.items.length}

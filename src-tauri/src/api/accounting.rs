@@ -1483,8 +1483,8 @@ async fn apply_matched_rule(
             quantity: q_str.clone(),
             asset_id: Some(ctx.asset_id.clone()),
             description: dr_desc,
-                functional_classification: None,
-            });
+            functional_classification: None,
+        });
         lines.push(JournalEntryLineInput {
             gl_account_id: credit_id,
             token_id: None,
@@ -1493,8 +1493,8 @@ async fn apply_matched_rule(
             quantity: q_str.clone(),
             asset_id: Some(ctx.asset_id.clone()),
             description: cr_desc,
-                functional_classification: None,
-            });
+            functional_classification: None,
+        });
     }
 
     let je_desc = if rule.je_description.is_empty() {
@@ -1542,8 +1542,8 @@ async fn apply_fallback_heuristics(
                     quantity: ctx.qty_str.clone(),
                     asset_id: Some(ctx.asset_id.clone()),
                     description: Some("Staking reward received".to_string()),
-                functional_classification: None,
-            });
+                    functional_classification: None,
+                });
                 lines.push(JournalEntryLineInput {
                     gl_account_id: accts.staking_income_id,
                     token_id: None,
@@ -1552,8 +1552,8 @@ async fn apply_fallback_heuristics(
                     quantity: ctx.qty_str.clone(),
                     asset_id: Some(ctx.asset_id.clone()),
                     description: Some("Staking reward income".to_string()),
-                functional_classification: None,
-            });
+                    functional_classification: None,
+                });
             }
             format!("Staking reward on {}", tx.chain_id)
         }
@@ -1581,8 +1581,8 @@ async fn apply_fallback_heuristics(
                     quantity: ctx.fee_qty_str.clone(),
                     asset_id: Some(ctx.asset_id.clone()),
                     description: Some("Network/gas fee".to_string()),
-                functional_classification: None,
-            });
+                    functional_classification: None,
+                });
                 lines.push(JournalEntryLineInput {
                     gl_account_id: accts.crypto_assets_id,
                     token_id: None,
@@ -1591,8 +1591,8 @@ async fn apply_fallback_heuristics(
                     quantity: ctx.fee_qty_str.clone(),
                     asset_id: Some(ctx.asset_id.clone()),
                     description: Some("Fee paid from crypto assets".to_string()),
-                functional_classification: None,
-            });
+                    functional_classification: None,
+                });
             }
             format!(
                 "{} on {} ({})",
@@ -1732,8 +1732,8 @@ pub async fn auto_classify_transaction(
             quantity: None,
             asset_id: Some("USD".to_string()),
             description: Some("Placeholder — update amounts".to_string()),
-                functional_classification: None,
-            });
+            functional_classification: None,
+        });
         lines.push(JournalEntryLineInput {
             gl_account_id: income_id,
             token_id: None,
@@ -1742,8 +1742,8 @@ pub async fn auto_classify_transaction(
             quantity: None,
             asset_id: Some("USD".to_string()),
             description: Some("Placeholder — update amounts".to_string()),
-                functional_classification: None,
-            });
+            functional_classification: None,
+        });
     }
 
     let entry_date = chrono::DateTime::from_timestamp(tx.timestamp, 0).map_or_else(

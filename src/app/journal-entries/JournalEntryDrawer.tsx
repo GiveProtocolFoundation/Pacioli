@@ -357,26 +357,39 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
                         className="flex-1 px-2 py-1 rounded border border-[rgba(95,227,192,0.1)] bg-transparent text-[#294050] dark:text-[#9FB4BE] text-xs placeholder-[#647D8B] disabled:opacity-60"
                       />
                     </div>
-                    {isNgo && (() => {
-                      const acct = line.glAccountId !== '' ? accounts.find(a => a.id === line.glAccountId) : undefined
-                      const isExpense5xxx = acct?.accountNumber?.startsWith('5') ?? false
-                      if (!isExpense5xxx) return null
-                      return (
-                        <select
-                          value={line.functionalClassification}
-                          onChange={e =>
-                            handleLineChange(idx, 'functionalClassification', e.target.value)
-                          }
-                          disabled={!isEditable}
-                          className="mt-1 w-full px-2 py-1 rounded border border-[rgba(95,227,192,0.15)] bg-white dark:bg-[#11202B] text-[#294050] dark:text-[#9FB4BE] text-xs disabled:opacity-60"
-                        >
-                          <option value="">Classification (optional)</option>
-                          <option value="program_services">Program Services</option>
-                          <option value="management_general">Management &amp; General</option>
-                          <option value="fundraising">Fundraising</option>
-                        </select>
-                      )
-                    })()}
+                    {isNgo &&
+                      (() => {
+                        const acct =
+                          line.glAccountId !== ''
+                            ? accounts.find(a => a.id === line.glAccountId)
+                            : undefined
+                        const isExpense5xxx =
+                          acct?.accountNumber?.startsWith('5') ?? false
+                        if (!isExpense5xxx) return null
+                        return (
+                          <select
+                            value={line.functionalClassification}
+                            onChange={e =>
+                              handleLineChange(
+                                idx,
+                                'functionalClassification',
+                                e.target.value
+                              )
+                            }
+                            disabled={!isEditable}
+                            className="mt-1 w-full px-2 py-1 rounded border border-[rgba(95,227,192,0.15)] bg-white dark:bg-[#11202B] text-[#294050] dark:text-[#9FB4BE] text-xs disabled:opacity-60"
+                          >
+                            <option value="">Classification (optional)</option>
+                            <option value="program_services">
+                              Program Services
+                            </option>
+                            <option value="management_general">
+                              Management &amp; General
+                            </option>
+                            <option value="fundraising">Fundraising</option>
+                          </select>
+                        )
+                      })()}
                   </div>
 
                   {/* Debit */}

@@ -886,8 +886,7 @@ const RESTRICTED_REVENUE_CODES: &[&str] = &["4010", "4360", "4910"];
 const RELEASE_FROM_RESTRICTION_CODE: &str = "4980";
 
 fn is_restricted_revenue(account_number: &str, account_name: &str) -> bool {
-    RESTRICTED_REVENUE_CODES.contains(&account_number)
-        || account_name.ends_with("- Restricted")
+    RESTRICTED_REVENUE_CODES.contains(&account_number) || account_name.ends_with("- Restricted")
 }
 
 async fn query_soa_expenses(
@@ -1008,8 +1007,7 @@ async fn build_statement_of_activities(
     }
 
     let expenses_program = build_soa_expense_section("Program Services", &prog_rows);
-    let expenses_management =
-        build_soa_expense_section("Management & General", &mgmt_rows);
+    let expenses_management = build_soa_expense_section("Management & General", &mgmt_rows);
     let expenses_fundraising = build_soa_expense_section("Fundraising", &fund_rows);
     let expenses_unclassified = build_soa_expense_section("Unclassified", &uncl_rows);
 
@@ -1111,7 +1109,12 @@ pub async fn export_statement_of_activities_csv(
     }
 
     writer
-        .write_record(["", "", "Total Revenue", &format_minor(soa.total_revenue_minor)])
+        .write_record([
+            "",
+            "",
+            "Total Revenue",
+            &format_minor(soa.total_revenue_minor),
+        ])
         .map_err(|e| e.to_string())?;
 
     let sections = [
@@ -1143,7 +1146,12 @@ pub async fn export_statement_of_activities_csv(
     }
 
     writer
-        .write_record(["", "", "Total Expenses", &format_minor(soa.total_expenses_minor)])
+        .write_record([
+            "",
+            "",
+            "Total Expenses",
+            &format_minor(soa.total_expenses_minor),
+        ])
         .map_err(|e| e.to_string())?;
 
     writer
