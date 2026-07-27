@@ -17,31 +17,21 @@ use super::persistence::DatabaseState;
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
 #[serde(rename_all = "camelCase")]
 pub struct GlAccount {
-    /// Auto-incremented primary key.
     pub id: i64,
-    /// Unique account number (e.g. "1200", "5100").
     pub account_number: String,
-    /// Human-readable account name.
     pub account_name: String,
-    /// One of: Asset, Liability, Equity, Income, Expense.
     pub account_type: String,
-    /// Optional parent account for sub-account hierarchy.
     pub parent_account_id: Option<i64>,
-    /// Optional digital-asset sub-classification.
     pub digital_asset_type: Option<String>,
-    /// Optional subcategory label.
     pub subcategory: Option<String>,
-    /// Optional description of the account's purpose.
     pub description: Option<String>,
-    /// Whether the account is active.
     pub is_active: bool,
-    /// Whether the account can be edited or deleted by users.
     pub is_editable: bool,
-    /// Either "debit" or "credit".
     pub normal_balance: Option<String>,
-    /// Timestamp when the account was created.
+    pub context: String,
+    pub profile_id: Option<String>,
+    pub hidden: i64,
     pub created_at: Option<NaiveDateTime>,
-    /// Timestamp when the account was last updated.
     pub updated_at: Option<NaiveDateTime>,
 }
 
@@ -2480,6 +2470,228 @@ pub async fn reopen_period(
         .fetch_one(&state.pool)
         .await
         .map_err(|e| e.to_string())
+}
+
+// ============================================================================
+// Chart-of-Accounts Template Importer (GIV-757)
+// ============================================================================
+
+#[derive(Debug, Deserialize)]
+struct TemplateAccount {
+    code: String,
+    name: String,
+    #[serde(rename = "type")]
+    account_type: String,
+    description: Option<String>,
+    subcategory: Option<String>,
+    #[serde(default = "default_true")]
+    #[serde(rename = "isActive")]
+    is_active: bool,
+    #[serde(default)]
+    editable: bool,
+}
+
+fn default_true() -> bool {
+    true
+}
+
+#[derive(Debug, Deserialize)]
+struct ChartTemplate {
+    #[allow(dead_code)]
+    name: String,
+    #[allow(dead_code)]
+    jurisdiction: String,
+    #[serde(rename = "accountType")]
+    #[allow(dead_code)]
+    account_type_field: String,
+    accounts: Vec<TemplateAccount>,
+}
+
+const TPL_US_GAAP_INDIVIDUAL: &str =
+    include_str!("../../../src/data/chart-of-accounts/us-gaap-individual.json");
+const TPL_US_GAAP_ENTERPRISE: &str =
+    include_str!("../../../src/data/chart-of-accounts/us-gaap-for-profit-enterprise.json");
+const TPL_US_GAAP_NFP: &str =
+    include_str!("../../../src/data/chart-of-accounts/us-gaap-not-for-profit.json");
+const TPL_IFRS_INDIVIDUAL: &str =
+    include_str!("../../../src/data/chart-of-accounts/ifrs-individual.json");
+const TPL_IFRS_SME: &str = include_str!("../../../src/data/chart-of-accounts/ifrs-sme.json");
+const TPL_IFRS_NFP: &str =
+    include_str!("../../../src/data/chart-of-accounts/ifrs-not-for-profit.json");
+
+fn resolve_template(jurisdiction: &str, account_type: &str) -> Result<&'static str, String> {
+    match (jurisdiction, account_type) {
+        ("us-gaap", "individual") => Ok(TPL_US_GAAP_INDIVIDUAL),
+        ("us-gaap", "for-profit-enterprise") => Ok(TPL_US_GAAP_ENTERPRISE),
+        ("us-gaap", "not-for-profit") => Ok(TPL_US_GAAP_NFP),
+        ("ifrs", "individual") => Ok(TPL_IFRS_INDIVIDUAL),
+        ("ifrs", "for-profit-enterprise") => Ok(TPL_IFRS_SME),
+        ("ifrs", "not-for-profit") => Ok(TPL_IFRS_NFP),
+        _ => Err(format!(
+            "Unknown template: jurisdiction={jurisdiction}, accountType={account_type}"
+        )),
+    }
+}
+
+fn account_type_to_context(account_type: &str) -> &'static str {
+    match account_type {
+        "individual" => "individual",
+        "for-profit-enterprise" => "sme",
+        "not-for-profit" => "ngo",
+        _ => "all",
+    }
+}
+
+fn is_shared_account(acct: &TemplateAccount) -> bool {
+    match acct.subcategory.as_deref() {
+        Some(s)
+            if s.starts_with("Digital")
+                || s.starts_with("DeFi")
+                || s.starts_with("Crypto") =>
+        {
+            true
+        }
+        _ => false,
+    }
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ImportCoaInput {
+    pub jurisdiction: String,
+    pub account_type: String,
+    pub profile_id: String,
+}
+
+/// Imports a chart-of-accounts template into `gl_accounts` for a profile.
+///
+/// Idempotent — uses `(profile_id, account_number)` as the natural key.
+/// Template-seeded rows are marked `is_editable = 0`.
+#[tauri::command]
+pub async fn import_chart_of_accounts_template(
+    state: State<'_, DatabaseState>,
+    input: ImportCoaInput,
+) -> Result<u64, String> {
+    let tpl_json = resolve_template(&input.jurisdiction, &input.account_type)?;
+    let tpl: ChartTemplate =
+        serde_json::from_str(tpl_json).map_err(|e| format!("Template parse error: {e}"))?;
+
+    let profile_context = account_type_to_context(&input.account_type);
+    let mut inserted: u64 = 0;
+
+    for acct in &tpl.accounts {
+        let context = if is_shared_account(acct) {
+            "all"
+        } else {
+            profile_context
+        };
+
+        let normal_balance = match acct.account_type.as_str() {
+            "Asset" | "Expense" => "debit",
+            _ => "credit",
+        };
+
+        let result = sqlx::query(
+            r#"
+            INSERT INTO gl_accounts (
+                account_number, account_name, account_type,
+                digital_asset_type, subcategory, description,
+                is_active, is_editable, normal_balance,
+                context, profile_id, hidden
+            )
+            VALUES (?, ?, ?, NULL, ?, ?, ?, 0, ?, ?, ?, 0)
+            ON CONFLICT (profile_id, account_number) DO UPDATE SET
+                account_name = excluded.account_name,
+                account_type = excluded.account_type,
+                subcategory  = excluded.subcategory,
+                description  = excluded.description,
+                context      = excluded.context,
+                normal_balance = excluded.normal_balance,
+                hidden       = 0
+            "#,
+        )
+        .bind(&acct.code)
+        .bind(&acct.name)
+        .bind(&acct.account_type)
+        .bind(&acct.subcategory)
+        .bind(&acct.description)
+        .bind(acct.is_active)
+        .bind(normal_balance)
+        .bind(context)
+        .bind(&input.profile_id)
+        .execute(&state.pool)
+        .await
+        .map_err(|e| format!("Failed to upsert account {}: {e}", acct.code))?;
+
+        inserted += result.rows_affected();
+    }
+
+    Ok(inserted)
+}
+
+/// Imports a chart-of-accounts template directly against a pool (for tests).
+#[cfg(test)]
+async fn import_coa_template_raw(
+    pool: &sqlx::SqlitePool,
+    jurisdiction: &str,
+    account_type: &str,
+    profile_id: &str,
+) -> Result<u64, String> {
+    let tpl_json = resolve_template(jurisdiction, account_type)?;
+    let tpl: ChartTemplate =
+        serde_json::from_str(tpl_json).map_err(|e| format!("Template parse error: {e}"))?;
+
+    let profile_context = account_type_to_context(account_type);
+    let mut inserted: u64 = 0;
+
+    for acct in &tpl.accounts {
+        let context = if is_shared_account(acct) {
+            "all"
+        } else {
+            profile_context
+        };
+
+        let normal_balance = match acct.account_type.as_str() {
+            "Asset" | "Expense" => "debit",
+            _ => "credit",
+        };
+
+        let result = sqlx::query(
+            r#"
+            INSERT INTO gl_accounts (
+                account_number, account_name, account_type,
+                digital_asset_type, subcategory, description,
+                is_active, is_editable, normal_balance,
+                context, profile_id, hidden
+            )
+            VALUES (?, ?, ?, NULL, ?, ?, ?, 0, ?, ?, ?, 0)
+            ON CONFLICT (profile_id, account_number) DO UPDATE SET
+                account_name = excluded.account_name,
+                account_type = excluded.account_type,
+                subcategory  = excluded.subcategory,
+                description  = excluded.description,
+                context      = excluded.context,
+                normal_balance = excluded.normal_balance,
+                hidden       = 0
+            "#,
+        )
+        .bind(&acct.code)
+        .bind(&acct.name)
+        .bind(&acct.account_type)
+        .bind(&acct.subcategory)
+        .bind(&acct.description)
+        .bind(acct.is_active)
+        .bind(normal_balance)
+        .bind(context)
+        .bind(profile_id)
+        .execute(pool)
+        .await
+        .map_err(|e| format!("Failed to upsert account {}: {e}", acct.code))?;
+
+        inserted += result.rows_affected();
+    }
+
+    Ok(inserted)
 }
 
 // ============================================================================
@@ -5102,6 +5314,187 @@ mod tests {
         assert!(
             price_result.unwrap_err().contains("USD price unavailable"),
             "Error must mention 'USD price unavailable'"
+        );
+    }
+
+    // ========================================================================
+    // GIV-757 — CoA schema + importer tests
+    // ========================================================================
+
+    async fn create_test_profile(pool: &SqlitePool, id: &str) {
+        sqlx::query("INSERT OR IGNORE INTO profiles (id, name) VALUES (?, ?)")
+            .bind(id)
+            .bind(format!("Test Profile {id}"))
+            .execute(pool)
+            .await
+            .expect("Failed to create test profile");
+    }
+
+    #[tokio::test]
+    async fn importer_idempotent_row_count_stable() {
+        let pool = setup_test_db().await;
+        create_test_profile(&pool, "profile-1").await;
+
+        let first =
+            import_coa_template_raw(&pool, "us-gaap", "individual", "profile-1")
+                .await
+                .expect("First import should succeed");
+        assert!(first > 0, "Should insert at least one row");
+
+        let count_after_first: (i64,) = sqlx::query_as(
+            "SELECT COUNT(*) FROM gl_accounts WHERE profile_id = 'profile-1'",
+        )
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+
+        let _second =
+            import_coa_template_raw(&pool, "us-gaap", "individual", "profile-1")
+                .await
+                .expect("Second import should succeed");
+
+        let count_after_second: (i64,) = sqlx::query_as(
+            "SELECT COUNT(*) FROM gl_accounts WHERE profile_id = 'profile-1'",
+        )
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+
+        assert_eq!(
+            count_after_first.0, count_after_second.0,
+            "Row count must be stable after re-import"
+        );
+    }
+
+    #[tokio::test]
+    async fn revenue_type_accepted_income_still_valid() {
+        let pool = setup_test_db().await;
+
+        sqlx::query(
+            "INSERT INTO gl_accounts (account_number, account_name, account_type, normal_balance, context) VALUES ('9901', 'Revenue Test', 'Revenue', 'credit', 'all')",
+        )
+        .execute(&pool)
+        .await
+        .expect("INSERT with account_type='Revenue' should succeed");
+
+        sqlx::query(
+            "INSERT INTO gl_accounts (account_number, account_name, account_type, normal_balance, context) VALUES ('9902', 'Income Test', 'Income', 'credit', 'all')",
+        )
+        .execute(&pool)
+        .await
+        .expect("INSERT with account_type='Income' should still succeed");
+    }
+
+    #[tokio::test]
+    async fn existing_views_return_rows_after_migration() {
+        let pool = setup_test_db().await;
+
+        let seed_count: (i64,) =
+            sqlx::query_as("SELECT COUNT(*) FROM gl_accounts WHERE profile_id IS NULL")
+                .fetch_one(&pool)
+                .await
+                .unwrap();
+        assert_eq!(seed_count.0, 21, "21 seed rows must survive migration");
+
+        let bs_result =
+            sqlx::query_as::<_, (String,)>("SELECT account_type FROM v_balance_sheet LIMIT 1")
+                .fetch_optional(&pool)
+                .await;
+        assert!(bs_result.is_ok(), "v_balance_sheet must be queryable");
+
+        let is_result = sqlx::query_as::<_, (String,)>(
+            "SELECT account_type FROM v_income_statement LIMIT 1",
+        )
+        .fetch_optional(&pool)
+        .await;
+        assert!(is_result.is_ok(), "v_income_statement must be queryable");
+
+        let tb_result = sqlx::query_as::<_, (String,)>(
+            "SELECT account_type FROM v_trial_balance LIMIT 1",
+        )
+        .fetch_optional(&pool)
+        .await;
+        assert!(tb_result.is_ok(), "v_trial_balance must be queryable");
+    }
+
+    #[tokio::test]
+    async fn importer_all_six_templates_succeed() {
+        let pool = setup_test_db().await;
+
+        let combos = [
+            ("us-gaap", "individual"),
+            ("us-gaap", "for-profit-enterprise"),
+            ("us-gaap", "not-for-profit"),
+            ("ifrs", "individual"),
+            ("ifrs", "for-profit-enterprise"),
+            ("ifrs", "not-for-profit"),
+        ];
+
+        for (i, (jur, at)) in combos.iter().enumerate() {
+            let pid = format!("profile-{i}");
+            create_test_profile(&pool, &pid).await;
+            let result = import_coa_template_raw(&pool, jur, at, &pid).await;
+            assert!(
+                result.is_ok(),
+                "Template {jur}/{at} failed: {:?}",
+                result.err()
+            );
+            assert!(result.unwrap() > 0, "Template {jur}/{at} must insert rows");
+        }
+    }
+
+    #[tokio::test]
+    async fn importer_sets_context_correctly() {
+        let pool = setup_test_db().await;
+        create_test_profile(&pool, "ctx-test").await;
+
+        import_coa_template_raw(&pool, "us-gaap", "individual", "ctx-test")
+            .await
+            .unwrap();
+
+        let individual_count: (i64,) = sqlx::query_as(
+            "SELECT COUNT(*) FROM gl_accounts WHERE profile_id = 'ctx-test' AND context = 'individual'",
+        )
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+
+        let all_count: (i64,) = sqlx::query_as(
+            "SELECT COUNT(*) FROM gl_accounts WHERE profile_id = 'ctx-test' AND context = 'all'",
+        )
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+
+        assert!(
+            individual_count.0 > 0,
+            "Some accounts should have context='individual'"
+        );
+        assert!(
+            all_count.0 > 0,
+            "DeFi/crypto accounts should have context='all'"
+        );
+    }
+
+    #[tokio::test]
+    async fn importer_marks_template_rows_not_editable() {
+        let pool = setup_test_db().await;
+        create_test_profile(&pool, "edit-test").await;
+
+        import_coa_template_raw(&pool, "us-gaap", "not-for-profit", "edit-test")
+            .await
+            .unwrap();
+
+        let editable_count: (i64,) = sqlx::query_as(
+            "SELECT COUNT(*) FROM gl_accounts WHERE profile_id = 'edit-test' AND is_editable = 1",
+        )
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+
+        assert_eq!(
+            editable_count.0, 0,
+            "All template-seeded rows must have is_editable = 0"
         );
     }
 }
