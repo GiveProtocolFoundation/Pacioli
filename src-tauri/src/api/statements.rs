@@ -1613,4 +1613,205 @@ mod tests {
         assert!(statements.trial_balance.is_balanced);
         assert_eq!(statements.trial_balance.total_debits_minor, 65500);
     }
+
+    // ========================================================================
+    // Statement of Activities — pure-logic unit tests
+    // ========================================================================
+
+    /// Helper: creates an SoaExpenseRow for testing.
+    fn expense_row(
+        account_number: &str,
+        account_name: &str,
+        fc: Option<&str>,
+        subcategory: Option<&str>,
+        debit: i64,
+        credit: i64,
+    ) -> SoaExpenseRow {
+        SoaExpenseRow {
+            account_number: account_number.to_string(),
+            account_name: account_name.to_string(),
+            functional_classification: fc.map(|s| s.to_string()),
+            subcategory: subcategory.map(|s| s.to_string()),
+            total_debit_minor: debit,
+            total_credit_minor: credit,
+        }
+    }
+
+    #[test]
+    fn test_resolve_explicit_classification_takes_priority() {
+        let r = expense_row("5010", "Payroll", Some("fundraising"), Some("Program Services"), 10000, 0);
+        assert_eq!(resolve_expense_classification(&r), "fundraising");
+    }
+
+    #[test]
+    fn test_resolve_subcategory_fallback_program_services() {
+        let r = expense_row("5010", "Payroll", None, Some("Program Services"), 10000, 0);
+        assert_eq!(resolve_expense_classification(&r), "program_services");
+    }
+
+    #[test]
+    fn test_resolve_subcategory_fallback_management_general() {
+        let r = expense_row("6010", "Accounting", None, Some("Management & General"), 5000, 0);
+        assert_eq!(resolve_expense_classification(&r), "management_general");
+    }
+
+    #[test]
+    fn test_resolve_subcategory_fallback_defi_expenses() {
+        let r = expense_row("6500", "DeFi Fees", None, Some("DeFi Expenses"), 3000, 0);
+        assert_eq!(resolve_expense_classification(&r), "management_general");
+    }
+
+    #[test]
+    fn test_resolve_subcategory_fallback_fundraising() {
+        let r = expense_row("7010", "Events", None, Some("Fundraising"), 8000, 0);
+        assert_eq!(resolve_expense_classification(&r), "fundraising");
+    }
+
+    #[test]
+    fn test_resolve_no_classification_no_subcategory_is_unclassified() {
+        let r = expense_row("5999", "Misc Expense", None, None, 2000, 0);
+        assert_eq!(resolve_expense_classification(&r), "unclassified");
+    }
+
+    #[test]
+    fn test_is_restricted_revenue_by_code() {
+        assert!(is_restricted_revenue("4010", "Grants - Restricted"));
+        assert!(is_restricted_revenue("4360", "Crypto - Restricted"));
+        assert!(is_restricted_revenue("4910", "Other - Restricted"));
+    }
+
+    #[test]
+    fn test_is_restricted_revenue_by_name_suffix() {
+        assert!(is_restricted_revenue("9999", "Custom Revenue - Restricted"));
+    }
+
+    #[test]
+    fn test_is_not_restricted_revenue() {
+        assert!(!is_restricted_revenue("4000", "Grants - Unrestricted"));
+        assert!(!is_restricted_revenue("4200", "Realized Gain"));
+    }
+
+    #[test]
+    fn test_release_from_restriction_code_is_4980() {
+        assert_eq!(RELEASE_FROM_RESTRICTION_CODE, "4980");
+    }
+
+    #[test]
+    fn test_build_soa_expense_section_aggregates() {
+        let rows = vec![
+            expense_row("5010", "Payroll", Some("program_services"), None, 10000, 0),
+            expense_row("5020", "Supplies", Some("program_services"), None, 5000, 0),
+        ];
+        let section = build_soa_expense_section("Program Services", &rows);
+        assert_eq!(section.items.len(), 2);
+        assert_eq!(section.subtotal_minor, 15000);
+    }
+
+    #[test]
+    fn test_build_soa_expense_section_excludes_zero_net() {
+        let rows = vec![
+            expense_row("5010", "Payroll", Some("program_services"), None, 5000, 5000),
+        ];
+        let section = build_soa_expense_section("Program Services", &rows);
+        assert_eq!(section.items.len(), 0);
+        assert_eq!(section.subtotal_minor, 0);
+    }
+
+    /// Inserts a GL account for testing, returns its row id.
+    async fn insert_test_account(
+        pool: &sqlx::SqlitePool,
+        number: &str,
+        name: &str,
+        acct_type: &str,
+        normal_balance: &str,
+        subcategory: Option<&str>,
+    ) -> i64 {
+        let result = sqlx::query(
+            "INSERT INTO gl_accounts (account_number, account_name, account_type, normal_balance, is_editable, description, subcategory) VALUES (?, ?, ?, ?, 1, 'Test account', ?)",
+        )
+        .bind(number)
+        .bind(name)
+        .bind(acct_type)
+        .bind(normal_balance)
+        .bind(subcategory)
+        .execute(pool)
+        .await
+        .expect("Failed to insert test account");
+        result.last_insert_rowid()
+    }
+
+    #[tokio::test]
+    async fn db_soa_classification_routing_and_fallback() {
+        let pool = setup_test_db().await;
+
+        let cash = account_id(&pool, "1000").await;
+        let expense_id = insert_test_account(
+            &pool, "5010", "Payroll & Benefits", "Expense", "debit", Some("Program Services"),
+        ).await;
+
+        // Entry 1: explicit classification = program_services
+        let e1 = create_draft_with_lines(&pool, "SOA-01", "2026-02-10", expense_id, cash, 10000).await;
+        sqlx::query("UPDATE journal_entry_lines SET functional_classification = 'program_services' WHERE journal_entry_id = ? AND gl_account_id = ?")
+            .bind(e1).bind(expense_id).execute(&pool).await.unwrap();
+        approve_and_post(&pool, e1).await;
+
+        // Entry 2: no classification — should fall back to subcategory "Program Services"
+        let e2 = create_draft_with_lines(&pool, "SOA-02", "2026-02-15", expense_id, cash, 5000).await;
+        approve_and_post(&pool, e2).await;
+
+        let soa = build_statement_of_activities(&pool, "2026-02-01", "2026-02-28").await
+            .expect("SOA should build");
+
+        assert!(soa.expenses_program.subtotal_minor > 0, "Classified expense should route to Program Services");
+        assert_eq!(soa.total_expenses_minor, 15000);
+        assert_eq!(soa.change_in_net_assets, -15000);
+    }
+
+    #[tokio::test]
+    async fn db_soa_revenue_restriction_split() {
+        let pool = setup_test_db().await;
+
+        let cash = account_id(&pool, "1000").await;
+        let unrestricted_rev = account_id(&pool, "4000").await;
+        let _restricted_id = insert_test_account(
+            &pool, "4010", "Grants - Restricted", "Income", "credit", None,
+        ).await;
+        let restricted_rev = account_id(&pool, "4010").await;
+
+        // Unrestricted revenue
+        let e1 = create_draft_with_lines(&pool, "SOA-R1", "2026-02-10", cash, unrestricted_rev, 20000).await;
+        approve_and_post(&pool, e1).await;
+
+        // Restricted revenue
+        let e2 = create_draft_with_lines(&pool, "SOA-R2", "2026-02-15", cash, restricted_rev, 8000).await;
+        approve_and_post(&pool, e2).await;
+
+        let soa = build_statement_of_activities(&pool, "2026-02-01", "2026-02-28").await
+            .expect("SOA should build");
+
+        assert_eq!(soa.total_revenue_without_minor, 20000);
+        assert_eq!(soa.total_revenue_with_minor, 8000);
+        assert_eq!(soa.total_revenue_minor, 28000);
+    }
+
+    #[tokio::test]
+    async fn db_soa_release_from_restriction_4980() {
+        let pool = setup_test_db().await;
+
+        let cash = account_id(&pool, "1000").await;
+        let _release_id = insert_test_account(
+            &pool, "4980", "Net Assets Released from Restrictions", "Income", "credit", None,
+        ).await;
+        let release_acct = account_id(&pool, "4980").await;
+
+        let e1 = create_draft_with_lines(&pool, "SOA-RL", "2026-02-10", cash, release_acct, 3000).await;
+        approve_and_post(&pool, e1).await;
+
+        let soa = build_statement_of_activities(&pool, "2026-02-01", "2026-02-28").await
+            .expect("SOA should build");
+
+        assert_eq!(soa.released_from_restrictions.len(), 1);
+        assert_eq!(soa.released_from_restrictions[0].account_number, "4980");
+        assert_eq!(soa.released_from_restrictions[0].balance_minor, 3000);
+    }
 }

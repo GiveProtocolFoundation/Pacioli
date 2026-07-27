@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { invoke } from '@tauri-apps/api/core'
 import { save } from '@tauri-apps/plugin-dialog'
 import { FileText, Download, AlertTriangle } from 'lucide-react'
@@ -7,6 +8,7 @@ import {
   formatStatementDate,
   defaultPeriodDates,
 } from './statementUtils'
+import { useAuth } from '../../contexts/AuthContext'
 
 interface SoaLineItem {
   accountNumber: string
@@ -175,7 +177,16 @@ const ExpenseSectionBlock: React.FC<{
   )
 }
 
+/** Statement of Activities report page — NGO-only. Redirects SME profiles. */
 const StatementOfActivities: React.FC = () => {
+  const { accountType } = useAuth()
+  const isNgo = accountType === 'not-for-profit'
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (!isNgo) navigate('/reports', { replace: true })
+  }, [isNgo, navigate])
+
   const defaults = useMemo(() => defaultPeriodDates(), [])
   const [startDate, setStartDate] = useState(defaults.startDate)
   const [endDate, setEndDate] = useState(defaults.endDate)
@@ -184,6 +195,7 @@ const StatementOfActivities: React.FC = () => {
   const [data, setData] = useState<StatementOfActivitiesReport | null>(null)
 
   const fetchData = useCallback(async () => {
+    if (!isNgo) return
     setLoading(true)
     setError(null)
     try {
@@ -197,7 +209,7 @@ const StatementOfActivities: React.FC = () => {
     } finally {
       setLoading(false)
     }
-  }, [startDate, endDate])
+  }, [startDate, endDate, isNgo])
 
   useEffect(() => {
     fetchData()
@@ -219,7 +231,10 @@ const StatementOfActivities: React.FC = () => {
     }
   }, [startDate, endDate])
 
+  if (!isNgo) return null
+
   return (
+    // skipcq: JS-0415 — report table requires nested sections
     <div className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>

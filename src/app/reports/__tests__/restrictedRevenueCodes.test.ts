@@ -24,7 +24,9 @@ describe('NGO restricted revenue codes vs template', () => {
 
   it('every RESTRICTED_REVENUE_CODES account name ends with "- Restricted"', () => {
     for (const code of RESTRICTED_REVENUE_CODES) {
-      const acct = revenueAccounts.find(a => a.code === code)!
+      const acct = revenueAccounts.find(a => a.code === code)
+      expect(acct, `code ${code} not found in template`).toBeDefined()
+      if (!acct) continue
       expect(
         acct.name.endsWith('- Restricted'),
         `${code} "${acct.name}" does not end with "- Restricted"`
