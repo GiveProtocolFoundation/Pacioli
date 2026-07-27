@@ -322,12 +322,12 @@ const ChartOfAccounts: React.FC = () => {
       a => a.context === 'all' || a.context === userContext
     )
     if (searchQuery) {
-      const q = searchQuery.toLowerCase()
+      const query = searchQuery.toLowerCase()
       filtered = filtered.filter(
         a =>
-          a.accountNumber.toLowerCase().includes(q) ||
-          a.accountName.toLowerCase().includes(q) ||
-          a.description?.toLowerCase().includes(q)
+          a.accountNumber.toLowerCase().includes(query) ||
+          a.accountName.toLowerCase().includes(query) ||
+          a.description?.toLowerCase().includes(query)
       )
     }
     return filtered
