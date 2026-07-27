@@ -1,18 +1,10 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { invoke } from '@tauri-apps/api/core'
-import {
-  Plus,
-  Search,
-  ChevronDown,
-  ChevronRight,
-  Scale,
-} from 'lucide-react'
+import { Plus, Search, ChevronDown, ChevronRight, Scale } from 'lucide-react'
 import type { GLAccount } from '../../types/database'
 import { persistence } from '../../services/persistence'
 
-function accountTypeToContext(
-  accountType: string | null
-): string {
+function accountTypeToContext(accountType: string | null): string {
   switch (accountType) {
     case 'individual':
       return 'individual'
@@ -35,8 +27,7 @@ const accountTypeColors: Record<string, string> = {
     'text-purple-700 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/20',
   Income:
     'text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20',
-  Expense:
-    'text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-900/20',
+  Expense: 'text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-900/20',
 }
 
 interface AccountGroupProps {
@@ -53,8 +44,7 @@ const AccountGroup: React.FC<AccountGroupProps> = ({
   expanded,
   onToggle,
 }) => {
-  const colorClass =
-    accountTypeColors[typeName] ?? 'text-gray-700 bg-gray-50'
+  const colorClass = accountTypeColors[typeName] ?? 'text-gray-700 bg-gray-50'
 
   return (
     <div className="border border-[rgba(95,227,192,0.15)] rounded-lg overflow-hidden">
@@ -249,9 +239,7 @@ const AddAccountForm: React.FC<AddAccountFormProps> = ({
           <select
             value={parentAccountId}
             onChange={e =>
-              setParentAccountId(
-                e.target.value ? parseInt(e.target.value) : ''
-              )
+              setParentAccountId(e.target.value ? parseInt(e.target.value) : '')
             }
             className="w-full px-3 py-1.5 rounded border border-[rgba(95,227,192,0.15)] bg-white dark:bg-[#0C141B] text-sm text-[#11202B] dark:text-[#EAF3F2]"
           >
@@ -302,9 +290,7 @@ const ChartOfAccounts: React.FC = () => {
   const [accounts, setAccounts] = useState<GLAccount[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
-  const [expandedTypes, setExpandedTypes] = useState<string[]>(
-    accountTypeOrder
-  )
+  const [expandedTypes, setExpandedTypes] = useState<string[]>(accountTypeOrder)
   const [showAddForm, setShowAddForm] = useState(false)
   const [userContext, setUserContext] = useState<string>('all')
 

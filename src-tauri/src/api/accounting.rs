@@ -464,13 +464,12 @@ pub async fn hide_profile_template_accounts(
     state: State<'_, DatabaseState>,
     profile_id: String,
 ) -> Result<u64, String> {
-    let result = sqlx::query(
-        "UPDATE gl_accounts SET hidden = 1 WHERE profile_id = ? AND is_editable = 0",
-    )
-    .bind(&profile_id)
-    .execute(&state.pool)
-    .await
-    .map_err(|e| format!("Failed to hide template accounts: {e}"))?;
+    let result =
+        sqlx::query("UPDATE gl_accounts SET hidden = 1 WHERE profile_id = ? AND is_editable = 0")
+            .bind(&profile_id)
+            .execute(&state.pool)
+            .await
+            .map_err(|e| format!("Failed to hide template accounts: {e}"))?;
 
     Ok(result.rows_affected())
 }
