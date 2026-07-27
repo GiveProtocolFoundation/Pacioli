@@ -1639,7 +1639,14 @@ mod tests {
 
     #[test]
     fn test_resolve_explicit_classification_takes_priority() {
-        let r = expense_row("5010", "Payroll", Some("fundraising"), Some("Program Services"), 10000, 0);
+        let r = expense_row(
+            "5010",
+            "Payroll",
+            Some("fundraising"),
+            Some("Program Services"),
+            10000,
+            0,
+        );
         assert_eq!(resolve_expense_classification(&r), "fundraising");
     }
 
@@ -1651,7 +1658,14 @@ mod tests {
 
     #[test]
     fn test_resolve_subcategory_fallback_management_general() {
-        let r = expense_row("6010", "Accounting", None, Some("Management & General"), 5000, 0);
+        let r = expense_row(
+            "6010",
+            "Accounting",
+            None,
+            Some("Management & General"),
+            5000,
+            0,
+        );
         assert_eq!(resolve_expense_classification(&r), "management_general");
     }
 
@@ -1709,9 +1723,14 @@ mod tests {
 
     #[test]
     fn test_build_soa_expense_section_excludes_zero_net() {
-        let rows = vec![
-            expense_row("5010", "Payroll", Some("program_services"), None, 5000, 5000),
-        ];
+        let rows = vec![expense_row(
+            "5010",
+            "Payroll",
+            Some("program_services"),
+            None,
+            5000,
+            5000,
+        )];
         let section = build_soa_expense_section("Program Services", &rows);
         assert_eq!(section.items.len(), 0);
         assert_eq!(section.subtotal_minor, 0);
@@ -1746,23 +1765,35 @@ mod tests {
 
         let cash = account_id(&pool, "1000").await;
         let expense_id = insert_test_account(
-            &pool, "5010", "Payroll & Benefits", "Expense", "debit", Some("Program Services"),
-        ).await;
+            &pool,
+            "5010",
+            "Payroll & Benefits",
+            "Expense",
+            "debit",
+            Some("Program Services"),
+        )
+        .await;
 
         // Entry 1: explicit classification = program_services
-        let e1 = create_draft_with_lines(&pool, "SOA-01", "2026-02-10", expense_id, cash, 10000).await;
+        let e1 =
+            create_draft_with_lines(&pool, "SOA-01", "2026-02-10", expense_id, cash, 10000).await;
         sqlx::query("UPDATE journal_entry_lines SET functional_classification = 'program_services' WHERE journal_entry_id = ? AND gl_account_id = ?")
             .bind(e1).bind(expense_id).execute(&pool).await.unwrap();
         approve_and_post(&pool, e1).await;
 
         // Entry 2: no classification — should fall back to subcategory "Program Services"
-        let e2 = create_draft_with_lines(&pool, "SOA-02", "2026-02-15", expense_id, cash, 5000).await;
+        let e2 =
+            create_draft_with_lines(&pool, "SOA-02", "2026-02-15", expense_id, cash, 5000).await;
         approve_and_post(&pool, e2).await;
 
-        let soa = build_statement_of_activities(&pool, "2026-02-01", "2026-02-28").await
+        let soa = build_statement_of_activities(&pool, "2026-02-01", "2026-02-28")
+            .await
             .expect("SOA should build");
 
-        assert!(soa.expenses_program.subtotal_minor > 0, "Classified expense should route to Program Services");
+        assert!(
+            soa.expenses_program.subtotal_minor > 0,
+            "Classified expense should route to Program Services"
+        );
         assert_eq!(soa.total_expenses_minor, 15000);
         assert_eq!(soa.change_in_net_assets, -15000);
     }
@@ -1774,19 +1805,29 @@ mod tests {
         let cash = account_id(&pool, "1000").await;
         let unrestricted_rev = account_id(&pool, "4000").await;
         let _restricted_id = insert_test_account(
-            &pool, "4010", "Grants - Restricted", "Income", "credit", None,
-        ).await;
+            &pool,
+            "4010",
+            "Grants - Restricted",
+            "Income",
+            "credit",
+            None,
+        )
+        .await;
         let restricted_rev = account_id(&pool, "4010").await;
 
         // Unrestricted revenue
-        let e1 = create_draft_with_lines(&pool, "SOA-R1", "2026-02-10", cash, unrestricted_rev, 20000).await;
+        let e1 =
+            create_draft_with_lines(&pool, "SOA-R1", "2026-02-10", cash, unrestricted_rev, 20000)
+                .await;
         approve_and_post(&pool, e1).await;
 
         // Restricted revenue
-        let e2 = create_draft_with_lines(&pool, "SOA-R2", "2026-02-15", cash, restricted_rev, 8000).await;
+        let e2 = create_draft_with_lines(&pool, "SOA-R2", "2026-02-15", cash, restricted_rev, 8000)
+            .await;
         approve_and_post(&pool, e2).await;
 
-        let soa = build_statement_of_activities(&pool, "2026-02-01", "2026-02-28").await
+        let soa = build_statement_of_activities(&pool, "2026-02-01", "2026-02-28")
+            .await
             .expect("SOA should build");
 
         assert_eq!(soa.total_revenue_without_minor, 20000);
@@ -1800,14 +1841,22 @@ mod tests {
 
         let cash = account_id(&pool, "1000").await;
         let _release_id = insert_test_account(
-            &pool, "4980", "Net Assets Released from Restrictions", "Income", "credit", None,
-        ).await;
+            &pool,
+            "4980",
+            "Net Assets Released from Restrictions",
+            "Income",
+            "credit",
+            None,
+        )
+        .await;
         let release_acct = account_id(&pool, "4980").await;
 
-        let e1 = create_draft_with_lines(&pool, "SOA-RL", "2026-02-10", cash, release_acct, 3000).await;
+        let e1 =
+            create_draft_with_lines(&pool, "SOA-RL", "2026-02-10", cash, release_acct, 3000).await;
         approve_and_post(&pool, e1).await;
 
-        let soa = build_statement_of_activities(&pool, "2026-02-01", "2026-02-28").await
+        let soa = build_statement_of_activities(&pool, "2026-02-01", "2026-02-28")
+            .await
             .expect("SOA should build");
 
         assert_eq!(soa.released_from_restrictions.len(), 1);

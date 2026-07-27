@@ -20,7 +20,9 @@ describe('functional-classification picker gating', () => {
   })
 
   it('hides picker for SME profile + Expense account', () => {
-    expect(isPickerVisible('small-medium-enterprise', AccountType.Expense)).toBe(false)
+    expect(
+      isPickerVisible('small-medium-enterprise', AccountType.Expense)
+    ).toBe(false)
   })
 
   it('hides picker for individual profile + Expense account', () => {

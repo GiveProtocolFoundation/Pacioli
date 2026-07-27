@@ -363,8 +363,7 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
                           line.glAccountId !== ''
                             ? accounts.find(a => a.id === line.glAccountId)
                             : undefined
-                        const isExpense =
-                          acct?.accountType === 'Expense'
+                        const isExpense = acct?.accountType === 'Expense'
                         if (!isExpense) return null
                         return (
                           <select
