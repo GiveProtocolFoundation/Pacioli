@@ -444,17 +444,35 @@ impl PostedEntry {
 // Chart of Accounts Commands
 // ============================================================================
 
-/// Returns all active GL accounts ordered by account number.
+/// Returns all active, non-hidden GL accounts ordered by account number.
 #[tauri::command]
 pub async fn get_chart_of_accounts(
     state: State<'_, DatabaseState>,
 ) -> Result<Vec<GlAccount>, String> {
     sqlx::query_as::<_, GlAccount>(
-        "SELECT * FROM gl_accounts WHERE is_active = 1 ORDER BY account_number",
+        "SELECT * FROM gl_accounts WHERE is_active = 1 AND hidden = 0 ORDER BY account_number",
     )
     .fetch_all(&state.pool)
     .await
     .map_err(|e| e.to_string())
+}
+
+/// Hides all template-seeded accounts for a given profile (sets `hidden = 1`
+/// on rows where `is_editable = 0`). User-added accounts are untouched.
+#[tauri::command]
+pub async fn hide_profile_template_accounts(
+    state: State<'_, DatabaseState>,
+    profile_id: String,
+) -> Result<u64, String> {
+    let result = sqlx::query(
+        "UPDATE gl_accounts SET hidden = 1 WHERE profile_id = ? AND is_editable = 0",
+    )
+    .bind(&profile_id)
+    .execute(&state.pool)
+    .await
+    .map_err(|e| format!("Failed to hide template accounts: {e}"))?;
+
+    Ok(result.rows_affected())
 }
 
 /// Creates a new GL account and returns it.

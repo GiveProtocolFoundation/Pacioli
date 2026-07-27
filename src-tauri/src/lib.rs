@@ -488,7 +488,8 @@ pub fn run() {
             api::rules::delete_classification_rule,
             api::rules::install_starter_rules,
             // Chart-of-accounts template importer (GIV-757)
-            api::accounting::import_chart_of_accounts_template
+            api::accounting::import_chart_of_accounts_template,
+            api::accounting::hide_profile_template_accounts
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

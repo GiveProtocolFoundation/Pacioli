@@ -1,4 +1,5 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
+import { invoke } from '@tauri-apps/api/core'
 import {
   Building2,
   Calendar,
@@ -7,10 +8,13 @@ import {
   X,
   Upload,
   AlertCircle,
+  AlertTriangle,
   Radio,
 } from 'lucide-react'
 import { useTheme } from '../../contexts/ThemeContext'
 import { useOrganization } from '../../contexts/OrganizationContext'
+import { useProfile } from '../../contexts/ProfileContext'
+import { persistence } from '../../services/persistence'
 import { StorageService } from '../../services/database/storageService'
 
 interface OrganizationSettings {
@@ -684,12 +688,86 @@ const BlockchainSyncSection: React.FC = () => {
   )
 }
 
+/** Confirmation dialog for changing the organization type */
+const ChangeOrgTypeDialog: React.FC<{
+  newType: OrganizationSettings['organizationType']
+  onConfirm: () => void
+  onCancel: () => void
+  isProcessing: boolean
+  error: string | null
+}> = ({ newType, onConfirm, onCancel, isProcessing, error }) => {
+  const typeLabel =
+    newType === 'not-for-profit'
+      ? 'Not-for-Profit'
+      : newType === 'for-profit-enterprise'
+        ? 'For-Profit Enterprise'
+        : 'Individual'
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-[#F7FAFA] dark:bg-[#0C141B] rounded-xl shadow-2xl max-w-lg w-full p-6 border border-[rgba(95,227,192,0.15)]">
+        <div className="flex items-center gap-3 mb-4">
+          <AlertTriangle className="w-6 h-6 text-amber-500 flex-shrink-0" />
+          <h3 className="text-lg font-semibold text-[#11202B] dark:text-[#EAF3F2]">
+            Change Organization Type
+          </h3>
+        </div>
+
+        <p className="text-sm text-[#294050] dark:text-[#9FB4BE] mb-3">
+          You are about to switch to <strong>{typeLabel}</strong>. Here is what
+          will happen:
+        </p>
+
+        <ul className="text-sm text-[#294050] dark:text-[#9FB4BE] space-y-2 mb-4 list-disc list-inside">
+          <li>
+            The chart of accounts presentation will change to match the new
+            organization type.
+          </li>
+          <li>
+            Historical journal entries remain intact but may be reclassified in
+            reports.
+          </li>
+          <li>Any accounts you added manually will be preserved.</li>
+          <li>
+            Template-seeded accounts from the previous type will be hidden (not
+            deleted).
+          </li>
+        </ul>
+
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-800 dark:text-red-300">
+            {error}
+          </div>
+        )}
+
+        <div className="flex justify-end gap-3">
+          <button
+            onClick={onCancel}
+            disabled={isProcessing}
+            className="px-4 py-2 text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] bg-[#F7FAFA] dark:bg-[#11202B] border border-[rgba(95,227,192,0.15)] rounded-lg hover:bg-[#EAF3F2] dark:hover:bg-[#16242F] disabled:opacity-50"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={isProcessing}
+            className="px-4 py-2 text-sm font-medium text-white bg-[#294050] rounded-lg hover:bg-[#1E2F3C] disabled:opacity-50"
+          >
+            {isProcessing ? 'Updating...' : 'Confirm Change'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 /** General settings page with organization info, fiscal year, regional, and language configuration */
 const GeneralSettings: React.FC<GeneralSettingsProps> = ({
   userType = 'organization',
 }) => {
   const { theme: currentTheme, setTheme } = useTheme()
   const { organizationLogo, setOrganizationLogo } = useOrganization()
+  const { currentProfile } = useProfile()
 
   const [organizationSettings, setOrganizationSettings] =
     useState<OrganizationSettings>({
@@ -720,16 +798,88 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({
 
   const [hasChanges, setHasChanges] = useState(false)
 
+  // Entity-type change dialog state
+  const [pendingOrgType, setPendingOrgType] =
+    useState<OrganizationSettings['organizationType'] | null>(null)
+  const [orgTypeChanging, setOrgTypeChanging] = useState(false)
+  const [orgTypeError, setOrgTypeError] = useState<string | null>(null)
+  const [jurisdiction, setJurisdiction] = useState<string>('us-gaap')
+
+  useEffect(() => {
+    persistence.getSetting('jurisdiction').then(val => {
+      if (val) setJurisdiction(val)
+    })
+    persistence.getSetting('accountType').then(val => {
+      if (
+        val === 'not-for-profit' ||
+        val === 'for-profit-enterprise' ||
+        val === 'individual'
+      ) {
+        setOrganizationSettings(prev => ({
+          ...prev,
+          organizationType: val,
+        }))
+      }
+    })
+  }, [])
+
   const handleOrganizationChange = useCallback(
     <K extends keyof OrganizationSettings>(
       key: K,
       value: OrganizationSettings[K]
     ) => {
+      if (key === 'organizationType') {
+        const newType = value as OrganizationSettings['organizationType']
+        setPendingOrgType(newType)
+        setOrgTypeError(null)
+        return
+      }
       setOrganizationSettings(prev => ({ ...prev, [key]: value }))
       setHasChanges(true)
     },
     []
   )
+
+  const handleOrgTypeConfirm = useCallback(async () => {
+    if (!pendingOrgType) return
+    setOrgTypeChanging(true)
+    setOrgTypeError(null)
+    try {
+      const profileId = currentProfile?.id ?? 'default'
+
+      await invoke('hide_profile_template_accounts', { profileId })
+
+      await invoke('import_chart_of_accounts_template', {
+        input: {
+          jurisdiction,
+          accountType: pendingOrgType,
+          profileId,
+        },
+      })
+
+      await persistence.setSetting('accountType', pendingOrgType)
+
+      setOrganizationSettings(prev => ({
+        ...prev,
+        organizationType: pendingOrgType,
+      }))
+      setPendingOrgType(null)
+    } catch (err) {
+      const message =
+        typeof err === 'string'
+          ? err
+          : 'Failed to update organization type'
+      setOrgTypeError(message)
+      console.error('[GeneralSettings] Org type change failed:', err)
+    } finally {
+      setOrgTypeChanging(false)
+    }
+  }, [pendingOrgType, currentProfile, jurisdiction])
+
+  const handleOrgTypeCancel = useCallback(() => {
+    setPendingOrgType(null)
+    setOrgTypeError(null)
+  }, [])
 
   const handleSystemChange = useCallback(
     <K extends keyof SystemSettings>(key: K, value: SystemSettings[K]) => {
@@ -779,6 +929,17 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({
 
   return (
     <div className="p-6">
+      {/* Organization Type Change Dialog */}
+      {pendingOrgType && (
+        <ChangeOrgTypeDialog
+          newType={pendingOrgType}
+          onConfirm={handleOrgTypeConfirm}
+          onCancel={handleOrgTypeCancel}
+          isProcessing={orgTypeChanging}
+          error={orgTypeError}
+        />
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>

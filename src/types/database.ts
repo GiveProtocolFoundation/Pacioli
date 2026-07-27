@@ -13,6 +13,7 @@ export enum AccountType {
   Liability = 'Liability',
   Equity = 'Equity',
   Income = 'Income',
+  Revenue = 'Revenue',
   Expense = 'Expense',
 }
 
@@ -102,6 +103,9 @@ export interface GLAccount {
   isActive: boolean
   isEditable: boolean
   normalBalance: NormalBalance
+  context: string
+  profileId?: string
+  hidden: number
   createdAt: Date
   updatedAt: Date
 }

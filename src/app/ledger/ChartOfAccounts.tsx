@@ -8,6 +8,22 @@ import {
   Scale,
 } from 'lucide-react'
 import type { GLAccount } from '../../types/database'
+import { persistence } from '../../services/persistence'
+
+function accountTypeToContext(
+  accountType: string | null
+): string {
+  switch (accountType) {
+    case 'individual':
+      return 'individual'
+    case 'for-profit-enterprise':
+      return 'sme'
+    case 'not-for-profit':
+      return 'ngo'
+    default:
+      return 'all'
+  }
+}
 
 const accountTypeOrder = ['Asset', 'Liability', 'Equity', 'Income', 'Expense']
 
@@ -290,6 +306,13 @@ const ChartOfAccounts: React.FC = () => {
     accountTypeOrder
   )
   const [showAddForm, setShowAddForm] = useState(false)
+  const [userContext, setUserContext] = useState<string>('all')
+
+  useEffect(() => {
+    persistence.getSetting('accountType').then(val => {
+      setUserContext(accountTypeToContext(val))
+    })
+  }, [])
 
   const fetchAccounts = useCallback(async () => {
     setLoading(true)
@@ -308,15 +331,20 @@ const ChartOfAccounts: React.FC = () => {
   }, [fetchAccounts])
 
   const filteredAccounts = useMemo(() => {
-    if (!searchQuery) return accounts
-    const q = searchQuery.toLowerCase()
-    return accounts.filter(
-      a =>
-        a.accountNumber.toLowerCase().includes(q) ||
-        a.accountName.toLowerCase().includes(q) ||
-        a.description?.toLowerCase().includes(q)
+    let filtered = accounts.filter(
+      a => a.context === 'all' || a.context === userContext
     )
-  }, [accounts, searchQuery])
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase()
+      filtered = filtered.filter(
+        a =>
+          a.accountNumber.toLowerCase().includes(q) ||
+          a.accountName.toLowerCase().includes(q) ||
+          a.description?.toLowerCase().includes(q)
+      )
+    }
+    return filtered
+  }, [accounts, searchQuery, userContext])
 
   const grouped = useMemo(() => {
     const groups: Record<string, GLAccount[]> = {}
