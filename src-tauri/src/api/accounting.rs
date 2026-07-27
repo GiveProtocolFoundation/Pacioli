@@ -168,6 +168,9 @@ pub struct JournalEntryLine {
     /// Asset identifier: 'USD' for fiat, 'token:<id>' for tokens,
     /// NULL for measurement lines (gains/losses).
     pub asset_id: Option<String>,
+    /// NGO functional classification: program_services, management_general, or fundraising.
+    /// NULL for non-NGO profiles or non-expense lines.
+    pub functional_classification: Option<String>,
 }
 
 /// Shared SELECT for decoding [`JournalEntryLine`] rows.
@@ -176,7 +179,7 @@ pub struct JournalEntryLine {
 /// (NUMERIC affinity), so SQLite stores whole-dollar REAL values as
 /// INTEGER — and sqlx refuses to decode an INTEGER storage class into
 /// `f64`. CAST both back to REAL so every stored value decodes.
-const SELECT_JOURNAL_ENTRY_LINES: &str = "SELECT id, journal_entry_id, gl_account_id, token_id, CAST(debit_amount AS REAL) AS debit_amount, CAST(credit_amount AS REAL) AS credit_amount, description, line_number, created_at, debit_minor, credit_minor, quantity, asset_id FROM journal_entry_lines WHERE journal_entry_id = ? ORDER BY line_number";
+const SELECT_JOURNAL_ENTRY_LINES: &str = "SELECT id, journal_entry_id, gl_account_id, token_id, CAST(debit_amount AS REAL) AS debit_amount, CAST(credit_amount AS REAL) AS credit_amount, description, line_number, created_at, debit_minor, credit_minor, quantity, asset_id, functional_classification FROM journal_entry_lines WHERE journal_entry_id = ? ORDER BY line_number";
 
 /// A journal entry with its lines, returned to the frontend.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -208,6 +211,8 @@ pub struct JournalEntryLineInput {
     pub asset_id: Option<String>,
     /// Optional memo for this line.
     pub description: Option<String>,
+    /// NGO functional classification: program_services, management_general, or fundraising.
+    pub functional_classification: Option<String>,
 }
 
 /// Input for creating a new journal entry with lines.
@@ -805,9 +810,10 @@ pub async fn create_journal_entry(
                 debit_amount, credit_amount,
                 debit_minor, credit_minor,
                 quantity, asset_id,
-                description, line_number
+                description, line_number,
+                functional_classification
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             "#,
         )
         .bind(entry_id)
@@ -821,6 +827,7 @@ pub async fn create_journal_entry(
         .bind(&line.asset_id)
         .bind(&line.description)
         .bind(i as i64 + 1)
+        .bind(&line.functional_classification)
         .execute(&mut *tx)
         .await
         .map_err(|e| e.to_string())?;
@@ -1077,7 +1084,7 @@ pub(crate) async fn void_journal_entry_impl(
     let rev_entry_id = rev_result.last_insert_rowid();
 
     // Insert reversed lines: swap debit/credit (both minor and legacy float),
-    // preserve quantity and asset_id
+    // preserve quantity, asset_id, and functional_classification
     for (i, line) in original_lines.iter().enumerate() {
         sqlx::query(
             r#"
@@ -1086,9 +1093,10 @@ pub(crate) async fn void_journal_entry_impl(
                 debit_amount, credit_amount,
                 debit_minor, credit_minor,
                 quantity, asset_id,
-                description, line_number
+                description, line_number,
+                functional_classification
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             "#,
         )
         .bind(rev_entry_id)
@@ -1102,6 +1110,7 @@ pub(crate) async fn void_journal_entry_impl(
         .bind(&line.asset_id) // preserve asset_id
         .bind(&line.description)
         .bind(i as i64 + 1)
+        .bind(&line.functional_classification)
         .execute(&mut *tx)
         .await
         .map_err(|e| e.to_string())?;
@@ -1272,9 +1281,10 @@ pub async fn update_journal_entry(
                 debit_amount, credit_amount,
                 debit_minor, credit_minor,
                 quantity, asset_id,
-                description, line_number
+                description, line_number,
+                functional_classification
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             "#,
         )
         .bind(id)
@@ -1288,6 +1298,7 @@ pub async fn update_journal_entry(
         .bind(&line.asset_id)
         .bind(&line.description)
         .bind(i as i64 + 1)
+        .bind(&line.functional_classification)
         .execute(&mut *tx)
         .await
         .map_err(|e| e.to_string())?;
@@ -1371,6 +1382,7 @@ async fn classify_transfer_lines(
                 quantity: qty_str.clone(),
                 asset_id: Some(asset_id.to_string()),
                 description: Some("Intra-entity transfer in — own wallet".to_string()),
+                functional_classification: None,
             });
             lines.push(JournalEntryLineInput {
                 gl_account_id: crypto_assets_id,
@@ -1380,6 +1392,7 @@ async fn classify_transfer_lines(
                 quantity: qty_str.clone(),
                 asset_id: Some(asset_id.to_string()),
                 description: Some("Intra-entity transfer out — own wallet".to_string()),
+                functional_classification: None,
             });
         }
         Ok((
@@ -1400,6 +1413,7 @@ async fn classify_transfer_lines(
                 quantity: qty_str.clone(),
                 asset_id: Some(asset_id.to_string()),
                 description: Some("Transfer received".to_string()),
+                functional_classification: None,
             });
             lines.push(JournalEntryLineInput {
                 gl_account_id: income_id,
@@ -1409,6 +1423,7 @@ async fn classify_transfer_lines(
                 quantity: qty_str.clone(),
                 asset_id: Some(asset_id.to_string()),
                 description: Some("Uncategorized income — review and reclassify".to_string()),
+                functional_classification: None,
             });
         }
         Ok((
@@ -1468,7 +1483,8 @@ async fn apply_matched_rule(
             quantity: q_str.clone(),
             asset_id: Some(ctx.asset_id.clone()),
             description: dr_desc,
-        });
+                functional_classification: None,
+            });
         lines.push(JournalEntryLineInput {
             gl_account_id: credit_id,
             token_id: None,
@@ -1477,7 +1493,8 @@ async fn apply_matched_rule(
             quantity: q_str.clone(),
             asset_id: Some(ctx.asset_id.clone()),
             description: cr_desc,
-        });
+                functional_classification: None,
+            });
     }
 
     let je_desc = if rule.je_description.is_empty() {
@@ -1525,7 +1542,8 @@ async fn apply_fallback_heuristics(
                     quantity: ctx.qty_str.clone(),
                     asset_id: Some(ctx.asset_id.clone()),
                     description: Some("Staking reward received".to_string()),
-                });
+                functional_classification: None,
+            });
                 lines.push(JournalEntryLineInput {
                     gl_account_id: accts.staking_income_id,
                     token_id: None,
@@ -1534,7 +1552,8 @@ async fn apply_fallback_heuristics(
                     quantity: ctx.qty_str.clone(),
                     asset_id: Some(ctx.asset_id.clone()),
                     description: Some("Staking reward income".to_string()),
-                });
+                functional_classification: None,
+            });
             }
             format!("Staking reward on {}", tx.chain_id)
         }
@@ -1562,7 +1581,8 @@ async fn apply_fallback_heuristics(
                     quantity: ctx.fee_qty_str.clone(),
                     asset_id: Some(ctx.asset_id.clone()),
                     description: Some("Network/gas fee".to_string()),
-                });
+                functional_classification: None,
+            });
                 lines.push(JournalEntryLineInput {
                     gl_account_id: accts.crypto_assets_id,
                     token_id: None,
@@ -1571,7 +1591,8 @@ async fn apply_fallback_heuristics(
                     quantity: ctx.fee_qty_str.clone(),
                     asset_id: Some(ctx.asset_id.clone()),
                     description: Some("Fee paid from crypto assets".to_string()),
-                });
+                functional_classification: None,
+            });
             }
             format!(
                 "{} on {} ({})",
@@ -1711,7 +1732,8 @@ pub async fn auto_classify_transaction(
             quantity: None,
             asset_id: Some("USD".to_string()),
             description: Some("Placeholder — update amounts".to_string()),
-        });
+                functional_classification: None,
+            });
         lines.push(JournalEntryLineInput {
             gl_account_id: income_id,
             token_id: None,
@@ -1720,7 +1742,8 @@ pub async fn auto_classify_transaction(
             quantity: None,
             asset_id: Some("USD".to_string()),
             description: Some("Placeholder — update amounts".to_string()),
-        });
+                functional_classification: None,
+            });
     }
 
     let entry_date = chrono::DateTime::from_timestamp(tx.timestamp, 0).map_or_else(

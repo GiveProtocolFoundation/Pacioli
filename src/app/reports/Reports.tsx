@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   FileText,
@@ -20,7 +20,9 @@ import {
   Settings,
   Plus,
   Inbox,
+  ClipboardList,
 } from 'lucide-react'
+import { useAuth } from '../../contexts/AuthContext'
 
 /**
  * Formats an ISO date string into a human-readable format.
@@ -330,18 +332,36 @@ const reportRoutes: Record<string, string> = {
   'balance-sheet': '/reports/balance-sheet',
   'income-statement': '/reports/income-statement',
   'trial-balance': '/reports/trial-balance',
+  'statement-of-activities': '/reports/statement-of-activities',
+}
+
+const soaReport: Report = {
+  id: 'statement-of-activities',
+  name: 'Statement of Activities',
+  description:
+    'NGO revenue by donor restriction and expenses by functional classification',
+  category: 'financial',
+  icon: ClipboardList,
+  favorite: true,
 }
 
 /** Main reports page with search, category filtering, and recent run history */
 const Reports: React.FC = () => {
   const navigate = useNavigate()
+  const { accountType } = useAuth()
+  const isNgo = accountType === 'not-for-profit'
   const [selectedCategory, setSelectedCategory] = useState<
     ReportCategory | 'all'
   >('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false)
 
-  const filteredReports = reports.filter(report => {
+  const allReports = useMemo(
+    () => (isNgo ? [...reports, soaReport] : reports),
+    [isNgo]
+  )
+
+  const filteredReports = allReports.filter(report => {
     const matchesCategory =
       selectedCategory === 'all' || report.category === selectedCategory
     const matchesSearch =
@@ -352,7 +372,7 @@ const Reports: React.FC = () => {
     return matchesCategory && matchesSearch && matchesFavorite
   })
 
-  const favoriteReports = reports.filter(r => r.favorite)
+  const favoriteReports = allReports.filter(r => r.favorite)
 
   const handleSearchChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -386,7 +406,7 @@ const Reports: React.FC = () => {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <StatCard
                 label="Total Reports"
-                value={reports.length}
+                value={allReports.length}
                 Icon={FileText}
               />
               <StatCard

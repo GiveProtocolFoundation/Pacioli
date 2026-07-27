@@ -826,6 +826,339 @@ pub async fn export_trial_balance_csv(
     Ok(())
 }
 
+// ============================================================================
+// Statement of Activities (NGO) — Types, Query, Builder, Commands
+// ============================================================================
+
+/// A line item in the Statement of Activities, with functional classification.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SoaLineItem {
+    pub account_number: String,
+    pub account_name: String,
+    pub balance_minor: i64,
+}
+
+/// A classified expense section for the Statement of Activities.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SoaExpenseSection {
+    pub label: String,
+    pub items: Vec<SoaLineItem>,
+    pub subtotal_minor: i64,
+}
+
+/// Statement of Activities report for NGO profiles.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct StatementOfActivitiesReport {
+    pub start_date: String,
+    pub end_date: String,
+    pub revenue_without_restrictions: Vec<SoaLineItem>,
+    pub revenue_with_restrictions: Vec<SoaLineItem>,
+    pub released_from_restrictions: Vec<SoaLineItem>,
+    pub total_revenue_without_minor: i64,
+    pub total_revenue_with_minor: i64,
+    pub total_revenue_minor: i64,
+    pub expenses_program: SoaExpenseSection,
+    pub expenses_management: SoaExpenseSection,
+    pub expenses_fundraising: SoaExpenseSection,
+    pub expenses_unclassified: SoaExpenseSection,
+    pub total_expenses_minor: i64,
+    pub change_in_net_assets: i64,
+}
+
+/// Raw row from the SOA expense query, grouping by account + classification.
+#[derive(Debug, Clone, FromRow)]
+struct SoaExpenseRow {
+    account_number: String,
+    account_name: String,
+    functional_classification: Option<String>,
+    subcategory: Option<String>,
+    total_debit_minor: i64,
+    total_credit_minor: i64,
+}
+
+/// Revenue codes that represent With Donor Restriction revenue.
+const RESTRICTED_REVENUE_CODES: &[&str] = &["4010", "4360", "4910"];
+
+/// Account code for the release-from-restriction reclassification line.
+const RELEASE_FROM_RESTRICTION_CODE: &str = "4980";
+
+fn is_restricted_revenue(account_number: &str, account_name: &str) -> bool {
+    RESTRICTED_REVENUE_CODES.contains(&account_number)
+        || account_name.ends_with("- Restricted")
+}
+
+async fn query_soa_expenses(
+    pool: &sqlx::SqlitePool,
+    start_date: &str,
+    end_date: &str,
+) -> Result<Vec<SoaExpenseRow>, String> {
+    sqlx::query_as::<_, SoaExpenseRow>(
+        r#"
+        SELECT
+            ga.account_number,
+            ga.account_name,
+            jel.functional_classification,
+            ga.subcategory,
+            COALESCE(SUM(jel.debit_minor), 0) AS total_debit_minor,
+            COALESCE(SUM(jel.credit_minor), 0) AS total_credit_minor
+        FROM journal_entry_lines jel
+        INNER JOIN journal_entries je ON je.id = jel.journal_entry_id
+        INNER JOIN gl_accounts ga ON ga.id = jel.gl_account_id
+        WHERE je.is_posted = 1
+            AND ga.account_type = 'Expense'
+            AND DATE(je.entry_date) >= DATE(?)
+            AND DATE(je.entry_date) <= DATE(?)
+        GROUP BY ga.id, ga.account_number, ga.account_name, ga.subcategory, jel.functional_classification
+        HAVING COALESCE(SUM(jel.debit_minor), 0) != 0
+            OR COALESCE(SUM(jel.credit_minor), 0) != 0
+        ORDER BY ga.account_number
+        "#,
+    )
+    .bind(start_date)
+    .bind(end_date)
+    .fetch_all(pool)
+    .await
+    .map_err(|e| e.to_string())
+}
+
+fn resolve_expense_classification(row: &SoaExpenseRow) -> &str {
+    if let Some(ref fc) = row.functional_classification {
+        return fc.as_str();
+    }
+    match row.subcategory.as_deref() {
+        Some("Management & General") | Some("DeFi Expenses") => "management_general",
+        Some("Fundraising") => "fundraising",
+        Some("Program Services") => "program_services",
+        _ => "unclassified",
+    }
+}
+
+fn build_soa_expense_section(label: &str, rows: &[SoaExpenseRow]) -> SoaExpenseSection {
+    let items: Vec<SoaLineItem> = rows
+        .iter()
+        .map(|r| SoaLineItem {
+            account_number: r.account_number.clone(),
+            account_name: r.account_name.clone(),
+            balance_minor: r.total_debit_minor - r.total_credit_minor,
+        })
+        .filter(|i| i.balance_minor != 0)
+        .collect();
+    let subtotal_minor: i64 = items.iter().map(|i| i.balance_minor).sum();
+    SoaExpenseSection {
+        label: label.to_string(),
+        items,
+        subtotal_minor,
+    }
+}
+
+async fn build_statement_of_activities(
+    pool: &sqlx::SqlitePool,
+    start_date: &str,
+    end_date: &str,
+) -> Result<StatementOfActivitiesReport, String> {
+    let revenue_rows = query_account_activity(pool, Some(start_date), end_date).await?;
+    let expense_rows = query_soa_expenses(pool, start_date, end_date).await?;
+
+    let mut rev_without: Vec<SoaLineItem> = Vec::new();
+    let mut rev_with: Vec<SoaLineItem> = Vec::new();
+    let mut rev_released: Vec<SoaLineItem> = Vec::new();
+
+    for r in &revenue_rows {
+        if r.account_type != "Income" {
+            continue;
+        }
+        let balance = r.total_credit_minor - r.total_debit_minor;
+        if balance == 0 {
+            continue;
+        }
+        let item = SoaLineItem {
+            account_number: r.account_number.clone(),
+            account_name: r.account_name.clone(),
+            balance_minor: balance,
+        };
+        if r.account_number == RELEASE_FROM_RESTRICTION_CODE {
+            rev_released.push(item);
+        } else if is_restricted_revenue(&r.account_number, &r.account_name) {
+            rev_with.push(item);
+        } else {
+            rev_without.push(item);
+        }
+    }
+
+    let total_rev_without: i64 = rev_without.iter().map(|i| i.balance_minor).sum();
+    let total_rev_with: i64 = rev_with.iter().map(|i| i.balance_minor).sum();
+    let total_released: i64 = rev_released.iter().map(|i| i.balance_minor).sum();
+    let total_revenue_minor = total_rev_without + total_rev_with + total_released;
+
+    let mut prog_rows: Vec<SoaExpenseRow> = Vec::new();
+    let mut mgmt_rows: Vec<SoaExpenseRow> = Vec::new();
+    let mut fund_rows: Vec<SoaExpenseRow> = Vec::new();
+    let mut uncl_rows: Vec<SoaExpenseRow> = Vec::new();
+
+    for row in expense_rows {
+        match resolve_expense_classification(&row) {
+            "program_services" => prog_rows.push(row),
+            "management_general" => mgmt_rows.push(row),
+            "fundraising" => fund_rows.push(row),
+            _ => uncl_rows.push(row),
+        }
+    }
+
+    let expenses_program = build_soa_expense_section("Program Services", &prog_rows);
+    let expenses_management =
+        build_soa_expense_section("Management & General", &mgmt_rows);
+    let expenses_fundraising = build_soa_expense_section("Fundraising", &fund_rows);
+    let expenses_unclassified = build_soa_expense_section("Unclassified", &uncl_rows);
+
+    let total_expenses_minor = expenses_program.subtotal_minor
+        + expenses_management.subtotal_minor
+        + expenses_fundraising.subtotal_minor
+        + expenses_unclassified.subtotal_minor;
+
+    let change_in_net_assets = total_revenue_minor - total_expenses_minor;
+
+    Ok(StatementOfActivitiesReport {
+        start_date: start_date.to_string(),
+        end_date: end_date.to_string(),
+        revenue_without_restrictions: rev_without,
+        revenue_with_restrictions: rev_with,
+        released_from_restrictions: rev_released,
+        total_revenue_without_minor: total_rev_without,
+        total_revenue_with_minor: total_rev_with,
+        total_revenue_minor,
+        expenses_program,
+        expenses_management,
+        expenses_fundraising,
+        expenses_unclassified,
+        total_expenses_minor,
+        change_in_net_assets,
+    })
+}
+
+#[tauri::command]
+pub async fn get_statement_of_activities(
+    state: State<'_, DatabaseState>,
+    params: StatementParams,
+) -> Result<StatementOfActivitiesReport, String> {
+    build_statement_of_activities(&state.pool, &params.start_date, &params.end_date).await
+}
+
+#[tauri::command]
+pub async fn export_statement_of_activities_csv(
+    state: State<'_, DatabaseState>,
+    params: StatementParams,
+    path: String,
+) -> Result<(), String> {
+    let soa =
+        build_statement_of_activities(&state.pool, &params.start_date, &params.end_date).await?;
+
+    let mut writer = Writer::from_path(&path).map_err(|e| e.to_string())?;
+
+    writer
+        .write_record(["Section", "Account #", "Account Name", "Amount"])
+        .map_err(|e| e.to_string())?;
+
+    for item in &soa.revenue_without_restrictions {
+        writer
+            .write_record([
+                "Revenue - Without Donor Restrictions",
+                &item.account_number,
+                &item.account_name,
+                &format_minor(item.balance_minor),
+            ])
+            .map_err(|e| e.to_string())?;
+    }
+    writer
+        .write_record([
+            "",
+            "",
+            "Total Without Restrictions",
+            &format_minor(soa.total_revenue_without_minor),
+        ])
+        .map_err(|e| e.to_string())?;
+
+    for item in &soa.revenue_with_restrictions {
+        writer
+            .write_record([
+                "Revenue - With Donor Restrictions",
+                &item.account_number,
+                &item.account_name,
+                &format_minor(item.balance_minor),
+            ])
+            .map_err(|e| e.to_string())?;
+    }
+    writer
+        .write_record([
+            "",
+            "",
+            "Total With Restrictions",
+            &format_minor(soa.total_revenue_with_minor),
+        ])
+        .map_err(|e| e.to_string())?;
+
+    for item in &soa.released_from_restrictions {
+        writer
+            .write_record([
+                "Released from Restrictions",
+                &item.account_number,
+                &item.account_name,
+                &format_minor(item.balance_minor),
+            ])
+            .map_err(|e| e.to_string())?;
+    }
+
+    writer
+        .write_record(["", "", "Total Revenue", &format_minor(soa.total_revenue_minor)])
+        .map_err(|e| e.to_string())?;
+
+    let sections = [
+        ("Program Services", &soa.expenses_program),
+        ("Management & General", &soa.expenses_management),
+        ("Fundraising", &soa.expenses_fundraising),
+        ("Unclassified", &soa.expenses_unclassified),
+    ];
+
+    for (label, section) in &sections {
+        for item in &section.items {
+            writer
+                .write_record([
+                    &format!("Expenses - {}", label),
+                    &item.account_number,
+                    &item.account_name,
+                    &format_minor(item.balance_minor),
+                ])
+                .map_err(|e| e.to_string())?;
+        }
+        writer
+            .write_record([
+                "",
+                "",
+                &format!("Total {}", label),
+                &format_minor(section.subtotal_minor),
+            ])
+            .map_err(|e| e.to_string())?;
+    }
+
+    writer
+        .write_record(["", "", "Total Expenses", &format_minor(soa.total_expenses_minor)])
+        .map_err(|e| e.to_string())?;
+
+    writer
+        .write_record([
+            "",
+            "",
+            "Change in Net Assets",
+            &format_minor(soa.change_in_net_assets),
+        ])
+        .map_err(|e| e.to_string())?;
+
+    writer.flush().map_err(|e| e.to_string())?;
+    Ok(())
+}
+
 /// Formats minor units (cents) as a dollar string (e.g. 12345 -> "123.45").
 fn format_minor(minor: i64) -> String {
     let sign = if minor < 0 { "-" } else { "" };
