@@ -17,21 +17,37 @@ use super::persistence::DatabaseState;
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
 #[serde(rename_all = "camelCase")]
 pub struct GlAccount {
+    /// Primary key.
     pub id: i64,
+    /// Unique account number (e.g. "1000").
     pub account_number: String,
+    /// Human-readable account name.
     pub account_name: String,
+    /// Account type: Asset, Liability, Equity, Income, Revenue, or Expense.
     pub account_type: String,
+    /// Optional parent account for sub-account hierarchy.
     pub parent_account_id: Option<i64>,
+    /// Optional digital-asset sub-classification.
     pub digital_asset_type: Option<String>,
+    /// Optional subcategory within the account type.
     pub subcategory: Option<String>,
+    /// Optional free-text description.
     pub description: Option<String>,
+    /// Whether the account is active.
     pub is_active: bool,
+    /// Whether the user may edit this account.
     pub is_editable: bool,
+    /// Debit or Credit.
     pub normal_balance: Option<String>,
+    /// Profile scope: all, individual, sme, or ngo.
     pub context: String,
+    /// Owning profile, or None for global seed accounts.
     pub profile_id: Option<String>,
+    /// 1 to hide from default views.
     pub hidden: i64,
+    /// Row creation timestamp.
     pub created_at: Option<NaiveDateTime>,
+    /// Row last-update timestamp.
     pub updated_at: Option<NaiveDateTime>,
 }
 
@@ -2488,6 +2504,7 @@ struct TemplateAccount {
     #[serde(rename = "isActive")]
     is_active: bool,
     #[serde(default)]
+    #[allow(dead_code)]
     editable: bool,
 }
 
@@ -2551,11 +2568,15 @@ fn is_shared_account(acct: &TemplateAccount) -> bool {
     }
 }
 
+/// Input payload for the `import_chart_of_accounts_template` command.
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ImportCoaInput {
+    /// Accounting jurisdiction (e.g. "us-gaap", "ifrs").
     pub jurisdiction: String,
+    /// Entity type: "individual", "for-profit-enterprise", or "not-for-profit".
     pub account_type: String,
+    /// Profile to import the template into.
     pub profile_id: String,
 }
 
