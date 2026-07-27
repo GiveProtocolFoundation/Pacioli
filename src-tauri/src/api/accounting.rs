@@ -2560,12 +2560,7 @@ fn account_type_to_context(account_type: &str) -> &'static str {
 }
 
 fn is_shared_account(acct: &TemplateAccount) -> bool {
-    match acct.subcategory.as_deref() {
-        Some(s) if s.starts_with("Digital") || s.starts_with("DeFi") || s.starts_with("Crypto") => {
-            true
-        }
-        _ => false,
-    }
+    matches!(acct.subcategory.as_deref(), Some(s) if s.starts_with("Digital") || s.starts_with("DeFi") || s.starts_with("Crypto"))
 }
 
 /// Input payload for the `import_chart_of_accounts_template` command.
