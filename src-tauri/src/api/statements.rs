@@ -826,6 +826,380 @@ pub async fn export_trial_balance_csv(
     Ok(())
 }
 
+// ============================================================================
+// Statement of Activities (NGO) — Types, Query, Builder, Commands
+// ============================================================================
+
+/// A line item in the Statement of Activities, with functional classification.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SoaLineItem {
+    /// GL account number (e.g. "6010").
+    pub account_number: String,
+    /// Human-readable GL account name.
+    pub account_name: String,
+    /// Net balance in minor units (positive = debit for expenses, credit for revenue).
+    pub balance_minor: i64,
+}
+
+/// A classified expense section for the Statement of Activities.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SoaExpenseSection {
+    /// Display label for this expense classification (e.g. "Program Services").
+    pub label: String,
+    /// Line items belonging to this functional classification.
+    pub items: Vec<SoaLineItem>,
+    /// Sum of all item balances in minor units.
+    pub subtotal_minor: i64,
+}
+
+/// Statement of Activities report for NGO profiles.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct StatementOfActivitiesReport {
+    /// Report period start date (ISO 8601, e.g. "2025-01-01").
+    pub start_date: String,
+    /// Report period end date (ISO 8601, e.g. "2025-12-31").
+    pub end_date: String,
+    /// Revenue accounts with no donor restrictions.
+    pub revenue_without_restrictions: Vec<SoaLineItem>,
+    /// Revenue accounts with donor restrictions.
+    pub revenue_with_restrictions: Vec<SoaLineItem>,
+    /// Release-from-restriction reclassification entries (account 4980).
+    pub released_from_restrictions: Vec<SoaLineItem>,
+    /// Total without-restriction revenue in minor units.
+    pub total_revenue_without_minor: i64,
+    /// Total with-restriction revenue in minor units.
+    pub total_revenue_with_minor: i64,
+    /// Combined total revenue (all streams) in minor units.
+    pub total_revenue_minor: i64,
+    /// Expenses classified as Program Services.
+    pub expenses_program: SoaExpenseSection,
+    /// Expenses classified as Management & General.
+    pub expenses_management: SoaExpenseSection,
+    /// Expenses classified as Fundraising.
+    pub expenses_fundraising: SoaExpenseSection,
+    /// Expenses with no functional classification.
+    pub expenses_unclassified: SoaExpenseSection,
+    /// Total of all expense sections in minor units.
+    pub total_expenses_minor: i64,
+    /// Change in net assets (total_revenue_minor − total_expenses_minor).
+    pub change_in_net_assets: i64,
+}
+
+/// Raw row from the SOA expense query, grouping by account + classification.
+#[derive(Debug, Clone, FromRow)]
+struct SoaExpenseRow {
+    account_number: String,
+    account_name: String,
+    functional_classification: Option<String>,
+    subcategory: Option<String>,
+    total_debit_minor: i64,
+    total_credit_minor: i64,
+}
+
+/// Revenue codes that represent With Donor Restriction revenue.
+const RESTRICTED_REVENUE_CODES: &[&str] = &["4010", "4360", "4910"];
+
+/// Account code for the release-from-restriction reclassification line.
+const RELEASE_FROM_RESTRICTION_CODE: &str = "4980";
+
+fn is_restricted_revenue(account_number: &str, account_name: &str) -> bool {
+    RESTRICTED_REVENUE_CODES.contains(&account_number) || account_name.ends_with("- Restricted")
+}
+
+async fn query_soa_expenses(
+    pool: &sqlx::SqlitePool,
+    start_date: &str,
+    end_date: &str,
+) -> Result<Vec<SoaExpenseRow>, String> {
+    sqlx::query_as::<_, SoaExpenseRow>(
+        r#"
+        SELECT
+            ga.account_number,
+            ga.account_name,
+            jel.functional_classification,
+            ga.subcategory,
+            COALESCE(SUM(jel.debit_minor), 0) AS total_debit_minor,
+            COALESCE(SUM(jel.credit_minor), 0) AS total_credit_minor
+        FROM journal_entry_lines jel
+        INNER JOIN journal_entries je ON je.id = jel.journal_entry_id
+        INNER JOIN gl_accounts ga ON ga.id = jel.gl_account_id
+        WHERE je.is_posted = 1
+            AND ga.account_type = 'Expense'
+            AND DATE(je.entry_date) >= DATE(?)
+            AND DATE(je.entry_date) <= DATE(?)
+        GROUP BY ga.id, ga.account_number, ga.account_name, ga.subcategory, jel.functional_classification
+        HAVING COALESCE(SUM(jel.debit_minor), 0) != 0
+            OR COALESCE(SUM(jel.credit_minor), 0) != 0
+        ORDER BY ga.account_number
+        "#,
+    )
+    .bind(start_date)
+    .bind(end_date)
+    .fetch_all(pool)
+    .await
+    .map_err(|e| e.to_string())
+}
+
+/// Resolves the functional classification for an expense row.
+///
+/// POLICY: Explicit line-level `functional_classification` wins if present.
+/// Otherwise the account subcategory maps to a classification:
+///   - "Program Services" → `program_services`
+///   - "Management & General" | "DeFi Expenses" → `management_general`
+///   - "Fundraising" → `fundraising`
+///   - All other / NULL subcategories → `unclassified`
+///
+/// This NULL→subcategory fallback is an accepted deviation from the strict
+/// requirement that all expense lines carry an explicit classification.
+fn resolve_expense_classification(row: &SoaExpenseRow) -> &str {
+    if let Some(ref fc) = row.functional_classification {
+        return fc.as_str();
+    }
+    match row.subcategory.as_deref() {
+        Some("Management & General") | Some("DeFi Expenses") => "management_general",
+        Some("Fundraising") => "fundraising",
+        Some("Program Services") => "program_services",
+        _ => "unclassified",
+    }
+}
+
+fn build_soa_expense_section(label: &str, rows: &[SoaExpenseRow]) -> SoaExpenseSection {
+    let items: Vec<SoaLineItem> = rows
+        .iter()
+        .map(|r| SoaLineItem {
+            account_number: r.account_number.clone(),
+            account_name: r.account_name.clone(),
+            balance_minor: r.total_debit_minor - r.total_credit_minor,
+        })
+        .filter(|i| i.balance_minor != 0)
+        .collect();
+    let subtotal_minor: i64 = items.iter().map(|i| i.balance_minor).sum();
+    SoaExpenseSection {
+        label: label.to_string(),
+        items,
+        subtotal_minor,
+    }
+}
+
+async fn build_statement_of_activities(
+    pool: &sqlx::SqlitePool,
+    start_date: &str,
+    end_date: &str,
+) -> Result<StatementOfActivitiesReport, String> {
+    let revenue_rows = query_account_activity(pool, Some(start_date), end_date).await?;
+    let expense_rows = query_soa_expenses(pool, start_date, end_date).await?;
+
+    let mut rev_without: Vec<SoaLineItem> = Vec::new();
+    let mut rev_with: Vec<SoaLineItem> = Vec::new();
+    let mut rev_released: Vec<SoaLineItem> = Vec::new();
+
+    for r in &revenue_rows {
+        if r.account_type != "Income" {
+            continue;
+        }
+        let balance = r.total_credit_minor - r.total_debit_minor;
+        if balance == 0 {
+            continue;
+        }
+        let item = SoaLineItem {
+            account_number: r.account_number.clone(),
+            account_name: r.account_name.clone(),
+            balance_minor: balance,
+        };
+        if r.account_number == RELEASE_FROM_RESTRICTION_CODE {
+            rev_released.push(item);
+        } else if is_restricted_revenue(&r.account_number, &r.account_name) {
+            rev_with.push(item);
+        } else {
+            rev_without.push(item);
+        }
+    }
+
+    let total_rev_without: i64 = rev_without.iter().map(|i| i.balance_minor).sum();
+    let total_rev_with: i64 = rev_with.iter().map(|i| i.balance_minor).sum();
+    let total_released: i64 = rev_released.iter().map(|i| i.balance_minor).sum();
+    let total_revenue_minor = total_rev_without + total_rev_with + total_released;
+
+    let mut prog_rows: Vec<SoaExpenseRow> = Vec::new();
+    let mut mgmt_rows: Vec<SoaExpenseRow> = Vec::new();
+    let mut fund_rows: Vec<SoaExpenseRow> = Vec::new();
+    let mut uncl_rows: Vec<SoaExpenseRow> = Vec::new();
+
+    for row in expense_rows {
+        match resolve_expense_classification(&row) {
+            "program_services" => prog_rows.push(row),
+            "management_general" => mgmt_rows.push(row),
+            "fundraising" => fund_rows.push(row),
+            _ => uncl_rows.push(row),
+        }
+    }
+
+    let expenses_program = build_soa_expense_section("Program Services", &prog_rows);
+    let expenses_management = build_soa_expense_section("Management & General", &mgmt_rows);
+    let expenses_fundraising = build_soa_expense_section("Fundraising", &fund_rows);
+    let expenses_unclassified = build_soa_expense_section("Unclassified", &uncl_rows);
+
+    let total_expenses_minor = expenses_program.subtotal_minor
+        + expenses_management.subtotal_minor
+        + expenses_fundraising.subtotal_minor
+        + expenses_unclassified.subtotal_minor;
+
+    let change_in_net_assets = total_revenue_minor - total_expenses_minor;
+
+    Ok(StatementOfActivitiesReport {
+        start_date: start_date.to_string(),
+        end_date: end_date.to_string(),
+        revenue_without_restrictions: rev_without,
+        revenue_with_restrictions: rev_with,
+        released_from_restrictions: rev_released,
+        total_revenue_without_minor: total_rev_without,
+        total_revenue_with_minor: total_rev_with,
+        total_revenue_minor,
+        expenses_program,
+        expenses_management,
+        expenses_fundraising,
+        expenses_unclassified,
+        total_expenses_minor,
+        change_in_net_assets,
+    })
+}
+
+/// Tauri command: returns the Statement of Activities report for the given period.
+#[tauri::command]
+pub async fn get_statement_of_activities(
+    state: State<'_, DatabaseState>,
+    params: StatementParams,
+) -> Result<StatementOfActivitiesReport, String> {
+    build_statement_of_activities(&state.pool, &params.start_date, &params.end_date).await
+}
+
+/// Tauri command: exports the Statement of Activities report as a CSV file at `path`.
+#[tauri::command]
+pub async fn export_statement_of_activities_csv(
+    state: State<'_, DatabaseState>,
+    params: StatementParams,
+    path: String,
+) -> Result<(), String> {
+    let soa =
+        build_statement_of_activities(&state.pool, &params.start_date, &params.end_date).await?;
+
+    let mut writer = Writer::from_path(&path).map_err(|e| e.to_string())?;
+
+    writer
+        .write_record(["Section", "Account #", "Account Name", "Amount"])
+        .map_err(|e| e.to_string())?;
+
+    for item in &soa.revenue_without_restrictions {
+        writer
+            .write_record([
+                "Revenue - Without Donor Restrictions",
+                &item.account_number,
+                &item.account_name,
+                &format_minor(item.balance_minor),
+            ])
+            .map_err(|e| e.to_string())?;
+    }
+    writer
+        .write_record([
+            "",
+            "",
+            "Total Without Restrictions",
+            &format_minor(soa.total_revenue_without_minor),
+        ])
+        .map_err(|e| e.to_string())?;
+
+    for item in &soa.revenue_with_restrictions {
+        writer
+            .write_record([
+                "Revenue - With Donor Restrictions",
+                &item.account_number,
+                &item.account_name,
+                &format_minor(item.balance_minor),
+            ])
+            .map_err(|e| e.to_string())?;
+    }
+    writer
+        .write_record([
+            "",
+            "",
+            "Total With Restrictions",
+            &format_minor(soa.total_revenue_with_minor),
+        ])
+        .map_err(|e| e.to_string())?;
+
+    for item in &soa.released_from_restrictions {
+        writer
+            .write_record([
+                "Released from Restrictions",
+                &item.account_number,
+                &item.account_name,
+                &format_minor(item.balance_minor),
+            ])
+            .map_err(|e| e.to_string())?;
+    }
+
+    writer
+        .write_record([
+            "",
+            "",
+            "Total Revenue",
+            &format_minor(soa.total_revenue_minor),
+        ])
+        .map_err(|e| e.to_string())?;
+
+    let sections = [
+        ("Program Services", &soa.expenses_program),
+        ("Management & General", &soa.expenses_management),
+        ("Fundraising", &soa.expenses_fundraising),
+        ("Unclassified", &soa.expenses_unclassified),
+    ];
+
+    for (label, section) in &sections {
+        for item in &section.items {
+            writer
+                .write_record([
+                    &format!("Expenses - {}", label),
+                    &item.account_number,
+                    &item.account_name,
+                    &format_minor(item.balance_minor),
+                ])
+                .map_err(|e| e.to_string())?;
+        }
+        writer
+            .write_record([
+                "",
+                "",
+                &format!("Total {}", label),
+                &format_minor(section.subtotal_minor),
+            ])
+            .map_err(|e| e.to_string())?;
+    }
+
+    writer
+        .write_record([
+            "",
+            "",
+            "Total Expenses",
+            &format_minor(soa.total_expenses_minor),
+        ])
+        .map_err(|e| e.to_string())?;
+
+    writer
+        .write_record([
+            "",
+            "",
+            "Change in Net Assets",
+            &format_minor(soa.change_in_net_assets),
+        ])
+        .map_err(|e| e.to_string())?;
+
+    writer.flush().map_err(|e| e.to_string())?;
+    Ok(())
+}
+
 /// Formats minor units (cents) as a dollar string (e.g. 12345 -> "123.45").
 fn format_minor(minor: i64) -> String {
     let sign = if minor < 0 { "-" } else { "" };
@@ -1271,5 +1645,255 @@ mod tests {
         assert_eq!(statements.income_statement.net_income_minor, 10000);
         assert!(statements.trial_balance.is_balanced);
         assert_eq!(statements.trial_balance.total_debits_minor, 65500);
+    }
+
+    // ========================================================================
+    // Statement of Activities — pure-logic unit tests
+    // ========================================================================
+
+    /// Helper: creates an SoaExpenseRow for testing.
+    fn expense_row(
+        account_number: &str,
+        account_name: &str,
+        fc: Option<&str>,
+        subcategory: Option<&str>,
+        debit: i64,
+        credit: i64,
+    ) -> SoaExpenseRow {
+        SoaExpenseRow {
+            account_number: account_number.to_string(),
+            account_name: account_name.to_string(),
+            functional_classification: fc.map(|s| s.to_string()),
+            subcategory: subcategory.map(|s| s.to_string()),
+            total_debit_minor: debit,
+            total_credit_minor: credit,
+        }
+    }
+
+    #[test]
+    fn test_resolve_explicit_classification_takes_priority() {
+        let r = expense_row(
+            "5010",
+            "Payroll",
+            Some("fundraising"),
+            Some("Program Services"),
+            10000,
+            0,
+        );
+        assert_eq!(resolve_expense_classification(&r), "fundraising");
+    }
+
+    #[test]
+    fn test_resolve_subcategory_fallback_program_services() {
+        let r = expense_row("5010", "Payroll", None, Some("Program Services"), 10000, 0);
+        assert_eq!(resolve_expense_classification(&r), "program_services");
+    }
+
+    #[test]
+    fn test_resolve_subcategory_fallback_management_general() {
+        let r = expense_row(
+            "6010",
+            "Accounting",
+            None,
+            Some("Management & General"),
+            5000,
+            0,
+        );
+        assert_eq!(resolve_expense_classification(&r), "management_general");
+    }
+
+    #[test]
+    fn test_resolve_subcategory_fallback_defi_expenses() {
+        let r = expense_row("6500", "DeFi Fees", None, Some("DeFi Expenses"), 3000, 0);
+        assert_eq!(resolve_expense_classification(&r), "management_general");
+    }
+
+    #[test]
+    fn test_resolve_subcategory_fallback_fundraising() {
+        let r = expense_row("7010", "Events", None, Some("Fundraising"), 8000, 0);
+        assert_eq!(resolve_expense_classification(&r), "fundraising");
+    }
+
+    #[test]
+    fn test_resolve_no_classification_no_subcategory_is_unclassified() {
+        let r = expense_row("5999", "Misc Expense", None, None, 2000, 0);
+        assert_eq!(resolve_expense_classification(&r), "unclassified");
+    }
+
+    #[test]
+    fn test_is_restricted_revenue_by_code() {
+        assert!(is_restricted_revenue("4010", "Grants - Restricted"));
+        assert!(is_restricted_revenue("4360", "Crypto - Restricted"));
+        assert!(is_restricted_revenue("4910", "Other - Restricted"));
+    }
+
+    #[test]
+    fn test_is_restricted_revenue_by_name_suffix() {
+        assert!(is_restricted_revenue("9999", "Custom Revenue - Restricted"));
+    }
+
+    #[test]
+    fn test_is_not_restricted_revenue() {
+        assert!(!is_restricted_revenue("4000", "Grants - Unrestricted"));
+        assert!(!is_restricted_revenue("4200", "Realized Gain"));
+    }
+
+    #[test]
+    fn test_release_from_restriction_code_is_4980() {
+        assert_eq!(RELEASE_FROM_RESTRICTION_CODE, "4980");
+    }
+
+    #[test]
+    fn test_build_soa_expense_section_aggregates() {
+        let rows = vec![
+            expense_row("5010", "Payroll", Some("program_services"), None, 10000, 0),
+            expense_row("5020", "Supplies", Some("program_services"), None, 5000, 0),
+        ];
+        let section = build_soa_expense_section("Program Services", &rows);
+        assert_eq!(section.items.len(), 2);
+        assert_eq!(section.subtotal_minor, 15000);
+    }
+
+    #[test]
+    fn test_build_soa_expense_section_excludes_zero_net() {
+        let rows = vec![expense_row(
+            "5010",
+            "Payroll",
+            Some("program_services"),
+            None,
+            5000,
+            5000,
+        )];
+        let section = build_soa_expense_section("Program Services", &rows);
+        assert_eq!(section.items.len(), 0);
+        assert_eq!(section.subtotal_minor, 0);
+    }
+
+    /// Inserts a GL account for testing, returns its row id.
+    async fn insert_test_account(
+        pool: &sqlx::SqlitePool,
+        number: &str,
+        name: &str,
+        acct_type: &str,
+        normal_balance: &str,
+        subcategory: Option<&str>,
+    ) -> i64 {
+        let result = sqlx::query(
+            "INSERT INTO gl_accounts (account_number, account_name, account_type, normal_balance, is_editable, description, subcategory) VALUES (?, ?, ?, ?, 1, 'Test account', ?)",
+        )
+        .bind(number)
+        .bind(name)
+        .bind(acct_type)
+        .bind(normal_balance)
+        .bind(subcategory)
+        .execute(pool)
+        .await
+        .expect("Failed to insert test account");
+        result.last_insert_rowid()
+    }
+
+    #[tokio::test]
+    async fn db_soa_classification_routing_and_fallback() {
+        let pool = setup_test_db().await;
+
+        let cash = account_id(&pool, "1000").await;
+        let expense_id = insert_test_account(
+            &pool,
+            "5010",
+            "Payroll & Benefits",
+            "Expense",
+            "debit",
+            Some("Program Services"),
+        )
+        .await;
+
+        // Entry 1: explicit classification = program_services
+        let e1 =
+            create_draft_with_lines(&pool, "SOA-01", "2026-02-10", expense_id, cash, 10000).await;
+        sqlx::query("UPDATE journal_entry_lines SET functional_classification = 'program_services' WHERE journal_entry_id = ? AND gl_account_id = ?")
+            .bind(e1).bind(expense_id).execute(&pool).await.unwrap();
+        approve_and_post(&pool, e1).await;
+
+        // Entry 2: no classification — should fall back to subcategory "Program Services"
+        let e2 =
+            create_draft_with_lines(&pool, "SOA-02", "2026-02-15", expense_id, cash, 5000).await;
+        approve_and_post(&pool, e2).await;
+
+        let soa = build_statement_of_activities(&pool, "2026-02-01", "2026-02-28")
+            .await
+            .expect("SOA should build");
+
+        assert!(
+            soa.expenses_program.subtotal_minor > 0,
+            "Classified expense should route to Program Services"
+        );
+        assert_eq!(soa.total_expenses_minor, 15000);
+        assert_eq!(soa.change_in_net_assets, -15000);
+    }
+
+    #[tokio::test]
+    async fn db_soa_revenue_restriction_split() {
+        let pool = setup_test_db().await;
+
+        let cash = account_id(&pool, "1000").await;
+        let unrestricted_rev = account_id(&pool, "4000").await;
+        let _restricted_id = insert_test_account(
+            &pool,
+            "4010",
+            "Grants - Restricted",
+            "Income",
+            "credit",
+            None,
+        )
+        .await;
+        let restricted_rev = account_id(&pool, "4010").await;
+
+        // Unrestricted revenue
+        let e1 =
+            create_draft_with_lines(&pool, "SOA-R1", "2026-02-10", cash, unrestricted_rev, 20000)
+                .await;
+        approve_and_post(&pool, e1).await;
+
+        // Restricted revenue
+        let e2 = create_draft_with_lines(&pool, "SOA-R2", "2026-02-15", cash, restricted_rev, 8000)
+            .await;
+        approve_and_post(&pool, e2).await;
+
+        let soa = build_statement_of_activities(&pool, "2026-02-01", "2026-02-28")
+            .await
+            .expect("SOA should build");
+
+        assert_eq!(soa.total_revenue_without_minor, 20000);
+        assert_eq!(soa.total_revenue_with_minor, 8000);
+        assert_eq!(soa.total_revenue_minor, 28000);
+    }
+
+    #[tokio::test]
+    async fn db_soa_release_from_restriction_4980() {
+        let pool = setup_test_db().await;
+
+        let cash = account_id(&pool, "1000").await;
+        let _release_id = insert_test_account(
+            &pool,
+            "4980",
+            "Net Assets Released from Restrictions",
+            "Income",
+            "credit",
+            None,
+        )
+        .await;
+        let release_acct = account_id(&pool, "4980").await;
+
+        let e1 =
+            create_draft_with_lines(&pool, "SOA-RL", "2026-02-10", cash, release_acct, 3000).await;
+        approve_and_post(&pool, e1).await;
+
+        let soa = build_statement_of_activities(&pool, "2026-02-01", "2026-02-28")
+            .await
+            .expect("SOA should build");
+
+        assert_eq!(soa.released_from_restrictions.len(), 1);
+        assert_eq!(soa.released_from_restrictions[0].account_number, "4980");
+        assert_eq!(soa.released_from_restrictions[0].balance_minor, 3000);
     }
 }
