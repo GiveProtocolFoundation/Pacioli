@@ -5,6 +5,7 @@ import {
   Routes,
   Route,
   Navigate,
+  useLocation,
 } from 'react-router-dom'
 import { ConfigProvider, theme as antdTheme } from 'antd'
 import Navigation from './components/layout/Navigation'
@@ -18,6 +19,7 @@ import { ProfileProvider } from './contexts/ProfileContext'
 import { EntityProvider } from './contexts/EntityContext'
 import { NavBadgeProvider } from './contexts/NavBadgeContext'
 import { AppProvider, useApp } from './contexts/AppContext'
+import { useAuth } from './contexts/AuthContext'
 import { LanguageProvider } from './contexts/LanguageContext'
 import { UnlockScreen } from './components/security'
 import { FirstLaunch } from './components/onboarding'
@@ -164,6 +166,27 @@ const AppWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return children as React.ReactElement
 }
 
+/**
+ * Blocks access to protected routes until onboarding (jurisdiction + account type) is complete.
+ * Auth-adjacent screens (FirstLaunch, lock/unlock) are handled by AppWrapper above this gate.
+ */
+const OnboardingGate: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  const { accountType, isLoading } = useAuth()
+  const { pathname } = useLocation()
+
+  if (isLoading) {
+    return <LoadingFallback />
+  }
+
+  if (accountType === null && pathname !== '/onboarding') {
+    return <Navigate to="/onboarding" replace />
+  }
+
+  return children as React.ReactElement
+}
+
 // Main routes wrapped with navigation
 const MainRoutes: React.FC = () => (
   <Navigation userType="organization">
@@ -256,6 +279,34 @@ const BrandedAntdProvider: React.FC<{ children: React.ReactNode }> = ({
   )
 }
 
+/** Gated routes — onboarding redirect + lazy-loaded page tree. */
+const AppRoutes: React.FC = () => (
+  <OnboardingGate>
+    <Suspense fallback={<LoadingFallback />}>
+      <Routes>
+        <Route path="/onboarding" element={<Onboarding />} />
+        <Route path="/login" element={<Navigate to="/dashboard" replace />} />
+        <Route
+          path="/register"
+          element={<Navigate to="/dashboard" replace />}
+        />
+        <Route path="/*" element={<MainRoutes />} />
+      </Routes>
+    </Suspense>
+  </OnboardingGate>
+)
+
+/** Inner shell: initialization gate, data providers, theming, and routes. */
+const AppContent: React.FC = () => (
+  <AppWrapper>
+    <AppProviders>
+      <BrandedAntdProvider>
+        <AppRoutes />
+      </BrandedAntdProvider>
+    </AppProviders>
+  </AppWrapper>
+)
+
 /**
  * Root application component with routing and provider hierarchy.
  */
@@ -263,31 +314,7 @@ const App: React.FC = () => (
   <Router>
     <LanguageProvider>
       <AppProvider>
-        <AppWrapper>
-          <AppProviders>
-            <BrandedAntdProvider>
-              <Suspense fallback={<LoadingFallback />}>
-                <Routes>
-                  {/* Onboarding for first-time setup */}
-                  <Route path="/onboarding" element={<Onboarding />} />
-
-                  {/* Redirect old auth routes to dashboard for local-only MVP */}
-                  <Route
-                    path="/login"
-                    element={<Navigate to="/dashboard" replace />}
-                  />
-                  <Route
-                    path="/register"
-                    element={<Navigate to="/dashboard" replace />}
-                  />
-
-                  {/* Main routes - no auth required for local-only version */}
-                  <Route path="/*" element={<MainRoutes />} />
-                </Routes>
-              </Suspense>
-            </BrandedAntdProvider>
-          </AppProviders>
-        </AppWrapper>
+        <AppContent />
       </AppProvider>
     </LanguageProvider>
   </Router>
