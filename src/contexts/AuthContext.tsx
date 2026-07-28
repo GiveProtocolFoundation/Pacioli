@@ -99,7 +99,7 @@ interface AuthContextType {
   clearError: () => void
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+const AuthContext = createContext<AuthContextType | undefined>(undefined) // skipcq: JS-W1042
 
 // Session ID storage key
 const SESSION_ID_KEY = 'pacioli_session_id'
