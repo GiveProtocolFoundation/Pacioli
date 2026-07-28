@@ -4,6 +4,7 @@ import { Globe, Building2, User, Check } from 'lucide-react'
 import PacioliBlackLogo from '../../assets/pacioli_logo_black.svg'
 import { GridSelectionButton } from '../../components/GridSelectionButton'
 import { persistence } from '../../services/persistence'
+import { useAuth } from '../../contexts/AuthContext'
 
 type Step = 'jurisdiction' | 'account-type' | 'complete'
 type Jurisdiction = 'us-gaap' | 'ifrs'
@@ -56,6 +57,7 @@ const ProgressConnector: React.FC<ProgressConnectorProps> = ({
 
 const Onboarding: React.FC = () => {
   const navigate = useNavigate()
+  const { completeOnboarding } = useAuth()
   const [currentStep, setCurrentStep] = useState<Step>('jurisdiction')
   const [jurisdiction, setJurisdiction] = useState<Jurisdiction | null>(null)
   const [accountType, setAccountType] = useState<AccountType | null>(null)
@@ -72,19 +74,18 @@ const Onboarding: React.FC = () => {
     if (currentStep === 'jurisdiction' && jurisdiction) {
       setCurrentStep('account-type')
     } else if (currentStep === 'account-type' && accountType) {
-      // Save settings to persistence
       try {
         await persistence.setSetting('accountType', accountType)
         if (jurisdiction) {
           await persistence.setSetting('jurisdiction', jurisdiction)
         }
+        completeOnboarding(accountType)
       } catch (err) {
         console.error('[Onboarding] Failed to save settings:', err)
       }
-      // Navigate to dashboard
       navigate('/dashboard')
     }
-  }, [currentStep, jurisdiction, accountType, navigate])
+  }, [currentStep, jurisdiction, accountType, navigate, completeOnboarding])
 
   const handleBack = useCallback(() => {
     if (currentStep === 'account-type') {
