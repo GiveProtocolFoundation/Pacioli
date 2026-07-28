@@ -7,7 +7,7 @@ import { AccountType } from '../../../types/database'
  */
 function isPickerVisible(
   profileAccountType: string,
-  glAccountType: AccountType | undefined
+  glAccountType?: AccountType
 ): boolean {
   const isNgo = profileAccountType === 'not-for-profit'
   if (!isNgo) return false
@@ -46,7 +46,7 @@ describe('functional-classification picker gating', () => {
   })
 
   it('hides picker when no account is selected', () => {
-    expect(isPickerVisible('not-for-profit', undefined)).toBe(false)
+    expect(isPickerVisible('not-for-profit')).toBe(false)
   })
 
   it('covers all account types — only Expense shows the picker', () => {
@@ -62,20 +62,24 @@ describe('functional-classification picker gating', () => {
 })
 
 describe('SME report route guard', () => {
-  it('NGO profiles see the Statement of Activities', () => {
-    const isNgo = 'not-for-profit' === 'not-for-profit'
-    expect(isNgo).toBe(true)
+  // Mirrors the isNgo guard in StatementOfActivities.tsx — same comparison, testable without DOM.
+  function shouldShowSoa(accountType: string | null | undefined): boolean {
+    return accountType === 'not-for-profit'
+  }
+
+  it('NGO profile is allowed to view Statement of Activities', () => {
+    expect(shouldShowSoa('not-for-profit')).toBe(true)
   })
 
-  it('SME profiles are redirected from Statement of Activities', () => {
-    const profileType: string = 'small-medium-enterprise'
-    const isNgo = profileType === 'not-for-profit'
-    expect(isNgo).toBe(false)
+  it('SME profile is redirected away from Statement of Activities', () => {
+    expect(shouldShowSoa('small-medium-enterprise')).toBe(false)
   })
 
-  it('individual profiles are redirected from Statement of Activities', () => {
-    const profileType: string = 'individual'
-    const isNgo = profileType === 'not-for-profit'
-    expect(isNgo).toBe(false)
+  it('individual profile is redirected away from Statement of Activities', () => {
+    expect(shouldShowSoa('individual')).toBe(false)
+  })
+
+  it('null accountType (unauthenticated) is redirected away', () => {
+    expect(shouldShowSoa(null)).toBe(false)
   })
 })

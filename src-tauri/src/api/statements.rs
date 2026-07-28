@@ -834,8 +834,11 @@ pub async fn export_trial_balance_csv(
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SoaLineItem {
+    /// GL account number (e.g. "6010").
     pub account_number: String,
+    /// Human-readable GL account name.
     pub account_name: String,
+    /// Net balance in minor units (positive = debit for expenses, credit for revenue).
     pub balance_minor: i64,
 }
 
@@ -843,8 +846,11 @@ pub struct SoaLineItem {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SoaExpenseSection {
+    /// Display label for this expense classification (e.g. "Program Services").
     pub label: String,
+    /// Line items belonging to this functional classification.
     pub items: Vec<SoaLineItem>,
+    /// Sum of all item balances in minor units.
     pub subtotal_minor: i64,
 }
 
@@ -852,19 +858,33 @@ pub struct SoaExpenseSection {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct StatementOfActivitiesReport {
+    /// Report period start date (ISO 8601, e.g. "2025-01-01").
     pub start_date: String,
+    /// Report period end date (ISO 8601, e.g. "2025-12-31").
     pub end_date: String,
+    /// Revenue accounts with no donor restrictions.
     pub revenue_without_restrictions: Vec<SoaLineItem>,
+    /// Revenue accounts with donor restrictions.
     pub revenue_with_restrictions: Vec<SoaLineItem>,
+    /// Release-from-restriction reclassification entries (account 4980).
     pub released_from_restrictions: Vec<SoaLineItem>,
+    /// Total without-restriction revenue in minor units.
     pub total_revenue_without_minor: i64,
+    /// Total with-restriction revenue in minor units.
     pub total_revenue_with_minor: i64,
+    /// Combined total revenue (all streams) in minor units.
     pub total_revenue_minor: i64,
+    /// Expenses classified as Program Services.
     pub expenses_program: SoaExpenseSection,
+    /// Expenses classified as Management & General.
     pub expenses_management: SoaExpenseSection,
+    /// Expenses classified as Fundraising.
     pub expenses_fundraising: SoaExpenseSection,
+    /// Expenses with no functional classification.
     pub expenses_unclassified: SoaExpenseSection,
+    /// Total of all expense sections in minor units.
     pub total_expenses_minor: i64,
+    /// Change in net assets (total_revenue_minor − total_expenses_minor).
     pub change_in_net_assets: i64,
 }
 
@@ -923,6 +943,17 @@ async fn query_soa_expenses(
     .map_err(|e| e.to_string())
 }
 
+/// Resolves the functional classification for an expense row.
+///
+/// POLICY: Explicit line-level `functional_classification` wins if present.
+/// Otherwise the account subcategory maps to a classification:
+///   - "Program Services" → `program_services`
+///   - "Management & General" | "DeFi Expenses" → `management_general`
+///   - "Fundraising" → `fundraising`
+///   - All other / NULL subcategories → `unclassified`
+///
+/// This NULL→subcategory fallback is an accepted deviation from the strict
+/// requirement that all expense lines carry an explicit classification.
 fn resolve_expense_classification(row: &SoaExpenseRow) -> &str {
     if let Some(ref fc) = row.functional_classification {
         return fc.as_str();
@@ -1036,6 +1067,7 @@ async fn build_statement_of_activities(
     })
 }
 
+/// Tauri command: returns the Statement of Activities report for the given period.
 #[tauri::command]
 pub async fn get_statement_of_activities(
     state: State<'_, DatabaseState>,
@@ -1044,6 +1076,7 @@ pub async fn get_statement_of_activities(
     build_statement_of_activities(&state.pool, &params.start_date, &params.end_date).await
 }
 
+/// Tauri command: exports the Statement of Activities report as a CSV file at `path`.
 #[tauri::command]
 pub async fn export_statement_of_activities_csv(
     state: State<'_, DatabaseState>,

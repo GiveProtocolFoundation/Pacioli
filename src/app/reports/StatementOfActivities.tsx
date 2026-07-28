@@ -48,6 +48,7 @@ interface PeriodSelectorProps {
   loading: boolean
 }
 
+/** Date-range inputs and Generate button for the statement period. */
 const PeriodSelector: React.FC<PeriodSelectorProps> = ({
   startDate,
   endDate,
@@ -89,6 +90,7 @@ const PeriodSelector: React.FC<PeriodSelectorProps> = ({
   </div>
 )
 
+/** Single account line within a revenue or expense section. */
 const SectionRow: React.FC<{
   item: SoaLineItem
   even: boolean
@@ -110,6 +112,7 @@ const SectionRow: React.FC<{
   </tr>
 )
 
+/** Subtotal or total row, optionally bolded for grand totals. */
 const SubtotalRow: React.FC<{
   label: string
   amount: number
@@ -136,6 +139,7 @@ const SubtotalRow: React.FC<{
   </tr>
 )
 
+/** Full-width section header row (dark background, all-caps label). */
 const SectionHeader: React.FC<{ label: string }> = ({ label }) => (
   <tr className="bg-[#294050]">
     <td
@@ -147,6 +151,7 @@ const SectionHeader: React.FC<{ label: string }> = ({ label }) => (
   </tr>
 )
 
+/** Renders one functional-classification expense group: sub-header, line items, subtotal. */
 const ExpenseSectionBlock: React.FC<{
   section: SoaExpenseSection
   startIdx: number
@@ -234,7 +239,6 @@ const StatementOfActivities: React.FC = () => {
   if (!isNgo) return null
 
   return (
-    // skipcq: JS-0415 — report table requires nested sections
     <div className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
@@ -293,6 +297,7 @@ const StatementOfActivities: React.FC = () => {
       )}
 
       {!loading && data !== null && (
+        // skipcq: JS-0415 — report table requires nested sections
         <div className="border border-[rgba(95,227,192,0.15)] rounded-lg overflow-hidden">
           <table className="min-w-full">
             <thead>
