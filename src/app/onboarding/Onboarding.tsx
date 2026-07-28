@@ -5,6 +5,7 @@ import { Globe, Building2, User, Check } from 'lucide-react'
 import PacioliBlackLogo from '../../assets/pacioli_logo_black.svg'
 import { GridSelectionButton } from '../../components/GridSelectionButton'
 import { persistence } from '../../services/persistence'
+import { useAuth } from '../../contexts/AuthContext'
 import { useProfile } from '../../contexts/ProfileContext'
 
 type Step = 'jurisdiction' | 'account-type' | 'complete'
@@ -58,6 +59,7 @@ const ProgressConnector: React.FC<ProgressConnectorProps> = ({
 
 const Onboarding: React.FC = () => {
   const navigate = useNavigate()
+  const { completeOnboarding } = useAuth()
   const { currentProfile } = useProfile()
   const [currentStep, setCurrentStep] = useState<Step>('jurisdiction')
   const [jurisdiction, setJurisdiction] = useState<Jurisdiction | null>(null)
@@ -88,6 +90,7 @@ const Onboarding: React.FC = () => {
           input: { jurisdiction, accountType, profileId },
         })
 
+        completeOnboarding(accountType)
         navigate('/dashboard')
       } catch (err) {
         const message =
@@ -98,7 +101,14 @@ const Onboarding: React.FC = () => {
         setIsSubmitting(false)
       }
     }
-  }, [currentStep, jurisdiction, accountType, currentProfile, navigate])
+  }, [
+    currentStep,
+    jurisdiction,
+    accountType,
+    currentProfile,
+    navigate,
+    completeOnboarding,
+  ])
 
   const handleBack = useCallback(() => {
     if (currentStep === 'account-type') {
