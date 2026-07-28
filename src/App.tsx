@@ -66,6 +66,9 @@ const IncomeStatementReport = React.lazy(
 const PeriodTrialBalance = React.lazy(
   () => import('./app/reports/PeriodTrialBalance')
 )
+const StatementOfActivities = React.lazy(
+  () => import('./app/reports/StatementOfActivities')
+)
 
 // Loading fallback component
 const LoadingFallback: React.FC = () => (
@@ -203,6 +206,10 @@ const MainRoutes: React.FC = () => (
         element={<IncomeStatementReport />}
       />
       <Route path="/reports/trial-balance" element={<PeriodTrialBalance />} />
+      <Route
+        path="/reports/statement-of-activities"
+        element={<StatementOfActivities />}
+      />
     </Routes>
   </Navigation>
 )

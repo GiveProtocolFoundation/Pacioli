@@ -232,6 +232,8 @@ export interface JournalEntryLine {
   quantity?: string
   /** Asset identifier: 'USD' for fiat, 'token:<id>' for tokens, null for measurement lines. */
   assetId?: string
+  /** NGO functional classification: program_services, management_general, or fundraising. */
+  functionalClassification?: string
 }
 
 // =============================================================================
