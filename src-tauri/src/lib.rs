@@ -464,6 +464,8 @@ pub fn run() {
             api::statements::export_balance_sheet_csv,
             api::statements::export_income_statement_csv,
             api::statements::export_trial_balance_csv,
+            api::statements::get_statement_of_activities,
+            api::statements::export_statement_of_activities_csv,
             // Cost basis engine commands (GIV-689, Phase 7)
             api::cost_basis::acquire_lot,
             api::cost_basis::dispose_lots,
