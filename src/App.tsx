@@ -295,6 +295,17 @@ const AppRoutes: React.FC = () => (
   </OnboardingGate>
 )
 
+/** Inner shell: initialization gate, data providers, theming, and routes. */
+const AppContent: React.FC = () => (
+  <AppWrapper>
+    <AppProviders>
+      <BrandedAntdProvider>
+        <AppRoutes />
+      </BrandedAntdProvider>
+    </AppProviders>
+  </AppWrapper>
+)
+
 /**
  * Root application component with routing and provider hierarchy.
  */
@@ -302,13 +313,7 @@ const App: React.FC = () => (
   <Router>
     <LanguageProvider>
       <AppProvider>
-        <AppWrapper>
-          <AppProviders>
-            <BrandedAntdProvider>
-              <AppRoutes />
-            </BrandedAntdProvider>
-          </AppProviders>
-        </AppWrapper>
+        <AppContent />
       </AppProvider>
     </LanguageProvider>
   </Router>
