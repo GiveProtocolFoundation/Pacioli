@@ -191,6 +191,7 @@ const OnboardingGate: React.FC<{ children: React.ReactNode }> = ({
   return children as React.ReactElement
 }
 
+/** @returns Children on desktop (Tauri), or DesktopRequiredBanner on web builds. */
 const DesktopOnlyRoute: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
@@ -354,6 +355,25 @@ const BrandedAntdProvider: React.FC<{ children: React.ReactNode }> = ({
   )
 }
 
+/** @returns Gated routes with onboarding, lazy loading, and theme. */
+const AppContent: React.FC = () => (
+  <BrandedAntdProvider>
+    <OnboardingGate>
+      <Suspense fallback={<LoadingFallback />}>
+        <Routes>
+          <Route path="/onboarding" element={<Onboarding />} />
+          <Route path="/login" element={<Navigate to="/dashboard" replace />} />
+          <Route
+            path="/register"
+            element={<Navigate to="/dashboard" replace />}
+          />
+          <Route path="/*" element={<MainRoutes />} />
+        </Routes>
+      </Suspense>
+    </OnboardingGate>
+  </BrandedAntdProvider>
+)
+
 /**
  * Root application component with routing and provider hierarchy.
  */
@@ -363,29 +383,7 @@ const App: React.FC = () => (
       <AppProvider>
         <AppWrapper>
           <AppProviders>
-            <BrandedAntdProvider>
-              <OnboardingGate>
-                <Suspense fallback={<LoadingFallback />}>
-                  <Routes>
-                    {/* Onboarding for first-time setup */}
-                    <Route path="/onboarding" element={<Onboarding />} />
-
-                    {/* Redirect old auth routes to dashboard for local-only MVP */}
-                    <Route
-                      path="/login"
-                      element={<Navigate to="/dashboard" replace />}
-                    />
-                    <Route
-                      path="/register"
-                      element={<Navigate to="/dashboard" replace />}
-                    />
-
-                    {/* Main routes - no auth required for local-only version */}
-                    <Route path="/*" element={<MainRoutes />} />
-                  </Routes>
-                </Suspense>
-              </OnboardingGate>
-            </BrandedAntdProvider>
+            <AppContent />
           </AppProviders>
         </AppWrapper>
       </AppProvider>

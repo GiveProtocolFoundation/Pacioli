@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 
 const DOWNLOAD_URL = 'https://pacioli.io'
 
+/** @returns Full-page amber banner directing users to the desktop app for accounting features. */
 const DesktopRequiredBanner: React.FC = () => {
   const navigate = useNavigate()
 

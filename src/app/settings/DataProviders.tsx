@@ -168,6 +168,7 @@ function getLocalStorageStatuses(): ProviderStatus[] {
 
 type KeyMode = 'none' | 'default' | 'turbo'
 
+/** @returns A pill badge showing the current API key mode (none, default, turbo). */
 const TurboModeIndicator: React.FC<{ mode: KeyMode }> = ({ mode }) => {
   const styles: Record<KeyMode, string> = {
     none: 'bg-[#294050]/10 text-[#294050] dark:bg-[#294050]/20 dark:text-[#9FB4BE]',
@@ -216,32 +217,26 @@ const RateLimitBadge: React.FC<{
 
 /** Informational box explaining turbo mode and its benefits */
 const TurboInfoBox: React.FC = () => (
-  <div className="bg-[#5FE3C0]/10 dark:bg-[#5FE3C0]/20 border border-[#5FE3C0]/30 dark:border-[#5FE3C0]/40 rounded-lg p-4 mb-6">
-    <div className="flex items-start gap-3">
-      <Zap className="w-5 h-5 text-[#5FE3C0] flex-shrink-0 mt-0.5" />
-      <div>
-        <h3 className="font-medium text-[#11202B] dark:text-[#EAF3F2] mb-1">
-          Batteries Included, Turbo Optional
-        </h3>
-        <p className="text-sm text-[#294050] dark:text-[#9FB4BE]">
-          Pacioli works out of the box with conservative rate limits. Add your
-          free API keys from block explorers to unlock 5x faster sync speeds.
-          API keys are free to obtain from each provider.
-        </p>
-        <div className="mt-3 flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-[#294050]" />
-            <span className="text-sm text-[#294050] dark:text-[#9FB4BE]">
-              Default: ~1 req/sec
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-[#5FE3C0]" />
-            <span className="text-sm text-[#294050] dark:text-[#9FB4BE]">
-              Turbo: ~5-10 req/sec
-            </span>
-          </div>
-        </div>
+  <div className="bg-[#5FE3C0]/10 dark:bg-[#5FE3C0]/20 border border-[#5FE3C0]/30 dark:border-[#5FE3C0]/40 rounded-lg p-4 mb-6 flex items-start gap-3">
+    <Zap className="w-5 h-5 text-[#5FE3C0] flex-shrink-0 mt-0.5" />
+    <div>
+      <h3 className="font-medium text-[#11202B] dark:text-[#EAF3F2] mb-1">
+        Batteries Included, Turbo Optional
+      </h3>
+      <p className="text-sm text-[#294050] dark:text-[#9FB4BE]">
+        Pacioli works out of the box with conservative rate limits. Add your
+        free API keys from block explorers to unlock 5x faster sync speeds. API
+        keys are free to obtain from each provider.
+      </p>
+      <div className="mt-3 flex items-center gap-4 text-sm text-[#294050] dark:text-[#9FB4BE]">
+        <span className="flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-[#294050] inline-block" />
+          Default: ~1 req/sec
+        </span>
+        <span className="flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-[#5FE3C0] inline-block" />
+          Turbo: ~5-10 req/sec
+        </span>
       </div>
     </div>
   </div>
@@ -568,13 +563,11 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
     <div className="border border-[rgba(95,227,192,0.15)] rounded-lg p-4 hover:border-[rgba(95,227,192,0.3)] transition-colors">
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1">
-          <div className="flex items-center gap-2 mb-1">
-            <h4 className="font-medium text-[#11202B] dark:text-[#EAF3F2]">
-              {config.name}
-            </h4>
-            <TurboModeIndicator mode={keyMode} />
-          </div>
-          <p className="text-sm text-[#294050] dark:text-[#9FB4BE]">
+          <h4 className="font-medium text-[#11202B] dark:text-[#EAF3F2] inline mr-2">
+            {config.name}
+          </h4>
+          <TurboModeIndicator mode={keyMode} />
+          <p className="text-sm text-[#294050] dark:text-[#9FB4BE] mt-1">
             {config.description}
           </p>
           <div className="flex items-center gap-4 mt-2">
@@ -583,14 +576,14 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
               turboLimit={turboLimit}
               isTurbo={isTurbo}
             />
-            <div className="flex items-center gap-1 text-xs text-[#647D8B] dark:text-[#647D8B]">
+            <span className="flex items-center gap-1 text-xs text-[#647D8B] dark:text-[#647D8B]">
               {config.chains.map((chain, i) => (
                 <span key={chain}>
                   {chain}
                   {i < config.chains.length - 1 && ', '}
                 </span>
               ))}
-            </div>
+            </span>
           </div>
         </div>
         <a

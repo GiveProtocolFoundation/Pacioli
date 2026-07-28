@@ -17,12 +17,14 @@ interface ProgressStepProps {
   stepNumber: number
 }
 
+/** @returns A single numbered step indicator with active/completed styling. */
 const ProgressStep: React.FC<ProgressStepProps> = ({
   label,
   isActive,
   isCompleted,
   stepNumber,
 }) => {
+  /** @returns Tailwind class string for the step circle based on state. */
   const getStepClassName = () => {
     if (isActive) return 'bg-[#8b4e52] text-white'
     if (isCompleted) return 'bg-[#2E9A82] text-white'
@@ -45,6 +47,7 @@ interface ProgressConnectorProps {
   isCompleted: boolean
 }
 
+/** @returns A horizontal bar between progress steps that fills when completed. */
 const ProgressConnector: React.FC<ProgressConnectorProps> = ({
   isCompleted,
 }) => (
@@ -55,6 +58,7 @@ const ProgressConnector: React.FC<ProgressConnectorProps> = ({
   </div>
 )
 
+/** @returns Two-step onboarding wizard: jurisdiction selection then account type. */
 const Onboarding: React.FC = () => {
   const navigate = useNavigate()
   const { completeOnboarding } = useAuth()
@@ -120,18 +124,21 @@ const Onboarding: React.FC = () => {
   const isJurisdictionStep = currentStep === 'jurisdiction'
   const isAccountTypeStep = currentStep === 'account-type'
 
+  /** @returns Tailwind class for the back button based on current step. */
   const getBackButtonClassName = () => {
     return isJurisdictionStep
       ? 'text-gray-400 cursor-not-allowed'
       : 'text-gray-700 hover:bg-gray-50'
   }
 
+  /** @returns Tailwind class for the continue button based on selection state. */
   const getContinueButtonClassName = () => {
     return canContinue
       ? 'bg-[#8b4e52] text-white hover:bg-[#7a4248]'
       : 'bg-gray-200 text-gray-400 cursor-not-allowed'
   }
 
+  /** @returns Label text for the continue button. */
   const getContinueButtonText = () => {
     return isAccountTypeStep ? 'Complete Setup' : 'Continue'
   }
@@ -140,19 +147,17 @@ const Onboarding: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-[#fafaf8] to-[#ede8e0] flex items-center justify-center p-4">
       <div className="w-full max-w-4xl">
         {/* Logo and Header */}
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center mb-4">
-            <img
-              src={PacioliBlackLogo}
-              alt="Pacioli"
-              className="h-12 w-auto mix-blend-multiply"
-            />
-            <span className="ml-3 text-2xl font-bold text-gray-900">
-              Pacioli
-            </span>
-          </div>
-          <p className="text-gray-600">Let&apos;s set up your account</p>
-        </div>
+        <header className="text-center mb-8">
+          <img
+            src={PacioliBlackLogo}
+            alt="Pacioli"
+            className="h-12 w-auto mix-blend-multiply inline-block align-middle"
+          />
+          <span className="ml-3 text-2xl font-bold text-gray-900 align-middle">
+            Pacioli
+          </span>
+          <p className="text-gray-600 mt-4">Let&apos;s set up your account</p>
+        </header>
 
         {/* Progress Steps */}
         <div className="mb-8">
