@@ -335,6 +335,7 @@ const reportRoutes: Record<string, string> = {
   'statement-of-activities': '/reports/statement-of-activities',
 }
 
+/** Statement of Activities report card — surfaced only for NGO profiles. */
 const soaReport: Report = {
   id: 'statement-of-activities',
   name: 'Statement of Activities',

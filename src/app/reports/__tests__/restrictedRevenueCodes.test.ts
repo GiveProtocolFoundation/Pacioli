@@ -1,8 +1,36 @@
 import { describe, it, expect } from 'vitest'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import ngoTemplate from '../../../data/chart-of-accounts/us-gaap-not-for-profit.json'
 
-const RESTRICTED_REVENUE_CODES = ['4010', '4360', '4910']
-const RELEASE_FROM_RESTRICTION_CODE = '4980'
+/**
+ * Reads the restricted revenue code constants from the Rust source so the TS
+ * test fails if the two sides drift. The Rust file is the source of truth.
+ */
+function readRustConstants(): {
+  restrictedCodes: string[]
+  releaseCode: string
+} {
+  const rustSrc = readFileSync(
+    resolve(__dirname, '../../../../src-tauri/src/api/statements.rs'),
+    'utf-8'
+  )
+  const codesMatch = rustSrc.match(
+    /RESTRICTED_REVENUE_CODES:\s*&\[&str\]\s*=\s*&\[([^\]]+)\]/
+  )
+  if (!codesMatch) throw new Error('RESTRICTED_REVENUE_CODES not found in statements.rs')
+  const restrictedCodes = codesMatch[1]
+    .split(',')
+    .map(s => s.trim().replace(/"/g, ''))
+    .filter(Boolean)
+
+  const releaseMatch = rustSrc.match(
+    /RELEASE_FROM_RESTRICTION_CODE:\s*&str\s*=\s*"([^"]+)"/
+  )
+  if (!releaseMatch) throw new Error('RELEASE_FROM_RESTRICTION_CODE not found in statements.rs')
+
+  return { restrictedCodes, releaseCode: releaseMatch[1] }
+}
 
 interface TemplateAccount {
   code: string
@@ -12,6 +40,10 @@ interface TemplateAccount {
 }
 
 describe('NGO restricted revenue codes vs template', () => {
+  const {
+    restrictedCodes: RESTRICTED_REVENUE_CODES,
+    releaseCode: RELEASE_FROM_RESTRICTION_CODE,
+  } = readRustConstants()
   const accounts = (ngoTemplate as { accounts: TemplateAccount[] }).accounts
   const revenueAccounts = accounts.filter(a => a.type === 'Income')
 
