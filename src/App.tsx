@@ -23,6 +23,7 @@ import { useAuth } from './contexts/AuthContext'
 import { LanguageProvider } from './contexts/LanguageContext'
 import { UnlockScreen } from './components/security'
 import { FirstLaunch } from './components/onboarding'
+import DesktopRequiredBanner from './components/DesktopRequiredBanner'
 
 // Lazy load route components for code splitting
 const Dashboard = React.lazy(() => import('./app/dashboard/Dashboard'))
@@ -180,10 +181,24 @@ const OnboardingGate: React.FC<{ children: React.ReactNode }> = ({
     return <LoadingFallback />
   }
 
-  if (accountType === null && pathname !== '/onboarding') {
+  if (
+    accountType === null &&
+    pathname !== '/onboarding' &&
+    isTauriAvailable()
+  ) {
     return <Navigate to="/onboarding" replace />
   }
 
+  return children as React.ReactElement
+}
+
+/** @returns Children on desktop (Tauri), or DesktopRequiredBanner on web builds. */
+const DesktopOnlyRoute: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  if (!isTauriAvailable()) {
+    return <DesktopRequiredBanner />
+  }
   return children as React.ReactElement
 }
 
@@ -216,22 +231,93 @@ const MainRoutes: React.FC = () => (
       <Route path="/docs" element={<Docs />} />
       <Route path="/support" element={<Support />} />
       <Route path="/profile" element={<Profile />} />
-      <Route path="/classification" element={<ClassificationQueue />} />
-      <Route path="/classification-rules" element={<ClassificationRules />} />
-      <Route path="/journal-entries" element={<JournalEntries />} />
-      <Route path="/chart-of-accounts" element={<ChartOfAccounts />} />
-      <Route path="/trial-balance" element={<TrialBalance />} />
-      <Route path="/ledger/reconciliation" element={<Reconciliation />} />
-      <Route path="/accounting-periods" element={<AccountingPeriods />} />
-      <Route path="/reports/balance-sheet" element={<BalanceSheetReport />} />
+      <Route
+        path="/classification"
+        element={
+          <DesktopOnlyRoute>
+            <ClassificationQueue />
+          </DesktopOnlyRoute>
+        }
+      />
+      <Route
+        path="/classification-rules"
+        element={
+          <DesktopOnlyRoute>
+            <ClassificationRules />
+          </DesktopOnlyRoute>
+        }
+      />
+      <Route
+        path="/journal-entries"
+        element={
+          <DesktopOnlyRoute>
+            <JournalEntries />
+          </DesktopOnlyRoute>
+        }
+      />
+      <Route
+        path="/chart-of-accounts"
+        element={
+          <DesktopOnlyRoute>
+            <ChartOfAccounts />
+          </DesktopOnlyRoute>
+        }
+      />
+      <Route
+        path="/trial-balance"
+        element={
+          <DesktopOnlyRoute>
+            <TrialBalance />
+          </DesktopOnlyRoute>
+        }
+      />
+      <Route
+        path="/ledger/reconciliation"
+        element={
+          <DesktopOnlyRoute>
+            <Reconciliation />
+          </DesktopOnlyRoute>
+        }
+      />
+      <Route
+        path="/accounting-periods"
+        element={
+          <DesktopOnlyRoute>
+            <AccountingPeriods />
+          </DesktopOnlyRoute>
+        }
+      />
+      <Route
+        path="/reports/balance-sheet"
+        element={
+          <DesktopOnlyRoute>
+            <BalanceSheetReport />
+          </DesktopOnlyRoute>
+        }
+      />
       <Route
         path="/reports/income-statement"
-        element={<IncomeStatementReport />}
+        element={
+          <DesktopOnlyRoute>
+            <IncomeStatementReport />
+          </DesktopOnlyRoute>
+        }
       />
-      <Route path="/reports/trial-balance" element={<PeriodTrialBalance />} />
+      <Route
+        path="/reports/trial-balance"
+        element={
+          <DesktopOnlyRoute>
+            <PeriodTrialBalance />
+          </DesktopOnlyRoute>
+        }
+      />
       <Route
         path="/reports/statement-of-activities"
-        element={<StatementOfActivities />}
+        element={
+          <DesktopOnlyRoute>
+            <StatementOfActivities />
+          </DesktopOnlyRoute>
+        }
       />
     </Routes>
   </Navigation>
