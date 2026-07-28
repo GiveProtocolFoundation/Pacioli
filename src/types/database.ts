@@ -13,6 +13,7 @@ export enum AccountType {
   Liability = 'Liability',
   Equity = 'Equity',
   Income = 'Income',
+  Revenue = 'Revenue',
   Expense = 'Expense',
 }
 
@@ -102,6 +103,9 @@ export interface GLAccount {
   isActive: boolean
   isEditable: boolean
   normalBalance: NormalBalance
+  context: string
+  profileId?: string
+  hidden: number
   createdAt: Date
   updatedAt: Date
 }
@@ -228,6 +232,8 @@ export interface JournalEntryLine {
   quantity?: string
   /** Asset identifier: 'USD' for fiat, 'token:<id>' for tokens, null for measurement lines. */
   assetId?: string
+  /** NGO functional classification: program_services, management_general, or fundraising. */
+  functionalClassification?: string
 }
 
 // =============================================================================

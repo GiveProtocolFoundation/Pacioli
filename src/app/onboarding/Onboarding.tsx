@@ -1,10 +1,12 @@
 import React, { useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { invoke } from '@tauri-apps/api/core'
 import { Globe, Building2, User, Check } from 'lucide-react'
 import PacioliBlackLogo from '../../assets/pacioli_logo_black.svg'
 import { GridSelectionButton } from '../../components/GridSelectionButton'
 import { persistence } from '../../services/persistence'
 import { useAuth } from '../../contexts/AuthContext'
+import { useProfile } from '../../contexts/ProfileContext'
 
 type Step = 'jurisdiction' | 'account-type' | 'complete'
 type Jurisdiction = 'us-gaap' | 'ifrs'
@@ -17,14 +19,12 @@ interface ProgressStepProps {
   stepNumber: number
 }
 
-/** @returns A single numbered step indicator with active/completed styling. */
 const ProgressStep: React.FC<ProgressStepProps> = ({
   label,
   isActive,
   isCompleted,
   stepNumber,
 }) => {
-  /** @returns Tailwind class string for the step circle based on state. */
   const getStepClassName = () => {
     if (isActive) return 'bg-[#8b4e52] text-white'
     if (isCompleted) return 'bg-[#2E9A82] text-white'
@@ -47,7 +47,6 @@ interface ProgressConnectorProps {
   isCompleted: boolean
 }
 
-/** @returns A horizontal bar between progress steps that fills when completed. */
 const ProgressConnector: React.FC<ProgressConnectorProps> = ({
   isCompleted,
 }) => (
@@ -58,13 +57,15 @@ const ProgressConnector: React.FC<ProgressConnectorProps> = ({
   </div>
 )
 
-/** @returns Two-step onboarding wizard: jurisdiction selection then account type. */
 const Onboarding: React.FC = () => {
   const navigate = useNavigate()
   const { completeOnboarding } = useAuth()
+  const { currentProfile } = useProfile()
   const [currentStep, setCurrentStep] = useState<Step>('jurisdiction')
   const [jurisdiction, setJurisdiction] = useState<Jurisdiction | null>(null)
   const [accountType, setAccountType] = useState<AccountType | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleJurisdictionSelect = useCallback((selected: Jurisdiction) => {
     setJurisdiction(selected)
@@ -77,19 +78,37 @@ const Onboarding: React.FC = () => {
   const handleContinue = useCallback(async () => {
     if (currentStep === 'jurisdiction' && jurisdiction) {
       setCurrentStep('account-type')
-    } else if (currentStep === 'account-type' && accountType) {
+    } else if (currentStep === 'account-type' && accountType && jurisdiction) {
+      setError(null)
+      setIsSubmitting(true)
       try {
         await persistence.setSetting('accountType', accountType)
-        if (jurisdiction) {
-          await persistence.setSetting('jurisdiction', jurisdiction)
-        }
+        await persistence.setSetting('jurisdiction', jurisdiction)
+
+        const profileId = currentProfile?.id ?? 'default'
+        await invoke('import_chart_of_accounts_template', {
+          input: { jurisdiction, accountType, profileId },
+        })
+
         completeOnboarding(accountType)
+        navigate('/dashboard')
       } catch (err) {
-        console.error('[Onboarding] Failed to save settings:', err)
+        const message =
+          typeof err === 'string' ? err : 'Failed to set up chart of accounts'
+        setError(message)
+        console.error('[Onboarding] Setup failed:', err)
+      } finally {
+        setIsSubmitting(false)
       }
-      navigate('/dashboard')
     }
-  }, [currentStep, jurisdiction, accountType, navigate, completeOnboarding])
+  }, [
+    currentStep,
+    jurisdiction,
+    accountType,
+    currentProfile,
+    navigate,
+    completeOnboarding,
+  ])
 
   const handleBack = useCallback(() => {
     if (currentStep === 'account-type') {
@@ -118,28 +137,27 @@ const Onboarding: React.FC = () => {
   }, [handleAccountTypeSelect])
 
   const canContinue =
-    (currentStep === 'jurisdiction' && jurisdiction) ||
-    (currentStep === 'account-type' && accountType)
+    !isSubmitting &&
+    ((currentStep === 'jurisdiction' && jurisdiction) ||
+      (currentStep === 'account-type' && accountType))
 
   const isJurisdictionStep = currentStep === 'jurisdiction'
   const isAccountTypeStep = currentStep === 'account-type'
 
-  /** @returns Tailwind class for the back button based on current step. */
   const getBackButtonClassName = () => {
     return isJurisdictionStep
       ? 'text-gray-400 cursor-not-allowed'
       : 'text-gray-700 hover:bg-gray-50'
   }
 
-  /** @returns Tailwind class for the continue button based on selection state. */
   const getContinueButtonClassName = () => {
     return canContinue
       ? 'bg-[#8b4e52] text-white hover:bg-[#7a4248]'
       : 'bg-gray-200 text-gray-400 cursor-not-allowed'
   }
 
-  /** @returns Label text for the continue button. */
   const getContinueButtonText = () => {
+    if (isSubmitting) return 'Setting up...'
     return isAccountTypeStep ? 'Complete Setup' : 'Continue'
   }
 
@@ -147,17 +165,19 @@ const Onboarding: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-[#fafaf8] to-[#ede8e0] flex items-center justify-center p-4">
       <div className="w-full max-w-4xl">
         {/* Logo and Header */}
-        <header className="text-center mb-8">
-          <img
-            src={PacioliBlackLogo}
-            alt="Pacioli"
-            className="h-12 w-auto mix-blend-multiply inline-block align-middle"
-          />
-          <span className="ml-3 text-2xl font-bold text-gray-900 align-middle">
-            Pacioli
-          </span>
-          <p className="text-gray-600 mt-4">Let&apos;s set up your account</p>
-        </header>
+        <div className="text-center mb-8">
+          <div className="flex items-center justify-center mb-4">
+            <img
+              src={PacioliBlackLogo}
+              alt="Pacioli"
+              className="h-12 w-auto mix-blend-multiply"
+            />
+            <span className="ml-3 text-2xl font-bold text-gray-900">
+              Pacioli
+            </span>
+          </div>
+          <p className="text-gray-600">Let&apos;s set up your account</p>
+        </div>
 
         {/* Progress Steps */}
         <div className="mb-8">
@@ -254,6 +274,13 @@ const Onboarding: React.FC = () => {
                   value="not-for-profit"
                 />
               </div>
+            </div>
+          )}
+
+          {/* Error Banner */}
+          {error && (
+            <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg text-sm text-red-800">
+              {error}
             </div>
           )}
 

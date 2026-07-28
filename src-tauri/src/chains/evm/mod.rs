@@ -212,33 +212,30 @@ impl EvmAdapter {
     ) -> ChainResult<Vec<ChainTransaction>> {
         let explorer = self.get_explorer().await?;
 
-        // Get normal transactions
+        // Get normal transactions (windowed for full history)
         let normal_txs = explorer
-            .get_transactions(address, from_block, to_block, 1, 1000)
+            .get_all_normal_transactions(address, from_block, to_block)
             .await?;
 
-        // Get internal transactions (contract calls)
+        // Get internal transactions (windowed for full history)
         let internal_txs = explorer
-            .get_internal_transactions(address, from_block, to_block)
-            .await
-            .unwrap_or_default();
-
-        // Get ERC20 transfers
-        let erc20_transfers = explorer
-            .get_erc20_transfers(address, None, from_block, to_block, 1, 1000)
+            .get_all_internal_transactions(address, from_block, to_block)
             .await?;
 
-        // Get ERC721 NFT transfers
-        let nft_transfers = explorer
-            .get_nft_transfers(address, None, from_block)
-            .await
-            .unwrap_or_default();
+        // Get ERC20 transfers (windowed for full history)
+        let erc20_transfers = explorer
+            .get_all_token_transfers(address, None, from_block, to_block)
+            .await?;
 
-        // Get ERC1155 NFT transfers
+        // Get ERC721 NFT transfers (windowed for full history)
+        let nft_transfers = explorer
+            .get_all_nft_transfers(address, None, from_block, to_block)
+            .await?;
+
+        // Get ERC1155 NFT transfers (windowed for full history)
         let erc1155_transfers = explorer
-            .get_erc1155_transfers(address, None, from_block)
-            .await
-            .unwrap_or_default();
+            .get_all_erc1155_transfers(address, None, from_block, to_block)
+            .await?;
 
         // Normalize normal transactions
         let mut transactions: Vec<ChainTransaction> = normal_txs

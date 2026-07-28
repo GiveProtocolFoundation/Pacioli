@@ -15,20 +15,18 @@ export function findMatchingRule(
   isSelfTransfer: boolean
 ): ClassificationRuleMatch | undefined {
   return rules.find(rule => {
-    if (!rule.enabled) return false
     const types = rule.matchTxTypes.split(',').map(s => s.trim())
-    if (!types.includes(txType)) return false
-    if (rule.matchChains) {
-      const chains = rule.matchChains
-        .split(',')
-        .map(s => s.trim().toLowerCase())
-      if (!chains.includes(chainId.toLowerCase())) return false
-    }
+    const chains = rule.matchChains
+      ? rule.matchChains.split(',').map(s => s.trim().toLowerCase())
+      : null
     const mode = rule.matchSelfTransfer
-    if (mode === 'true' || mode === 'false') {
-      return (mode === 'true') === isSelfTransfer
-    }
-    return true
+    return (
+      rule.enabled &&
+      types.includes(txType) &&
+      (!chains || chains.includes(chainId.toLowerCase())) &&
+      (mode !== 'true' || isSelfTransfer) &&
+      (mode !== 'false' || !isSelfTransfer)
+    )
   })
 }
 

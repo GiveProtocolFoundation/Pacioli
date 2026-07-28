@@ -69,6 +69,9 @@ const IncomeStatementReport = React.lazy(
 const PeriodTrialBalance = React.lazy(
   () => import('./app/reports/PeriodTrialBalance')
 )
+const StatementOfActivities = React.lazy(
+  () => import('./app/reports/StatementOfActivities')
+)
 
 // Loading fallback component
 const LoadingFallback: React.FC = () => (
@@ -178,8 +181,6 @@ const OnboardingGate: React.FC<{ children: React.ReactNode }> = ({
     return <LoadingFallback />
   }
 
-  // Web builds skip onboarding — no CoA to import without the desktop engine.
-  // Accounting routes are gated separately by DesktopOnlyRoute.
   if (
     accountType === null &&
     pathname !== '/onboarding' &&
@@ -226,89 +227,21 @@ const MainRoutes: React.FC = () => (
       <Route path="/settings/currencies" element={<Settings />} />
       <Route path="/settings/users" element={<Settings />} />
       <Route path="/settings/data-providers" element={<Settings />} />
+      <Route path="/settings/chart-of-accounts" element={<Settings />} />
       <Route path="/docs" element={<Docs />} />
       <Route path="/support" element={<Support />} />
       <Route path="/profile" element={<Profile />} />
-      <Route
-        path="/classification"
-        element={
-          <DesktopOnlyRoute>
-            <ClassificationQueue />
-          </DesktopOnlyRoute>
-        }
-      />
-      <Route
-        path="/classification-rules"
-        element={
-          <DesktopOnlyRoute>
-            <ClassificationRules />
-          </DesktopOnlyRoute>
-        }
-      />
-      <Route
-        path="/journal-entries"
-        element={
-          <DesktopOnlyRoute>
-            <JournalEntries />
-          </DesktopOnlyRoute>
-        }
-      />
-      <Route
-        path="/chart-of-accounts"
-        element={
-          <DesktopOnlyRoute>
-            <ChartOfAccounts />
-          </DesktopOnlyRoute>
-        }
-      />
-      <Route
-        path="/trial-balance"
-        element={
-          <DesktopOnlyRoute>
-            <TrialBalance />
-          </DesktopOnlyRoute>
-        }
-      />
-      <Route
-        path="/ledger/reconciliation"
-        element={
-          <DesktopOnlyRoute>
-            <Reconciliation />
-          </DesktopOnlyRoute>
-        }
-      />
-      <Route
-        path="/accounting-periods"
-        element={
-          <DesktopOnlyRoute>
-            <AccountingPeriods />
-          </DesktopOnlyRoute>
-        }
-      />
-      <Route
-        path="/reports/balance-sheet"
-        element={
-          <DesktopOnlyRoute>
-            <BalanceSheetReport />
-          </DesktopOnlyRoute>
-        }
-      />
-      <Route
-        path="/reports/income-statement"
-        element={
-          <DesktopOnlyRoute>
-            <IncomeStatementReport />
-          </DesktopOnlyRoute>
-        }
-      />
-      <Route
-        path="/reports/trial-balance"
-        element={
-          <DesktopOnlyRoute>
-            <PeriodTrialBalance />
-          </DesktopOnlyRoute>
-        }
-      />
+      <Route path="/classification" element={<DesktopOnlyRoute><ClassificationQueue /></DesktopOnlyRoute>} />
+      <Route path="/classification-rules" element={<DesktopOnlyRoute><ClassificationRules /></DesktopOnlyRoute>} />
+      <Route path="/journal-entries" element={<DesktopOnlyRoute><JournalEntries /></DesktopOnlyRoute>} />
+      <Route path="/chart-of-accounts" element={<DesktopOnlyRoute><ChartOfAccounts /></DesktopOnlyRoute>} />
+      <Route path="/trial-balance" element={<DesktopOnlyRoute><TrialBalance /></DesktopOnlyRoute>} />
+      <Route path="/ledger/reconciliation" element={<DesktopOnlyRoute><Reconciliation /></DesktopOnlyRoute>} />
+      <Route path="/accounting-periods" element={<DesktopOnlyRoute><AccountingPeriods /></DesktopOnlyRoute>} />
+      <Route path="/reports/balance-sheet" element={<DesktopOnlyRoute><BalanceSheetReport /></DesktopOnlyRoute>} />
+      <Route path="/reports/income-statement" element={<DesktopOnlyRoute><IncomeStatementReport /></DesktopOnlyRoute>} />
+      <Route path="/reports/trial-balance" element={<DesktopOnlyRoute><PeriodTrialBalance /></DesktopOnlyRoute>} />
+      <Route path="/reports/statement-of-activities" element={<DesktopOnlyRoute><StatementOfActivities /></DesktopOnlyRoute>} />
     </Routes>
   </Navigation>
 )
@@ -355,23 +288,32 @@ const BrandedAntdProvider: React.FC<{ children: React.ReactNode }> = ({
   )
 }
 
-/** @returns Gated routes with onboarding, lazy loading, and theme. */
+/** Gated routes — onboarding redirect + lazy-loaded page tree. */
+const AppRoutes: React.FC = () => (
+  <OnboardingGate>
+    <Suspense fallback={<LoadingFallback />}>
+      <Routes>
+        <Route path="/onboarding" element={<Onboarding />} />
+        <Route path="/login" element={<Navigate to="/dashboard" replace />} />
+        <Route
+          path="/register"
+          element={<Navigate to="/dashboard" replace />}
+        />
+        <Route path="/*" element={<MainRoutes />} />
+      </Routes>
+    </Suspense>
+  </OnboardingGate>
+)
+
+/** Inner shell: initialization gate, data providers, theming, and routes. */
 const AppContent: React.FC = () => (
-  <BrandedAntdProvider>
-    <OnboardingGate>
-      <Suspense fallback={<LoadingFallback />}>
-        <Routes>
-          <Route path="/onboarding" element={<Onboarding />} />
-          <Route path="/login" element={<Navigate to="/dashboard" replace />} />
-          <Route
-            path="/register"
-            element={<Navigate to="/dashboard" replace />}
-          />
-          <Route path="/*" element={<MainRoutes />} />
-        </Routes>
-      </Suspense>
-    </OnboardingGate>
-  </BrandedAntdProvider>
+  <AppWrapper>
+    <AppProviders>
+      <BrandedAntdProvider>
+        <AppRoutes />
+      </BrandedAntdProvider>
+    </AppProviders>
+  </AppWrapper>
 )
 
 /**
@@ -381,11 +323,7 @@ const App: React.FC = () => (
   <Router>
     <LanguageProvider>
       <AppProvider>
-        <AppWrapper>
-          <AppProviders>
-            <AppContent />
-          </AppProviders>
-        </AppWrapper>
+        <AppContent />
       </AppProvider>
     </LanguageProvider>
   </Router>

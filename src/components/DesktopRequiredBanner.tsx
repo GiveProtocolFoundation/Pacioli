@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useCallback } from 'react'
 import { Monitor, ArrowRight } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
@@ -7,6 +7,9 @@ const DOWNLOAD_URL = 'https://pacioli.io'
 /** @returns Full-page amber banner directing users to the desktop app for accounting features. */
 const DesktopRequiredBanner: React.FC = () => {
   const navigate = useNavigate()
+  const handleBack = useCallback(() => {
+    navigate('/dashboard')
+  }, [navigate])
 
   return (
     <div className="flex-1 flex items-center justify-center p-8">
@@ -25,23 +28,21 @@ const DesktopRequiredBanner: React.FC = () => {
           build is view-only for wallets and portfolio.
         </p>
 
-        <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <a
-            href={DOWNLOAD_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[#294050] dark:bg-[#5FE3C0] text-white dark:text-[#0C141B] rounded-lg font-medium hover:opacity-90 transition-opacity"
-          >
-            Get the Desktop App
-            <ArrowRight className="w-4 h-4" />
-          </a>
-          <button
-            onClick={() => navigate('/dashboard')}
-            className="inline-flex items-center justify-center px-5 py-2.5 border border-[#294050]/20 dark:border-[#9FB4BE]/20 text-[#294050] dark:text-[#9FB4BE] rounded-lg font-medium hover:bg-[#294050]/5 dark:hover:bg-[#9FB4BE]/5 transition-colors"
-          >
-            Back to Dashboard
-          </button>
-        </div>
+        <a
+          href={DOWNLOAD_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[#294050] dark:bg-[#5FE3C0] text-white dark:text-[#0C141B] rounded-lg font-medium hover:opacity-90 transition-opacity mr-3"
+        >
+          Get the Desktop App
+          <ArrowRight className="w-4 h-4" />
+        </a>
+        <button
+          onClick={handleBack}
+          className="inline-flex items-center justify-center px-5 py-2.5 border border-[#294050]/20 dark:border-[#9FB4BE]/20 text-[#294050] dark:text-[#9FB4BE] rounded-lg font-medium hover:bg-[#294050]/5 dark:hover:bg-[#9FB4BE]/5 transition-colors mt-3 sm:mt-0"
+        >
+          Back to Dashboard
+        </button>
       </div>
     </div>
   )
