@@ -33,22 +33,33 @@ const ACCOUNT_TYPE_ORDER = [
   'Expense',
 ]
 
+/**
+ * Builds a human-readable template name (e.g. "US GAAP — Not-for-Profit")
+ * from the stored jurisdiction and account type setting values.
+ */
 function formatTemplateName(jurisdiction: string, accountType: string): string {
-  const j = JURISDICTION_LABELS[jurisdiction] ?? jurisdiction.toUpperCase()
-  const a = ACCOUNT_TYPE_LABELS[accountType] ?? accountType
-  return `${j} — ${a}`
+  const jurisdictionLabel =
+    JURISDICTION_LABELS[jurisdiction] ?? jurisdiction.toUpperCase()
+  const accountTypeLabel = ACCOUNT_TYPE_LABELS[accountType] ?? accountType
+  return `${jurisdictionLabel} — ${accountTypeLabel}`
 }
 
+/** Number of accounts sharing a single account type (Asset, Liability, …). */
 interface TypeCount {
   type: string
   count: number
 }
 
+/** Number of accounts targeting a single context (All, Individual, SME, NGO). */
 interface ContextCount {
   context: string
   count: number
 }
 
+/**
+ * Aggregates a flat account list into per-type and per-context counts for
+ * the summary display, ordered by the conventional accounting sequence.
+ */
 function summariseAccounts(accounts: GLAccount[]): {
   typeCounts: TypeCount[]
   contextCounts: ContextCount[]
@@ -56,19 +67,21 @@ function summariseAccounts(accounts: GLAccount[]): {
   const byType: Record<string, number> = {}
   const byContext: Record<string, number> = {}
 
-  for (const a of accounts) {
-    const t = a.accountType || 'Other'
-    byType[t] = (byType[t] || 0) + 1
-    const c = a.context || 'all'
-    byContext[c] = (byContext[c] || 0) + 1
+  for (const account of accounts) {
+    const typeKey = account.accountType || 'Other'
+    byType[typeKey] = (byType[typeKey] || 0) + 1
+    const contextKey = account.context || 'all'
+    byContext[contextKey] = (byContext[contextKey] || 0) + 1
   }
 
-  const typeCounts = ACCOUNT_TYPE_ORDER.filter(t => byType[t]).map(t => ({
-    type: t,
-    count: byType[t],
+  const typeCounts = ACCOUNT_TYPE_ORDER.filter(
+    typeName => byType[typeName]
+  ).map(typeName => ({
+    type: typeName,
+    count: byType[typeName],
   }))
   const remaining = Object.entries(byType)
-    .filter(([t]) => !ACCOUNT_TYPE_ORDER.includes(t))
+    .filter(([typeName]) => !ACCOUNT_TYPE_ORDER.includes(typeName))
     .map(([type, count]) => ({ type, count }))
   typeCounts.push(...remaining)
 
@@ -79,11 +92,11 @@ function summariseAccounts(accounts: GLAccount[]): {
     ngo: 'NGO',
   }
   const contextCounts = Object.entries(byContext)
-    .sort(([a], [b]) => {
+    .sort(([contextA], [contextB]) => {
       const order = ['all', 'individual', 'sme', 'ngo']
       return (
-        (order.indexOf(a) === -1 ? 99 : order.indexOf(a)) -
-        (order.indexOf(b) === -1 ? 99 : order.indexOf(b))
+        (order.indexOf(contextA) === -1 ? 99 : order.indexOf(contextA)) -
+        (order.indexOf(contextB) === -1 ? 99 : order.indexOf(contextB))
       )
     })
     .map(([context, count]) => ({
@@ -94,6 +107,183 @@ function summariseAccounts(accounts: GLAccount[]): {
   return { typeCounts, contextCounts }
 }
 
+/** Props for {@link SetupSummarySection}. */
+interface SetupSummaryProps {
+  jurisdiction: string | null
+  accountType: string | null
+  onChange: () => void
+}
+
+/** Card summarising the currently configured jurisdiction and entity type. */
+const SetupSummarySection: React.FC<SetupSummaryProps> = ({
+  jurisdiction,
+  accountType,
+  onChange,
+}) => (
+  <section className="rounded-lg border border-[rgba(95,227,192,0.15)] bg-[#EAF3F2]/30 dark:bg-[#16242F]/40 p-5">
+    <div className="flex items-center justify-between mb-4">
+      <h3 className="text-sm font-medium text-[#11202B] dark:text-[#EAF3F2] flex items-center gap-2">
+        <Settings className="w-4 h-4 text-[#294050] dark:text-[#9FB4BE]" />
+        Current Setup
+      </h3>
+      <button
+        onClick={onChange}
+        className="text-xs font-medium text-[#294050] dark:text-[#F09988] hover:underline"
+      >
+        Change
+      </button>
+    </div>
+    <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+      <div>
+        <dt className="text-[#647D8B] dark:text-[#647D8B]">Jurisdiction</dt>
+        <dd className="mt-0.5 font-medium text-[#11202B] dark:text-[#EAF3F2]">
+          {JURISDICTION_LABELS[jurisdiction ?? ''] ?? jurisdiction ?? '—'}
+        </dd>
+      </div>
+      <div>
+        <dt className="text-[#647D8B] dark:text-[#647D8B]">Entity Type</dt>
+        <dd className="mt-0.5 font-medium text-[#11202B] dark:text-[#EAF3F2]">
+          {ACCOUNT_TYPE_LABELS[accountType ?? ''] ?? accountType ?? '—'}
+        </dd>
+      </div>
+    </dl>
+  </section>
+)
+
+/** Props for {@link EmptyStateSection}. */
+interface EmptyStateProps {
+  isTauri: boolean
+  importing: boolean
+  importError: string | null
+  onImport: () => void
+}
+
+/**
+ * Call-to-action shown when no chart of accounts exists yet. Offers the
+ * template import in the desktop app; explains the limitation on web.
+ */
+const EmptyStateSection: React.FC<EmptyStateProps> = ({
+  isTauri,
+  importing,
+  importError,
+  onImport,
+}) => (
+  <section className="rounded-lg border-2 border-dashed border-[rgba(95,227,192,0.3)] p-8 text-center">
+    <BookOpen className="mx-auto h-10 w-10 text-[#647D8B] dark:text-[#9FB4BE] mb-3" />
+    <h3 className="text-sm font-medium text-[#11202B] dark:text-[#EAF3F2]">
+      No Chart of Accounts Imported
+    </h3>
+    <p className="text-sm text-[#294050] dark:text-[#9FB4BE] mt-1 max-w-md mx-auto">
+      Import a chart of accounts template based on your current jurisdiction and
+      entity type to get started.
+    </p>
+
+    {isTauri ? (
+      <>
+        <button
+          onClick={onImport}
+          disabled={importing}
+          className="mt-4 inline-flex items-center gap-2 px-5 py-2.5 bg-[#294050] text-white text-sm font-medium rounded-lg hover:bg-[#1E2F3C] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          {importing ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <Download className="w-4 h-4" />
+          )}
+          {importing ? 'Importing…' : 'Import Chart of Accounts Template'}
+        </button>
+        {importError && (
+          <div className="mt-3 flex items-center justify-center gap-2 text-sm text-red-600 dark:text-red-400">
+            <AlertCircle className="w-4 h-4" />
+            {importError}
+          </div>
+        )}
+      </>
+    ) : (
+      <p className="mt-4 text-xs text-[#647D8B] dark:text-[#647D8B]">
+        Template import is available in the Pacioli desktop app.
+      </p>
+    )}
+  </section>
+)
+
+/** Tile showing the number of accounts for one account type. */
+const TypeCountTile: React.FC<TypeCount> = ({ type, count }) => (
+  <div className="rounded-md bg-white/60 dark:bg-[#0C141B]/60 border border-[rgba(95,227,192,0.1)] px-3 py-2 text-center">
+    <div className="text-lg font-semibold text-[#11202B] dark:text-[#EAF3F2]">
+      {count}
+    </div>
+    <div className="text-xs text-[#647D8B] dark:text-[#9FB4BE]">{type}</div>
+  </div>
+)
+
+/** Pill showing how many accounts target a given context. */
+const ContextChip: React.FC<ContextCount> = ({ context, count }) => (
+  <span className="inline-flex items-center gap-1.5 rounded-full bg-white/60 dark:bg-[#0C141B]/60 border border-[rgba(95,227,192,0.1)] px-3 py-1 text-xs text-[#294050] dark:text-[#9FB4BE]">
+    <span className="font-medium">{context}</span>
+    <span className="text-[#647D8B]">{count}</span>
+  </span>
+)
+
+/** Props for {@link ImportedTemplateSection}. */
+interface ImportedTemplateProps {
+  templateName: string
+  typeCounts: TypeCount[]
+  contextCounts: ContextCount[]
+}
+
+/** Summary of the imported template: name plus type and context breakdowns. */
+const ImportedTemplateSection: React.FC<ImportedTemplateProps> = ({
+  templateName,
+  typeCounts,
+  contextCounts,
+}) => (
+  <section className="rounded-lg border border-[rgba(95,227,192,0.15)] bg-[#EAF3F2]/30 dark:bg-[#16242F]/40 p-5">
+    <h3 className="text-sm font-medium text-[#11202B] dark:text-[#EAF3F2] flex items-center gap-2 mb-4">
+      <BookOpen className="w-4 h-4 text-[#294050] dark:text-[#9FB4BE]" />
+      Imported Template
+    </h3>
+
+    <div className="mb-4">
+      <span className="text-sm text-[#647D8B] dark:text-[#647D8B]">
+        Template
+      </span>
+      <p className="text-sm font-medium text-[#11202B] dark:text-[#EAF3F2] mt-0.5">
+        {templateName}
+      </p>
+    </div>
+
+    {/* Account counts by type */}
+    <div className="mb-4">
+      <span className="text-xs uppercase tracking-wider text-[#647D8B] dark:text-[#647D8B]">
+        Accounts by Type
+      </span>
+      <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        {typeCounts.map(({ type, count }) => (
+          <TypeCountTile key={type} type={type} count={count} />
+        ))}
+      </div>
+    </div>
+
+    {/* Context distribution */}
+    <div>
+      <span className="text-xs uppercase tracking-wider text-[#647D8B] dark:text-[#647D8B]">
+        Context Distribution
+      </span>
+      <div className="mt-2 flex flex-wrap gap-2">
+        {contextCounts.map(({ context, count }) => (
+          <ContextChip key={context} context={context} count={count} />
+        ))}
+      </div>
+    </div>
+  </section>
+)
+
+/**
+ * Settings panel for the chart of accounts (GIV-789): shows the configured
+ * jurisdiction/entity type, lets desktop users import the matching CoA
+ * template, and summarises the imported account structure.
+ */
 const CoASettings: React.FC = () => {
   const navigate = useNavigate()
   const { currentProfile } = useProfile()
@@ -109,12 +299,12 @@ const CoASettings: React.FC = () => {
   const loadData = useCallback(async () => {
     setLoading(true)
     try {
-      const [j, at] = await Promise.all([
+      const [savedJurisdiction, savedAccountType] = await Promise.all([
         persistence.getSetting('jurisdiction'),
         persistence.getSetting('accountType'),
       ])
-      setJurisdiction(j ?? 'us-gaap')
-      setAccountType(at ?? 'not-for-profit')
+      setJurisdiction(savedJurisdiction ?? 'us-gaap')
+      setAccountType(savedAccountType ?? 'not-for-profit')
 
       if (isTauri) {
         const result = await invoke<GLAccount[]>('get_chart_of_accounts')
@@ -176,131 +366,28 @@ const CoASettings: React.FC = () => {
         </p>
       </div>
 
-      {/* Current setup summary */}
-      <section className="rounded-lg border border-[rgba(95,227,192,0.15)] bg-[#EAF3F2]/30 dark:bg-[#16242F]/40 p-5">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-medium text-[#11202B] dark:text-[#EAF3F2] flex items-center gap-2">
-            <Settings className="w-4 h-4 text-[#294050] dark:text-[#9FB4BE]" />
-            Current Setup
-          </h3>
-          <button
-            onClick={() => navigate('/settings/general')}
-            className="text-xs font-medium text-[#294050] dark:text-[#F09988] hover:underline"
-          >
-            Change
-          </button>
-        </div>
-        <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-          <div>
-            <dt className="text-[#647D8B] dark:text-[#647D8B]">Jurisdiction</dt>
-            <dd className="mt-0.5 font-medium text-[#11202B] dark:text-[#EAF3F2]">
-              {JURISDICTION_LABELS[jurisdiction ?? ''] ?? jurisdiction ?? '—'}
-            </dd>
-          </div>
-          <div>
-            <dt className="text-[#647D8B] dark:text-[#647D8B]">Entity Type</dt>
-            <dd className="mt-0.5 font-medium text-[#11202B] dark:text-[#EAF3F2]">
-              {ACCOUNT_TYPE_LABELS[accountType ?? ''] ?? accountType ?? '—'}
-            </dd>
-          </div>
-        </dl>
-      </section>
+      <SetupSummarySection
+        jurisdiction={jurisdiction}
+        accountType={accountType}
+        onChange={() => navigate('/settings/general')}
+      />
 
-      {/* Empty-state CTA or Imported template summary */}
       {isEmpty ? (
-        <section className="rounded-lg border-2 border-dashed border-[rgba(95,227,192,0.3)] p-8 text-center">
-          <BookOpen className="mx-auto h-10 w-10 text-[#647D8B] dark:text-[#9FB4BE] mb-3" />
-          <h3 className="text-sm font-medium text-[#11202B] dark:text-[#EAF3F2]">
-            No Chart of Accounts Imported
-          </h3>
-          <p className="text-sm text-[#294050] dark:text-[#9FB4BE] mt-1 max-w-md mx-auto">
-            Import a chart of accounts template based on your current
-            jurisdiction and entity type to get started.
-          </p>
-
-          {isTauri ? (
-            <>
-              <button
-                onClick={handleImport}
-                disabled={importing}
-                className="mt-4 inline-flex items-center gap-2 px-5 py-2.5 bg-[#294050] text-white text-sm font-medium rounded-lg hover:bg-[#1E2F3C] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                {importing ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Download className="w-4 h-4" />
-                )}
-                {importing ? 'Importing…' : 'Import Chart of Accounts Template'}
-              </button>
-              {importError && (
-                <div className="mt-3 flex items-center justify-center gap-2 text-sm text-red-600 dark:text-red-400">
-                  <AlertCircle className="w-4 h-4" />
-                  {importError}
-                </div>
-              )}
-            </>
-          ) : (
-            <p className="mt-4 text-xs text-[#647D8B] dark:text-[#647D8B]">
-              Template import is available in the Pacioli desktop app.
-            </p>
-          )}
-        </section>
+        <EmptyStateSection
+          isTauri={isTauri}
+          importing={importing}
+          importError={importError}
+          onImport={handleImport}
+        />
       ) : (
-        <section className="rounded-lg border border-[rgba(95,227,192,0.15)] bg-[#EAF3F2]/30 dark:bg-[#16242F]/40 p-5">
-          <h3 className="text-sm font-medium text-[#11202B] dark:text-[#EAF3F2] flex items-center gap-2 mb-4">
-            <BookOpen className="w-4 h-4 text-[#294050] dark:text-[#9FB4BE]" />
-            Imported Template
-          </h3>
-
-          <div className="mb-4">
-            <span className="text-sm text-[#647D8B] dark:text-[#647D8B]">
-              Template
-            </span>
-            <p className="text-sm font-medium text-[#11202B] dark:text-[#EAF3F2] mt-0.5">
-              {formatTemplateName(jurisdiction ?? '', accountType ?? '')}
-            </p>
-          </div>
-
-          {/* Account counts by type */}
-          <div className="mb-4">
-            <span className="text-xs uppercase tracking-wider text-[#647D8B] dark:text-[#647D8B]">
-              Accounts by Type
-            </span>
-            <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-              {summary.typeCounts.map(({ type, count }) => (
-                <div
-                  key={type}
-                  className="rounded-md bg-white/60 dark:bg-[#0C141B]/60 border border-[rgba(95,227,192,0.1)] px-3 py-2 text-center"
-                >
-                  <div className="text-lg font-semibold text-[#11202B] dark:text-[#EAF3F2]">
-                    {count}
-                  </div>
-                  <div className="text-xs text-[#647D8B] dark:text-[#9FB4BE]">
-                    {type}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Context distribution */}
-          <div>
-            <span className="text-xs uppercase tracking-wider text-[#647D8B] dark:text-[#647D8B]">
-              Context Distribution
-            </span>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {summary.contextCounts.map(({ context, count }) => (
-                <span
-                  key={context}
-                  className="inline-flex items-center gap-1.5 rounded-full bg-white/60 dark:bg-[#0C141B]/60 border border-[rgba(95,227,192,0.1)] px-3 py-1 text-xs text-[#294050] dark:text-[#9FB4BE]"
-                >
-                  <span className="font-medium">{context}</span>
-                  <span className="text-[#647D8B]">{count}</span>
-                </span>
-              ))}
-            </div>
-          </div>
-        </section>
+        <ImportedTemplateSection
+          templateName={formatTemplateName(
+            jurisdiction ?? '',
+            accountType ?? ''
+          )}
+          typeCounts={summary.typeCounts}
+          contextCounts={summary.contextCounts}
+        />
       )}
 
       {/* Deep link to Ledger CoA browser */}
