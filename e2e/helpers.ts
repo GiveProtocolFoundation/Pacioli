@@ -38,6 +38,35 @@ export async function mockBlockchainRpc(page: Page): Promise<void> {
 // ---------------------------------------------------------------------------
 
 /**
+ * Seed onboarding settings (accountType + jurisdiction) directly into IndexedDB
+ * so the OnboardingGate passes through without needing Tauri's invoke().
+ */
+async function seedOnboardingSettings(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    return new Promise<void>((resolve, reject) => {
+      const request = indexedDB.open('PacioliPersistenceDB', 2)
+      request.onupgradeneeded = () => {
+        const db = request.result
+        if (!db.objectStoreNames.contains('settings')) {
+          db.createObjectStore('settings', { keyPath: 'key' })
+        }
+      }
+      request.onsuccess = () => {
+        const db = request.result
+        const tx = db.transaction('settings', 'readwrite')
+        const store = tx.objectStore('settings')
+        const now = new Date().toISOString()
+        store.put({ key: 'accountType', value: 'individual', updated_at: now })
+        store.put({ key: 'jurisdiction', value: 'us-gaap', updated_at: now })
+        tx.oncomplete = () => { db.close(); resolve() }
+        tx.onerror = () => { db.close(); reject(tx.error) }
+      }
+      request.onerror = () => reject(request.error)
+    })
+  })
+}
+
+/**
  * Navigate to the app and complete the first-launch wizard in Easy mode so
  * the main shell is visible.  Idempotent — if the app is already unlocked,
  * this returns immediately.
@@ -72,6 +101,17 @@ export async function setupApp(page: Page): Promise<void> {
   const doneBtn = page.getByRole('button', { name: /get started|continue|finish|done/i }).first()
   await expect(doneBtn).toBeVisible({ timeout: 8_000 })
   await doneBtn.click()
+
+  // --- Onboarding gate ---
+  // After first-launch, the OnboardingGate redirects to /onboarding because
+  // accountType is null. In E2E (web build, no Tauri), we seed the required
+  // settings directly into IndexedDB and reload so AuthContext picks them up.
+  const onboardingHeading = page.getByText('Select Your Jurisdiction')
+  const hitOnboarding = await expect(onboardingHeading).toBeVisible({ timeout: 5_000 }).then(() => true, () => false)
+  if (hitOnboarding) {
+    await seedOnboardingSettings(page)
+    await page.goto('/')
+  }
 
   // Wait for the main shell (navigation) to appear
   await expect(page.locator('nav').first()).toBeVisible({ timeout: 15_000 })
