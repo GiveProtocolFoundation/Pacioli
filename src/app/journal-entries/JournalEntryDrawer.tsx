@@ -140,6 +140,14 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
     []
   )
 
+  const handleFunctionalClassChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      const index = Number(e.currentTarget.dataset.idx)
+      handleLineChange(index, 'functionalClassification', e.target.value)
+    },
+    [handleLineChange]
+  )
+
   const handleAddLine = useCallback(() => {
     setLines(prev => [...prev, emptyLine()])
   }, [])
@@ -368,13 +376,8 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
                         return (
                           <select
                             value={line.functionalClassification}
-                            onChange={e =>
-                              handleLineChange(
-                                idx,
-                                'functionalClassification',
-                                e.target.value
-                              )
-                            }
+                            data-idx={idx}
+                            onChange={handleFunctionalClassChange}
                             disabled={!isEditable}
                             className="mt-1 w-full px-2 py-1 rounded border border-[rgba(95,227,192,0.15)] bg-white dark:bg-[#11202B] text-[#294050] dark:text-[#9FB4BE] text-xs disabled:opacity-60"
                           >
