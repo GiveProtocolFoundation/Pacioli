@@ -231,17 +231,94 @@ const MainRoutes: React.FC = () => (
       <Route path="/docs" element={<Docs />} />
       <Route path="/support" element={<Support />} />
       <Route path="/profile" element={<Profile />} />
-      <Route path="/classification" element={<DesktopOnlyRoute><ClassificationQueue /></DesktopOnlyRoute>} />
-      <Route path="/classification-rules" element={<DesktopOnlyRoute><ClassificationRules /></DesktopOnlyRoute>} />
-      <Route path="/journal-entries" element={<DesktopOnlyRoute><JournalEntries /></DesktopOnlyRoute>} />
-      <Route path="/chart-of-accounts" element={<DesktopOnlyRoute><ChartOfAccounts /></DesktopOnlyRoute>} />
-      <Route path="/trial-balance" element={<DesktopOnlyRoute><TrialBalance /></DesktopOnlyRoute>} />
-      <Route path="/ledger/reconciliation" element={<DesktopOnlyRoute><Reconciliation /></DesktopOnlyRoute>} />
-      <Route path="/accounting-periods" element={<DesktopOnlyRoute><AccountingPeriods /></DesktopOnlyRoute>} />
-      <Route path="/reports/balance-sheet" element={<DesktopOnlyRoute><BalanceSheetReport /></DesktopOnlyRoute>} />
-      <Route path="/reports/income-statement" element={<DesktopOnlyRoute><IncomeStatementReport /></DesktopOnlyRoute>} />
-      <Route path="/reports/trial-balance" element={<DesktopOnlyRoute><PeriodTrialBalance /></DesktopOnlyRoute>} />
-      <Route path="/reports/statement-of-activities" element={<DesktopOnlyRoute><StatementOfActivities /></DesktopOnlyRoute>} />
+      <Route
+        path="/classification"
+        element={
+          <DesktopOnlyRoute>
+            <ClassificationQueue />
+          </DesktopOnlyRoute>
+        }
+      />
+      <Route
+        path="/classification-rules"
+        element={
+          <DesktopOnlyRoute>
+            <ClassificationRules />
+          </DesktopOnlyRoute>
+        }
+      />
+      <Route
+        path="/journal-entries"
+        element={
+          <DesktopOnlyRoute>
+            <JournalEntries />
+          </DesktopOnlyRoute>
+        }
+      />
+      <Route
+        path="/chart-of-accounts"
+        element={
+          <DesktopOnlyRoute>
+            <ChartOfAccounts />
+          </DesktopOnlyRoute>
+        }
+      />
+      <Route
+        path="/trial-balance"
+        element={
+          <DesktopOnlyRoute>
+            <TrialBalance />
+          </DesktopOnlyRoute>
+        }
+      />
+      <Route
+        path="/ledger/reconciliation"
+        element={
+          <DesktopOnlyRoute>
+            <Reconciliation />
+          </DesktopOnlyRoute>
+        }
+      />
+      <Route
+        path="/accounting-periods"
+        element={
+          <DesktopOnlyRoute>
+            <AccountingPeriods />
+          </DesktopOnlyRoute>
+        }
+      />
+      <Route
+        path="/reports/balance-sheet"
+        element={
+          <DesktopOnlyRoute>
+            <BalanceSheetReport />
+          </DesktopOnlyRoute>
+        }
+      />
+      <Route
+        path="/reports/income-statement"
+        element={
+          <DesktopOnlyRoute>
+            <IncomeStatementReport />
+          </DesktopOnlyRoute>
+        }
+      />
+      <Route
+        path="/reports/trial-balance"
+        element={
+          <DesktopOnlyRoute>
+            <PeriodTrialBalance />
+          </DesktopOnlyRoute>
+        }
+      />
+      <Route
+        path="/reports/statement-of-activities"
+        element={
+          <DesktopOnlyRoute>
+            <StatementOfActivities />
+          </DesktopOnlyRoute>
+        }
+      />
     </Routes>
   </Navigation>
 )
