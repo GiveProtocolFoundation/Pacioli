@@ -92,6 +92,9 @@ interface AuthContextType {
   canAccessProfile: (profileId: string) => boolean
   getProfileRole: (profileId: string) => UserRole | null
 
+  // Onboarding
+  completeOnboarding: (type: AccountType) => void
+
   // Clear error
   clearError: () => void
 }
@@ -505,6 +508,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     [userProfiles]
   )
 
+  const completeOnboarding = useCallback((type: AccountType) => {
+    setAccountType(type)
+  }, [])
+
   const clearError = useCallback(() => {
     setError(null)
   }, [])
@@ -530,6 +537,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         hasPermission: hasPermissionCheck,
         canAccessProfile,
         getProfileRole,
+        completeOnboarding,
         clearError,
       }}
     >
