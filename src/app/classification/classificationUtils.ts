@@ -25,8 +25,9 @@ export function findMatchingRule(
       if (!chains.includes(chainId.toLowerCase())) return false
     }
     const mode = rule.matchSelfTransfer
-    if (mode === 'true' && !isSelfTransfer) return false
-    if (mode === 'false' && isSelfTransfer) return false
+    if (mode === 'true' || mode === 'false') {
+      return (mode === 'true') === isSelfTransfer
+    }
     return true
   })
 }
