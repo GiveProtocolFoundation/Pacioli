@@ -18,7 +18,8 @@ function readRustConstants(): {
   const codesMatch = rustSrc.match(
     /RESTRICTED_REVENUE_CODES:\s*&\[&str\]\s*=\s*&\[([^\]]+)\]/
   )
-  if (!codesMatch) throw new Error('RESTRICTED_REVENUE_CODES not found in statements.rs')
+  if (!codesMatch)
+    throw new Error('RESTRICTED_REVENUE_CODES not found in statements.rs')
   const restrictedCodes = codesMatch[1]
     .split(',')
     .map(s => s.trim().replace(/"/g, ''))
@@ -27,7 +28,8 @@ function readRustConstants(): {
   const releaseMatch = rustSrc.match(
     /RELEASE_FROM_RESTRICTION_CODE:\s*&str\s*=\s*"([^"]+)"/
   )
-  if (!releaseMatch) throw new Error('RELEASE_FROM_RESTRICTION_CODE not found in statements.rs')
+  if (!releaseMatch)
+    throw new Error('RELEASE_FROM_RESTRICTION_CODE not found in statements.rs')
 
   return { restrictedCodes, releaseCode: releaseMatch[1] }
 }
