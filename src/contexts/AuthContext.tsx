@@ -101,8 +101,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-// Session ID storage key
-const SESSION_ID_KEY = 'pacioli_session_id'
+const SESSION_ID_KEY = 'pacioli_session_id' // skipcq: SCT-A000 — localStorage key name, not a credential
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
