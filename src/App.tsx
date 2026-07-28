@@ -284,10 +284,7 @@ const AppRoutes: React.FC = () => (
     <Suspense fallback={<LoadingFallback />}>
       <Routes>
         <Route path="/onboarding" element={<Onboarding />} />
-        <Route
-          path="/login"
-          element={<Navigate to="/dashboard" replace />}
-        />
+        <Route path="/login" element={<Navigate to="/dashboard" replace />} />
         <Route
           path="/register"
           element={<Navigate to="/dashboard" replace />}
