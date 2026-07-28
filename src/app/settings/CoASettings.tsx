@@ -25,7 +25,13 @@ const ACCOUNT_TYPE_LABELS: Record<string, string> = {
   individual: 'Individual',
 }
 
-const ACCOUNT_TYPE_ORDER = ['Asset', 'Liability', 'Equity', 'Revenue', 'Expense']
+const ACCOUNT_TYPE_ORDER = [
+  'Asset',
+  'Liability',
+  'Equity',
+  'Revenue',
+  'Expense',
+]
 
 function formatTemplateName(jurisdiction: string, accountType: string): string {
   const j = JURISDICTION_LABELS[jurisdiction] ?? jurisdiction.toUpperCase()
@@ -57,8 +63,10 @@ function summariseAccounts(accounts: GLAccount[]): {
     byContext[c] = (byContext[c] || 0) + 1
   }
 
-  const typeCounts = ACCOUNT_TYPE_ORDER.filter(t => byType[t])
-    .map(t => ({ type: t, count: byType[t] }))
+  const typeCounts = ACCOUNT_TYPE_ORDER.filter(t => byType[t]).map(t => ({
+    type: t,
+    count: byType[t],
+  }))
   const remaining = Object.entries(byType)
     .filter(([t]) => !ACCOUNT_TYPE_ORDER.includes(t))
     .map(([type, count]) => ({ type, count }))
@@ -73,8 +81,10 @@ function summariseAccounts(accounts: GLAccount[]): {
   const contextCounts = Object.entries(byContext)
     .sort(([a], [b]) => {
       const order = ['all', 'individual', 'sme', 'ngo']
-      return (order.indexOf(a) === -1 ? 99 : order.indexOf(a)) -
-             (order.indexOf(b) === -1 ? 99 : order.indexOf(b))
+      return (
+        (order.indexOf(a) === -1 ? 99 : order.indexOf(a)) -
+        (order.indexOf(b) === -1 ? 99 : order.indexOf(b))
+      )
     })
     .map(([context, count]) => ({
       context: CONTEXT_LABELS[context] ?? context,
@@ -133,7 +143,8 @@ const CoASettings: React.FC = () => {
       const result = await invoke<GLAccount[]>('get_chart_of_accounts')
       setAccounts(result)
     } catch (err) {
-      const message = typeof err === 'string' ? err : 'Failed to import template'
+      const message =
+        typeof err === 'string' ? err : 'Failed to import template'
       setImportError(message)
       console.error('[CoASettings] Import failed:', err)
     } finally {
@@ -160,7 +171,8 @@ const CoASettings: React.FC = () => {
           Chart of Accounts
         </h2>
         <p className="text-sm text-[#294050] dark:text-[#9FB4BE] mt-1">
-          Manage your chart of accounts template and view imported account structure.
+          Manage your chart of accounts template and view imported account
+          structure.
         </p>
       </div>
 
@@ -202,8 +214,8 @@ const CoASettings: React.FC = () => {
             No Chart of Accounts Imported
           </h3>
           <p className="text-sm text-[#294050] dark:text-[#9FB4BE] mt-1 max-w-md mx-auto">
-            Import a chart of accounts template based on your current jurisdiction
-            and entity type to get started.
+            Import a chart of accounts template based on your current
+            jurisdiction and entity type to get started.
           </p>
 
           {isTauri ? (
@@ -241,7 +253,9 @@ const CoASettings: React.FC = () => {
           </h3>
 
           <div className="mb-4">
-            <span className="text-sm text-[#647D8B] dark:text-[#647D8B]">Template</span>
+            <span className="text-sm text-[#647D8B] dark:text-[#647D8B]">
+              Template
+            </span>
             <p className="text-sm font-medium text-[#11202B] dark:text-[#EAF3F2] mt-0.5">
               {formatTemplateName(jurisdiction ?? '', accountType ?? '')}
             </p>
