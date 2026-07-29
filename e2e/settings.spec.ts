@@ -123,8 +123,7 @@ test.describe('Settings — API keys and provider configuration', () => {
     })
   })
 
-  // TODO(GIV-445): Unskip when real-time sync toggle feature lands.
-  test.skip('real-time sync toggle persists state', async ({ page }) => {
+  test('real-time sync toggle persists state', async ({ page }) => {
     await goToSettings(page)
     const syncToggle = page
       .getByRole('switch', { name: /real.?time sync/i })
