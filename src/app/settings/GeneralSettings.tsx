@@ -789,6 +789,7 @@ const BlockchainSyncSection: React.FC = () => {
           type="button"
           role="switch"
           aria-checked={enabled}
+          aria-label="Real-time sync"
           onClick={handleToggle}
           className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#5FE3C0] focus:ring-offset-2 ${
             enabled ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'
