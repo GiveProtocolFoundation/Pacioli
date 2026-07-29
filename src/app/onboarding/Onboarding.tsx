@@ -1,15 +1,15 @@
-  import React, { useState, useCallback } from 'react'
-  import { useNavigate } from 'react-router-dom'
-  import { invoke } from '@tauri-apps/api/core'
-  import { Globe, Building2, User, Check } from 'lucide-react'
-  import PacioliBlackLogo from '../../assets/pacioli_logo_black.svg'
-  import { GridSelectionButton } from '../../components/GridSelectionButton'
-  import { persistence } from '../../services/persistence'
-  import { useAuth } from '../../contexts/AuthContext'
-  import { useProfile } from '../../contexts/ProfileContext'
-  import OnboardingHeader from './OnboardingHeader'
-  import ProgressStepsSection from './ProgressStepsSection'
-  import JurisdictionStepSection from './JurisdictionStepSection'
+import React, { useState, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { invoke } from '@tauri-apps/api/core'
+import { Globe, Building2, User, Check } from 'lucide-react'
+import PacioliBlackLogo from '../../assets/pacioli_logo_black.svg'
+import { GridSelectionButton } from '../../components/GridSelectionButton'
+import { persistence } from '../../services/persistence'
+import { useAuth } from '../../contexts/AuthContext'
+import { useProfile } from '../../contexts/ProfileContext'
+
+type Step = 'jurisdiction' | 'account-type' | 'complete'
+type Jurisdiction = 'us-gaap' | 'ifrs'
 type AccountType = 'individual' | 'for-profit-enterprise' | 'not-for-profit'
 
 interface ProgressStepProps {
@@ -19,22 +19,44 @@ interface ProgressStepProps {
   stepNumber: number
 }
 
-/** Logo, title, and subtitle shown at the top of each onboarding step. */
-const OnboardingHeader: React.FC = () => (
-  <div className="text-center mb-8">
-    <div className="flex items-center justify-center mb-4">
-      <img
-        src={PacioliBlackLogo}
-        alt="Pacioli"
-        className="h-12 w-auto mix-blend-multiply"
-      />
-      <span className="ml-3 text-2xl font-bold text-gray-900">Pacioli</span>
+const ProgressStep: React.FC<ProgressStepProps> = ({
+  label,
+  isActive,
+  isCompleted,
+  stepNumber,
+}) => {
+  const getStepClassName = () => {
+    if (isActive) return 'bg-[#8b4e52] text-white'
+    if (isCompleted) return 'bg-[#2E9A82] text-white'
+    return 'bg-gray-200 text-gray-600'
+  }
+
+  return (
+    <div className="flex items-center">
+      <div
+        className={`w-10 h-10 rounded-full flex items-center justify-center ${getStepClassName()}`}
+      >
+        {isCompleted ? <Check className="w-5 h-5" /> : stepNumber}
+      </div>
+      <span className="ml-2 text-sm font-medium text-gray-700">{label}</span>
     </div>
-    <p className="text-gray-600">Let&apos;s set up your account</p>
+  )
+}
+
+interface ProgressConnectorProps {
+  isCompleted: boolean
+}
+
+const ProgressConnector: React.FC<ProgressConnectorProps> = ({
+  isCompleted,
+}) => (
+  <div className="w-16 h-1 bg-gray-300">
+    <div
+      className={`h-full transition-all ${isCompleted ? 'bg-[#8b4e52] w-full' : 'bg-transparent w-0'}`}
+    />
   </div>
 )
 
-/** Multi-step onboarding flow: jurisdiction → account type → CoA import. */
 const Onboarding: React.FC = () => {
   const navigate = useNavigate()
   const { completeOnboarding } = useAuth()
@@ -122,28 +144,19 @@ const Onboarding: React.FC = () => {
   const isJurisdictionStep = currentStep === 'jurisdiction'
   const isAccountTypeStep = currentStep === 'account-type'
 
-  /**
-   * Returns the CSS class for the back button based on the current step.
-   * @returns {string} The class names for the back button.
-   */
-  const getBackButtonClassName = () =>
-    // skipcq: JS-D1001
-    isJurisdictionStep
+  const getBackButtonClassName = () => {
+    return isJurisdictionStep
       ? 'text-gray-400 cursor-not-allowed'
       : 'text-gray-700 hover:bg-gray-50'
+  }
 
-  /**
-   * Returns the CSS class for the continue button based on whether continuation is allowed.
-   * @returns {string} The class names for the continue button.
-   */
-  const getContinueButtonClassName = () =>
-    // skipcq: JS-D1001
-    canContinue
+  const getContinueButtonClassName = () => {
+    return canContinue
       ? 'bg-[#8b4e52] text-white hover:bg-[#7a4248]'
       : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+  }
 
   const getContinueButtonText = () => {
-    // skipcq: JS-D1001
     if (isSubmitting) return 'Setting up...'
     return isAccountTypeStep ? 'Complete Setup' : 'Continue'
   }
@@ -151,28 +164,55 @@ const Onboarding: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#fafaf8] to-[#ede8e0] flex items-center justify-center p-4">
       <div className="w-full max-w-4xl">
-        <OnboardingHeader />
+        {/* Logo and Header */}
+        <div className="text-center mb-8">
+          <div className="flex items-center justify-center mb-4">
+            <img
+              src={PacioliBlackLogo}
+              alt="Pacioli"
+              className="h-12 w-auto mix-blend-multiply"
+            />
+            <span className="ml-3 text-2xl font-bold text-gray-900">
+              Pacioli
+            </span>
+          </div>
+          <p className="text-gray-600">Let&apos;s set up your account</p>
+        </div>
 
-        <ProgressStepsSection
-          isJurisdictionStep={isJurisdictionStep}
-          jurisdiction={jurisdiction}
-          isAccountTypeStep={isAccountTypeStep}
-          accountType={accountType}
-        />
+        {/* Progress Steps */}
+        <div className="mb-8">
+          <div className="flex items-center justify-center space-x-4">
+            <ProgressStep
+              label="Jurisdiction"
+              isActive={isJurisdictionStep}
+              isCompleted={Boolean(jurisdiction)}
+              stepNumber={1}
+            />
+            <ProgressConnector isCompleted={Boolean(jurisdiction)} />
+            <ProgressStep
+              label="Account Type"
+              isActive={isAccountTypeStep}
+              isCompleted={Boolean(accountType)}
+              stepNumber={2}
+            />
+          </div>
+        </div>
 
         {/* Main Content Card */}
         <div className="bg-white rounded-xl shadow-xl p-8">
           {/* Jurisdiction Step */}
           {isJurisdictionStep && (
-            <JurisdictionStepSection
-              jurisdiction={jurisdiction}
-              setJurisdiction={setJurisdiction}
-            />
-          )}
+            <div>
+              <h2 className="text-2xl font-bold text-[#0C141B] mb-2">
+                Select Your Jurisdiction
+              </h2>
+              <p className="text-gray-600 mb-8">
+                Choose the accounting standard that applies to your organization
+              </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <GridSelectionButton
-              icon={Globe}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <GridSelectionButton
+                  icon={Globe}
                   title="United States"
                   description="US GAAP (Generally Accepted Accounting Principles)"
                   subtitle="For organizations operating in the United States"

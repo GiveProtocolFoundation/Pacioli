@@ -56,39 +56,55 @@ const PeriodSelector: React.FC<PeriodSelectorProps> = ({
   onEndChange,
   onGenerate,
   loading,
-}) => (
-  <div className="flex flex-wrap items-end gap-4 mb-6 p-4 bg-white dark:bg-[#11202B] border border-[rgba(95,227,192,0.15)] rounded-lg">
-    <div>
-      <label className="block text-xs font-medium text-[#294050] dark:text-[#9FB4BE] mb-1">
-        Start Date
-      </label>
-      <input
-        type="date"
-        value={startDate}
-        onChange={e => onStartChange(e.target.value)}
-        className="px-3 py-1.5 text-sm border border-[rgba(95,227,192,0.25)] rounded bg-[#F7FAFA] dark:bg-[#0C141B] text-[#11202B] dark:text-[#EAF3F2]"
-      />
+}) => {
+  const handleStartChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      onStartChange(e.target.value)
+    },
+    [onStartChange]
+  )
+
+  const handleEndChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      onEndChange(e.target.value)
+    },
+    [onEndChange]
+  )
+
+  return (
+    <div className="flex flex-wrap items-end gap-4 mb-6 p-4 bg-white dark:bg-[#11202B] border border-[rgba(95,227,192,0.15)] rounded-lg">
+      <div>
+        <label className="block text-xs font-medium text-[#294050] dark:text-[#9FB4BE] mb-1">
+          Start Date
+        </label>
+        <input
+          type="date"
+          value={startDate}
+          onChange={handleStartChange}
+          className="px-3 py-1.5 text-sm border border-[rgba(95,227,192,0.25)] rounded bg-[#F7FAFA] dark:bg-[#0C141B] text-[#11202B] dark:text-[#EAF3F2]"
+        />
+      </div>
+      <div>
+        <label className="block text-xs font-medium text-[#294050] dark:text-[#9FB4BE] mb-1">
+          End Date
+        </label>
+        <input
+          type="date"
+          value={endDate}
+          onChange={handleEndChange}
+          className="px-3 py-1.5 text-sm border border-[rgba(95,227,192,0.25)] rounded bg-[#F7FAFA] dark:bg-[#0C141B] text-[#11202B] dark:text-[#EAF3F2]"
+        />
+      </div>
+      <button
+        onClick={onGenerate}
+        disabled={loading}
+        className="px-4 py-1.5 text-sm font-medium bg-[#294050] text-white rounded hover:bg-[#1E2F3C] disabled:opacity-50"
+      >
+        {loading ? 'Generating...' : 'Generate'}
+      </button>
     </div>
-    <div>
-      <label className="block text-xs font-medium text-[#294050] dark:text-[#9FB4BE] mb-1">
-        End Date
-      </label>
-      <input
-        type="date"
-        value={endDate}
-        onChange={e => onEndChange(e.target.value)}
-        className="px-3 py-1.5 text-sm border border-[rgba(95,227,192,0.25)] rounded bg-[#F7FAFA] dark:bg-[#0C141B] text-[#11202B] dark:text-[#EAF3F2]"
-      />
-    </div>
-    <button
-      onClick={onGenerate}
-      disabled={loading}
-      className="px-4 py-1.5 text-sm font-medium bg-[#294050] text-white rounded hover:bg-[#1E2F3C] disabled:opacity-50"
-    >
-      {loading ? 'Generating...' : 'Generate'}
-    </button>
-  </div>
-)
+  )
+}
 
 /** Single account line within a revenue or expense section. */
 const SectionRow: React.FC<{

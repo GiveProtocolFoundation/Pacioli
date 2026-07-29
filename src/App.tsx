@@ -23,6 +23,7 @@ import { useAuth } from './contexts/AuthContext'
 import { LanguageProvider } from './contexts/LanguageContext'
 import { UnlockScreen } from './components/security'
 import { FirstLaunch } from './components/onboarding'
+import DesktopRequiredBanner from './components/DesktopRequiredBanner'
 
 // Lazy load route components for code splitting
 const Dashboard = React.lazy(() => import('./app/dashboard/Dashboard'))
@@ -73,11 +74,6 @@ const StatementOfActivities = React.lazy(
 )
 
 // Loading fallback component
-/**
- * Loading fallback component that displays a spinner and loading message while content is loading.
- *
- * @returns JSX.Element A loading screen component.
- */
 const LoadingFallback: React.FC = () => (
   <div className="min-h-screen bg-[#F7FAFA] dark:bg-[#0C141B] flex items-center justify-center">
     <div className="text-center">
@@ -88,36 +84,17 @@ const LoadingFallback: React.FC = () => (
 )
 
 // Composed providers to reduce JSX nesting depth
-/**
- * Composed provider component that wraps children with navigation badge and transaction contexts.
- *
- * @param children React.ReactNode The content to be wrapped by the providers.
- * @returns JSX.Element The composed provider elements.
- */
-// skipcq: JS-0415
-const TransactionProviders: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => (
-  <NavBadgeProvider>
-    <TransactionProvider userAccountType="organization">
-      {children}
-    </TransactionProvider>
-  </NavBadgeProvider>
-)
-
-/**
- * Composed provider component that wraps children with token, wallet alias, notification, and transaction contexts.
- *
- * @param children React.ReactNode The content to be wrapped by the providers.
- * @returns JSX.Element The composed provider elements.
- */
 const DataProviders: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => (
   <TokenProvider>
     <WalletAliasProvider>
       <NotificationProvider>
-        <TransactionProviders>{children}</TransactionProviders>
+        <NavBadgeProvider>
+          <TransactionProvider userAccountType="organization">
+            {children}
+          </TransactionProvider>
+        </NavBadgeProvider>
       </NotificationProvider>
     </WalletAliasProvider>
   </TokenProvider>
@@ -128,15 +105,15 @@ const DataProviders: React.FC<{ children: React.ReactNode }> = ({
  */
 const AppProviders: React.FC<{ children: React.ReactNode }> = ({
   children,
-}) => {
-  return (
-    <ProfileProvider>
-      <EntityProvider>
-        <DataProviders>{children}</DataProviders>
-      </EntityProvider>
-    </ProfileProvider>
-  );
-}
+}) => (
+  <ProfileProvider>
+    <EntityProvider>
+      <DataProviders>{children}</DataProviders>
+    </EntityProvider>
+  </ProfileProvider>
+)
+
+/**
  * Handles page reload for retry button.
  */
 const handleRetry = () => {
@@ -204,10 +181,24 @@ const OnboardingGate: React.FC<{ children: React.ReactNode }> = ({
     return <LoadingFallback />
   }
 
-  if (accountType === null && pathname !== '/onboarding') {
+  if (
+    accountType === null &&
+    pathname !== '/onboarding' &&
+    isTauriAvailable()
+  ) {
     return <Navigate to="/onboarding" replace />
   }
 
+  return children as React.ReactElement
+}
+
+/** @returns Children on desktop (Tauri), or DesktopRequiredBanner on web builds. */
+const DesktopOnlyRoute: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  if (!isTauriAvailable()) {
+    return <DesktopRequiredBanner />
+  }
   return children as React.ReactElement
 }
 
@@ -236,25 +227,97 @@ const MainRoutes: React.FC = () => (
       <Route path="/settings/currencies" element={<Settings />} />
       <Route path="/settings/users" element={<Settings />} />
       <Route path="/settings/data-providers" element={<Settings />} />
+      <Route path="/settings/chart-of-accounts" element={<Settings />} />
       <Route path="/docs" element={<Docs />} />
       <Route path="/support" element={<Support />} />
       <Route path="/profile" element={<Profile />} />
-      <Route path="/classification" element={<ClassificationQueue />} />
-      <Route path="/classification-rules" element={<ClassificationRules />} />
-      <Route path="/journal-entries" element={<JournalEntries />} />
-      <Route path="/chart-of-accounts" element={<ChartOfAccounts />} />
-      <Route path="/trial-balance" element={<TrialBalance />} />
-      <Route path="/ledger/reconciliation" element={<Reconciliation />} />
-      <Route path="/accounting-periods" element={<AccountingPeriods />} />
-      <Route path="/reports/balance-sheet" element={<BalanceSheetReport />} />
+      <Route
+        path="/classification"
+        element={
+          <DesktopOnlyRoute>
+            <ClassificationQueue />
+          </DesktopOnlyRoute>
+        }
+      />
+      <Route
+        path="/classification-rules"
+        element={
+          <DesktopOnlyRoute>
+            <ClassificationRules />
+          </DesktopOnlyRoute>
+        }
+      />
+      <Route
+        path="/journal-entries"
+        element={
+          <DesktopOnlyRoute>
+            <JournalEntries />
+          </DesktopOnlyRoute>
+        }
+      />
+      <Route
+        path="/chart-of-accounts"
+        element={
+          <DesktopOnlyRoute>
+            <ChartOfAccounts />
+          </DesktopOnlyRoute>
+        }
+      />
+      <Route
+        path="/trial-balance"
+        element={
+          <DesktopOnlyRoute>
+            <TrialBalance />
+          </DesktopOnlyRoute>
+        }
+      />
+      <Route
+        path="/ledger/reconciliation"
+        element={
+          <DesktopOnlyRoute>
+            <Reconciliation />
+          </DesktopOnlyRoute>
+        }
+      />
+      <Route
+        path="/accounting-periods"
+        element={
+          <DesktopOnlyRoute>
+            <AccountingPeriods />
+          </DesktopOnlyRoute>
+        }
+      />
+      <Route
+        path="/reports/balance-sheet"
+        element={
+          <DesktopOnlyRoute>
+            <BalanceSheetReport />
+          </DesktopOnlyRoute>
+        }
+      />
       <Route
         path="/reports/income-statement"
-        element={<IncomeStatementReport />}
+        element={
+          <DesktopOnlyRoute>
+            <IncomeStatementReport />
+          </DesktopOnlyRoute>
+        }
       />
-      <Route path="/reports/trial-balance" element={<PeriodTrialBalance />} />
+      <Route
+        path="/reports/trial-balance"
+        element={
+          <DesktopOnlyRoute>
+            <PeriodTrialBalance />
+          </DesktopOnlyRoute>
+        }
+      />
       <Route
         path="/reports/statement-of-activities"
-        element={<StatementOfActivities />}
+        element={
+          <DesktopOnlyRoute>
+            <StatementOfActivities />
+          </DesktopOnlyRoute>
+        }
       />
     </Routes>
   </Navigation>
@@ -302,10 +365,30 @@ const BrandedAntdProvider: React.FC<{ children: React.ReactNode }> = ({
   )
 }
 
-const AppThemeProviders: React.FC<{ children?: React.ReactNode }> = ({ children }) => (
+/** Gated routes — onboarding redirect + lazy-loaded page tree. */
+const AppRoutes: React.FC = () => (
+  <OnboardingGate>
+    <Suspense fallback={<LoadingFallback />}>
+      <Routes>
+        <Route path="/onboarding" element={<Onboarding />} />
+        <Route path="/login" element={<Navigate to="/dashboard" replace />} />
+        <Route
+          path="/register"
+          element={<Navigate to="/dashboard" replace />}
+        />
+        <Route path="/*" element={<MainRoutes />} />
+      </Routes>
+    </Suspense>
+  </OnboardingGate>
+)
+
+/** Inner shell: initialization gate, data providers, theming, and routes. */
+const AppContent: React.FC = () => (
   <AppWrapper>
     <AppProviders>
-      <BrandedAntdProvider>{children}</BrandedAntdProvider>
+      <BrandedAntdProvider>
+        <AppRoutes />
+      </BrandedAntdProvider>
     </AppProviders>
   </AppWrapper>
 )
@@ -313,51 +396,13 @@ const AppThemeProviders: React.FC<{ children?: React.ReactNode }> = ({ children 
 /**
  * Root application component with routing and provider hierarchy.
  */
-// skipcq: JS-0415
-const Providers: React.FC<{ children?: React.ReactNode }> = ({ children }) => (
-  <LanguageProvider>
-    <AppProvider>
-      <AppThemeProviders>{children}</AppThemeProviders>
-    </AppProvider>
-  </LanguageProvider>
-)
-
-/**
- * Content component that wraps routes with onboarding gate and suspense fallback.
- *
- * @returns JSX element containing the application routes.
- */
-const Content: React.FC = () => (
-  <OnboardingGate>
-    <Suspense fallback={<LoadingFallback />}>
-      <Routes>
-        {/* Onboarding for first-time setup */}
-        <Route path="/onboarding" element={<Onboarding />} />
-
-        {/* Redirect old auth routes to dashboard for local-only MVP */}
-        <Route path="/login" element={<Navigate to="/dashboard" replace />} />
-        <Route
-          path="/register"
-          element={<Navigate to="/dashboard" replace />}
-        />
-
-        {/* Main routes - no auth required for local-only version */}
-        <Route path="/*" element={<MainRoutes />} />
-      </Routes>
-    </Suspense>
-  </OnboardingGate>
-)
-
-/**
- * Main App component that initializes the router and providers.
- *
- * @returns JSX element rendering the application.
- */
 const App: React.FC = () => (
   <Router>
-    <Providers>
-      <Content />
-    </Providers>
+    <LanguageProvider>
+      <AppProvider>
+        <AppContent />
+      </AppProvider>
+    </LanguageProvider>
   </Router>
 )
 
