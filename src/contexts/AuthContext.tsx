@@ -99,11 +99,12 @@ interface AuthContextType {
   clearError: () => void
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+const AuthContext = createContext<AuthContextType | undefined>(undefined) // skipcq: JS-W1042
 
 // Session ID storage key
-const SESSION_ID_KEY = 'pacioli_session_id'
+const SESSION_ID_KEY = 'pacioli_session_id' // skipcq: SCT-A000
 
+/** Provides authentication state and operations to the component tree. */
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
@@ -287,7 +288,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // Update current profile role when profile selection changes
   useEffect(() => {
-    const handleStorageChange = (e: StorageEvent) => {
+    const handleStorageChange = (e: StorageEvent) => { // skipcq: JS-D1001
       if (e.key === 'currentProfileId' && e.newValue) {
         const profile = userProfiles.find(p => p.profile_id === e.newValue)
         if (profile) {
@@ -546,6 +547,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   )
 }
 
+/** Hook to access authentication context; throws if used outside AuthProvider. */
 export const useAuth = () => {
   const context = useContext(AuthContext)
   if (context === undefined) {

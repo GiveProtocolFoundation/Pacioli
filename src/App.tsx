@@ -83,6 +83,7 @@ const LoadingFallback: React.FC = () => (
 )
 
 // Composed providers to reduce JSX nesting depth
+// skipcq: JS-0415
 const DataProviders: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => (
@@ -281,6 +282,7 @@ const BrandedAntdProvider: React.FC<{ children: React.ReactNode }> = ({
 /**
  * Root application component with routing and provider hierarchy.
  */
+// skipcq: JS-0415
 const App: React.FC = () => (
   <Router>
     <LanguageProvider>

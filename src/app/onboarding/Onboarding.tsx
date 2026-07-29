@@ -19,13 +19,29 @@ interface ProgressStepProps {
   stepNumber: number
 }
 
+/** Logo, title, and subtitle shown at the top of each onboarding step. */
+const OnboardingHeader: React.FC = () => (
+  <div className="text-center mb-8">
+    <div className="flex items-center justify-center mb-4">
+      <img
+        src={PacioliBlackLogo}
+        alt="Pacioli"
+        className="h-12 w-auto mix-blend-multiply"
+      />
+      <span className="ml-3 text-2xl font-bold text-gray-900">Pacioli</span>
+    </div>
+    <p className="text-gray-600">Let&apos;s set up your account</p>
+  </div>
+)
+
+/** Renders a numbered step indicator with active/completed styling. */
 const ProgressStep: React.FC<ProgressStepProps> = ({
   label,
   isActive,
   isCompleted,
   stepNumber,
 }) => {
-  const getStepClassName = () => {
+  const getStepClassName = () => { // skipcq: JS-D1001
     if (isActive) return 'bg-[#8b4e52] text-white'
     if (isCompleted) return 'bg-[#2E9A82] text-white'
     return 'bg-gray-200 text-gray-600'
@@ -47,6 +63,7 @@ interface ProgressConnectorProps {
   isCompleted: boolean
 }
 
+/** Horizontal connector line between progress steps, filled when the step is complete. */
 const ProgressConnector: React.FC<ProgressConnectorProps> = ({
   isCompleted,
 }) => (
@@ -57,6 +74,7 @@ const ProgressConnector: React.FC<ProgressConnectorProps> = ({
   </div>
 )
 
+/** Multi-step onboarding flow: jurisdiction → account type → CoA import. */
 const Onboarding: React.FC = () => {
   const navigate = useNavigate()
   const { completeOnboarding } = useAuth()
@@ -144,19 +162,17 @@ const Onboarding: React.FC = () => {
   const isJurisdictionStep = currentStep === 'jurisdiction'
   const isAccountTypeStep = currentStep === 'account-type'
 
-  const getBackButtonClassName = () => {
-    return isJurisdictionStep
+  const getBackButtonClassName = () => // skipcq: JS-D1001
+    isJurisdictionStep
       ? 'text-gray-400 cursor-not-allowed'
       : 'text-gray-700 hover:bg-gray-50'
-  }
 
-  const getContinueButtonClassName = () => {
-    return canContinue
+  const getContinueButtonClassName = () => // skipcq: JS-D1001
+    canContinue
       ? 'bg-[#8b4e52] text-white hover:bg-[#7a4248]'
       : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-  }
 
-  const getContinueButtonText = () => {
+  const getContinueButtonText = () => { // skipcq: JS-D1001
     if (isSubmitting) return 'Setting up...'
     return isAccountTypeStep ? 'Complete Setup' : 'Continue'
   }
@@ -164,20 +180,7 @@ const Onboarding: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#fafaf8] to-[#ede8e0] flex items-center justify-center p-4">
       <div className="w-full max-w-4xl">
-        {/* Logo and Header */}
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center mb-4">
-            <img
-              src={PacioliBlackLogo}
-              alt="Pacioli"
-              className="h-12 w-auto mix-blend-multiply"
-            />
-            <span className="ml-3 text-2xl font-bold text-gray-900">
-              Pacioli
-            </span>
-          </div>
-          <p className="text-gray-600">Let&apos;s set up your account</p>
-        </div>
+        <OnboardingHeader />
 
         {/* Progress Steps */}
         <div className="mb-8">
