@@ -43,7 +43,6 @@ vi.mock('@polkadot/util-crypto', () => ({
   decodeAddress: (_addr: string) => new Uint8Array(32),
 }))
 
-
 describe('useBlockSubscription — service contracts', () => {
   beforeEach(() => {
     vi.useFakeTimers()
