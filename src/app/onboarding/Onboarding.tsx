@@ -41,7 +41,8 @@ const ProgressStep: React.FC<ProgressStepProps> = ({
   isCompleted,
   stepNumber,
 }) => {
-  const getStepClassName = () => { // skipcq: JS-D1001
+  const getStepClassName = () => {
+    // skipcq: JS-D1001
     if (isActive) return 'bg-[#8b4e52] text-white'
     if (isCompleted) return 'bg-[#2E9A82] text-white'
     return 'bg-gray-200 text-gray-600'
@@ -162,17 +163,20 @@ const Onboarding: React.FC = () => {
   const isJurisdictionStep = currentStep === 'jurisdiction'
   const isAccountTypeStep = currentStep === 'account-type'
 
-  const getBackButtonClassName = () => // skipcq: JS-D1001
+  const getBackButtonClassName = () =>
+    // skipcq: JS-D1001
     isJurisdictionStep
       ? 'text-gray-400 cursor-not-allowed'
       : 'text-gray-700 hover:bg-gray-50'
 
-  const getContinueButtonClassName = () => // skipcq: JS-D1001
+  const getContinueButtonClassName = () =>
+    // skipcq: JS-D1001
     canContinue
       ? 'bg-[#8b4e52] text-white hover:bg-[#7a4248]'
       : 'bg-gray-200 text-gray-400 cursor-not-allowed'
 
-  const getContinueButtonText = () => { // skipcq: JS-D1001
+  const getContinueButtonText = () => {
+    // skipcq: JS-D1001
     if (isSubmitting) return 'Setting up...'
     return isAccountTypeStep ? 'Complete Setup' : 'Continue'
   }

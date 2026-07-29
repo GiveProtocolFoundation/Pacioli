@@ -288,7 +288,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // Update current profile role when profile selection changes
   useEffect(() => {
-    const handleStorageChange = (e: StorageEvent) => { // skipcq: JS-D1001
+    const handleStorageChange = (e: StorageEvent) => {
+      // skipcq: JS-D1001
       if (e.key === 'currentProfileId' && e.newValue) {
         const profile = userProfiles.find(p => p.profile_id === e.newValue)
         if (profile) {
