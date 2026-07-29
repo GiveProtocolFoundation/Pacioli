@@ -20,9 +20,12 @@
   --font-family-display: 'Geist', system-ui, -apple-system, sans-serif;
   --font-family-serif: 'Geist', system-ui, -apple-system, sans-serif;
   --font-family-sans:
-    'Geist', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    'Geist', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    sans-serif;
   --font-family-heading: 'Geist', system-ui, -apple-system, sans-serif;
-  --font-family-ui: 'Geist', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-family-ui:
+    'Geist', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    sans-serif;
   --font-family-mono: 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
 
   /* Font weight scale */
@@ -53,55 +56,55 @@
      ============================================================================= */
 
   /* Dark Mode Background Palette */
-  --color-bg-primary-dark: #0C141B;
-  --color-bg-secondary-dark: #11202B;
-  --color-bg-tertiary-dark: #16242F;
+  --color-bg-primary-dark: #0c141b;
+  --color-bg-secondary-dark: #11202b;
+  --color-bg-tertiary-dark: #16242f;
 
   /* Light Mode Background Palette (parchment-led) */
-  --color-bg-primary-light: #F7FAFA;
-  --color-bg-secondary-light: #EAF3F2;
-  --color-bg-tertiary-light: #D9E5E4;
+  --color-bg-primary-light: #f7fafa;
+  --color-bg-secondary-light: #eaf3f2;
+  --color-bg-tertiary-light: #d9e5e4;
 
   /* Dark Mode Text Colors */
-  --color-text-primary-dark: #EAF3F2;
-  --color-text-secondary-dark: #9FB4BE;
-  --color-text-muted-dark: #647D8B;
+  --color-text-primary-dark: #eaf3f2;
+  --color-text-secondary-dark: #9fb4be;
+  --color-text-muted-dark: #647d8b;
 
   /* Light Mode Text Colors */
-  --color-text-primary-light: #0C141B;
+  --color-text-primary-light: #0c141b;
   --color-text-secondary-light: #294050;
-  --color-text-muted-light: #647D8B;
+  --color-text-muted-light: #647d8b;
 
   /* Accent Colors - Burgundy (cool slate-burgundy from pacioli-web) */
   --color-burgundy: #294050;
-  --color-burgundy-hover: #34526B;
-  --color-burgundy-light: #1E2F3C;
+  --color-burgundy-hover: #34526b;
+  --color-burgundy-light: #1e2f3c;
 
   /* Accent Colors - "Gold" slot now maps to brand mint-teal (primary accent) */
-  --color-gold: #5FE3C0;
-  --color-gold-hover: #9CF1DC;
-  --color-gold-light: #2E9A82;
+  --color-gold: #5fe3c0;
+  --color-gold-hover: #9cf1dc;
+  --color-gold-light: #2e9a82;
 
   /* Accent Colors - Warm coral (burgundy-bright from pacioli-web) */
-  --color-warm: #E8836F;
-  --color-warm-hover: #F09988;
-  --color-warm-light: #C56A57;
+  --color-warm: #e8836f;
+  --color-warm-hover: #f09988;
+  --color-warm-light: #c56a57;
 
   /* Semantic Colors - Dark Mode */
-  --color-success: #5FE3C0;
-  --color-success-hover: #9CF1DC;
+  --color-success: #5fe3c0;
+  --color-success-hover: #9cf1dc;
   --color-success-light: rgba(95, 227, 192, 0.15);
-  --color-warning: #E8B36F;
-  --color-warning-hover: #F0C385;
+  --color-warning: #e8b36f;
+  --color-warning-hover: #f0c385;
   --color-warning-light: rgba(232, 179, 111, 0.15);
-  --color-error: #E8836F;
-  --color-error-hover: #F09988;
+  --color-error: #e8836f;
+  --color-error-hover: #f09988;
   --color-error-light: rgba(232, 131, 111, 0.15);
 
   /* Semantic Colors - Light Mode (darker variants for AA contrast on parchment) */
-  --color-success-light-mode: #2E9A82;
-  --color-warning-light-mode: #B07A2F;
-  --color-error-light-mode: #B0533F;
+  --color-success-light-mode: #2e9a82;
+  --color-warning-light-mode: #b07a2f;
+  --color-error-light-mode: #b0533f;
 
   /* Border Colors (mint-tinted, replacing gold tint) */
   --color-border-subtle: rgba(150, 180, 196, 0.07);
@@ -109,73 +112,73 @@
   --color-border-strong: rgba(150, 180, 196, 0.28);
 
   /* Surface colors for cards */
-  --color-surface-dark: #11202B;
-  --color-surface-secondary-dark: #16242F;
-  --color-surface-light: #FFFFFF;
-  --color-surface-secondary-light: #EAF3F2;
+  --color-surface-dark: #11202b;
+  --color-surface-secondary-dark: #16242f;
+  --color-surface-light: #ffffff;
+  --color-surface-secondary-light: #eaf3f2;
 
   /* Legacy mappings — primary slot = burgundy (sober UI chrome) */
   --color-primary: #294050;
-  --color-primary-hover: #34526B;
+  --color-primary-hover: #34526b;
   --color-primary-dark: #294050;
-  --color-primary-dark-hover: #34526B;
-  --color-primary-light: rgba(41, 64, 80, 0.10);
+  --color-primary-dark-hover: #34526b;
+  --color-primary-light: rgba(41, 64, 80, 0.1);
   --color-primary-dark-light: rgba(41, 64, 80, 0.15);
-  --color-accent: #5FE3C0;
-  --color-accent-hover: #9CF1DC;
-  --color-accent-dark: #5FE3C0;
-  --color-accent-dark-hover: #9CF1DC;
+  --color-accent: #5fe3c0;
+  --color-accent-hover: #9cf1dc;
+  --color-accent-dark: #5fe3c0;
+  --color-accent-dark-hover: #9cf1dc;
 
   /* Legacy text colors */
-  --color-text-primary: #0C141B;
+  --color-text-primary: #0c141b;
   --color-text-secondary: #294050;
-  --color-text-muted: #647D8B;
+  --color-text-muted: #647d8b;
 
   /* Legacy surface colors */
-  --color-surface: #FFFFFF;
-  --color-surface-secondary: #EAF3F2;
+  --color-surface: #ffffff;
+  --color-surface-secondary: #eaf3f2;
   --color-border: rgba(150, 180, 196, 0.18);
   --color-border-dark: rgba(150, 180, 196, 0.12);
 
   /* Legacy background colors */
-  --color-bg-main: #F7FAFA;
-  --color-bg-card: #FFFFFF;
-  --color-bg-main-dark: #0C141B;
-  --color-bg-card-dark: #11202B;
+  --color-bg-main: #f7fafa;
+  --color-bg-card: #ffffff;
+  --color-bg-main-dark: #0c141b;
+  --color-bg-card-dark: #11202b;
 
   /* =============================================================================
      SOFT UI PALETTE — Dashboard-scoped additive tokens
      Remapped from Heritage burgundy/cream to Pacioli ink/parchment/mint.
      ============================================================================= */
-  --color-soft-background: #F7FAFA;
-  --color-soft-surface: #FFFFFF;
+  --color-soft-background: #f7fafa;
+  --color-soft-surface: #ffffff;
   --color-soft-primary: #294050;
-  --color-soft-primary-hover: #1E2F3C;
-  --color-soft-secondary: #EAF3F2;
-  --color-soft-foreground: #0C141B;
-  --color-soft-success: #2E9A82;
-  --color-soft-success-bg: rgba(46, 154, 130, 0.10);
-  --color-soft-warning: #B07A2F;
-  --color-soft-warning-bg: rgba(176, 122, 47, 0.10);
-  --color-soft-danger: #B0533F;
-  --color-soft-danger-bg: rgba(176, 83, 63, 0.10);
+  --color-soft-primary-hover: #1e2f3c;
+  --color-soft-secondary: #eaf3f2;
+  --color-soft-foreground: #0c141b;
+  --color-soft-success: #2e9a82;
+  --color-soft-success-bg: rgba(46, 154, 130, 0.1);
+  --color-soft-warning: #b07a2f;
+  --color-soft-warning-bg: rgba(176, 122, 47, 0.1);
+  --color-soft-danger: #b0533f;
+  --color-soft-danger-bg: rgba(176, 83, 63, 0.1);
 
   /* =============================================================================
      PACIOLI BRAND - native tokens (in addition to the legacy slot mapping above)
      Use these in new components for unambiguous intent.
      ============================================================================= */
-  --color-ink: #0C141B;
-  --color-ink-2: #11202B;
-  --color-ink-3: #16242F;
-  --color-parchment: #EAF3F2;
-  --color-parchment-dim: #9FB4BE;
-  --color-muted: #647D8B;
-  --color-mint: #5FE3C0;
-  --color-mint-bright: #9CF1DC;
-  --color-mint-dim: #2E9A82;
-  --color-coral: #E8836F;
-  --color-coral-bright: #F09988;
-  --color-coral-dim: #C56A57;
+  --color-ink: #0c141b;
+  --color-ink-2: #11202b;
+  --color-ink-3: #16242f;
+  --color-parchment: #eaf3f2;
+  --color-parchment-dim: #9fb4be;
+  --color-muted: #647d8b;
+  --color-mint: #5fe3c0;
+  --color-mint-bright: #9cf1dc;
+  --color-mint-dim: #2e9a82;
+  --color-coral: #e8836f;
+  --color-coral-bright: #f09988;
+  --color-coral-dim: #c56a57;
   --color-rule: rgba(150, 180, 196, 0.12);
   --color-rule-soft: rgba(150, 180, 196, 0.07);
 }
@@ -505,7 +508,7 @@ th,
 .badge-info,
 .badge-draft,
 .badge-neutral {
-  background: rgba(41, 64, 80, 0.10);
+  background: rgba(41, 64, 80, 0.1);
   color: var(--color-burgundy);
 }
 .dark .badge-exchange,
@@ -790,7 +793,7 @@ th,
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: linear-gradient(135deg, var(--color-burgundy) 0%, #1E2F3C 100%);
+  background: linear-gradient(135deg, var(--color-burgundy) 0%, #1e2f3c 100%);
   color: #ffffff;
   border-radius: 10px;
   padding: 11px 24px;
@@ -808,7 +811,7 @@ th,
   background: linear-gradient(
     135deg,
     var(--color-burgundy-hover) 0%,
-    #1E2F3C 100%
+    #1e2f3c 100%
   );
   transform: translateY(-1px);
   box-shadow:
@@ -824,14 +827,14 @@ th,
 }
 
 .dark .btn-primary {
-  background: linear-gradient(135deg, var(--color-burgundy) 0%, #1E2F3C 100%);
+  background: linear-gradient(135deg, var(--color-burgundy) 0%, #1e2f3c 100%);
 }
 
 .dark .btn-primary:hover {
   background: linear-gradient(
     135deg,
     var(--color-burgundy-hover) 0%,
-    #1E2F3C 100%
+    #1e2f3c 100%
   );
 }
 
@@ -845,7 +848,7 @@ th,
   opacity: 0.5;
   transform: none;
   box-shadow: 0 2px 4px rgba(139, 78, 82, 0.2);
-  background: linear-gradient(135deg, var(--color-burgundy) 0%, #1E2F3C 100%);
+  background: linear-gradient(135deg, var(--color-burgundy) 0%, #1e2f3c 100%);
 }
 
 .btn-primary svg,
@@ -1235,7 +1238,7 @@ textarea::placeholder {
 }
 
 .dark .dashboard-link {
-  color: #9CF1DC; /* 5.4:1 on #0C141B — AA */
+  color: #9cf1dc; /* 5.4:1 on #0C141B — AA */
 }
 
 /* Change indicators — AAA-compliant bold green/red */
@@ -1245,7 +1248,7 @@ textarea::placeholder {
 }
 
 .dark .change-positive {
-  color: #5FE3C0;
+  color: #5fe3c0;
 }
 
 .change-negative {
@@ -1254,7 +1257,7 @@ textarea::placeholder {
 }
 
 .dark .change-negative {
-  color: #E8836F;
+  color: #e8836f;
 }
 
 /* Status pills — prominent compliance indicators */
@@ -1276,7 +1279,7 @@ textarea::placeholder {
 
 .dark .status-pill-success {
   background: rgba(74, 222, 128, 0.1);
-  color: #5FE3C0;
+  color: #5fe3c0;
   border-color: rgba(74, 222, 128, 0.2);
 }
 
@@ -1288,7 +1291,7 @@ textarea::placeholder {
 
 .dark .status-pill-warning {
   background: rgba(251, 191, 36, 0.1);
-  color: #E8B36F;
+  color: #e8b36f;
   border-color: rgba(251, 191, 36, 0.2);
 }
 
@@ -1317,7 +1320,7 @@ textarea::placeholder {
 }
 
 .dark .alert-toast-warning {
-  border-left-color: #E8B36F;
+  border-left-color: #e8b36f;
 }
 
 .alert-toast-danger {
@@ -1325,7 +1328,7 @@ textarea::placeholder {
 }
 
 .dark .alert-toast-danger {
-  border-left-color: #E8836F;
+  border-left-color: #e8836f;
 }
 
 /* =============================================================================
@@ -1347,9 +1350,13 @@ textarea::placeholder {
 }
 
 /* Smooth scroll, with reduced-motion fallback */
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+}
 @media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
+  html {
+    scroll-behavior: auto;
+  }
 }
 
 /* ---------- Double-rule divider ----------
@@ -1391,7 +1398,9 @@ html { scroll-behavior: smooth; }
   font-size: 17px;
   color: var(--color-text-primary-light);
 }
-.dark .ledger-card__title { color: var(--color-text-primary-dark); }
+.dark .ledger-card__title {
+  color: var(--color-text-primary-dark);
+}
 
 .ledger-card__date {
   font-family: var(--font-family-mono);
@@ -1416,12 +1425,27 @@ html { scroll-behavior: smooth; }
   padding: 0 0 8px;
   border-bottom: 1px solid var(--color-rule);
 }
-.ledger-card table.je th:first-child { text-align: left; }
-.ledger-card table.je td { padding: 9px 0; color: var(--color-text-secondary-light); text-align: right; }
-.ledger-card table.je td:first-child { text-align: left; color: var(--color-text-primary-light); }
-.dark .ledger-card table.je td { color: var(--color-parchment-dim); }
-.dark .ledger-card table.je td:first-child { color: var(--color-parchment); }
-.ledger-card table.je td.indent { padding-left: 18px; }
+.ledger-card table.je th:first-child {
+  text-align: left;
+}
+.ledger-card table.je td {
+  padding: 9px 0;
+  color: var(--color-text-secondary-light);
+  text-align: right;
+}
+.ledger-card table.je td:first-child {
+  text-align: left;
+  color: var(--color-text-primary-light);
+}
+.dark .ledger-card table.je td {
+  color: var(--color-parchment-dim);
+}
+.dark .ledger-card table.je td:first-child {
+  color: var(--color-parchment);
+}
+.ledger-card table.je td.indent {
+  padding-left: 18px;
+}
 .ledger-card table.je tr.total td {
   border-top: 1px solid var(--color-rule);
   box-shadow: inset 0 -3px 0 -2px var(--color-mint-dim);
@@ -1442,7 +1466,9 @@ html { scroll-behavior: smooth; }
   border: 1px solid transparent;
   background: var(--color-mint);
   color: var(--color-ink);
-  transition: background .18s ease, transform .18s ease;
+  transition:
+    background 0.18s ease,
+    transform 0.18s ease;
 }
 .btn-mint:hover {
   background: var(--color-mint-bright);
@@ -1462,7 +1488,13 @@ html { scroll-behavior: smooth; }
   border: 1px solid var(--color-rule);
   background: transparent;
   color: var(--color-text-primary-light);
-  transition: border-color .18s ease, color .18s ease;
+  transition:
+    border-color 0.18s ease,
+    color 0.18s ease;
 }
-.dark .btn-ghost { color: var(--color-text-primary-dark); }
-.btn-ghost:hover { border-color: var(--color-mint-dim); }
+.dark .btn-ghost {
+  color: var(--color-text-primary-dark);
+}
+.btn-ghost:hover {
+  border-color: var(--color-mint-dim);
+}
