@@ -100,9 +100,7 @@ const DataProviders: React.FC<{ children: React.ReactNode }> = ({
   <TokenProvider>
     <WalletAliasProvider>
       <NotificationProvider>
-        <TransactionProviders>
-          {children}
-        </TransactionProviders>
+        <TransactionProviders>{children}</TransactionProviders>
       </NotificationProvider>
     </WalletAliasProvider>
   </TokenProvider>
@@ -296,14 +294,12 @@ const Providers: React.FC<{ children?: React.ReactNode }> = ({ children }) => (
     <AppProvider>
       <AppWrapper>
         <AppProviders>
-          <BrandedAntdProvider>
-            {children}
-          </BrandedAntdProvider>
+          <BrandedAntdProvider>{children}</BrandedAntdProvider>
         </AppProviders>
       </AppWrapper>
     </AppProvider>
   </LanguageProvider>
-);
+)
 
 const Content: React.FC = () => (
   <OnboardingGate>
@@ -313,10 +309,7 @@ const Content: React.FC = () => (
         <Route path="/onboarding" element={<Onboarding />} />
 
         {/* Redirect old auth routes to dashboard for local-only MVP */}
-        <Route
-          path="/login"
-          element={<Navigate to="/dashboard" replace />}
-        />
+        <Route path="/login" element={<Navigate to="/dashboard" replace />} />
         <Route
           path="/register"
           element={<Navigate to="/dashboard" replace />}
@@ -327,7 +320,7 @@ const Content: React.FC = () => (
       </Routes>
     </Suspense>
   </OnboardingGate>
-);
+)
 
 const App: React.FC = () => (
   <Router>
@@ -335,6 +328,6 @@ const App: React.FC = () => (
       <Content />
     </Providers>
   </Router>
-);
+)
 
 export default App

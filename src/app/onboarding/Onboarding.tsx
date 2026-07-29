@@ -165,7 +165,7 @@ const Onboarding: React.FC = () => {
 
   /**
    * Returns the CSS class for the back button based on the current step.
-  * @returns {string} The class names for the back button.
+   * @returns {string} The class names for the back button.
    */
   const getBackButtonClassName = () =>
     // skipcq: JS-D1001
