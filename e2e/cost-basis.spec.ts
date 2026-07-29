@@ -72,7 +72,6 @@ test.describe('Cost basis report generation', () => {
     }
   })
 
-  // TODO(GIV-447): Unskip and implement once cost-basis engine is merged.
   //   This test should:
   //     1. Seed fixture transactions with known acquisition/disposal dates and prices.
   //     2. Trigger cost-basis calculation via the report UI.
@@ -87,7 +86,6 @@ test.describe('Cost basis report generation', () => {
     expect(true).toBe(false) // fail-safe: should not run until unskipped
   })
 
-  // TODO(GIV-447): Unskip once cost-basis calculation supports HIFO/LIFO methods.
   test.skip('cost basis method selector persists selection across report runs', ({
     page,
   }) => {
