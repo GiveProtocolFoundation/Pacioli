@@ -101,7 +101,14 @@ const Onboarding: React.FC = () => {
         setIsSubmitting(false)
       }
     }
-  }, [currentStep, jurisdiction, accountType, currentProfile, navigate, completeOnboarding])
+  }, [
+    currentStep,
+    jurisdiction,
+    accountType,
+    currentProfile,
+    navigate,
+    completeOnboarding,
+  ])
 
   const handleBack = useCallback(() => {
     if (currentStep === 'account-type') {
