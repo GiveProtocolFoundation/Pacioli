@@ -84,17 +84,25 @@ const LoadingFallback: React.FC = () => (
 
 // Composed providers to reduce JSX nesting depth
 // skipcq: JS-0415
+const TransactionProviders: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => (
+  <NavBadgeProvider>
+    <TransactionProvider userAccountType="organization">
+      {children}
+    </TransactionProvider>
+  </NavBadgeProvider>
+)
+
 const DataProviders: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => (
   <TokenProvider>
     <WalletAliasProvider>
       <NotificationProvider>
-        <NavBadgeProvider>
-          <TransactionProvider userAccountType="organization">
-            {children}
-          </TransactionProvider>
-        </NavBadgeProvider>
+        <TransactionProviders>
+          {children}
+        </TransactionProviders>
       </NotificationProvider>
     </WalletAliasProvider>
   </TokenProvider>
@@ -283,40 +291,50 @@ const BrandedAntdProvider: React.FC<{ children: React.ReactNode }> = ({
  * Root application component with routing and provider hierarchy.
  */
 // skipcq: JS-0415
+const Providers: React.FC<{ children?: React.ReactNode }> = ({ children }) => (
+  <LanguageProvider>
+    <AppProvider>
+      <AppWrapper>
+        <AppProviders>
+          <BrandedAntdProvider>
+            {children}
+          </BrandedAntdProvider>
+        </AppProviders>
+      </AppWrapper>
+    </AppProvider>
+  </LanguageProvider>
+);
+
+const Content: React.FC = () => (
+  <OnboardingGate>
+    <Suspense fallback={<LoadingFallback />}>
+      <Routes>
+        {/* Onboarding for first-time setup */}
+        <Route path="/onboarding" element={<Onboarding />} />
+
+        {/* Redirect old auth routes to dashboard for local-only MVP */}
+        <Route
+          path="/login"
+          element={<Navigate to="/dashboard" replace />}
+        />
+        <Route
+          path="/register"
+          element={<Navigate to="/dashboard" replace />}
+        />
+
+        {/* Main routes - no auth required for local-only version */}
+        <Route path="/*" element={<MainRoutes />} />
+      </Routes>
+    </Suspense>
+  </OnboardingGate>
+);
+
 const App: React.FC = () => (
   <Router>
-    <LanguageProvider>
-      <AppProvider>
-        <AppWrapper>
-          <AppProviders>
-            <BrandedAntdProvider>
-              <OnboardingGate>
-                <Suspense fallback={<LoadingFallback />}>
-                  <Routes>
-                    {/* Onboarding for first-time setup */}
-                    <Route path="/onboarding" element={<Onboarding />} />
-
-                    {/* Redirect old auth routes to dashboard for local-only MVP */}
-                    <Route
-                      path="/login"
-                      element={<Navigate to="/dashboard" replace />}
-                    />
-                    <Route
-                      path="/register"
-                      element={<Navigate to="/dashboard" replace />}
-                    />
-
-                    {/* Main routes - no auth required for local-only version */}
-                    <Route path="/*" element={<MainRoutes />} />
-                  </Routes>
-                </Suspense>
-              </OnboardingGate>
-            </BrandedAntdProvider>
-          </AppProviders>
-        </AppWrapper>
-      </AppProvider>
-    </LanguageProvider>
+    <Providers>
+      <Content />
+    </Providers>
   </Router>
-)
+);
 
 export default App

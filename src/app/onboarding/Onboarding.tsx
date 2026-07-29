@@ -163,12 +163,20 @@ const Onboarding: React.FC = () => {
   const isJurisdictionStep = currentStep === 'jurisdiction'
   const isAccountTypeStep = currentStep === 'account-type'
 
+  /**
+   * Returns the CSS class for the back button based on the current step.
+  * @returns {string} The class names for the back button.
+   */
   const getBackButtonClassName = () =>
     // skipcq: JS-D1001
     isJurisdictionStep
       ? 'text-gray-400 cursor-not-allowed'
       : 'text-gray-700 hover:bg-gray-50'
 
+  /**
+   * Returns the CSS class for the continue button based on whether continuation is allowed.
+   * @returns {string} The class names for the continue button.
+   */
   const getContinueButtonClassName = () =>
     // skipcq: JS-D1001
     canContinue
@@ -186,24 +194,12 @@ const Onboarding: React.FC = () => {
       <div className="w-full max-w-4xl">
         <OnboardingHeader />
 
-        {/* Progress Steps */}
-        <div className="mb-8">
-          <div className="flex items-center justify-center space-x-4">
-            <ProgressStep
-              label="Jurisdiction"
-              isActive={isJurisdictionStep}
-              isCompleted={Boolean(jurisdiction)}
-              stepNumber={1}
-            />
-            <ProgressConnector isCompleted={Boolean(jurisdiction)} />
-            <ProgressStep
-              label="Account Type"
-              isActive={isAccountTypeStep}
-              isCompleted={Boolean(accountType)}
-              stepNumber={2}
-            />
-          </div>
-        </div>
+        <ProgressStepsSection
+          isJurisdictionStep={isJurisdictionStep}
+          jurisdiction={jurisdiction}
+          isAccountTypeStep={isAccountTypeStep}
+          accountType={accountType}
+        />
 
         {/* Main Content Card */}
         <div className="bg-white rounded-xl shadow-xl p-8">
