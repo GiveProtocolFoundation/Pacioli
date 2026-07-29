@@ -73,6 +73,11 @@ const StatementOfActivities = React.lazy(
 )
 
 // Loading fallback component
+/**
+ * Loading fallback component that displays a spinner and loading message while content is loading.
+ *
+ * @returns JSX.Element A loading screen component.
+ */
 const LoadingFallback: React.FC = () => (
   <div className="min-h-screen bg-[#F7FAFA] dark:bg-[#0C141B] flex items-center justify-center">
     <div className="text-center">
@@ -83,6 +88,12 @@ const LoadingFallback: React.FC = () => (
 )
 
 // Composed providers to reduce JSX nesting depth
+/**
+ * Composed provider component that wraps children with navigation badge and transaction contexts.
+ *
+ * @param children React.ReactNode The content to be wrapped by the providers.
+ * @returns JSX.Element The composed provider elements.
+ */
 // skipcq: JS-0415
 const TransactionProviders: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -94,6 +105,12 @@ const TransactionProviders: React.FC<{ children: React.ReactNode }> = ({
   </NavBadgeProvider>
 )
 
+/**
+ * Composed provider component that wraps children with token, wallet alias, notification, and transaction contexts.
+ *
+ * @param children React.ReactNode The content to be wrapped by the providers.
+ * @returns JSX.Element The composed provider elements.
+ */
 const DataProviders: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => (
@@ -118,8 +135,6 @@ const AppProviders: React.FC<{ children: React.ReactNode }> = ({
     </EntityProvider>
   </ProfileProvider>
 )
-
-/**
  * Handles page reload for retry button.
  */
 const handleRetry = () => {
@@ -285,6 +300,14 @@ const BrandedAntdProvider: React.FC<{ children: React.ReactNode }> = ({
   )
 }
 
+const AppThemeProviders: React.FC<{ children?: React.ReactNode }> = ({ children }) => (
+  <AppWrapper>
+    <AppProviders>
+      <BrandedAntdProvider>{children}</BrandedAntdProvider>
+    </AppProviders>
+  </AppWrapper>
+)
+
 /**
  * Root application component with routing and provider hierarchy.
  */
@@ -292,15 +315,16 @@ const BrandedAntdProvider: React.FC<{ children: React.ReactNode }> = ({
 const Providers: React.FC<{ children?: React.ReactNode }> = ({ children }) => (
   <LanguageProvider>
     <AppProvider>
-      <AppWrapper>
-        <AppProviders>
-          <BrandedAntdProvider>{children}</BrandedAntdProvider>
-        </AppProviders>
-      </AppWrapper>
+      <AppThemeProviders>{children}</AppThemeProviders>
     </AppProvider>
   </LanguageProvider>
 )
 
+/**
+ * Content component that wraps routes with onboarding gate and suspense fallback.
+ *
+ * @returns JSX element containing the application routes.
+ */
 const Content: React.FC = () => (
   <OnboardingGate>
     <Suspense fallback={<LoadingFallback />}>
@@ -322,6 +346,11 @@ const Content: React.FC = () => (
   </OnboardingGate>
 )
 
+/**
+ * Main App component that initializes the router and providers.
+ *
+ * @returns JSX element rendering the application.
+ */
 const App: React.FC = () => (
   <Router>
     <Providers>

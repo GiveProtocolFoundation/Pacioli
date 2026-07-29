@@ -1,15 +1,15 @@
-import React, { useState, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { invoke } from '@tauri-apps/api/core'
-import { Globe, Building2, User, Check } from 'lucide-react'
-import PacioliBlackLogo from '../../assets/pacioli_logo_black.svg'
-import { GridSelectionButton } from '../../components/GridSelectionButton'
-import { persistence } from '../../services/persistence'
-import { useAuth } from '../../contexts/AuthContext'
-import { useProfile } from '../../contexts/ProfileContext'
-
-type Step = 'jurisdiction' | 'account-type' | 'complete'
-type Jurisdiction = 'us-gaap' | 'ifrs'
+  import React, { useState, useCallback } from 'react'
+  import { useNavigate } from 'react-router-dom'
+  import { invoke } from '@tauri-apps/api/core'
+  import { Globe, Building2, User, Check } from 'lucide-react'
+  import PacioliBlackLogo from '../../assets/pacioli_logo_black.svg'
+  import { GridSelectionButton } from '../../components/GridSelectionButton'
+  import { persistence } from '../../services/persistence'
+  import { useAuth } from '../../contexts/AuthContext'
+  import { useProfile } from '../../contexts/ProfileContext'
+  import OnboardingHeader from './OnboardingHeader'
+  import ProgressStepsSection from './ProgressStepsSection'
+  import JurisdictionStepSection from './JurisdictionStepSection'
 type AccountType = 'individual' | 'for-profit-enterprise' | 'not-for-profit'
 
 interface ProgressStepProps {
@@ -31,47 +31,6 @@ const OnboardingHeader: React.FC = () => (
       <span className="ml-3 text-2xl font-bold text-gray-900">Pacioli</span>
     </div>
     <p className="text-gray-600">Let&apos;s set up your account</p>
-  </div>
-)
-
-/** Renders a numbered step indicator with active/completed styling. */
-const ProgressStep: React.FC<ProgressStepProps> = ({
-  label,
-  isActive,
-  isCompleted,
-  stepNumber,
-}) => {
-  const getStepClassName = () => {
-    // skipcq: JS-D1001
-    if (isActive) return 'bg-[#8b4e52] text-white'
-    if (isCompleted) return 'bg-[#2E9A82] text-white'
-    return 'bg-gray-200 text-gray-600'
-  }
-
-  return (
-    <div className="flex items-center">
-      <div
-        className={`w-10 h-10 rounded-full flex items-center justify-center ${getStepClassName()}`}
-      >
-        {isCompleted ? <Check className="w-5 h-5" /> : stepNumber}
-      </div>
-      <span className="ml-2 text-sm font-medium text-gray-700">{label}</span>
-    </div>
-  )
-}
-
-interface ProgressConnectorProps {
-  isCompleted: boolean
-}
-
-/** Horizontal connector line between progress steps, filled when the step is complete. */
-const ProgressConnector: React.FC<ProgressConnectorProps> = ({
-  isCompleted,
-}) => (
-  <div className="w-16 h-1 bg-gray-300">
-    <div
-      className={`h-full transition-all ${isCompleted ? 'bg-[#8b4e52] w-full' : 'bg-transparent w-0'}`}
-    />
   </div>
 )
 
@@ -205,17 +164,15 @@ const Onboarding: React.FC = () => {
         <div className="bg-white rounded-xl shadow-xl p-8">
           {/* Jurisdiction Step */}
           {isJurisdictionStep && (
-            <div>
-              <h2 className="text-2xl font-bold text-[#0C141B] mb-2">
-                Select Your Jurisdiction
-              </h2>
-              <p className="text-gray-600 mb-8">
-                Choose the accounting standard that applies to your organization
-              </p>
+            <JurisdictionStepSection
+              jurisdiction={jurisdiction}
+              setJurisdiction={setJurisdiction}
+            />
+          )}
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <GridSelectionButton
-                  icon={Globe}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <GridSelectionButton
+              icon={Globe}
                   title="United States"
                   description="US GAAP (Generally Accepted Accounting Principles)"
                   subtitle="For organizations operating in the United States"
