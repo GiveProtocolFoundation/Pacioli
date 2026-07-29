@@ -128,13 +128,15 @@ const DataProviders: React.FC<{ children: React.ReactNode }> = ({
  */
 const AppProviders: React.FC<{ children: React.ReactNode }> = ({
   children,
-}) => (
-  <ProfileProvider>
-    <EntityProvider>
-      <DataProviders>{children}</DataProviders>
-    </EntityProvider>
-  </ProfileProvider>
-)
+}) => {
+  return (
+    <ProfileProvider>
+      <EntityProvider>
+        <DataProviders>{children}</DataProviders>
+      </EntityProvider>
+    </ProfileProvider>
+  );
+}
  * Handles page reload for retry button.
  */
 const handleRetry = () => {
