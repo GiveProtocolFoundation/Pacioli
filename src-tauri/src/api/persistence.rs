@@ -554,43 +554,71 @@ pub async fn get_all_settings(
 #[derive(Debug, Clone, Deserialize)]
 pub struct ChainTransactionInput {
     #[allow(dead_code)]
+    /// Unique identifier for the chain transaction input.
     pub id: String,
+    /// Hash of the transaction.
     pub transaction_hash: String,
+    /// Block number in which the transaction was included.
     pub block_number: Option<i64>,
+    /// Timestamp of the transaction.
     pub timestamp: i64,
+    /// Sender address of the transaction.
     pub from_address: String,
+    /// Optional recipient address of the transaction.
     pub to_address: Option<String>,
+    /// Value transferred in the transaction.
     pub transfer_value: String,
+    /// Optional fee for the transaction.
     pub transaction_fee: Option<String>,
+    /// Status of the transaction.
     pub status: String,
+    /// Type of the transaction.
     pub transaction_type: String,
+    /// Raw JSON data representing the transaction.
     pub raw_json_data: String,
 }
 
 /// Row type for reading chain transactions back.
 #[derive(Debug, Clone, Serialize, FromRow)]
 pub struct ChainTransactionRow {
+    /// Unique identifier of the transaction.
     pub id: String,
+    /// Identifier of the blockchain network.
     pub chain_id: String,
+    /// Hash of the transaction.
     pub transaction_hash: String,
+    /// Sender address of the transaction.
     pub from_address: String,
+    /// Optional recipient address of the transaction.
     pub to_address: Option<String>,
+    /// Value transferred in the transaction.
     pub transfer_value: String,
+    /// Optional fee for the transaction.
     pub transaction_fee: Option<String>,
+    /// Timestamp of the transaction.
     pub timestamp: i64,
+    /// Block number in which the transaction was included.
     pub block_number: Option<i64>,
+    /// Type of the transaction.
     pub transaction_type: String,
+    /// Status of the transaction.
     pub status: String,
+    /// Optional raw JSON data of the transaction.
     pub raw_json_data: Option<String>,
 }
 
 /// Row type for sync status.
 #[derive(Debug, Clone, Serialize, FromRow)]
 pub struct ChainSyncStatusRow {
+    /// Identifier of the blockchain network.
     pub chain_id: String,
+    /// Address for which the sync status applies.
     pub address: String,
+    /// Last block number that was synced.
     pub last_block_synced: i64,
+    /// Timestamp of the last synchronization.
     pub last_sync_timestamp: Option<i64>,
+    /// Optional state of synchronization.
     pub sync_state: Option<String>,
 }
 
