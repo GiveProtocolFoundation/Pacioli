@@ -52,6 +52,7 @@ pub enum ProviderKind {
 /// mirroring the price-feed key-sourcing pattern.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ProviderConfig {
+    /// The provider kind (backend) to use.
     pub provider: ProviderKind,
     /// Model identifier as understood by the provider (e.g. "claude-opus-4-6").
     pub model: String,
