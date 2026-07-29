@@ -64,9 +64,9 @@ describe('useBlockSubscription — service contracts', () => {
 
     const unsub = await polkadotService.subscribeNewBlocks(
       'polkadot' as never,
-      () => {}
-    )
-
+      () => {
+        // empty because no-op callback for this test
+      }
     expect(typeof unsub).toBe('function')
     unsub()
     expect(mockUnsubscribe).toHaveBeenCalledTimes(1)
@@ -113,7 +113,9 @@ describe('useBlockSubscription — service contracts', () => {
 
     const unsub = await polkadotService.subscribeNewBlocks(
       'polkadot' as never,
-      () => {}
+      () => {
+        // empty because this function is a no-op placeholder
+      }
     )
 
     unsub()
