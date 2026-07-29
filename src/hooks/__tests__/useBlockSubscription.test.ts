@@ -43,6 +43,7 @@ vi.mock('@polkadot/util-crypto', () => ({
   decodeAddress: (_addr: string) => new Uint8Array(32),
 }))
 
+
 describe('useBlockSubscription — service contracts', () => {
   beforeEach(() => {
     vi.useFakeTimers()
@@ -67,6 +68,7 @@ describe('useBlockSubscription — service contracts', () => {
       () => {
         // empty because no-op callback for this test
       }
+    )
     expect(typeof unsub).toBe('function')
     unsub()
     expect(mockUnsubscribe).toHaveBeenCalledTimes(1)
