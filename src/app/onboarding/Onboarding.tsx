@@ -196,7 +196,7 @@ const Onboarding: React.FC = () => {
           {/* Jurisdiction Step */}
           {isJurisdictionStep && (
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              <h2 className="text-2xl font-bold text-[#0C141B] mb-2">
                 Select Your Jurisdiction
               </h2>
               <p className="text-gray-600 mb-8">
@@ -231,7 +231,7 @@ const Onboarding: React.FC = () => {
           {/* Account Type Step */}
           {isAccountTypeStep && (
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              <h2 className="text-2xl font-bold text-[#0C141B] mb-2">
                 Select Your Account Type
               </h2>
               <p className="text-gray-600 mb-8">

@@ -187,61 +187,61 @@
    - Mono (Geist Mono): Numbers, metrics, financial data, eyebrows
    ============================================================================= */
 
-/* Base typography - Geist for entire UI */
-body {
-  font-family: var(--font-family-sans);
-  font-size: var(--font-size-body);
-  line-height: var(--line-height-body);
-  color: var(--color-text-primary-light);
-  background-color: var(--color-bg-primary-light);
-  color-scheme: light;
-}
+/* Base typography — placed in @layer base so Tailwind utilities can override
+   per-element when a component locks in its own color (e.g. Onboarding on
+   a fixed-light card in dark mode). */
+@layer base {
+  body {
+    font-family: var(--font-family-sans);
+    font-size: var(--font-size-body);
+    line-height: var(--line-height-body);
+    color: var(--color-text-primary-light);
+    background-color: var(--color-bg-primary-light);
+    color-scheme: light;
+  }
 
-.dark body {
-  color: var(--color-text-primary-dark);
-  background-color: var(--color-bg-primary-dark);
-  color-scheme: dark;
-}
+  .dark body {
+    color: var(--color-text-primary-dark);
+    background-color: var(--color-bg-primary-dark);
+    color-scheme: dark;
+  }
 
-/* Page titles: Cormorant Garamond for elegant display */
-h1 {
-  font-family: var(--font-family-display);
-  font-size: var(--font-size-page-title);
-  font-weight: var(--font-weight-semibold);
-  line-height: var(--line-height-page-title);
-  color: var(--color-text-primary-light);
-  letter-spacing: -0.01em;
-}
+  h1 {
+    font-family: var(--font-family-display);
+    font-size: var(--font-size-page-title);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--line-height-page-title);
+    color: var(--color-text-primary-light);
+    letter-spacing: -0.01em;
+  }
 
-/* Section headers: Inter semibold for clarity */
-h2 {
-  font-family: var(--font-family-sans);
-  font-size: var(--font-size-section-header);
-  font-weight: var(--font-weight-semibold);
-  line-height: var(--line-height-section-header);
-  color: var(--color-text-primary-light);
-}
+  h2 {
+    font-family: var(--font-family-sans);
+    font-size: var(--font-size-section-header);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--line-height-section-header);
+    color: var(--color-text-primary-light);
+  }
 
-/* Sub-section headers: Inter medium */
-h3 {
-  font-family: var(--font-family-sans);
-  font-size: 16px;
-  font-weight: var(--font-weight-medium);
-  line-height: 1.4;
-  color: var(--color-text-secondary-light);
-}
+  h3 {
+    font-family: var(--font-family-sans);
+    font-size: 16px;
+    font-weight: var(--font-weight-medium);
+    line-height: 1.4;
+    color: var(--color-text-secondary-light);
+  }
 
-/* Dark mode overrides for headings */
-.dark h1 {
-  color: var(--color-text-primary-dark);
-}
+  .dark h1 {
+    color: var(--color-text-primary-dark);
+  }
 
-.dark h2 {
-  color: var(--color-text-primary-dark);
-}
+  .dark h2 {
+    color: var(--color-text-primary-dark);
+  }
 
-.dark h3 {
-  color: var(--color-text-secondary-dark);
+  .dark h3 {
+    color: var(--color-text-secondary-dark);
+  }
 }
 
 /* =============================================================================
