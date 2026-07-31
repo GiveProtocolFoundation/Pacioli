@@ -45,7 +45,9 @@ describe('toMinorUnits', () => {
     const tenCentsInMinorUnits = toMinorUnits('0.10')
     const twentyCentsInMinorUnits = toMinorUnits('0.20')
     expect(tenCentsInMinorUnits + twentyCentsInMinorUnits).toBe(30) // exactly 30 cents
-    expect(tenCentsInMinorUnits + twentyCentsInMinorUnits).toBe(toMinorUnits('0.30'))
+    expect(tenCentsInMinorUnits + twentyCentsInMinorUnits).toBe(
+      toMinorUnits('0.30')
+    )
   })
 
   it('should handle the float rounding trap 19.99 + 0.01', () => {
