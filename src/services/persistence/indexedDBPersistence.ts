@@ -978,11 +978,11 @@ class IndexedDBPersistenceService implements PersistenceService {
   // Chain Transaction Operations (delegates to indexedDBService)
   // ============================================================================
 
-  async initTransactionStore(): Promise<void> {
+  static async initTransactionStore(): Promise<void> {
     await indexedDBService.init()
   }
 
-  async saveChainTransactions(
+  static async saveChainTransactions(
     network: string,
     address: string,
     transactions: Transaction[]
@@ -1008,11 +1008,11 @@ class IndexedDBPersistenceService implements PersistenceService {
     return indexedDBService.loadSyncStatus(network, address)
   }
 
-  async saveChainSyncStatus(status: ChainSyncStatus): Promise<void> {
+  static async saveChainSyncStatus(status: ChainSyncStatus): Promise<void> {
     await indexedDBService.saveSyncStatus(status)
   }
 
-  async clearChainTransactions(): Promise<void> {
+  static async clearChainTransactions(): Promise<void> {
     await indexedDBService.clearTransactions()
   }
 
@@ -1020,7 +1020,7 @@ class IndexedDBPersistenceService implements PersistenceService {
   // Connected Wallet Operations (delegates to indexedDBService)
   // ============================================================================
 
-  async saveConnectedWallets(wallets: ConnectedWallet[]): Promise<void> {
+  static async saveConnectedWallets(wallets: ConnectedWallet[]): Promise<void> {
     await indexedDBService.saveWallets(wallets)
   }
 
