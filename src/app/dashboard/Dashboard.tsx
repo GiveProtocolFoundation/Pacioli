@@ -447,6 +447,10 @@ const Dashboard: React.FC = () => {
   )
   const [txLoading, setTxLoading] = useState(true)
 
+  /**
+   * Handles navigation to the new transaction creation page.
+   * @returns {void}
+   */
   const handleNewTransaction = useCallback(() => {
     navigate('/transactions/new')
   }, [navigate])
@@ -465,6 +469,11 @@ const Dashboard: React.FC = () => {
   // Load recent transactions from persistence
   useEffect(() => {
     let cancelled = false
+    /**
+     * Loads recent transactions for the current profile from persistence and updates state.
+     * @async
+     * @returns {Promise<void>}
+     */
     const loadTransactions = async () => {
       if (!currentProfile) {
         setRecentTransactions([])
@@ -522,6 +531,12 @@ const Dashboard: React.FC = () => {
     }
   }, [currentProfile])
 
+  /**
+   * Returns a badge color class based on the transaction type.
+   *
+   * @param {string} type - The transaction type (e.g., 'donation', 'expense', 'exchange', 'transfer').
+   * @returns {string} The corresponding badge color class.
+   */
   const getTypeColor = (type: string) => {
     switch (type) {
       case 'donation':

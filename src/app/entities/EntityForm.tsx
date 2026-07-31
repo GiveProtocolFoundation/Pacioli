@@ -692,6 +692,11 @@ const EntityForm: React.FC<EntityFormProps> = ({
     }
   }, [entity, newAddress, addEntityAddress])
 
+  /**
+   * Handles removal of an address by id.
+   * @param id - The id of the address to remove.
+   * @returns A promise that resolves when the address is removed.
+   */
   const handleRemoveAddress = useCallback(
     async (id: string) => {
       try {
@@ -706,6 +711,10 @@ const EntityForm: React.FC<EntityFormProps> = ({
     [removeEntityAddress]
   )
 
+  /**
+   * Memoizes handlers for removing addresses based on current addresses.
+   * @returns A record mapping address IDs to their removal handler functions.
+   */
   const removeAddressHandlers = React.useMemo(() => {
     const handlers: Record<string, () => void> = {}
     addresses.forEach(addr => {
@@ -714,6 +723,10 @@ const EntityForm: React.FC<EntityFormProps> = ({
     return handlers
   }, [addresses, handleRemoveAddress])
 
+  /**
+   * Renders the body section of the entity form, displaying errors and entity detail sections.
+   * @returns The JSX element representing the body section of the form.
+   */
   const BodySection = () => (
     <div className="p-6 space-y-6">
       {error && (
