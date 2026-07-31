@@ -539,6 +539,10 @@ const Analytics: React.FC = () => {
   // Load all transactions for analytics
   useEffect(() => {
     let cancelled = false
+    /**
+     * Loads all transactions for the current profile and updates the state.
+     * @returns {Promise<void>} A promise that resolves when transactions are loaded.
+     */
     const load = async () => {
       if (!currentProfile) {
         setAllTransactions([])
@@ -647,6 +651,11 @@ const Analytics: React.FC = () => {
   const kpis = useMemo((): KPI[] => {
     const hasWallets = wallets.length > 0
 
+    /**
+     * Formats a number as currency according to primary currency settings.
+     * @param v The numeric value to format.
+     * @returns The formatted currency string.
+     */
     const fmtCurrency = (v: number) =>
       formatCurrency(v, currencySettings.primaryCurrency, {
         decimalPlaces: currencySettings.decimalPlaces,

@@ -14,6 +14,12 @@ interface PasswordStrength {
   color: string
 }
 
+/**
+ * Calculates the strength of a given password.
+ *
+ * @param password - The password to evaluate.
+ * @returns An object containing the score, label, and color representing the password strength.
+ */
 const getPasswordStrength = (password: string): PasswordStrength => {
   let score = 0
 
@@ -30,6 +36,12 @@ const getPasswordStrength = (password: string): PasswordStrength => {
   return { score, label: 'Very Strong', color: 'bg-green-600' }
 }
 
+/**
+ * Displays a visual indicator of the current password strength.
+ *
+ * @param password - The password string to assess and display strength for.
+ * @returns A React element showing strength bars and label, or null if password is empty.
+ */
 const PasswordStrengthIndicator: React.FC<{ password: string }> = ({
   password,
 }) => {
@@ -54,6 +66,11 @@ const PasswordStrengthIndicator: React.FC<{ password: string }> = ({
   )
 }
 
+/**
+ * Renders a list of password requirement indicators.
+ *
+ * @returns A React element listing password requirements.
+ */
 const PasswordRequirements: React.FC = () => (
   <div className="space-y-1 text-xs text-muted-foreground">
     <div className="flex items-center gap-2">
@@ -75,6 +92,11 @@ const PasswordRequirements: React.FC = () => (
   </div>
 )
 
+/**
+ * Registration form component for new users.
+ *
+ * @returns A React element containing the registration form and logic.
+ */
 const Register: React.FC = () => {
   const navigate = useNavigate()
   const { register, isLoading, error, clearError } = useAuth()

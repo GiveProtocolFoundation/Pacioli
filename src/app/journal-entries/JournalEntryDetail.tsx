@@ -196,6 +196,11 @@ const JournalEntryDetail: React.FC<JournalEntryDetailProps> = ({
     return m
   }, [accounts])
 
+  /**
+   * Resolves a GL account ID to a display string combining its account number and name.
+   * @param glAccountId The ID of the general ledger account to resolve.
+   * @returns A formatted string "accountNumber · accountName" if the account exists, otherwise "#<glAccountId>".
+   */
   const resolveAccountName = (glAccountId: number) => {
     const acct = accountMap.get(glAccountId)
     return acct
