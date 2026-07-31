@@ -386,7 +386,9 @@ const RevenueExpensesChart: React.FC<{
 
     for (let i = 4; i >= 0; i--) {
       const monthDate = new Date(now.getFullYear(), now.getMonth() - i, 1)
-      const monthName = monthDate.toLocaleDateString('en-US', { month: 'short' })
+      const monthName = monthDate.toLocaleDateString('en-US', {
+        month: 'short',
+      })
       const monthStart = monthDate.getTime()
       const monthEnd = new Date(
         monthDate.getFullYear(),
