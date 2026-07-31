@@ -7,6 +7,14 @@ interface SparklineChartProps {
   height?: number
 }
 
+/**
+ * SparklineChart component renders a small area chart (sparkline) displaying a series of numeric data.
+ *
+ * @param {number[]} data - Array of numeric values to display in the sparkline.
+ * @param {string} [color='#2E9A82'] - Color of the sparkline curve and gradient.
+ * @param {number} [height=48] - Height of the chart in pixels.
+ * @returns {JSX.Element} The rendered sparkline chart component.
+ */
 const SparklineChart: React.FC<SparklineChartProps> = ({
   data,
   color = '#2E9A82',
