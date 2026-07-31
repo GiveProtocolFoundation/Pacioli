@@ -1,4 +1,5 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
+import { invoke } from '@tauri-apps/api/core'
 import {
   Building2,
   Calendar,
@@ -7,10 +8,13 @@ import {
   X,
   Upload,
   AlertCircle,
+  AlertTriangle,
   Radio,
 } from 'lucide-react'
 import { useTheme } from '../../contexts/ThemeContext'
 import { useOrganization } from '../../contexts/OrganizationContext'
+import { useProfile } from '../../contexts/ProfileContext'
+import { persistence } from '../../services/persistence'
 import { StorageService } from '../../services/database/storageService'
 
 interface OrganizationSettings {
@@ -448,26 +452,44 @@ const TimezoneSelect: React.FC<TimezoneSelectProps> = ({ value, onChange }) => (
       className="select-input w-full px-3 pr-8 py-2 border border-[rgba(95,227,192,0.15)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]"
     >
       <optgroup label="Universal">
-        <option value="Etc/GMT+12">UTC-12:00 - Baker Island, Howland Island (AoE)</option>
+        <option value="Etc/GMT+12">
+          UTC-12:00 - Baker Island, Howland Island (AoE)
+        </option>
         <option value="Pacific/Samoa">UTC-11:00 - Samoa, Niue (SST)</option>
         <option value="Pacific/Honolulu">UTC-10:00 - Hawaii (HST)</option>
-        <option value="Pacific/Marquesas">UTC-09:30 - Marquesas Islands (MART)</option>
+        <option value="Pacific/Marquesas">
+          UTC-09:30 - Marquesas Islands (MART)
+        </option>
         <option value="America/Anchorage">UTC-09:00 - Alaska (AKST)</option>
-        <option value="America/Los_Angeles">UTC-08:00 - Pacific Time (PST)</option>
+        <option value="America/Los_Angeles">
+          UTC-08:00 - Pacific Time (PST)
+        </option>
         <option value="America/Denver">UTC-07:00 - Mountain Time (MST)</option>
         <option value="America/Chicago">UTC-06:00 - Central Time (CST)</option>
         <option value="America/New_York">UTC-05:00 - Eastern Time (EST)</option>
-        <option value="UTC">UTC+00:00 - Coordinated Universal Time (UTC)</option>
+        <option value="UTC">
+          UTC+00:00 - Coordinated Universal Time (UTC)
+        </option>
       </optgroup>
       <optgroup label="Americas">
         <option value="America/Adak">UTC-10:00 - Adak, Alaska</option>
-        <option value="America/Phoenix">UTC-07:00 - Phoenix, Arizona (no DST)</option>
+        <option value="America/Phoenix">
+          UTC-07:00 - Phoenix, Arizona (no DST)
+        </option>
         <option value="America/Boise">UTC-07:00 - Boise, Idaho</option>
-        <option value="America/Indiana/Indianapolis">UTC-05:00 - Indianapolis, Indiana</option>
+        <option value="America/Indiana/Indianapolis">
+          UTC-05:00 - Indianapolis, Indiana
+        </option>
         <option value="America/Detroit">UTC-05:00 - Detroit, Michigan</option>
-        <option value="America/Kentucky/Louisville">UTC-05:00 - Louisville, Kentucky</option>
-        <option value="America/Halifax">UTC-04:00 - Halifax, Atlantic Canada (AST)</option>
-        <option value="America/St_Johns">UTC-03:30 - St. John&apos;s, Newfoundland (NST)</option>
+        <option value="America/Kentucky/Louisville">
+          UTC-05:00 - Louisville, Kentucky
+        </option>
+        <option value="America/Halifax">
+          UTC-04:00 - Halifax, Atlantic Canada (AST)
+        </option>
+        <option value="America/St_Johns">
+          UTC-03:30 - St. John&apos;s, Newfoundland (NST)
+        </option>
         <option value="America/Mexico_City">UTC-06:00 - Mexico City</option>
         <option value="America/Cancun">UTC-05:00 - Cancun</option>
         <option value="America/Tijuana">UTC-08:00 - Tijuana</option>
@@ -478,46 +500,76 @@ const TimezoneSelect: React.FC<TimezoneSelectProps> = ({ value, onChange }) => (
         <option value="America/Jamaica">UTC-05:00 - Kingston, Jamaica</option>
         <option value="America/Bogota">UTC-05:00 - Bogota, Colombia</option>
         <option value="America/Lima">UTC-05:00 - Lima, Peru</option>
-        <option value="America/Guayaquil">UTC-05:00 - Guayaquil, Ecuador</option>
+        <option value="America/Guayaquil">
+          UTC-05:00 - Guayaquil, Ecuador
+        </option>
         <option value="America/Caracas">UTC-04:00 - Caracas, Venezuela</option>
         <option value="America/La_Paz">UTC-04:00 - La Paz, Bolivia</option>
         <option value="America/Manaus">UTC-04:00 - Manaus, Brazil</option>
         <option value="America/Santiago">UTC-04:00 - Santiago, Chile</option>
         <option value="America/Asuncion">UTC-04:00 - Asuncion, Paraguay</option>
-        <option value="America/Montevideo">UTC-03:00 - Montevideo, Uruguay</option>
+        <option value="America/Montevideo">
+          UTC-03:00 - Montevideo, Uruguay
+        </option>
         <option value="America/Sao_Paulo">UTC-03:00 - Sao Paulo, Brazil</option>
-        <option value="America/Buenos_Aires">UTC-03:00 - Buenos Aires, Argentina</option>
-        <option value="America/Cayenne">UTC-03:00 - Cayenne, French Guiana</option>
-        <option value="America/Miquelon">UTC-03:00 - Saint-Pierre and Miquelon</option>
+        <option value="America/Buenos_Aires">
+          UTC-03:00 - Buenos Aires, Argentina
+        </option>
+        <option value="America/Cayenne">
+          UTC-03:00 - Cayenne, French Guiana
+        </option>
+        <option value="America/Miquelon">
+          UTC-03:00 - Saint-Pierre and Miquelon
+        </option>
         <option value="America/Nuuk">UTC-03:00 - Nuuk, Greenland</option>
-        <option value="America/Noronha">UTC-02:00 - Fernando de Noronha, Brazil</option>
-        <option value="Atlantic/South_Georgia">UTC-02:00 - South Georgia Island</option>
+        <option value="America/Noronha">
+          UTC-02:00 - Fernando de Noronha, Brazil
+        </option>
+        <option value="Atlantic/South_Georgia">
+          UTC-02:00 - South Georgia Island
+        </option>
         <option value="Atlantic/Azores">UTC-01:00 - Azores, Portugal</option>
         <option value="Atlantic/Cape_Verde">UTC-01:00 - Cape Verde</option>
       </optgroup>
       <optgroup label="Europe">
-        <option value="Atlantic/Reykjavik">UTC+00:00 - Reykjavik, Iceland</option>
-        <option value="Europe/London">UTC+00:00 - London, Edinburgh (GMT/BST)</option>
-        <option value="Europe/Dublin">UTC+00:00 - Dublin, Ireland (GMT/IST)</option>
-        <option value="Europe/Lisbon">UTC+00:00 - Lisbon, Portugal (WET)</option>
+        <option value="Atlantic/Reykjavik">
+          UTC+00:00 - Reykjavik, Iceland
+        </option>
+        <option value="Europe/London">
+          UTC+00:00 - London, Edinburgh (GMT/BST)
+        </option>
+        <option value="Europe/Dublin">
+          UTC+00:00 - Dublin, Ireland (GMT/IST)
+        </option>
+        <option value="Europe/Lisbon">
+          UTC+00:00 - Lisbon, Portugal (WET)
+        </option>
         <option value="Atlantic/Canary">UTC+00:00 - Canary Islands</option>
         <option value="Europe/Paris">UTC+01:00 - Paris, France (CET)</option>
         <option value="Europe/Brussels">UTC+01:00 - Brussels, Belgium</option>
-        <option value="Europe/Amsterdam">UTC+01:00 - Amsterdam, Netherlands</option>
+        <option value="Europe/Amsterdam">
+          UTC+01:00 - Amsterdam, Netherlands
+        </option>
         <option value="Europe/Berlin">UTC+01:00 - Berlin, Germany</option>
         <option value="Europe/Zurich">UTC+01:00 - Zurich, Switzerland</option>
         <option value="Europe/Rome">UTC+01:00 - Rome, Italy</option>
         <option value="Europe/Madrid">UTC+01:00 - Madrid, Spain</option>
         <option value="Europe/Vienna">UTC+01:00 - Vienna, Austria</option>
         <option value="Europe/Warsaw">UTC+01:00 - Warsaw, Poland</option>
-        <option value="Europe/Prague">UTC+01:00 - Prague, Czech Republic</option>
+        <option value="Europe/Prague">
+          UTC+01:00 - Prague, Czech Republic
+        </option>
         <option value="Europe/Budapest">UTC+01:00 - Budapest, Hungary</option>
-        <option value="Europe/Copenhagen">UTC+01:00 - Copenhagen, Denmark</option>
+        <option value="Europe/Copenhagen">
+          UTC+01:00 - Copenhagen, Denmark
+        </option>
         <option value="Europe/Stockholm">UTC+01:00 - Stockholm, Sweden</option>
         <option value="Europe/Oslo">UTC+01:00 - Oslo, Norway</option>
         <option value="Europe/Belgrade">UTC+01:00 - Belgrade, Serbia</option>
         <option value="Europe/Luxembourg">UTC+01:00 - Luxembourg</option>
-        <option value="Europe/Helsinki">UTC+02:00 - Helsinki, Finland (EET)</option>
+        <option value="Europe/Helsinki">
+          UTC+02:00 - Helsinki, Finland (EET)
+        </option>
         <option value="Europe/Tallinn">UTC+02:00 - Tallinn, Estonia</option>
         <option value="Europe/Riga">UTC+02:00 - Riga, Latvia</option>
         <option value="Europe/Vilnius">UTC+02:00 - Vilnius, Lithuania</option>
@@ -526,13 +578,17 @@ const TimezoneSelect: React.FC<TimezoneSelectProps> = ({ value, onChange }) => (
         <option value="Europe/Sofia">UTC+02:00 - Sofia, Bulgaria</option>
         <option value="Europe/Kyiv">UTC+02:00 - Kyiv, Ukraine</option>
         <option value="Europe/Chisinau">UTC+02:00 - Chisinau, Moldova</option>
-        <option value="Europe/Istanbul">UTC+03:00 - Istanbul, Turkey (TRT)</option>
+        <option value="Europe/Istanbul">
+          UTC+03:00 - Istanbul, Turkey (TRT)
+        </option>
         <option value="Europe/Moscow">UTC+03:00 - Moscow, Russia (MSK)</option>
         <option value="Europe/Minsk">UTC+03:00 - Minsk, Belarus</option>
         <option value="Europe/Samara">UTC+04:00 - Samara, Russia</option>
       </optgroup>
       <optgroup label="Africa">
-        <option value="Africa/Casablanca">UTC+00:00 - Casablanca, Morocco</option>
+        <option value="Africa/Casablanca">
+          UTC+00:00 - Casablanca, Morocco
+        </option>
         <option value="Africa/Monrovia">UTC+00:00 - Monrovia, Liberia</option>
         <option value="Africa/Abidjan">UTC+00:00 - Abidjan, Ivory Coast</option>
         <option value="Africa/Accra">UTC+00:00 - Accra, Ghana</option>
@@ -543,21 +599,31 @@ const TimezoneSelect: React.FC<TimezoneSelectProps> = ({ value, onChange }) => (
         <option value="Africa/Windhoek">UTC+02:00 - Windhoek, Namibia</option>
         <option value="Africa/Cairo">UTC+02:00 - Cairo, Egypt (EET)</option>
         <option value="Africa/Tripoli">UTC+02:00 - Tripoli, Libya</option>
-        <option value="Africa/Johannesburg">UTC+02:00 - Johannesburg, South Africa (SAST)</option>
+        <option value="Africa/Johannesburg">
+          UTC+02:00 - Johannesburg, South Africa (SAST)
+        </option>
         <option value="Africa/Harare">UTC+02:00 - Harare, Zimbabwe</option>
         <option value="Africa/Maputo">UTC+02:00 - Maputo, Mozambique</option>
         <option value="Africa/Khartoum">UTC+02:00 - Khartoum, Sudan</option>
         <option value="Africa/Nairobi">UTC+03:00 - Nairobi, Kenya (EAT)</option>
-        <option value="Africa/Dar_es_Salaam">UTC+03:00 - Dar es Salaam, Tanzania</option>
-        <option value="Africa/Addis_Ababa">UTC+03:00 - Addis Ababa, Ethiopia</option>
+        <option value="Africa/Dar_es_Salaam">
+          UTC+03:00 - Dar es Salaam, Tanzania
+        </option>
+        <option value="Africa/Addis_Ababa">
+          UTC+03:00 - Addis Ababa, Ethiopia
+        </option>
       </optgroup>
       <optgroup label="Middle East">
-        <option value="Asia/Jerusalem">UTC+02:00 - Jerusalem, Israel (IST)</option>
+        <option value="Asia/Jerusalem">
+          UTC+02:00 - Jerusalem, Israel (IST)
+        </option>
         <option value="Asia/Beirut">UTC+02:00 - Beirut, Lebanon</option>
         <option value="Asia/Amman">UTC+03:00 - Amman, Jordan</option>
         <option value="Asia/Damascus">UTC+03:00 - Damascus, Syria</option>
         <option value="Asia/Baghdad">UTC+03:00 - Baghdad, Iraq</option>
-        <option value="Asia/Riyadh">UTC+03:00 - Riyadh, Saudi Arabia (AST)</option>
+        <option value="Asia/Riyadh">
+          UTC+03:00 - Riyadh, Saudi Arabia (AST)
+        </option>
         <option value="Asia/Kuwait">UTC+03:00 - Kuwait City</option>
         <option value="Asia/Qatar">UTC+03:00 - Doha, Qatar</option>
         <option value="Asia/Bahrain">UTC+03:00 - Manama, Bahrain</option>
@@ -570,10 +636,16 @@ const TimezoneSelect: React.FC<TimezoneSelectProps> = ({ value, onChange }) => (
         <option value="Asia/Yerevan">UTC+04:00 - Yerevan, Armenia</option>
         <option value="Asia/Baku">UTC+04:00 - Baku, Azerbaijan</option>
         <option value="Asia/Kabul">UTC+04:30 - Kabul, Afghanistan</option>
-        <option value="Asia/Karachi">UTC+05:00 - Karachi, Pakistan (PKT)</option>
+        <option value="Asia/Karachi">
+          UTC+05:00 - Karachi, Pakistan (PKT)
+        </option>
         <option value="Asia/Tashkent">UTC+05:00 - Tashkent, Uzbekistan</option>
-        <option value="Asia/Yekaterinburg">UTC+05:00 - Yekaterinburg, Russia</option>
-        <option value="Asia/Kolkata">UTC+05:30 - Mumbai, Kolkata, India (IST)</option>
+        <option value="Asia/Yekaterinburg">
+          UTC+05:00 - Yekaterinburg, Russia
+        </option>
+        <option value="Asia/Kolkata">
+          UTC+05:30 - Mumbai, Kolkata, India (IST)
+        </option>
         <option value="Asia/Colombo">UTC+05:30 - Colombo, Sri Lanka</option>
         <option value="Asia/Kathmandu">UTC+05:45 - Kathmandu, Nepal</option>
         <option value="Asia/Dhaka">UTC+06:00 - Dhaka, Bangladesh (BST)</option>
@@ -583,50 +655,98 @@ const TimezoneSelect: React.FC<TimezoneSelectProps> = ({ value, onChange }) => (
         <option value="Indian/Cocos">UTC+06:30 - Cocos Islands</option>
       </optgroup>
       <optgroup label="East & Southeast Asia">
-        <option value="Asia/Bangkok">UTC+07:00 - Bangkok, Thailand (ICT)</option>
-        <option value="Asia/Jakarta">UTC+07:00 - Jakarta, Indonesia (WIB)</option>
-        <option value="Asia/Ho_Chi_Minh">UTC+07:00 - Ho Chi Minh City, Vietnam</option>
-        <option value="Asia/Novosibirsk">UTC+07:00 - Novosibirsk, Russia</option>
-        <option value="Asia/Phnom_Penh">UTC+07:00 - Phnom Penh, Cambodia</option>
-        <option value="Asia/Shanghai">UTC+08:00 - Shanghai, Beijing, China (CST)</option>
+        <option value="Asia/Bangkok">
+          UTC+07:00 - Bangkok, Thailand (ICT)
+        </option>
+        <option value="Asia/Jakarta">
+          UTC+07:00 - Jakarta, Indonesia (WIB)
+        </option>
+        <option value="Asia/Ho_Chi_Minh">
+          UTC+07:00 - Ho Chi Minh City, Vietnam
+        </option>
+        <option value="Asia/Novosibirsk">
+          UTC+07:00 - Novosibirsk, Russia
+        </option>
+        <option value="Asia/Phnom_Penh">
+          UTC+07:00 - Phnom Penh, Cambodia
+        </option>
+        <option value="Asia/Shanghai">
+          UTC+08:00 - Shanghai, Beijing, China (CST)
+        </option>
         <option value="Asia/Hong_Kong">UTC+08:00 - Hong Kong (HKT)</option>
         <option value="Asia/Taipei">UTC+08:00 - Taipei, Taiwan</option>
         <option value="Asia/Singapore">UTC+08:00 - Singapore (SGT)</option>
-        <option value="Asia/Kuala_Lumpur">UTC+08:00 - Kuala Lumpur, Malaysia</option>
-        <option value="Asia/Manila">UTC+08:00 - Manila, Philippines (PHT)</option>
-        <option value="Asia/Makassar">UTC+08:00 - Makassar, Indonesia (WITA)</option>
+        <option value="Asia/Kuala_Lumpur">
+          UTC+08:00 - Kuala Lumpur, Malaysia
+        </option>
+        <option value="Asia/Manila">
+          UTC+08:00 - Manila, Philippines (PHT)
+        </option>
+        <option value="Asia/Makassar">
+          UTC+08:00 - Makassar, Indonesia (WITA)
+        </option>
         <option value="Asia/Brunei">UTC+08:00 - Brunei</option>
         <option value="Asia/Irkutsk">UTC+08:00 - Irkutsk, Russia</option>
-        <option value="Australia/Perth">UTC+08:00 - Perth, Australia (AWST)</option>
-        <option value="Asia/Jayapura">UTC+09:00 - Jayapura, Indonesia (WIT)</option>
+        <option value="Australia/Perth">
+          UTC+08:00 - Perth, Australia (AWST)
+        </option>
+        <option value="Asia/Jayapura">
+          UTC+09:00 - Jayapura, Indonesia (WIT)
+        </option>
         <option value="Asia/Seoul">UTC+09:00 - Seoul, South Korea (KST)</option>
         <option value="Asia/Tokyo">UTC+09:00 - Tokyo, Japan (JST)</option>
         <option value="Asia/Yakutsk">UTC+09:00 - Yakutsk, Russia</option>
-        <option value="Asia/Pyongyang">UTC+09:00 - Pyongyang, North Korea</option>
+        <option value="Asia/Pyongyang">
+          UTC+09:00 - Pyongyang, North Korea
+        </option>
       </optgroup>
       <optgroup label="Australia">
-        <option value="Australia/Darwin">UTC+09:30 - Darwin, Australia (ACST)</option>
-        <option value="Australia/Adelaide">UTC+09:30 - Adelaide, Australia (ACST/ACDT)</option>
-        <option value="Australia/Brisbane">UTC+10:00 - Brisbane, Australia (AEST, no DST)</option>
-        <option value="Australia/Sydney">UTC+10:00 - Sydney, Melbourne, Australia (AEST/AEDT)</option>
-        <option value="Australia/Hobart">UTC+10:00 - Hobart, Tasmania (AEST/AEDT)</option>
-        <option value="Australia/Lord_Howe">UTC+10:30 - Lord Howe Island</option>
+        <option value="Australia/Darwin">
+          UTC+09:30 - Darwin, Australia (ACST)
+        </option>
+        <option value="Australia/Adelaide">
+          UTC+09:30 - Adelaide, Australia (ACST/ACDT)
+        </option>
+        <option value="Australia/Brisbane">
+          UTC+10:00 - Brisbane, Australia (AEST, no DST)
+        </option>
+        <option value="Australia/Sydney">
+          UTC+10:00 - Sydney, Melbourne, Australia (AEST/AEDT)
+        </option>
+        <option value="Australia/Hobart">
+          UTC+10:00 - Hobart, Tasmania (AEST/AEDT)
+        </option>
+        <option value="Australia/Lord_Howe">
+          UTC+10:30 - Lord Howe Island
+        </option>
       </optgroup>
       <optgroup label="Pacific">
         <option value="Pacific/Guam">UTC+10:00 - Guam, Saipan (ChST)</option>
-        <option value="Pacific/Port_Moresby">UTC+10:00 - Port Moresby, Papua New Guinea</option>
-        <option value="Asia/Vladivostok">UTC+10:00 - Vladivostok, Russia</option>
+        <option value="Pacific/Port_Moresby">
+          UTC+10:00 - Port Moresby, Papua New Guinea
+        </option>
+        <option value="Asia/Vladivostok">
+          UTC+10:00 - Vladivostok, Russia
+        </option>
         <option value="Pacific/Guadalcanal">UTC+11:00 - Solomon Islands</option>
-        <option value="Pacific/Noumea">UTC+11:00 - Noumea, New Caledonia</option>
+        <option value="Pacific/Noumea">
+          UTC+11:00 - Noumea, New Caledonia
+        </option>
         <option value="Asia/Magadan">UTC+11:00 - Magadan, Russia</option>
         <option value="Pacific/Norfolk">UTC+11:00 - Norfolk Island</option>
-        <option value="Pacific/Auckland">UTC+12:00 - Auckland, New Zealand (NZST)</option>
+        <option value="Pacific/Auckland">
+          UTC+12:00 - Auckland, New Zealand (NZST)
+        </option>
         <option value="Pacific/Fiji">UTC+12:00 - Fiji (FJT)</option>
         <option value="Asia/Kamchatka">UTC+12:00 - Kamchatka, Russia</option>
         <option value="Pacific/Chatham">UTC+12:45 - Chatham Islands, NZ</option>
-        <option value="Pacific/Tongatapu">UTC+13:00 - Nuku&apos;alofa, Tonga</option>
+        <option value="Pacific/Tongatapu">
+          UTC+13:00 - Nuku&apos;alofa, Tonga
+        </option>
         <option value="Pacific/Apia">UTC+13:00 - Apia, Samoa</option>
-        <option value="Pacific/Kiritimati">UTC+14:00 - Kiritimati, Line Islands</option>
+        <option value="Pacific/Kiritimati">
+          UTC+14:00 - Kiritimati, Line Islands
+        </option>
       </optgroup>
     </select>
   </div>
@@ -661,13 +781,16 @@ const BlockchainSyncSection: React.FC = () => {
             Real-time sync
           </p>
           <p className="text-xs text-[#294050] dark:text-[#9FB4BE] mt-0.5">
-            Automatically refresh transactions and balances when new blocks arrive on connected networks.
+            Automatically refresh transactions and balances when new blocks
+            arrive on connected networks.
           </p>
         </div>
         <button
           type="button"
           role="switch"
+          aria-label="Real-time sync"
           aria-checked={enabled}
+          aria-label="Real-time sync"
           onClick={handleToggle}
           className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#5FE3C0] focus:ring-offset-2 ${
             enabled ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'
@@ -684,12 +807,86 @@ const BlockchainSyncSection: React.FC = () => {
   )
 }
 
+/** Confirmation dialog for changing the organization type */
+const ChangeOrgTypeDialog: React.FC<{
+  newType: OrganizationSettings['organizationType']
+  onConfirm: () => void
+  onCancel: () => void
+  isProcessing: boolean
+  error: string | null
+}> = ({ newType, onConfirm, onCancel, isProcessing, error }) => {
+  const typeLabel =
+    newType === 'not-for-profit'
+      ? 'Not-for-Profit'
+      : newType === 'for-profit-enterprise'
+        ? 'For-Profit Enterprise'
+        : 'Individual'
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-[#F7FAFA] dark:bg-[#0C141B] rounded-xl shadow-2xl max-w-lg w-full p-6 border border-[rgba(95,227,192,0.15)]">
+        <div className="flex items-center gap-3 mb-4">
+          <AlertTriangle className="w-6 h-6 text-amber-500 flex-shrink-0" />
+          <h3 className="text-lg font-semibold text-[#11202B] dark:text-[#EAF3F2]">
+            Change Organization Type
+          </h3>
+        </div>
+
+        <p className="text-sm text-[#294050] dark:text-[#9FB4BE] mb-3">
+          You are about to switch to <strong>{typeLabel}</strong>. Here is what
+          will happen:
+        </p>
+
+        <ul className="text-sm text-[#294050] dark:text-[#9FB4BE] space-y-2 mb-4 list-disc list-inside">
+          <li>
+            The chart of accounts presentation will change to match the new
+            organization type.
+          </li>
+          <li>
+            Historical journal entries remain intact but may be reclassified in
+            reports.
+          </li>
+          <li>Any accounts you added manually will be preserved.</li>
+          <li>
+            Template-seeded accounts from the previous type will be hidden (not
+            deleted).
+          </li>
+        </ul>
+
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-800 dark:text-red-300">
+            {error}
+          </div>
+        )}
+
+        <div className="flex justify-end gap-3">
+          <button
+            onClick={onCancel}
+            disabled={isProcessing}
+            className="px-4 py-2 text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] bg-[#F7FAFA] dark:bg-[#11202B] border border-[rgba(95,227,192,0.15)] rounded-lg hover:bg-[#EAF3F2] dark:hover:bg-[#16242F] disabled:opacity-50"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={isProcessing}
+            className="px-4 py-2 text-sm font-medium text-white bg-[#294050] rounded-lg hover:bg-[#1E2F3C] disabled:opacity-50"
+          >
+            {isProcessing ? 'Updating...' : 'Confirm Change'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 /** General settings page with organization info, fiscal year, regional, and language configuration */
 const GeneralSettings: React.FC<GeneralSettingsProps> = ({
   userType = 'organization',
 }) => {
   const { theme: currentTheme, setTheme } = useTheme()
   const { organizationLogo, setOrganizationLogo } = useOrganization()
+  const { currentProfile } = useProfile()
 
   const [organizationSettings, setOrganizationSettings] =
     useState<OrganizationSettings>({
@@ -720,16 +917,87 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({
 
   const [hasChanges, setHasChanges] = useState(false)
 
+  // Entity-type change dialog state
+  const [pendingOrgType, setPendingOrgType] = useState<
+    OrganizationSettings['organizationType'] | null
+  >(null)
+  const [orgTypeChanging, setOrgTypeChanging] = useState(false)
+  const [orgTypeError, setOrgTypeError] = useState<string | null>(null)
+  const [jurisdiction, setJurisdiction] = useState<string>('us-gaap')
+
+  useEffect(() => {
+    persistence.getSetting('jurisdiction').then(val => {
+      if (val) setJurisdiction(val)
+    })
+    persistence.getSetting('accountType').then(val => {
+      if (
+        val === 'not-for-profit' ||
+        val === 'for-profit-enterprise' ||
+        val === 'individual'
+      ) {
+        setOrganizationSettings(prev => ({
+          ...prev,
+          organizationType: val,
+        }))
+      }
+    })
+  }, [])
+
   const handleOrganizationChange = useCallback(
     <K extends keyof OrganizationSettings>(
       key: K,
       value: OrganizationSettings[K]
     ) => {
+      if (key === 'organizationType') {
+        const newType = value as OrganizationSettings['organizationType']
+        setPendingOrgType(newType)
+        setOrgTypeError(null)
+        return
+      }
       setOrganizationSettings(prev => ({ ...prev, [key]: value }))
       setHasChanges(true)
     },
     []
   )
+
+  const handleOrgTypeConfirm = useCallback(async () => {
+    if (!pendingOrgType) return
+    setOrgTypeChanging(true)
+    setOrgTypeError(null)
+    try {
+      const profileId = currentProfile?.id ?? 'default'
+
+      await invoke('hide_profile_template_accounts', { profileId })
+
+      await invoke('import_chart_of_accounts_template', {
+        input: {
+          jurisdiction,
+          accountType: pendingOrgType,
+          profileId,
+        },
+      })
+
+      await persistence.setSetting('accountType', pendingOrgType)
+
+      setOrganizationSettings(prev => ({
+        ...prev,
+        organizationType: pendingOrgType,
+      }))
+      setPendingOrgType(null)
+    } catch (err) {
+      const message =
+        typeof err === 'string' ? err : 'Failed to update organization type'
+      setOrgTypeError(message)
+      console.error('[GeneralSettings] Org type change failed:', err)
+    } finally {
+      setOrgTypeChanging(false)
+    }
+  }, [pendingOrgType, currentProfile, jurisdiction])
+
+  const handleOrgTypeCancel = useCallback(() => {
+    setPendingOrgType(null)
+    setOrgTypeError(null)
+  }, [])
 
   const handleSystemChange = useCallback(
     <K extends keyof SystemSettings>(key: K, value: SystemSettings[K]) => {
@@ -779,6 +1047,17 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({
 
   return (
     <div className="p-6">
+      {/* Organization Type Change Dialog */}
+      {pendingOrgType && (
+        <ChangeOrgTypeDialog
+          newType={pendingOrgType}
+          onConfirm={handleOrgTypeConfirm}
+          onCancel={handleOrgTypeCancel}
+          isProcessing={orgTypeChanging}
+          error={orgTypeError}
+        />
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>

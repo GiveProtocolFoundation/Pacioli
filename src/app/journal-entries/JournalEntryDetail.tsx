@@ -1,4 +1,5 @@
-import React, { useMemo } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
+import { invoke } from '@tauri-apps/api/core'
 import {
   X,
   Clock,
@@ -6,6 +7,8 @@ import {
   ShieldCheck,
   XCircle,
   ArrowRightLeft,
+  ExternalLink,
+  Link2,
 } from 'lucide-react'
 import type { GLAccount, JournalEntryWithLines } from '../../types/database'
 import {
@@ -14,7 +17,24 @@ import {
   formatDateTime,
   minorToDollars,
 } from './journalEntryUtils'
+import { isTauriAvailable } from '../../utils/tauri'
 
+/** On-chain source transaction summary returned by the Tauri backend. */
+interface SourceTransactionSummary {
+  id: string
+  chainId: string
+  transactionHash: string
+  fromAddress: string
+  toAddress?: string
+  transferValue: string
+  transactionFee?: string
+  timestamp: number
+  transactionType: string
+  status: string
+  walletAddress: string
+}
+
+/** Props for the journal-entry detail overlay panel. */
 interface JournalEntryDetailProps {
   entry: JournalEntryWithLines
   accounts: GLAccount[]
@@ -55,14 +75,115 @@ const originLabels: Record<string, string> = {
   model: 'Model',
 }
 
-/**
- * Full detail view for a journal entry.
- * Shows lines, lifecycle timestamps, provenance (origin, created_by),
- * and reversal linkage: a voided entry links to its reversing entry
- * and vice versa.
- * @param props - Component properties
- * @returns The JournalEntryDetail overlay component
- */
+/** Shorten a blockchain address to first 8 + last 6 characters with an ellipsis. */
+function truncateAddress(addr: string): string {
+  if (addr.length <= 14) return addr
+  return `${addr.slice(0, 8)}…${addr.slice(-6)}`
+}
+
+/** Format a Unix-seconds timestamp into a localised medium-date + short-time string. */
+function formatTxTimestamp(unixSec: number): string {
+  return new Date(unixSec * 1000).toLocaleString(undefined, {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  })
+}
+
+/** Displays the linked on-chain source transaction for a journal entry. */
+const SourceTransactionSection: React.FC<{ sourceTxId: string }> = ({
+  sourceTxId,
+}) => {
+  const [sourceTx, setSourceTx] = useState<SourceTransactionSummary | null>(
+    null
+  )
+  const [fetched, setFetched] = useState(false)
+
+  const loading = isTauriAvailable() && !fetched
+
+  useEffect(() => {
+    if (!isTauriAvailable()) return
+    invoke<SourceTransactionSummary | null>('get_source_transaction', {
+      sourceTxId,
+    })
+      .then(result => setSourceTx(result ?? null))
+      .catch(() => setSourceTx(null))
+      .finally(() => setFetched(true))
+  }, [sourceTxId])
+
+  return (
+    <div>
+      <h3 className="text-xs font-semibold text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider mb-3 flex items-center gap-1.5">
+        <Link2 className="w-3.5 h-3.5" />
+        Source Transaction
+      </h3>
+      {loading && <p className="text-sm text-[#647D8B]">Loading&hellip;</p>}
+      {!loading && sourceTx && (
+        <div className="p-3 rounded-lg bg-[#EAF3F2]/60 dark:bg-[#16242F]/60 border border-[rgba(95,227,192,0.15)] space-y-2">
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <div>
+              <span className="text-xs text-[#647D8B] uppercase">Chain</span>
+              <p className="font-mono text-[#11202B] dark:text-[#EAF3F2]">
+                {sourceTx.chainId}
+              </p>
+            </div>
+            <div>
+              <span className="text-xs text-[#647D8B] uppercase">Type</span>
+              <p className="text-[#11202B] dark:text-[#EAF3F2] capitalize">
+                {sourceTx.transactionType.replace('_', ' ')}
+              </p>
+            </div>
+            <div className="col-span-2">
+              <span className="text-xs text-[#647D8B] uppercase">Tx Hash</span>
+              <p className="font-mono text-[#11202B] dark:text-[#EAF3F2] break-all flex items-center gap-1.5">
+                {sourceTx.transactionHash}
+                <ExternalLink className="w-3 h-3 text-[#647D8B] flex-shrink-0" />
+              </p>
+            </div>
+            <div>
+              <span className="text-xs text-[#647D8B] uppercase">From</span>
+              <p
+                className="font-mono text-[#11202B] dark:text-[#EAF3F2]"
+                title={sourceTx.fromAddress}
+              >
+                {truncateAddress(sourceTx.fromAddress)}
+              </p>
+            </div>
+            <div>
+              <span className="text-xs text-[#647D8B] uppercase">To</span>
+              <p
+                className="font-mono text-[#11202B] dark:text-[#EAF3F2]"
+                title={sourceTx.toAddress ?? ''}
+              >
+                {sourceTx.toAddress ? truncateAddress(sourceTx.toAddress) : '—'}
+              </p>
+            </div>
+            <div>
+              <span className="text-xs text-[#647D8B] uppercase">
+                Timestamp
+              </span>
+              <p className="text-[#11202B] dark:text-[#EAF3F2]">
+                {formatTxTimestamp(sourceTx.timestamp)}
+              </p>
+            </div>
+            <div>
+              <span className="text-xs text-[#647D8B] uppercase">Value</span>
+              <p className="font-mono text-[#11202B] dark:text-[#EAF3F2]">
+                {sourceTx.transferValue}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+      {!loading && !sourceTx && (
+        <p className="text-sm text-[#647D8B] italic">
+          Source transaction not found (ID: {sourceTxId})
+        </p>
+      )}
+    </div>
+  )
+}
+
+/** Slide-over panel showing a journal entry's lines, metadata, and linked source transaction. */
 const JournalEntryDetail: React.FC<JournalEntryDetailProps> = ({
   entry,
   accounts,
@@ -78,7 +199,7 @@ const JournalEntryDetail: React.FC<JournalEntryDetailProps> = ({
   const resolveAccountName = (glAccountId: number) => {
     const acct = accountMap.get(glAccountId)
     return acct
-      ? `${acct.accountNumber} \u00b7 ${acct.accountName}`
+      ? `${acct.accountNumber} · ${acct.accountName}`
       : `#${glAccountId}`
   }
 
@@ -89,7 +210,6 @@ const JournalEntryDetail: React.FC<JournalEntryDetailProps> = ({
   const totalDebits = entry.lines.reduce((s, l) => s + l.debitMinor, 0)
   const totalCredits = entry.lines.reduce((s, l) => s + l.creditMinor, 0)
 
-  /** Find the linked reversal entry if one exists */
   const reversalEntry = useMemo(() => {
     if (entry.reversedByEntryId) {
       return entries.find(e => e.id === entry.reversedByEntryId)
@@ -194,7 +314,7 @@ const JournalEntryDetail: React.FC<JournalEntryDetailProps> = ({
                 Entry Number
               </label>
               <span className="text-sm font-mono text-[#11202B] dark:text-[#EAF3F2]">
-                {entry.entryNumber ?? '\u2014'}
+                {entry.entryNumber ?? '—'}
               </span>
             </div>
             <div className="col-span-2">
@@ -202,7 +322,7 @@ const JournalEntryDetail: React.FC<JournalEntryDetailProps> = ({
                 Description
               </label>
               <span className="text-sm text-[#11202B] dark:text-[#EAF3F2]">
-                {entry.description ?? '\u2014'}
+                {entry.description ?? '—'}
               </span>
             </div>
             <div>
@@ -210,7 +330,7 @@ const JournalEntryDetail: React.FC<JournalEntryDetailProps> = ({
                 Reference
               </label>
               <span className="text-sm font-mono text-[#11202B] dark:text-[#EAF3F2] break-all">
-                {entry.referenceNumber ?? '\u2014'}
+                {entry.referenceNumber ?? '—'}
               </span>
             </div>
             <div>
@@ -222,6 +342,11 @@ const JournalEntryDetail: React.FC<JournalEntryDetailProps> = ({
               </span>
             </div>
           </div>
+
+          {/* Source on-chain transaction */}
+          {entry.sourceTxId && (
+            <SourceTransactionSection sourceTxId={entry.sourceTxId} />
+          )}
 
           {/* Lifecycle timestamps */}
           <div>
@@ -320,7 +445,7 @@ const JournalEntryDetail: React.FC<JournalEntryDetailProps> = ({
                         {resolveAccountName(line.glAccountId)}
                       </td>
                       <td className="px-4 py-2 font-mono text-xs text-[#294050] dark:text-[#9FB4BE]">
-                        {line.assetId ?? '\u2014'}
+                        {line.assetId ?? '—'}
                       </td>
                       <td className="px-4 py-2 text-right font-mono text-[#294050] dark:text-[#9FB4BE]">
                         {line.quantity ?? ''}

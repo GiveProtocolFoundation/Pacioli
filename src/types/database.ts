@@ -13,6 +13,7 @@ export enum AccountType {
   Liability = 'Liability',
   Equity = 'Equity',
   Income = 'Income',
+  Revenue = 'Revenue',
   Expense = 'Expense',
 }
 
@@ -102,6 +103,9 @@ export interface GLAccount {
   isActive: boolean
   isEditable: boolean
   normalBalance: NormalBalance
+  context: string
+  profileId?: string
+  hidden: number
   createdAt: Date
   updatedAt: Date
 }
@@ -206,6 +210,8 @@ export interface JournalEntry {
   approvedAt?: Date
   /** When this entry was posted to the ledger. */
   postedAt?: Date
+  /** FK to multi_chain_transactions — on-chain source tx, null for manual entries. */
+  sourceTxId?: string
 }
 
 export interface JournalEntryLine {
@@ -226,6 +232,8 @@ export interface JournalEntryLine {
   quantity?: string
   /** Asset identifier: 'USD' for fiat, 'token:<id>' for tokens, null for measurement lines. */
   assetId?: string
+  /** NGO functional classification: program_services, management_general, or fundraising. */
+  functionalClassification?: string
 }
 
 // =============================================================================
@@ -298,6 +306,9 @@ export type ClassificationStatus =
   | 'ignored'
   | 'split'
 
+/** Valuation enrichment status for multi-chain transactions. */
+export type ValuationStatus = 'unpriced' | 'priced' | 'unavailable'
+
 /** Raw multi-chain transaction row from the Rust backend (camelCase via serde). */
 export interface RawTransaction {
   id: string
@@ -311,6 +322,9 @@ export interface RawTransaction {
   transactionType: string
   status: string
   classificationStatus: ClassificationStatus
+  priceAtAcquisitionUsd: string | null
+  valuationStatus: ValuationStatus
+  isSelfTransfer: boolean
 }
 
 // =============================================================================

@@ -945,8 +945,8 @@ const CostBasisReport: React.FC = () => {
                 <p className="text-sm font-medium text-[#E8B36F]">
                   Lot data warnings
                 </p>
-                {validationWarnings.map((w, i) => (
-                  <p key={i} className="text-xs text-[#E8B36F]/80 mt-1">
+                {validationWarnings.map(w => (
+                  <p key={w} className="text-xs text-[#E8B36F]/80 mt-1">
                     {w}
                   </p>
                 ))}

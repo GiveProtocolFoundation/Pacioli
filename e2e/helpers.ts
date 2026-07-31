@@ -22,20 +22,85 @@ import { expect } from '@playwright/test'
  */
 export async function mockBlockchainRpc(page: Page): Promise<void> {
   // Ethereum / EVM JSON-RPC
-  await page.route('**/*.infura.io/**', route => route.fulfill({ status: 200, body: JSON.stringify({ jsonrpc: '2.0', id: 1, result: '0x0' }) }))
-  await page.route('**/*.alchemy.com/**', route => route.fulfill({ status: 200, body: JSON.stringify({ jsonrpc: '2.0', id: 1, result: '0x0' }) }))
-  await page.route('**/api.etherscan.io/**', route => route.fulfill({ status: 200, body: JSON.stringify({ status: '1', message: 'OK', result: [] }) }))
-  await page.route('**/api.polygonscan.com/**', route => route.fulfill({ status: 200, body: JSON.stringify({ status: '1', message: 'OK', result: [] }) }))
+  await page.route('**/*.infura.io/**', route =>
+    route.fulfill({
+      status: 200,
+      body: JSON.stringify({ jsonrpc: '2.0', id: 1, result: '0x0' }),
+    })
+  )
+  await page.route('**/*.alchemy.com/**', route =>
+    route.fulfill({
+      status: 200,
+      body: JSON.stringify({ jsonrpc: '2.0', id: 1, result: '0x0' }),
+    })
+  )
+  await page.route('**/api.etherscan.io/**', route =>
+    route.fulfill({
+      status: 200,
+      body: JSON.stringify({ status: '1', message: 'OK', result: [] }),
+    })
+  )
+  await page.route('**/api.polygonscan.com/**', route =>
+    route.fulfill({
+      status: 200,
+      body: JSON.stringify({ status: '1', message: 'OK', result: [] }),
+    })
+  )
   // Polkadot WSS (ws://) — Playwright can't intercept WebSocket frames but we
   // prevent the initial HTTP upgrade from reaching the network.
-  await page.route('**subscan.io**', route => route.fulfill({ status: 200, body: JSON.stringify({ code: 0, data: { list: [], count: 0 } }) }))
+  await page.route('**subscan.io**', route =>
+    route.fulfill({
+      status: 200,
+      body: JSON.stringify({ code: 0, data: { list: [], count: 0 } }),
+    })
+  )
   // Solana RPC
-  await page.route('**/mainnet-beta.solana.com/**', route => route.fulfill({ status: 200, body: JSON.stringify({ jsonrpc: '2.0', id: 1, result: { value: [] } }) }))
+  await page.route('**/mainnet-beta.solana.com/**', route =>
+    route.fulfill({
+      status: 200,
+      body: JSON.stringify({ jsonrpc: '2.0', id: 1, result: { value: [] } }),
+    })
+  )
 }
 
 // ---------------------------------------------------------------------------
 // App bootstrap helpers
 // ---------------------------------------------------------------------------
+
+/**
+ * Seed onboarding settings (accountType + jurisdiction) directly into IndexedDB
+ * so the OnboardingGate passes through without needing Tauri's invoke().
+ */
+async function seedOnboardingSettings(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    return new Promise<void>((resolve, reject) => {
+      const request = indexedDB.open('PacioliPersistenceDB', 2)
+      request.onupgradeneeded = () => {
+        const db = request.result
+        if (!db.objectStoreNames.contains('settings')) {
+          db.createObjectStore('settings', { keyPath: 'key' })
+        }
+      }
+      request.onsuccess = () => {
+        const db = request.result
+        const tx = db.transaction('settings', 'readwrite')
+        const store = tx.objectStore('settings')
+        const now = new Date().toISOString()
+        store.put({ key: 'accountType', value: 'individual', updated_at: now })
+        store.put({ key: 'jurisdiction', value: 'us-gaap', updated_at: now })
+        tx.oncomplete = () => {
+          db.close()
+          resolve()
+        }
+        tx.onerror = () => {
+          db.close()
+          reject(tx.error)
+        }
+      }
+      request.onerror = () => reject(request.error)
+    })
+  })
+}
 
 /**
  * Navigate to the app and complete the first-launch wizard in Easy mode so
@@ -66,12 +131,33 @@ export async function setupApp(page: Page): Promise<void> {
     await easyRadio.click()
   }
   // Click Continue on the security step
-  await page.getByRole('button', { name: /continue/i }).first().click()
+  await page
+    .getByRole('button', { name: /continue/i })
+    .first()
+    .click()
 
   // Step 3: Completion step — click "Get Started" or "Continue"
-  const doneBtn = page.getByRole('button', { name: /get started|continue|finish|done/i }).first()
+  const doneBtn = page
+    .getByRole('button', { name: /get started|continue|finish|done/i })
+    .first()
   await expect(doneBtn).toBeVisible({ timeout: 8_000 })
   await doneBtn.click()
+
+  // --- Onboarding gate ---
+  // After first-launch, the OnboardingGate redirects to /onboarding because
+  // accountType is null. In E2E (web build, no Tauri), we seed the required
+  // settings directly into IndexedDB and reload so AuthContext picks them up.
+  const onboardingHeading = page.getByText('Select Your Jurisdiction')
+  const hitOnboarding = await expect(onboardingHeading)
+    .toBeVisible({ timeout: 5_000 })
+    .then(
+      () => true,
+      () => false
+    )
+  if (hitOnboarding) {
+    await seedOnboardingSettings(page)
+    await page.goto('/')
+  }
 
   // Wait for the main shell (navigation) to appear
   await expect(page.locator('nav').first()).toBeVisible({ timeout: 15_000 })

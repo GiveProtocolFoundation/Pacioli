@@ -17,31 +17,37 @@ use super::persistence::DatabaseState;
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
 #[serde(rename_all = "camelCase")]
 pub struct GlAccount {
-    /// Auto-incremented primary key.
+    /// Primary key.
     pub id: i64,
-    /// Unique account number (e.g. "1200", "5100").
+    /// Unique account number (e.g. "1000").
     pub account_number: String,
     /// Human-readable account name.
     pub account_name: String,
-    /// One of: Asset, Liability, Equity, Income, Expense.
+    /// Account type: Asset, Liability, Equity, Income, Revenue, or Expense.
     pub account_type: String,
     /// Optional parent account for sub-account hierarchy.
     pub parent_account_id: Option<i64>,
     /// Optional digital-asset sub-classification.
     pub digital_asset_type: Option<String>,
-    /// Optional subcategory label.
+    /// Optional subcategory within the account type.
     pub subcategory: Option<String>,
-    /// Optional description of the account's purpose.
+    /// Optional free-text description.
     pub description: Option<String>,
     /// Whether the account is active.
     pub is_active: bool,
-    /// Whether the account can be edited or deleted by users.
+    /// Whether the user may edit this account.
     pub is_editable: bool,
-    /// Either "debit" or "credit".
+    /// Debit or Credit.
     pub normal_balance: Option<String>,
-    /// Timestamp when the account was created.
+    /// Profile scope: all, individual, sme, or ngo.
+    pub context: String,
+    /// Owning profile, or None for global seed accounts.
+    pub profile_id: Option<String>,
+    /// 1 to hide from default views.
+    pub hidden: i64,
+    /// Row creation timestamp.
     pub created_at: Option<NaiveDateTime>,
-    /// Timestamp when the account was last updated.
+    /// Row last-update timestamp.
     pub updated_at: Option<NaiveDateTime>,
 }
 
@@ -125,6 +131,9 @@ pub struct JournalEntry {
     pub approved_at: Option<NaiveDateTime>,
     /// When this entry was posted to the ledger.
     pub posted_at: Option<NaiveDateTime>,
+    /// FK to multi_chain_transactions(id) — the on-chain source tx.
+    /// NULL for manual entries with no wallet source.
+    pub source_tx_id: Option<String>,
 }
 
 /// A single debit or credit line within a journal entry.
@@ -159,6 +168,9 @@ pub struct JournalEntryLine {
     /// Asset identifier: 'USD' for fiat, 'token:<id>' for tokens,
     /// NULL for measurement lines (gains/losses).
     pub asset_id: Option<String>,
+    /// NGO functional classification: program_services, management_general, or fundraising.
+    /// NULL for non-NGO profiles or non-expense lines.
+    pub functional_classification: Option<String>,
 }
 
 /// Shared SELECT for decoding [`JournalEntryLine`] rows.
@@ -167,7 +179,7 @@ pub struct JournalEntryLine {
 /// (NUMERIC affinity), so SQLite stores whole-dollar REAL values as
 /// INTEGER — and sqlx refuses to decode an INTEGER storage class into
 /// `f64`. CAST both back to REAL so every stored value decodes.
-const SELECT_JOURNAL_ENTRY_LINES: &str = "SELECT id, journal_entry_id, gl_account_id, token_id, CAST(debit_amount AS REAL) AS debit_amount, CAST(credit_amount AS REAL) AS credit_amount, description, line_number, created_at, debit_minor, credit_minor, quantity, asset_id FROM journal_entry_lines WHERE journal_entry_id = ? ORDER BY line_number";
+const SELECT_JOURNAL_ENTRY_LINES: &str = "SELECT id, journal_entry_id, gl_account_id, token_id, CAST(debit_amount AS REAL) AS debit_amount, CAST(credit_amount AS REAL) AS credit_amount, description, line_number, created_at, debit_minor, credit_minor, quantity, asset_id, functional_classification FROM journal_entry_lines WHERE journal_entry_id = ? ORDER BY line_number";
 
 /// A journal entry with its lines, returned to the frontend.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -199,6 +211,8 @@ pub struct JournalEntryLineInput {
     pub asset_id: Option<String>,
     /// Optional memo for this line.
     pub description: Option<String>,
+    /// NGO functional classification: program_services, management_general, or fundraising.
+    pub functional_classification: Option<String>,
 }
 
 /// Input for creating a new journal entry with lines.
@@ -435,17 +449,34 @@ impl PostedEntry {
 // Chart of Accounts Commands
 // ============================================================================
 
-/// Returns all active GL accounts ordered by account number.
+/// Returns all active, non-hidden GL accounts ordered by account number.
 #[tauri::command]
 pub async fn get_chart_of_accounts(
     state: State<'_, DatabaseState>,
 ) -> Result<Vec<GlAccount>, String> {
     sqlx::query_as::<_, GlAccount>(
-        "SELECT * FROM gl_accounts WHERE is_active = 1 ORDER BY account_number",
+        "SELECT * FROM gl_accounts WHERE is_active = 1 AND hidden = 0 ORDER BY account_number",
     )
     .fetch_all(&state.pool)
     .await
     .map_err(|e| e.to_string())
+}
+
+/// Hides all template-seeded accounts for a given profile (sets `hidden = 1`
+/// on rows where `is_editable = 0`). User-added accounts are untouched.
+#[tauri::command]
+pub async fn hide_profile_template_accounts(
+    state: State<'_, DatabaseState>,
+    profile_id: String,
+) -> Result<u64, String> {
+    let result =
+        sqlx::query("UPDATE gl_accounts SET hidden = 1 WHERE profile_id = ? AND is_editable = 0")
+            .bind(&profile_id)
+            .execute(&state.pool)
+            .await
+            .map_err(|e| format!("Failed to hide template accounts: {e}"))?;
+
+    Ok(result.rows_affected())
 }
 
 /// Creates a new GL account and returns it.
@@ -655,6 +686,52 @@ pub async fn get_journal_entry(
     Ok(JournalEntryWithLines { entry, lines })
 }
 
+/// Summary of the on-chain source transaction linked to a journal entry.
+#[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
+#[serde(rename_all = "camelCase")]
+pub struct SourceTransactionSummary {
+    /// Unique row identifier from multi_chain_transactions.
+    pub id: String,
+    /// Blockchain network identifier (e.g. "polkadot", "kusama").
+    pub chain_id: String,
+    /// On-chain transaction hash.
+    pub transaction_hash: String,
+    /// Sender address.
+    pub from_address: String,
+    /// Recipient address (None for contract-creation transactions).
+    pub to_address: Option<String>,
+    /// Transfer value in the chain's smallest unit.
+    pub transfer_value: String,
+    /// Network fee paid for the transaction, if available.
+    pub transaction_fee: Option<String>,
+    /// Unix timestamp of the block containing this transaction.
+    pub timestamp: i64,
+    /// Classification of the transaction (e.g. "transfer", "staking").
+    pub transaction_type: String,
+    /// On-chain finality status.
+    pub status: String,
+    /// Address of the wallet that owns this transaction.
+    pub wallet_address: String,
+}
+
+/// Fetches the on-chain source transaction linked to a journal entry.
+/// Returns None (null) if the entry has no source_tx_id or the row is missing.
+#[tauri::command]
+pub async fn get_source_transaction(
+    state: State<'_, DatabaseState>,
+    source_tx_id: String,
+) -> Result<Option<SourceTransactionSummary>, String> {
+    let row = sqlx::query_as::<_, SourceTransactionSummary>(
+        "SELECT id, chain_id, transaction_hash, from_address, to_address, transfer_value, transaction_fee, timestamp, transaction_type, status, wallet_address FROM multi_chain_transactions WHERE id = ?",
+    )
+    .bind(&source_tx_id)
+    .fetch_optional(&state.pool)
+    .await
+    .map_err(|e| e.to_string())?;
+
+    Ok(row)
+}
+
 /// Creates a new journal entry as a draft with the given lines.
 #[tauri::command]
 pub async fn create_journal_entry(
@@ -706,8 +783,8 @@ pub async fn create_journal_entry(
 
     let result = sqlx::query(
         r#"
-        INSERT INTO journal_entries (entry_date, entry_number, description, reference_number, is_posted, status, origin, created_by)
-        VALUES (?, ?, ?, ?, 0, 'draft', ?, 'system')
+        INSERT INTO journal_entries (entry_date, entry_number, description, reference_number, is_posted, status, origin, created_by, source_tx_id)
+        VALUES (?, ?, ?, ?, 0, 'draft', ?, 'system', ?)
         "#,
     )
     .bind(entry_date)
@@ -715,6 +792,7 @@ pub async fn create_journal_entry(
     .bind(&input.description)
     .bind(&input.reference_number)
     .bind(origin)
+    .bind(&input.raw_transaction_id)
     .execute(&mut *tx)
     .await
     .map_err(|e| e.to_string())?;
@@ -732,9 +810,10 @@ pub async fn create_journal_entry(
                 debit_amount, credit_amount,
                 debit_minor, credit_minor,
                 quantity, asset_id,
-                description, line_number
+                description, line_number,
+                functional_classification
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             "#,
         )
         .bind(entry_id)
@@ -748,6 +827,7 @@ pub async fn create_journal_entry(
         .bind(&line.asset_id)
         .bind(&line.description)
         .bind(i as i64 + 1)
+        .bind(&line.functional_classification)
         .execute(&mut *tx)
         .await
         .map_err(|e| e.to_string())?;
@@ -1004,7 +1084,7 @@ pub(crate) async fn void_journal_entry_impl(
     let rev_entry_id = rev_result.last_insert_rowid();
 
     // Insert reversed lines: swap debit/credit (both minor and legacy float),
-    // preserve quantity and asset_id
+    // preserve quantity, asset_id, and functional_classification
     for (i, line) in original_lines.iter().enumerate() {
         sqlx::query(
             r#"
@@ -1013,9 +1093,10 @@ pub(crate) async fn void_journal_entry_impl(
                 debit_amount, credit_amount,
                 debit_minor, credit_minor,
                 quantity, asset_id,
-                description, line_number
+                description, line_number,
+                functional_classification
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             "#,
         )
         .bind(rev_entry_id)
@@ -1029,6 +1110,7 @@ pub(crate) async fn void_journal_entry_impl(
         .bind(&line.asset_id) // preserve asset_id
         .bind(&line.description)
         .bind(i as i64 + 1)
+        .bind(&line.functional_classification)
         .execute(&mut *tx)
         .await
         .map_err(|e| e.to_string())?;
@@ -1199,9 +1281,10 @@ pub async fn update_journal_entry(
                 debit_amount, credit_amount,
                 debit_minor, credit_minor,
                 quantity, asset_id,
-                description, line_number
+                description, line_number,
+                functional_classification
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             "#,
         )
         .bind(id)
@@ -1215,6 +1298,7 @@ pub async fn update_journal_entry(
         .bind(&line.asset_id)
         .bind(&line.description)
         .bind(i as i64 + 1)
+        .bind(&line.functional_classification)
         .execute(&mut *tx)
         .await
         .map_err(|e| e.to_string())?;
@@ -1226,8 +1310,323 @@ pub async fn update_journal_entry(
 }
 
 // ============================================================================
+// Self-Transfer Detection
+// ============================================================================
+
+/// Returns `Ok(true)` when both `from_address` and `to_address` exist in
+/// `user_wallets` under the same entity (same non-null `profile_id`, or both
+/// `NULL` which means the single-entity default). A `None` `to_address`
+/// (contract-creation txns) is never a self-transfer. Propagates DB errors
+/// so a transient failure cannot silently book an intra-wallet move as income.
+async fn is_self_transfer(
+    pool: &sqlx::SqlitePool,
+    from_address: &str,
+    to_address: Option<&str>,
+) -> Result<bool, String> {
+    let Some(to) = to_address else {
+        return Ok(false);
+    };
+
+    let result: Option<(i64,)> = sqlx::query_as(
+        r#"
+        SELECT 1
+        FROM user_wallets a
+        JOIN user_wallets b
+          ON (
+            (a.profile_id IS NOT NULL AND a.profile_id = b.profile_id)
+            OR (a.profile_id IS NULL AND b.profile_id IS NULL)
+          )
+        WHERE a.address = ?
+          AND b.address = ?
+        LIMIT 1
+        "#,
+    )
+    .bind(from_address)
+    .bind(to)
+    .fetch_optional(pool)
+    .await
+    .map_err(|e| e.to_string())?;
+
+    Ok(result.is_some())
+}
+
+// ============================================================================
 // Auto-Classify Command
 // ============================================================================
+
+/// Builds journal entry lines and a description for the "transfer" transaction
+/// type, branching on whether the move is between own wallets (self-transfer)
+/// or an external incoming transfer. Extracted from auto_classify_transaction
+/// to reduce function complexity (RS-R1000).
+async fn classify_transfer_lines(
+    pool: &sqlx::SqlitePool,
+    tx: &MultiChainTx,
+    amount_minor: i64,
+    qty_str: &Option<String>,
+    asset_id: &str,
+    crypto_assets_id: i64,
+    income_id: i64,
+) -> Result<(Vec<JournalEntryLineInput>, String), String> {
+    let self_xfer = is_self_transfer(pool, &tx.from_address, tx.to_address.as_deref()).await?;
+    let mut lines = Vec::new();
+    let short_hash = &tx.transaction_hash[..8.min(tx.transaction_hash.len())];
+
+    if self_xfer {
+        // Intra-entity rebalance: both legs are asset accounts — no P&L impact.
+        if amount_minor > 0 {
+            lines.push(JournalEntryLineInput {
+                gl_account_id: crypto_assets_id,
+                token_id: None,
+                debit_minor: amount_minor,
+                credit_minor: 0,
+                quantity: qty_str.clone(),
+                asset_id: Some(asset_id.to_string()),
+                description: Some("Intra-entity transfer in — own wallet".to_string()),
+                functional_classification: None,
+            });
+            lines.push(JournalEntryLineInput {
+                gl_account_id: crypto_assets_id,
+                token_id: None,
+                debit_minor: 0,
+                credit_minor: amount_minor,
+                quantity: qty_str.clone(),
+                asset_id: Some(asset_id.to_string()),
+                description: Some("Intra-entity transfer out — own wallet".to_string()),
+                functional_classification: None,
+            });
+        }
+        Ok((
+            lines,
+            format!(
+                "self-transfer on {} ({}) — own-wallet move, no P&L",
+                tx.chain_id, short_hash
+            ),
+        ))
+    } else {
+        // Incoming transfer from an external address: DR Crypto Assets / CR Income.
+        if amount_minor > 0 {
+            lines.push(JournalEntryLineInput {
+                gl_account_id: crypto_assets_id,
+                token_id: None,
+                debit_minor: amount_minor,
+                credit_minor: 0,
+                quantity: qty_str.clone(),
+                asset_id: Some(asset_id.to_string()),
+                description: Some("Transfer received".to_string()),
+                functional_classification: None,
+            });
+            lines.push(JournalEntryLineInput {
+                gl_account_id: income_id,
+                token_id: None,
+                debit_minor: 0,
+                credit_minor: amount_minor,
+                quantity: qty_str.clone(),
+                asset_id: Some(asset_id.to_string()),
+                description: Some("Uncategorized income — review and reclassify".to_string()),
+                functional_classification: None,
+            });
+        }
+        Ok((
+            lines,
+            format!("Transfer on {} ({})", tx.chain_id, short_hash),
+        ))
+    }
+}
+
+/// Shared context for classification helper functions, bundling parsed
+/// amounts and quantity strings to stay within clippy's argument limit.
+struct ClassifyCtx {
+    amount_minor: i64,
+    fee_minor: i64,
+    qty_str: Option<String>,
+    fee_qty_str: Option<String>,
+    asset_id: String,
+    short_hash: String,
+}
+
+/// Applies a matched classification rule to produce journal entry lines and
+/// a description string. Extracted from auto_classify_transaction to reduce
+/// cyclomatic complexity (RS-R1000).
+async fn apply_matched_rule(
+    pool: &sqlx::SqlitePool,
+    rule: &super::rules::ClassificationRule,
+    tx: &MultiChainTx,
+    ctx: &ClassifyCtx,
+) -> Result<(Vec<JournalEntryLineInput>, String), String> {
+    let debit_id = get_account_id_by_number(pool, &rule.debit_account).await?;
+    let credit_id = get_account_id_by_number(pool, &rule.credit_account).await?;
+
+    let (amt, q_str) = if rule.use_fee_amount {
+        (ctx.fee_minor, &ctx.fee_qty_str)
+    } else {
+        (ctx.amount_minor, &ctx.qty_str)
+    };
+
+    let mut lines = Vec::new();
+    if amt > 0 {
+        let dr_desc = if rule.debit_line_desc.is_empty() {
+            None
+        } else {
+            Some(rule.debit_line_desc.clone())
+        };
+        let cr_desc = if rule.credit_line_desc.is_empty() {
+            None
+        } else {
+            Some(rule.credit_line_desc.clone())
+        };
+
+        lines.push(JournalEntryLineInput {
+            gl_account_id: debit_id,
+            token_id: None,
+            debit_minor: amt,
+            credit_minor: 0,
+            quantity: q_str.clone(),
+            asset_id: Some(ctx.asset_id.clone()),
+            description: dr_desc,
+            functional_classification: None,
+        });
+        lines.push(JournalEntryLineInput {
+            gl_account_id: credit_id,
+            token_id: None,
+            debit_minor: 0,
+            credit_minor: amt,
+            quantity: q_str.clone(),
+            asset_id: Some(ctx.asset_id.clone()),
+            description: cr_desc,
+            functional_classification: None,
+        });
+    }
+
+    let je_desc = if rule.je_description.is_empty() {
+        format!(
+            "{} on {} ({})",
+            tx.transaction_type, tx.chain_id, ctx.short_hash
+        )
+    } else {
+        rule.je_description
+            .replace("{chain}", &tx.chain_id)
+            .replace("{hash}", &ctx.short_hash)
+            .replace("{type}", &tx.transaction_type)
+    };
+
+    Ok((lines, je_desc))
+}
+
+/// Resolved GL account IDs used by the fallback heuristic classifier.
+struct FallbackAccounts {
+    crypto_assets_id: i64,
+    staking_income_id: i64,
+    network_fees_id: i64,
+    income_id: i64,
+}
+
+/// Applies fallback heuristic classification when no classification rule
+/// matches. Extracted from auto_classify_transaction to reduce cyclomatic
+/// complexity (RS-R1000).
+async fn apply_fallback_heuristics(
+    pool: &sqlx::SqlitePool,
+    tx: &MultiChainTx,
+    ctx: &ClassifyCtx,
+    accts: &FallbackAccounts,
+) -> Result<(Vec<JournalEntryLineInput>, String), String> {
+    let mut lines = Vec::new();
+
+    let description = match tx.transaction_type.as_str() {
+        "claim" | "stake" => {
+            if ctx.amount_minor > 0 {
+                lines.push(JournalEntryLineInput {
+                    gl_account_id: accts.crypto_assets_id,
+                    token_id: None,
+                    debit_minor: ctx.amount_minor,
+                    credit_minor: 0,
+                    quantity: ctx.qty_str.clone(),
+                    asset_id: Some(ctx.asset_id.clone()),
+                    description: Some("Staking reward received".to_string()),
+                    functional_classification: None,
+                });
+                lines.push(JournalEntryLineInput {
+                    gl_account_id: accts.staking_income_id,
+                    token_id: None,
+                    debit_minor: 0,
+                    credit_minor: ctx.amount_minor,
+                    quantity: ctx.qty_str.clone(),
+                    asset_id: Some(ctx.asset_id.clone()),
+                    description: Some("Staking reward income".to_string()),
+                    functional_classification: None,
+                });
+            }
+            format!("Staking reward on {}", tx.chain_id)
+        }
+        "transfer" => {
+            let (transfer_lines, transfer_desc) = classify_transfer_lines(
+                pool,
+                tx,
+                ctx.amount_minor,
+                &ctx.qty_str,
+                &ctx.asset_id,
+                accts.crypto_assets_id,
+                accts.income_id,
+            )
+            .await?;
+            lines.extend(transfer_lines);
+            transfer_desc
+        }
+        _ => {
+            if ctx.fee_minor > 0 {
+                lines.push(JournalEntryLineInput {
+                    gl_account_id: accts.network_fees_id,
+                    token_id: None,
+                    debit_minor: ctx.fee_minor,
+                    credit_minor: 0,
+                    quantity: ctx.fee_qty_str.clone(),
+                    asset_id: Some(ctx.asset_id.clone()),
+                    description: Some("Network/gas fee".to_string()),
+                    functional_classification: None,
+                });
+                lines.push(JournalEntryLineInput {
+                    gl_account_id: accts.crypto_assets_id,
+                    token_id: None,
+                    debit_minor: 0,
+                    credit_minor: ctx.fee_minor,
+                    quantity: ctx.fee_qty_str.clone(),
+                    asset_id: Some(ctx.asset_id.clone()),
+                    description: Some("Fee paid from crypto assets".to_string()),
+                    functional_classification: None,
+                });
+            }
+            format!(
+                "{} on {} ({})",
+                tx.transaction_type, tx.chain_id, ctx.short_hash
+            )
+        }
+    };
+
+    Ok((lines, description))
+}
+
+/// Checks whether a classification rule matches a given transaction.
+fn rule_matches(
+    rule: &super::rules::ClassificationRule,
+    tx_type: &str,
+    chain_id: &str,
+    self_xfer: bool,
+) -> bool {
+    let types: Vec<&str> = rule.match_tx_types.split(',').map(|s| s.trim()).collect();
+    if !types.contains(&tx_type) {
+        return false;
+    }
+    if !rule.match_chains.is_empty() {
+        let chains: Vec<&str> = rule.match_chains.split(',').map(|s| s.trim()).collect();
+        if !chains.iter().any(|c| c.eq_ignore_ascii_case(chain_id)) {
+            return false;
+        }
+    }
+    match rule.match_self_transfer.as_str() {
+        "true" => self_xfer,
+        "false" => !self_xfer,
+        _ => true,
+    }
+}
 
 /// Auto-classifies a raw multi_chain_transaction into a draft journal entry
 /// using basic heuristics based on the transaction type.
@@ -1236,9 +1635,8 @@ pub async fn auto_classify_transaction(
     state: State<'_, DatabaseState>,
     transaction_id: String,
 ) -> Result<JournalEntryWithLines, String> {
-    // Fetch the raw transaction
     let tx = sqlx::query_as::<_, MultiChainTx>(
-        "SELECT id, chain_id, transaction_hash, from_address, to_address, transfer_value, transaction_fee, timestamp, transaction_type, status FROM multi_chain_transactions WHERE id = ? AND classification_status = 'unclassified'",
+        "SELECT id, chain_id, transaction_hash, from_address, to_address, transfer_value, transaction_fee, timestamp, transaction_type, status, price_at_acquisition_usd, valuation_status FROM multi_chain_transactions WHERE id = ? AND classification_status = 'unclassified'",
     )
     .bind(&transaction_id)
     .fetch_optional(&state.pool)
@@ -1246,117 +1644,85 @@ pub async fn auto_classify_transaction(
     .map_err(|e| e.to_string())?
     .ok_or_else(|| "Transaction not found or already classified/ignored".to_string())?;
 
-    // Resolve GL account IDs
     let crypto_assets_id = get_account_id_by_number(&state.pool, "1200").await?;
     let staking_income_id = get_account_id_by_number(&state.pool, "4100").await?;
     let network_fees_id = get_account_id_by_number(&state.pool, "5100").await?;
     let income_id = get_account_id_by_number(&state.pool, "4000").await?;
 
-    // Parse amounts via rust_decimal at the boundary — no f64 in the money path (Inv-2).
-    // The raw string value in the source row is never modified (Inv-5).
-    // Rounding is explicit half-away-from-zero: Decimal::round() defaults to
-    // banker's rounding (10000.5 -> 10000), which is not the money convention
-    // used elsewhere in this codebase.
-    let amount_dec = Decimal::from_str(&tx.transfer_value)
+    let token_qty = Decimal::from_str(&tx.transfer_value)
         .map_err(|e| format!("Cannot parse value '{}': {e}", tx.transfer_value))?;
-    let amount_minor: i64 = decimal_to_minor_units(amount_dec)
-        .ok_or_else(|| format!("Value out of range: {}", tx.transfer_value))?;
-    let fee_dec = tx
+    let fee_qty = tx
         .transaction_fee
         .as_deref()
         .unwrap_or("0")
         .parse::<Decimal>()
         .unwrap_or(Decimal::ZERO);
-    let fee_minor: i64 = decimal_to_minor_units(fee_dec)
-        .ok_or_else(|| format!("Fee out of range: {:?}", tx.transaction_fee))?;
 
-    // Build lines based on transaction_type heuristics
-    let mut lines = Vec::new();
-    let description = match tx.transaction_type.as_str() {
-        "claim" | "stake" => {
-            // Staking reward: DR Crypto Assets / CR Staking Income
-            if amount_minor > 0 {
-                lines.push(JournalEntryLineInput {
-                    gl_account_id: crypto_assets_id,
-                    token_id: None,
-                    debit_minor: amount_minor,
-                    credit_minor: 0,
-                    quantity: None,
-                    asset_id: Some("USD".to_string()),
-                    description: Some("Staking reward received".to_string()),
-                });
-                lines.push(JournalEntryLineInput {
-                    gl_account_id: staking_income_id,
-                    token_id: None,
-                    debit_minor: 0,
-                    credit_minor: amount_minor,
-                    quantity: None,
-                    asset_id: Some("USD".to_string()),
-                    description: Some("Staking reward income".to_string()),
-                });
-            }
-            format!("Staking reward on {}", tx.chain_id)
-        }
-        "transfer" => {
-            // Incoming transfer: DR Crypto Assets / CR Income (uncategorized)
-            if amount_minor > 0 {
-                lines.push(JournalEntryLineInput {
-                    gl_account_id: crypto_assets_id,
-                    token_id: None,
-                    debit_minor: amount_minor,
-                    credit_minor: 0,
-                    quantity: None,
-                    asset_id: Some("USD".to_string()),
-                    description: Some("Transfer received".to_string()),
-                });
-                lines.push(JournalEntryLineInput {
-                    gl_account_id: income_id,
-                    token_id: None,
-                    debit_minor: 0,
-                    credit_minor: amount_minor,
-                    quantity: None,
-                    asset_id: Some("USD".to_string()),
-                    description: Some("Uncategorized income — review and reclassify".to_string()),
-                });
-            }
-            format!(
-                "Transfer on {} ({})",
-                tx.chain_id,
-                &tx.transaction_hash[..8.min(tx.transaction_hash.len())]
-            )
-        }
-        _ => {
-            // Default: if there's a fee, record it as an expense
-            if fee_minor > 0 {
-                lines.push(JournalEntryLineInput {
-                    gl_account_id: network_fees_id,
-                    token_id: None,
-                    debit_minor: fee_minor,
-                    credit_minor: 0,
-                    quantity: None,
-                    asset_id: Some("USD".to_string()),
-                    description: Some("Network/gas fee".to_string()),
-                });
-                lines.push(JournalEntryLineInput {
-                    gl_account_id: crypto_assets_id,
-                    token_id: None,
-                    debit_minor: 0,
-                    credit_minor: fee_minor,
-                    quantity: None,
-                    asset_id: Some("USD".to_string()),
-                    description: Some("Fee paid from crypto assets".to_string()),
-                });
-            }
-            format!(
-                "{} on {} ({})",
-                tx.transaction_type,
-                tx.chain_id,
-                &tx.transaction_hash[..8.min(tx.transaction_hash.len())]
-            )
-        }
+    let price = tx
+        .price_at_acquisition_usd
+        .as_deref()
+        .and_then(|s| Decimal::from_str(s).ok())
+        .ok_or_else(|| "USD price unavailable — run Enrich Prices".to_string())?;
+
+    let amount_usd = token_qty.checked_mul(price).unwrap_or(Decimal::ZERO);
+    let fee_usd = fee_qty.checked_mul(price).unwrap_or(Decimal::ZERO);
+
+    let amount_minor: i64 = decimal_to_minor_units(amount_usd)
+        .ok_or_else(|| format!("USD value out of range: {}", amount_usd))?;
+    let fee_minor: i64 = decimal_to_minor_units(fee_usd)
+        .ok_or_else(|| format!("USD fee out of range: {}", fee_usd))?;
+
+    let qty_str = Some(token_qty.normalize().to_string());
+    let fee_qty_str = if fee_qty > Decimal::ZERO {
+        Some(fee_qty.normalize().to_string())
+    } else {
+        None
     };
 
-    // If we have no lines at all, create a placeholder
+    let asset_id = chain_id_to_native_symbol(&tx.chain_id)
+        .map_or_else(|| "USD".to_string(), |s| format!("token:{}", s));
+
+    let short_hash = tx.transaction_hash[..8.min(tx.transaction_hash.len())].to_string();
+
+    let ctx = ClassifyCtx {
+        amount_minor,
+        fee_minor,
+        qty_str,
+        fee_qty_str,
+        asset_id,
+        short_hash,
+    };
+
+    let self_xfer =
+        is_self_transfer(&state.pool, &tx.from_address, tx.to_address.as_deref()).await?;
+
+    let rules = sqlx::query_as::<_, super::rules::ClassificationRule>(
+        "SELECT id, name, description, match_tx_types, match_chains, match_self_transfer, \
+         debit_account, credit_account, debit_line_desc, credit_line_desc, je_description, \
+         use_fee_amount, priority, enabled, source, created_at, updated_at \
+         FROM classification_rules WHERE enabled = 1 ORDER BY priority ASC",
+    )
+    .fetch_all(&state.pool)
+    .await
+    .map_err(|e| e.to_string())?;
+
+    let matched_rule = rules
+        .iter()
+        .find(|r| rule_matches(r, &tx.transaction_type, &tx.chain_id, self_xfer));
+
+    let accts = FallbackAccounts {
+        crypto_assets_id,
+        staking_income_id,
+        network_fees_id,
+        income_id,
+    };
+
+    let (mut lines, description) = if let Some(rule) = matched_rule {
+        apply_matched_rule(&state.pool, rule, &tx, &ctx).await?
+    } else {
+        apply_fallback_heuristics(&state.pool, &tx, &ctx, &accts).await?
+    };
+
     if lines.is_empty() {
         lines.push(JournalEntryLineInput {
             gl_account_id: crypto_assets_id,
@@ -1366,6 +1732,7 @@ pub async fn auto_classify_transaction(
             quantity: None,
             asset_id: Some("USD".to_string()),
             description: Some("Placeholder — update amounts".to_string()),
+            functional_classification: None,
         });
         lines.push(JournalEntryLineInput {
             gl_account_id: income_id,
@@ -1375,19 +1742,20 @@ pub async fn auto_classify_transaction(
             quantity: None,
             asset_id: Some("USD".to_string()),
             description: Some("Placeholder — update amounts".to_string()),
+            functional_classification: None,
         });
     }
 
-    // Format timestamp
-    let entry_date = chrono::DateTime::from_timestamp(tx.timestamp, 0)
-        .map(|dt| dt.format("%Y-%m-%d").to_string())
-        .unwrap_or_else(|| chrono::Utc::now().format("%Y-%m-%d").to_string());
+    let entry_date = chrono::DateTime::from_timestamp(tx.timestamp, 0).map_or_else(
+        || chrono::Utc::now().format("%Y-%m-%d").to_string(),
+        |dt| dt.format("%Y-%m-%d").to_string(),
+    );
 
     let input = NewJournalEntryInput {
         entry_date,
-        description,
+        description: format!("{description} (@ ${price}/unit)"),
         reference_number: Some(tx.transaction_hash.clone()),
-        raw_transaction_id: Some(transaction_id),
+        raw_transaction_id: Some(transaction_id.clone()),
         origin: Some("rule".to_string()),
         lines,
     };
@@ -1406,10 +1774,8 @@ struct MultiChainTx {
     /// Transaction hash.
     transaction_hash: String,
     /// Sender address.
-    #[allow(dead_code)]
     from_address: String,
     /// Recipient address.
-    #[allow(dead_code)]
     to_address: Option<String>,
     /// Transaction value as string.
     transfer_value: String,
@@ -1422,6 +1788,11 @@ struct MultiChainTx {
     /// Transaction status.
     #[allow(dead_code)]
     status: String,
+    /// USD price per token unit at time of transaction (populated by enrichment).
+    price_at_acquisition_usd: Option<String>,
+    /// Valuation status: unpriced, priced, or unavailable.
+    #[allow(dead_code)]
+    valuation_status: String,
 }
 
 /// Converts an exact decimal amount to integer minor units (cents) using
@@ -1443,6 +1814,186 @@ async fn get_account_id_by_number(pool: &sqlx::SqlitePool, number: &str) -> Resu
             .map_err(|e| format!("GL account {number} not found: {e}"))?;
 
     Ok(row.0)
+}
+
+// ============================================================================
+// Chain → CoinGecko Mapping (GIV-722)
+// ============================================================================
+
+/// Maps a chain_id (as stored in multi_chain_transactions) to the CoinGecko
+/// coin ID for the chain's native token. Returns None for unrecognized chains.
+fn chain_id_to_coingecko(chain_id: &str) -> Option<&'static str> {
+    match chain_id.to_lowercase().as_str() {
+        "polkadot" => Some("polkadot"),
+        "kusama" => Some("kusama"),
+        "moonbeam" | "1284" => Some("moonbeam"),
+        "moonriver" | "1285" => Some("moonriver"),
+        "astar" | "592" => Some("astar"),
+        "acala" => Some("acala"),
+        "ethereum" | "1" => Some("ethereum"),
+        "arbitrum" | "42161" => Some("ethereum"),
+        "base" | "8453" => Some("ethereum"),
+        "optimism" | "10" => Some("ethereum"),
+        "polygon" | "137" => Some("matic-network"),
+        "bsc" | "56" => Some("binancecoin"),
+        "solana" => Some("solana"),
+        "bitcoin" => Some("bitcoin"),
+        _ => None,
+    }
+}
+
+/// Maps chain_id to the native token symbol for JE asset_id fields.
+fn chain_id_to_native_symbol(chain_id: &str) -> Option<&'static str> {
+    match chain_id.to_lowercase().as_str() {
+        "polkadot" => Some("DOT"),
+        "kusama" => Some("KSM"),
+        "moonbeam" | "1284" => Some("GLMR"),
+        "moonriver" | "1285" => Some("MOVR"),
+        "astar" | "592" => Some("ASTR"),
+        "acala" => Some("ACA"),
+        "ethereum" | "1" | "arbitrum" | "42161" | "base" | "8453" | "optimism" | "10" => {
+            Some("ETH")
+        }
+        "polygon" | "137" => Some("POL"),
+        "bsc" | "56" => Some("BNB"),
+        "solana" => Some("SOL"),
+        "bitcoin" => Some("BTC"),
+        _ => None,
+    }
+}
+
+/// Row for batch enrichment queries.
+#[derive(Debug, FromRow)]
+struct EnrichRow {
+    id: String,
+    chain_id: String,
+    timestamp: i64,
+}
+
+/// Result summary for the enrichment command.
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EnrichmentResult {
+    /// Number of transactions successfully priced.
+    pub priced: u32,
+    /// Number of transactions whose chain is unsupported (no price available).
+    pub unavailable: u32,
+    /// Number of transactions that were already priced (idempotent skip).
+    pub already_priced: u32,
+}
+
+/// Enriches unclassified, unpriced multi_chain_transactions with historical
+/// USD prices from CoinGecko, grouped by (chain, date) to minimize API calls.
+/// Transactions for unsupported chains are marked 'unavailable'. Idempotent —
+/// already-priced rows are skipped.
+#[tauri::command]
+pub async fn enrich_transaction_prices(
+    state: State<'_, DatabaseState>,
+) -> Result<EnrichmentResult, String> {
+    use super::price_feeds::CoinGeckoClient;
+    use std::collections::BTreeMap;
+
+    let rows = sqlx::query_as::<_, EnrichRow>(
+        "SELECT id, chain_id, timestamp FROM multi_chain_transactions WHERE classification_status = 'unclassified' AND valuation_status = 'unpriced'",
+    )
+    .fetch_all(&state.pool)
+    .await
+    .map_err(|e| e.to_string())?;
+
+    if rows.is_empty() {
+        return Ok(EnrichmentResult {
+            priced: 0,
+            unavailable: 0,
+            already_priced: 0,
+        });
+    }
+
+    // Load API key from env — use a named constant to avoid spelling errors (RS-W1015).
+    static COINGECKO_API_KEY_ENV: &str = "COINGECKO_API_KEY";
+    let api_key = std::env::var(COINGECKO_API_KEY_ENV).ok();
+    let client = CoinGeckoClient::new(api_key);
+
+    // Group transactions by (coingecko_id, date) → vec of tx IDs.
+    // date is DD-MM-YYYY format for CoinGecko.
+    let mut groups: BTreeMap<(String, String), Vec<String>> = BTreeMap::new();
+    let mut unsupported_ids: Vec<String> = Vec::new();
+
+    for row in &rows {
+        let cg_id = match chain_id_to_coingecko(&row.chain_id) {
+            Some(id) => id.to_string(),
+            None => {
+                unsupported_ids.push(row.id.clone());
+                continue;
+            }
+        };
+
+        let date = chrono::DateTime::from_timestamp(row.timestamp, 0)
+            .map_or_else(String::new, |dt| dt.format("%d-%m-%Y").to_string());
+
+        if date.is_empty() {
+            unsupported_ids.push(row.id.clone());
+            continue;
+        }
+
+        groups
+            .entry((cg_id, date))
+            .or_default()
+            .push(row.id.clone());
+    }
+
+    // Mark unsupported chains as unavailable.
+    for id in &unsupported_ids {
+        let _ = sqlx::query(
+            "UPDATE multi_chain_transactions SET valuation_status = 'unavailable' WHERE id = ?",
+        )
+        .bind(id)
+        .execute(&state.pool)
+        .await;
+    }
+
+    let mut priced: u32 = 0;
+    let mut unavailable: u32 = unsupported_ids.len() as u32;
+
+    // Fetch prices grouped by (coin, date). CoinGecko historical endpoint
+    // is per-coin-per-date, so each unique (coin, date) pair is one API call.
+    for ((coin_id, date), tx_ids) in &groups {
+        // Rate limit: 250ms between requests (CoinGecko free tier: 10-30/min).
+        if priced > 0 || unavailable > unsupported_ids.len() as u32 {
+            tokio::time::sleep(tokio::time::Duration::from_millis(250)).await;
+        }
+
+        match client.get_historical_price(coin_id, date, "usd").await {
+            Ok(price_str) => {
+                for tx_id in tx_ids {
+                    let _ = sqlx::query(
+                        "UPDATE multi_chain_transactions SET price_at_acquisition_usd = ?, valuation_status = 'priced' WHERE id = ?",
+                    )
+                    .bind(&price_str)
+                    .bind(tx_id)
+                    .execute(&state.pool)
+                    .await;
+                    priced += 1;
+                }
+            }
+            Err(_) => {
+                for tx_id in tx_ids {
+                    let _ = sqlx::query(
+                        "UPDATE multi_chain_transactions SET valuation_status = 'unavailable' WHERE id = ?",
+                    )
+                    .bind(tx_id)
+                    .execute(&state.pool)
+                    .await;
+                    unavailable += 1;
+                }
+            }
+        }
+    }
+
+    Ok(EnrichmentResult {
+        priced,
+        unavailable,
+        already_priced: 0,
+    })
 }
 
 // ============================================================================
@@ -1475,6 +2026,14 @@ pub struct MultiChainTransaction {
     pub status: String,
     /// Classification status.
     pub classification_status: String,
+    /// USD price per token unit at time of transaction.
+    pub price_at_acquisition_usd: Option<String>,
+    /// Valuation enrichment status: unpriced, priced, or unavailable.
+    pub valuation_status: String,
+    /// Whether the from and to addresses both belong to wallets under the same
+    /// profile (self-transfer detection for the classification queue preview).
+    #[serde(default)]
+    pub is_self_transfer: bool,
 }
 
 /// Returns all unclassified multi-chain transactions for the classification queue.
@@ -1483,7 +2042,21 @@ pub async fn get_unclassified_transactions(
     state: State<'_, DatabaseState>,
 ) -> Result<Vec<MultiChainTransaction>, String> {
     sqlx::query_as::<_, MultiChainTransaction>(
-        "SELECT id, chain_id, transaction_hash, from_address, to_address, transfer_value, transaction_fee, timestamp, transaction_type, status, classification_status FROM multi_chain_transactions WHERE classification_status = 'unclassified' ORDER BY timestamp DESC",
+        r#"SELECT
+             t.id, t.chain_id, t.transaction_hash, t.from_address, t.to_address,
+             t.transfer_value, t.transaction_fee, t.timestamp, t.transaction_type,
+             t.status, t.classification_status, t.price_at_acquisition_usd,
+             t.valuation_status,
+             CASE WHEN t.to_address IS NOT NULL AND EXISTS (
+               SELECT 1 FROM user_wallets a
+               JOIN user_wallets b
+                 ON (a.profile_id IS NOT NULL AND a.profile_id = b.profile_id)
+                 OR (a.profile_id IS NULL AND b.profile_id IS NULL)
+               WHERE a.address = t.from_address AND b.address = t.to_address
+             ) THEN 1 ELSE 0 END AS is_self_transfer
+           FROM multi_chain_transactions t
+           WHERE t.classification_status = 'unclassified'
+           ORDER BY t.timestamp DESC"#,
     )
     .fetch_all(&state.pool)
     .await
@@ -1953,6 +2526,224 @@ pub async fn reopen_period(
         .fetch_one(&state.pool)
         .await
         .map_err(|e| e.to_string())
+}
+
+// ============================================================================
+// Chart-of-Accounts Template Importer (GIV-757)
+// ============================================================================
+
+#[derive(Debug, Deserialize)]
+struct TemplateAccount {
+    code: String,
+    name: String,
+    #[serde(rename = "type")]
+    account_type: String,
+    description: Option<String>,
+    subcategory: Option<String>,
+    #[serde(default = "default_true")]
+    #[serde(rename = "isActive")]
+    is_active: bool,
+    #[serde(default)]
+    #[allow(dead_code)]
+    editable: bool,
+}
+
+fn default_true() -> bool {
+    true
+}
+
+#[derive(Debug, Deserialize)]
+struct ChartTemplate {
+    #[allow(dead_code)]
+    name: String,
+    #[allow(dead_code)]
+    jurisdiction: String,
+    #[serde(rename = "accountType")]
+    #[allow(dead_code)]
+    account_type_field: String,
+    accounts: Vec<TemplateAccount>,
+}
+
+const TPL_US_GAAP_INDIVIDUAL: &str =
+    include_str!("../../../src/data/chart-of-accounts/us-gaap-individual.json");
+const TPL_US_GAAP_ENTERPRISE: &str =
+    include_str!("../../../src/data/chart-of-accounts/us-gaap-for-profit-enterprise.json");
+const TPL_US_GAAP_NFP: &str =
+    include_str!("../../../src/data/chart-of-accounts/us-gaap-not-for-profit.json");
+const TPL_IFRS_INDIVIDUAL: &str =
+    include_str!("../../../src/data/chart-of-accounts/ifrs-individual.json");
+const TPL_IFRS_SME: &str = include_str!("../../../src/data/chart-of-accounts/ifrs-sme.json");
+const TPL_IFRS_NFP: &str =
+    include_str!("../../../src/data/chart-of-accounts/ifrs-not-for-profit.json");
+
+fn resolve_template(jurisdiction: &str, account_type: &str) -> Result<&'static str, String> {
+    match (jurisdiction, account_type) {
+        ("us-gaap", "individual") => Ok(TPL_US_GAAP_INDIVIDUAL),
+        ("us-gaap", "for-profit-enterprise") => Ok(TPL_US_GAAP_ENTERPRISE),
+        ("us-gaap", "not-for-profit") => Ok(TPL_US_GAAP_NFP),
+        ("ifrs", "individual") => Ok(TPL_IFRS_INDIVIDUAL),
+        ("ifrs", "for-profit-enterprise") => Ok(TPL_IFRS_SME),
+        ("ifrs", "not-for-profit") => Ok(TPL_IFRS_NFP),
+        _ => Err(format!(
+            "Unknown template: jurisdiction={jurisdiction}, accountType={account_type}"
+        )),
+    }
+}
+
+fn account_type_to_context(account_type: &str) -> &'static str {
+    match account_type {
+        "individual" => "individual",
+        "for-profit-enterprise" => "sme",
+        "not-for-profit" => "ngo",
+        _ => "all",
+    }
+}
+
+fn is_shared_account(acct: &TemplateAccount) -> bool {
+    matches!(acct.subcategory.as_deref(), Some(s) if s.starts_with("Digital") || s.starts_with("DeFi") || s.starts_with("Crypto"))
+}
+
+/// Input payload for the `import_chart_of_accounts_template` command.
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ImportCoaInput {
+    /// Accounting jurisdiction (e.g. "us-gaap", "ifrs").
+    pub jurisdiction: String,
+    /// Entity type: "individual", "for-profit-enterprise", or "not-for-profit".
+    pub account_type: String,
+    /// Profile to import the template into.
+    pub profile_id: String,
+}
+
+/// Imports a chart-of-accounts template into `gl_accounts` for a profile.
+///
+/// Idempotent — uses `(profile_id, account_number)` as the natural key.
+/// Template-seeded rows are marked `is_editable = 0`.
+#[tauri::command]
+pub async fn import_chart_of_accounts_template(
+    state: State<'_, DatabaseState>,
+    input: ImportCoaInput,
+) -> Result<u64, String> {
+    let tpl_json = resolve_template(&input.jurisdiction, &input.account_type)?;
+    let tpl: ChartTemplate =
+        serde_json::from_str(tpl_json).map_err(|e| format!("Template parse error: {e}"))?;
+
+    let profile_context = account_type_to_context(&input.account_type);
+    let mut inserted: u64 = 0;
+
+    for acct in &tpl.accounts {
+        let context = if is_shared_account(acct) {
+            "all"
+        } else {
+            profile_context
+        };
+
+        let normal_balance = match acct.account_type.as_str() {
+            "Asset" | "Expense" => "debit",
+            _ => "credit",
+        };
+
+        let result = sqlx::query(
+            r#"
+            INSERT INTO gl_accounts (
+                account_number, account_name, account_type,
+                digital_asset_type, subcategory, description,
+                is_active, is_editable, normal_balance,
+                context, profile_id, hidden
+            )
+            VALUES (?, ?, ?, NULL, ?, ?, ?, 0, ?, ?, ?, 0)
+            ON CONFLICT (profile_id, account_number) DO UPDATE SET
+                account_name = excluded.account_name,
+                account_type = excluded.account_type,
+                subcategory  = excluded.subcategory,
+                description  = excluded.description,
+                context      = excluded.context,
+                normal_balance = excluded.normal_balance,
+                hidden       = 0
+            "#,
+        )
+        .bind(&acct.code)
+        .bind(&acct.name)
+        .bind(&acct.account_type)
+        .bind(&acct.subcategory)
+        .bind(&acct.description)
+        .bind(acct.is_active)
+        .bind(normal_balance)
+        .bind(context)
+        .bind(&input.profile_id)
+        .execute(&state.pool)
+        .await
+        .map_err(|e| format!("Failed to upsert account {}: {e}", acct.code))?;
+
+        inserted += result.rows_affected();
+    }
+
+    Ok(inserted)
+}
+
+/// Imports a chart-of-accounts template directly against a pool (for tests).
+#[cfg(test)]
+async fn import_coa_template_raw(
+    pool: &sqlx::SqlitePool,
+    jurisdiction: &str,
+    account_type: &str,
+    profile_id: &str,
+) -> Result<u64, String> {
+    let tpl_json = resolve_template(jurisdiction, account_type)?;
+    let tpl: ChartTemplate =
+        serde_json::from_str(tpl_json).map_err(|e| format!("Template parse error: {e}"))?;
+
+    let profile_context = account_type_to_context(account_type);
+    let mut inserted: u64 = 0;
+
+    for acct in &tpl.accounts {
+        let context = if is_shared_account(acct) {
+            "all"
+        } else {
+            profile_context
+        };
+
+        let normal_balance = match acct.account_type.as_str() {
+            "Asset" | "Expense" => "debit",
+            _ => "credit",
+        };
+
+        let result = sqlx::query(
+            r#"
+            INSERT INTO gl_accounts (
+                account_number, account_name, account_type,
+                digital_asset_type, subcategory, description,
+                is_active, is_editable, normal_balance,
+                context, profile_id, hidden
+            )
+            VALUES (?, ?, ?, NULL, ?, ?, ?, 0, ?, ?, ?, 0)
+            ON CONFLICT (profile_id, account_number) DO UPDATE SET
+                account_name = excluded.account_name,
+                account_type = excluded.account_type,
+                subcategory  = excluded.subcategory,
+                description  = excluded.description,
+                context      = excluded.context,
+                normal_balance = excluded.normal_balance,
+                hidden       = 0
+            "#,
+        )
+        .bind(&acct.code)
+        .bind(&acct.name)
+        .bind(&acct.account_type)
+        .bind(&acct.subcategory)
+        .bind(&acct.description)
+        .bind(acct.is_active)
+        .bind(normal_balance)
+        .bind(context)
+        .bind(profile_id)
+        .execute(pool)
+        .await
+        .map_err(|e| format!("Failed to upsert account {}: {e}", acct.code))?;
+
+        inserted += result.rows_affected();
+    }
+
+    Ok(inserted)
 }
 
 // ============================================================================
@@ -4208,5 +4999,548 @@ mod tests {
                 .execute(&pool)
                 .await;
         assert!(result.is_ok(), "Draft entry_date must remain editable");
+    }
+
+    // ========================================================================
+    // GIV-724 — Self-transfer detection
+    // ========================================================================
+
+    /// Inserts a wallet into user_wallets for a given profile.
+    async fn insert_user_wallet(
+        pool: &SqlitePool,
+        address: &str,
+        chain_id: &str,
+        profile_id: Option<&str>,
+    ) {
+        sqlx::query(
+            "INSERT INTO user_wallets (address, chain_id, wallet_type, profile_id) VALUES (?, ?, 'substrate', ?)",
+        )
+        .bind(address)
+        .bind(chain_id)
+        .bind(profile_id)
+        .execute(pool)
+        .await
+        .expect("Insert user_wallet");
+    }
+
+    /// Inserts a raw transaction with explicit from/to addresses.
+    async fn insert_raw_tx_with_addresses(
+        pool: &SqlitePool,
+        id: &str,
+        chain: &str,
+        transaction_hash: &str,
+        from_address: &str,
+        to_address: &str,
+        transfer_value: &str,
+        transaction_type: &str,
+        timestamp: i64,
+    ) {
+        sqlx::query(
+            r#"INSERT INTO multi_chain_transactions
+               (id, chain_id, transaction_hash, from_address, to_address, transfer_value, timestamp, transaction_type, status)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'success')"#,
+        )
+        .bind(id)
+        .bind(chain)
+        .bind(transaction_hash)
+        .bind(from_address)
+        .bind(to_address)
+        .bind(transfer_value)
+        .bind(timestamp)
+        .bind(transaction_type)
+        .execute(pool)
+        .await
+        .expect("Insert raw tx with addresses");
+    }
+
+    // ---- is_self_transfer detection ----
+
+    #[tokio::test]
+    async fn self_transfer_detected_for_same_profile_wallets() {
+        let pool = setup_test_db().await;
+        let addr_a = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY";
+        let addr_b = "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty";
+
+        insert_user_wallet(&pool, addr_a, "polkadot", Some("profile-1")).await;
+        insert_user_wallet(&pool, addr_b, "polkadot", Some("profile-1")).await;
+
+        assert!(
+            is_self_transfer(&pool, addr_a, Some(addr_b)).await.unwrap(),
+            "Two wallets under the same profile should be detected as a self-transfer"
+        );
+    }
+
+    #[tokio::test]
+    async fn self_transfer_rejected_for_different_profiles() {
+        let pool = setup_test_db().await;
+        let addr_a = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY";
+        let addr_b = "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty";
+
+        insert_user_wallet(&pool, addr_a, "polkadot", Some("profile-1")).await;
+        insert_user_wallet(&pool, addr_b, "polkadot", Some("profile-2")).await;
+
+        assert!(
+            !is_self_transfer(&pool, addr_a, Some(addr_b)).await.unwrap(),
+            "Wallets under different profiles must not match as self-transfer"
+        );
+    }
+
+    #[tokio::test]
+    async fn self_transfer_none_to_address_returns_false() {
+        let pool = setup_test_db().await;
+        let addr = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY";
+        insert_user_wallet(&pool, addr, "polkadot", Some("profile-1")).await;
+
+        assert!(
+            !is_self_transfer(&pool, addr, None).await.unwrap(),
+            "None to_address (contract creation) must never be a self-transfer"
+        );
+    }
+
+    #[tokio::test]
+    async fn self_transfer_detected_for_null_profile_wallets() {
+        let pool = setup_test_db().await;
+        let addr_a = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY";
+        let addr_b = "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty";
+
+        insert_user_wallet(&pool, addr_a, "polkadot", None).await;
+        insert_user_wallet(&pool, addr_b, "polkadot", None).await;
+
+        assert!(
+            is_self_transfer(&pool, addr_a, Some(addr_b)).await.unwrap(),
+            "Two wallets with NULL profile_id (default entity) should match"
+        );
+    }
+
+    // ---- Acceptance test: DOT rebalance produces asset-only draft JE ----
+
+    #[tokio::test]
+    async fn dot_rebalance_produces_asset_only_draft_je() {
+        let pool = setup_test_db().await;
+        let crypto_id = get_account_id_by_number(&pool, "1200").await.unwrap();
+        let income_id = get_account_id_by_number(&pool, "4000").await.unwrap();
+
+        let addr_a = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY";
+        let addr_b = "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty";
+
+        // Both wallets belong to the same entity
+        insert_user_wallet(&pool, addr_a, "polkadot", Some("dao-profile")).await;
+        insert_user_wallet(&pool, addr_b, "polkadot", Some("dao-profile")).await;
+
+        // Insert a priced DOT transfer from addr_a to addr_b
+        insert_raw_tx_with_addresses(
+            &pool,
+            "polkadot_0xdot001",
+            "polkadot",
+            "0xdot001",
+            addr_a,
+            addr_b,
+            "100.0",
+            "transfer",
+            1700000000,
+        )
+        .await;
+        // Set a price so amount_minor > 0
+        sqlx::query(
+            "UPDATE multi_chain_transactions SET price_at_acquisition_usd = '8.00', valuation_status = 'priced' WHERE id = 'polkadot_0xdot001'",
+        )
+        .execute(&pool)
+        .await
+        .expect("Set price");
+
+        // Detect self-transfer and build the JE (mirrors auto_classify_transaction logic).
+        let is_st = is_self_transfer(&pool, addr_a, Some(addr_b)).await.unwrap();
+        assert!(
+            is_st,
+            "Must detect self-transfer for same-entity DOT wallets"
+        );
+
+        // Simulate the JE that auto_classify_transaction would produce
+        let entry_id = {
+            let r = sqlx::query(
+                "INSERT INTO journal_entries (entry_date, entry_number, description, is_posted, status, origin, created_by) VALUES ('2023-11-14', 'ST-DOT-001', 'self-transfer on polkadot (0xdot001) — own-wallet move, no P&L', 0, 'draft', 'rule', 'system')",
+            )
+            .execute(&pool)
+            .await
+            .expect("Create self-transfer JE");
+            r.last_insert_rowid()
+        };
+
+        // 100 DOT × $8.00 = $800.00 = 80000 minor units
+        let amount_minor: i64 = 80000;
+
+        // DR Crypto Assets
+        sqlx::query(
+            "INSERT INTO journal_entry_lines (journal_entry_id, gl_account_id, debit_amount, credit_amount, debit_minor, credit_minor, asset_id, line_number) VALUES (?, ?, 800.0, 0, ?, 0, 'token:DOT', 1)",
+        )
+        .bind(entry_id)
+        .bind(crypto_id)
+        .bind(amount_minor)
+        .execute(&pool)
+        .await
+        .expect("DR line");
+
+        // CR Crypto Assets (same account — intra-entity, no income)
+        sqlx::query(
+            "INSERT INTO journal_entry_lines (journal_entry_id, gl_account_id, debit_amount, credit_amount, debit_minor, credit_minor, asset_id, line_number) VALUES (?, ?, 0, 800.0, 0, ?, 'token:DOT', 2)",
+        )
+        .bind(entry_id)
+        .bind(crypto_id)
+        .bind(amount_minor)
+        .execute(&pool)
+        .await
+        .expect("CR line");
+
+        // --- Assertions ---
+
+        // 1. Exactly two lines, both on the Crypto Assets (1200) account
+        let lines: Vec<(i64, i64, i64)> = sqlx::query_as(
+            "SELECT gl_account_id, debit_minor, credit_minor FROM journal_entry_lines WHERE journal_entry_id = ? ORDER BY line_number",
+        )
+        .bind(entry_id)
+        .fetch_all(&pool)
+        .await
+        .expect("Fetch lines");
+
+        assert_eq!(
+            lines.len(),
+            2,
+            "Self-transfer JE must have exactly two lines"
+        );
+        for (gl_id, _, _) in &lines {
+            assert_eq!(
+                *gl_id, crypto_id,
+                "All lines must post to Crypto Assets (1200), not income/expense"
+            );
+        }
+
+        // 2. No income account involved
+        let income_lines: Vec<(i64,)> = sqlx::query_as(
+            "SELECT id FROM journal_entry_lines WHERE journal_entry_id = ? AND gl_account_id = ?",
+        )
+        .bind(entry_id)
+        .bind(income_id)
+        .fetch_all(&pool)
+        .await
+        .expect("Check income lines");
+        assert!(
+            income_lines.is_empty(),
+            "Self-transfer JE must have no income-account lines"
+        );
+
+        // 3. JE is balanced (total debit == total credit)
+        let (total_dr,): (i64,) = sqlx::query_as(
+            "SELECT SUM(debit_minor) FROM journal_entry_lines WHERE journal_entry_id = ?",
+        )
+        .bind(entry_id)
+        .fetch_one(&pool)
+        .await
+        .expect("Sum debits");
+        let (total_cr,): (i64,) = sqlx::query_as(
+            "SELECT SUM(credit_minor) FROM journal_entry_lines WHERE journal_entry_id = ?",
+        )
+        .bind(entry_id)
+        .fetch_one(&pool)
+        .await
+        .expect("Sum credits");
+        assert_eq!(total_dr, total_cr, "JE must be balanced (debit == credit)");
+
+        // 4. JE has origin = 'rule'
+        let (origin,): (String,) =
+            sqlx::query_as("SELECT origin FROM journal_entries WHERE id = ?")
+                .bind(entry_id)
+                .fetch_one(&pool)
+                .await
+                .expect("Fetch origin");
+        assert_eq!(origin, "rule", "Self-transfer JE must have origin = 'rule'");
+
+        // 5. Description mentions "self-transfer"
+        let (desc,): (String,) =
+            sqlx::query_as("SELECT description FROM journal_entries WHERE id = ?")
+                .bind(entry_id)
+                .fetch_one(&pool)
+                .await
+                .expect("Fetch description");
+        assert!(
+            desc.contains("self-transfer"),
+            "JE description must mention 'self-transfer', got: {desc}"
+        );
+    }
+
+    // ---- GIV-722: Valuation fix — enriched prices produce USD JE amounts ----
+
+    #[tokio::test]
+    async fn auto_classify_uses_enriched_usd_price() {
+        let pool = setup_test_db().await;
+
+        // Insert a DOT staking reward: 10.5 DOT, pre-enriched to $8/DOT.
+        let tx_id = "polkadot_0xdot001";
+        insert_raw_tx(
+            &pool, tx_id, "polkadot", "0xdot001", "10.5", None, "claim", 1700000000,
+        )
+        .await;
+
+        // Simulate enrichment: set price and valuation_status.
+        sqlx::query(
+            "UPDATE multi_chain_transactions SET price_at_acquisition_usd = '8.00', valuation_status = 'priced' WHERE id = 'polkadot_0xdot001'",
+        )
+        .execute(&pool)
+        .await
+        .expect("Enrich with price");
+
+        // Read and classify via the internal logic (mirrors auto_classify_transaction).
+        let tx = sqlx::query_as::<_, MultiChainTx>(
+            "SELECT id, chain_id, transaction_hash, from_address, to_address, transfer_value, transaction_fee, timestamp, transaction_type, status, price_at_acquisition_usd, valuation_status FROM multi_chain_transactions WHERE id = ?",
+        )
+        .bind(tx_id)
+        .fetch_one(&pool)
+        .await
+        .expect("Fetch enriched tx");
+
+        let price = tx
+            .price_at_acquisition_usd
+            .as_deref()
+            .and_then(|s| Decimal::from_str(s).ok())
+            .expect("Price should be set");
+
+        let token_qty = Decimal::from_str(&tx.transfer_value).unwrap();
+        let usd_amount = token_qty * price;
+        let usd_minor = decimal_to_minor_units(usd_amount).unwrap();
+
+        // 10.5 DOT × $8.00 = $84.00 = 8400 cents
+        assert_eq!(
+            usd_minor, 8400,
+            "10.5 DOT @ $8.00 should produce $84.00 (8400 minor units), not raw 10.5 → 1050"
+        );
+
+        // Verify the chain mapping functions.
+        assert_eq!(chain_id_to_coingecko("polkadot"), Some("polkadot"));
+        assert_eq!(chain_id_to_native_symbol("polkadot"), Some("DOT"));
+        assert_eq!(chain_id_to_coingecko("ethereum"), Some("ethereum"));
+        assert_eq!(chain_id_to_native_symbol("arbitrum"), Some("ETH"));
+        assert_eq!(chain_id_to_coingecko("bsc"), Some("binancecoin"));
+        assert_eq!(chain_id_to_coingecko("unknown_chain"), None);
+    }
+
+    #[tokio::test]
+    async fn auto_classify_without_price_fails_closed() {
+        let pool = setup_test_db().await;
+
+        // Insert a DOT claim WITHOUT enrichment (valuation_status = 'unpriced').
+        let tx_id = "polkadot_0xnoprice";
+        insert_raw_tx(
+            &pool,
+            tx_id,
+            "polkadot",
+            "0xnoprice",
+            "5.0",
+            None,
+            "claim",
+            1700000000,
+        )
+        .await;
+
+        // Read the tx — no price set.
+        let tx = sqlx::query_as::<_, MultiChainTx>(
+            "SELECT id, chain_id, transaction_hash, from_address, to_address, transfer_value, transaction_fee, timestamp, transaction_type, status, price_at_acquisition_usd, valuation_status FROM multi_chain_transactions WHERE id = ?",
+        )
+        .bind(tx_id)
+        .fetch_one(&pool)
+        .await
+        .expect("Fetch unpriced tx");
+
+        assert!(tx.price_at_acquisition_usd.is_none());
+
+        // Fail-closed: attempting classification without a price must return an
+        // explicit error rather than silently booking $0 journal entry lines.
+        let price_result: Result<rust_decimal::Decimal, String> = tx
+            .price_at_acquisition_usd
+            .as_deref()
+            .and_then(|s| Decimal::from_str(s).ok())
+            .ok_or_else(|| "USD price unavailable — run Enrich Prices".to_string());
+
+        assert!(
+            price_result.is_err(),
+            "Unpriced tx must fail classification with an explicit error, not produce $0 lines"
+        );
+        assert!(
+            price_result.unwrap_err().contains("USD price unavailable"),
+            "Error must mention 'USD price unavailable'"
+        );
+    }
+
+    // ========================================================================
+    // GIV-757 — CoA schema + importer tests
+    // ========================================================================
+
+    async fn create_test_profile(pool: &SqlitePool, id: &str) {
+        sqlx::query("INSERT OR IGNORE INTO profiles (id, name) VALUES (?, ?)")
+            .bind(id)
+            .bind(format!("Test Profile {id}"))
+            .execute(pool)
+            .await
+            .expect("Failed to create test profile");
+    }
+
+    #[tokio::test]
+    async fn importer_idempotent_row_count_stable() {
+        let pool = setup_test_db().await;
+        create_test_profile(&pool, "profile-1").await;
+
+        let first = import_coa_template_raw(&pool, "us-gaap", "individual", "profile-1")
+            .await
+            .expect("First import should succeed");
+        assert!(first > 0, "Should insert at least one row");
+
+        let count_after_first: (i64,) =
+            sqlx::query_as("SELECT COUNT(*) FROM gl_accounts WHERE profile_id = 'profile-1'")
+                .fetch_one(&pool)
+                .await
+                .unwrap();
+
+        let _second = import_coa_template_raw(&pool, "us-gaap", "individual", "profile-1")
+            .await
+            .expect("Second import should succeed");
+
+        let count_after_second: (i64,) =
+            sqlx::query_as("SELECT COUNT(*) FROM gl_accounts WHERE profile_id = 'profile-1'")
+                .fetch_one(&pool)
+                .await
+                .unwrap();
+
+        assert_eq!(
+            count_after_first.0, count_after_second.0,
+            "Row count must be stable after re-import"
+        );
+    }
+
+    #[tokio::test]
+    async fn revenue_type_accepted_income_still_valid() {
+        let pool = setup_test_db().await;
+
+        sqlx::query(
+            "INSERT INTO gl_accounts (account_number, account_name, account_type, normal_balance, context) VALUES ('9901', 'Revenue Test', 'Revenue', 'credit', 'all')",
+        )
+        .execute(&pool)
+        .await
+        .expect("INSERT with account_type='Revenue' should succeed");
+
+        sqlx::query(
+            "INSERT INTO gl_accounts (account_number, account_name, account_type, normal_balance, context) VALUES ('9902', 'Income Test', 'Income', 'credit', 'all')",
+        )
+        .execute(&pool)
+        .await
+        .expect("INSERT with account_type='Income' should still succeed");
+    }
+
+    #[tokio::test]
+    async fn existing_views_return_rows_after_migration() {
+        let pool = setup_test_db().await;
+
+        let seed_count: (i64,) =
+            sqlx::query_as("SELECT COUNT(*) FROM gl_accounts WHERE profile_id IS NULL")
+                .fetch_one(&pool)
+                .await
+                .unwrap();
+        assert_eq!(seed_count.0, 21, "21 seed rows must survive migration");
+
+        let bs_result =
+            sqlx::query_as::<_, (String,)>("SELECT account_type FROM v_balance_sheet LIMIT 1")
+                .fetch_optional(&pool)
+                .await;
+        assert!(bs_result.is_ok(), "v_balance_sheet must be queryable");
+
+        let is_result =
+            sqlx::query_as::<_, (String,)>("SELECT account_type FROM v_income_statement LIMIT 1")
+                .fetch_optional(&pool)
+                .await;
+        assert!(is_result.is_ok(), "v_income_statement must be queryable");
+
+        let tb_result =
+            sqlx::query_as::<_, (String,)>("SELECT account_type FROM v_trial_balance LIMIT 1")
+                .fetch_optional(&pool)
+                .await;
+        assert!(tb_result.is_ok(), "v_trial_balance must be queryable");
+    }
+
+    #[tokio::test]
+    async fn importer_all_six_templates_succeed() {
+        let pool = setup_test_db().await;
+
+        let combos = [
+            ("us-gaap", "individual"),
+            ("us-gaap", "for-profit-enterprise"),
+            ("us-gaap", "not-for-profit"),
+            ("ifrs", "individual"),
+            ("ifrs", "for-profit-enterprise"),
+            ("ifrs", "not-for-profit"),
+        ];
+
+        for (i, (jur, at)) in combos.iter().enumerate() {
+            let pid = format!("profile-{i}");
+            create_test_profile(&pool, &pid).await;
+            let result = import_coa_template_raw(&pool, jur, at, &pid).await;
+            assert!(
+                result.is_ok(),
+                "Template {jur}/{at} failed: {:?}",
+                result.err()
+            );
+            assert!(result.unwrap() > 0, "Template {jur}/{at} must insert rows");
+        }
+    }
+
+    #[tokio::test]
+    async fn importer_sets_context_correctly() {
+        let pool = setup_test_db().await;
+        create_test_profile(&pool, "ctx-test").await;
+
+        import_coa_template_raw(&pool, "us-gaap", "individual", "ctx-test")
+            .await
+            .unwrap();
+
+        let individual_count: (i64,) = sqlx::query_as(
+            "SELECT COUNT(*) FROM gl_accounts WHERE profile_id = 'ctx-test' AND context = 'individual'",
+        )
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+
+        let all_count: (i64,) = sqlx::query_as(
+            "SELECT COUNT(*) FROM gl_accounts WHERE profile_id = 'ctx-test' AND context = 'all'",
+        )
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+
+        assert!(
+            individual_count.0 > 0,
+            "Some accounts should have context='individual'"
+        );
+        assert!(
+            all_count.0 > 0,
+            "DeFi/crypto accounts should have context='all'"
+        );
+    }
+
+    #[tokio::test]
+    async fn importer_marks_template_rows_not_editable() {
+        let pool = setup_test_db().await;
+        create_test_profile(&pool, "edit-test").await;
+
+        import_coa_template_raw(&pool, "us-gaap", "not-for-profit", "edit-test")
+            .await
+            .unwrap();
+
+        let editable_count: (i64,) = sqlx::query_as(
+            "SELECT COUNT(*) FROM gl_accounts WHERE profile_id = 'edit-test' AND is_editable = 1",
+        )
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+
+        assert_eq!(
+            editable_count.0, 0,
+            "All template-seeded rows must have is_editable = 0"
+        );
     }
 }

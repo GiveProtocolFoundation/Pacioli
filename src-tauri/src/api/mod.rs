@@ -22,6 +22,9 @@ pub mod persistence;
 pub mod price_feeds;
 /// The `prices` module provides functionality for retrieving and managing price data.
 pub mod prices;
+/// Classification rules engine: CRUD, starter pack, and rule-based auto-classify
+/// (GIV-726, Phase 1.5).
+pub mod rules;
 /// Financial statement generation: balance sheet, income statement, trial balance,
 /// tie verification, and CSV export (GIV-688, Phase 6).
 pub mod statements;

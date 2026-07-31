@@ -5,7 +5,10 @@ import {
   truncateHash,
   displayTxType,
   txTypeLabels,
+  rulePreview,
+  findMatchingRule,
 } from '../classificationUtils'
+import type { ClassificationRuleMatch } from '../classificationUtils'
 
 describe('formatTimestamp', () => {
   it('should format a Unix timestamp to a date string', () => {
@@ -94,5 +97,147 @@ describe('txTypeLabels', () => {
     for (const t of expectedTypes) {
       expect(txTypeLabels[t]).toBeDefined()
     }
+  })
+})
+
+describe('rulePreview', () => {
+  it('should return rule description for known tx types', () => {
+    expect(rulePreview('claim')).toContain('Staking reward')
+    expect(rulePreview('stake')).toContain('Staking reward')
+    expect(rulePreview('transfer')).toContain('Transfer')
+    expect(rulePreview('swap')).toContain('swap')
+    expect(rulePreview('approve')).toContain('approval')
+  })
+
+  it('should return generic description for unknown types', () => {
+    expect(rulePreview('some_new_type')).toContain('Heuristic')
+  })
+})
+
+describe('findMatchingRule', () => {
+  const rules: ClassificationRuleMatch[] = [
+    {
+      id: 'r1',
+      name: 'Staking Reward',
+      matchTxTypes: 'claim,stake',
+      matchChains: '',
+      matchSelfTransfer: 'any',
+      enabled: true,
+    },
+    {
+      id: 'r2',
+      name: 'Polkadot Transfer',
+      matchTxTypes: 'transfer',
+      matchChains: 'polkadot,kusama',
+      matchSelfTransfer: 'any',
+      enabled: true,
+    },
+    {
+      id: 'r3',
+      name: 'Disabled Rule',
+      matchTxTypes: 'swap',
+      matchChains: '',
+      matchSelfTransfer: 'any',
+      enabled: false,
+    },
+    {
+      id: 'r4',
+      name: 'Generic Swap',
+      matchTxTypes: 'swap',
+      matchChains: '',
+      matchSelfTransfer: 'any',
+      enabled: true,
+    },
+  ]
+
+  it('should match first enabled rule by tx type', () => {
+    const match = findMatchingRule(rules, 'claim', 'polkadot', false)
+    expect(match?.name).toBe('Staking Reward')
+  })
+
+  it('should match chain-specific rules', () => {
+    const match = findMatchingRule(rules, 'transfer', 'polkadot', false)
+    expect(match?.name).toBe('Polkadot Transfer')
+  })
+
+  it('should not match chain-specific rules for other chains', () => {
+    const match = findMatchingRule(rules, 'transfer', 'ethereum', false)
+    expect(match).toBeUndefined()
+  })
+
+  it('should skip disabled rules', () => {
+    const match = findMatchingRule(rules, 'swap', 'ethereum', false)
+    expect(match?.name).toBe('Generic Swap')
+  })
+
+  it('should return undefined when no rule matches', () => {
+    const match = findMatchingRule(rules, 'burn', 'ethereum', false)
+    expect(match).toBeUndefined()
+  })
+
+  it('should match chain case-insensitively', () => {
+    const match = findMatchingRule(rules, 'transfer', 'Polkadot', false)
+    expect(match?.name).toBe('Polkadot Transfer')
+  })
+
+  it('should skip self-transfer-only rules for external transfers', () => {
+    const selfTransferRules: ClassificationRuleMatch[] = [
+      {
+        id: 'st1',
+        name: 'Self-Transfer (Own Wallets)',
+        matchTxTypes: 'transfer',
+        matchChains: '',
+        matchSelfTransfer: 'true',
+        enabled: true,
+      },
+      {
+        id: 'st2',
+        name: 'Transfer Received (External)',
+        matchTxTypes: 'transfer',
+        matchChains: '',
+        matchSelfTransfer: 'false',
+        enabled: true,
+      },
+    ]
+    const match = findMatchingRule(
+      selfTransferRules,
+      'transfer',
+      'polkadot',
+      false
+    )
+    expect(match?.name).toBe('Transfer Received (External)')
+  })
+
+  it('should skip external-only rules for self-transfers', () => {
+    const selfTransferRules: ClassificationRuleMatch[] = [
+      {
+        id: 'st1',
+        name: 'Self-Transfer (Own Wallets)',
+        matchTxTypes: 'transfer',
+        matchChains: '',
+        matchSelfTransfer: 'true',
+        enabled: true,
+      },
+      {
+        id: 'st2',
+        name: 'Transfer Received (External)',
+        matchTxTypes: 'transfer',
+        matchChains: '',
+        matchSelfTransfer: 'false',
+        enabled: true,
+      },
+    ]
+    const match = findMatchingRule(
+      selfTransferRules,
+      'transfer',
+      'polkadot',
+      true
+    )
+    expect(match?.name).toBe('Self-Transfer (Own Wallets)')
+  })
+
+  it('should match "any" self-transfer mode regardless of flag', () => {
+    const match = findMatchingRule(rules, 'claim', 'polkadot', true)
+    expect(match?.name).toBe('Staking Reward')
   })
 })

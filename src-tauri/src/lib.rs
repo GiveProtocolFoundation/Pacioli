@@ -435,12 +435,14 @@ pub fn run() {
             api::accounting::deactivate_gl_account,
             api::accounting::get_journal_entries,
             api::accounting::get_journal_entry,
+            api::accounting::get_source_transaction,
             api::accounting::create_journal_entry,
             api::accounting::approve_journal_entry,
             api::accounting::post_journal_entry,
             api::accounting::void_journal_entry,
             api::accounting::demote_journal_entry,
             api::accounting::update_journal_entry,
+            api::accounting::enrich_transaction_prices,
             api::accounting::auto_classify_transaction,
             api::accounting::update_transaction_classification,
             api::accounting::get_unclassified_transactions,
@@ -462,6 +464,8 @@ pub fn run() {
             api::statements::export_balance_sheet_csv,
             api::statements::export_income_statement_csv,
             api::statements::export_trial_balance_csv,
+            api::statements::get_statement_of_activities,
+            api::statements::export_statement_of_activities_csv,
             // Cost basis engine commands (GIV-689, Phase 7)
             api::cost_basis::acquire_lot,
             api::cost_basis::dispose_lots,
@@ -476,7 +480,18 @@ pub fn run() {
             api::fair_value::run_remeasurement,
             api::fair_value::list_remeasurement_runs,
             api::fair_value::get_remeasurement_entries,
-            api::fair_value::get_latest_asset_price
+            api::fair_value::get_latest_asset_price,
+            // Classification rules commands (GIV-726, Phase 1.5)
+            api::rules::list_classification_rules,
+            api::rules::create_classification_rule,
+            api::rules::update_classification_rule,
+            api::rules::toggle_classification_rule,
+            api::rules::reorder_classification_rules,
+            api::rules::delete_classification_rule,
+            api::rules::install_starter_rules,
+            // Chart-of-accounts template importer (GIV-757)
+            api::accounting::import_chart_of_accounts_template,
+            api::accounting::hide_profile_template_accounts
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
