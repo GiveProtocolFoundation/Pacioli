@@ -125,9 +125,9 @@ const JournalEntries: React.FC = () => {
   const { user } = useAuth()
 
   const accountMap = useMemo(() => {
-    const m = new Map<number, GLAccount>()
-    accounts.forEach(a => m.set(a.id, a))
-    return m
+    const accountMapById = new Map<number, GLAccount>()
+    accounts.forEach(account => accountMapById.set(account.id, account))
+    return accountMapById
   }, [accounts])
 
   const fetchEntries = useCallback(async () => {
@@ -175,15 +175,15 @@ const JournalEntries: React.FC = () => {
   const filteredEntries = useMemo(() => {
     let list = entries
     if (filterParam !== 'all') {
-      list = list.filter(e => displayStatus(e) === filterParam)
+      list = list.filter(entry => displayStatus(entry) === filterParam)
     }
     if (!searchQuery) return list
-    const q = searchQuery.toLowerCase()
+    const lowerCaseQuery = searchQuery.toLowerCase()
     return list.filter(
-      e =>
-        e.description?.toLowerCase().includes(q) ||
-        e.entryNumber?.toLowerCase().includes(q) ||
-        e.referenceNumber?.toLowerCase().includes(q)
+      entry =>
+        entry.description?.toLowerCase().includes(lowerCaseQuery) ||
+        entry.entryNumber?.toLowerCase().includes(lowerCaseQuery) ||
+        entry.referenceNumber?.toLowerCase().includes(lowerCaseQuery)
     )
   }, [entries, searchQuery, filterParam])
 

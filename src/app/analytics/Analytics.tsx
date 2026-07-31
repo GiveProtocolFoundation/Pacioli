@@ -385,12 +385,14 @@ const RevenueExpensesChart: React.FC<{
     const months: { name: string; revenue: number; expense: number }[] = []
 
     for (let i = 4; i >= 0; i--) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
-      const monthName = d.toLocaleDateString('en-US', { month: 'short' })
-      const monthStart = d.getTime()
+      const monthDate = new Date(now.getFullYear(), now.getMonth() - i, 1)
+      const monthName = monthDate.toLocaleDateString('en-US', {
+        month: 'short',
+      })
+      const monthStart = monthDate.getTime()
       const monthEnd = new Date(
-        d.getFullYear(),
-        d.getMonth() + 1,
+        monthDate.getFullYear(),
+        monthDate.getMonth() + 1,
         0,
         23,
         59,

@@ -191,9 +191,9 @@ const JournalEntryDetail: React.FC<JournalEntryDetailProps> = ({
   onClose,
 }) => {
   const accountMap = useMemo(() => {
-    const m = new Map<number, GLAccount>()
-    accounts.forEach(a => m.set(a.id, a))
-    return m
+    const accountsByIdMap = new Map<number, GLAccount>()
+    accounts.forEach(account => accountsByIdMap.set(account.id, account))
+    return accountsByIdMap
   }, [accounts])
 
   /**
