@@ -904,6 +904,71 @@ interface LanguageSettingsSectionProps {
   ) => (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => void
 }
 
+/** Language, date, and time format select fields */
+const LanguageSelectFields: React.FC<LanguageSettingsSectionProps> = ({
+  systemSettings,
+  createSystemSelectHandler,
+}) => (
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div>
+      <label
+        htmlFor="language"
+        className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] mb-2"
+      >
+        Language
+      </label>
+      <select
+        id="language"
+        value={systemSettings.language}
+        onChange={createSystemSelectHandler('language')}
+        className="select-input w-full px-3 pr-8 py-2 border border-[rgba(95,227,192,0.15)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]"
+      >
+        <option value="en">English</option>
+        <option value="es">Español</option>
+        <option value="fr">Français</option>
+        <option value="de">Deutsch</option>
+      </select>
+    </div>
+
+    <div>
+      <label
+        htmlFor="dateFormat"
+        className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] mb-2"
+      >
+        Date Format
+      </label>
+      <select
+        id="dateFormat"
+        value={systemSettings.dateFormat}
+        onChange={createSystemSelectHandler('dateFormat')}
+        className="select-input w-full px-3 pr-8 py-2 border border-[rgba(95,227,192,0.15)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]"
+      >
+        <option value="MM/DD/YYYY">MM/DD/YYYY (US)</option>
+        <option value="DD/MM/YYYY">DD/MM/YYYY (EU)</option>
+        <option value="YYYY-MM-DD">YYYY-MM-DD (ISO)</option>
+      </select>
+    </div>
+
+    <div>
+      <label
+        htmlFor="timeFormat"
+        className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] mb-2"
+      >
+        Time Format
+      </label>
+      <select
+        id="timeFormat"
+        value={systemSettings.timeFormat}
+        onChange={createSystemSelectHandler('timeFormat')}
+        className="select-input w-full px-3 pr-8 py-2 border border-[rgba(95,227,192,0.15)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]"
+      >
+        <option value="12h">12-hour (AM/PM)</option>
+        <option value="24h">24-hour</option>
+      </select>
+    </div>
+  </div>
+)
+
 /** Language, date format, and time format preferences card */
 const LanguageSettingsSection: React.FC<LanguageSettingsSectionProps> = ({
   systemSettings,
@@ -913,65 +978,34 @@ const LanguageSettingsSection: React.FC<LanguageSettingsSectionProps> = ({
     <h3 className="text-lg font-semibold text-[#11202B] dark:text-[#EAF3F2] mb-4">
       Language Settings
     </h3>
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div>
-        <label
-          htmlFor="language"
-          className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] mb-2"
-        >
-          Language
-        </label>
-        <select
-          id="language"
-          value={systemSettings.language}
-          onChange={createSystemSelectHandler('language')}
-          className="select-input w-full px-3 pr-8 py-2 border border-[rgba(95,227,192,0.15)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]"
-        >
-          <option value="en">English</option>
-          <option value="es">Español</option>
-          <option value="fr">Français</option>
-          <option value="de">Deutsch</option>
-        </select>
-      </div>
-
-      <div>
-        <label
-          htmlFor="dateFormat"
-          className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] mb-2"
-        >
-          Date Format
-        </label>
-        <select
-          id="dateFormat"
-          value={systemSettings.dateFormat}
-          onChange={createSystemSelectHandler('dateFormat')}
-          className="select-input w-full px-3 pr-8 py-2 border border-[rgba(95,227,192,0.15)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]"
-        >
-          <option value="MM/DD/YYYY">MM/DD/YYYY (US)</option>
-          <option value="DD/MM/YYYY">DD/MM/YYYY (EU)</option>
-          <option value="YYYY-MM-DD">YYYY-MM-DD (ISO)</option>
-        </select>
-      </div>
-
-      <div>
-        <label
-          htmlFor="timeFormat"
-          className="block text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] mb-2"
-        >
-          Time Format
-        </label>
-        <select
-          id="timeFormat"
-          value={systemSettings.timeFormat}
-          onChange={createSystemSelectHandler('timeFormat')}
-          className="select-input w-full px-3 pr-8 py-2 border border-[rgba(95,227,192,0.15)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]"
-        >
-          <option value="12h">12-hour (AM/PM)</option>
-          <option value="24h">24-hour</option>
-        </select>
-      </div>
-    </div>
+    <LanguageSelectFields
+      systemSettings={systemSettings}
+      createSystemSelectHandler={createSystemSelectHandler}
+    />
   </div>
+)
+
+/** Cancel / Save buttons shown in the header when there are unsaved changes */
+const SettingsSaveActions: React.FC<{
+  onReset: () => void
+  onSave: () => void
+}> = ({ onReset, onSave }) => (
+  <>
+    <button
+      onClick={onReset}
+      className="px-4 py-2 text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] bg-[#F7FAFA] dark:bg-[#11202B] border border-[rgba(95,227,192,0.15)] rounded-lg hover:bg-[#EAF3F2] dark:hover:bg-[#16242F] flex items-center"
+    >
+      <X className="w-4 h-4 mr-2" />
+      Cancel
+    </button>
+    <button
+      onClick={onSave}
+      className="px-4 py-2 text-sm font-medium text-white bg-[#294050] rounded-lg hover:bg-[#1E2F3C] flex items-center"
+    >
+      <Save className="w-4 h-4 mr-2" />
+      Save Changes
+    </button>
+  </>
 )
 
 /** General settings page with organization info, fiscal year, regional, and language configuration */
@@ -1164,22 +1198,7 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({
         </div>
         <div className="flex items-center space-x-3">
           {hasChanges && (
-            <>
-              <button
-                onClick={handleReset}
-                className="px-4 py-2 text-sm font-medium text-[#11202B] dark:text-[#9FB4BE] bg-[#F7FAFA] dark:bg-[#11202B] border border-[rgba(95,227,192,0.15)] rounded-lg hover:bg-[#EAF3F2] dark:hover:bg-[#16242F] flex items-center"
-              >
-                <X className="w-4 h-4 mr-2" />
-                Cancel
-              </button>
-              <button
-                onClick={handleSave}
-                className="px-4 py-2 text-sm font-medium text-white bg-[#294050] rounded-lg hover:bg-[#1E2F3C] flex items-center"
-              >
-                <Save className="w-4 h-4 mr-2" />
-                Save Changes
-              </button>
-            </>
+            <SettingsSaveActions onReset={handleReset} onSave={handleSave} />
           )}
         </div>
       </div>
