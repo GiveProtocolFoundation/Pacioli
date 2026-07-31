@@ -12,7 +12,7 @@ import {
   Key,
 } from 'lucide-react'
 import Currencies from './Currencies'
-import ChartOfAccounts from './ChartOfAccounts'
+import CoASettings from './CoASettings'
 import GeneralSettings from './GeneralSettings'
 import UsersPermissions from './UsersPermissions'
 import DataProviders from './DataProviders'
@@ -56,7 +56,7 @@ const navigationItems: NavigationItem[] = [
     label: 'Chart of Accounts',
     icon: BookOpen,
     description: 'Account structure and categories',
-    component: ChartOfAccounts,
+    component: CoASettings,
   },
   {
     id: 'users-permissions',
@@ -203,7 +203,7 @@ const Settings: React.FC<SettingsProps> = ({ userType = 'organization' }) => {
     if (path === '/settings/currencies') return 'currencies'
     if (path === '/settings/users') return 'users-permissions'
     if (path === '/settings/data-providers') return 'data-providers'
-    if (path === '/chart-of-accounts') return 'chart-of-accounts'
+    if (path === '/settings/chart-of-accounts') return 'chart-of-accounts'
     return 'general'
   }, [location.pathname])
 
@@ -221,7 +221,7 @@ const Settings: React.FC<SettingsProps> = ({ userType = 'organization' }) => {
         } else if (section === 'data-providers') {
           navigate('/settings/data-providers')
         } else if (section === 'chart-of-accounts') {
-          navigate('/chart-of-accounts')
+          navigate('/settings/chart-of-accounts')
         }
       }
     },

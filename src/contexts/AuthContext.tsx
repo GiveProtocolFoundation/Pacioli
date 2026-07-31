@@ -92,14 +92,16 @@ interface AuthContextType {
   canAccessProfile: (profileId: string) => boolean
   getProfileRole: (profileId: string) => UserRole | null
 
+  // Onboarding
+  completeOnboarding: (type: AccountType) => void
+
   // Clear error
   clearError: () => void
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+const AuthContext = createContext<AuthContextType | undefined>(undefined) // skipcq: JS-W1042
 
-// Session ID storage key
-const SESSION_ID_KEY = 'pacioli_session_id'
+const SESSION_ID_KEY = 'pacioli_session_id' // skipcq: SCT-A000 — localStorage key name, not a credential
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -505,6 +507,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     [userProfiles]
   )
 
+  const completeOnboarding = useCallback((type: AccountType) => {
+    setAccountType(type)
+  }, [])
+
   const clearError = useCallback(() => {
     setError(null)
   }, [])
@@ -530,6 +536,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         hasPermission: hasPermissionCheck,
         canAccessProfile,
         getProfileRole,
+        completeOnboarding,
         clearError,
       }}
     >

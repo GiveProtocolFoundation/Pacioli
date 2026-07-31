@@ -20,8 +20,12 @@ import type {
   SubstrateTransaction,
 } from '../../services/wallet/types'
 import { useTransactions } from '../../contexts/TransactionContext'
+import { useProfile } from '../../contexts/ProfileContext'
+import { persistence } from '../../services/persistence'
+import type { TransactionInput } from '../../services/persistence/types'
 import type { TransactionFormData } from '../../types/transaction'
 
+/** Props for the wallet transaction list with import, filtering, and inline price editing. */
 interface TransactionListProps {
   transactions: Transaction[]
   isLoading?: boolean
@@ -29,16 +33,24 @@ interface TransactionListProps {
   onPurge?: () => void
   /** Called when the user manually sets or overrides the acquisition price for a transaction. */
   onPriceUpdate?: (txId: string, pricePerUnitUsd: string) => void
+  /** The synced wallet's own address — used for correct wallet attribution on import. */
+  walletAddress?: string
+  /** The synced wallet's network/chain — used for correct wallet attribution on import. */
+  walletNetwork?: string
 }
 
+/** Renders synced wallet transactions with selection, filtering, and import-to-ledger. */
 export const TransactionList: React.FC<TransactionListProps> = ({
   transactions,
   isLoading,
   error,
   onPurge,
   onPriceUpdate,
+  walletAddress,
+  walletNetwork,
 }) => {
-  const { addTransaction } = useTransactions()
+  const { reloadTransactions } = useTransactions()
+  const { currentProfile } = useProfile()
   const [importing, setImporting] = useState(false)
   const [importSuccess, setImportSuccess] = useState(false)
   const [importError, setImportError] = useState<string | null>(null)
@@ -124,17 +136,22 @@ export const TransactionList: React.FC<TransactionListProps> = ({
     })
   }, [allFilteredSelected, filteredTransactions])
 
-  const handleToggleSelect = useCallback((txId: string) => {
-    setSelectedIds(prev => {
-      const next = new Set(prev)
-      if (next.has(txId)) {
-        next.delete(txId)
-      } else {
-        next.add(txId)
-      }
-      return next
-    })
-  }, [])
+  const handleToggleSelect = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const txId = e.currentTarget.dataset.txid
+      if (!txId) return
+      setSelectedIds(prev => {
+        const next = new Set(prev)
+        if (next.has(txId)) {
+          next.delete(txId)
+        } else {
+          next.add(txId)
+        }
+        return next
+      })
+    },
+    []
+  )
 
   const selectedCount = filteredTransactions.filter(tx =>
     selectedIds.has(tx.id)
@@ -148,6 +165,38 @@ export const TransactionList: React.FC<TransactionListProps> = ({
     setStatusFilter('all')
     setSearchQuery('')
   }, [])
+
+  const handleSearchChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setSearchQuery(e.target.value)
+    },
+    []
+  )
+
+  const handleTypeFilterChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      setTypeFilter(e.target.value)
+    },
+    []
+  )
+
+  const handleStatusFilterChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      setStatusFilter(e.target.value)
+    },
+    []
+  )
+
+  const handleClearSelection = useCallback(() => {
+    setSelectedIds(new Set())
+  }, [])
+
+  const indeterminateRef = useCallback(
+    (el: HTMLInputElement | null) => {
+      if (el) el.indeterminate = someFilteredSelected
+    },
+    [someFilteredSelected]
+  )
 
   // Helper: Get network decimals
   const getNetworkDecimals = useCallback((network: string): number => {
@@ -213,7 +262,6 @@ export const TransactionList: React.FC<TransactionListProps> = ({
 
   // Import selected (or all visible) wallet transactions to accounting ledger
   const importToLedger = useCallback(async () => {
-    // Import selected transactions, or all filtered if none selected
     const toImport =
       selectedCount > 0
         ? filteredTransactions.filter(tx => selectedIds.has(tx.id))
@@ -226,47 +274,89 @@ export const TransactionList: React.FC<TransactionListProps> = ({
     setImportError(null)
 
     try {
-      for (const tx of toImport) {
-        const substrateTx = tx as SubstrateTransaction
-
-        // Convert wallet transaction to accounting format
-        // Format date as YYYY-MM-DDTHH:MM for datetime-local input compatibility
-        const txDate = new Date(tx.timestamp)
-        const formattedDate = txDate.toISOString().slice(0, 16) // "YYYY-MM-DDTHH:MM"
-        const accountingTx: TransactionFormData = {
-          date: formattedDate,
-          description: `${substrateTx.section}.${substrateTx.method} - ${substrateTx.network}`,
-          type: 'transfer', // Blockchain transactions are transfers
-          category: substrateTx.section, // e.g., "balances", "staking"
-          wallet: tx.from,
-
-          // Token information
-          tokenId: getTokenSymbol(tx), // DOT, KSM, etc.
-          chainId: substrateTx.network,
-          amount: parseFloat(
-            formatBalance(tx.value, {
-              decimals: getNetworkDecimals(substrateTx.network),
-              withUnit: false,
-              forceUnit: '-',
-            })
-          ),
-
-          // Fiat valuation (placeholder - you'd need price API)
-          fiatValue: 0,
-          fiatCurrency: 'USD',
-
-          // Blockchain details
-          hash: tx.hash,
-
-          // Additional metadata
-          memo: `Block #${tx.blockNumber} - Status: ${tx.status}`,
-        }
-
-        await addTransaction(accountingTx)
+      if (!currentProfile) {
+        throw new Error('No profile available — cannot persist transactions')
       }
 
+      const network =
+        walletNetwork ||
+        (toImport[0] as SubstrateTransaction).network ||
+        'unknown'
+      const address = walletAddress || toImport[0].to || 'unknown'
+
+      const wallets = await persistence.getWallets(currentProfile.id)
+      let wallet = wallets.find(
+        w => w.address === address && w.chain === network
+      )
+      if (!wallet) {
+        wallet = await persistence.saveWallet({
+          profile_id: currentProfile.id,
+          address,
+          chain: network,
+          name: `${network} synced wallet`,
+          wallet_type: 'imported',
+        })
+      }
+
+      const MARKER = '__pacioli_accounting'
+      const inputs: TransactionInput[] = toImport.map(tx => {
+        const substrateTx = tx as SubstrateTransaction
+        const decimals = getNetworkDecimals(substrateTx.network)
+        const tokenSym = getTokenSymbol(tx)
+        const humanValue = formatBalance(tx.value, {
+          decimals,
+          withUnit: false,
+          forceUnit: '-',
+        })
+        const txDate = new Date(tx.timestamp)
+
+        const accountingPayload: TransactionFormData & Record<string, unknown> =
+          {
+            date: txDate.toISOString().slice(0, 16),
+            description: `${substrateTx.section}.${substrateTx.method} - ${substrateTx.network}`,
+            type: 'transfer',
+            category: substrateTx.section,
+            wallet: walletAddress || tx.to || tx.from,
+            tokenId: tokenSym,
+            chainId: substrateTx.network,
+            amount: parseFloat(humanValue),
+            fiatValue: 0,
+            fiatCurrency: 'USD',
+            hash: tx.hash,
+            memo: `Block #${tx.blockNumber} - Status: ${tx.status}`,
+            [MARKER]: true,
+            id: `txn_${txDate.getTime()}_${tx.hash.slice(-9)}`,
+            status: 'completed',
+            classificationStatus: 'unclassified',
+            createdBy: 'wallet-import',
+            createdByName: 'Wallet Import',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          }
+
+        return {
+          hash: tx.hash,
+          block_number: tx.blockNumber,
+          timestamp: txDate.toISOString(),
+          from_address: tx.from,
+          to_address: tx.to,
+          value: humanValue,
+          fee: tx.fee,
+          status: tx.status,
+          tx_type: 'transfer',
+          token_symbol: tokenSym,
+          chain: substrateTx.network,
+          raw_data: JSON.stringify(accountingPayload),
+          ...(tx.pricePerUnitUsd != null && {
+            price_at_acquisition_usd: tx.pricePerUnitUsd.toString(),
+          }),
+        }
+      })
+
+      await persistence.saveTransactions(wallet.id, inputs)
+      await reloadTransactions()
+
       setImportSuccess(true)
-      // Clear selection after successful import
       setSelectedIds(new Set())
       setTimeout(() => setImportSuccess(false), 3000)
     } catch (err) {
@@ -279,9 +369,12 @@ export const TransactionList: React.FC<TransactionListProps> = ({
     filteredTransactions,
     selectedIds,
     selectedCount,
-    addTransaction,
+    currentProfile,
+    reloadTransactions,
     getNetworkDecimals,
     getTokenSymbol,
+    walletAddress,
+    walletNetwork,
   ])
 
   // Handle purge confirmation
@@ -613,7 +706,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
           <input
             type="text"
             value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
+            onChange={handleSearchChange}
             placeholder="Search by address, hash, or method..."
             className="w-full pl-8 pr-3 py-1.5 text-sm border border-[rgba(95,227,192,0.3)] rounded bg-[#F7FAFA] dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] placeholder-[#647D8B] focus:outline-none focus:border-[#5FE3C0] focus:ring-1 focus:ring-[#5FE3C0]"
           />
@@ -624,7 +717,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
           <Filter className="w-3.5 h-3.5 text-[#647D8B]" />
           <select
             value={typeFilter}
-            onChange={e => setTypeFilter(e.target.value)}
+            onChange={handleTypeFilterChange}
             className="text-sm border border-[rgba(95,227,192,0.3)] rounded bg-[#F7FAFA] dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] px-2 py-1.5 focus:outline-none focus:border-[#5FE3C0] focus:ring-1 focus:ring-[#5FE3C0]"
           >
             <option value="all">All Types</option>
@@ -639,7 +732,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
         {/* Status filter */}
         <select
           value={statusFilter}
-          onChange={e => setStatusFilter(e.target.value)}
+          onChange={handleStatusFilterChange}
           className="text-sm border border-[rgba(95,227,192,0.3)] rounded bg-[#F7FAFA] dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] px-2 py-1.5 focus:outline-none focus:border-[#5FE3C0] focus:ring-1 focus:ring-[#5FE3C0]"
         >
           <option value="all">All Statuses</option>
@@ -690,9 +783,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
                 <input
                   type="checkbox"
                   checked={allFilteredSelected}
-                  ref={el => {
-                    if (el) el.indeterminate = someFilteredSelected
-                  }}
+                  ref={indeterminateRef}
                   onChange={handleToggleSelectAll}
                   className="w-4 h-4 text-[#294050] border-[rgba(95,227,192,0.3)] rounded focus:ring-[#5FE3C0] cursor-pointer"
                   title={
@@ -734,7 +825,8 @@ export const TransactionList: React.FC<TransactionListProps> = ({
                     <input
                       type="checkbox"
                       checked={selectedIds.has(tx.id)}
-                      onChange={() => handleToggleSelect(tx.id)}
+                      data-txid={tx.id}
+                      onChange={handleToggleSelect}
                       className="w-4 h-4 text-[#294050] border-[rgba(95,227,192,0.3)] rounded focus:ring-[#5FE3C0] cursor-pointer"
                     />
                   </td>
@@ -882,7 +974,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
           </p>
           {selectedCount > 0 && (
             <button
-              onClick={() => setSelectedIds(new Set())}
+              onClick={handleClearSelection}
               className="text-sm text-[#294050] dark:text-[#F09988] hover:opacity-90 font-medium"
             >
               Clear Selection

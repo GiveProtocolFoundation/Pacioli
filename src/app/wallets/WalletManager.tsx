@@ -1331,6 +1331,8 @@ const WalletManager: React.FC = () => {
               error={error}
               onPurge={handlePurgeData}
               onPriceUpdate={currentProfile ? handlePriceUpdate : undefined}
+              walletAddress={selectedAddress}
+              walletNetwork={selectedNetwork}
             />
           </div>
         )}

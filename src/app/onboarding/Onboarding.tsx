@@ -1,9 +1,12 @@
 import React, { useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { invoke } from '@tauri-apps/api/core'
 import { Globe, Building2, User, Check } from 'lucide-react'
 import PacioliBlackLogo from '../../assets/pacioli_logo_black.svg'
 import { GridSelectionButton } from '../../components/GridSelectionButton'
 import { persistence } from '../../services/persistence'
+import { useAuth } from '../../contexts/AuthContext'
+import { useProfile } from '../../contexts/ProfileContext'
 
 type Step = 'jurisdiction' | 'account-type' | 'complete'
 type Jurisdiction = 'us-gaap' | 'ifrs'
@@ -56,9 +59,13 @@ const ProgressConnector: React.FC<ProgressConnectorProps> = ({
 
 const Onboarding: React.FC = () => {
   const navigate = useNavigate()
+  const { completeOnboarding } = useAuth()
+  const { currentProfile } = useProfile()
   const [currentStep, setCurrentStep] = useState<Step>('jurisdiction')
   const [jurisdiction, setJurisdiction] = useState<Jurisdiction | null>(null)
   const [accountType, setAccountType] = useState<AccountType | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleJurisdictionSelect = useCallback((selected: Jurisdiction) => {
     setJurisdiction(selected)
@@ -71,20 +78,37 @@ const Onboarding: React.FC = () => {
   const handleContinue = useCallback(async () => {
     if (currentStep === 'jurisdiction' && jurisdiction) {
       setCurrentStep('account-type')
-    } else if (currentStep === 'account-type' && accountType) {
-      // Save settings to persistence
+    } else if (currentStep === 'account-type' && accountType && jurisdiction) {
+      setError(null)
+      setIsSubmitting(true)
       try {
         await persistence.setSetting('accountType', accountType)
-        if (jurisdiction) {
-          await persistence.setSetting('jurisdiction', jurisdiction)
-        }
+        await persistence.setSetting('jurisdiction', jurisdiction)
+
+        const profileId = currentProfile?.id ?? 'default'
+        await invoke('import_chart_of_accounts_template', {
+          input: { jurisdiction, accountType, profileId },
+        })
+
+        completeOnboarding(accountType)
+        navigate('/dashboard')
       } catch (err) {
-        console.error('[Onboarding] Failed to save settings:', err)
+        const message =
+          typeof err === 'string' ? err : 'Failed to set up chart of accounts'
+        setError(message)
+        console.error('[Onboarding] Setup failed:', err)
+      } finally {
+        setIsSubmitting(false)
       }
-      // Navigate to dashboard
-      navigate('/dashboard')
     }
-  }, [currentStep, jurisdiction, accountType, navigate])
+  }, [
+    currentStep,
+    jurisdiction,
+    accountType,
+    currentProfile,
+    navigate,
+    completeOnboarding,
+  ])
 
   const handleBack = useCallback(() => {
     if (currentStep === 'account-type') {
@@ -113,8 +137,9 @@ const Onboarding: React.FC = () => {
   }, [handleAccountTypeSelect])
 
   const canContinue =
-    (currentStep === 'jurisdiction' && jurisdiction) ||
-    (currentStep === 'account-type' && accountType)
+    !isSubmitting &&
+    ((currentStep === 'jurisdiction' && jurisdiction) ||
+      (currentStep === 'account-type' && accountType))
 
   const isJurisdictionStep = currentStep === 'jurisdiction'
   const isAccountTypeStep = currentStep === 'account-type'
@@ -132,6 +157,7 @@ const Onboarding: React.FC = () => {
   }
 
   const getContinueButtonText = () => {
+    if (isSubmitting) return 'Setting up...'
     return isAccountTypeStep ? 'Complete Setup' : 'Continue'
   }
 
@@ -177,7 +203,7 @@ const Onboarding: React.FC = () => {
           {/* Jurisdiction Step */}
           {isJurisdictionStep && (
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              <h2 className="text-2xl font-bold text-[#0C141B] mb-2">
                 Select Your Jurisdiction
               </h2>
               <p className="text-gray-600 mb-8">
@@ -212,7 +238,7 @@ const Onboarding: React.FC = () => {
           {/* Account Type Step */}
           {isAccountTypeStep && (
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              <h2 className="text-2xl font-bold text-[#0C141B] mb-2">
                 Select Your Account Type
               </h2>
               <p className="text-gray-600 mb-8">
@@ -248,6 +274,13 @@ const Onboarding: React.FC = () => {
                   value="not-for-profit"
                 />
               </div>
+            </div>
+          )}
+
+          {/* Error Banner */}
+          {error && (
+            <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg text-sm text-red-800">
+              {error}
             </div>
           )}
 
