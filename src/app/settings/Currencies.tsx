@@ -237,7 +237,9 @@ const Currencies: React.FC = () => {
       .then(key =>
         setLocalSettings(prev => ({ ...prev, coingeckoApiKey: key ?? '' }))
       )
-      .catch(() => { // empty because errors are intentionally ignored })
+      .catch(() => {
+        // empty because errors are intentionally ignored
+      })
     persistence
       .getSetting('price_feed_provider')
       .then(p =>
@@ -257,7 +259,9 @@ const Currencies: React.FC = () => {
           priceFeedBaseUrl: url ?? '',
         }))
       )
-      .catch(() => { // empty because intentionally ignoring errors });
+      .catch(() => {
+        // empty because intentionally ignoring errors
+      })
   }, [contextSettings])
 
   // Format number based on decimal separator standard
