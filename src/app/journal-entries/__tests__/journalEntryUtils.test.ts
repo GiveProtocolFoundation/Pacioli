@@ -42,16 +42,16 @@ describe('toMinorUnits', () => {
 
   it('should avoid floating-point errors on classic problem values', () => {
     // 0.1 + 0.2 !== 0.3 in floating point, but our integer math is exact
-    const a = toMinorUnits('0.10')
-    const b = toMinorUnits('0.20')
-    expect(a + b).toBe(30) // exactly 30 cents
-    expect(a + b).toBe(toMinorUnits('0.30'))
+    const tenCentsInMinorUnits = toMinorUnits('0.10')
+    const twentyCentsInMinorUnits = toMinorUnits('0.20')
+    expect(tenCentsInMinorUnits + twentyCentsInMinorUnits).toBe(30) // exactly 30 cents
+    expect(tenCentsInMinorUnits + twentyCentsInMinorUnits).toBe(toMinorUnits('0.30'))
   })
 
   it('should handle the float rounding trap 19.99 + 0.01', () => {
-    const a = toMinorUnits('19.99')
-    const b = toMinorUnits('0.01')
-    expect(a + b).toBe(2000) // exactly $20.00
+    const originalAmountMinorUnits = toMinorUnits('19.99')
+    const incrementAmountMinorUnits = toMinorUnits('0.01')
+    expect(originalAmountMinorUnits + incrementAmountMinorUnits).toBe(2000) // exactly $20.00
   })
 
   it('should preserve the sign of negative amounts', () => {
