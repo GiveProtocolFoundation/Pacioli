@@ -87,10 +87,9 @@ test.describe('Cost basis report generation', () => {
   })
 
   test.skip('cost basis method selector persists selection across report runs', ({
-    page,
+    page: _page,
   }) => {
     // Depends on GIV-447
-    void page
     expect(true).toBe(false)
   })
 })
