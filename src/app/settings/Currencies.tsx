@@ -40,6 +40,13 @@ interface ChangeActionsProps {
   onSave: () => void
 }
 
+/**
+ * Renders action buttons for cancelling or saving changes when modifications exist.
+ * @param hasChanges - Indicates if there are unsaved changes.
+ * @param onReset - Callback invoked to reset changes.
+ * @param onSave - Callback invoked to save changes.
+ * @returns The action buttons or null if no changes are present.
+ */
 const ChangeActions: React.FC<ChangeActionsProps> = ({
   hasChanges,
   onReset,
@@ -71,6 +78,12 @@ interface PrimaryCurrencySectionProps {
   onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void
 }
 
+/**
+ * Renders the section for selecting the primary reporting currency.
+ * @param value - The currently selected currency value.
+ * @param onChange - Callback fired when the selected currency changes.
+ * @returns The primary currency selection UI.
+ */
 const PrimaryCurrencySection: React.FC<PrimaryCurrencySectionProps> = ({
   value,
   onChange,
@@ -120,6 +133,10 @@ const PrimaryCurrencySection: React.FC<PrimaryCurrencySectionProps> = ({
   </div>
 )
 
+/**
+ * Main component for configuring currency settings, including API keys and providers.
+ * @returns The currency settings UI component.
+ */
 const Currencies: React.FC = () => {
   const { settings: contextSettings, updateSettings: updateContextSettings } =
     useCurrency()
@@ -137,6 +154,12 @@ const Currencies: React.FC = () => {
   // Load persisted price-feed settings on mount
   useEffect(() => {
     let cancelled = false
+
+    /**
+     * Loads persisted price feed settings and updates local state.
+     * @async
+     * @returns Promise that resolves when settings have been loaded.
+     */
     const load = async () => {
       try {
         const [apiKey, provider, baseUrl] = await Promise.all([
@@ -160,6 +183,7 @@ const Currencies: React.FC = () => {
       cancelled = true
     }
   }, [])
+  // ... rest of component implementation
 
   const handleChange = useCallback(
     <K extends keyof CurrencySettings>(key: K, value: CurrencySettings[K]) => {
