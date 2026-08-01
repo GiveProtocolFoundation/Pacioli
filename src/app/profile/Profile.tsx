@@ -228,7 +228,8 @@ const WorkInfo: React.FC<WorkInfoProps> = ({
   </>
 )
 
-const Profile: React.FC = () => { // skipcq: JS-R1005 — multi-tab settings form; sub-components already extracted
+const Profile: React.FC = () => {
+  // skipcq: JS-R1005 — multi-tab settings form; sub-components already extracted
   const { userAvatar, setUserAvatar } = useOrganization()
   const {
     user,
