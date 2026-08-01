@@ -52,7 +52,6 @@ export const UnlockScreen: React.FC<UnlockScreenProps> = ({ onUnlock }) => {
     (e: React.ChangeEvent<HTMLInputElement>) => {
       setPassword(e.target.value)
     },
-  )
     []
   )
 

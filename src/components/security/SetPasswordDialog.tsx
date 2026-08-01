@@ -58,7 +58,6 @@ export const SetPasswordDialog: React.FC<SetPasswordDialogProps> = ({
     },
     []
   )
-  )
 
   const handleConfirmPasswordChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
