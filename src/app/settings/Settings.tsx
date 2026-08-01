@@ -238,7 +238,6 @@ const Settings: React.FC<SettingsProps> = ({ userType = 'organization' }) => {
           navigate('/settings/currencies')
         } else if (section === 'users-permissions') {
           navigate('/settings/users')
-        }
         } else if (section === 'data-providers') {
           navigate('/settings/data-providers')
         } else if (section === 'chart-of-accounts') {
