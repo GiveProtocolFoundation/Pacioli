@@ -165,34 +165,34 @@ export function parseFormattedNumber(
   // Remove currency symbols and whitespace
   let cleaned = formattedValue
     .replace(/[$€£¥₹]/gu, '')
-    .replace(/[A-Z]{3}/g, '')
+    .replace(/[A-Z]{3}/gu, '')
     .trim()
 
   // Convert based on separator standard
   switch (decimalSeparatorStandard) {
     case 'point-comma':
       // Remove commas (thousands) and parse
-      cleaned = cleaned.replace(/,/g, '')
+      cleaned = cleaned.replace(/,/gu, '')
       break
 
     case 'comma-point':
       // Replace comma (decimal) with point, remove points (thousands)
-      cleaned = cleaned.replace(/\./g, '').replace(',', '.')
+      cleaned = cleaned.replace(/\./gu, '').replace(',', '.')
       break
 
     case 'point-space':
       // Remove spaces (thousands) - both regular and thin spaces
-      cleaned = cleaned.replace(/[ \u2009]/g, '')
+      cleaned = cleaned.replace(/[ \u2009]/gu, '')
       break
 
     case 'comma-space':
       // Remove spaces (thousands) - both regular and thin spaces, replace comma (decimal) with point
-      cleaned = cleaned.replace(/[ \u2009]/g, '').replace(',', '.')
+      cleaned = cleaned.replace(/[ \u2009]/gu, '').replace(',', '.')
       break
 
     default:
       // Default to point-comma format (most common)
-      cleaned = cleaned.replace(/,/g, '')
+      cleaned = cleaned.replace(/,/gu, '')
       break
   }
 
