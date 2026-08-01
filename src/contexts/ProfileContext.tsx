@@ -46,6 +46,13 @@ const ProfileContext = createContext<ProfileContextType | undefined>(undefined)
 
 const CURRENT_PROFILE_KEY = 'currentProfileId'
 
+/**
+ * ProfileProvider component that provides profile and wallet context to its children.
+ *
+ * @param {object} props - Component props.
+ * @param {React.ReactNode} props.children - The child components to render.
+ * @returns {JSX.Element} ProfileContext provider wrapping its children.
+ */
 export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
@@ -209,7 +216,6 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({
   const refreshWallets = useCallback(async () => {
     await loadWallets()
   }, [loadWallets])
-
   return (
     <ProfileContext.Provider
       value={{
@@ -234,6 +240,29 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({
   )
 }
 
+/**
+ * Custom hook to access the ProfileContext.
+ *
+ * Provides the current profiles state and related actions for managing profiles and wallets.
+ *
+ * @returns The profile context object containing:
+ *   - profiles: Array of user profiles.
+ *   - currentProfile: The currently selected profile.
+ *   - isLoading: Loading state for profile operations.
+ *   - error: Error state for profile operations.
+ *   - createProfile: Function to create a new profile.
+ *   - updateProfile: Function to update an existing profile.
+ *   - deleteProfile: Function to delete a profile.
+ *   - setCurrentProfile: Function to set the current profile.
+ *   - refreshProfiles: Function to reload profiles from the source.
+ *   - wallets: Array of user wallets.
+ *   - walletsLoading: Loading state for wallet operations.
+ *   - addWallet: Function to add a wallet.
+ *   - removeWallet: Function to remove a wallet.
+ *   - refreshWallets: Function to reload wallets from the source.
+ *
+ * @throws {Error} If used outside of a ProfileProvider.
+ */
 export const useProfile = () => {
   const context = useContext(ProfileContext)
   if (context === undefined) {

@@ -65,6 +65,11 @@ type ConnectionState = 'disconnected' | 'connecting' | 'connected' | 'error'
 type StateChangeCallback = (state: ConnectionState, error?: string) => void
 type SessionCallback = (session: WalletConnectSession | null) => void
 
+/**
+ * Service to manage WalletConnect sessions and connection states.
+ *
+ * Provides methods to configure, connect, disconnect, and subscribe to session and state changes.
+ */
 class WalletConnectService {
   private signClient: SignClient | null = null
   private modal: WalletConnectModal | null = null
@@ -110,11 +115,23 @@ class WalletConnectService {
     return () => this.sessionCallbacks.delete(callback)
   }
 
+  /**
+   * Notifies all registered callbacks of a change in connection state.
+   *
+   * @param state - The new connection state.
+   * @param error - Optional error message explaining the state change.
+   * @returns void
+   */
   private notifyStateChange(state: ConnectionState, error?: string) {
     this.connectionState = state
     this.stateCallbacks.forEach(cb => cb(state, error))
   }
 
+  /**
+  * Notifies all registered session callbacks about a session change.
+  *
+  * @param {WalletConnectSession | null} session - The new session, or null if disconnected.
+  */
   private notifySessionChange(session: WalletConnectSession | null) {
     this.currentSession = session
     this.sessionCallbacks.forEach(cb => cb(session))
@@ -165,6 +182,11 @@ class WalletConnectService {
     }
   }
 
+  /**
+   * Sets up event listeners for the WalletConnect client to handle session events.
+   * Handles session_event, session_update, and session_delete events.
+   * @returns void
+   */
   private setupEventListeners() {
     if (!this.signClient) return
 
