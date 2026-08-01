@@ -131,7 +131,6 @@ const Support: React.FC = () => {
     () => setSelectedCategory('guide'),
     []
   )
-  )
   const handleCategoryCrypto = useCallback(
     () => setSelectedCategory('crypto'),
     []
