@@ -74,6 +74,12 @@ interface EntityContextType {
 
 const EntityContext = createContext<EntityContextType | undefined>(undefined)
 
+/**
+ * EntityProvider component that provides entity context to its children.
+ *
+ * @param children - The child components that will have access to the entity context.
+ * @returns The provider component wrapping children with entity context values.
+ */
 export const EntityProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
@@ -307,6 +313,11 @@ export const EntityProvider: React.FC<{ children: React.ReactNode }> = ({
   )
 }
 
+/**
+ * Hook to access the EntityContext.
+ * @returns The context value from EntityContext.
+ * @throws Error if used outside of an EntityProvider.
+ */
 export const useEntity = () => {
   const context = useContext(EntityContext)
   if (context === undefined) {
@@ -325,6 +336,10 @@ export const useVendors = () => {
   return { vendors, ...rest }
 }
 
+/**
+ * Hook to retrieve active customer entities.
+ * @returns An object containing 'customers' (filtered active customers) and other context actions.
+ */
 export const useCustomers = () => {
   const { getFilteredEntities, ...rest } = useEntity()
   const customers = getFilteredEntities({

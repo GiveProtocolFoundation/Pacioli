@@ -47,6 +47,12 @@ const XCM_RECEIVE_EVENTS: ReadonlyArray<{
 /** Regex for a 32-byte hex message ID (0x + 64 hex chars). */
 const MESSAGE_ID_RE = /^0x[0-9a-fA-F]{64}$/
 
+/**
+ * Checks whether the provided value is a valid message ID.
+ *
+ * @param v - The value to check.
+ * @returns True if the value is a string matching the message ID regex; otherwise false.
+ */
 function isMessageId(v: unknown): v is string {
   return typeof v === 'string' && MESSAGE_ID_RE.test(v)
 }

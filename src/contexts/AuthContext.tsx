@@ -286,6 +286,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // Update current profile role when profile selection changes
   useEffect(() => {
+    /**
+     * Handles storage change events for the 'currentProfileId' key and updates the current profile role accordingly.
+     * @param e StorageEvent containing details of the storage change, including key and newValue.
+     */
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'currentProfileId' && e.newValue) {
         const profile = userProfiles.find(p => p.profile_id === e.newValue)
@@ -545,6 +549,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   )
 }
 
+/**
+ * Custom hook to access the authentication context.
+ * Throws an error if used outside of an AuthProvider.
+ * @returns The authentication context value including state and methods.
+ */
 export const useAuth = () => {
   const context = useContext(AuthContext)
   if (context === undefined) {

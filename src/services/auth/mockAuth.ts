@@ -58,6 +58,11 @@ interface MockSession {
   expires_at: string
 }
 
+/**
+ * Retrieves mock storage data from localStorage for authentication.
+ *
+ * @returns {MockStorageData} An object containing 'users' and 'sessions' maps.
+ */
 function getMockStorage(): MockStorageData {
   const stored = localStorage.getItem(MOCK_STORAGE_KEY)
   if (stored) {
@@ -73,6 +78,11 @@ function getMockStorage(): MockStorageData {
   }
 }
 
+/**
+ * Saves the mock storage data to localStorage under the MOCK_STORAGE_KEY.
+ *
+ * @param data - The mock storage data containing user and session entries.
+ */
 function saveMockStorage(data: MockStorageData): void {
   localStorage.setItem(
     MOCK_STORAGE_KEY,
@@ -83,10 +93,19 @@ function saveMockStorage(data: MockStorageData): void {
   )
 }
 
+/**
+ * Generates a unique identifier string using the current timestamp and a random string.
+ * @returns {string} A unique identifier.
+ */
 function generateId(): string {
   return `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 }
 
+/**
+ * Generates a mock authentication token.
+ *
+ * @returns {string} A mock token string prefixed with "mock_token_."
+ */
 function generateToken(): string {
   return `mock_token_${generateId()}`
 }
