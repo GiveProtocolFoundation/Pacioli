@@ -252,6 +252,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
   )
 }
 
+
 // ============================================================================
 // Panel Section Components
 // ============================================================================
@@ -259,7 +260,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
 /**
  * Filter tabs for categorizing notifications by type.
  */
-const FilterTabs: React.FC<{
+const FilterTabs: React.FC<{  
   filter: FilterType
   userType: 'individual' | 'organization'
   onAll: () => void
@@ -276,6 +277,11 @@ const FilterTabs: React.FC<{
   onWorkflow,
   onApproval,
 }) => {
+  /**
+   * Gets the CSS class names for a button based on its active state.
+   * @param isActive - Whether the button is active.
+   * @returns A string of CSS classes for styling the button.
+   */
   const getButtonClass = (isActive: boolean) =>
     `px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
       isActive
@@ -558,17 +564,50 @@ const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
     () => markAllAsRead(),
     [markAllAsRead]
   )
+  /**
+   * Triggers a refresh of notifications.
+   * @returns void
+   */
   const handleRefresh = useCallback(() => refresh(), [refresh])
 
+  /**
+   * Sets the filter to include all notifications.
+   * @returns void
+   */
   const handleFilterAll = useCallback(() => setFilter('all'), [])
+
+  /**
+   * Sets the filter to include only financial notifications.
+   * @returns void
+   */
   const handleFilterFinancial = useCallback(() => setFilter('financial'), [])
+
+  /**
+   * Sets the filter to include only transactional notifications.
+   * @returns void
+   */
   const handleFilterTransactional = useCallback(
     () => setFilter('transactional'),
     []
   )
+
+  /**
+   * Sets the filter to include only workflow notifications.
+   * @returns void
+   */
   const handleFilterWorkflow = useCallback(() => setFilter('workflow'), [])
+
+  /**
+   * Sets the filter to include only approval notifications.
+   * @returns void
+   */
   const handleFilterApproval = useCallback(() => setFilter('approval'), [])
 
+  /**
+   * Handles key down events on the backdrop and closes on 'Enter' or space key.
+   * @param e The keyboard event from the backdrop.
+   * @returns void
+   */
   const handleBackdropKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       if (e.key === 'Enter' || e.key === ' ') {
@@ -581,6 +620,10 @@ const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
 
   if (!isOpen) return null
 
+  /**
+   * Renders the notification panel content based on loading state and filtered notifications.
+   * @returns JSX.Element | null The content to display in the panel.
+   */
   const renderContent = () => {
     if (isLoading) return <LoadingState />
     if (filteredNotifications.length === 0) return <EmptyState />
