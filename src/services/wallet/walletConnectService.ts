@@ -81,7 +81,8 @@ class WalletConnectService {
   /**
    * Check if WalletConnect is properly configured
    */
-  isConfigured(): boolean { // skipcq: JS-0105 — checks module-level constant
+  isConfigured(): boolean {
+    // skipcq: JS-0105 — checks module-level constant
     return Boolean(PROJECT_ID)
   }
 
@@ -128,10 +129,10 @@ class WalletConnectService {
   }
 
   /**
-  * Notifies all registered session callbacks about a session change.
-  *
-  * @param {WalletConnectSession | null} session - The new session, or null if disconnected.
-  */
+   * Notifies all registered session callbacks about a session change.
+   *
+   * @param {WalletConnectSession | null} session - The new session, or null if disconnected.
+   */
   private notifySessionChange(session: WalletConnectSession | null) {
     this.currentSession = session
     this.sessionCallbacks.forEach(cb => cb(session))
@@ -235,7 +236,8 @@ class WalletConnectService {
   }
 
   /** Parse WalletConnect namespace accounts into structured account objects */
-  private parseAccounts( // skipcq: JS-0105 — pure helper, no instance state needed
+  private parseAccounts(
+    // skipcq: JS-0105 — pure helper, no instance state needed
     namespaces: Record<string, { accounts: string[] }>
   ): WalletConnectAccount[] {
     const accounts: WalletConnectAccount[] = []
@@ -428,7 +430,8 @@ class WalletConnectService {
   /**
    * Get chain display name from chain ID
    */
-  getChainName(chain: string): string { // skipcq: JS-0105 — pure lookup, no instance state needed
+  getChainName(chain: string): string {
+    // skipcq: JS-0105 — pure lookup, no instance state needed
     const chainNames: Record<string, string> = {
       'eip155:1': 'Ethereum',
       'eip155:137': 'Polygon',
