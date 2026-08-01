@@ -342,6 +342,12 @@ export const ImportDialog: React.FC<ImportDialogProps> = ({
     }
   }, [])
 
+  /**
+   * Handles importing data from the selected file.
+   *
+   * @async
+   * @returns {Promise<void>} A promise that resolves when import completes.
+   */
   const handleImport = useCallback(async () => {
     if (!filePath) return
 
@@ -364,6 +370,11 @@ export const ImportDialog: React.FC<ImportDialogProps> = ({
     }
   }, [filePath, preview, password, onImportComplete])
 
+  /**
+   * Renders the content corresponding to the current import step.
+   *
+   * @returns {JSX.Element|null} The component for the current step or null.
+   */
   const renderStepContent = () => {
     switch (step) {
       case 'select':
@@ -388,8 +399,6 @@ export const ImportDialog: React.FC<ImportDialogProps> = ({
   }
 
   if (!isOpen) return null
-
-  return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="flex min-h-screen items-center justify-center p-4">
         <DialogBackdrop
