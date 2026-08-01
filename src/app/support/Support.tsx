@@ -89,6 +89,10 @@ const quickLinks: QuickLink[] = [
   { title: 'FAQ', url: '/docs/faq/', icon: HelpCircle },
 ]
 
+/**
+ * Support component provides a UI for searching and filtering help topics.
+ * @returns A React element displaying the support interface.
+ */
 const Support: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<
@@ -104,6 +108,10 @@ const Support: React.FC = () => {
     return matchesSearch && matchesCategory
   })
 
+  /**
+   * Handles changes to the search input field.
+   * @param e The change event for the input element.
+   */
   const handleSearchChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       setSearchQuery(e.target.value)
@@ -111,7 +119,14 @@ const Support: React.FC = () => {
     []
   )
 
+  /**
+   * Sets the selected category to 'all'.
+   */
   const handleCategoryAll = useCallback(() => setSelectedCategory('all'), [])
+
+  /**
+   * Sets the selected category to 'guide'.
+   */
   const handleCategoryGuide = useCallback(
     () => setSelectedCategory('guide'),
     []

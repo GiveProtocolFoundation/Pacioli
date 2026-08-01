@@ -116,6 +116,12 @@ const classificationLabels: Record<ClassificationStatus, string> = {
   split: 'Split',
 }
 
+/**
+ * Renders a badge representing the given classification status.
+ *
+ * @param status - The classification status to display (unclassified, classified, ignored, split).
+ * @returns A span element styled as a badge reflecting the classification status.
+ */
 const ClassificationBadge: React.FC<{ status: ClassificationStatus }> = ({
   status,
 }) => (

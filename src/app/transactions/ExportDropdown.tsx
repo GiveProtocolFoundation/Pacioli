@@ -17,6 +17,10 @@ const ExportDropdown: React.FC<ExportDropdownProps> = ({ transactions }) => {
   const disabled = transactions.length === 0
 
   useEffect(() => {
+    /**
+     * Handles clicks outside the dropdown element to close it.
+     * @param event - The mouse event triggered by clicking outside the dropdown.
+     */
     const handleClickOutside = (event: MouseEvent) => {
       if (
         dropdownRef.current &&
