@@ -67,6 +67,17 @@ interface TokenSelectorProps {
   error?: string
 }
 
+/**
+ * TokenSelector component allows users to select a token from a list.
+ *
+ * @param {string} [selectedTokenId] - The ID of the currently selected token.
+ * @param {string} [selectedChainId] - The ID of the currently selected chain.
+ * @param {(token: Token, chain: Chain) => void} onTokenSelect - Callback invoked when a token is selected.
+ * @param {string} [label='Token'] - The label for the token selector.
+ * @param {boolean} [required=false] - Whether the selection is required.
+ * @param {string} [error] - Error message to display.
+ * @returns {JSX.Element} The TokenSelector component.
+ */
 const TokenSelector: React.FC<TokenSelectorProps> = ({
   selectedTokenId,
   selectedChainId,

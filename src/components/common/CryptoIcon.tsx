@@ -7,6 +7,15 @@ interface CryptoIconProps {
   className?: string
 }
 
+/**
+ * Renders a cryptocurrency icon for the given symbol.
+ *
+ * @param {object} props - The props for the component.
+ * @param {string} props.symbol - The symbol of the cryptocurrency.
+ * @param {number} [props.size=40] - The size of the icon.
+ * @param {string} [props.className] - Additional CSS classes.
+ * @returns {JSX.Element} The icon element.
+ */
 const CryptoIcon: React.FC<CryptoIconProps> = ({
   symbol,
   size = 40,

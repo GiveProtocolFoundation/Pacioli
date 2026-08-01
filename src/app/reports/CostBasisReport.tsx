@@ -317,6 +317,13 @@ export function computeReport(
   }
 }
 
+/**
+ * Formats a number or numeric string into a localized string with specified decimal precision.
+ *
+ * @param value The number or numeric string to format.
+ * @param decimals Optional. The maximum number of decimal places (default is 6).
+ * @returns The formatted number as a string, using 'en-US' locale.
+ */
 function formatNumber(value: string | number, decimals = 6): string {
   const num = typeof value === 'string' ? parseFloat(value) : value
   if (isNaN(num)) return '0'
@@ -326,6 +333,11 @@ function formatNumber(value: string | number, decimals = 6): string {
   })
 }
 
+/**
+ * Formats a date string into a locale-specific date format ('MMM DD, YYYY').
+ * @param dateString The input date string to format.
+ * @returns The formatted date string in 'en-US' locale, or the original string if invalid.
+ */
 function formatDate(dateString: string): string {
   const date = new Date(dateString)
   if (isNaN(date.getTime())) return dateString
@@ -336,6 +348,12 @@ function formatDate(dateString: string): string {
   })
 }
 
+/**
+ * Returns a sorted array of unique asset symbols from the given transactions.
+ *
+ * @param transactions Array of stored transactions to extract asset symbols from.
+ * @returns Sorted array of unique asset symbols.
+ */
 function getUniqueAssets(transactions: StoredTransaction[]): string[] {
   const set = new Set<string>()
   for (const tx of transactions) {
@@ -345,10 +363,20 @@ function getUniqueAssets(transactions: StoredTransaction[]): string[] {
   return Array.from(set).sort()
 }
 
+/**
+ * Returns the current tax year.
+ * @returns {number} The current calendar year as the tax year.
+ */
 function getCurrentTaxYear(): number {
   return new Date().getFullYear()
 }
 
+/**
+ * Returns the start and end ISO date strings for the specified tax year.
+ *
+ * @param year The tax year as a number.
+ * @returns An object containing the `start` and `end` ISO date strings for the year.
+ */
 function getTaxYearRange(year: number): { start: string; end: string } {
   return {
     start: `${year}-01-01T00:00:00Z`,
@@ -401,6 +429,13 @@ export function exportReportCSV(
   return lines.join('\n')
 }
 
+/**
+ * Exports the report data as a JSON string.
+ *
+ * @param data - The report data to export.
+ * @param method - The cost basis method used in the report.
+ * @returns The JSON string representation of the report.
+ */
 export function exportReportJSON(
   data: ReportData,
   method: CostBasisMethod
@@ -441,6 +476,13 @@ export function exportReportJSON(
   )
 }
 
+/**
+ * Downloads a file by creating a Blob URL and triggering a link click.
+ *
+ * @param content - The string content to download as a file.
+ * @param filename - The name to assign to the downloaded file.
+ * @param mimeType - The MIME type of the file (e.g., 'text/plain').
+ */
 function downloadFile(content: string, filename: string, mimeType: string) {
   const blob = new Blob([content], { type: mimeType })
   const url = URL.createObjectURL(blob)
@@ -470,6 +512,13 @@ const METHODS: {
   },
 ]
 
+/**
+ * Renders a set of buttons for selecting a cost basis method.
+ *
+ * @param selected - The currently selected cost basis method.
+ * @param onChange - Callback invoked when method changes.
+ * @returns A React component displaying method buttons.
+ */
 const MethodSelector: React.FC<{
   selected: CostBasisMethod
   onChange: (method: CostBasisMethod) => void
@@ -501,6 +550,15 @@ const MethodSelector: React.FC<{
   </div>
 )
 
+/**
+ * Displays a summary card with a label, value, and icon.
+ *
+ * @param label - The label text for the card.
+ * @param value - The value text displayed.
+ * @param isPositive - Optional flag indicating positive or negative status.
+ * @param Icon - The icon component to render.
+ * @returns A styled summary card component.
+ */
 const SummaryCard: React.FC<{
   label: string
   value: string
@@ -530,6 +588,14 @@ const SummaryCard: React.FC<{
   </div>
 )
 
+/**
+ * Renders a table of disposal records with expandable rows.
+ *
+ * @param disposals - Array of disposal records to display.
+ * @param expandedId - ID of the currently expanded row or null.
+ * @param onToggle - Callback to toggle expansion of a row.
+ * @returns A React component showing the disposal table.
+ */
 const DisposalTable: React.FC<{
   disposals: DisposalRecord[]
   expandedId: string | null
@@ -668,6 +734,12 @@ const DisposalTable: React.FC<{
   </div>
 )
 
+/**
+ * Component that renders a table of remaining lots.
+ *
+ * @param lots - An array of CryptoLot objects representing the lots to display.
+ * @returns A table displaying the remaining lots with their details.
+ */
 const RemainingLotsTable: React.FC<{ lots: CryptoLot[] }> = ({ lots }) => (
   <div className="overflow-x-auto">
     <table className="w-full text-sm">
@@ -761,6 +833,12 @@ const CostBasisReport: React.FC = () => {
 
   // Load transactions
   useEffect(() => {
+    /**
+     * Loads transactions for the current profile from persistence,
+     * updates loading state, error state, and sets transactions for accounting.
+     *
+     * @returns {Promise<void>} A promise that resolves when loading is complete.
+     */
     const load = async () => {
       if (!currentProfile) {
         setLoading(false)
