@@ -99,6 +99,11 @@ interface SettingsProps {
   userType?: 'individual' | 'organization'
 }
 
+/**
+ * Renders the settings header section containing title and subtitle.
+ *
+ * @returns {JSX.Element} The settings header component.
+ */
 const SettingsHeader: React.FC = () => (
   <header className="bg-[#F7FAFA] dark:bg-[#0C141B] border-b border-[rgba(95,227,192,0.15)]">
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -112,6 +117,15 @@ const SettingsHeader: React.FC = () => (
   </header>
 )
 
+/**
+ * Renders the sidebar navigation for settings sections.
+ *
+ * @param {Object} props - Component props.
+ * @param {typeof navigationItems} props.items - Array of navigation items.
+ * @param {SettingsSection} props.activeSection - Currently active settings section ID.
+ * @param {(section: SettingsSection) => void} props.onSectionChange - Callback to change active section.
+ * @returns {JSX.Element} The sidebar navigation component.
+ */
 const SidebarNavigation: React.FC<{
   items: typeof navigationItems
   activeSection: SettingsSection
@@ -192,6 +206,12 @@ const SidebarNavigation: React.FC<{
   )
 }
 
+/**
+ * Renders the settings page and manages navigation between different settings sections.
+ *
+ * @param {string} userType - The type of user, defaults to 'organization'.
+ * @returns {JSX.Element} The Settings component.
+ */
 const Settings: React.FC<SettingsProps> = ({ userType = 'organization' }) => {
   const location = useLocation()
   const navigate = useNavigate()
@@ -218,6 +238,7 @@ const Settings: React.FC<SettingsProps> = ({ userType = 'organization' }) => {
           navigate('/settings/currencies')
         } else if (section === 'users-permissions') {
           navigate('/settings/users')
+        }
         } else if (section === 'data-providers') {
           navigate('/settings/data-providers')
         } else if (section === 'chart-of-accounts') {
