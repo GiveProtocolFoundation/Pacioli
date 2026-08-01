@@ -56,14 +56,14 @@ interface PersonalInfoProps {
   showPhone?: boolean
 }
 
-  /**
-   * PersonalInfo component displays and allows editing of user's personal information fields.
-   *
-   * @param {UserProfile} profile - User profile data object.
-   * @param {(key: keyof UserProfile) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void} createProfileInputHandler - Handler to create input change functions for profile fields.
-   * @param {boolean} [showPhone=true] - Flag to show or hide the phone number input field.
-   * @returns {JSX.Element} - The rendered personal information form fields.
-   */
+/**
+ * PersonalInfo component displays and allows editing of user's personal information fields.
+ *
+ * @param {UserProfile} profile - User profile data object.
+ * @param {(key: keyof UserProfile) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void} createProfileInputHandler - Handler to create input change functions for profile fields.
+ * @param {boolean} [showPhone=true] - Flag to show or hide the phone number input field.
+ * @returns {JSX.Element} - The rendered personal information form fields.
+ */
 const PersonalInfo: React.FC<PersonalInfoProps> = ({
   profile,
   createProfileInputHandler,
@@ -228,7 +228,8 @@ const WorkInfo: React.FC<WorkInfoProps> = ({
   </>
 )
 
-const Profile: React.FC = () => { // skipcq: JS-R1005 — multi-tab settings form; sub-components already extracted
+const Profile: React.FC = () => {
+  // skipcq: JS-R1005 — multi-tab settings form; sub-components already extracted
   const { userAvatar, setUserAvatar } = useOrganization()
   const {
     user,
