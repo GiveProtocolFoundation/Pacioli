@@ -626,7 +626,7 @@ const DisposalTable: React.FC<{
           <th className="text-center py-3 px-3 text-xs font-semibold text-[#294050] dark:text-[#9FB4BE] uppercase tracking-wider">
             Term
           </th>
-          <th className="py-3 px-3"></th>
+          <th className="py-3 px-3" />
         </tr>
       </thead>
       <tbody>
