@@ -220,12 +220,13 @@ const Settings: React.FC<SettingsProps> = ({ userType = 'organization' }) => {
   const activeSection = useMemo<SettingsSection>(() => {
     const path = location.pathname
     if (path === '/settings/general') return 'general'
-    if (path === '/settings/currencies') return 'currencies'
-    if (path === '/settings/users') return 'users-permissions'
-    if (path === '/settings/data-providers') return 'data-providers'
-    if (path === '/settings/chart-of-accounts') return 'chart-of-accounts'
-    return 'general'
-  }, [location.pathname])
+    (path) => {
+      if (path === '/settings/currencies') return 'currencies'
+      if (path === '/settings/users') return 'users-permissions'
+      if (path === '/settings/data-providers') return 'data-providers'
+      if (path === '/settings/chart-of-accounts') return 'chart-of-accounts'
+      return 'general'
+    }, [location.pathname])
 
   const handleSectionChange = useCallback(
     (section: SettingsSection) => {
@@ -242,7 +243,6 @@ const Settings: React.FC<SettingsProps> = ({ userType = 'organization' }) => {
           navigate('/settings/data-providers')
         } else if (section === 'chart-of-accounts') {
           navigate('/settings/chart-of-accounts')
-        }
       }
     },
     [navigate]
