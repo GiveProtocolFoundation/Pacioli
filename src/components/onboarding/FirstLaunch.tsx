@@ -573,6 +573,11 @@ const CompleteStep: React.FC<CompleteStepProps> = ({
   onComplete,
   t,
 }) => {
+  /**
+   * Returns the label for the security mode based on the selected mode and session timeout.
+   *
+   * @returns A string label representing the current security mode, optionally including timeout.
+   */
   const getSecurityModeLabel = () => {
     if (securityMode === 'easy') return t.firstLaunch.easyAccess
     if (securityMode === 'secure') return t.firstLaunch.secureUse

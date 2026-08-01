@@ -15,6 +15,13 @@ interface UnlockScreenProps {
   onUnlock?: () => void
 }
 
+/**
+ * UnlockScreen component displayed when the app is locked with password protection.
+ * Includes forgot password flow with recovery phrase.
+ * @param {UnlockScreenProps} props - Component props.
+ * @param {() => void} [props.onUnlock] - Optional callback invoked when unlocking completes.
+ * @returns {JSX.Element} The unlock screen component.
+ */
 export const UnlockScreen: React.FC<UnlockScreenProps> = ({ onUnlock }) => {
   const { unlock, isUnlocking, error, sessionExpired } = useApp()
   const { t } = useLanguage()
@@ -37,6 +44,10 @@ export const UnlockScreen: React.FC<UnlockScreenProps> = ({ onUnlock }) => {
   const [isResetting, setIsResetting] = useState(false)
   const [resetSuccess, setResetSuccess] = useState(false)
 
+  /**
+   * Handles changes to the password input.
+   * @param {React.ChangeEvent<HTMLInputElement>} e - The change event for the password input.
+   */
   const handlePasswordChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       setPassword(e.target.value)
