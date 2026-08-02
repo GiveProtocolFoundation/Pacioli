@@ -138,7 +138,7 @@ export class EVMService {
    * @param address - The wallet address to fetch token balances for.
    * @returns A promise that resolves to an array of [token, balance] tuples.
    */
-  static async getTokenBalances(
+  static getTokenBalances(
     chain: string,
     address: string
   ): Promise<[string, string][]> {
@@ -154,7 +154,7 @@ export class EVMService {
    * @param address The account address to scan for DeFi positions.
    * @returns A list of DeFi position identifiers found for the address.
    */
-  static async scanDeFiPositions(
+  static scanDeFiPositions(
     chain: string,
     address: string
   ): Promise<string[]> {
@@ -167,7 +167,7 @@ export class EVMService {
    * @param address - The wallet address to query.
    * @returns The balance as a string.
    */
-  static async getBalance(chain: string, address: string): Promise<string> {
+  static getBalance(chain: string, address: string): Promise<string> {
     return invoke<string>('get_evm_balance', { chain, address })
   }
 
@@ -179,7 +179,7 @@ export class EVMService {
    * @param toBlock The ending block number or 'latest' (optional, defaults to 'latest').
    * @returns An array of transaction hash strings.
    */
-  static async getTransactions(
+  static getTransactions(
     chain: string,
     address: string,
     fromBlock?: number,
@@ -198,7 +198,7 @@ export class EVMService {
    * @param chain The identifier of the EVM chain to connect to.
    * @returns A Promise that resolves when the connection is established.
    */
-  static async connectToChain(chain: string): Promise<void> {
+  static connectToChain(chain: string): Promise<void> {
     return invoke<void>('connect_evm_chain', { chain })
   }
 
@@ -208,7 +208,7 @@ export class EVMService {
    * @param chain - The identifier of the EVM chain.
    * @returns The configuration object for the specified chain.
    */
-  static async getChainInfo(chain: string) {
+  static getChainInfo(chain: string) {
     const config = EVM_CHAINS[chain]
     if (!config) throw new Error(`Unknown chain: ${chain}`)
     return config
