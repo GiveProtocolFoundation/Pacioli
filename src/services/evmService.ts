@@ -127,10 +127,7 @@ export class EVMService {
    * @param {string} address - The wallet address to sync transactions for.
    * @returns {Promise<string>} A promise that resolves to a string identifier or status message.
    */
-  static syncEVMTransactions(
-    chain: string,
-    address: string
-  ): Promise<string> {
+  static syncEVMTransactions(chain: string, address: string): Promise<string> {
     return invoke<string>('sync_evm_transactions', { chain, address })
   }
 
