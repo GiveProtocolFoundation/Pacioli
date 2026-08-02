@@ -8,9 +8,8 @@ interface OrganizationContextType {
   setUserAvatar: (avatar: string | null) => void
 }
 
-// skipcq: JS-W1042
 const OrganizationContext = createContext<OrganizationContextType | undefined>(
-  undefined
+  undefined // skipcq: JS-W1042
 )
 
 /**

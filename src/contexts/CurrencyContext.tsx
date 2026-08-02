@@ -36,9 +36,8 @@ const defaultSettings: CurrencySettings = {
   cacheExchangeRates: true,
 }
 
-// skipcq: JS-W1042
 const CurrencyContext = createContext<CurrencyContextType | undefined>(
-  undefined
+  undefined // skipcq: JS-W1042
 )
 
 /**

@@ -18,9 +18,8 @@ interface WalletAliasContextType {
   formatWalletDisplay: (address: string, fallbackName?: string) => string
 }
 
-// skipcq: JS-W1042
 const WalletAliasContext = createContext<WalletAliasContextType | undefined>(
-  undefined
+  undefined // skipcq: JS-W1042
 )
 
 /**
