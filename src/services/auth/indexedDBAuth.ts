@@ -664,20 +664,20 @@ class IndexedDBAuthService implements AuthService {
   // Profile roles - stub implementations for browser mode
 
   /** Get user profiles (no-op in browser mode) */
+  // skipcq: JS-0105 — interface stub
   getUserProfiles = (_token: string): Promise<ProfileWithRole[]> =>
-    // skipcq: JS-0105 — interface stub
     Promise.resolve([])
 
   /** Get profile users (no-op in browser mode) */
+  // skipcq: JS-0105 — interface stub
   getProfileUsers = (
-    // skipcq: JS-0105 — interface stub
     _token: string,
     _profileId: string
   ): Promise<ProfileUser[]> => Promise.resolve([])
 
   /** Update user role (no-op in browser mode) */
+  // skipcq: JS-0105 — interface stub
   updateUserRole = (
-    // skipcq: JS-0105 — interface stub
     _token: string,
     _profileId: string,
     _userId: string,
@@ -685,8 +685,8 @@ class IndexedDBAuthService implements AuthService {
   ): Promise<void> => Promise.resolve()
 
   /** Remove user from profile (no-op in browser mode) */
+  // skipcq: JS-0105 — interface stub
   removeUserFromProfile = (
-    // skipcq: JS-0105 — interface stub
     _token: string,
     _profileId: string,
     _userId: string
@@ -695,31 +695,31 @@ class IndexedDBAuthService implements AuthService {
   // Invitations - stub implementations for browser mode
 
   /** Create invitation (not supported in browser mode) */
+  // skipcq: JS-0105 — interface stub
   createInvitation = (
-    // skipcq: JS-0105 — interface stub
     _token: string,
     _input: CreateInvitationInput
   ): Promise<Invitation> =>
     Promise.reject(new Error('Invitations not supported in browser mode'))
 
   /** Get profile invitations (no-op in browser mode) */
+  // skipcq: JS-0105 — interface stub
   getProfileInvitations = (
-    // skipcq: JS-0105 — interface stub
     _token: string,
     _profileId: string
   ): Promise<Invitation[]> => Promise.resolve([])
 
   /** Accept invitation (not supported in browser mode) */
+  // skipcq: JS-0105 — interface stub
   acceptInvitation = (
-    // skipcq: JS-0105 — interface stub
     _invitationToken: string,
     _accessToken?: string
   ): Promise<AuthResponse> =>
     Promise.reject(new Error('Invitations not supported in browser mode'))
 
   /** Revoke invitation (no-op in browser mode) */
+  // skipcq: JS-0105 — interface stub
   revokeInvitation = (_token: string, _invitationId: string): Promise<void> =>
-    // skipcq: JS-0105 — interface stub
     Promise.resolve()
 
   // Email change - simplified for browser mode (direct update, no email verification)
@@ -778,18 +778,18 @@ class IndexedDBAuthService implements AuthService {
   }
 
   /** Verify email change (no-op in browser mode, email updated directly) */
+  // skipcq: JS-0105 — interface stub
   verifyEmailChange = (_verificationToken: string): Promise<string> =>
-    // skipcq: JS-0105 — interface stub
     Promise.resolve('Email already updated (browser mode)')
 
   /** Cancel email change (no-op in browser mode) */
+  // skipcq: JS-0105 — interface stub
   cancelEmailChange = (_cancellationToken: string): Promise<string> =>
-    // skipcq: JS-0105 — interface stub
     Promise.resolve('No pending email change (browser mode)')
 
   /** Get email change status (no-op in browser mode) */
+  // skipcq: JS-0105 — interface stub
   getEmailChangeStatus = (_token: string): Promise<EmailChangeStatus> =>
-    // skipcq: JS-0105 — interface stub
     Promise.resolve({ pending: false })
 }
 
