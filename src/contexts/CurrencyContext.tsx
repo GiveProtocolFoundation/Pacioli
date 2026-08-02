@@ -37,7 +37,9 @@ const defaultSettings: CurrencySettings = {
 }
 
 // skipcq: JS-W1042
-const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined)
+const CurrencyContext = createContext<CurrencyContextType | undefined>(
+  undefined
+)
 
 /**
  * Provides currency context to child components, managing currency settings.

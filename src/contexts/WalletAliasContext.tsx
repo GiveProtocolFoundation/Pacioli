@@ -19,7 +19,9 @@ interface WalletAliasContextType {
 }
 
 // skipcq: JS-W1042
-const WalletAliasContext = createContext<WalletAliasContextType | undefined>(undefined)
+const WalletAliasContext = createContext<WalletAliasContextType | undefined>(
+  undefined
+)
 
 /**
  * WalletAliasProvider component provides wallet alias context for managing aliases.
