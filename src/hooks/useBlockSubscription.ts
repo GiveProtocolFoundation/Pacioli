@@ -176,6 +176,11 @@ export function useBlockSubscription(
 
     let cancelled = false
 
+    /**
+     * Subscribes to new block headers from the polkadot service and updates state.
+     *
+     * @returns {Promise<Function>} A promise that resolves to the unsubscribe function.
+     */
     const subscribe = async () => {
       try {
         const unsub = await polkadotService.subscribeNewBlocks(

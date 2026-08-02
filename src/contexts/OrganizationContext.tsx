@@ -9,9 +9,16 @@ interface OrganizationContextType {
 }
 
 const OrganizationContext = createContext<OrganizationContextType | undefined>(
-  undefined
+  undefined // skipcq: JS-W1042
 )
 
+/**
+ * Provides organization and user avatar context to child components.
+ *
+ * @param props - Component props.
+ * @param props.children - Child components to render within the provider.
+ * @returns The context provider wrapping children.
+ */
 export const OrganizationProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
@@ -32,6 +39,12 @@ export const OrganizationProvider: React.FC<{ children: ReactNode }> = ({
   )
 }
 
+/**
+ * Custom hook to access organization context.
+ *
+ * @returns The organization context value.
+ * @throws Error if used outside of OrganizationProvider.
+ */
 export const useOrganization = () => {
   const context = useContext(OrganizationContext)
   if (context === undefined) {
