@@ -154,10 +154,7 @@ export class EVMService {
    * @param address The account address to scan for DeFi positions.
    * @returns A list of DeFi position identifiers found for the address.
    */
-  static scanDeFiPositions(
-    chain: string,
-    address: string
-  ): Promise<string[]> {
+  static scanDeFiPositions(chain: string, address: string): Promise<string[]> {
     return invoke<string[]>('scan_defi_positions', { chain, address })
   }
 
