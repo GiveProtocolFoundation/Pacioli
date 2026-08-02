@@ -17,12 +17,21 @@ export interface TokenBalance {
   decimals?: number
 }
 
+/**
+ * Custom hook to interact with EVM-based blockchains via EVMService.
+ * Manages connection state, balances retrieval, and network switching.
+ * @returns An object containing currentAccount, isConnecting, balances, isLoadingBalances, and service methods.
+ */
 export const useEVMService = () => {
   const [currentAccount, setCurrentAccount] = useState<EVMAccount | null>(null)
   const [isConnecting, setIsConnecting] = useState(false)
   const [balances, setBalances] = useState<TokenBalance[]>([])
   const [isLoadingBalances, setIsLoadingBalances] = useState(false)
 
+  /**
+   * Connects to MetaMask wallet and retrieves the account information.
+   * @returns Promise resolving to the connected EVMAccount.
+   */
   const connectMetaMask = useCallback(async () => {
     setIsConnecting(true)
     try {
@@ -40,6 +49,11 @@ export const useEVMService = () => {
     }
   }, [])
 
+  /**
+   * Switches the connected wallet to the specified chain network.
+   * @param chainId The chain ID of the network to switch to.
+   * @returns Promise that resolves when the network switch is complete.
+   */
   const switchNetwork = useCallback(
     async (chainId: number) => {
       try {

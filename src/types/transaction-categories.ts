@@ -1021,28 +1021,54 @@ export const TRANSACTION_TYPE_DEFINITIONS: TransactionTypeDefinition[] = [
   },
 ]
 
+/**
+ * Retrieves transaction types that belong to the specified category.
+ *
+ * @param {TransactionCategory} category - The category to filter transaction types by.
+ * @returns {TransactionTypeDefinition[]} An array of transaction type definitions matching the category.
+ */
 export function getTransactionTypesByCategory(
   category: TransactionCategory
 ): TransactionTypeDefinition[] {
   return TRANSACTION_TYPE_DEFINITIONS.filter(t => t.category === category)
 }
 
+/**
+ * Retrieves the transaction type definition matching the given code.
+ *
+ * @param code - The code of the transaction type to retrieve.
+ * @returns The matching TransactionTypeDefinition, or undefined if no match is found.
+ */
 export function getTransactionTypeByCode(
   code: string
 ): TransactionTypeDefinition | undefined {
   return TRANSACTION_TYPE_DEFINITIONS.find(t => t.code === code)
 }
 
+/**
+ * Retrieves transaction type definitions that match the given subcategory.
+ *
+ * @param {string} subcategory - The subcategory to filter transaction types by.
+ * @returns {TransactionTypeDefinition[]} An array of transaction type definitions matching the subcategory.
+ */
 export function getTransactionTypesBySubcategory(
   subcategory: string
 ): TransactionTypeDefinition[] {
   return TRANSACTION_TYPE_DEFINITIONS.filter(t => t.subcategory === subcategory)
 }
 
+/**
+ * Retrieves all transaction categories.
+ * @returns {TransactionCategory[]} An array of all transaction categories.
+ */
 export function getAllCategories(): TransactionCategory[] {
   return Object.values(TransactionCategory)
 }
-
+/**
+ * Retrieves all unique subcategories for a given transaction category.
+ * @param category - The transaction category to retrieve subcategories for.
+ * @returns An array of unique subcategory names.
+ */
 export function getAllSubcategories(category: TransactionCategory): string[] {
   const types = getTransactionTypesByCategory(category)
   return Array.from(new Set(types.map(t => t.subcategory)))

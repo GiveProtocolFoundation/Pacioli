@@ -64,10 +64,24 @@ export const NETWORK_CONFIGS: Record<string, NetworkConfig> = {
   },
 }
 
+/**
+ * React hook to manage network configuration and connection status using MetaMask.
+ *
+ * @returns An object containing:
+ *   - currentNetwork: The name of the current network.
+ *   - isConnected: A boolean indicating if the wallet is connected.
+ *   - switchNetwork: Function to switch the Ethereum network in MetaMask.
+ */
 export const useNetworkConfig = () => {
   const [currentNetwork, setCurrentNetwork] = useState<string>('paseo')
   const [isConnected, setIsConnected] = useState(false)
 
+  /**
+   * Switches the Ethereum network in MetaMask.
+   *
+   * @param networkName - The name of the network to switch to.
+   * @returns A promise that resolves when the network is switched successfully.
+   */
   const switchNetwork = useCallback(async (networkName: string) => {
     if (!window.ethereum) {
       throw new Error('MetaMask is not installed')

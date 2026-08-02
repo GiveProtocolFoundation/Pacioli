@@ -175,6 +175,11 @@ const AddPortfolioModal: React.FC<AddPortfolioModalProps> = ({
     let cancelled = false
     setIsValidatingXpub(true)
 
+    /**
+     * Validates the xPub address by performing a quick check and parsing for full info.
+     * Updates state variables based on validation results and handles cancellation and errors.
+     * @returns {Promise<void>}
+     */
     const validateXpub = async () => {
       try {
         // First quick check with the fast function

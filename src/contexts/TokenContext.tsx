@@ -30,8 +30,15 @@ interface TokenContextType {
   updateTokenPrice: (price: TokenPrice) => void
 }
 
+// skipcq: JS-W1042
 const TokenContext = createContext<TokenContextType | undefined>(undefined)
 
+/**
+ * TokenProvider component that supplies token-related data and actions to its children via context.
+ *
+ * @param children - The ReactNode children that will receive the token context.
+ * @returns A Context Provider wrapping the children.
+ */
 export const TokenProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
@@ -47,10 +54,20 @@ export const TokenProvider: React.FC<{ children: ReactNode }> = ({
   const getTokensByChainFn = useMemo(() => getTokensByChain, [])
   const searchTokensFn = useMemo(() => searchTokensUtil, [])
 
+  /**
+   * Adds a custom token to the token list.
+   *
+   * @param token - The token to add.
+   */
   const addCustomToken = (token: Token) => {
     setTokens(prev => [...prev, token])
   }
 
+  /**
+   * Updates the balance for a specific token and account.
+   *
+   * @param balance - The token balance object containing accountId, tokenId, and balance.
+   */
   const updateTokenBalance = (balance: TokenBalance) => {
     setTokenBalances(prev => {
       const index = prev.findIndex(
@@ -65,6 +82,11 @@ export const TokenProvider: React.FC<{ children: ReactNode }> = ({
     })
   }
 
+  /**
+   * Updates the price for a specific token.
+   *
+   * @param price - The token price object containing tokenId and price.
+   */
   const updateTokenPrice = (price: TokenPrice) => {
     setTokenPrices(prev => {
       const updated = new Map(prev)
@@ -94,6 +116,12 @@ export const TokenProvider: React.FC<{ children: ReactNode }> = ({
   )
 }
 
+/**
+ * Custom hook to access token context.
+ *
+ * @throws Will throw an error if used outside of TokenProvider.
+ * @returns The TokenContextType containing chains, tokens, balances, prices and action functions.
+ */
 export const useTokens = () => {
   const context = useContext(TokenContext)
   if (context === undefined) {
