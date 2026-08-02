@@ -9,7 +9,9 @@ interface OrganizationContextType {
 }
 
 // skipcq: JS-W1042
-const OrganizationContext = createContext<OrganizationContextType | undefined>(undefined)
+const OrganizationContext = createContext<OrganizationContextType | undefined>(
+  undefined
+)
 
 /**
  * Provides organization and user avatar context to child components.
