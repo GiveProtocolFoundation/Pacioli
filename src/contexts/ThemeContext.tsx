@@ -9,6 +9,7 @@ interface ThemeContextType {
   setTheme: (theme: Theme) => void
 }
 
+// skipcq: JS-W1042
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 
 /**

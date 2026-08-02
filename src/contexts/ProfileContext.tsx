@@ -42,6 +42,7 @@ interface ProfileContextType {
   refreshWallets: () => Promise<void>
 }
 
+// skipcq: JS-W1042
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined)
 
 const CURRENT_PROFILE_KEY = 'currentProfileId'

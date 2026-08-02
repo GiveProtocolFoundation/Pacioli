@@ -72,6 +72,7 @@ interface EntityContextType {
   createEntityFromKnown: (address: string, chain: string) => Promise<Entity>
 }
 
+// skipcq: JS-W1042
 const EntityContext = createContext<EntityContextType | undefined>(undefined)
 
 /**
@@ -191,9 +192,9 @@ export const EntityProvider: React.FC<{ children: React.ReactNode }> = ({
   )
 
   const searchEntitiesAction = useCallback(
-    async (query: string, limit?: number): Promise<Entity[]> => {
+    (query: string, limit?: number): Promise<Entity[]> => {
       if (!currentProfile) {
-        return []
+        return Promise.resolve([])
       }
       return persistence.searchEntities(currentProfile.id, query, limit)
     },
@@ -202,14 +203,14 @@ export const EntityProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // Entity address operations
   const getEntityAddressesAction = useCallback(
-    async (entityId: string): Promise<EntityAddress[]> => {
+    (entityId: string): Promise<EntityAddress[]> => {
       return persistence.getEntityAddresses(entityId)
     },
     []
   )
 
   const addEntityAddress = useCallback(
-    async (
+    (
       address: Omit<EntityAddressInput, 'entity_id'>,
       entityId: string
     ): Promise<EntityAddress> => {
@@ -227,9 +228,9 @@ export const EntityProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // Address detection
   const lookupAddressAction = useCallback(
-    async (address: string, chain: string): Promise<AddressMatch | null> => {
+    (address: string, chain: string): Promise<AddressMatch | null> => {
       if (!currentProfile) {
-        return null
+        return Promise.resolve(null)
       }
       return persistence.lookupAddress(currentProfile.id, address, chain)
     },
@@ -237,9 +238,9 @@ export const EntityProvider: React.FC<{ children: React.ReactNode }> = ({
   )
 
   const batchLookupAddressesAction = useCallback(
-    async (addresses: Array<[string, string]>): Promise<AddressMatch[]> => {
+    (addresses: Array<[string, string]>): Promise<AddressMatch[]> => {
       if (!currentProfile) {
-        return []
+        return Promise.resolve([])
       }
       return persistence.batchLookupAddresses(currentProfile.id, addresses)
     },
@@ -247,9 +248,9 @@ export const EntityProvider: React.FC<{ children: React.ReactNode }> = ({
   )
 
   const findEntityByAddressAction = useCallback(
-    async (address: string, chain?: string): Promise<Entity | null> => {
+    (address: string, chain?: string): Promise<Entity | null> => {
       if (!currentProfile) {
-        return null
+        return Promise.resolve(null)
       }
       return persistence.findEntityByAddress(currentProfile.id, address, chain)
     },

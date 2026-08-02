@@ -30,6 +30,7 @@ interface TokenContextType {
   updateTokenPrice: (price: TokenPrice) => void
 }
 
+// skipcq: JS-W1042
 const TokenContext = createContext<TokenContextType | undefined>(undefined)
 
 /**
