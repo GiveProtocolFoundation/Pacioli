@@ -33,6 +33,27 @@ export const EVM_CHAINS: Record<string, EVMChain> = {
     chainId: 592,
     rpcUrl: 'https://evm.astar.network',
     nativeToken: { symbol: 'ASTR', decimals: 18 },
+    explorer: 'https://blockscout.com/astar',
+  },
+  shiden: {
+    name: 'Shiden',
+    chainId: 336,
+    rpcUrl: 'https://evm.shiden.astar.network',
+    nativeToken: { symbol: 'SDN', decimals: 18 },
+    explorer: 'https://blockscout.com/shiden',
+  },
+  acala: {
+    name: 'Acala',
+    chainId: 787,
+    rpcUrl: 'https://eth-rpc-acala.aca-api.network',
+    nativeToken: { symbol: 'ACA', decimals: 12 },
+    explorer: 'https://blockscout.acala.network',
+  },
+  paseo: {
+    name: 'Polkadot Hub TestNet',
+    chainId: 420420422,
+    rpcUrl: 'https://testnet-passet-hub-eth-rpc.polkadot.io',
+    nativeToken: { symbol: 'PAS', decimals: 18 },
     explorer: 'https://blockscout-passet-hub.parity-testnet.parity.io',
   },
 }
@@ -98,7 +119,6 @@ export class EVMService {
       chainId,
     }
   }
-}
 
   /**
    * Synchronize EVM transactions for the specified chain and wallet address.
