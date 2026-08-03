@@ -64,6 +64,18 @@ export interface UseBlockSubscriptionOptions {
 /** Debounce interval for block events (ms). Substrate produces blocks every 6s. */
 const DEBOUNCE_MS = 12_000
 
+/**
+ * Subscribes to block events and manages subscription state including
+ * live status, latest block number, and incremental refresh progress.
+ * @param options Configuration options for the block subscription:
+ *  - network: The blockchain network to subscribe to.
+ *  - address: The address for which to refresh transactions.
+ *  - enabled: Whether real-time synchronization is enabled.
+ *  - dbReady: Indicates if the database is initialized.
+ *  - onTransactionsUpdated: Optional callback invoked when new transactions are fetched.
+ * @returns The current state of the block subscription, including latestBlock,
+ * isLive, isRefreshing, refreshError, and refreshProgress.
+ */
 export function useBlockSubscription(
   options: UseBlockSubscriptionOptions
 ): BlockSubscriptionState {
