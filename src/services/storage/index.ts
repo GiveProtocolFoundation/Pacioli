@@ -6,7 +6,6 @@
  *   import { storage } from '@/services/storage'
  *   const appState = await storage.getAppState()
  */
-
 import type { StorageService } from '../../types/storage'
 import { tauriStorage } from './tauriStorage'
 import { isTauriAvailable } from '../../utils/tauri'
@@ -31,6 +30,10 @@ export type {
  */
 const SETTINGS_LS_PREFIX = 'pacioli_setting_'
 
+/**
+ * Creates an in-memory fallback StorageService for non-Tauri environments (browser development).
+ * @returns {StorageService} The memory-based storage service.
+ */
 const createMemoryStorage = (): StorageService => {
   let appState: 'Uninitialized' | 'Locked' | 'Unlocked' = 'Uninitialized'
   let hasPasswordSet = false
