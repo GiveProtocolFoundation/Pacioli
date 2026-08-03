@@ -217,6 +217,15 @@ class WalletConnectService {
     })
   }
 
+  /**
+   * Restores the most recent saved session.
+   *
+   * Checks if a signClient exists and sessions are available. If so,
+   * retrieves the last session, parses its accounts, and triggers
+   * session and state change notifications.
+   *
+   * @returns void
+   */
   private restoreSession(): void {
     if (!this.signClient) return
 
