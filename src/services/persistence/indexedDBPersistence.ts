@@ -1137,11 +1137,13 @@ class IndexedDBPersistenceService implements PersistenceService {
   // ============================================================================
 
   /** Initialises the IndexedDB transaction store. */
+  // skipcq: JS-0105 — delegates to indexedDBService
   async initTransactionStore(): Promise<void> {
     await indexedDBService.init()
   }
 
   /** Persists chain transactions for a given network and address. */
+  // skipcq: JS-0105 — delegates to indexedDBService
   async saveChainTransactions(
     network: string,
     address: string,
@@ -1169,11 +1171,13 @@ class IndexedDBPersistenceService implements PersistenceService {
   }
 
   /** Persists the sync status for a chain/address pair. */
+  // skipcq: JS-0105 — delegates to indexedDBService
   async saveChainSyncStatus(status: ChainSyncStatus): Promise<void> {
     await indexedDBService.saveSyncStatus(status)
   }
 
   /** Removes all stored chain transactions from IndexedDB. */
+  // skipcq: JS-0105 — delegates to indexedDBService
   async clearChainTransactions(): Promise<void> {
     await indexedDBService.clearTransactions()
   }
@@ -1183,6 +1187,7 @@ class IndexedDBPersistenceService implements PersistenceService {
   // ============================================================================
 
   /** Persists the list of connected wallets. */
+  // skipcq: JS-0105 — delegates to indexedDBService
   async saveConnectedWallets(wallets: ConnectedWallet[]): Promise<void> {
     await indexedDBService.saveWallets(wallets)
   }
