@@ -41,32 +41,40 @@ interface WalletConnectionModalProps {
   }) => void
 }
 
-const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
-  isOpen,
-  onClose,
-  onWalletAdded,
-}) => {
-  const [activeTab, setActiveTab] = useState<TabType>('add')
+  /**
+   * Modal component to add or manage wallet connections via manual entry or WalletConnect.
+   *
+   * @param {boolean} isOpen - Indicates if the modal is open.
+   * @param {() => void} onClose - Handler to close the modal.
+   * @param {(wallet: { address: string; blockchain: string; label?: string; isVerified: boolean; signature?: string }) => void} [onWalletAdded] - Callback invoked when a wallet is successfully added.
+   * @returns {JSX.Element} The rendered WalletConnectionModal component.
+   */
+  const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
+    isOpen,
+    onClose,
+    onWalletAdded,
+  }) => {
+    const [activeTab, setActiveTab] = useState<TabType>('add')
 
-  // Form state for manual entry
-  const [selectedBlockchain, setSelectedBlockchain] = useState<
-    BlockchainType | ''
-  >('')
-  const [address, setAddress] = useState('')
-  const [label, setLabel] = useState('')
-  const [addressError, setAddressError] = useState<string | null>(null)
-  const [showHelp, setShowHelp] = useState(false)
+    // Form state for manual entry
+    const [selectedBlockchain, setSelectedBlockchain] = useState<
+      BlockchainType | ''
+    >('')
+    const [address, setAddress] = useState('')
+    const [label, setLabel] = useState('')
+    const [addressError, setAddressError] = useState<string | null>(null)
+    const [showHelp, setShowHelp] = useState(false)
 
-  // WalletConnect state - initialize with existing session if available
-  const [wcSession, setWcSession] = useState<WalletConnectSession | null>(() =>
-    walletConnectService.getSession()
-  )
-  const [wcState, setWcState] = useState<
-    'disconnected' | 'connecting' | 'connected' | 'error'
-  >(() => (walletConnectService.getSession() ? 'connected' : 'disconnected'))
-  const [wcError, setWcError] = useState<string | null>(null)
-  const [isWcConfigured] = useState(() => walletConnectService.isConfigured())
-  const [addedAccounts, setAddedAccounts] = useState<Set<string>>(new Set())
+    // WalletConnect state - initialize with existing session if available
+    const [wcSession, setWcSession] = useState<WalletConnectSession | null>(() =>
+      walletConnectService.getSession()
+    )
+    const [wcState, setWcState] = useState<
+      'disconnected' | 'connecting' | 'connected' | 'error'
+    >(() => (walletConnectService.getSession() ? 'connected' : 'disconnected'))
+    const [wcError, setWcError] = useState<string | null>(null)
+    const [isWcConfigured] = useState(() => walletConnectService.isConfigured())
+    const [addedAccounts, setAddedAccounts] = useState<Set<string>>(new Set())
 
   // Subscribe to WalletConnect state changes on mount
   useEffect(() => {
