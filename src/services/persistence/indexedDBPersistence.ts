@@ -1250,6 +1250,7 @@ class IndexedDBPersistenceService implements PersistenceService {
     })
   }
 
+  /** Soft-deletes a bank account by setting active to false. */
   async archiveBankAccount(id: string): Promise<void> {
     const db = await this.ensureDB()
     return new Promise((resolve, reject) => {
