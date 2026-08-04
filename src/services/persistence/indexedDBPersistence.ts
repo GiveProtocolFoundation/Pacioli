@@ -1250,6 +1250,29 @@ class IndexedDBPersistenceService implements PersistenceService {
     })
   }
 
+  /** Soft-deletes a bank account by setting active to false. */
+  async archiveBankAccount(id: string): Promise<void> {
+    const db = await this.ensureDB()
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORES.BANK_ACCOUNTS, 'readwrite')
+      const store = tx.objectStore(STORES.BANK_ACCOUNTS)
+      const getReq = store.get(id)
+      getReq.onsuccess = () => {
+        const account = getReq.result as BankAccount | undefined
+        if (!account) {
+          reject(new Error(`Bank account ${id} not found`))
+          return
+        }
+        account.active = false
+        account.updated_at = Math.floor(Date.now() / 1000)
+        const putReq = store.put(account)
+        putReq.onsuccess = () => resolve()
+        putReq.onerror = () => reject(putReq.error)
+      }
+      getReq.onerror = () => reject(getReq.error)
+    })
+  }
+
   // ============================================================================
   // Bank Transaction Operations (GIV-825)
   // ============================================================================

@@ -254,6 +254,10 @@ export const tauriPersistence: PersistenceService = {
     return invoke<BankAccount>('save_bank_account', { account })
   },
 
+  archiveBankAccount: async (id: string): Promise<void> => {
+    await invoke('archive_bank_account', { id })
+  },
+
   // Bank Transaction Operations (GIV-825)
   getBankTransactions: (
     bankAccountId: string,
