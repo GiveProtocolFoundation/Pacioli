@@ -8,18 +8,20 @@ import type {
 
 const OFX_DATE_RE = /^(\d{4})(\d{2})(\d{2})(?:(\d{2})(\d{2})(\d{2}))?/
 
+/** Parses an OFX date string (YYYYMMDD[HHmmss]) into a UTC timestamp. */
 function parseOfxDate(raw: string): number {
-  const m = OFX_DATE_RE.exec(raw.trim())
-  if (!m) return 0
-  const year = Number.parseInt(m[1], 10)
-  const month = Number.parseInt(m[2], 10) - 1
-  const day = Number.parseInt(m[3], 10)
-  const hour = m[4] ? Number.parseInt(m[4], 10) : 0
-  const min = m[5] ? Number.parseInt(m[5], 10) : 0
-  const sec = m[6] ? Number.parseInt(m[6], 10) : 0
+  const match = OFX_DATE_RE.exec(raw.trim())
+  if (!match) return 0
+  const year = Number.parseInt(match[1], 10)
+  const month = Number.parseInt(match[2], 10) - 1
+  const day = Number.parseInt(match[3], 10)
+  const hour = match[4] ? Number.parseInt(match[4], 10) : 0
+  const min = match[5] ? Number.parseInt(match[5], 10) : 0
+  const sec = match[6] ? Number.parseInt(match[6], 10) : 0
   return new Date(Date.UTC(year, month, day, hour, min, sec)).getTime()
 }
 
+/** Normalizes SGML-style OFX into well-formed XML by closing open value tags. */
 function normalizeOfxToXml(raw: string): string {
   const bodyStart = raw.indexOf('<OFX>')
   if (bodyStart === -1) return raw
@@ -39,10 +41,12 @@ function normalizeOfxToXml(raw: string): string {
   return body
 }
 
+/** Escapes special regex characters in a string for safe use in `new RegExp()`. */
 function escapeRegExp(str: string): string {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
 
+/** Extracts the full content between an opening and closing XML tag. */
 function extractTag(xml: string, tag: string): string {
   const escaped = escapeRegExp(tag)
   const openRe = new RegExp(`<${escaped}>`, 'i')
@@ -58,13 +62,15 @@ function extractTag(xml: string, tag: string): string {
   return xml.slice(start, start + closeMatch.index).trim()
 }
 
+/** Extracts the inline text value immediately following an XML tag. */
 function extractTagValue(xml: string, tag: string): string {
   const escaped = escapeRegExp(tag)
   const re = new RegExp(`<${escaped}>\\s*([^<\\n]+)`, 'i')
-  const m = re.exec(xml)
-  return m ? m[1].trim() : ''
+  const match = re.exec(xml)
+  return match ? match[1].trim() : ''
 }
 
+/** Finds all content blocks between repeated opening/closing tag pairs. */
 function extractAllBlocks(xml: string, tag: string): string[] {
   const results: string[] = []
   const openTag = `<${tag}>`
@@ -82,6 +88,7 @@ function extractAllBlocks(xml: string, tag: string): string[] {
   return results
 }
 
+/** Extracts bank account metadata from the OFX BANKACCTFROM or CCACCTFROM block. */
 function parseAccountInfo(xml: string): ParsedAccountInfo {
   const info: ParsedAccountInfo = {}
   const bankAcct =
@@ -98,6 +105,7 @@ function parseAccountInfo(xml: string): ParsedAccountInfo {
   return info
 }
 
+/** Maps an OFX TRNTYPE code to a normalized lowercase transaction type string. */
 function mapOfxTxType(ofxType: string): string {
   const map: Record<string, string> = {
     CREDIT: 'credit',
@@ -122,6 +130,7 @@ function mapOfxTxType(ofxType: string): string {
   return map[ofxType.toUpperCase()] ?? 'other'
 }
 
+/** Parses a single OFX STMTTRN block into a ParsedTransaction. */
 function parseTransactionBlock(
   block: string,
   options: OfxParseOptions,
@@ -159,6 +168,7 @@ function parseTransactionBlock(
   return tx
 }
 
+/** Detects whether file content is an OFX/QFX/QBO statement by scanning for OFX markers. */
 export function detectOfxFormat(content: string): StatementFormat | null {
   const upper = content.slice(0, 2000).toUpperCase()
   if (
@@ -171,6 +181,7 @@ export function detectOfxFormat(content: string): StatementFormat | null {
   return null
 }
 
+/** Parses an OFX/QFX/QBO file into structured transactions and account metadata. */
 export function parseOfx(
   content: string,
   options: OfxParseOptions

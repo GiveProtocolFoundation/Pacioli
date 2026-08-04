@@ -170,7 +170,8 @@ describe('parseOfx', () => {
     it('should extract date range', () => {
       const result = parseOfx(OFX_V1_SAMPLE, defaultOptions)
       expect(result.dateRange).toBeDefined()
-      const startDate = new Date(result.dateRange!.start)
+      if (!result.dateRange) return
+      const startDate = new Date(result.dateRange.start)
       expect(startDate.getUTCFullYear()).toBe(2026)
       expect(startDate.getUTCMonth()).toBe(6)
       expect(startDate.getUTCDate()).toBe(1)

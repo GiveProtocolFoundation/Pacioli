@@ -224,6 +224,7 @@ function resolveColumns(
   headers: string[],
   colMap: CsvColumnMap
 ): ColumnIndices {
+  /** Finds a column index by case-insensitive name match. */
   const resolve = (colName: string | undefined): number => {
     if (!colName) return -1
     return headers.findIndex(

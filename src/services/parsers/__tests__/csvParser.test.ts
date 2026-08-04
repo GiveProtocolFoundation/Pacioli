@@ -105,8 +105,9 @@ describe('parseCsv', () => {
   it('should compute date range', () => {
     const result = parseCsv(SAMPLE_CSV, defaultOptions)
     expect(result.dateRange).toBeDefined()
-    const start = new Date(result.dateRange!.start)
-    const end = new Date(result.dateRange!.end)
+    if (!result.dateRange) return
+    const start = new Date(result.dateRange.start)
+    const end = new Date(result.dateRange.end)
     expect(start.getUTCDate()).toBe(1)
     expect(end.getUTCDate()).toBe(10)
   })
