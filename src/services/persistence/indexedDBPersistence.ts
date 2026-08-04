@@ -23,12 +23,21 @@ import type {
   KnownAddress,
   EntityType,
   TaxDocumentationStatus,
+  BankAccount,
+  BankAccountInput,
+  BankTransaction,
+  BankTransactionInput,
+  BankTransactionFilter,
+  ImportBatch,
+  ImportBatchInput,
+  StatementProfile,
+  StatementProfileInput,
 } from './types'
 import type { Transaction, ConnectedWallet } from '../wallet/types'
 import { indexedDBService } from '../database/indexedDBService'
 
 const DB_NAME = 'PacioliPersistenceDB'
-const DB_VERSION = 2 // Bumped for entity support
+const DB_VERSION = 3
 
 const STORES = {
   PROFILES: 'profiles',
@@ -38,6 +47,10 @@ const STORES = {
   ENTITIES: 'entities',
   ENTITY_ADDRESSES: 'entity_addresses',
   KNOWN_ADDRESSES: 'known_addresses',
+  BANK_ACCOUNTS: 'bank_accounts',
+  BANK_TRANSACTIONS: 'bank_transactions',
+  IMPORT_BATCHES: 'import_batches',
+  STATEMENT_PROFILES: 'statement_profiles',
 } as const
 
 // Utility functions (standalone to avoid 'this' requirement)
@@ -164,6 +177,52 @@ class IndexedDBPersistenceService implements PersistenceService {
             unique: false,
           })
           knownStore.createIndex('chain', 'chain', { unique: false })
+        }
+
+        // Bank accounts store (GIV-825)
+        if (!db.objectStoreNames.contains(STORES.BANK_ACCOUNTS)) {
+          const baStore = db.createObjectStore(STORES.BANK_ACCOUNTS, {
+            keyPath: 'id',
+          })
+          baStore.createIndex('institution_name', 'institution_name', {
+            unique: false,
+          })
+          baStore.createIndex('entity_id', 'entity_id', { unique: false })
+        }
+
+        // Bank transactions store (GIV-825)
+        if (!db.objectStoreNames.contains(STORES.BANK_TRANSACTIONS)) {
+          const btStore = db.createObjectStore(STORES.BANK_TRANSACTIONS, {
+            keyPath: 'id',
+          })
+          btStore.createIndex('bank_account_id', 'bank_account_id', {
+            unique: false,
+          })
+          btStore.createIndex('posted_date', 'posted_date', { unique: false })
+          btStore.createIndex('account_posted', ['bank_account_id', 'posted_date'], {
+            unique: false,
+          })
+          btStore.createIndex('import_batch_id', 'import_batch_id', {
+            unique: false,
+          })
+          btStore.createIndex('classification_status', 'classification_status', {
+            unique: false,
+          })
+        }
+
+        // Import batches store (GIV-825)
+        if (!db.objectStoreNames.contains(STORES.IMPORT_BATCHES)) {
+          const ibStore = db.createObjectStore(STORES.IMPORT_BATCHES, {
+            keyPath: 'id',
+          })
+          ibStore.createIndex('bank_account_id', 'bank_account_id', {
+            unique: false,
+          })
+        }
+
+        // Statement profiles store (GIV-825)
+        if (!db.objectStoreNames.contains(STORES.STATEMENT_PROFILES)) {
+          db.createObjectStore(STORES.STATEMENT_PROFILES, { keyPath: 'id' })
         }
       }
     })
@@ -1130,6 +1189,220 @@ class IndexedDBPersistenceService implements PersistenceService {
     })
 
     return entity
+  }
+
+  // ============================================================================
+  // Chain Transaction Operations (delegates to indexedDBService)
+  // ============================================================================
+
+  // ============================================================================
+  // Bank Account Operations (GIV-825)
+  // ============================================================================
+
+  async getBankAccounts(): Promise<BankAccount[]> {
+    const db = await this.ensureDB()
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORES.BANK_ACCOUNTS, 'readonly')
+      const store = tx.objectStore(STORES.BANK_ACCOUNTS)
+      const request = store.getAll()
+      request.onsuccess = () => resolve(request.result)
+      request.onerror = () => reject(request.error)
+    })
+  }
+
+  async saveBankAccount(input: BankAccountInput): Promise<BankAccount> {
+    const db = await this.ensureDB()
+    const now = Math.floor(Date.now() / 1000)
+    const account: BankAccount = {
+      id: generateId(),
+      institution_name: input.institution_name,
+      account_nickname: input.account_nickname,
+      account_type: input.account_type,
+      currency: input.currency,
+      gl_account_number: input.gl_account_number ?? '1000',
+      external_source: input.external_source ?? null,
+      external_account_id: input.external_account_id ?? null,
+      masked_account_number: input.masked_account_number ?? null,
+      opening_balance: input.opening_balance ?? null,
+      opening_balance_date: input.opening_balance_date ?? null,
+      entity_id: input.entity_id ?? null,
+      active: true,
+      created_at: now,
+      updated_at: now,
+    }
+
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORES.BANK_ACCOUNTS, 'readwrite')
+      const store = tx.objectStore(STORES.BANK_ACCOUNTS)
+      const request = store.put(account)
+      request.onsuccess = () => resolve(account)
+      request.onerror = () => reject(request.error)
+    })
+  }
+
+  // ============================================================================
+  // Bank Transaction Operations (GIV-825)
+  // ============================================================================
+
+  async getBankTransactions(
+    bankAccountId: string,
+    filter?: BankTransactionFilter
+  ): Promise<BankTransaction[]> {
+    const db = await this.ensureDB()
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORES.BANK_TRANSACTIONS, 'readonly')
+      const store = tx.objectStore(STORES.BANK_TRANSACTIONS)
+      const index = store.index('bank_account_id')
+      const request = index.getAll(bankAccountId)
+      request.onsuccess = () => {
+        let rows: BankTransaction[] = request.result
+        if (filter?.from_date != null) {
+          rows = rows.filter(r => r.posted_date >= filter.from_date!)
+        }
+        if (filter?.to_date != null) {
+          rows = rows.filter(r => r.posted_date <= filter.to_date!)
+        }
+        if (filter?.classification_status) {
+          rows = rows.filter(
+            r => r.classification_status === filter.classification_status
+          )
+        }
+        if (filter?.import_batch_id) {
+          rows = rows.filter(
+            r => r.import_batch_id === filter.import_batch_id
+          )
+        }
+        rows.sort((a, b) => b.posted_date - a.posted_date)
+        const offset = filter?.offset ?? 0
+        const limit = filter?.limit ?? rows.length
+        resolve(rows.slice(offset, offset + limit))
+      }
+      request.onerror = () => reject(request.error)
+    })
+  }
+
+  async saveBankTransactions(rows: BankTransactionInput[]): Promise<number> {
+    const db = await this.ensureDB()
+    const now = Math.floor(Date.now() / 1000)
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORES.BANK_TRANSACTIONS, 'readwrite')
+      const store = tx.objectStore(STORES.BANK_TRANSACTIONS)
+      let count = 0
+      for (const row of rows) {
+        const record: BankTransaction = {
+          id: row.external_id
+            ? `${row.bank_account_id}_${row.external_id}`
+            : generateId(),
+          bank_account_id: row.bank_account_id,
+          external_id: row.external_id ?? null,
+          posted_date: row.posted_date,
+          transaction_date: row.transaction_date ?? null,
+          amount: row.amount,
+          currency: row.currency,
+          payee: row.payee ?? null,
+          memo: row.memo ?? null,
+          reference_number: row.reference_number ?? null,
+          tx_type: row.tx_type ?? null,
+          running_balance: row.running_balance ?? null,
+          classification_status: row.classification_status ?? 'unclassified',
+          classification_note: row.classification_note ?? null,
+          raw_data: row.raw_data ?? null,
+          import_batch_id: row.import_batch_id ?? null,
+          created_at: now,
+          updated_at: now,
+        }
+        const req = store.put(record)
+        req.onsuccess = () => { count++ }
+      }
+      tx.oncomplete = () => resolve(count)
+      tx.onerror = () => reject(tx.error)
+    })
+  }
+
+  // ============================================================================
+  // Import Batch Operations (GIV-825)
+  // ============================================================================
+
+  async getImportBatches(bankAccountId?: string): Promise<ImportBatch[]> {
+    const db = await this.ensureDB()
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORES.IMPORT_BATCHES, 'readonly')
+      const store = tx.objectStore(STORES.IMPORT_BATCHES)
+      if (bankAccountId) {
+        const index = store.index('bank_account_id')
+        const request = index.getAll(bankAccountId)
+        request.onsuccess = () => resolve(request.result)
+        request.onerror = () => reject(request.error)
+      } else {
+        const request = store.getAll()
+        request.onsuccess = () => resolve(request.result)
+        request.onerror = () => reject(request.error)
+      }
+    })
+  }
+
+  async saveImportBatch(input: ImportBatchInput): Promise<ImportBatch> {
+    const db = await this.ensureDB()
+    const now = Math.floor(Date.now() / 1000)
+    const batch: ImportBatch = {
+      id: generateId(),
+      bank_account_id: input.bank_account_id,
+      filename: input.filename ?? null,
+      format: input.format ?? null,
+      imported_at: now,
+      row_count: input.row_count ?? null,
+      duplicate_count: input.duplicate_count ?? null,
+      status: input.status ?? 'staged',
+    }
+
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORES.IMPORT_BATCHES, 'readwrite')
+      const store = tx.objectStore(STORES.IMPORT_BATCHES)
+      const request = store.put(batch)
+      request.onsuccess = () => resolve(batch)
+      request.onerror = () => reject(request.error)
+    })
+  }
+
+  // ============================================================================
+  // Statement Profile Operations (GIV-825)
+  // ============================================================================
+
+  async getStatementProfiles(): Promise<StatementProfile[]> {
+    const db = await this.ensureDB()
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORES.STATEMENT_PROFILES, 'readonly')
+      const store = tx.objectStore(STORES.STATEMENT_PROFILES)
+      const request = store.getAll()
+      request.onsuccess = () => resolve(request.result)
+      request.onerror = () => reject(request.error)
+    })
+  }
+
+  async saveStatementProfile(
+    input: StatementProfileInput
+  ): Promise<StatementProfile> {
+    const db = await this.ensureDB()
+    const now = Math.floor(Date.now() / 1000)
+    const profile: StatementProfile = {
+      id: generateId(),
+      name: input.name,
+      institution_name: input.institution_name ?? null,
+      column_map: input.column_map ?? null,
+      date_format: input.date_format ?? null,
+      amount_sign_convention: input.amount_sign_convention ?? null,
+      currency_default: input.currency_default ?? null,
+      created_at: now,
+      updated_at: now,
+    }
+
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORES.STATEMENT_PROFILES, 'readwrite')
+      const store = tx.objectStore(STORES.STATEMENT_PROFILES)
+      const request = store.put(profile)
+      request.onsuccess = () => resolve(profile)
+      request.onerror = () => reject(request.error)
+    })
   }
 
   // ============================================================================

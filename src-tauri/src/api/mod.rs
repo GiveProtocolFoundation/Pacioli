@@ -2,6 +2,8 @@
 pub mod accounting;
 /// Authentication module containing functionality and types for user authentication and authorization.
 pub mod auth;
+/// Bank & card account/transaction capture (GIV-825, Phase 1 file-import).
+pub mod bank;
 /// Provides functionality for creating and restoring
 /// backups of application data, including serialization
 /// and storage management.
