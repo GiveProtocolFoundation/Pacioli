@@ -332,6 +332,155 @@ const BankQueueRow: React.FC<BankQueueRowProps> = ({
   )
 }
 
+interface SourceTabsProps {
+  sourceKind: SourceKind
+  cryptoCount: number
+  bankCount: number
+  onSwitchToCrypto: () => void
+  onSwitchToBank: () => void
+}
+
+const SourceTabs: React.FC<SourceTabsProps> = ({
+  sourceKind,
+  cryptoCount,
+  bankCount,
+  onSwitchToCrypto,
+  onSwitchToBank,
+}) => (
+  <div className="mb-4 flex items-center gap-1 border-b border-[rgba(95,227,192,0.15)]">
+    <button
+      onClick={onSwitchToCrypto}
+      className={`inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+        sourceKind === 'crypto'
+          ? 'border-[#5FE3C0] text-[#11202B] dark:text-[#EAF3F2]'
+          : 'border-transparent text-[#647D8B] hover:text-[#294050] dark:hover:text-[#9FB4BE]'
+      }`}
+    >
+      <Link2 className="w-4 h-4" />
+      Crypto
+      {cryptoCount > 0 && (
+        <span className="ml-1 px-1.5 py-0.5 text-xs rounded-full bg-[#294050]/10 dark:bg-[#294050]/30">
+          {cryptoCount}
+        </span>
+      )}
+    </button>
+    <button
+      onClick={onSwitchToBank}
+      className={`inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+        sourceKind === 'bank'
+          ? 'border-[#5FE3C0] text-[#11202B] dark:text-[#EAF3F2]'
+          : 'border-transparent text-[#647D8B] hover:text-[#294050] dark:hover:text-[#9FB4BE]'
+      }`}
+    >
+      <Landmark className="w-4 h-4" />
+      Bank
+      {bankCount > 0 && (
+        <span className="ml-1 px-1.5 py-0.5 text-xs rounded-full bg-[#294050]/10 dark:bg-[#294050]/30">
+          {bankCount}
+        </span>
+      )}
+    </button>
+  </div>
+)
+
+interface CryptoFilterMenuProps {
+  open: boolean
+  chains: string[]
+  types: string[]
+  filtered: RawTransaction[]
+  onToggle: () => void
+  onClose: () => void
+  onSelectByChain: (event: React.MouseEvent<HTMLButtonElement>) => void
+  onSelectByType: (event: React.MouseEvent<HTMLButtonElement>) => void
+}
+
+const CryptoFilterMenu: React.FC<CryptoFilterMenuProps> = ({
+  open,
+  chains,
+  types,
+  filtered,
+  onToggle,
+  onClose,
+  onSelectByChain,
+  onSelectByType,
+}) => (
+  <div className="relative">
+    <button
+      onClick={onToggle}
+      className="inline-flex items-center gap-1.5 px-3 py-2 text-sm border border-[rgba(95,227,192,0.15)] rounded-lg bg-[#F7FAFA] dark:bg-[#11202B] text-[#294050] dark:text-[#9FB4BE] hover:bg-[#EAF3F2] dark:hover:bg-[#16242F] transition-colors"
+    >
+      <Filter className="w-4 h-4" />
+      Select by...
+    </button>
+    {open && (
+      <>
+        <div className="fixed inset-0 z-40" onClick={onClose} />
+        <div className="absolute right-0 top-full mt-1 z-50 w-56 bg-[#F7FAFA] dark:bg-[#11202B] border border-[rgba(95,227,192,0.15)] rounded-lg shadow-lg py-1">
+          {chains.length > 1 && (
+            <>
+              <div className="px-3 py-1.5 text-xs font-medium text-[#647D8B] uppercase tracking-wider">
+                By Chain
+              </div>
+              {chains.map(chain => (
+                <button
+                  key={chain}
+                  data-chain={chain}
+                  onClick={onSelectByChain}
+                  className="w-full text-left px-3 py-1.5 text-sm text-[#11202B] dark:text-[#EAF3F2] hover:bg-[#EAF3F2] dark:hover:bg-[#16242F]"
+                >
+                  {chain} ({filtered.filter(tx => tx.chainId === chain).length})
+                </button>
+              ))}
+            </>
+          )}
+          {types.length > 1 && (
+            <>
+              <div className="px-3 py-1.5 text-xs font-medium text-[#647D8B] uppercase tracking-wider border-t border-[rgba(95,227,192,0.1)] mt-1">
+                By Type
+              </div>
+              {types.map(txType => (
+                <button
+                  key={txType}
+                  data-txtype={txType}
+                  onClick={onSelectByType}
+                  className="w-full text-left px-3 py-1.5 text-sm text-[#11202B] dark:text-[#EAF3F2] hover:bg-[#EAF3F2] dark:hover:bg-[#16242F]"
+                >
+                  {displayTxType(txType)} (
+                  {filtered.filter(tx => tx.transactionType === txType).length})
+                </button>
+              ))}
+            </>
+          )}
+        </div>
+      </>
+    )}
+  </div>
+)
+
+interface BatchProgressBarProps {
+  done: number
+  total: number
+}
+
+const BatchProgressBar: React.FC<BatchProgressBarProps> = ({ done, total }) => (
+  <div className="mb-4">
+    <div className="flex items-center justify-between mb-1">
+      <span className="text-xs text-[#294050] dark:text-[#9FB4BE]">
+        Processing {done} of {total}...
+      </span>
+      <span className="text-xs font-mono text-[#647D8B]">
+        {Math.round((done / total) * 100)}%
+      </span>
+    </div>
+    <div className="h-1.5 bg-[#294050]/10 dark:bg-[#294050]/20 rounded-full overflow-hidden">
+      <div
+        className="h-full bg-[#5FE3C0] rounded-full transition-all duration-300"
+        style={{ width: `${(done / total) * 100}%` }}
+      />
+    </div>
+  </div>
+)
+
 interface IgnoreDialogProps {
   hash: string
   reason: string
@@ -1029,40 +1178,13 @@ const ClassificationQueue: React.FC = () => {
       </div>
 
       {/* Source tabs */}
-      <div className="mb-4 flex items-center gap-1 border-b border-[rgba(95,227,192,0.15)]">
-        <button
-          onClick={handleSwitchToCrypto}
-          className={`inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
-            sourceKind === 'crypto'
-              ? 'border-[#5FE3C0] text-[#11202B] dark:text-[#EAF3F2]'
-              : 'border-transparent text-[#647D8B] hover:text-[#294050] dark:hover:text-[#9FB4BE]'
-          }`}
-        >
-          <Link2 className="w-4 h-4" />
-          Crypto
-          {transactions.length > 0 && (
-            <span className="ml-1 px-1.5 py-0.5 text-xs rounded-full bg-[#294050]/10 dark:bg-[#294050]/30">
-              {transactions.length}
-            </span>
-          )}
-        </button>
-        <button
-          onClick={handleSwitchToBank}
-          className={`inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
-            sourceKind === 'bank'
-              ? 'border-[#5FE3C0] text-[#11202B] dark:text-[#EAF3F2]'
-              : 'border-transparent text-[#647D8B] hover:text-[#294050] dark:hover:text-[#9FB4BE]'
-          }`}
-        >
-          <Landmark className="w-4 h-4" />
-          Bank
-          {bankTransactions.length > 0 && (
-            <span className="ml-1 px-1.5 py-0.5 text-xs rounded-full bg-[#294050]/10 dark:bg-[#294050]/30">
-              {bankTransactions.length}
-            </span>
-          )}
-        </button>
-      </div>
+      <SourceTabs
+        sourceKind={sourceKind}
+        cryptoCount={transactions.length}
+        bankCount={bankTransactions.length}
+        onSwitchToCrypto={handleSwitchToCrypto}
+        onSwitchToBank={handleSwitchToBank}
+      />
 
       {/* Error banners */}
       {error !== null && (
@@ -1104,65 +1226,16 @@ const ClassificationQueue: React.FC = () => {
           />
         </div>
         {filtered.length > 0 && (
-          <div className="relative">
-            <button
-              onClick={handleToggleFilterMenu}
-              className="inline-flex items-center gap-1.5 px-3 py-2 text-sm border border-[rgba(95,227,192,0.15)] rounded-lg bg-[#F7FAFA] dark:bg-[#11202B] text-[#294050] dark:text-[#9FB4BE] hover:bg-[#EAF3F2] dark:hover:bg-[#16242F] transition-colors"
-            >
-              <Filter className="w-4 h-4" />
-              Select by...
-            </button>
-            {filterMenuOpen && (
-              <>
-                <div
-                  className="fixed inset-0 z-40"
-                  onClick={handleCloseFilterMenu}
-                />
-                <div className="absolute right-0 top-full mt-1 z-50 w-56 bg-[#F7FAFA] dark:bg-[#11202B] border border-[rgba(95,227,192,0.15)] rounded-lg shadow-lg py-1">
-                  {uniqueChains.length > 1 && (
-                    <>
-                      <div className="px-3 py-1.5 text-xs font-medium text-[#647D8B] uppercase tracking-wider">
-                        By Chain
-                      </div>
-                      {uniqueChains.map(chain => (
-                        <button
-                          key={chain}
-                          data-chain={chain}
-                          onClick={handleSelectByChain}
-                          className="w-full text-left px-3 py-1.5 text-sm text-[#11202B] dark:text-[#EAF3F2] hover:bg-[#EAF3F2] dark:hover:bg-[#16242F]"
-                        >
-                          {chain} (
-                          {filtered.filter(tx => tx.chainId === chain).length})
-                        </button>
-                      ))}
-                    </>
-                  )}
-                  {uniqueTypes.length > 1 && (
-                    <>
-                      <div className="px-3 py-1.5 text-xs font-medium text-[#647D8B] uppercase tracking-wider border-t border-[rgba(95,227,192,0.1)] mt-1">
-                        By Type
-                      </div>
-                      {uniqueTypes.map(txType => (
-                        <button
-                          key={txType}
-                          data-txtype={txType}
-                          onClick={handleSelectByType}
-                          className="w-full text-left px-3 py-1.5 text-sm text-[#11202B] dark:text-[#EAF3F2] hover:bg-[#EAF3F2] dark:hover:bg-[#16242F]"
-                        >
-                          {displayTxType(txType)} (
-                          {
-                            filtered.filter(tx => tx.transactionType === txType)
-                              .length
-                          }
-                          )
-                        </button>
-                      ))}
-                    </>
-                  )}
-                </div>
-              </>
-            )}
-          </div>
+          <CryptoFilterMenu
+            open={filterMenuOpen}
+            chains={uniqueChains}
+            types={uniqueTypes}
+            filtered={filtered}
+            onToggle={handleToggleFilterMenu}
+            onClose={handleCloseFilterMenu}
+            onSelectByChain={handleSelectByChain}
+            onSelectByType={handleSelectByType}
+          />
         )}
       </div>
 
@@ -1201,24 +1274,10 @@ const ClassificationQueue: React.FC = () => {
 
       {/* Batch progress bar */}
       {batchProgress !== null && (
-        <div className="mb-4">
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-xs text-[#294050] dark:text-[#9FB4BE]">
-              Processing {batchProgress.done} of {batchProgress.total}...
-            </span>
-            <span className="text-xs font-mono text-[#647D8B]">
-              {Math.round((batchProgress.done / batchProgress.total) * 100)}%
-            </span>
-          </div>
-          <div className="h-1.5 bg-[#294050]/10 dark:bg-[#294050]/20 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-[#5FE3C0] rounded-full transition-all duration-300"
-              style={{
-                width: `${(batchProgress.done / batchProgress.total) * 100}%`,
-              }}
-            />
-          </div>
-        </div>
+        <BatchProgressBar
+          done={batchProgress.done}
+          total={batchProgress.total}
+        />
       )}
 
       {/* Count summary */}
