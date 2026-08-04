@@ -134,6 +134,9 @@ pub struct JournalEntry {
     /// FK to multi_chain_transactions(id) — the on-chain source tx.
     /// NULL for manual entries with no wallet source.
     pub source_tx_id: Option<String>,
+    /// FK to bank_transactions(id) — the bank/card source tx.
+    /// NULL for non-bank entries.
+    pub source_bank_tx_id: Option<String>,
 }
 
 /// A single debit or credit line within a journal entry.
@@ -225,8 +228,10 @@ pub struct NewJournalEntryInput {
     pub description: String,
     /// Free-form reference (e.g. transaction hash).
     pub reference_number: Option<String>,
-    /// Optional: link to a raw transaction ID.
+    /// Optional: link to a raw crypto transaction ID (multi_chain_transactions).
     pub raw_transaction_id: Option<String>,
+    /// Optional: link to a bank transaction ID (bank_transactions).
+    pub bank_transaction_id: Option<String>,
     /// Entry origin: manual (default), rule, or model.
     pub origin: Option<String>,
     /// The debit/credit lines.
@@ -783,8 +788,8 @@ pub async fn create_journal_entry(
 
     let result = sqlx::query(
         r#"
-        INSERT INTO journal_entries (entry_date, entry_number, description, reference_number, is_posted, status, origin, created_by, source_tx_id)
-        VALUES (?, ?, ?, ?, 0, 'draft', ?, 'system', ?)
+        INSERT INTO journal_entries (entry_date, entry_number, description, reference_number, is_posted, status, origin, created_by, source_tx_id, source_bank_tx_id)
+        VALUES (?, ?, ?, ?, 0, 'draft', ?, 'system', ?, ?)
         "#,
     )
     .bind(entry_date)
@@ -793,6 +798,7 @@ pub async fn create_journal_entry(
     .bind(&input.reference_number)
     .bind(origin)
     .bind(&input.raw_transaction_id)
+    .bind(&input.bank_transaction_id)
     .execute(&mut *tx)
     .await
     .map_err(|e| e.to_string())?;
@@ -849,6 +855,23 @@ pub async fn create_journal_entry(
         if flipped.rows_affected() == 0 {
             return Err(format!(
                 "Raw transaction {tx_id} not found or already classified/ignored"
+            ));
+        }
+    }
+
+    // Same guard for bank transactions.
+    if let Some(ref bank_tx_id) = input.bank_transaction_id {
+        let flipped = sqlx::query(
+            "UPDATE bank_transactions SET classification_status = 'classified' WHERE id = ? AND classification_status = 'unclassified'",
+        )
+        .bind(bank_tx_id)
+        .execute(&mut *tx)
+        .await
+        .map_err(|e| e.to_string())?;
+
+        if flipped.rows_affected() == 0 {
+            return Err(format!(
+                "Bank transaction {bank_tx_id} not found or already classified/ignored"
             ));
         }
     }
@@ -1756,6 +1779,7 @@ pub async fn auto_classify_transaction(
         description: format!("{description} (@ ${price}/unit)"),
         reference_number: Some(tx.transaction_hash.clone()),
         raw_transaction_id: Some(transaction_id.clone()),
+        bank_transaction_id: None,
         origin: Some("rule".to_string()),
         lines,
     };
@@ -2257,13 +2281,15 @@ pub async fn get_account_balances_by_asset(
     Ok(map.into_values().collect())
 }
 
-/// Returns the count of unclassified multi-chain transactions.
+/// Returns the combined count of unclassified multi-chain and bank transactions.
 #[tauri::command]
 pub async fn get_unclassified_transaction_count(
     state: State<'_, DatabaseState>,
 ) -> Result<i64, String> {
     let row: (i64,) = sqlx::query_as(
-        "SELECT COUNT(*) FROM multi_chain_transactions WHERE classification_status = 'unclassified'",
+        "SELECT \
+           (SELECT COUNT(*) FROM multi_chain_transactions WHERE classification_status = 'unclassified') \
+         + (SELECT COUNT(*) FROM bank_transactions WHERE classification_status = 'unclassified')",
     )
     .fetch_one(&state.pool)
     .await
@@ -4551,6 +4577,7 @@ mod tests {
             description: "Test".to_string(),
             reference_number: None,
             raw_transaction_id: Some("tx123".to_string()),
+            bank_transaction_id: None,
             origin: Some("rule".to_string()),
             lines: vec![],
         };
