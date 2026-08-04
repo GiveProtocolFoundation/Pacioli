@@ -19,6 +19,7 @@ export { columnMapFromProfile } from './types'
 export { inferColumnMap } from './csvParser'
 export { dedup, buildExternalIdSet }
 
+/** Detects the statement format from file content and optional filename extension. */
 export function detectFormat(
   content: string,
   filename?: string
@@ -36,6 +37,7 @@ export function detectFormat(
   return null
 }
 
+/** Parses a bank statement string into structured transactions using the appropriate format parser. */
 export function parseStatement(
   content: string,
   format: StatementFormat,

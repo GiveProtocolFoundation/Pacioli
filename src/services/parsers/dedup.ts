@@ -7,6 +7,7 @@ export interface DedupResult {
   duplicateCount: number
 }
 
+/** Separates parsed transactions into unique and duplicate sets against existing records. */
 export function dedup(
   parsed: ParsedTransaction[],
   existing: BankTransaction[]
@@ -42,6 +43,7 @@ export function dedup(
   return { unique, duplicates, duplicateCount: duplicates.length }
 }
 
+/** Collects all external IDs from existing bank transactions into a Set for fast lookup. */
 export function buildExternalIdSet(existing: BankTransaction[]): Set<string> {
   const ids = new Set<string>()
   for (const tx of existing) {

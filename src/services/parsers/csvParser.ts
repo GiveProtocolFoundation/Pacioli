@@ -1,5 +1,11 @@
-import type { CsvParseOptions, ParseResult, ParsedTransaction } from './types'
+import type {
+  CsvColumnMap,
+  CsvParseOptions,
+  ParseResult,
+  ParsedTransaction,
+} from './types'
 
+/** Splits a CSV line into fields, respecting quoted values. */
 function splitCsvLine(line: string): string[] {
   const fields: string[] = []
   let current = ''
@@ -30,6 +36,7 @@ function splitCsvLine(line: string): string[] {
   return fields
 }
 
+// Shared regex for MM/DD and DD/MM — groups are positional; parseDateWithFormat resolves semantics via the format key.
 const SLASH_DMY_RE = /^(\d{1,2})\/(\d{1,2})\/(\d{4})/
 const DASH_DMY_RE = /^(\d{1,2})-(\d{1,2})-(\d{4})/
 
@@ -43,31 +50,33 @@ const DATE_FORMATS: Record<string, RegExp> = {
   'DD.MM.YYYY': /^(\d{1,2})\.(\d{1,2})\.(\d{4})/,
 }
 
+/** Parses a date string using the given format key and returns a UTC timestamp. */
 function parseDateWithFormat(raw: string, format: string): number {
   const re = DATE_FORMATS[format]
   if (!re) return 0
-  const m = re.exec(raw.trim())
-  if (!m) return 0
+  const match = re.exec(raw.trim())
+  if (!match) return 0
 
   let year: number, month: number, day: number
 
   if (format.startsWith('YYYY')) {
-    year = Number.parseInt(m[1], 10)
-    month = Number.parseInt(m[2], 10) - 1
-    day = Number.parseInt(m[3], 10)
+    year = Number.parseInt(match[1], 10)
+    month = Number.parseInt(match[2], 10) - 1
+    day = Number.parseInt(match[3], 10)
   } else if (format.startsWith('MM')) {
-    month = Number.parseInt(m[1], 10) - 1
-    day = Number.parseInt(m[2], 10)
-    year = Number.parseInt(m[3], 10)
+    month = Number.parseInt(match[1], 10) - 1
+    day = Number.parseInt(match[2], 10)
+    year = Number.parseInt(match[3], 10)
   } else {
-    day = Number.parseInt(m[1], 10)
-    month = Number.parseInt(m[2], 10) - 1
-    year = Number.parseInt(m[3], 10)
+    day = Number.parseInt(match[1], 10)
+    month = Number.parseInt(match[2], 10) - 1
+    year = Number.parseInt(match[3], 10)
   }
 
   return Date.UTC(year, month, day)
 }
 
+/** Strips non-numeric characters and applies the sign convention to produce a numeric string. */
 function parseAmount(raw: string, convention: string, txType?: string): string {
   const cleaned = raw.replace(/[^0-9.+-]/g, '')
   if (!cleaned) return '0'
@@ -94,6 +103,7 @@ function parseAmount(raw: string, convention: string, txType?: string): string {
   return num.toString()
 }
 
+/** Computes a deterministic external ID from row values and line number. */
 function computeExternalId(
   row: Record<string, string>,
   lineNum: number
@@ -107,6 +117,7 @@ function computeExternalId(
   return `csv_${hashString(parts.join('|'))}`
 }
 
+/** Produces a simple numeric hash of a string, returned in base-36. */
 function hashString(str: string): string {
   let hash = 0
   for (let i = 0; i < str.length; i++) {
@@ -116,6 +127,7 @@ function hashString(str: string): string {
   return Math.abs(hash).toString(36)
 }
 
+/** Checks whether file content looks like a bank-statement CSV based on header keywords. */
 export function detectCsvFormat(content: string): boolean {
   const lines = content.split('\n').filter(l => l.trim().length > 0)
   if (lines.length < 2) return false
@@ -141,6 +153,7 @@ export function detectCsvFormat(content: string): boolean {
   return bankKeywords.some(kw => headerLower.includes(kw))
 }
 
+/** Maps common bank-statement header names to semantic column roles. */
 export function inferColumnMap(
   headers: string[]
 ): Partial<Record<string, string>> {
@@ -196,118 +209,148 @@ export function inferColumnMap(
   return map
 }
 
+interface ColumnIndices {
+  date: number
+  amount: number
+  payee: number
+  memo: number
+  ref: number
+  type: number
+  balance: number
+}
+
+/** Resolves column indices from header names using case-insensitive matching. */
+function resolveColumns(
+  headers: string[],
+  colMap: CsvColumnMap
+): ColumnIndices {
+  const resolve = (colName: string | undefined): number => {
+    if (!colName) return -1
+    return headers.findIndex(
+      h => h.trim().toLowerCase() === colName.trim().toLowerCase()
+    )
+  }
+  return {
+    date: resolve(colMap.date),
+    amount: resolve(colMap.amount),
+    payee: resolve(colMap.payee),
+    memo: resolve(colMap.memo),
+    ref: resolve(colMap.referenceNumber),
+    type: resolve(colMap.type),
+    balance: resolve(colMap.balance),
+  }
+}
+
+/** Returns the field at the given index, or undefined if the index is negative or the field is empty. */
+function optionalField(fields: string[], idx: number): string | undefined {
+  if (idx < 0) return undefined
+  return fields[idx] || undefined
+}
+
+/** Parses a single CSV data row into a ParsedTransaction, or null if the row is invalid. */
+function parseCsvRow(
+  rawLine: string,
+  fields: string[],
+  lineNum: number,
+  cols: ColumnIndices,
+  options: CsvParseOptions
+): ParsedTransaction | null {
+  if (fields.length <= Math.max(cols.date, cols.amount)) return null
+
+  const dateRaw = fields[cols.date] ?? ''
+  const amountRaw = fields[cols.amount] ?? ''
+  const typeRaw = optionalField(fields, cols.type)
+
+  const postedDate = parseDateWithFormat(dateRaw, options.dateFormat)
+  if (!postedDate) return null
+
+  const amount = parseAmount(amountRaw, options.amountSignConvention, typeRaw)
+
+  const rowData: Record<string, string> = {
+    date: dateRaw,
+    amount: amountRaw,
+    payee: cols.payee >= 0 ? (fields[cols.payee] ?? '') : '',
+    memo: cols.memo >= 0 ? (fields[cols.memo] ?? '') : '',
+  }
+
+  const externalId = computeExternalId(rowData, lineNum)
+  const isDuplicate = Boolean(options.existingExternalIds?.has(externalId))
+
+  return {
+    bank_account_id: options.bankAccountId,
+    external_id: externalId,
+    posted_date: postedDate,
+    amount,
+    currency: options.currencyDefault,
+    payee: optionalField(fields, cols.payee),
+    memo: optionalField(fields, cols.memo),
+    reference_number: optionalField(fields, cols.ref),
+    tx_type: typeRaw?.toLowerCase() ?? undefined,
+    running_balance: optionalField(fields, cols.balance),
+    classification_status: 'unclassified',
+    raw_data: rawLine,
+    _isDuplicate: isDuplicate,
+    _duplicateOf: isDuplicate ? externalId : undefined,
+    _rawLine: lineNum,
+  }
+}
+
+/** Computes the earliest and latest posted_date across a transaction list. */
+function computeDateRange(
+  transactions: ParsedTransaction[]
+): { start: number; end: number } | undefined {
+  if (transactions.length === 0) return undefined
+  let start = Number.POSITIVE_INFINITY
+  let end = 0
+  for (const tx of transactions) {
+    if (tx.posted_date < start) start = tx.posted_date
+    if (tx.posted_date > end) end = tx.posted_date
+  }
+  return {
+    start: start === Number.POSITIVE_INFINITY ? 0 : start,
+    end,
+  }
+}
+
+/** Parses a CSV bank statement into structured transactions. */
 export function parseCsv(
   content: string,
   options: CsvParseOptions
 ): ParseResult {
   const lines = content.split(/\r?\n/).filter(l => l.trim().length > 0)
   const skipRows = options.skipHeaderRows ?? 1
-  if (lines.length <= skipRows) {
-    return {
-      transactions: [],
-      format: 'csv',
-      duplicateCount: 0,
-      totalCount: 0,
-      currency: options.currencyDefault,
-    }
+  const emptyResult: ParseResult = {
+    transactions: [],
+    format: 'csv',
+    duplicateCount: 0,
+    totalCount: 0,
+    currency: options.currencyDefault,
   }
+
+  if (lines.length <= skipRows) return emptyResult
 
   const headerRowIdx = Math.max(0, skipRows - 1)
   const headers = splitCsvLine(lines[headerRowIdx])
-  const colMap = options.columnMap
+  const cols = resolveColumns(headers, options.columnMap)
   const dataLines = lines.slice(skipRows)
 
-  const getColIndex = (colName: string | undefined): number => {
-    if (!colName) return -1
-    return headers.findIndex(
-      h => h.trim().toLowerCase() === colName.trim().toLowerCase()
-    )
-  }
-
-  const dateIdx = getColIndex(colMap.date)
-  const amountIdx = getColIndex(colMap.amount)
-  const payeeIdx = getColIndex(colMap.payee)
-  const memoIdx = getColIndex(colMap.memo)
-  const refIdx = getColIndex(colMap.referenceNumber)
-  const typeIdx = getColIndex(colMap.type)
-  const balanceIdx = getColIndex(colMap.balance)
-
-  if (dateIdx === -1 || amountIdx === -1) {
-    return {
-      transactions: [],
-      format: 'csv',
-      duplicateCount: 0,
-      totalCount: 0,
-      currency: options.currencyDefault,
-    }
-  }
+  if (cols.date === -1 || cols.amount === -1) return emptyResult
 
   const transactions: ParsedTransaction[] = []
   let duplicateCount = 0
 
   for (let i = 0; i < dataLines.length; i++) {
     const fields = splitCsvLine(dataLines[i])
-    if (fields.length <= Math.max(dateIdx, amountIdx)) continue
-
-    const dateRaw = fields[dateIdx] ?? ''
-    const amountRaw = fields[amountIdx] ?? ''
-    const typeRaw = typeIdx >= 0 ? fields[typeIdx] : undefined
-
-    const postedDate = parseDateWithFormat(dateRaw, options.dateFormat)
-    if (!postedDate) continue
-
-    const amount = parseAmount(amountRaw, options.amountSignConvention, typeRaw)
-
-    const rowData: Record<string, string> = {
-      date: dateRaw,
-      amount: amountRaw,
-      payee: payeeIdx >= 0 ? (fields[payeeIdx] ?? '') : '',
-      memo: memoIdx >= 0 ? (fields[memoIdx] ?? '') : '',
-    }
-
-    const externalId = computeExternalId(rowData, i + skipRows)
-    const isDuplicate = Boolean(options.existingExternalIds?.has(externalId))
-    if (isDuplicate) duplicateCount++
-
-    const tx: ParsedTransaction = {
-      bank_account_id: options.bankAccountId,
-      external_id: externalId,
-      posted_date: postedDate,
-      amount,
-      currency: options.currencyDefault,
-      payee: payeeIdx >= 0 ? fields[payeeIdx] || undefined : undefined,
-      memo: memoIdx >= 0 ? fields[memoIdx] || undefined : undefined,
-      reference_number: refIdx >= 0 ? fields[refIdx] || undefined : undefined,
-      tx_type: typeRaw?.toLowerCase() ?? undefined,
-      running_balance:
-        balanceIdx >= 0 ? fields[balanceIdx] || undefined : undefined,
-      classification_status: 'unclassified',
-      raw_data: dataLines[i],
-      _isDuplicate: isDuplicate,
-      _duplicateOf: isDuplicate ? externalId : undefined,
-      _rawLine: i + skipRows,
-    }
-
+    const tx = parseCsvRow(dataLines[i], fields, i + skipRows, cols, options)
+    if (!tx) continue
+    if (tx._isDuplicate) duplicateCount++
     transactions.push(tx)
-  }
-
-  let startDate = Number.POSITIVE_INFINITY
-  let endDate = 0
-  for (const tx of transactions) {
-    if (tx.posted_date < startDate) startDate = tx.posted_date
-    if (tx.posted_date > endDate) endDate = tx.posted_date
   }
 
   return {
     transactions,
     format: 'csv',
-    dateRange:
-      transactions.length > 0
-        ? {
-            start: startDate === Number.POSITIVE_INFINITY ? 0 : startDate,
-            end: endDate,
-          }
-        : undefined,
+    dateRange: computeDateRange(transactions),
     currency: options.currencyDefault,
     duplicateCount,
     totalCount: transactions.length,
