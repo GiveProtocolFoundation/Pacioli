@@ -66,6 +66,7 @@ export interface StatementParser {
   detectFormat(content: string): StatementFormat | null
 }
 
+/** Deserializes a StatementProfile's JSON column_map into a typed CsvColumnMap, or null on failure. */
 export function columnMapFromProfile(
   profile: StatementProfile
 ): CsvColumnMap | null {

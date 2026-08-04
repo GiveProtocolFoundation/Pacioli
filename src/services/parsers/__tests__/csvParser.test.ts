@@ -183,9 +183,9 @@ describe('parseCsv', () => {
       const opts = makeOpts('MM/DD/YYYY')
       opts.columnMap = { date: 'Date', amount: 'Amount' }
       const result = parseCsv(csv, opts)
-      const d = new Date(result.transactions[0].posted_date)
-      expect(d.getUTCMonth()).toBe(6)
-      expect(d.getUTCDate()).toBe(15)
+      const date = new Date(result.transactions[0].posted_date)
+      expect(date.getUTCMonth()).toBe(6)
+      expect(date.getUTCDate()).toBe(15)
     })
 
     it('should parse DD/MM/YYYY', () => {
@@ -193,9 +193,9 @@ describe('parseCsv', () => {
       const opts = makeOpts('DD/MM/YYYY')
       opts.columnMap = { date: 'Date', amount: 'Amount' }
       const result = parseCsv(csv, opts)
-      const d = new Date(result.transactions[0].posted_date)
-      expect(d.getUTCMonth()).toBe(6)
-      expect(d.getUTCDate()).toBe(15)
+      const date = new Date(result.transactions[0].posted_date)
+      expect(date.getUTCMonth()).toBe(6)
+      expect(date.getUTCDate()).toBe(15)
     })
 
     it('should parse DD.MM.YYYY', () => {
@@ -203,8 +203,8 @@ describe('parseCsv', () => {
       const opts = makeOpts('DD.MM.YYYY')
       opts.columnMap = { date: 'Date', amount: 'Amount' }
       const result = parseCsv(csv, opts)
-      const d = new Date(result.transactions[0].posted_date)
-      expect(d.getUTCMonth()).toBe(6)
+      const date = new Date(result.transactions[0].posted_date)
+      expect(date.getUTCMonth()).toBe(6)
     })
   })
 
@@ -250,7 +250,7 @@ describe('parseCsv', () => {
     it('should mark known external_ids as duplicates', () => {
       const result1 = parseCsv(SAMPLE_CSV, defaultOptions)
       const existingIds = new Set(
-        result1.transactions.slice(0, 2).map(t => t.external_id!)
+        result1.transactions.slice(0, 2).map(t => t.external_id ?? '')
       )
 
       const opts: CsvParseOptions = {
