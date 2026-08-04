@@ -1723,129 +1723,129 @@ proptest! {
 // ============================================================================
 
 proptest! {
-    #![proptest_config(ProptestConfig::with_cases(1))]
+#![proptest_config(ProptestConfig::with_cases(1))]
 
-    /// 100 random bank transactions through auto-classify all trace back to
-    /// their source rows via journal_entries.source_bank_tx_id FK.
-    #[test]
-    fn bank_auto_classify_fk_traceability(
-        amounts in prop::collection::vec(-99999i64..99999i64, 100..=100),
-    ) {
-            let rt = tokio::runtime::Runtime::new().unwrap();
-            rt.block_on(async {
-                let pool = setup_test_db().await;
-                let accts = get_seed_accounts(&pool).await;
+/// 100 random bank transactions through auto-classify all trace back to
+/// their source rows via journal_entries.source_bank_tx_id FK.
+#[test]
+fn bank_auto_classify_fk_traceability(
+    amounts in prop::collection::vec(-99999i64..99999i64, 100..=100),
+) {
+        let rt = tokio::runtime::Runtime::new().unwrap();
+        rt.block_on(async {
+            let pool = setup_test_db().await;
+            let accts = get_seed_accounts(&pool).await;
 
-                let bank_acct_id = "ba-proptest-001";
+            let bank_acct_id = "ba-proptest-001";
+            sqlx::query(
+                "INSERT INTO bank_accounts (id, institution_name, account_nickname, account_type, currency, gl_account_number) VALUES (?, 'Test Bank', 'Checking', 'checking', 'USD', '1000')",
+            )
+            .bind(bank_acct_id)
+            .execute(&pool)
+            .await
+            .expect("insert bank_accounts");
+
+            let mut created_je_ids: Vec<i64> = Vec::new();
+
+            for (i, &raw_amount) in amounts.iter().enumerate() {
+                if raw_amount == 0 { continue; }
+
+                let amount_cents = raw_amount;
+                let tx_id = format!("bt-prop-{i:04}");
+                let amount_str = if amount_cents < 0 {
+                    format!("-{}.{:02}", (-amount_cents) / 100, ((-amount_cents) % 100).unsigned_abs())
+                } else {
+                    format!("{}.{:02}", amount_cents / 100, (amount_cents % 100).unsigned_abs())
+                };
+
                 sqlx::query(
-                    "INSERT INTO bank_accounts (id, institution_name, account_nickname, account_type, currency, gl_account_number) VALUES (?, 'Test Bank', 'Checking', 'checking', 'USD', '1000')",
+                    "INSERT INTO bank_transactions (id, bank_account_id, posted_date, amount, currency, payee, classification_status) VALUES (?, ?, 1720000000, ?, 'USD', ?, 'unclassified')",
                 )
+                .bind(&tx_id)
                 .bind(bank_acct_id)
+                .bind(&amount_str)
+                .bind(format!("Payee {i}"))
                 .execute(&pool)
                 .await
-                .expect("insert bank_accounts");
+                .expect("insert bank_transactions");
 
-                let mut created_je_ids: Vec<i64> = Vec::new();
+                let abs_minor = amount_cents.unsigned_abs() as i64;
+                let (debit_acct, credit_acct) = if amount_cents < 0 {
+                    (accts.expenses, accts.cash)
+                } else {
+                    (accts.cash, accts.income)
+                };
 
-                for (i, &raw_amount) in amounts.iter().enumerate() {
-                    if raw_amount == 0 { continue; }
-
-                    let amount_cents = raw_amount;
-                    let tx_id = format!("bt-prop-{i:04}");
-                    let amount_str = if amount_cents < 0 {
-                        format!("-{}.{:02}", (-amount_cents) / 100, ((-amount_cents) % 100).unsigned_abs())
-                    } else {
-                        format!("{}.{:02}", amount_cents / 100, (amount_cents % 100).unsigned_abs())
-                    };
-
-                    sqlx::query(
-                        "INSERT INTO bank_transactions (id, bank_account_id, posted_date, amount, currency, payee, classification_status) VALUES (?, ?, 1720000000, ?, 'USD', ?, 'unclassified')",
-                    )
-                    .bind(&tx_id)
-                    .bind(bank_acct_id)
-                    .bind(&amount_str)
-                    .bind(format!("Payee {i}"))
-                    .execute(&pool)
-                    .await
-                    .expect("insert bank_transactions");
-
-                    let abs_minor = amount_cents.unsigned_abs() as i64;
-                    let (debit_acct, credit_acct) = if amount_cents < 0 {
-                        (accts.expenses, accts.cash)
-                    } else {
-                        (accts.cash, accts.income)
-                    };
-
-                    let je_result = sqlx::query(
-                        "INSERT INTO journal_entries (entry_date, description, is_posted, status, origin, created_by, source_bank_tx_id) VALUES ('2026-07-01 00:00:00', ?, 0, 'draft', 'rule', 'proptest', ?)",
-                    )
-                    .bind(format!("Bank auto-classify {i}"))
-                    .bind(&tx_id)
-                    .execute(&pool)
-                    .await
-                    .expect("insert journal_entries");
-
-                    let je_id = je_result.last_insert_rowid();
-                    created_je_ids.push(je_id);
-
-                    add_balanced_lines(&pool, je_id, debit_acct, credit_acct, abs_minor, Some("USD"), None).await;
-
-                    sqlx::query(
-                        "UPDATE bank_transactions SET classification_status = 'classified' WHERE id = ? AND classification_status = 'unclassified'",
-                    )
-                    .bind(&tx_id)
-                    .execute(&pool)
-                    .await
-                    .expect("flip classification_status");
-                }
-
-                // Verify FK traceability: every JE with source_bank_tx_id links
-                // to an existing bank_transactions row.
-                let orphan_count: (i64,) = sqlx::query_as(
-                    "SELECT COUNT(*) FROM journal_entries je WHERE je.source_bank_tx_id IS NOT NULL AND NOT EXISTS (SELECT 1 FROM bank_transactions bt WHERE bt.id = je.source_bank_tx_id)",
+                let je_result = sqlx::query(
+                    "INSERT INTO journal_entries (entry_date, description, is_posted, status, origin, created_by, source_bank_tx_id) VALUES ('2026-07-01 00:00:00', ?, 0, 'draft', 'rule', 'proptest', ?)",
                 )
-                .fetch_one(&pool)
+                .bind(format!("Bank auto-classify {i}"))
+                .bind(&tx_id)
+                .execute(&pool)
                 .await
-                .expect("orphan check query");
-                assert_eq!(orphan_count.0, 0, "Orphan JEs found: source_bank_tx_id points to non-existent bank_transactions");
+                .expect("insert journal_entries");
 
-                // Verify every auto-classified bank tx has exactly one JE.
-                let classified_count: (i64,) = sqlx::query_as(
-                    "SELECT COUNT(*) FROM bank_transactions WHERE classification_status = 'classified'",
+                let je_id = je_result.last_insert_rowid();
+                created_je_ids.push(je_id);
+
+                add_balanced_lines(&pool, je_id, debit_acct, credit_acct, abs_minor, Some("USD"), None).await;
+
+                sqlx::query(
+                    "UPDATE bank_transactions SET classification_status = 'classified' WHERE id = ? AND classification_status = 'unclassified'",
                 )
-                .fetch_one(&pool)
+                .bind(&tx_id)
+                .execute(&pool)
                 .await
-                .expect("classified count query");
+                .expect("flip classification_status");
+            }
 
-                let linked_je_count: (i64,) = sqlx::query_as(
-                    "SELECT COUNT(*) FROM journal_entries WHERE source_bank_tx_id IS NOT NULL",
-                )
-                .fetch_one(&pool)
-                .await
-                .expect("linked JE count query");
+            // Verify FK traceability: every JE with source_bank_tx_id links
+            // to an existing bank_transactions row.
+            let orphan_count: (i64,) = sqlx::query_as(
+                "SELECT COUNT(*) FROM journal_entries je WHERE je.source_bank_tx_id IS NOT NULL AND NOT EXISTS (SELECT 1 FROM bank_transactions bt WHERE bt.id = je.source_bank_tx_id)",
+            )
+            .fetch_one(&pool)
+            .await
+            .expect("orphan check query");
+            assert_eq!(orphan_count.0, 0, "Orphan JEs found: source_bank_tx_id points to non-existent bank_transactions");
 
-                assert_eq!(classified_count.0, linked_je_count.0,
-                    "Classified bank tx count ({}) != JEs with source_bank_tx_id ({})",
-                    classified_count.0, linked_je_count.0);
+            // Verify every auto-classified bank tx has exactly one JE.
+            let classified_count: (i64,) = sqlx::query_as(
+                "SELECT COUNT(*) FROM bank_transactions WHERE classification_status = 'classified'",
+            )
+            .fetch_one(&pool)
+            .await
+            .expect("classified count query");
 
-                // Verify no bank tx is still unclassified.
-                let unclassified_count: (i64,) = sqlx::query_as(
-                    "SELECT COUNT(*) FROM bank_transactions WHERE classification_status = 'unclassified'",
-                )
-                .fetch_one(&pool)
-                .await
-                .expect("unclassified count query");
-                assert_eq!(unclassified_count.0, 0, "All bank txs should be classified");
+            let linked_je_count: (i64,) = sqlx::query_as(
+                "SELECT COUNT(*) FROM journal_entries WHERE source_bank_tx_id IS NOT NULL",
+            )
+            .fetch_one(&pool)
+            .await
+            .expect("linked JE count query");
 
-                // Verify round-trip: JE → bank_tx → bank_account.
-                let traceable: (i64,) = sqlx::query_as(
-                    "SELECT COUNT(*) FROM journal_entries je JOIN bank_transactions bt ON bt.id = je.source_bank_tx_id JOIN bank_accounts ba ON ba.id = bt.bank_account_id WHERE je.source_bank_tx_id IS NOT NULL",
-                )
-                .fetch_one(&pool)
-                .await
-                .expect("round-trip traceability query");
-                assert_eq!(traceable.0, linked_je_count.0,
-                    "All JEs with bank source should trace through to bank_accounts");
-            });
-        }
+            assert_eq!(classified_count.0, linked_je_count.0,
+                "Classified bank tx count ({}) != JEs with source_bank_tx_id ({})",
+                classified_count.0, linked_je_count.0);
+
+            // Verify no bank tx is still unclassified.
+            let unclassified_count: (i64,) = sqlx::query_as(
+                "SELECT COUNT(*) FROM bank_transactions WHERE classification_status = 'unclassified'",
+            )
+            .fetch_one(&pool)
+            .await
+            .expect("unclassified count query");
+            assert_eq!(unclassified_count.0, 0, "All bank txs should be classified");
+
+            // Verify round-trip: JE → bank_tx → bank_account.
+            let traceable: (i64,) = sqlx::query_as(
+                "SELECT COUNT(*) FROM journal_entries je JOIN bank_transactions bt ON bt.id = je.source_bank_tx_id JOIN bank_accounts ba ON ba.id = bt.bank_account_id WHERE je.source_bank_tx_id IS NOT NULL",
+            )
+            .fetch_one(&pool)
+            .await
+            .expect("round-trip traceability query");
+            assert_eq!(traceable.0, linked_je_count.0,
+                "All JEs with bank source should trace through to bank_accounts");
+        });
     }
+}
