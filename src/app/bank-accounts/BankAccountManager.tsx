@@ -118,9 +118,11 @@ export default function BankAccountManager() {
       setLoading(true)
       setError(null)
       const data = await persistence.getBankAccounts()
-      setAccounts(data.filter((a) => a.active))
+      setAccounts(data.filter(a => a.active))
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load bank accounts')
+      setError(
+        err instanceof Error ? err.message : 'Failed to load bank accounts'
+      )
     } finally {
       setLoading(false)
     }
@@ -143,7 +145,7 @@ export default function BankAccountManager() {
   const handleFormChange = useCallback(
     (field: keyof AccountFormData) =>
       (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        setFormData((prev) => ({ ...prev, [field]: e.target.value }))
+        setFormData(prev => ({ ...prev, [field]: e.target.value }))
       },
     []
   )
@@ -168,28 +170,26 @@ export default function BankAccountManager() {
     setShowAddForm(true)
   }, [])
 
-  const handleArchive = useCallback(
-    async (account: BankAccount) => {
-      try {
-        await persistence.saveBankAccount({
-          ...account,
-          entity_id: account.entity_id ?? undefined,
-          masked_account_number: account.masked_account_number ?? undefined,
-          opening_balance: account.opening_balance ?? undefined,
-          opening_balance_date: account.opening_balance_date ?? undefined,
-          external_source: account.external_source ?? undefined,
-          external_account_id: account.external_account_id ?? undefined,
-        })
-        setAccounts((prev) => prev.filter((a) => a.id !== account.id))
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to archive account')
-      }
-    },
-    []
-  )
+  const handleArchive = useCallback(async (account: BankAccount) => {
+    try {
+      await persistence.saveBankAccount({
+        ...account,
+        entity_id: account.entity_id ?? undefined,
+        masked_account_number: account.masked_account_number ?? undefined,
+        opening_balance: account.opening_balance ?? undefined,
+        opening_balance_date: account.opening_balance_date ?? undefined,
+        external_source: account.external_source ?? undefined,
+        external_account_id: account.external_account_id ?? undefined,
+      })
+      setAccounts(prev => prev.filter(a => a.id !== account.id))
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to archive account')
+    }
+  }, [])
 
   const handleSave = useCallback(async () => {
-    if (!formData.institution_name.trim() || !formData.account_nickname.trim()) return
+    if (!formData.institution_name.trim() || !formData.account_nickname.trim())
+      return
     setSaving(true)
     try {
       const input: BankAccountInput = {
@@ -198,7 +198,8 @@ export default function BankAccountManager() {
         account_type: formData.account_type,
         currency: formData.currency.trim() || 'USD',
         gl_account_number: formData.gl_account_number.trim() || '1000',
-        masked_account_number: formData.masked_account_number.trim() || undefined,
+        masked_account_number:
+          formData.masked_account_number.trim() || undefined,
         entity_id: formData.entity_id || undefined,
       }
       await persistence.saveBankAccount(input)
@@ -245,13 +246,17 @@ export default function BankAccountManager() {
 
         let result: ParseResult
         if (format === 'csv') {
-          const profile = profiles.find((p) => p.id === selectedProfileId)
+          const profile = profiles.find(p => p.id === selectedProfileId)
           const inferred = profile
             ? columnMapFromProfile(profile)
             : inferColumnMap(content.split('\n')[0]?.split(',') ?? [])
 
           const colMap: CsvColumnMap | null =
-            inferred && 'date' in inferred && 'amount' in inferred && inferred.date && inferred.amount
+            inferred &&
+            'date' in inferred &&
+            'amount' in inferred &&
+            inferred.date &&
+            inferred.amount
               ? (inferred as CsvColumnMap)
               : null
 
@@ -267,8 +272,12 @@ export default function BankAccountManager() {
             columnMap: colMap,
             dateFormat: profile?.date_format ?? 'MM/DD/YYYY',
             amountSignConvention:
-              (profile?.amount_sign_convention as 'signed' | 'debit_positive' | 'debit_negative') ?? 'signed',
-            currencyDefault: profile?.currency_default ?? uploadAccount.currency,
+              (profile?.amount_sign_convention as
+                | 'signed'
+                | 'debit_positive'
+                | 'debit_negative') ?? 'signed',
+            currencyDefault:
+              profile?.currency_default ?? uploadAccount.currency,
             existingExternalIds: existingIds,
           })
         } else {
@@ -280,12 +289,16 @@ export default function BankAccountManager() {
 
         const dedupResult = dedup(result.transactions, existing)
         const allTx = [...dedupResult.unique, ...dedupResult.duplicates]
-        const rows: PreviewRow[] = allTx.map((tx) => ({
+        const rows: PreviewRow[] = allTx.map(tx => ({
           ...tx,
           _selected: !tx._isDuplicate,
         }))
 
-        setParseResult({ ...result, transactions: allTx, duplicateCount: dedupResult.duplicateCount })
+        setParseResult({
+          ...result,
+          transactions: allTx,
+          duplicateCount: dedupResult.duplicateCount,
+        })
         setPreviewRows(rows)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to parse file')
@@ -322,25 +335,29 @@ export default function BankAccountManager() {
   }, [])
 
   const handleToggleRow = useCallback((index: number) => {
-    setPreviewRows((prev) =>
-      prev.map((row, i) => (i === index ? { ...row, _selected: !row._selected } : row))
+    setPreviewRows(prev =>
+      prev.map((row, i) =>
+        i === index ? { ...row, _selected: !row._selected } : row
+      )
     )
   }, [])
 
   const handleEditPayee = useCallback((index: number, value: string) => {
-    setPreviewRows((prev) =>
-      prev.map((row, i) => (i === index ? { ...row, _editedPayee: value } : row))
+    setPreviewRows(prev =>
+      prev.map((row, i) =>
+        i === index ? { ...row, _editedPayee: value } : row
+      )
     )
   }, [])
 
   const handleEditMemo = useCallback((index: number, value: string) => {
-    setPreviewRows((prev) =>
+    setPreviewRows(prev =>
       prev.map((row, i) => (i === index ? { ...row, _editedMemo: value } : row))
     )
   }, [])
 
   const selectedCount = useMemo(
-    () => previewRows.filter((r) => r._selected).length,
+    () => previewRows.filter(r => r._selected).length,
     [previewRows]
   )
 
@@ -360,8 +377,8 @@ export default function BankAccountManager() {
       const savedBatch = await persistence.saveImportBatch(batch)
 
       const txInputs: BankTransactionInput[] = previewRows
-        .filter((r) => r._selected)
-        .map((row) => ({
+        .filter(r => r._selected)
+        .map(row => ({
           bank_account_id: uploadAccount.id,
           external_id: row.external_id,
           posted_date: row.posted_date,
@@ -379,11 +396,15 @@ export default function BankAccountManager() {
         }))
 
       const count = await persistence.saveBankTransactions(txInputs)
-      setImportSuccess(`Imported ${count} transaction${count !== 1 ? 's' : ''} successfully.`)
+      setImportSuccess(
+        `Imported ${count} transaction${count !== 1 ? 's' : ''} successfully.`
+      )
       setPreviewRows([])
       setParseResult(null)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to import transactions')
+      setError(
+        err instanceof Error ? err.message : 'Failed to import transactions'
+      )
     } finally {
       setImporting(false)
     }
@@ -404,9 +425,9 @@ export default function BankAccountManager() {
   )
 
   const handleSelectAllToggle = useCallback(() => {
-    const allSelected = previewRows.every((r) => r._selected || r._isDuplicate)
-    setPreviewRows((prev) =>
-      prev.map((row) =>
+    const allSelected = previewRows.every(r => r._selected || r._isDuplicate)
+    setPreviewRows(prev =>
+      prev.map(row =>
         row._isDuplicate ? row : { ...row, _selected: !allSelected }
       )
     )
@@ -418,7 +439,9 @@ export default function BankAccountManager() {
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-center py-20">
             <Loader className="w-6 h-6 animate-spin text-[#5FE3C0]" />
-            <span className="ml-3 text-[#9FB4BE]">Loading bank accounts...</span>
+            <span className="ml-3 text-[#9FB4BE]">
+              Loading bank accounts...
+            </span>
           </div>
         </div>
       </div>
@@ -436,14 +459,17 @@ export default function BankAccountManager() {
               Bank Accounts
             </h1>
           </div>
-          <button onClick={handleAddClick} className="btn-primary flex items-center gap-2">
+          <button
+            onClick={handleAddClick}
+            className="btn-primary flex items-center gap-2"
+          >
             <Plus className="w-4 h-4" />
             Add Account
           </button>
         </div>
         <p className="text-[#647D8B] dark:text-[#9FB4BE] mb-8">
-          Manage bank and card accounts, import statements, and review transactions
-          before posting.
+          Manage bank and card accounts, import statements, and review
+          transactions before posting.
         </p>
 
         {error && (
@@ -452,7 +478,10 @@ export default function BankAccountManager() {
             <div className="flex-1">
               <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
             </div>
-            <button onClick={() => setError(null)} className="text-red-400 hover:text-red-600">
+            <button
+              onClick={() => setError(null)}
+              className="text-red-400 hover:text-red-600"
+            >
               <X className="w-4 h-4" />
             </button>
           </div>
@@ -461,8 +490,13 @@ export default function BankAccountManager() {
         {importSuccess && (
           <div className="mb-6 p-4 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 flex items-start gap-3">
             <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-green-700 dark:text-green-300">{importSuccess}</p>
-            <button onClick={() => setImportSuccess(null)} className="text-green-400 hover:text-green-600">
+            <p className="text-sm text-green-700 dark:text-green-300">
+              {importSuccess}
+            </p>
+            <button
+              onClick={() => setImportSuccess(null)}
+              className="text-green-400 hover:text-green-600"
+            >
               <X className="w-4 h-4" />
             </button>
           </div>
@@ -511,7 +545,7 @@ export default function BankAccountManager() {
                   value={formData.account_type}
                   onChange={handleFormChange('account_type')}
                 >
-                  {ACCOUNT_TYPES.map((t) => (
+                  {ACCOUNT_TYPES.map(t => (
                     <option key={t.value} value={t.value}>
                       {t.label}
                     </option>
@@ -569,7 +603,7 @@ export default function BankAccountManager() {
                   onChange={handleFormChange('entity_id')}
                 >
                   <option value="">No entity</option>
-                  {entities.map((e) => (
+                  {entities.map(e => (
                     <option key={e.id} value={e.id}>
                       {e.name}
                     </option>
@@ -580,7 +614,11 @@ export default function BankAccountManager() {
             <div className="flex gap-3 mt-6">
               <button
                 onClick={handleSave}
-                disabled={saving || !formData.institution_name.trim() || !formData.account_nickname.trim()}
+                disabled={
+                  saving ||
+                  !formData.institution_name.trim() ||
+                  !formData.account_nickname.trim()
+                }
                 className="btn-primary flex items-center gap-2 disabled:opacity-50"
               >
                 {saving && <Loader className="w-4 h-4 animate-spin" />}
@@ -603,14 +641,17 @@ export default function BankAccountManager() {
             <p className="text-[#647D8B] dark:text-[#9FB4BE] mb-6">
               Add a bank or card account to start importing statements.
             </p>
-            <button onClick={handleAddClick} className="btn-primary inline-flex items-center gap-2">
+            <button
+              onClick={handleAddClick}
+              className="btn-primary inline-flex items-center gap-2"
+            >
               <Plus className="w-4 h-4" />
               Add Your First Account
             </button>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            {accounts.map((account) => (
+            {accounts.map(account => (
               <AccountCard
                 key={account.id}
                 account={account}
@@ -666,11 +707,14 @@ const AccountCard = React.memo(function AccountCard({
   onUpload,
 }: AccountCardProps) {
   const handleEdit = useCallback(() => onEdit(account), [onEdit, account])
-  const handleArchive = useCallback(() => onArchive(account), [onArchive, account])
+  const handleArchive = useCallback(
+    () => onArchive(account),
+    [onArchive, account]
+  )
   const handleUpload = useCallback(() => onUpload(account), [onUpload, account])
 
   const typeLabel =
-    ACCOUNT_TYPES.find((t) => t.value === account.account_type)?.label ??
+    ACCOUNT_TYPES.find(t => t.value === account.account_type)?.label ??
     account.account_type
 
   return (
@@ -791,7 +835,10 @@ function StatementUpload({
             Import Statement — {account.account_nickname}
           </h2>
         </div>
-        <button onClick={onCancel} className="text-[#647D8B] hover:text-[#11202B] dark:hover:text-[#EAF3F2]">
+        <button
+          onClick={onCancel}
+          className="text-[#647D8B] hover:text-[#11202B] dark:hover:text-[#EAF3F2]"
+        >
           <X className="w-5 h-5" />
         </button>
       </div>
@@ -809,7 +856,7 @@ function StatementUpload({
             onChange={onProfileChange}
           >
             <option value="">Auto-detect columns</option>
-            {profiles.map((p) => (
+            {profiles.map(p => (
               <option key={p.id} value={p.id}>
                 {p.name}
                 {p.institution_name ? ` (${p.institution_name})` : ''}
@@ -856,11 +903,13 @@ function StatementUpload({
         <div>
           <div className="flex items-center justify-between mb-3">
             <p className="text-sm text-[#647D8B] dark:text-[#9FB4BE]">
-              {parseResult.totalCount} transaction{parseResult.totalCount !== 1 ? 's' : ''} parsed
+              {parseResult.totalCount} transaction
+              {parseResult.totalCount !== 1 ? 's' : ''} parsed
               {parseResult.duplicateCount > 0 && (
                 <span className="text-amber-500">
                   {' '}
-                  ({parseResult.duplicateCount} duplicate{parseResult.duplicateCount !== 1 ? 's' : ''})
+                  ({parseResult.duplicateCount} duplicate
+                  {parseResult.duplicateCount !== 1 ? 's' : ''})
                 </span>
               )}
               {' — '}
@@ -871,7 +920,7 @@ function StatementUpload({
             <label className="flex items-center gap-2 text-sm text-[#647D8B] cursor-pointer">
               <input
                 type="checkbox"
-                checked={previewRows.every((r) => r._selected || r._isDuplicate)}
+                checked={previewRows.every(r => r._selected || r._isDuplicate)}
                 onChange={onSelectAllToggle}
                 className="rounded border-[rgba(95,227,192,0.3)]"
               />
@@ -883,22 +932,40 @@ function StatementUpload({
               <thead>
                 <tr className="bg-[#EAF3F2] dark:bg-[#1E2F3C]">
                   <th scope="col" className="px-3 py-2 text-left w-10" />
-                  <th scope="col" className="px-3 py-2 text-left text-[#294050] dark:text-[#9CF1DC] font-medium">
+                  <th
+                    scope="col"
+                    className="px-3 py-2 text-left text-[#294050] dark:text-[#9CF1DC] font-medium"
+                  >
                     Date
                   </th>
-                  <th scope="col" className="px-3 py-2 text-left text-[#294050] dark:text-[#9CF1DC] font-medium">
+                  <th
+                    scope="col"
+                    className="px-3 py-2 text-left text-[#294050] dark:text-[#9CF1DC] font-medium"
+                  >
                     Payee
                   </th>
-                  <th scope="col" className="px-3 py-2 text-left text-[#294050] dark:text-[#9CF1DC] font-medium">
+                  <th
+                    scope="col"
+                    className="px-3 py-2 text-left text-[#294050] dark:text-[#9CF1DC] font-medium"
+                  >
                     Memo
                   </th>
-                  <th scope="col" className="px-3 py-2 text-right text-[#294050] dark:text-[#9CF1DC] font-medium">
+                  <th
+                    scope="col"
+                    className="px-3 py-2 text-right text-[#294050] dark:text-[#9CF1DC] font-medium"
+                  >
                     Amount
                   </th>
-                  <th scope="col" className="px-3 py-2 text-left text-[#294050] dark:text-[#9CF1DC] font-medium">
+                  <th
+                    scope="col"
+                    className="px-3 py-2 text-left text-[#294050] dark:text-[#9CF1DC] font-medium"
+                  >
                     Type
                   </th>
-                  <th scope="col" className="px-3 py-2 text-center text-[#294050] dark:text-[#9CF1DC] font-medium">
+                  <th
+                    scope="col"
+                    className="px-3 py-2 text-center text-[#294050] dark:text-[#9CF1DC] font-medium"
+                  >
                     Status
                   </th>
                 </tr>
@@ -965,18 +1032,21 @@ const PreviewRowComponent = React.memo(function PreviewRowComponent({
 }: PreviewRowComponentProps) {
   const handleToggle = useCallback(() => onToggle(index), [onToggle, index])
   const handlePayeeChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => onEditPayee(index, e.target.value),
+    (e: React.ChangeEvent<HTMLInputElement>) =>
+      onEditPayee(index, e.target.value),
     [onEditPayee, index]
   )
   const handleMemoChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => onEditMemo(index, e.target.value),
+    (e: React.ChangeEvent<HTMLInputElement>) =>
+      onEditMemo(index, e.target.value),
     [onEditMemo, index]
   )
 
   const amount = Number.parseFloat(row.amount)
-  const amountColor = amount < 0
-    ? 'text-red-500 dark:text-red-400'
-    : 'text-green-600 dark:text-green-400'
+  const amountColor =
+    amount < 0
+      ? 'text-red-500 dark:text-red-400'
+      : 'text-green-600 dark:text-green-400'
 
   return (
     <tr
@@ -1012,7 +1082,9 @@ const PreviewRowComponent = React.memo(function PreviewRowComponent({
           className="w-full bg-transparent border-b border-transparent hover:border-[rgba(95,227,192,0.3)] focus:border-[#5FE3C0] focus:outline-none text-[#647D8B] dark:text-[#9FB4BE] text-sm"
         />
       </td>
-      <td className={`px-3 py-2 text-right font-mono whitespace-nowrap ${amountColor}`}>
+      <td
+        className={`px-3 py-2 text-right font-mono whitespace-nowrap ${amountColor}`}
+      >
         {formatAmount(row.amount)}
       </td>
       <td className="px-3 py-2 text-[#647D8B] dark:text-[#9FB4BE] text-xs">
