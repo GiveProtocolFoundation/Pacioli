@@ -77,8 +77,8 @@ export const WalletAliasProvider: React.FC<{ children: ReactNode }> = ({
 
     // Update local state
     setAliases(prev => {
-      const next = { ...prev }
-      delete next[normalizedAddress]
+      const next = new Map(prev)
+      next.delete(normalizedAddress)
       return next
     })
   }, [])
