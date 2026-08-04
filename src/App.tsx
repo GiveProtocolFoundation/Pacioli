@@ -57,6 +57,9 @@ const ClassificationQueue = React.lazy(
 const ClassificationRules = React.lazy(
   () => import('./app/classification/ClassificationRules')
 )
+const BankAccountManager = React.lazy(
+  () => import('./app/bank-accounts/BankAccountManager')
+)
 const AccountingPeriods = React.lazy(
   () => import('./app/accounting-periods/AccountingPeriods')
 )
@@ -213,6 +216,7 @@ const MainRoutes: React.FC = () => (
       <Route path="/transactions/edit/:id" element={<TransactionForm />} />
       <Route path="/wallets" element={<Balances />} />
       <Route path="/wallet-manager" element={<WalletManager />} />
+      <Route path="/bank-accounts" element={<BankAccountManager />} />
       <Route path="/entities" element={<Entities />} />
       <Route path="/team" element={<Team />} />
       <Route path="/reports" element={<Reports />} />
