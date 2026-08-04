@@ -172,15 +172,7 @@ export default function BankAccountManager() {
 
   const handleArchive = useCallback(async (account: BankAccount) => {
     try {
-      await persistence.saveBankAccount({
-        ...account,
-        entity_id: account.entity_id ?? undefined,
-        masked_account_number: account.masked_account_number ?? undefined,
-        opening_balance: account.opening_balance ?? undefined,
-        opening_balance_date: account.opening_balance_date ?? undefined,
-        external_source: account.external_source ?? undefined,
-        external_account_id: account.external_account_id ?? undefined,
-      })
+      await persistence.archiveBankAccount(account.id)
       setAccounts(prev => prev.filter(a => a.id !== account.id))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to archive account')
@@ -1004,10 +996,10 @@ function StatementUpload({
         <div className="text-center py-8">
           <CheckCircle className="w-10 h-10 mx-auto mb-3 text-green-500 opacity-60" />
           <p className="text-[#11202B] dark:text-[#EAF3F2] font-medium">
-            All transactions are duplicates
+            No transactions found in this file
           </p>
           <p className="text-sm text-[#647D8B] dark:text-[#9FB4BE] mt-1">
-            This statement has already been fully imported.
+            The file could not be parsed or contains no transactions.
           </p>
         </div>
       )}

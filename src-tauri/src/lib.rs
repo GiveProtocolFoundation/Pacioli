@@ -495,6 +495,7 @@ pub fn run() {
             // Bank & card transaction capture (GIV-825)
             api::bank::get_bank_accounts,
             api::bank::save_bank_account,
+            api::bank::archive_bank_account,
             api::bank::get_bank_transactions,
             api::bank::save_bank_transactions,
             api::bank::get_import_batches,
