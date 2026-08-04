@@ -219,7 +219,7 @@ export function useBlockSubscription(
         if (cancelled) {
           // Race: effect cleaned up before subscribe resolved
           unsub()
-          return null;
+          return null
         }
 
         unsubscribeRef.current = unsub
@@ -236,7 +236,7 @@ export function useBlockSubscription(
           )
         }
       }
-      return null;
+      return null
     }
 
     subscribe()
