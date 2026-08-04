@@ -286,7 +286,9 @@ const BankQueueRow: React.FC<BankQueueRowProps> = ({
       <td className="px-4 py-3 text-sm text-[#647D8B] max-w-[200px] truncate">
         {tx.memo ?? '—'}
       </td>
-      <td className={`px-4 py-3 whitespace-nowrap text-sm text-right font-mono ${isNegative ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
+      <td
+        className={`px-4 py-3 whitespace-nowrap text-sm text-right font-mono ${isNegative ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400'}`}
+      >
         {isNegative ? '-' : ''}${Math.abs(amount).toFixed(2)}
       </td>
       <td className="px-4 py-3 whitespace-nowrap text-sm text-[#294050] dark:text-[#9FB4BE]">
@@ -664,12 +666,15 @@ const ClassificationQueue: React.FC = () => {
   }, [])
 
   const handleBatchAutoClassify = useCallback(async () => {
-    const ids = activeItems.filter(tx => selectedIds.has(tx.id)).map(tx => tx.id)
+    const ids = activeItems
+      .filter(tx => selectedIds.has(tx.id))
+      .map(tx => tx.id)
     if (ids.length === 0) return
 
-    const command = sourceKind === 'crypto'
-      ? 'auto_classify_transaction'
-      : 'auto_classify_bank_transaction'
+    const command =
+      sourceKind === 'crypto'
+        ? 'auto_classify_transaction'
+        : 'auto_classify_bank_transaction'
 
     setBatchProcessing(true)
     setBatchProgress({ done: 0, total: ids.length })
@@ -682,10 +687,9 @@ const ClassificationQueue: React.FC = () => {
 
     for (const txId of ids) {
       try {
-        const je = await invoke<JournalEntryWithLines>(
-          command,
-          { transactionId: txId }
-        )
+        const je = await invoke<JournalEntryWithLines>(command, {
+          transactionId: txId,
+        })
         classified++
         classifiedTxIds.push(txId)
         journalEntryIds.push(je.id)
@@ -698,7 +702,9 @@ const ClassificationQueue: React.FC = () => {
     if (sourceKind === 'crypto') {
       setTransactions(prev => prev.filter(t => !classifiedTxIds.includes(t.id)))
     } else {
-      setBankTransactions(prev => prev.filter(t => !classifiedTxIds.includes(t.id)))
+      setBankTransactions(prev =>
+        prev.filter(t => !classifiedTxIds.includes(t.id))
+      )
     }
     setSelectedIds(new Set())
     refreshCounts()
@@ -714,12 +720,13 @@ const ClassificationQueue: React.FC = () => {
   }, [activeItems, selectedIds, refreshCounts, sourceKind])
 
   const handleBatchSkip = useCallback(async () => {
-    const ids = activeItems.filter(tx => selectedIds.has(tx.id)).map(tx => tx.id)
+    const ids = activeItems
+      .filter(tx => selectedIds.has(tx.id))
+      .map(tx => tx.id)
     if (ids.length === 0) return
 
-    const command = sourceKind === 'crypto'
-      ? 'ignore_transaction'
-      : 'ignore_bank_transaction'
+    const command =
+      sourceKind === 'crypto' ? 'ignore_transaction' : 'ignore_bank_transaction'
 
     setBatchProcessing(true)
     setBatchProgress({ done: 0, total: ids.length })
@@ -746,7 +753,9 @@ const ClassificationQueue: React.FC = () => {
     if (sourceKind === 'crypto') {
       setTransactions(prev => prev.filter(t => !skippedTxIds.includes(t.id)))
     } else {
-      setBankTransactions(prev => prev.filter(t => !skippedTxIds.includes(t.id)))
+      setBankTransactions(prev =>
+        prev.filter(t => !skippedTxIds.includes(t.id))
+      )
     }
     setSelectedIds(new Set())
     refreshCounts()
@@ -839,9 +848,10 @@ const ClassificationQueue: React.FC = () => {
       if (!txId) return
       setProcessingId(txId)
       setActionError(null)
-      const command = sourceKind === 'crypto'
-        ? 'auto_classify_transaction'
-        : 'auto_classify_bank_transaction'
+      const command =
+        sourceKind === 'crypto'
+          ? 'auto_classify_transaction'
+          : 'auto_classify_bank_transaction'
       try {
         await invoke<JournalEntryWithLines>(command, {
           transactionId: txId,
@@ -901,9 +911,8 @@ const ClassificationQueue: React.FC = () => {
     if (!ignoreModal) return
     setProcessingId(ignoreModal.transactionId)
     setActionError(null)
-    const command = sourceKind === 'crypto'
-      ? 'ignore_transaction'
-      : 'ignore_bank_transaction'
+    const command =
+      sourceKind === 'crypto' ? 'ignore_transaction' : 'ignore_bank_transaction'
     try {
       await invoke(command, {
         transactionId: ignoreModal.transactionId,
@@ -998,16 +1007,17 @@ const ClassificationQueue: React.FC = () => {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          {sourceKind === 'crypto' && transactions.some(tx => tx.valuationStatus === 'unpriced') && (
-            <button
-              onClick={handleEnrichPrices}
-              disabled={enriching}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#5FE3C0]/10 text-[#294050] dark:text-[#5FE3C0] hover:bg-[#5FE3C0]/20 disabled:opacity-50 transition-colors"
-            >
-              <DollarSign className="w-4 h-4" />
-              {enriching ? 'Fetching prices...' : 'Enrich Prices'}
-            </button>
-          )}
+          {sourceKind === 'crypto' &&
+            transactions.some(tx => tx.valuationStatus === 'unpriced') && (
+              <button
+                onClick={handleEnrichPrices}
+                disabled={enriching}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#5FE3C0]/10 text-[#294050] dark:text-[#5FE3C0] hover:bg-[#5FE3C0]/20 disabled:opacity-50 transition-colors"
+              >
+                <DollarSign className="w-4 h-4" />
+                {enriching ? 'Fetching prices...' : 'Enrich Prices'}
+              </button>
+            )}
           <button
             onClick={handleRefresh}
             className="flex items-center gap-2 px-4 py-2 border border-[rgba(95,227,192,0.15)] rounded-lg bg-[#F7FAFA] dark:bg-[#11202B] hover:bg-[#EAF3F2] dark:hover:bg-[#16242F] text-[#294050] dark:text-[#9FB4BE]"
@@ -1083,7 +1093,11 @@ const ClassificationQueue: React.FC = () => {
           <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#647D8B]" />
           <input
             type="text"
-            placeholder={sourceKind === 'crypto' ? 'Search by hash, chain, type, address...' : 'Search by payee, memo, account...'}
+            placeholder={
+              sourceKind === 'crypto'
+                ? 'Search by hash, chain, type, address...'
+                : 'Search by payee, memo, account...'
+            }
             value={searchQuery}
             onChange={handleSearchChange}
             className="w-full pl-4 pr-10 py-2 border border-[rgba(95,227,192,0.15)] rounded-lg bg-[#F7FAFA] dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] placeholder-[#647D8B] dark:placeholder-[#294050] focus:outline-none focus:ring-2 focus:ring-[#5FE3C0] focus:border-[#5FE3C0]"
@@ -1209,9 +1223,12 @@ const ClassificationQueue: React.FC = () => {
 
       {/* Count summary */}
       <div className="mb-4 text-sm text-[#294050] dark:text-[#9FB4BE]">
-        {activeItems.length} unclassified {sourceKind === 'crypto' ? 'blockchain' : 'bank'} transaction
+        {activeItems.length} unclassified{' '}
+        {sourceKind === 'crypto' ? 'blockchain' : 'bank'} transaction
         {activeItems.length !== 1 ? 's' : ''}
-        {sourceKind === 'crypto' && filtered.length > 0 && <ValuationSummary transactions={filtered} />}
+        {sourceKind === 'crypto' && filtered.length > 0 && (
+          <ValuationSummary transactions={filtered} />
+        )}
       </div>
 
       {/* Crypto Table */}
@@ -1241,7 +1258,9 @@ const ClassificationQueue: React.FC = () => {
                           key={tx.id}
                           tx={tx}
                           ruleLabel={
-                            matched ? matched.name : rulePreview(tx.transactionType)
+                            matched
+                              ? matched.name
+                              : rulePreview(tx.transactionType)
                           }
                           selected={selectedIds.has(tx.id)}
                           busy={processingId === tx.id || batchProcessing}
@@ -1263,8 +1282,8 @@ const ClassificationQueue: React.FC = () => {
                 All caught up
               </h3>
               <p className="mt-1 text-sm text-[#294050] dark:text-[#9FB4BE] max-w-sm mx-auto">
-                Every crypto transaction has been classified or skipped. Your next step
-                is to review and approve draft journal entries.
+                Every crypto transaction has been classified or skipped. Your
+                next step is to review and approve draft journal entries.
               </p>
               <div className="mt-5 flex items-center justify-center gap-3">
                 <button
@@ -1325,7 +1344,8 @@ const ClassificationQueue: React.FC = () => {
                 No bank transactions to classify
               </h3>
               <p className="mt-1 text-sm text-[#294050] dark:text-[#9FB4BE] max-w-sm mx-auto">
-                Import bank statements from the Bank Accounts page to see transactions here.
+                Import bank statements from the Bank Accounts page to see
+                transactions here.
               </p>
             </div>
           )}
