@@ -501,7 +501,11 @@ pub fn run() {
             api::bank::get_import_batches,
             api::bank::save_import_batch,
             api::bank::get_statement_profiles,
-            api::bank::save_statement_profile
+            api::bank::save_statement_profile,
+            // Bank classification queue (GIV-828)
+            api::bank::get_unclassified_bank_transactions,
+            api::bank::auto_classify_bank_transaction,
+            api::bank::ignore_bank_transaction
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
