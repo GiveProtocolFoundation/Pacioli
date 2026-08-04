@@ -282,6 +282,20 @@ pub async fn save_bank_account(
         .map_err(|e| e.to_string())
 }
 
+/// Sets a bank account's active flag to false (soft-delete).
+#[tauri::command]
+pub async fn archive_bank_account(
+    state: State<'_, DatabaseState>,
+    id: String,
+) -> Result<(), String> {
+    sqlx::query("UPDATE bank_accounts SET active = 0, updated_at = unixepoch() WHERE id = ?")
+        .bind(&id)
+        .execute(&state.pool)
+        .await
+        .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
 // ============================================================================
 // Bank Transaction Commands
 // ============================================================================
