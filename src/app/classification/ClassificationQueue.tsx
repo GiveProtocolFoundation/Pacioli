@@ -1232,99 +1232,35 @@ const ClassificationQueue: React.FC = () => {
       </div>
 
       {/* Crypto Table */}
-      {sourceKind === 'crypto' && (
-        <>
-          {filtered.length > 0 ? (
-            <div className="bg-[#F7FAFA] dark:bg-[#0C141B] rounded-lg border border-[rgba(95,227,192,0.15)] overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-[#EAF3F2] dark:bg-[#11202B] border-b border-[rgba(95,227,192,0.15)]">
-                    <QueueHeaderRow
-                      allSelected={allFilteredSelected}
-                      someSelected={someFilteredSelected}
-                      onToggleAll={handleToggleAll}
-                    />
-                  </thead>
-                  <tbody className="divide-y divide-[rgba(95,227,192,0.1)]">
-                    {filtered.map(tx => {
-                      const matched = findMatchingRule(
-                        classificationRules,
-                        tx.transactionType,
-                        tx.chainId,
-                        tx.isSelfTransfer
-                      )
-                      return (
-                        <QueueRow
-                          key={tx.id}
-                          tx={tx}
-                          ruleLabel={
-                            matched
-                              ? matched.name
-                              : rulePreview(tx.transactionType)
-                          }
-                          selected={selectedIds.has(tx.id)}
-                          busy={processingId === tx.id || batchProcessing}
-                          onToggleSelect={handleToggleSelect}
-                          onAutoClassify={handleAutoClassify}
-                          onManualClassify={handleManualClassify}
-                          onIgnore={handleIgnoreClick}
-                        />
-                      )
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          ) : (
-            <div className="text-center py-12 bg-[#F7FAFA] dark:bg-[#0C141B] rounded-lg border border-[rgba(95,227,192,0.15)]">
-              <Inbox className="mx-auto h-12 w-12 text-[#5FE3C0]" />
-              <h3 className="mt-3 text-lg font-medium text-[#11202B] dark:text-[#EAF3F2]">
-                All caught up
-              </h3>
-              <p className="mt-1 text-sm text-[#294050] dark:text-[#9FB4BE] max-w-sm mx-auto">
-                Every crypto transaction has been classified or skipped. Your
-                next step is to review and approve draft journal entries.
-              </p>
-              <div className="mt-5 flex items-center justify-center gap-3">
-                <button
-                  onClick={handleNavigateToDrafts}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#294050] text-white hover:bg-[#1E2F3C] transition-colors text-sm font-medium"
-                >
-                  <ShieldCheck className="w-4 h-4" />
-                  Review Drafts
-                </button>
-                <button
-                  onClick={handleNavigateToReports}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[rgba(95,227,192,0.15)] text-[#294050] dark:text-[#9FB4BE] hover:bg-[#EAF3F2] dark:hover:bg-[#16242F] transition-colors text-sm font-medium"
-                >
-                  <BarChart3 className="w-4 h-4" />
-                  View Trial Balance
-                </button>
-              </div>
-            </div>
-          )}
-        </>
-      )}
-
-      {/* Bank Table */}
-      {sourceKind === 'bank' && (
-        <>
-          {filteredBank.length > 0 ? (
-            <div className="bg-[#F7FAFA] dark:bg-[#0C141B] rounded-lg border border-[rgba(95,227,192,0.15)] overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-[#EAF3F2] dark:bg-[#11202B] border-b border-[rgba(95,227,192,0.15)]">
-                    <BankQueueHeaderRow
-                      allSelected={allFilteredSelected}
-                      someSelected={someFilteredSelected}
-                      onToggleAll={handleToggleAll}
-                    />
-                  </thead>
-                  <tbody className="divide-y divide-[rgba(95,227,192,0.1)]">
-                    {filteredBank.map(tx => (
-                      <BankQueueRow
+      {sourceKind === 'crypto' &&
+        (filtered.length > 0 ? (
+          <div className="bg-[#F7FAFA] dark:bg-[#0C141B] rounded-lg border border-[rgba(95,227,192,0.15)] overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-[#EAF3F2] dark:bg-[#11202B] border-b border-[rgba(95,227,192,0.15)]">
+                  <QueueHeaderRow
+                    allSelected={allFilteredSelected}
+                    someSelected={someFilteredSelected}
+                    onToggleAll={handleToggleAll}
+                  />
+                </thead>
+                <tbody className="divide-y divide-[rgba(95,227,192,0.1)]">
+                  {filtered.map(tx => {
+                    const matched = findMatchingRule(
+                      classificationRules,
+                      tx.transactionType,
+                      tx.chainId,
+                      tx.isSelfTransfer
+                    )
+                    return (
+                      <QueueRow
                         key={tx.id}
                         tx={tx}
+                        ruleLabel={
+                          matched
+                            ? matched.name
+                            : rulePreview(tx.transactionType)
+                        }
                         selected={selectedIds.has(tx.id)}
                         busy={processingId === tx.id || batchProcessing}
                         onToggleSelect={handleToggleSelect}
@@ -1332,25 +1268,83 @@ const ClassificationQueue: React.FC = () => {
                         onManualClassify={handleManualClassify}
                         onIgnore={handleIgnoreClick}
                       />
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    )
+                  })}
+                </tbody>
+              </table>
             </div>
-          ) : (
-            <div className="text-center py-12 bg-[#F7FAFA] dark:bg-[#0C141B] rounded-lg border border-[rgba(95,227,192,0.15)]">
-              <Inbox className="mx-auto h-12 w-12 text-[#5FE3C0]" />
-              <h3 className="mt-3 text-lg font-medium text-[#11202B] dark:text-[#EAF3F2]">
-                No bank transactions to classify
-              </h3>
-              <p className="mt-1 text-sm text-[#294050] dark:text-[#9FB4BE] max-w-sm mx-auto">
-                Import bank statements from the Bank Accounts page to see
-                transactions here.
-              </p>
+          </div>
+        ) : (
+          <div className="text-center py-12 bg-[#F7FAFA] dark:bg-[#0C141B] rounded-lg border border-[rgba(95,227,192,0.15)]">
+            <Inbox className="mx-auto h-12 w-12 text-[#5FE3C0]" />
+            <h3 className="mt-3 text-lg font-medium text-[#11202B] dark:text-[#EAF3F2]">
+              All caught up
+            </h3>
+            <p className="mt-1 text-sm text-[#294050] dark:text-[#9FB4BE] max-w-sm mx-auto">
+              Every crypto transaction has been classified or skipped. Your next
+              step is to review and approve draft journal entries.
+            </p>
+            <div className="mt-5 flex items-center justify-center gap-3">
+              <button
+                onClick={handleNavigateToDrafts}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#294050] text-white hover:bg-[#1E2F3C] transition-colors text-sm font-medium"
+              >
+                <ShieldCheck className="w-4 h-4" />
+                Review Drafts
+              </button>
+              <button
+                onClick={handleNavigateToReports}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[rgba(95,227,192,0.15)] text-[#294050] dark:text-[#9FB4BE] hover:bg-[#EAF3F2] dark:hover:bg-[#16242F] transition-colors text-sm font-medium"
+              >
+                <BarChart3 className="w-4 h-4" />
+                View Trial Balance
+              </button>
             </div>
-          )}
-        </>
-      )}
+          </div>
+        ))}
+
+      {/* Bank Table */}
+      {sourceKind === 'bank' &&
+        (filteredBank.length > 0 ? (
+          <div className="bg-[#F7FAFA] dark:bg-[#0C141B] rounded-lg border border-[rgba(95,227,192,0.15)] overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-[#EAF3F2] dark:bg-[#11202B] border-b border-[rgba(95,227,192,0.15)]">
+                  <BankQueueHeaderRow
+                    allSelected={allFilteredSelected}
+                    someSelected={someFilteredSelected}
+                    onToggleAll={handleToggleAll}
+                  />
+                </thead>
+                <tbody className="divide-y divide-[rgba(95,227,192,0.1)]">
+                  {filteredBank.map(tx => (
+                    <BankQueueRow
+                      key={tx.id}
+                      tx={tx}
+                      selected={selectedIds.has(tx.id)}
+                      busy={processingId === tx.id || batchProcessing}
+                      onToggleSelect={handleToggleSelect}
+                      onAutoClassify={handleAutoClassify}
+                      onManualClassify={handleManualClassify}
+                      onIgnore={handleIgnoreClick}
+                    />
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ) : (
+          <div className="text-center py-12 bg-[#F7FAFA] dark:bg-[#0C141B] rounded-lg border border-[rgba(95,227,192,0.15)]">
+            <Inbox className="mx-auto h-12 w-12 text-[#5FE3C0]" />
+            <h3 className="mt-3 text-lg font-medium text-[#11202B] dark:text-[#EAF3F2]">
+              No bank transactions to classify
+            </h3>
+            <p className="mt-1 text-sm text-[#294050] dark:text-[#9FB4BE] max-w-sm mx-auto">
+              Import bank statements from the Bank Accounts page to see
+              transactions here.
+            </p>
+          </div>
+        ))}
 
       {/* Ignore confirmation modal */}
       {ignoreModal !== null && (
