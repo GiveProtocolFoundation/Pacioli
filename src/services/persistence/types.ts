@@ -476,7 +476,9 @@ export interface PersistenceService {
 
   // Statement profile operations (GIV-825)
   getStatementProfiles(): Promise<StatementProfile[]>
-  saveStatementProfile(profile: StatementProfileInput): Promise<StatementProfile>
+  saveStatementProfile(
+    profile: StatementProfileInput
+  ): Promise<StatementProfile>
 
   // Address detection operations
   lookupAddress(
