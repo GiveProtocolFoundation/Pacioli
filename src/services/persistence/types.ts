@@ -462,6 +462,7 @@ export interface PersistenceService {
   // Bank account operations (GIV-825)
   getBankAccounts(): Promise<BankAccount[]>
   saveBankAccount(account: BankAccountInput): Promise<BankAccount>
+  archiveBankAccount(id: string): Promise<void>
 
   // Bank transaction operations (GIV-825)
   getBankTransactions(
