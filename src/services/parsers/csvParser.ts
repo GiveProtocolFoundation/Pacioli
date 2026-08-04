@@ -30,13 +30,16 @@ function splitCsvLine(line: string): string[] {
   return fields
 }
 
+const SLASH_DMY_RE = /^(\d{1,2})\/(\d{1,2})\/(\d{4})/
+const DASH_DMY_RE = /^(\d{1,2})-(\d{1,2})-(\d{4})/
+
 const DATE_FORMATS: Record<string, RegExp> = {
   'YYYY-MM-DD': /^(\d{4})-(\d{1,2})-(\d{1,2})/,
-  'MM/DD/YYYY': /^(\d{1,2})\/(\d{1,2})\/(\d{4})/,
-  'DD/MM/YYYY': /^(\d{1,2})\/(\d{1,2})\/(\d{4})/,
+  'MM/DD/YYYY': SLASH_DMY_RE,
+  'DD/MM/YYYY': SLASH_DMY_RE,
   'YYYY/MM/DD': /^(\d{4})\/(\d{1,2})\/(\d{1,2})/,
-  'MM-DD-YYYY': /^(\d{1,2})-(\d{1,2})-(\d{4})/,
-  'DD-MM-YYYY': /^(\d{1,2})-(\d{1,2})-(\d{4})/,
+  'MM-DD-YYYY': DASH_DMY_RE,
+  'DD-MM-YYYY': DASH_DMY_RE,
   'DD.MM.YYYY': /^(\d{1,2})\.(\d{1,2})\.(\d{4})/,
 }
 
@@ -66,7 +69,7 @@ function parseDateWithFormat(raw: string, format: string): number {
 }
 
 function parseAmount(raw: string, convention: string, txType?: string): string {
-  const cleaned = raw.replace(/[^0-9.\-+]/g, '')
+  const cleaned = raw.replace(/[^0-9.+-]/g, '')
   if (!cleaned) return '0'
 
   const num = Number.parseFloat(cleaned)

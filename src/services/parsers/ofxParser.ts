@@ -39,9 +39,14 @@ function normalizeOfxToXml(raw: string): string {
   return body
 }
 
+function escapeRegExp(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
 function extractTag(xml: string, tag: string): string {
-  const openRe = new RegExp(`<${tag}>`, 'i')
-  const closeRe = new RegExp(`</${tag}>`, 'i')
+  const escaped = escapeRegExp(tag)
+  const openRe = new RegExp(`<${escaped}>`, 'i')
+  const closeRe = new RegExp(`</${escaped}>`, 'i')
   const openMatch = openRe.exec(xml)
   if (!openMatch) return ''
   const start = openMatch.index + openMatch[0].length
@@ -54,7 +59,8 @@ function extractTag(xml: string, tag: string): string {
 }
 
 function extractTagValue(xml: string, tag: string): string {
-  const re = new RegExp(`<${tag}>\\s*([^<\\n]+)`, 'i')
+  const escaped = escapeRegExp(tag)
+  const re = new RegExp(`<${escaped}>\\s*([^<\\n]+)`, 'i')
   const m = re.exec(xml)
   return m ? m[1].trim() : ''
 }
