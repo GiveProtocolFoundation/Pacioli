@@ -75,15 +75,17 @@ interface PreviewRow extends ParsedTransaction {
   _editedMemo?: string
 }
 
+/** Formats epoch milliseconds as a locale date string. */
 function formatDate(epochMs: number): string {
-  const d = new Date(epochMs)
-  return d.toLocaleDateString('en-US', {
+  const date = new Date(epochMs)
+  return date.toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
   })
 }
 
+/** Formats a numeric string as a dollar amount with sign. */
 function formatAmount(amount: string): string {
   const n = Number.parseFloat(amount)
   if (Number.isNaN(n)) return amount
@@ -91,6 +93,7 @@ function formatAmount(amount: string): string {
   return n < 0 ? `-$${abs}` : `$${abs}`
 }
 
+/** Resolves CSV column mapping from a profile or by inference. */
 function resolveCsvColumnMap(
   content: string,
   profiles: StatementProfile[],
@@ -120,6 +123,7 @@ function resolveCsvColumnMap(
   return { colMap: inferred as CsvColumnMap, profile }
 }
 
+/** Builds parse options for CSV or OFX/QFX statement formats. */
 function buildParseOptions(
   format: string,
   bankAccountId: string,
@@ -155,6 +159,7 @@ function buildParseOptions(
   }
 }
 
+/** Deduplicates parsed transactions and builds preview rows. */
 function buildPreviewState(
   result: ParseResult,
   existing: BankTransaction[]
@@ -371,6 +376,7 @@ interface StatementUploadProps {
   onProfileChange: (e: React.ChangeEvent<HTMLSelectElement>) => void
 }
 
+/** Statement upload panel with drag-drop, preview grid, and import. */
 function StatementUpload({
   account,
   dragOver,
