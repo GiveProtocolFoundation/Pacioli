@@ -95,7 +95,9 @@ function resolveCsvColumnMap(
   content: string,
   profiles: StatementProfile[],
   selectedProfileId: string
-): { colMap: CsvColumnMap; profile: StatementProfile | undefined } | { error: string } {
+):
+  | { colMap: CsvColumnMap; profile: StatementProfile | undefined }
+  | { error: string } {
   const profile = profiles.find(p => p.id === selectedProfileId)
   const inferred = profile
     ? columnMapFromProfile(profile)
@@ -126,9 +128,7 @@ function buildParseOptions(
   selectedProfileId: string,
   currency: string,
   existingIds: Set<string>
-):
-  | { options: Parameters<typeof parseStatement>[2] }
-  | { error: string } {
+): { options: Parameters<typeof parseStatement>[2] } | { error: string } {
   if (format !== 'csv') {
     return {
       options: { bankAccountId, existingExternalIds: existingIds },
