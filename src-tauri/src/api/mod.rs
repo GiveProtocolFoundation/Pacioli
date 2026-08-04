@@ -2,12 +2,12 @@
 pub mod accounting;
 /// Authentication module containing functionality and types for user authentication and authorization.
 pub mod auth;
-/// Bank & card account/transaction capture (GIV-825, Phase 1 file-import).
-pub mod bank;
 /// Provides functionality for creating and restoring
 /// backups of application data, including serialization
 /// and storage management.
 pub mod backup;
+/// Bank & card account/transaction capture (GIV-825, Phase 1 file-import).
+pub mod bank;
 /// Cost basis engine: FIFO lot tracking, realized gain/loss, and
 /// non-realizing own-wallet transfers (GIV-689, Phase 7).
 pub mod cost_basis;

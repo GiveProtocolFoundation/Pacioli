@@ -137,12 +137,10 @@ pub struct StatementProfileInput {
 pub async fn get_bank_accounts(
     state: State<'_, DatabaseState>,
 ) -> Result<Vec<BankAccount>, String> {
-    sqlx::query_as::<_, BankAccount>(
-        "SELECT * FROM bank_accounts ORDER BY created_at DESC",
-    )
-    .fetch_all(&state.pool)
-    .await
-    .map_err(|e| e.to_string())
+    sqlx::query_as::<_, BankAccount>("SELECT * FROM bank_accounts ORDER BY created_at DESC")
+        .fetch_all(&state.pool)
+        .await
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -201,9 +199,7 @@ pub async fn get_bank_transactions(
     limit: Option<i64>,
     offset: Option<i64>,
 ) -> Result<Vec<BankTransaction>, String> {
-    let mut sql = String::from(
-        "SELECT * FROM bank_transactions WHERE bank_account_id = ?",
-    );
+    let mut sql = String::from("SELECT * FROM bank_transactions WHERE bank_account_id = ?");
     let mut bind_values: Vec<String> = vec![bank_account_id.clone()];
 
     if let Some(fd) = from_date {
@@ -327,12 +323,10 @@ pub async fn get_import_batches(
         .await
         .map_err(|e| e.to_string())
     } else {
-        sqlx::query_as::<_, ImportBatch>(
-            "SELECT * FROM import_batches ORDER BY imported_at DESC",
-        )
-        .fetch_all(&state.pool)
-        .await
-        .map_err(|e| e.to_string())
+        sqlx::query_as::<_, ImportBatch>("SELECT * FROM import_batches ORDER BY imported_at DESC")
+            .fetch_all(&state.pool)
+            .await
+            .map_err(|e| e.to_string())
     }
 }
 
@@ -379,12 +373,10 @@ pub async fn save_import_batch(
 pub async fn get_statement_profiles(
     state: State<'_, DatabaseState>,
 ) -> Result<Vec<StatementProfile>, String> {
-    sqlx::query_as::<_, StatementProfile>(
-        "SELECT * FROM statement_profiles ORDER BY name",
-    )
-    .fetch_all(&state.pool)
-    .await
-    .map_err(|e| e.to_string())
+    sqlx::query_as::<_, StatementProfile>("SELECT * FROM statement_profiles ORDER BY name")
+        .fetch_all(&state.pool)
+        .await
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -414,11 +406,9 @@ pub async fn save_statement_profile(
     .await
     .map_err(|e| e.to_string())?;
 
-    sqlx::query_as::<_, StatementProfile>(
-        "SELECT * FROM statement_profiles WHERE id = ?",
-    )
-    .bind(&id)
-    .fetch_one(&state.pool)
-    .await
-    .map_err(|e| e.to_string())
+    sqlx::query_as::<_, StatementProfile>("SELECT * FROM statement_profiles WHERE id = ?")
+        .bind(&id)
+        .fetch_one(&state.pool)
+        .await
+        .map_err(|e| e.to_string())
 }

@@ -67,16 +67,19 @@ describe('Bank persistence round-trip (GIV-825)', () => {
     })
 
     // Generate 100 transactions with signed amounts
-    const rows: BankTransactionInput[] = Array.from({ length: 100 }, (_, i) => ({
-      bank_account_id: account.id,
-      external_id: `FITID-${String(i).padStart(4, '0')}`,
-      posted_date: 1720000000 + i * 86400,
-      amount: i % 3 === 0 ? `-${(i + 1) * 10}.00` : `${(i + 1) * 10}.00`,
-      currency: 'USD',
-      payee: `Vendor ${i}`,
-      memo: `Payment #${i}`,
-      tx_type: i % 3 === 0 ? 'ach_debit' : 'ach_credit',
-    }))
+    const rows: BankTransactionInput[] = Array.from(
+      { length: 100 },
+      (_, i) => ({
+        bank_account_id: account.id,
+        external_id: `FITID-${String(i).padStart(4, '0')}`,
+        posted_date: 1720000000 + i * 86400,
+        amount: i % 3 === 0 ? `-${(i + 1) * 10}.00` : `${(i + 1) * 10}.00`,
+        currency: 'USD',
+        payee: `Vendor ${i}`,
+        memo: `Payment #${i}`,
+        tx_type: i % 3 === 0 ? 'ach_debit' : 'ach_credit',
+      })
+    )
 
     const savedCount = await indexedDBPersistence.saveBankTransactions(rows)
     expect(savedCount).toBe(100)
@@ -84,12 +87,14 @@ describe('Bank persistence round-trip (GIV-825)', () => {
     // Fetch all for this account
     const fetched = await indexedDBPersistence.getBankTransactions(account.id)
     expect(fetched).toHaveLength(100)
-    expect(fetched[0].posted_date).toBeGreaterThanOrEqual(fetched[99].posted_date)
+    expect(fetched[0].posted_date).toBeGreaterThanOrEqual(
+      fetched[99].posted_date
+    )
 
     // Verify signed amounts
     const debits = fetched.filter(t => parseFloat(t.amount) < 0)
     const credits = fetched.filter(t => parseFloat(t.amount) > 0)
-    expect(debits.length).toBe(34)  // indices 0,3,6,...,99
+    expect(debits.length).toBe(34) // indices 0,3,6,...,99
     expect(credits.length).toBe(66)
 
     // Verify composite id pattern
@@ -119,15 +124,33 @@ describe('Bank persistence round-trip (GIV-825)', () => {
     })
 
     await indexedDBPersistence.saveBankTransactions([
-      { bank_account_id: account.id, posted_date: 1000, amount: '10.00', currency: 'USD' },
-      { bank_account_id: account.id, posted_date: 2000, amount: '20.00', currency: 'USD' },
-      { bank_account_id: account.id, posted_date: 3000, amount: '30.00', currency: 'USD' },
+      {
+        bank_account_id: account.id,
+        posted_date: 1000,
+        amount: '10.00',
+        currency: 'USD',
+      },
+      {
+        bank_account_id: account.id,
+        posted_date: 2000,
+        amount: '20.00',
+        currency: 'USD',
+      },
+      {
+        bank_account_id: account.id,
+        posted_date: 3000,
+        amount: '30.00',
+        currency: 'USD',
+      },
     ])
 
-    const filtered = await indexedDBPersistence.getBankTransactions(account.id, {
-      from_date: 1500,
-      to_date: 2500,
-    })
+    const filtered = await indexedDBPersistence.getBankTransactions(
+      account.id,
+      {
+        from_date: 1500,
+        to_date: 2500,
+      }
+    )
     expect(filtered).toHaveLength(1)
     expect(filtered[0].amount).toBe('20.00')
   })
@@ -141,13 +164,27 @@ describe('Bank persistence round-trip (GIV-825)', () => {
     })
 
     await indexedDBPersistence.saveBankTransactions([
-      { bank_account_id: account.id, posted_date: 1000, amount: '10.00', currency: 'USD' },
-      { bank_account_id: account.id, posted_date: 2000, amount: '20.00', currency: 'USD', classification_status: 'classified' },
+      {
+        bank_account_id: account.id,
+        posted_date: 1000,
+        amount: '10.00',
+        currency: 'USD',
+      },
+      {
+        bank_account_id: account.id,
+        posted_date: 2000,
+        amount: '20.00',
+        currency: 'USD',
+        classification_status: 'classified',
+      },
     ])
 
-    const unclassified = await indexedDBPersistence.getBankTransactions(account.id, {
-      classification_status: 'unclassified',
-    })
+    const unclassified = await indexedDBPersistence.getBankTransactions(
+      account.id,
+      {
+        classification_status: 'unclassified',
+      }
+    )
     expect(unclassified).toHaveLength(1)
     expect(unclassified[0].amount).toBe('10.00')
   })
@@ -191,10 +228,24 @@ describe('Bank persistence round-trip (GIV-825)', () => {
     })
 
     await indexedDBPersistence.saveBankTransactions([
-      { bank_account_id: account.id, external_id: 'FITID-001', posted_date: 1000, amount: '50.00', currency: 'USD', payee: 'Original' },
+      {
+        bank_account_id: account.id,
+        external_id: 'FITID-001',
+        posted_date: 1000,
+        amount: '50.00',
+        currency: 'USD',
+        payee: 'Original',
+      },
     ])
     await indexedDBPersistence.saveBankTransactions([
-      { bank_account_id: account.id, external_id: 'FITID-001', posted_date: 1000, amount: '50.00', currency: 'USD', payee: 'Reimport' },
+      {
+        bank_account_id: account.id,
+        external_id: 'FITID-001',
+        posted_date: 1000,
+        amount: '50.00',
+        currency: 'USD',
+        payee: 'Reimport',
+      },
     ])
 
     const all = await indexedDBPersistence.getBankTransactions(account.id)
@@ -254,7 +305,12 @@ describe('Bank persistence round-trip (GIV-825)', () => {
     const profile = await indexedDBPersistence.saveStatementProfile(input)
     expect(profile.id).toBeTruthy()
     expect(profile.name).toBe('Chase CSV')
-    expect(JSON.parse(profile.column_map!)).toEqual({ date: 0, amount: 2, payee: 3, memo: 4 })
+    expect(JSON.parse(profile.column_map!)).toEqual({
+      date: 0,
+      amount: 2,
+      payee: 3,
+      memo: 4,
+    })
 
     const all = await indexedDBPersistence.getStatementProfiles()
     expect(all).toHaveLength(1)

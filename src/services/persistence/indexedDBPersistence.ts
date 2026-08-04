@@ -199,15 +199,23 @@ class IndexedDBPersistenceService implements PersistenceService {
             unique: false,
           })
           btStore.createIndex('posted_date', 'posted_date', { unique: false })
-          btStore.createIndex('account_posted', ['bank_account_id', 'posted_date'], {
-            unique: false,
-          })
+          btStore.createIndex(
+            'account_posted',
+            ['bank_account_id', 'posted_date'],
+            {
+              unique: false,
+            }
+          )
           btStore.createIndex('import_batch_id', 'import_batch_id', {
             unique: false,
           })
-          btStore.createIndex('classification_status', 'classification_status', {
-            unique: false,
-          })
+          btStore.createIndex(
+            'classification_status',
+            'classification_status',
+            {
+              unique: false,
+            }
+          )
         }
 
         // Import batches store (GIV-825)
@@ -1268,9 +1276,7 @@ class IndexedDBPersistenceService implements PersistenceService {
           )
         }
         if (filter?.import_batch_id) {
-          rows = rows.filter(
-            r => r.import_batch_id === filter.import_batch_id
-          )
+          rows = rows.filter(r => r.import_batch_id === filter.import_batch_id)
         }
         rows.sort((a, b) => b.posted_date - a.posted_date)
         const offset = filter?.offset ?? 0
@@ -1312,7 +1318,9 @@ class IndexedDBPersistenceService implements PersistenceService {
           updated_at: now,
         }
         const req = store.put(record)
-        req.onsuccess = () => { count++ }
+        req.onsuccess = () => {
+          count++
+        }
       }
       tx.oncomplete = () => resolve(count)
       tx.onerror = () => reject(tx.error)
