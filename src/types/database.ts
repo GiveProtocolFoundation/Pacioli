@@ -212,6 +212,8 @@ export interface JournalEntry {
   postedAt?: Date
   /** FK to multi_chain_transactions — on-chain source tx, null for manual entries. */
   sourceTxId?: string
+  /** FK to bank_transactions — bank/card source tx, null for non-bank entries. */
+  sourceBankTxId?: string
 }
 
 export interface JournalEntryLine {
@@ -325,6 +327,26 @@ export interface RawTransaction {
   priceAtAcquisitionUsd: string | null
   valuationStatus: ValuationStatus
   isSelfTransfer: boolean
+}
+
+// =============================================================================
+// BANK QUEUE ITEM (GIV-828)
+// =============================================================================
+
+/** Unclassified bank transaction with account metadata for the classification queue. */
+export interface BankQueueItem {
+  id: string
+  bankAccountId: string
+  accountNickname: string
+  institutionName: string
+  postedDate: number
+  amount: string
+  currency: string
+  payee: string | null
+  memo: string | null
+  referenceNumber: string | null
+  txType: string | null
+  classificationStatus: string
 }
 
 // =============================================================================
