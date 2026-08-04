@@ -16,6 +16,8 @@ import {
   ShieldCheck,
   ArrowRight,
   BarChart3,
+  Landmark,
+  Link2,
 } from 'lucide-react'
 import { useNavBadges } from '../../contexts/NavBadgeContext'
 import { useAuth } from '../../contexts/AuthContext'
@@ -23,6 +25,7 @@ import type {
   RawTransaction,
   GLAccount,
   JournalEntryWithLines,
+  BankQueueItem,
 } from '../../types/database'
 import JournalEntryDrawer from '../journal-entries/JournalEntryDrawer'
 import {
@@ -33,6 +36,8 @@ import {
   findMatchingRule,
 } from './classificationUtils'
 import type { ClassificationRuleMatch } from './classificationUtils'
+
+type SourceKind = 'crypto' | 'bank'
 
 interface IgnoreModal {
   transactionId: string
@@ -202,6 +207,329 @@ const QueueRow: React.FC<QueueRowProps> = ({
   </tr>
 )
 
+/** @returns Header row for the bank transaction queue table. */
+const BankQueueHeaderRow: React.FC<{
+  allSelected: boolean
+  someSelected: boolean
+  onToggleAll: () => void
+}> = ({ allSelected, someSelected, onToggleAll }) => (
+  <tr>
+    <th className={`${HEADER_CELL} w-10 text-center`}>
+      <button
+        onClick={onToggleAll}
+        className="p-0.5 hover:bg-[#294050]/10 dark:hover:bg-[#294050]/20 rounded transition-colors"
+        title={allSelected ? 'Deselect all' : 'Select all'}
+      >
+        {allSelected ? (
+          <CheckSquare className="w-4 h-4 text-[#5FE3C0]" />
+        ) : someSelected ? (
+          <MinusSquare className="w-4 h-4 text-[#5FE3C0]" />
+        ) : (
+          <Square className="w-4 h-4" />
+        )}
+      </button>
+    </th>
+    <th className={`${HEADER_CELL} text-left`}>Account</th>
+    <th className={`${HEADER_CELL} text-left`}>Payee</th>
+    <th className={`${HEADER_CELL} text-left`}>Memo</th>
+    <th className={`${HEADER_CELL} text-right`}>Amount</th>
+    <th className={`${HEADER_CELL} text-left`}>Date</th>
+    <th className={`${HEADER_CELL} text-center`}>Actions</th>
+  </tr>
+)
+
+interface BankQueueRowProps {
+  tx: BankQueueItem
+  selected: boolean
+  busy: boolean
+  onToggleSelect: (event: React.MouseEvent<HTMLButtonElement>) => void
+  onAutoClassify: (event: React.MouseEvent<HTMLButtonElement>) => void
+  onManualClassify: (event: React.MouseEvent<HTMLButtonElement>) => void
+  onIgnore: (event: React.MouseEvent<HTMLButtonElement>) => void
+}
+
+/** @returns Single bank transaction row with action buttons. */
+const BankQueueRow: React.FC<BankQueueRowProps> = ({
+  tx,
+  selected,
+  busy,
+  onToggleSelect,
+  onAutoClassify,
+  onManualClassify,
+  onIgnore,
+}) => {
+  const amount = parseFloat(tx.amount)
+  const isNegative = amount < 0
+  return (
+    <tr
+      className={`hover:bg-[#EAF3F2] dark:hover:bg-[#11202B] ${selected ? 'bg-[#5FE3C0]/5 dark:bg-[#5FE3C0]/5' : ''}`}
+    >
+      <td className="px-4 py-3 text-center">
+        <button
+          data-txid={tx.id}
+          onClick={onToggleSelect}
+          className="p-0.5 hover:bg-[#294050]/10 rounded transition-colors"
+        >
+          {selected ? (
+            <CheckSquare className="w-4 h-4 text-[#5FE3C0]" />
+          ) : (
+            <Square className="w-4 h-4 text-[#647D8B]" />
+          )}
+        </button>
+      </td>
+      <td className="px-4 py-3 whitespace-nowrap text-sm text-[#11202B] dark:text-[#EAF3F2]">
+        <span title={tx.institutionName}>{tx.accountNickname}</span>
+      </td>
+      <td className="px-4 py-3 text-sm text-[#11202B] dark:text-[#EAF3F2] max-w-[200px] truncate">
+        {tx.payee ?? '—'}
+      </td>
+      <td className="px-4 py-3 text-sm text-[#647D8B] max-w-[200px] truncate">
+        {tx.memo ?? '—'}
+      </td>
+      <td
+        className={`px-4 py-3 whitespace-nowrap text-sm text-right font-mono ${isNegative ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400'}`}
+      >
+        {isNegative ? '-' : ''}${Math.abs(amount).toFixed(2)}
+      </td>
+      <td className="px-4 py-3 whitespace-nowrap text-sm text-[#294050] dark:text-[#9FB4BE]">
+        {formatTimestampFull(tx.postedDate)}
+      </td>
+      <td className="px-4 py-3 whitespace-nowrap text-center">
+        <div className="flex items-center justify-center gap-1">
+          <button
+            data-txid={tx.id}
+            onClick={onAutoClassify}
+            disabled={busy}
+            className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded bg-[#5FE3C0]/10 text-[#294050] dark:text-[#5FE3C0] hover:bg-[#5FE3C0]/20 disabled:opacity-50 transition-colors"
+            title="Auto-classify using amount sign heuristic"
+          >
+            <Zap className="w-3 h-3" />
+            Auto
+          </button>
+          <button
+            data-txid={tx.id}
+            onClick={onManualClassify}
+            disabled={busy}
+            className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/50 disabled:opacity-50 transition-colors"
+            title="Manually classify with journal entry form"
+          >
+            <FileEdit className="w-3 h-3" />
+            Manual
+          </button>
+          <button
+            data-txid={tx.id}
+            onClick={onIgnore}
+            disabled={busy}
+            className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded bg-gray-100 text-gray-600 dark:bg-gray-800/50 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700/50 disabled:opacity-50 transition-colors"
+            title="Skip / ignore this transaction"
+          >
+            <EyeOff className="w-3 h-3" />
+            Skip
+          </button>
+        </div>
+      </td>
+    </tr>
+  )
+}
+
+interface SourceTabsProps {
+  sourceKind: SourceKind
+  cryptoCount: number
+  bankCount: number
+  onSwitchToCrypto: () => void
+  onSwitchToBank: () => void
+}
+
+/** @returns Tab bar for switching between crypto and bank classification queues. */
+const SourceTabs: React.FC<SourceTabsProps> = ({
+  sourceKind,
+  cryptoCount,
+  bankCount,
+  onSwitchToCrypto,
+  onSwitchToBank,
+}) => (
+  <div className="mb-4 flex items-center gap-1 border-b border-[rgba(95,227,192,0.15)]">
+    <button
+      onClick={onSwitchToCrypto}
+      className={`inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+        sourceKind === 'crypto'
+          ? 'border-[#5FE3C0] text-[#11202B] dark:text-[#EAF3F2]'
+          : 'border-transparent text-[#647D8B] hover:text-[#294050] dark:hover:text-[#9FB4BE]'
+      }`}
+    >
+      <Link2 className="w-4 h-4" />
+      Crypto
+      {cryptoCount > 0 && (
+        <span className="ml-1 px-1.5 py-0.5 text-xs rounded-full bg-[#294050]/10 dark:bg-[#294050]/30">
+          {cryptoCount}
+        </span>
+      )}
+    </button>
+    <button
+      onClick={onSwitchToBank}
+      className={`inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+        sourceKind === 'bank'
+          ? 'border-[#5FE3C0] text-[#11202B] dark:text-[#EAF3F2]'
+          : 'border-transparent text-[#647D8B] hover:text-[#294050] dark:hover:text-[#9FB4BE]'
+      }`}
+    >
+      <Landmark className="w-4 h-4" />
+      Bank
+      {bankCount > 0 && (
+        <span className="ml-1 px-1.5 py-0.5 text-xs rounded-full bg-[#294050]/10 dark:bg-[#294050]/30">
+          {bankCount}
+        </span>
+      )}
+    </button>
+  </div>
+)
+
+interface CryptoFilterMenuProps {
+  open: boolean
+  chains: string[]
+  types: string[]
+  filtered: RawTransaction[]
+  onToggle: () => void
+  onClose: () => void
+  onSelectByChain: (event: React.MouseEvent<HTMLButtonElement>) => void
+  onSelectByType: (event: React.MouseEvent<HTMLButtonElement>) => void
+}
+
+/** @returns Dropdown menu for selecting transactions by chain or type. */
+const CryptoFilterMenu: React.FC<CryptoFilterMenuProps> = ({
+  open,
+  chains,
+  types,
+  filtered,
+  onToggle,
+  onClose,
+  onSelectByChain,
+  onSelectByType,
+}) => (
+  <div className="relative">
+    <button
+      onClick={onToggle}
+      className="inline-flex items-center gap-1.5 px-3 py-2 text-sm border border-[rgba(95,227,192,0.15)] rounded-lg bg-[#F7FAFA] dark:bg-[#11202B] text-[#294050] dark:text-[#9FB4BE] hover:bg-[#EAF3F2] dark:hover:bg-[#16242F] transition-colors"
+    >
+      <Filter className="w-4 h-4" />
+      Select by...
+    </button>
+    {open && (
+      <>
+        <div className="fixed inset-0 z-40" onClick={onClose} />
+        <div className="absolute right-0 top-full mt-1 z-50 w-56 bg-[#F7FAFA] dark:bg-[#11202B] border border-[rgba(95,227,192,0.15)] rounded-lg shadow-lg py-1">
+          {chains.length > 1 && (
+            <>
+              <div className="px-3 py-1.5 text-xs font-medium text-[#647D8B] uppercase tracking-wider">
+                By Chain
+              </div>
+              {chains.map(chain => (
+                <button
+                  key={chain}
+                  data-chain={chain}
+                  onClick={onSelectByChain}
+                  className="w-full text-left px-3 py-1.5 text-sm text-[#11202B] dark:text-[#EAF3F2] hover:bg-[#EAF3F2] dark:hover:bg-[#16242F]"
+                >
+                  {chain} ({filtered.filter(tx => tx.chainId === chain).length})
+                </button>
+              ))}
+            </>
+          )}
+          {types.length > 1 && (
+            <>
+              <div className="px-3 py-1.5 text-xs font-medium text-[#647D8B] uppercase tracking-wider border-t border-[rgba(95,227,192,0.1)] mt-1">
+                By Type
+              </div>
+              {types.map(txType => (
+                <button
+                  key={txType}
+                  data-txtype={txType}
+                  onClick={onSelectByType}
+                  className="w-full text-left px-3 py-1.5 text-sm text-[#11202B] dark:text-[#EAF3F2] hover:bg-[#EAF3F2] dark:hover:bg-[#16242F]"
+                >
+                  {displayTxType(txType)} (
+                  {filtered.filter(tx => tx.transactionType === txType).length})
+                </button>
+              ))}
+            </>
+          )}
+        </div>
+      </>
+    )}
+  </div>
+)
+
+interface BatchProgressBarProps {
+  done: number
+  total: number
+}
+
+interface QueueHeaderProps {
+  sourceKind: SourceKind
+  hasUnpriced: boolean
+  enriching: boolean
+  onEnrichPrices: () => void
+  onRefresh: () => void
+}
+
+/** @returns Page header with optional price-enrichment button and refresh. */
+const QueueHeader: React.FC<QueueHeaderProps> = ({
+  sourceKind,
+  hasUnpriced,
+  enriching,
+  onEnrichPrices,
+  onRefresh,
+}) => (
+  <div className="mb-6 flex items-center justify-between">
+    <div>
+      <p className="eyebrow">Accounting</p>
+      <h1>Classification Queue</h1>
+      <p className="text-[#294050] dark:text-[#9FB4BE] mt-1">
+        Classify transactions into draft journal entries
+      </p>
+    </div>
+    <div className="flex items-center gap-2">
+      {sourceKind === 'crypto' && hasUnpriced && (
+        <button
+          onClick={onEnrichPrices}
+          disabled={enriching}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#5FE3C0]/10 text-[#294050] dark:text-[#5FE3C0] hover:bg-[#5FE3C0]/20 disabled:opacity-50 transition-colors"
+        >
+          <DollarSign className="w-4 h-4" />
+          {enriching ? 'Fetching prices...' : 'Enrich Prices'}
+        </button>
+      )}
+      <button
+        onClick={onRefresh}
+        className="flex items-center gap-2 px-4 py-2 border border-[rgba(95,227,192,0.15)] rounded-lg bg-[#F7FAFA] dark:bg-[#11202B] hover:bg-[#EAF3F2] dark:hover:bg-[#16242F] text-[#294050] dark:text-[#9FB4BE]"
+      >
+        <RefreshCw className="w-4 h-4" />
+        Refresh
+      </button>
+    </div>
+  </div>
+)
+
+/** @returns Horizontal progress bar for batch classification operations. */
+const BatchProgressBar: React.FC<BatchProgressBarProps> = ({ done, total }) => (
+  <div className="mb-4">
+    <div className="flex items-center justify-between mb-1">
+      <span className="text-xs text-[#294050] dark:text-[#9FB4BE]">
+        Processing {done} of {total}...
+      </span>
+      <span className="text-xs font-mono text-[#647D8B]">
+        {Math.round((done / total) * 100)}%
+      </span>
+    </div>
+    <div className="h-1.5 bg-[#294050]/10 dark:bg-[#294050]/20 rounded-full overflow-hidden">
+      <div
+        className="h-full bg-[#5FE3C0] rounded-full transition-all duration-300"
+        style={{ width: `${(done / total) * 100}%` }}
+      />
+    </div>
+  </div>
+)
+
 interface IgnoreDialogProps {
   hash: string
   reason: string
@@ -359,7 +687,9 @@ const ClassificationQueue: React.FC = () => {
   const navigate = useNavigate()
   const { refreshCounts } = useNavBadges()
   const { user } = useAuth()
+  const [sourceKind, setSourceKind] = useState<SourceKind>('crypto')
   const [transactions, setTransactions] = useState<RawTransaction[]>([])
+  const [bankTransactions, setBankTransactions] = useState<BankQueueItem[]>([])
   const [accounts, setAccounts] = useState<GLAccount[]>([])
   const [classificationRules, setClassificationRules] = useState<
     ClassificationRuleMatch[]
@@ -371,6 +701,7 @@ const ClassificationQueue: React.FC = () => {
   const [processingId, setProcessingId] = useState<string | null>(null)
 
   const [drawerTx, setDrawerTx] = useState<RawTransaction | null>(null)
+  const [drawerBankTx, setDrawerBankTx] = useState<BankQueueItem | null>(null)
 
   const [ignoreModal, setIgnoreModal] = useState<IgnoreModal | null>(null)
   const [ignoreReason, setIgnoreReason] = useState('')
@@ -390,12 +721,14 @@ const ClassificationQueue: React.FC = () => {
     setLoading(true)
     setError(null)
     try {
-      const [txs, accts, rules] = await Promise.all([
+      const [txs, bankTxs, accts, rules] = await Promise.all([
         invoke<RawTransaction[]>('get_unclassified_transactions'),
+        invoke<BankQueueItem[]>('get_unclassified_bank_transactions'),
         invoke<GLAccount[]>('get_chart_of_accounts'),
         invoke<ClassificationRuleMatch[]>('list_classification_rules'),
       ])
       setTransactions(txs)
+      setBankTransactions(bankTxs)
       setAccounts(accts)
       setClassificationRules(rules)
       setSelectedIds(new Set())
@@ -437,6 +770,19 @@ const ClassificationQueue: React.FC = () => {
     )
   }, [transactions, searchQuery])
 
+  const filteredBank = useMemo(() => {
+    if (!searchQuery) return bankTransactions
+    const needle = searchQuery.toLowerCase()
+    return bankTransactions.filter(
+      tx =>
+        (tx.payee?.toLowerCase().includes(needle) ?? false) ||
+        (tx.memo?.toLowerCase().includes(needle) ?? false) ||
+        tx.accountNickname.toLowerCase().includes(needle) ||
+        tx.institutionName.toLowerCase().includes(needle) ||
+        tx.amount.includes(needle)
+    )
+  }, [bankTransactions, searchQuery])
+
   const uniqueChains = useMemo(
     () => [...new Set(filtered.map(tx => tx.chainId))].sort(),
     [filtered]
@@ -446,25 +792,31 @@ const ClassificationQueue: React.FC = () => {
     [filtered]
   )
 
+  const activeItems = sourceKind === 'crypto' ? filtered : filteredBank
   const allFilteredSelected =
-    filtered.length > 0 && filtered.every(tx => selectedIds.has(tx.id))
+    activeItems.length > 0 && activeItems.every(tx => selectedIds.has(tx.id))
   const someFilteredSelected =
-    filtered.some(tx => selectedIds.has(tx.id)) && !allFilteredSelected
+    activeItems.some(tx => selectedIds.has(tx.id)) && !allFilteredSelected
 
-  const selectedCount = filtered.filter(tx => selectedIds.has(tx.id)).length
+  const selectedCount = activeItems.filter(tx => selectedIds.has(tx.id)).length
+
+  const searchPlaceholder =
+    sourceKind === 'crypto'
+      ? 'Search by hash, chain, type, address...'
+      : 'Search by payee, memo, account...'
 
   const handleToggleAll = useCallback(() => {
     setSelectedIds(prev => {
-      if (filtered.every(tx => prev.has(tx.id))) {
+      if (activeItems.every(tx => prev.has(tx.id))) {
         const next = new Set(prev)
-        filtered.forEach(tx => next.delete(tx.id))
+        activeItems.forEach(tx => next.delete(tx.id))
         return next
       }
       const next = new Set(prev)
-      filtered.forEach(tx => next.add(tx.id))
+      activeItems.forEach(tx => next.add(tx.id))
       return next
     })
-  }, [filtered])
+  }, [activeItems])
 
   const handleToggleSelect = useCallback(
     (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -517,8 +869,15 @@ const ClassificationQueue: React.FC = () => {
   }, [])
 
   const handleBatchAutoClassify = useCallback(async () => {
-    const ids = filtered.filter(tx => selectedIds.has(tx.id)).map(tx => tx.id)
+    const ids = activeItems
+      .filter(tx => selectedIds.has(tx.id))
+      .map(tx => tx.id)
     if (ids.length === 0) return
+
+    const command =
+      sourceKind === 'crypto'
+        ? 'auto_classify_transaction'
+        : 'auto_classify_bank_transaction'
 
     setBatchProcessing(true)
     setBatchProgress({ done: 0, total: ids.length })
@@ -531,10 +890,9 @@ const ClassificationQueue: React.FC = () => {
 
     for (const txId of ids) {
       try {
-        const je = await invoke<JournalEntryWithLines>(
-          'auto_classify_transaction',
-          { transactionId: txId }
-        )
+        const je = await invoke<JournalEntryWithLines>(command, {
+          transactionId: txId,
+        })
         classified++
         classifiedTxIds.push(txId)
         journalEntryIds.push(je.id)
@@ -544,7 +902,13 @@ const ClassificationQueue: React.FC = () => {
       setBatchProgress({ done: classified + failed, total: ids.length })
     }
 
-    setTransactions(prev => prev.filter(t => !classifiedTxIds.includes(t.id)))
+    if (sourceKind === 'crypto') {
+      setTransactions(prev => prev.filter(t => !classifiedTxIds.includes(t.id)))
+    } else {
+      setBankTransactions(prev =>
+        prev.filter(t => !classifiedTxIds.includes(t.id))
+      )
+    }
     setSelectedIds(new Set())
     refreshCounts()
     setBatchProcessing(false)
@@ -553,14 +917,19 @@ const ClassificationQueue: React.FC = () => {
 
     if (failed > 0) {
       setActionError(
-        `${failed} transaction${failed !== 1 ? 's' : ''} failed to auto-classify (may need price enrichment or manual classification)`
+        `${failed} transaction${failed !== 1 ? 's' : ''} failed to auto-classify${sourceKind === 'crypto' ? ' (may need price enrichment or manual classification)' : ''}`
       )
     }
-  }, [filtered, selectedIds, refreshCounts])
+  }, [activeItems, selectedIds, refreshCounts, sourceKind])
 
   const handleBatchSkip = useCallback(async () => {
-    const ids = filtered.filter(tx => selectedIds.has(tx.id)).map(tx => tx.id)
+    const ids = activeItems
+      .filter(tx => selectedIds.has(tx.id))
+      .map(tx => tx.id)
     if (ids.length === 0) return
+
+    const command =
+      sourceKind === 'crypto' ? 'ignore_transaction' : 'ignore_bank_transaction'
 
     setBatchProcessing(true)
     setBatchProgress({ done: 0, total: ids.length })
@@ -572,7 +941,7 @@ const ClassificationQueue: React.FC = () => {
 
     for (const txId of ids) {
       try {
-        await invoke('ignore_transaction', {
+        await invoke(command, {
           transactionId: txId,
           reason: null,
         })
@@ -584,7 +953,13 @@ const ClassificationQueue: React.FC = () => {
       setBatchProgress({ done: skipped + failed, total: ids.length })
     }
 
-    setTransactions(prev => prev.filter(t => !skippedTxIds.includes(t.id)))
+    if (sourceKind === 'crypto') {
+      setTransactions(prev => prev.filter(t => !skippedTxIds.includes(t.id)))
+    } else {
+      setBankTransactions(prev =>
+        prev.filter(t => !skippedTxIds.includes(t.id))
+      )
+    }
     setSelectedIds(new Set())
     refreshCounts()
     setBatchProcessing(false)
@@ -601,7 +976,7 @@ const ClassificationQueue: React.FC = () => {
         `${failed} transaction${failed !== 1 ? 's' : ''} failed to skip`
       )
     }
-  }, [filtered, selectedIds, refreshCounts])
+  }, [activeItems, selectedIds, refreshCounts, sourceKind])
 
   const handleBatchApprove = useCallback(async () => {
     if (!batchResult || batchResult.journalEntryIds.length === 0) return
@@ -676,11 +1051,19 @@ const ClassificationQueue: React.FC = () => {
       if (!txId) return
       setProcessingId(txId)
       setActionError(null)
+      const command =
+        sourceKind === 'crypto'
+          ? 'auto_classify_transaction'
+          : 'auto_classify_bank_transaction'
       try {
-        await invoke<JournalEntryWithLines>('auto_classify_transaction', {
+        await invoke<JournalEntryWithLines>(command, {
           transactionId: txId,
         })
-        setTransactions(prev => prev.filter(t => t.id !== txId))
+        if (sourceKind === 'crypto') {
+          setTransactions(prev => prev.filter(t => t.id !== txId))
+        } else {
+          setBankTransactions(prev => prev.filter(t => t.id !== txId))
+        }
         refreshCounts()
       } catch (err) {
         setActionError(typeof err === 'string' ? err : 'Auto-classify failed')
@@ -688,44 +1071,65 @@ const ClassificationQueue: React.FC = () => {
         setProcessingId(null)
       }
     },
-    [refreshCounts]
+    [refreshCounts, sourceKind]
   )
 
   const handleManualClassify = useCallback(
     (event: React.MouseEvent<HTMLButtonElement>) => {
       const txId = event.currentTarget.dataset.txid
       if (!txId) return
-      const tx = transactions.find(t => t.id === txId)
-      if (tx) setDrawerTx(tx)
+      if (sourceKind === 'crypto') {
+        const tx = transactions.find(t => t.id === txId)
+        if (tx) setDrawerTx(tx)
+      } else {
+        const tx = bankTransactions.find(t => t.id === txId)
+        if (tx) setDrawerBankTx(tx)
+      }
     },
-    [transactions]
+    [transactions, bankTransactions, sourceKind]
   )
 
   const handleIgnoreClick = useCallback(
     (event: React.MouseEvent<HTMLButtonElement>) => {
       const txId = event.currentTarget.dataset.txid
       if (!txId) return
-      const tx = transactions.find(t => t.id === txId)
-      if (tx) {
-        setIgnoreModal({ transactionId: tx.id, hash: tx.transactionHash })
-        setIgnoreReason('')
+      if (sourceKind === 'crypto') {
+        const tx = transactions.find(t => t.id === txId)
+        if (tx) {
+          setIgnoreModal({ transactionId: tx.id, hash: tx.transactionHash })
+          setIgnoreReason('')
+        }
+      } else {
+        const tx = bankTransactions.find(t => t.id === txId)
+        if (tx) {
+          setIgnoreModal({ transactionId: tx.id, hash: tx.payee ?? tx.id })
+          setIgnoreReason('')
+        }
       }
     },
-    [transactions]
+    [transactions, bankTransactions, sourceKind]
   )
 
   const handleIgnoreConfirm = useCallback(async () => {
     if (!ignoreModal) return
     setProcessingId(ignoreModal.transactionId)
     setActionError(null)
+    const command =
+      sourceKind === 'crypto' ? 'ignore_transaction' : 'ignore_bank_transaction'
     try {
-      await invoke('ignore_transaction', {
+      await invoke(command, {
         transactionId: ignoreModal.transactionId,
         reason: ignoreReason || null,
       })
-      setTransactions(prev =>
-        prev.filter(t => t.id !== ignoreModal.transactionId)
-      )
+      if (sourceKind === 'crypto') {
+        setTransactions(prev =>
+          prev.filter(t => t.id !== ignoreModal.transactionId)
+        )
+      } else {
+        setBankTransactions(prev =>
+          prev.filter(t => t.id !== ignoreModal.transactionId)
+        )
+      }
       refreshCounts()
       setIgnoreModal(null)
     } catch (err) {
@@ -733,7 +1137,7 @@ const ClassificationQueue: React.FC = () => {
     } finally {
       setProcessingId(null)
     }
-  }, [ignoreModal, ignoreReason, refreshCounts])
+  }, [ignoreModal, ignoreReason, refreshCounts, sourceKind])
 
   const handleIgnoreCancel = useCallback(() => {
     setIgnoreModal(null)
@@ -741,13 +1145,19 @@ const ClassificationQueue: React.FC = () => {
   }, [])
 
   const handleDrawerSaved = useCallback(() => {
-    setDrawerTx(null)
-    setTransactions(prev => prev.filter(t => t.id !== drawerTx?.id))
+    if (drawerTx) {
+      setDrawerTx(null)
+      setTransactions(prev => prev.filter(t => t.id !== drawerTx.id))
+    } else if (drawerBankTx) {
+      setDrawerBankTx(null)
+      setBankTransactions(prev => prev.filter(t => t.id !== drawerBankTx.id))
+    }
     refreshCounts()
-  }, [drawerTx, refreshCounts])
+  }, [drawerTx, drawerBankTx, refreshCounts])
 
   const handleDrawerClose = useCallback(() => {
     setDrawerTx(null)
+    setDrawerBankTx(null)
   }, [])
 
   const handleSearchChange = useCallback(
@@ -760,6 +1170,16 @@ const ClassificationQueue: React.FC = () => {
   const handleRefresh = useCallback(() => {
     fetchData()
   }, [fetchData])
+
+  const handleSwitchToCrypto = useCallback(() => {
+    setSourceKind('crypto')
+    setSelectedIds(new Set())
+  }, [])
+
+  const handleSwitchToBank = useCallback(() => {
+    setSourceKind('bank')
+    setSelectedIds(new Set())
+  }, [])
 
   const handleReasonChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -781,34 +1201,22 @@ const ClassificationQueue: React.FC = () => {
   return (
     <div className="p-6 min-h-screen ledger-background">
       {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <p className="eyebrow">Accounting</p>
-          <h1>Classification Queue</h1>
-          <p className="text-[#294050] dark:text-[#9FB4BE] mt-1">
-            Classify raw blockchain transactions into draft journal entries
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          {transactions.some(tx => tx.valuationStatus === 'unpriced') && (
-            <button
-              onClick={handleEnrichPrices}
-              disabled={enriching}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#5FE3C0]/10 text-[#294050] dark:text-[#5FE3C0] hover:bg-[#5FE3C0]/20 disabled:opacity-50 transition-colors"
-            >
-              <DollarSign className="w-4 h-4" />
-              {enriching ? 'Fetching prices...' : 'Enrich Prices'}
-            </button>
-          )}
-          <button
-            onClick={handleRefresh}
-            className="flex items-center gap-2 px-4 py-2 border border-[rgba(95,227,192,0.15)] rounded-lg bg-[#F7FAFA] dark:bg-[#11202B] hover:bg-[#EAF3F2] dark:hover:bg-[#16242F] text-[#294050] dark:text-[#9FB4BE]"
-          >
-            <RefreshCw className="w-4 h-4" />
-            Refresh
-          </button>
-        </div>
-      </div>
+      <QueueHeader
+        sourceKind={sourceKind}
+        hasUnpriced={transactions.some(tx => tx.valuationStatus === 'unpriced')}
+        enriching={enriching}
+        onEnrichPrices={handleEnrichPrices}
+        onRefresh={handleRefresh}
+      />
+
+      {/* Source tabs */}
+      <SourceTabs
+        sourceKind={sourceKind}
+        cryptoCount={transactions.length}
+        bankCount={bankTransactions.length}
+        onSwitchToCrypto={handleSwitchToCrypto}
+        onSwitchToBank={handleSwitchToBank}
+      />
 
       {/* Error banners */}
       {error !== null && (
@@ -839,72 +1247,23 @@ const ClassificationQueue: React.FC = () => {
           <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#647D8B]" />
           <input
             type="text"
-            placeholder="Search by hash, chain, type, address..."
+            placeholder={searchPlaceholder}
             value={searchQuery}
             onChange={handleSearchChange}
             className="w-full pl-4 pr-10 py-2 border border-[rgba(95,227,192,0.15)] rounded-lg bg-[#F7FAFA] dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] placeholder-[#647D8B] dark:placeholder-[#294050] focus:outline-none focus:ring-2 focus:ring-[#5FE3C0] focus:border-[#5FE3C0]"
           />
         </div>
         {filtered.length > 0 && (
-          <div className="relative">
-            <button
-              onClick={handleToggleFilterMenu}
-              className="inline-flex items-center gap-1.5 px-3 py-2 text-sm border border-[rgba(95,227,192,0.15)] rounded-lg bg-[#F7FAFA] dark:bg-[#11202B] text-[#294050] dark:text-[#9FB4BE] hover:bg-[#EAF3F2] dark:hover:bg-[#16242F] transition-colors"
-            >
-              <Filter className="w-4 h-4" />
-              Select by...
-            </button>
-            {filterMenuOpen && (
-              <>
-                <div
-                  className="fixed inset-0 z-40"
-                  onClick={handleCloseFilterMenu}
-                />
-                <div className="absolute right-0 top-full mt-1 z-50 w-56 bg-[#F7FAFA] dark:bg-[#11202B] border border-[rgba(95,227,192,0.15)] rounded-lg shadow-lg py-1">
-                  {uniqueChains.length > 1 && (
-                    <>
-                      <div className="px-3 py-1.5 text-xs font-medium text-[#647D8B] uppercase tracking-wider">
-                        By Chain
-                      </div>
-                      {uniqueChains.map(chain => (
-                        <button
-                          key={chain}
-                          data-chain={chain}
-                          onClick={handleSelectByChain}
-                          className="w-full text-left px-3 py-1.5 text-sm text-[#11202B] dark:text-[#EAF3F2] hover:bg-[#EAF3F2] dark:hover:bg-[#16242F]"
-                        >
-                          {chain} (
-                          {filtered.filter(tx => tx.chainId === chain).length})
-                        </button>
-                      ))}
-                    </>
-                  )}
-                  {uniqueTypes.length > 1 && (
-                    <>
-                      <div className="px-3 py-1.5 text-xs font-medium text-[#647D8B] uppercase tracking-wider border-t border-[rgba(95,227,192,0.1)] mt-1">
-                        By Type
-                      </div>
-                      {uniqueTypes.map(txType => (
-                        <button
-                          key={txType}
-                          data-txtype={txType}
-                          onClick={handleSelectByType}
-                          className="w-full text-left px-3 py-1.5 text-sm text-[#11202B] dark:text-[#EAF3F2] hover:bg-[#EAF3F2] dark:hover:bg-[#16242F]"
-                        >
-                          {displayTxType(txType)} (
-                          {
-                            filtered.filter(tx => tx.transactionType === txType)
-                              .length
-                          }
-                          )
-                        </button>
-                      ))}
-                    </>
-                  )}
-                </div>
-              </>
-            )}
-          </div>
+          <CryptoFilterMenu
+            open={filterMenuOpen}
+            chains={uniqueChains}
+            types={uniqueTypes}
+            filtered={filtered}
+            onToggle={handleToggleFilterMenu}
+            onClose={handleCloseFilterMenu}
+            onSelectByChain={handleSelectByChain}
+            onSelectByType={handleSelectByType}
+          />
         )}
       </div>
 
@@ -943,60 +1302,112 @@ const ClassificationQueue: React.FC = () => {
 
       {/* Batch progress bar */}
       {batchProgress !== null && (
-        <div className="mb-4">
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-xs text-[#294050] dark:text-[#9FB4BE]">
-              Processing {batchProgress.done} of {batchProgress.total}...
-            </span>
-            <span className="text-xs font-mono text-[#647D8B]">
-              {Math.round((batchProgress.done / batchProgress.total) * 100)}%
-            </span>
-          </div>
-          <div className="h-1.5 bg-[#294050]/10 dark:bg-[#294050]/20 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-[#5FE3C0] rounded-full transition-all duration-300"
-              style={{
-                width: `${(batchProgress.done / batchProgress.total) * 100}%`,
-              }}
-            />
-          </div>
-        </div>
+        <BatchProgressBar
+          done={batchProgress.done}
+          total={batchProgress.total}
+        />
       )}
 
       {/* Count summary */}
       <div className="mb-4 text-sm text-[#294050] dark:text-[#9FB4BE]">
-        {filtered.length} unclassified transaction
-        {filtered.length !== 1 ? 's' : ''}
-        {filtered.length > 0 && <ValuationSummary transactions={filtered} />}
+        {activeItems.length} unclassified{' '}
+        {sourceKind === 'crypto' ? 'blockchain' : 'bank'} transaction
+        {activeItems.length !== 1 ? 's' : ''}
+        {sourceKind === 'crypto' && filtered.length > 0 && (
+          <ValuationSummary transactions={filtered} />
+        )}
       </div>
 
-      {/* Table */}
-      {filtered.length > 0 ? (
-        <div className="bg-[#F7FAFA] dark:bg-[#0C141B] rounded-lg border border-[rgba(95,227,192,0.15)] overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-[#EAF3F2] dark:bg-[#11202B] border-b border-[rgba(95,227,192,0.15)]">
-                <QueueHeaderRow
-                  allSelected={allFilteredSelected}
-                  someSelected={someFilteredSelected}
-                  onToggleAll={handleToggleAll}
-                />
-              </thead>
-              <tbody className="divide-y divide-[rgba(95,227,192,0.1)]">
-                {filtered.map(tx => {
-                  const matched = findMatchingRule(
-                    classificationRules,
-                    tx.transactionType,
-                    tx.chainId,
-                    tx.isSelfTransfer
-                  )
-                  return (
-                    <QueueRow
+      {/* Crypto Table */}
+      {sourceKind === 'crypto' &&
+        (filtered.length > 0 ? (
+          <div className="bg-[#F7FAFA] dark:bg-[#0C141B] rounded-lg border border-[rgba(95,227,192,0.15)] overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-[#EAF3F2] dark:bg-[#11202B] border-b border-[rgba(95,227,192,0.15)]">
+                  <QueueHeaderRow
+                    allSelected={allFilteredSelected}
+                    someSelected={someFilteredSelected}
+                    onToggleAll={handleToggleAll}
+                  />
+                </thead>
+                <tbody className="divide-y divide-[rgba(95,227,192,0.1)]">
+                  {filtered.map(tx => {
+                    const matched = findMatchingRule(
+                      classificationRules,
+                      tx.transactionType,
+                      tx.chainId,
+                      tx.isSelfTransfer
+                    )
+                    return (
+                      <QueueRow
+                        key={tx.id}
+                        tx={tx}
+                        ruleLabel={
+                          matched
+                            ? matched.name
+                            : rulePreview(tx.transactionType)
+                        }
+                        selected={selectedIds.has(tx.id)}
+                        busy={processingId === tx.id || batchProcessing}
+                        onToggleSelect={handleToggleSelect}
+                        onAutoClassify={handleAutoClassify}
+                        onManualClassify={handleManualClassify}
+                        onIgnore={handleIgnoreClick}
+                      />
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ) : (
+          <div className="text-center py-12 bg-[#F7FAFA] dark:bg-[#0C141B] rounded-lg border border-[rgba(95,227,192,0.15)]">
+            <Inbox className="mx-auto h-12 w-12 text-[#5FE3C0]" />
+            <h3 className="mt-3 text-lg font-medium text-[#11202B] dark:text-[#EAF3F2]">
+              All caught up
+            </h3>
+            <p className="mt-1 text-sm text-[#294050] dark:text-[#9FB4BE] max-w-sm mx-auto">
+              Every crypto transaction has been classified or skipped. Your next
+              step is to review and approve draft journal entries.
+            </p>
+            <div className="mt-5 flex items-center justify-center gap-3">
+              <button
+                onClick={handleNavigateToDrafts}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#294050] text-white hover:bg-[#1E2F3C] transition-colors text-sm font-medium"
+              >
+                <ShieldCheck className="w-4 h-4" />
+                Review Drafts
+              </button>
+              <button
+                onClick={handleNavigateToReports}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[rgba(95,227,192,0.15)] text-[#294050] dark:text-[#9FB4BE] hover:bg-[#EAF3F2] dark:hover:bg-[#16242F] transition-colors text-sm font-medium"
+              >
+                <BarChart3 className="w-4 h-4" />
+                View Trial Balance
+              </button>
+            </div>
+          </div>
+        ))}
+
+      {/* Bank Table */}
+      {sourceKind === 'bank' &&
+        (filteredBank.length > 0 ? (
+          <div className="bg-[#F7FAFA] dark:bg-[#0C141B] rounded-lg border border-[rgba(95,227,192,0.15)] overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-[#EAF3F2] dark:bg-[#11202B] border-b border-[rgba(95,227,192,0.15)]">
+                  <BankQueueHeaderRow
+                    allSelected={allFilteredSelected}
+                    someSelected={someFilteredSelected}
+                    onToggleAll={handleToggleAll}
+                  />
+                </thead>
+                <tbody className="divide-y divide-[rgba(95,227,192,0.1)]">
+                  {filteredBank.map(tx => (
+                    <BankQueueRow
                       key={tx.id}
                       tx={tx}
-                      ruleLabel={
-                        matched ? matched.name : rulePreview(tx.transactionType)
-                      }
                       selected={selectedIds.has(tx.id)}
                       busy={processingId === tx.id || batchProcessing}
                       onToggleSelect={handleToggleSelect}
@@ -1004,41 +1415,23 @@ const ClassificationQueue: React.FC = () => {
                       onManualClassify={handleManualClassify}
                       onIgnore={handleIgnoreClick}
                     />
-                  )
-                })}
-              </tbody>
-            </table>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
-      ) : (
-        <div className="text-center py-12 bg-[#F7FAFA] dark:bg-[#0C141B] rounded-lg border border-[rgba(95,227,192,0.15)]">
-          <Inbox className="mx-auto h-12 w-12 text-[#5FE3C0]" />
-          <h3 className="mt-3 text-lg font-medium text-[#11202B] dark:text-[#EAF3F2]">
-            All caught up
-          </h3>
-          <p className="mt-1 text-sm text-[#294050] dark:text-[#9FB4BE] max-w-sm mx-auto">
-            Every raw transaction has been classified or skipped. Your next step
-            is to review and approve draft journal entries, then view your trial
-            balance.
-          </p>
-          <div className="mt-5 flex items-center justify-center gap-3">
-            <button
-              onClick={handleNavigateToDrafts}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#294050] text-white hover:bg-[#1E2F3C] transition-colors text-sm font-medium"
-            >
-              <ShieldCheck className="w-4 h-4" />
-              Review Drafts
-            </button>
-            <button
-              onClick={handleNavigateToReports}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[rgba(95,227,192,0.15)] text-[#294050] dark:text-[#9FB4BE] hover:bg-[#EAF3F2] dark:hover:bg-[#16242F] transition-colors text-sm font-medium"
-            >
-              <BarChart3 className="w-4 h-4" />
-              View Trial Balance
-            </button>
+        ) : (
+          <div className="text-center py-12 bg-[#F7FAFA] dark:bg-[#0C141B] rounded-lg border border-[rgba(95,227,192,0.15)]">
+            <Inbox className="mx-auto h-12 w-12 text-[#5FE3C0]" />
+            <h3 className="mt-3 text-lg font-medium text-[#11202B] dark:text-[#EAF3F2]">
+              No bank transactions to classify
+            </h3>
+            <p className="mt-1 text-sm text-[#294050] dark:text-[#9FB4BE] max-w-sm mx-auto">
+              Import bank statements from the Bank Accounts page to see
+              transactions here.
+            </p>
           </div>
-        </div>
-      )}
+        ))}
 
       {/* Ignore confirmation modal */}
       {ignoreModal !== null && (
@@ -1052,13 +1445,25 @@ const ClassificationQueue: React.FC = () => {
         />
       )}
 
-      {/* Manual classification drawer */}
+      {/* Manual classification drawer — crypto */}
       {drawerTx !== null && (
         <JournalEntryDrawer
           accounts={accounts}
           transactionRef={drawerTx.transactionHash}
           rawTransactionId={drawerTx.id}
           initialDescription={`${displayTxType(drawerTx.transactionType)} on ${drawerTx.chainId} (${truncateHash(drawerTx.transactionHash)})`}
+          onClose={handleDrawerClose}
+          onSaved={handleDrawerSaved}
+        />
+      )}
+
+      {/* Manual classification drawer — bank */}
+      {drawerBankTx !== null && (
+        <JournalEntryDrawer
+          accounts={accounts}
+          transactionRef={drawerBankTx.referenceNumber ?? drawerBankTx.id}
+          bankTransactionId={drawerBankTx.id}
+          initialDescription={`${drawerBankTx.payee ?? 'Bank transaction'} — $${Math.abs(parseFloat(drawerBankTx.amount)).toFixed(2)} (${drawerBankTx.accountNickname})`}
           onClose={handleDrawerClose}
           onSaved={handleDrawerSaved}
         />

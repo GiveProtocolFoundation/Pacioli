@@ -21,6 +21,7 @@ interface JournalEntryDrawerProps {
   entry?: JournalEntryWithLines
   transactionRef?: string
   rawTransactionId?: string
+  bankTransactionId?: string
   initialLines?: LineInput[]
   initialDescription?: string
   onClose: () => void
@@ -54,6 +55,7 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
   entry,
   transactionRef,
   rawTransactionId,
+  bankTransactionId,
   initialLines,
   initialDescription,
   onClose,
@@ -171,7 +173,8 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
         description,
         referenceNumber: referenceNumber || null,
         rawTransactionId: rawTransactionId ?? null,
-        origin: rawTransactionId ? 'manual' : null,
+        bankTransactionId: bankTransactionId ?? null,
+        origin: (rawTransactionId ?? bankTransactionId) ? 'manual' : null,
         lines: lines
           .filter(l => l.glAccountId !== '')
           .map(l => ({
@@ -203,6 +206,7 @@ const JournalEntryDrawer: React.FC<JournalEntryDrawerProps> = ({
     description,
     referenceNumber,
     rawTransactionId,
+    bankTransactionId,
     lines,
     isEditDraft,
     entry,
