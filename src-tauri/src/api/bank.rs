@@ -1,8 +1,13 @@
+use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
+use std::str::FromStr;
 use tauri::State;
 use uuid::Uuid;
 
+use super::accounting::{
+    decimal_to_minor_units, JournalEntryLineInput, JournalEntryWithLines, NewJournalEntryInput,
+};
 use super::persistence::DatabaseState;
 
 // ============================================================================
@@ -530,4 +535,224 @@ pub async fn save_statement_profile(
         .fetch_one(&state.pool)
         .await
         .map_err(|e| e.to_string())
+}
+
+// ============================================================================
+// Bank Classification Queue Commands (GIV-828)
+// ============================================================================
+
+/// Bank transaction with joined account info for queue display.
+#[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
+pub struct BankQueueItem {
+    /// Transaction ID.
+    pub id: String,
+    /// Owning bank account ID.
+    pub bank_account_id: String,
+    /// Account nickname from bank_accounts.
+    pub account_nickname: String,
+    /// Institution name from bank_accounts.
+    pub institution_name: String,
+    /// Settlement date (unix epoch seconds).
+    pub posted_date: i64,
+    /// Signed amount as decimal string.
+    pub amount: String,
+    /// ISO 4217 currency code.
+    pub currency: String,
+    /// Payee or merchant name.
+    pub payee: Option<String>,
+    /// Free-text memo from the statement.
+    pub memo: Option<String>,
+    /// Check number or reference.
+    pub reference_number: Option<String>,
+    /// Transaction type code from the source file.
+    pub tx_type: Option<String>,
+    /// Classification status.
+    pub classification_status: String,
+}
+
+/// Returns all unclassified bank transactions with account metadata.
+#[tauri::command]
+pub async fn get_unclassified_bank_transactions(
+    state: State<'_, DatabaseState>,
+) -> Result<Vec<BankQueueItem>, String> {
+    sqlx::query_as::<_, BankQueueItem>(
+        r#"SELECT
+             bt.id, bt.bank_account_id,
+             ba.account_nickname, ba.institution_name,
+             bt.posted_date, bt.amount, bt.currency,
+             bt.payee, bt.memo, bt.reference_number, bt.tx_type,
+             bt.classification_status
+           FROM bank_transactions bt
+           JOIN bank_accounts ba ON ba.id = bt.bank_account_id
+           WHERE bt.classification_status = 'unclassified'
+           ORDER BY bt.posted_date DESC"#,
+    )
+    .fetch_all(&state.pool)
+    .await
+    .map_err(|e| e.to_string())
+}
+
+/// Auto-classifies a bank transaction by creating a journal entry from its
+/// fiat amount. Bank amounts are already in the functional currency, so no
+/// price enrichment is needed.
+#[tauri::command]
+pub async fn auto_classify_bank_transaction(
+    state: State<'_, DatabaseState>,
+    transaction_id: String,
+) -> Result<JournalEntryWithLines, String> {
+    let tx = sqlx::query_as::<_, BankQueueItem>(
+        r#"SELECT
+             bt.id, bt.bank_account_id,
+             ba.account_nickname, ba.institution_name,
+             bt.posted_date, bt.amount, bt.currency,
+             bt.payee, bt.memo, bt.reference_number, bt.tx_type,
+             bt.classification_status
+           FROM bank_transactions bt
+           JOIN bank_accounts ba ON ba.id = bt.bank_account_id
+           WHERE bt.id = ? AND bt.classification_status = 'unclassified'"#,
+    )
+    .bind(&transaction_id)
+    .fetch_optional(&state.pool)
+    .await
+    .map_err(|e| e.to_string())?
+    .ok_or_else(|| "Bank transaction not found or already classified/ignored".to_string())?;
+
+    let gl_account_number: (String,) =
+        sqlx::query_as("SELECT gl_account_number FROM bank_accounts WHERE id = ?")
+            .bind(&tx.bank_account_id)
+            .fetch_one(&state.pool)
+            .await
+            .map_err(|e| format!("Bank account not found: {e}"))?;
+
+    let bank_account_id = get_account_id_by_number(&state.pool, &gl_account_number.0).await?;
+    let uncategorized_id = get_uncategorized_account(&state.pool, &tx.amount).await?;
+
+    let amount = Decimal::from_str(&tx.amount)
+        .map_err(|e| format!("Cannot parse amount '{}': {e}", tx.amount))?;
+    let abs_amount = amount.abs();
+    let amount_minor = decimal_to_minor_units(abs_amount)
+        .ok_or_else(|| format!("Amount out of range: {abs_amount}"))?;
+
+    let is_debit = amount < Decimal::ZERO;
+
+    let payee_display = tx.payee.as_deref().unwrap_or("Unknown payee");
+    let description = format!(
+        "{} — {} ({})",
+        payee_display, tx.institution_name, tx.account_nickname
+    );
+
+    let lines = if is_debit {
+        vec![
+            JournalEntryLineInput {
+                gl_account_id: uncategorized_id,
+                token_id: None,
+                debit_minor: amount_minor,
+                credit_minor: 0,
+                quantity: None,
+                asset_id: Some(tx.currency.clone()),
+                description: Some(format!("{payee_display} (debit)")),
+                functional_classification: None,
+            },
+            JournalEntryLineInput {
+                gl_account_id: bank_account_id,
+                token_id: None,
+                debit_minor: 0,
+                credit_minor: amount_minor,
+                quantity: None,
+                asset_id: Some(tx.currency.clone()),
+                description: Some(format!("Bank withdrawal — {payee_display}")),
+                functional_classification: None,
+            },
+        ]
+    } else {
+        vec![
+            JournalEntryLineInput {
+                gl_account_id: bank_account_id,
+                token_id: None,
+                debit_minor: amount_minor,
+                credit_minor: 0,
+                quantity: None,
+                asset_id: Some(tx.currency.clone()),
+                description: Some(format!("Bank deposit — {payee_display}")),
+                functional_classification: None,
+            },
+            JournalEntryLineInput {
+                gl_account_id: uncategorized_id,
+                token_id: None,
+                debit_minor: 0,
+                credit_minor: amount_minor,
+                quantity: None,
+                asset_id: Some(tx.currency.clone()),
+                description: Some(format!("{payee_display} (credit)")),
+                functional_classification: None,
+            },
+        ]
+    };
+
+    let entry_date = chrono::DateTime::from_timestamp(tx.posted_date, 0).map_or_else(
+        || chrono::Utc::now().format("%Y-%m-%d").to_string(),
+        |dt| dt.format("%Y-%m-%d").to_string(),
+    );
+
+    let input = NewJournalEntryInput {
+        entry_date,
+        description,
+        reference_number: tx.reference_number.clone(),
+        raw_transaction_id: None,
+        bank_transaction_id: Some(transaction_id),
+        origin: Some("rule".to_string()),
+        lines,
+    };
+
+    super::accounting::create_journal_entry(state, input).await
+}
+
+/// Ignores a bank transaction with an optional reason.
+#[tauri::command]
+pub async fn ignore_bank_transaction(
+    state: State<'_, DatabaseState>,
+    transaction_id: String,
+    reason: Option<String>,
+) -> Result<(), String> {
+    let result = sqlx::query(
+        "UPDATE bank_transactions SET classification_status = 'ignored', classification_note = ? WHERE id = ? AND classification_status = 'unclassified'",
+    )
+    .bind(&reason)
+    .bind(&transaction_id)
+    .execute(&state.pool)
+    .await
+    .map_err(|e| e.to_string())?;
+
+    if result.rows_affected() == 0 {
+        return Err("Bank transaction not found or already classified".to_string());
+    }
+
+    Ok(())
+}
+
+/// Resolves a GL account number to its database ID.
+async fn get_account_id_by_number(pool: &sqlx::SqlitePool, number: &str) -> Result<i64, String> {
+    let row: (i64,) =
+        sqlx::query_as("SELECT id FROM gl_accounts WHERE account_number = ? AND is_active = 1")
+            .bind(number)
+            .fetch_one(pool)
+            .await
+            .map_err(|e| format!("GL account {number} not found: {e}"))?;
+    Ok(row.0)
+}
+
+/// Returns the appropriate uncategorized income or expense account based on
+/// the transaction amount sign. Tries primary accounts (5000/4000) first,
+/// then falls back to 5100/4100.
+async fn get_uncategorized_account(pool: &sqlx::SqlitePool, amount: &str) -> Result<i64, String> {
+    let is_negative = amount.starts_with('-');
+    let (primary, fallback) = if is_negative {
+        ("5000", "5100")
+    } else {
+        ("4000", "4100")
+    };
+    match get_account_id_by_number(pool, primary).await {
+        Ok(id) => Ok(id),
+        Err(_) => get_account_id_by_number(pool, fallback).await,
+    }
 }
