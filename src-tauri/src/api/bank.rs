@@ -5,7 +5,9 @@ use std::str::FromStr;
 use tauri::State;
 use uuid::Uuid;
 
-use super::accounting::{decimal_to_minor_units, JournalEntryLineInput, JournalEntryWithLines, NewJournalEntryInput};
+use super::accounting::{
+    decimal_to_minor_units, JournalEntryLineInput, JournalEntryWithLines, NewJournalEntryInput,
+};
 use super::persistence::DatabaseState;
 
 // ============================================================================
@@ -615,13 +617,12 @@ pub async fn auto_classify_bank_transaction(
     .map_err(|e| e.to_string())?
     .ok_or_else(|| "Bank transaction not found or already classified/ignored".to_string())?;
 
-    let gl_account_number: (String,) = sqlx::query_as(
-        "SELECT gl_account_number FROM bank_accounts WHERE id = ?",
-    )
-    .bind(&tx.bank_account_id)
-    .fetch_one(&state.pool)
-    .await
-    .map_err(|e| format!("Bank account not found: {e}"))?;
+    let gl_account_number: (String,) =
+        sqlx::query_as("SELECT gl_account_number FROM bank_accounts WHERE id = ?")
+            .bind(&tx.bank_account_id)
+            .fetch_one(&state.pool)
+            .await
+            .map_err(|e| format!("Bank account not found: {e}"))?;
 
     let bank_account_id = get_account_id_by_number(&state.pool, &gl_account_number.0).await?;
     let uncategorized_id = get_uncategorized_account(&state.pool, &tx.amount).await?;
