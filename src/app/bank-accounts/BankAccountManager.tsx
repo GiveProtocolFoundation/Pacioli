@@ -174,6 +174,418 @@ function buildPreviewState(
   }
 }
 
+interface PreviewRowComponentProps {
+  row: PreviewRow
+  index: number
+  onToggle: (i: number) => void
+  onEditPayee: (i: number, v: string) => void
+  onEditMemo: (i: number, v: string) => void
+}
+
+const PreviewRowComponent = React.memo(function PreviewRowComponent({
+  row,
+  index,
+  onToggle,
+  onEditPayee,
+  onEditMemo,
+}: PreviewRowComponentProps) {
+  const handleToggle = useCallback(() => onToggle(index), [onToggle, index])
+  const handlePayeeChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) =>
+      onEditPayee(index, e.target.value),
+    [onEditPayee, index]
+  )
+  const handleMemoChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) =>
+      onEditMemo(index, e.target.value),
+    [onEditMemo, index]
+  )
+
+  const amount = Number.parseFloat(row.amount)
+  const amountColor =
+    amount < 0
+      ? 'text-red-500 dark:text-red-400'
+      : 'text-green-600 dark:text-green-400'
+
+  return (
+    <tr
+      className={`border-t border-[rgba(95,227,192,0.08)] ${
+        row._isDuplicate ? 'opacity-40' : ''
+      } ${row._selected ? '' : 'bg-gray-50/50 dark:bg-gray-900/20'}`}
+    >
+      <td className="px-3 py-2">
+        <input
+          type="checkbox"
+          checked={row._selected}
+          onChange={handleToggle}
+          disabled={Boolean(row._isDuplicate)}
+          className="rounded border-[rgba(95,227,192,0.3)]"
+        />
+      </td>
+      <td className="px-3 py-2 text-[#11202B] dark:text-[#EAF3F2] whitespace-nowrap">
+        {formatDate(row.posted_date)}
+      </td>
+      <td className="px-3 py-2">
+        <input
+          type="text"
+          value={row._editedPayee ?? row.payee ?? ''}
+          onChange={handlePayeeChange}
+          className="w-full bg-transparent border-b border-transparent hover:border-[rgba(95,227,192,0.3)] focus:border-[#5FE3C0] focus:outline-none text-[#11202B] dark:text-[#EAF3F2] text-sm"
+        />
+      </td>
+      <td className="px-3 py-2">
+        <input
+          type="text"
+          value={row._editedMemo ?? row.memo ?? ''}
+          onChange={handleMemoChange}
+          className="w-full bg-transparent border-b border-transparent hover:border-[rgba(95,227,192,0.3)] focus:border-[#5FE3C0] focus:outline-none text-[#647D8B] dark:text-[#9FB4BE] text-sm"
+        />
+      </td>
+      <td
+        className={`px-3 py-2 text-right font-mono whitespace-nowrap ${amountColor}`}
+      >
+        {formatAmount(row.amount)}
+      </td>
+      <td className="px-3 py-2 text-[#647D8B] dark:text-[#9FB4BE] text-xs">
+        {row.tx_type ?? '—'}
+      </td>
+      <td className="px-3 py-2 text-center">
+        {row._isDuplicate ? (
+          <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300">
+            Duplicate
+          </span>
+        ) : (
+          <span className="text-xs px-2 py-0.5 rounded-full bg-[#EAF3F2] dark:bg-[#1E2F3C] text-[#294050] dark:text-[#9CF1DC]">
+            New
+          </span>
+        )}
+      </td>
+    </tr>
+  )
+})
+
+interface AccountCardProps {
+  account: BankAccount
+  onEdit: (a: BankAccount) => void
+  onArchive: (a: BankAccount) => void
+  onUpload: (a: BankAccount) => void
+}
+
+const AccountCard = React.memo(function AccountCard({
+  account,
+  onEdit,
+  onArchive,
+  onUpload,
+}: AccountCardProps) {
+  const handleEdit = useCallback(() => onEdit(account), [onEdit, account])
+  const handleArchive = useCallback(
+    () => onArchive(account),
+    [onArchive, account]
+  )
+  const handleUpload = useCallback(() => onUpload(account), [onUpload, account])
+
+  const typeLabel =
+    ACCOUNT_TYPES.find(t => t.value === account.account_type)?.label ??
+    account.account_type
+
+  return (
+    <div className="ledger-card border border-[rgba(95,227,192,0.15)] rounded-xl p-5">
+      <div className="flex items-start justify-between mb-3">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-[#294050] flex items-center justify-center">
+            <Landmark className="w-5 h-5 text-[#5FE3C0]" />
+          </div>
+          <div>
+            <h3 className="font-semibold text-[#11202B] dark:text-[#EAF3F2]">
+              {account.account_nickname}
+            </h3>
+            <p className="text-sm text-[#647D8B] dark:text-[#9FB4BE]">
+              {account.institution_name}
+            </p>
+          </div>
+        </div>
+        <div className="flex gap-1">
+          <button
+            onClick={handleEdit}
+            className="p-1.5 rounded-md hover:bg-[#EAF3F2] dark:hover:bg-[#1E2F3C] transition-colors"
+            title="Edit account"
+          >
+            <Pencil className="w-4 h-4 text-[#647D8B]" />
+          </button>
+          <button
+            onClick={handleArchive}
+            className="p-1.5 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+            title="Archive account"
+          >
+            <Archive className="w-4 h-4 text-[#647D8B] hover:text-red-500" />
+          </button>
+        </div>
+      </div>
+      <div className="flex flex-wrap gap-2 mb-4 text-xs">
+        <span className="px-2 py-0.5 rounded-full bg-[#EAF3F2] dark:bg-[#1E2F3C] text-[#294050] dark:text-[#9CF1DC]">
+          {typeLabel}
+        </span>
+        <span className="px-2 py-0.5 rounded-full bg-[#EAF3F2] dark:bg-[#1E2F3C] text-[#294050] dark:text-[#9CF1DC]">
+          {account.currency}
+        </span>
+        {account.masked_account_number && (
+          <span className="px-2 py-0.5 rounded-full bg-[#EAF3F2] dark:bg-[#1E2F3C] text-[#647D8B] dark:text-[#9FB4BE]">
+            ****{account.masked_account_number}
+          </span>
+        )}
+        <span className="px-2 py-0.5 rounded-full bg-[#EAF3F2] dark:bg-[#1E2F3C] text-[#647D8B] dark:text-[#9FB4BE]">
+          GL {account.gl_account_number}
+        </span>
+      </div>
+      <button
+        onClick={handleUpload}
+        className="w-full btn-secondary flex items-center justify-center gap-2 text-sm"
+      >
+        <Upload className="w-4 h-4" />
+        Import Statement
+      </button>
+    </div>
+  )
+})
+
+interface StatementUploadProps {
+  account: BankAccount
+  dragOver: boolean
+  parseResult: ParseResult | null
+  previewRows: PreviewRow[]
+  importing: boolean
+  selectedCount: number
+  profiles: StatementProfile[]
+  selectedProfileId: string
+  fileInputRef: React.RefObject<HTMLInputElement | null>
+  onDragOver: (e: React.DragEvent) => void
+  onDragLeave: () => void
+  onDrop: (e: React.DragEvent) => void
+  onFileSelect: (e: React.ChangeEvent<HTMLInputElement>) => void
+  onToggleRow: (i: number) => void
+  onEditPayee: (i: number, v: string) => void
+  onEditMemo: (i: number, v: string) => void
+  onSelectAllToggle: () => void
+  onConfirm: () => void
+  onCancel: () => void
+  onProfileChange: (e: React.ChangeEvent<HTMLSelectElement>) => void
+}
+
+function StatementUpload({
+  account,
+  dragOver,
+  parseResult,
+  previewRows,
+  importing,
+  selectedCount,
+  profiles,
+  selectedProfileId,
+  fileInputRef,
+  onDragOver,
+  onDragLeave,
+  onDrop,
+  onFileSelect,
+  onToggleRow,
+  onEditPayee,
+  onEditMemo,
+  onSelectAllToggle,
+  onConfirm,
+  onCancel,
+  onProfileChange,
+}: StatementUploadProps) {
+  const handleBrowseClick = useCallback(() => {
+    fileInputRef.current?.click()
+  }, [fileInputRef])
+
+  return (
+    <div className="ledger-card border border-[rgba(95,227,192,0.15)] rounded-xl p-6">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <FileText className="w-5 h-5 text-[#5FE3C0]" />
+          <h2 className="text-lg font-semibold text-[#11202B] dark:text-[#EAF3F2]">
+            Import Statement — {account.account_nickname}
+          </h2>
+        </div>
+        <button
+          onClick={onCancel}
+          className="text-[#647D8B] hover:text-[#11202B] dark:hover:text-[#EAF3F2]"
+        >
+          <X className="w-5 h-5" />
+        </button>
+      </div>
+
+      {/* CSV profile selector */}
+      {profiles.length > 0 && (
+        <div className="mb-4">
+          <label htmlFor="profile_select" className={labelClassName}>
+            Statement Profile (for CSV)
+          </label>
+          <select
+            id="profile_select"
+            className={inputClassName}
+            value={selectedProfileId}
+            onChange={onProfileChange}
+          >
+            <option value="">Auto-detect columns</option>
+            {profiles.map(p => (
+              <option key={p.id} value={p.id}>
+                {p.name}
+                {p.institution_name ? ` (${p.institution_name})` : ''}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      {/* Drop zone */}
+      {!parseResult && (
+        <div
+          onDragOver={onDragOver}
+          onDragLeave={onDragLeave}
+          onDrop={onDrop}
+          className={`border-2 border-dashed rounded-xl p-12 text-center transition-colors cursor-pointer ${
+            dragOver
+              ? 'border-[#5FE3C0] bg-[#5FE3C0]/10'
+              : 'border-[rgba(95,227,192,0.3)] hover:border-[#5FE3C0]/50'
+          }`}
+          onClick={handleBrowseClick}
+          role="button"
+          tabIndex={0}
+        >
+          <Upload className="w-10 h-10 mx-auto mb-3 text-[#5FE3C0] opacity-60" />
+          <p className="text-[#11202B] dark:text-[#EAF3F2] font-medium mb-1">
+            Drag & drop a statement file here
+          </p>
+          <p className="text-sm text-[#647D8B] dark:text-[#9FB4BE]">
+            OFX, QFX, QBO, or CSV files supported
+          </p>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".ofx,.qfx,.qbo,.csv"
+            onChange={onFileSelect}
+            className="hidden"
+          />
+        </div>
+      )}
+
+      {/* Preview grid */}
+      {parseResult && previewRows.length > 0 && (
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-sm text-[#647D8B] dark:text-[#9FB4BE]">
+              {parseResult.totalCount} transaction
+              {parseResult.totalCount !== 1 ? 's' : ''} parsed
+              {parseResult.duplicateCount > 0 && (
+                <span className="text-amber-500">
+                  {' '}
+                  ({parseResult.duplicateCount} duplicate
+                  {parseResult.duplicateCount !== 1 ? 's' : ''})
+                </span>
+              )}
+              {' — '}
+              <span className="font-medium text-[#11202B] dark:text-[#EAF3F2]">
+                {selectedCount} selected
+              </span>
+            </p>
+            <label className="flex items-center gap-2 text-sm text-[#647D8B] cursor-pointer">
+              <input
+                type="checkbox"
+                checked={previewRows.every(r => r._selected || r._isDuplicate)}
+                onChange={onSelectAllToggle}
+                className="rounded border-[rgba(95,227,192,0.3)]"
+              />
+              Select all
+            </label>
+          </div>
+          <div className="overflow-x-auto rounded-lg border border-[rgba(95,227,192,0.15)]">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-[#EAF3F2] dark:bg-[#1E2F3C]">
+                  <th scope="col" className="px-3 py-2 text-left w-10" />
+                  <th
+                    scope="col"
+                    className="px-3 py-2 text-left text-[#294050] dark:text-[#9CF1DC] font-medium"
+                  >
+                    Date
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-3 py-2 text-left text-[#294050] dark:text-[#9CF1DC] font-medium"
+                  >
+                    Payee
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-3 py-2 text-left text-[#294050] dark:text-[#9CF1DC] font-medium"
+                  >
+                    Memo
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-3 py-2 text-right text-[#294050] dark:text-[#9CF1DC] font-medium"
+                  >
+                    Amount
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-3 py-2 text-left text-[#294050] dark:text-[#9CF1DC] font-medium"
+                  >
+                    Type
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-3 py-2 text-center text-[#294050] dark:text-[#9CF1DC] font-medium"
+                  >
+                    Status
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {previewRows.map((row, idx) => (
+                  <PreviewRowComponent
+                    key={row.external_id ?? `row-${idx}`}
+                    row={row}
+                    index={idx}
+                    onToggle={onToggleRow}
+                    onEditPayee={onEditPayee}
+                    onEditMemo={onEditMemo}
+                  />
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="flex items-center gap-3 mt-4">
+            <button
+              onClick={onConfirm}
+              disabled={importing || selectedCount === 0}
+              className="btn-primary flex items-center gap-2 disabled:opacity-50"
+            >
+              {importing && <Loader className="w-4 h-4 animate-spin" />}
+              Import {selectedCount} Transaction{selectedCount !== 1 ? 's' : ''}
+            </button>
+            <button onClick={onCancel} className="btn-secondary">
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {parseResult && previewRows.length === 0 && (
+        <div className="text-center py-8">
+          <CheckCircle className="w-10 h-10 mx-auto mb-3 text-green-500 opacity-60" />
+          <p className="text-[#11202B] dark:text-[#EAF3F2] font-medium">
+            No transactions found in this file
+          </p>
+          <p className="text-sm text-[#647D8B] dark:text-[#9FB4BE] mt-1">
+            The file could not be parsed or contains no transactions.
+          </p>
+        </div>
+      )}
+    </div>
+  )
+}
+
 /** @returns BankAccountManager page component */
 export default function BankAccountManager() {
   const { entities } = useEntity()
@@ -730,415 +1142,3 @@ export default function BankAccountManager() {
     </div>
   )
 }
-
-interface AccountCardProps {
-  account: BankAccount
-  onEdit: (a: BankAccount) => void
-  onArchive: (a: BankAccount) => void
-  onUpload: (a: BankAccount) => void
-}
-
-const AccountCard = React.memo(function AccountCard({
-  account,
-  onEdit,
-  onArchive,
-  onUpload,
-}: AccountCardProps) {
-  const handleEdit = useCallback(() => onEdit(account), [onEdit, account])
-  const handleArchive = useCallback(
-    () => onArchive(account),
-    [onArchive, account]
-  )
-  const handleUpload = useCallback(() => onUpload(account), [onUpload, account])
-
-  const typeLabel =
-    ACCOUNT_TYPES.find(t => t.value === account.account_type)?.label ??
-    account.account_type
-
-  return (
-    <div className="ledger-card border border-[rgba(95,227,192,0.15)] rounded-xl p-5">
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-[#294050] flex items-center justify-center">
-            <Landmark className="w-5 h-5 text-[#5FE3C0]" />
-          </div>
-          <div>
-            <h3 className="font-semibold text-[#11202B] dark:text-[#EAF3F2]">
-              {account.account_nickname}
-            </h3>
-            <p className="text-sm text-[#647D8B] dark:text-[#9FB4BE]">
-              {account.institution_name}
-            </p>
-          </div>
-        </div>
-        <div className="flex gap-1">
-          <button
-            onClick={handleEdit}
-            className="p-1.5 rounded-md hover:bg-[#EAF3F2] dark:hover:bg-[#1E2F3C] transition-colors"
-            title="Edit account"
-          >
-            <Pencil className="w-4 h-4 text-[#647D8B]" />
-          </button>
-          <button
-            onClick={handleArchive}
-            className="p-1.5 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-            title="Archive account"
-          >
-            <Archive className="w-4 h-4 text-[#647D8B] hover:text-red-500" />
-          </button>
-        </div>
-      </div>
-      <div className="flex flex-wrap gap-2 mb-4 text-xs">
-        <span className="px-2 py-0.5 rounded-full bg-[#EAF3F2] dark:bg-[#1E2F3C] text-[#294050] dark:text-[#9CF1DC]">
-          {typeLabel}
-        </span>
-        <span className="px-2 py-0.5 rounded-full bg-[#EAF3F2] dark:bg-[#1E2F3C] text-[#294050] dark:text-[#9CF1DC]">
-          {account.currency}
-        </span>
-        {account.masked_account_number && (
-          <span className="px-2 py-0.5 rounded-full bg-[#EAF3F2] dark:bg-[#1E2F3C] text-[#647D8B] dark:text-[#9FB4BE]">
-            ****{account.masked_account_number}
-          </span>
-        )}
-        <span className="px-2 py-0.5 rounded-full bg-[#EAF3F2] dark:bg-[#1E2F3C] text-[#647D8B] dark:text-[#9FB4BE]">
-          GL {account.gl_account_number}
-        </span>
-      </div>
-      <button
-        onClick={handleUpload}
-        className="w-full btn-secondary flex items-center justify-center gap-2 text-sm"
-      >
-        <Upload className="w-4 h-4" />
-        Import Statement
-      </button>
-    </div>
-  )
-})
-
-interface StatementUploadProps {
-  account: BankAccount
-  dragOver: boolean
-  parseResult: ParseResult | null
-  previewRows: PreviewRow[]
-  importing: boolean
-  selectedCount: number
-  profiles: StatementProfile[]
-  selectedProfileId: string
-  fileInputRef: React.RefObject<HTMLInputElement | null>
-  onDragOver: (e: React.DragEvent) => void
-  onDragLeave: () => void
-  onDrop: (e: React.DragEvent) => void
-  onFileSelect: (e: React.ChangeEvent<HTMLInputElement>) => void
-  onToggleRow: (i: number) => void
-  onEditPayee: (i: number, v: string) => void
-  onEditMemo: (i: number, v: string) => void
-  onSelectAllToggle: () => void
-  onConfirm: () => void
-  onCancel: () => void
-  onProfileChange: (e: React.ChangeEvent<HTMLSelectElement>) => void
-}
-
-function StatementUpload({
-  account,
-  dragOver,
-  parseResult,
-  previewRows,
-  importing,
-  selectedCount,
-  profiles,
-  selectedProfileId,
-  fileInputRef,
-  onDragOver,
-  onDragLeave,
-  onDrop,
-  onFileSelect,
-  onToggleRow,
-  onEditPayee,
-  onEditMemo,
-  onSelectAllToggle,
-  onConfirm,
-  onCancel,
-  onProfileChange,
-}: StatementUploadProps) {
-  const handleBrowseClick = useCallback(() => {
-    fileInputRef.current?.click()
-  }, [fileInputRef])
-
-  return (
-    <div className="ledger-card border border-[rgba(95,227,192,0.15)] rounded-xl p-6">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <FileText className="w-5 h-5 text-[#5FE3C0]" />
-          <h2 className="text-lg font-semibold text-[#11202B] dark:text-[#EAF3F2]">
-            Import Statement — {account.account_nickname}
-          </h2>
-        </div>
-        <button
-          onClick={onCancel}
-          className="text-[#647D8B] hover:text-[#11202B] dark:hover:text-[#EAF3F2]"
-        >
-          <X className="w-5 h-5" />
-        </button>
-      </div>
-
-      {/* CSV profile selector */}
-      {profiles.length > 0 && (
-        <div className="mb-4">
-          <label htmlFor="profile_select" className={labelClassName}>
-            Statement Profile (for CSV)
-          </label>
-          <select
-            id="profile_select"
-            className={inputClassName}
-            value={selectedProfileId}
-            onChange={onProfileChange}
-          >
-            <option value="">Auto-detect columns</option>
-            {profiles.map(p => (
-              <option key={p.id} value={p.id}>
-                {p.name}
-                {p.institution_name ? ` (${p.institution_name})` : ''}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
-
-      {/* Drop zone */}
-      {!parseResult && (
-        <div
-          onDragOver={onDragOver}
-          onDragLeave={onDragLeave}
-          onDrop={onDrop}
-          className={`border-2 border-dashed rounded-xl p-12 text-center transition-colors cursor-pointer ${
-            dragOver
-              ? 'border-[#5FE3C0] bg-[#5FE3C0]/10'
-              : 'border-[rgba(95,227,192,0.3)] hover:border-[#5FE3C0]/50'
-          }`}
-          onClick={handleBrowseClick}
-          role="button"
-          tabIndex={0}
-        >
-          <Upload className="w-10 h-10 mx-auto mb-3 text-[#5FE3C0] opacity-60" />
-          <p className="text-[#11202B] dark:text-[#EAF3F2] font-medium mb-1">
-            Drag & drop a statement file here
-          </p>
-          <p className="text-sm text-[#647D8B] dark:text-[#9FB4BE]">
-            OFX, QFX, QBO, or CSV files supported
-          </p>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".ofx,.qfx,.qbo,.csv"
-            onChange={onFileSelect}
-            className="hidden"
-          />
-        </div>
-      )}
-
-      {/* Preview grid */}
-      {parseResult && previewRows.length > 0 && (
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-sm text-[#647D8B] dark:text-[#9FB4BE]">
-              {parseResult.totalCount} transaction
-              {parseResult.totalCount !== 1 ? 's' : ''} parsed
-              {parseResult.duplicateCount > 0 && (
-                <span className="text-amber-500">
-                  {' '}
-                  ({parseResult.duplicateCount} duplicate
-                  {parseResult.duplicateCount !== 1 ? 's' : ''})
-                </span>
-              )}
-              {' — '}
-              <span className="font-medium text-[#11202B] dark:text-[#EAF3F2]">
-                {selectedCount} selected
-              </span>
-            </p>
-            <label className="flex items-center gap-2 text-sm text-[#647D8B] cursor-pointer">
-              <input
-                type="checkbox"
-                checked={previewRows.every(r => r._selected || r._isDuplicate)}
-                onChange={onSelectAllToggle}
-                className="rounded border-[rgba(95,227,192,0.3)]"
-              />
-              Select all
-            </label>
-          </div>
-          <div className="overflow-x-auto rounded-lg border border-[rgba(95,227,192,0.15)]">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-[#EAF3F2] dark:bg-[#1E2F3C]">
-                  <th scope="col" className="px-3 py-2 text-left w-10" />
-                  <th
-                    scope="col"
-                    className="px-3 py-2 text-left text-[#294050] dark:text-[#9CF1DC] font-medium"
-                  >
-                    Date
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-3 py-2 text-left text-[#294050] dark:text-[#9CF1DC] font-medium"
-                  >
-                    Payee
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-3 py-2 text-left text-[#294050] dark:text-[#9CF1DC] font-medium"
-                  >
-                    Memo
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-3 py-2 text-right text-[#294050] dark:text-[#9CF1DC] font-medium"
-                  >
-                    Amount
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-3 py-2 text-left text-[#294050] dark:text-[#9CF1DC] font-medium"
-                  >
-                    Type
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-3 py-2 text-center text-[#294050] dark:text-[#9CF1DC] font-medium"
-                  >
-                    Status
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {previewRows.map((row, idx) => (
-                  <PreviewRowComponent
-                    key={row.external_id ?? `row-${idx}`}
-                    row={row}
-                    index={idx}
-                    onToggle={onToggleRow}
-                    onEditPayee={onEditPayee}
-                    onEditMemo={onEditMemo}
-                  />
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div className="flex items-center gap-3 mt-4">
-            <button
-              onClick={onConfirm}
-              disabled={importing || selectedCount === 0}
-              className="btn-primary flex items-center gap-2 disabled:opacity-50"
-            >
-              {importing && <Loader className="w-4 h-4 animate-spin" />}
-              Import {selectedCount} Transaction{selectedCount !== 1 ? 's' : ''}
-            </button>
-            <button onClick={onCancel} className="btn-secondary">
-              Cancel
-            </button>
-          </div>
-        </div>
-      )}
-
-      {parseResult && previewRows.length === 0 && (
-        <div className="text-center py-8">
-          <CheckCircle className="w-10 h-10 mx-auto mb-3 text-green-500 opacity-60" />
-          <p className="text-[#11202B] dark:text-[#EAF3F2] font-medium">
-            No transactions found in this file
-          </p>
-          <p className="text-sm text-[#647D8B] dark:text-[#9FB4BE] mt-1">
-            The file could not be parsed or contains no transactions.
-          </p>
-        </div>
-      )}
-    </div>
-  )
-}
-
-interface PreviewRowComponentProps {
-  row: PreviewRow
-  index: number
-  onToggle: (i: number) => void
-  onEditPayee: (i: number, v: string) => void
-  onEditMemo: (i: number, v: string) => void
-}
-
-const PreviewRowComponent = React.memo(function PreviewRowComponent({
-  row,
-  index,
-  onToggle,
-  onEditPayee,
-  onEditMemo,
-}: PreviewRowComponentProps) {
-  const handleToggle = useCallback(() => onToggle(index), [onToggle, index])
-  const handlePayeeChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) =>
-      onEditPayee(index, e.target.value),
-    [onEditPayee, index]
-  )
-  const handleMemoChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) =>
-      onEditMemo(index, e.target.value),
-    [onEditMemo, index]
-  )
-
-  const amount = Number.parseFloat(row.amount)
-  const amountColor =
-    amount < 0
-      ? 'text-red-500 dark:text-red-400'
-      : 'text-green-600 dark:text-green-400'
-
-  return (
-    <tr
-      className={`border-t border-[rgba(95,227,192,0.08)] ${
-        row._isDuplicate ? 'opacity-40' : ''
-      } ${row._selected ? '' : 'bg-gray-50/50 dark:bg-gray-900/20'}`}
-    >
-      <td className="px-3 py-2">
-        <input
-          type="checkbox"
-          checked={row._selected}
-          onChange={handleToggle}
-          disabled={Boolean(row._isDuplicate)}
-          className="rounded border-[rgba(95,227,192,0.3)]"
-        />
-      </td>
-      <td className="px-3 py-2 text-[#11202B] dark:text-[#EAF3F2] whitespace-nowrap">
-        {formatDate(row.posted_date)}
-      </td>
-      <td className="px-3 py-2">
-        <input
-          type="text"
-          value={row._editedPayee ?? row.payee ?? ''}
-          onChange={handlePayeeChange}
-          className="w-full bg-transparent border-b border-transparent hover:border-[rgba(95,227,192,0.3)] focus:border-[#5FE3C0] focus:outline-none text-[#11202B] dark:text-[#EAF3F2] text-sm"
-        />
-      </td>
-      <td className="px-3 py-2">
-        <input
-          type="text"
-          value={row._editedMemo ?? row.memo ?? ''}
-          onChange={handleMemoChange}
-          className="w-full bg-transparent border-b border-transparent hover:border-[rgba(95,227,192,0.3)] focus:border-[#5FE3C0] focus:outline-none text-[#647D8B] dark:text-[#9FB4BE] text-sm"
-        />
-      </td>
-      <td
-        className={`px-3 py-2 text-right font-mono whitespace-nowrap ${amountColor}`}
-      >
-        {formatAmount(row.amount)}
-      </td>
-      <td className="px-3 py-2 text-[#647D8B] dark:text-[#9FB4BE] text-xs">
-        {row.tx_type ?? '—'}
-      </td>
-      <td className="px-3 py-2 text-center">
-        {row._isDuplicate ? (
-          <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300">
-            Duplicate
-          </span>
-        ) : (
-          <span className="text-xs px-2 py-0.5 rounded-full bg-[#EAF3F2] dark:bg-[#1E2F3C] text-[#294050] dark:text-[#9CF1DC]">
-            New
-          </span>
-        )}
-      </td>
-    </tr>
-  )
-})
