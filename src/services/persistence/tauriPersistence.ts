@@ -21,6 +21,15 @@ import type {
   EntityAddressInput,
   AddressMatch,
   KnownAddress,
+  BankAccount,
+  BankAccountInput,
+  BankTransaction,
+  BankTransactionInput,
+  BankTransactionFilter,
+  ImportBatch,
+  ImportBatchInput,
+  StatementProfile,
+  StatementProfileInput,
 } from './types'
 import type { Transaction, ConnectedWallet } from '../wallet/types'
 import { indexedDBService } from '../database/indexedDBService'
@@ -234,6 +243,57 @@ export const tauriPersistence: PersistenceService = {
       address,
       chain,
     })
+  },
+
+  // Bank Account Operations (GIV-825)
+  getBankAccounts: (): Promise<BankAccount[]> => {
+    return invoke<BankAccount[]>('get_bank_accounts')
+  },
+
+  saveBankAccount: (account: BankAccountInput): Promise<BankAccount> => {
+    return invoke<BankAccount>('save_bank_account', { account })
+  },
+
+  // Bank Transaction Operations (GIV-825)
+  getBankTransactions: (
+    bankAccountId: string,
+    filter?: BankTransactionFilter
+  ): Promise<BankTransaction[]> => {
+    return invoke<BankTransaction[]>('get_bank_transactions', {
+      bankAccountId,
+      fromDate: filter?.from_date ?? null,
+      toDate: filter?.to_date ?? null,
+      classificationStatus: filter?.classification_status ?? null,
+      importBatchId: filter?.import_batch_id ?? null,
+      limit: filter?.limit ?? null,
+      offset: filter?.offset ?? null,
+    })
+  },
+
+  saveBankTransactions: (rows: BankTransactionInput[]): Promise<number> => {
+    return invoke<number>('save_bank_transactions', { rows })
+  },
+
+  // Import Batch Operations (GIV-825)
+  getImportBatches: (bankAccountId?: string): Promise<ImportBatch[]> => {
+    return invoke<ImportBatch[]>('get_import_batches', {
+      bankAccountId: bankAccountId ?? null,
+    })
+  },
+
+  saveImportBatch: (batch: ImportBatchInput): Promise<ImportBatch> => {
+    return invoke<ImportBatch>('save_import_batch', { batch })
+  },
+
+  // Statement Profile Operations (GIV-825)
+  getStatementProfiles: (): Promise<StatementProfile[]> => {
+    return invoke<StatementProfile[]>('get_statement_profiles')
+  },
+
+  saveStatementProfile: (
+    profile: StatementProfileInput
+  ): Promise<StatementProfile> => {
+    return invoke<StatementProfile>('save_statement_profile', { profile })
   },
 
   // Chain Transaction Operations
