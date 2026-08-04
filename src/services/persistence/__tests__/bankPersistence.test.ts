@@ -305,7 +305,8 @@ describe('Bank persistence round-trip (GIV-825)', () => {
     const profile = await indexedDBPersistence.saveStatementProfile(input)
     expect(profile.id).toBeTruthy()
     expect(profile.name).toBe('Chase CSV')
-    expect(JSON.parse(profile.column_map!)).toEqual({
+    const columnMap = profile.column_map ? JSON.parse(profile.column_map) : {}
+    expect(columnMap).toEqual({
       date: 0,
       amount: 2,
       payee: 3,
