@@ -1,8 +1,4 @@
-import type {
-  CsvParseOptions,
-  ParseResult,
-  ParsedTransaction,
-} from './types'
+import type { CsvParseOptions, ParseResult, ParsedTransaction } from './types'
 
 function splitCsvLine(line: string): string[] {
   const fields: string[] = []
@@ -69,11 +65,7 @@ function parseDateWithFormat(raw: string, format: string): number {
   return Date.UTC(year, month, day)
 }
 
-function parseAmount(
-  raw: string,
-  convention: string,
-  txType?: string
-): string {
+function parseAmount(raw: string, convention: string, txType?: string): string {
   const cleaned = raw.replace(/[^0-9.\-+]/g, '')
   if (!cleaned) return '0'
 
@@ -122,7 +114,7 @@ function hashString(str: string): string {
 }
 
 export function detectCsvFormat(content: string): boolean {
-  const lines = content.split('\n').filter((l) => l.trim().length > 0)
+  const lines = content.split('\n').filter(l => l.trim().length > 0)
   if (lines.length < 2) return false
 
   const firstLine = lines[0]
@@ -143,14 +135,14 @@ export function detectCsvFormat(content: string): boolean {
     'reference',
     'check',
   ]
-  return bankKeywords.some((kw) => headerLower.includes(kw))
+  return bankKeywords.some(kw => headerLower.includes(kw))
 }
 
 export function inferColumnMap(
   headers: string[]
 ): Partial<Record<string, string>> {
   const map: Record<string, string> = {}
-  const lower = headers.map((h) => h.toLowerCase().trim())
+  const lower = headers.map(h => h.toLowerCase().trim())
 
   const datePatterns = [
     'date',
@@ -205,7 +197,7 @@ export function parseCsv(
   content: string,
   options: CsvParseOptions
 ): ParseResult {
-  const lines = content.split(/\r?\n/).filter((l) => l.trim().length > 0)
+  const lines = content.split(/\r?\n/).filter(l => l.trim().length > 0)
   const skipRows = options.skipHeaderRows ?? 1
   if (lines.length <= skipRows) {
     return {
@@ -225,7 +217,7 @@ export function parseCsv(
   const getColIndex = (colName: string | undefined): number => {
     if (!colName) return -1
     return headers.findIndex(
-      (h) => h.trim().toLowerCase() === colName.trim().toLowerCase()
+      h => h.trim().toLowerCase() === colName.trim().toLowerCase()
     )
   }
 
@@ -261,11 +253,7 @@ export function parseCsv(
     const postedDate = parseDateWithFormat(dateRaw, options.dateFormat)
     if (!postedDate) continue
 
-    const amount = parseAmount(
-      amountRaw,
-      options.amountSignConvention,
-      typeRaw
-    )
+    const amount = parseAmount(amountRaw, options.amountSignConvention, typeRaw)
 
     const rowData: Record<string, string> = {
       date: dateRaw,
@@ -275,9 +263,7 @@ export function parseCsv(
     }
 
     const externalId = computeExternalId(rowData, i + skipRows)
-    const isDuplicate = Boolean(
-      options.existingExternalIds?.has(externalId)
-    )
+    const isDuplicate = Boolean(options.existingExternalIds?.has(externalId))
     if (isDuplicate) duplicateCount++
 
     const tx: ParsedTransaction = {
@@ -286,13 +272,12 @@ export function parseCsv(
       posted_date: postedDate,
       amount,
       currency: options.currencyDefault,
-      payee: payeeIdx >= 0 ? (fields[payeeIdx] || undefined) : undefined,
-      memo: memoIdx >= 0 ? (fields[memoIdx] || undefined) : undefined,
-      reference_number:
-        refIdx >= 0 ? (fields[refIdx] || undefined) : undefined,
+      payee: payeeIdx >= 0 ? fields[payeeIdx] || undefined : undefined,
+      memo: memoIdx >= 0 ? fields[memoIdx] || undefined : undefined,
+      reference_number: refIdx >= 0 ? fields[refIdx] || undefined : undefined,
       tx_type: typeRaw?.toLowerCase() ?? undefined,
       running_balance:
-        balanceIdx >= 0 ? (fields[balanceIdx] || undefined) : undefined,
+        balanceIdx >= 0 ? fields[balanceIdx] || undefined : undefined,
       classification_status: 'unclassified',
       raw_data: dataLines[i],
       _isDuplicate: isDuplicate,

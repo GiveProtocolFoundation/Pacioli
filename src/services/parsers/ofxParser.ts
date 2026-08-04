@@ -25,13 +25,16 @@ function normalizeOfxToXml(raw: string): string {
   if (bodyStart === -1) return raw
   let body = raw.slice(bodyStart)
 
-  body = body.replace(/<(\w+)[^/>]*>([^<]*)\n/g, (_match, tag: string, val: string) => {
-    const trimmed = val.trim()
-    if (trimmed.length > 0) {
-      return `<${tag}>${trimmed}</${tag}>\n`
+  body = body.replace(
+    /<(\w+)[^/>]*>([^<]*)\n/g,
+    (_match, tag: string, val: string) => {
+      const trimmed = val.trim()
+      if (trimmed.length > 0) {
+        return `<${tag}>${trimmed}</${tag}>\n`
+      }
+      return `<${tag}>\n`
     }
-    return `<${tag}>\n`
-  })
+  )
 
   return body
 }
@@ -128,9 +131,7 @@ function parseTransactionBlock(
   const refNum = extractTagValue(block, 'REFNUM')
   const trnType = extractTagValue(block, 'TRNTYPE')
 
-  const isDuplicate = Boolean(
-    fitid && options.existingExternalIds?.has(fitid)
-  )
+  const isDuplicate = Boolean(fitid && options.existingExternalIds?.has(fitid))
 
   const tx: ParsedTransaction = {
     bank_account_id: options.bankAccountId,
@@ -175,19 +176,15 @@ export function parseOfx(
 
   const accountInfo = parseAccountInfo(xml)
 
-  const stmtrs =
-    extractTag(xml, 'STMTTRNRS') || extractTag(xml, 'CCSTMTTRNRS')
+  const stmtrs = extractTag(xml, 'STMTTRNRS') || extractTag(xml, 'CCSTMTTRNRS')
 
   const tranList = stmtrs
     ? extractTag(stmtrs, 'BANKTRANLIST')
     : extractTag(xml, 'BANKTRANLIST')
 
-  const txBlocks = extractAllBlocks(
-    tranList || stmtrs || xml,
-    'STMTTRN'
-  )
+  const txBlocks = extractAllBlocks(tranList || stmtrs || xml, 'STMTTRN')
 
-  const transactions: ParsedTransaction[] = txBlocks.map((block) =>
+  const transactions: ParsedTransaction[] = txBlocks.map(block =>
     parseTransactionBlock(block, options, currency)
   )
 
@@ -200,7 +197,7 @@ export function parseOfx(
     if (dtEnd) endDate = parseOfxDate(dtEnd)
   }
 
-  const duplicateCount = transactions.filter((t) => t._isDuplicate).length
+  const duplicateCount = transactions.filter(t => t._isDuplicate).length
 
   return {
     transactions,

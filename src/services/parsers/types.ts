@@ -1,8 +1,14 @@
-import type { BankTransactionInput, StatementProfile } from '../persistence/types'
+import type {
+  BankTransactionInput,
+  StatementProfile,
+} from '../persistence/types'
 
 export type StatementFormat = 'ofx' | 'qfx' | 'qbo' | 'csv'
 
-export type AmountSignConvention = 'signed' | 'debit_positive' | 'debit_negative'
+export type AmountSignConvention =
+  | 'signed'
+  | 'debit_positive'
+  | 'debit_negative'
 
 export interface ParsedTransaction extends BankTransactionInput {
   _isDuplicate?: boolean
@@ -53,7 +59,10 @@ export interface OfxParseOptions {
 }
 
 export interface StatementParser {
-  parse(content: string, options: OfxParseOptions | CsvParseOptions): ParseResult
+  parse(
+    content: string,
+    options: OfxParseOptions | CsvParseOptions
+  ): ParseResult
   detectFormat(content: string): StatementFormat | null
 }
 

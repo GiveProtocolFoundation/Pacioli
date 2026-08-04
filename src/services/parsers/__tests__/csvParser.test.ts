@@ -128,7 +128,7 @@ describe('parseCsv', () => {
 
   it('should generate external_ids for all rows', () => {
     const result = parseCsv(SAMPLE_CSV, defaultOptions)
-    const ids = result.transactions.map((t) => t.external_id)
+    const ids = result.transactions.map(t => t.external_id)
     expect(new Set(ids).size).toBe(5)
     for (const id of ids) {
       expect(id).toMatch(/^csv_/)
@@ -208,7 +208,8 @@ describe('parseCsv', () => {
   })
 
   describe('amount sign conventions', () => {
-    const csv = 'Date,Amount,Type\n2026-07-01,45.50,Debit\n2026-07-02,100.00,Credit'
+    const csv =
+      'Date,Amount,Type\n2026-07-01,45.50,Debit\n2026-07-02,100.00,Credit'
 
     it('signed: passes through as-is', () => {
       const opts: CsvParseOptions = {
@@ -248,7 +249,7 @@ describe('parseCsv', () => {
     it('should mark known external_ids as duplicates', () => {
       const result1 = parseCsv(SAMPLE_CSV, defaultOptions)
       const existingIds = new Set(
-        result1.transactions.slice(0, 2).map((t) => t.external_id!)
+        result1.transactions.slice(0, 2).map(t => t.external_id!)
       )
 
       const opts: CsvParseOptions = {
@@ -257,7 +258,7 @@ describe('parseCsv', () => {
       }
       const result2 = parseCsv(SAMPLE_CSV, opts)
       expect(result2.duplicateCount).toBe(2)
-      expect(result2.transactions.filter((t) => t._isDuplicate)).toHaveLength(2)
+      expect(result2.transactions.filter(t => t._isDuplicate)).toHaveLength(2)
     })
   })
 

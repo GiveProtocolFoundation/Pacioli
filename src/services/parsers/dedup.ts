@@ -42,9 +42,7 @@ export function dedup(
   return { unique, duplicates, duplicateCount: duplicates.length }
 }
 
-export function buildExternalIdSet(
-  existing: BankTransaction[]
-): Set<string> {
+export function buildExternalIdSet(existing: BankTransaction[]): Set<string> {
   const ids = new Set<string>()
   for (const tx of existing) {
     if (tx.external_id) {

@@ -135,7 +135,9 @@ describe('detectOfxFormat', () => {
   })
 
   it('should return null for non-OFX content', () => {
-    expect(detectOfxFormat('Date,Amount,Description\n2026-07-01,100,Test')).toBeNull()
+    expect(
+      detectOfxFormat('Date,Amount,Description\n2026-07-01,100,Test')
+    ).toBeNull()
   })
 
   it('should detect by <OFX> tag alone', () => {
@@ -248,7 +250,7 @@ describe('parseOfx', () => {
       const result = parseOfx(OFX_V1_SAMPLE, opts)
       expect(result.duplicateCount).toBe(2)
 
-      const dupes = result.transactions.filter((t) => t._isDuplicate)
+      const dupes = result.transactions.filter(t => t._isDuplicate)
       expect(dupes).toHaveLength(2)
       expect(dupes[0].external_id).toBe('20260702001')
       expect(dupes[1].external_id).toBe('20260710001')
@@ -299,9 +301,24 @@ DATA:OFXSGML
 
     it('should map all known OFX transaction types', () => {
       const types = [
-        'CREDIT', 'DEBIT', 'INT', 'DIV', 'FEE', 'SRVCHG',
-        'DEP', 'ATM', 'POS', 'XFER', 'CHECK', 'PAYMENT',
-        'CASH', 'DIRECTDEP', 'DIRECTDEBIT', 'REPEATPMT', 'HOLD', 'OTHER',
+        'CREDIT',
+        'DEBIT',
+        'INT',
+        'DIV',
+        'FEE',
+        'SRVCHG',
+        'DEP',
+        'ATM',
+        'POS',
+        'XFER',
+        'CHECK',
+        'PAYMENT',
+        'CASH',
+        'DIRECTDEP',
+        'DIRECTDEBIT',
+        'REPEATPMT',
+        'HOLD',
+        'OTHER',
       ]
       for (const t of types) {
         const ofx = `<OFX><BANKTRANLIST><STMTTRN><TRNTYPE>${t}<DTPOSTED>20260701<TRNAMT>100<FITID>test_${t}<NAME>Test</STMTTRN></BANKTRANLIST></OFX>`

@@ -23,9 +23,9 @@ describe('detectFormat', () => {
   })
 
   it('should detect CSV by content', () => {
-    expect(
-      detectFormat('Date,Description,Amount\n2026-07-01,Test,100')
-    ).toBe('csv')
+    expect(detectFormat('Date,Description,Amount\n2026-07-01,Test,100')).toBe(
+      'csv'
+    )
   })
 
   it('should return null for unknown format', () => {
@@ -33,9 +33,7 @@ describe('detectFormat', () => {
   })
 
   it('should prefer extension over content detection', () => {
-    expect(
-      detectFormat('Date,Amount\n1,2', 'transactions.qfx')
-    ).toBe('qfx')
+    expect(detectFormat('Date,Amount\n1,2', 'transactions.qfx')).toBe('qfx')
   })
 })
 
@@ -73,13 +71,15 @@ describe('parseStatement', () => {
   })
 
   it('should route QFX to OFX parser', () => {
-    const qfx = '<OFX><BANKTRANLIST><STMTTRN><TRNTYPE>DEBIT<DTPOSTED>20260701<TRNAMT>-10<FITID>Q1<NAME>QFX Test</STMTTRN></BANKTRANLIST></OFX>'
+    const qfx =
+      '<OFX><BANKTRANLIST><STMTTRN><TRNTYPE>DEBIT<DTPOSTED>20260701<TRNAMT>-10<FITID>Q1<NAME>QFX Test</STMTTRN></BANKTRANLIST></OFX>'
     const result = parseStatement(qfx, 'qfx', { bankAccountId: 'acct-1' })
     expect(result.transactions).toHaveLength(1)
   })
 
   it('should route QBO to OFX parser', () => {
-    const qbo = '<OFX><BANKTRANLIST><STMTTRN><TRNTYPE>CREDIT<DTPOSTED>20260701<TRNAMT>500<FITID>QB1<NAME>QBO Test</STMTTRN></BANKTRANLIST></OFX>'
+    const qbo =
+      '<OFX><BANKTRANLIST><STMTTRN><TRNTYPE>CREDIT<DTPOSTED>20260701<TRNAMT>500<FITID>QB1<NAME>QBO Test</STMTTRN></BANKTRANLIST></OFX>'
     const result = parseStatement(qbo, 'qbo', { bankAccountId: 'acct-1' })
     expect(result.transactions).toHaveLength(1)
   })
