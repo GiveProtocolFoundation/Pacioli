@@ -288,6 +288,7 @@ pub async fn save_bank_account(
 
 /// Queries bank transactions for an account with optional filters and pagination.
 #[tauri::command]
+#[allow(clippy::too_many_arguments)]
 pub async fn get_bank_transactions(
     state: State<'_, DatabaseState>,
     bank_account_id: String,
