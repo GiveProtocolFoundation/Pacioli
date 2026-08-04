@@ -9,123 +9,219 @@ use super::persistence::DatabaseState;
 // Types
 // ============================================================================
 
+/// A bank or card account linked for statement import.
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
 pub struct BankAccount {
+    /// Unique identifier.
     pub id: String,
+    /// Name of the financial institution.
     pub institution_name: String,
+    /// User-chosen display name for this account.
     pub account_nickname: String,
+    /// Account type (checking, savings, credit, etc.).
     pub account_type: String,
+    /// ISO 4217 currency code.
     pub currency: String,
+    /// Default GL account number for imported transactions.
     pub gl_account_number: String,
+    /// External data source (e.g. "plaid", "manual").
     pub external_source: Option<String>,
+    /// Identifier in the external system.
     pub external_account_id: Option<String>,
+    /// Last four digits or masked account number.
     pub masked_account_number: Option<String>,
+    /// Opening balance as a decimal string.
     pub opening_balance: Option<String>,
+    /// Opening balance effective date (unix epoch seconds).
     pub opening_balance_date: Option<i64>,
+    /// Associated entity ID, if any.
     pub entity_id: Option<String>,
+    /// Whether this account is active (1) or archived (0).
     pub active: i64,
+    /// Row creation timestamp (unix epoch seconds).
     pub created_at: i64,
+    /// Row last-update timestamp (unix epoch seconds).
     pub updated_at: i64,
 }
 
+/// Input payload for creating a new bank account.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BankAccountInput {
+    /// Name of the financial institution.
     pub institution_name: String,
+    /// User-chosen display name.
     pub account_nickname: String,
+    /// Account type (checking, savings, credit, etc.).
     pub account_type: String,
+    /// ISO 4217 currency code.
     pub currency: String,
+    /// GL account number (defaults to "1000").
     pub gl_account_number: Option<String>,
+    /// External data source identifier.
     pub external_source: Option<String>,
+    /// Identifier in the external system.
     pub external_account_id: Option<String>,
+    /// Masked account number.
     pub masked_account_number: Option<String>,
+    /// Opening balance as a decimal string.
     pub opening_balance: Option<String>,
+    /// Opening balance effective date (unix epoch seconds).
     pub opening_balance_date: Option<i64>,
+    /// Associated entity ID.
     pub entity_id: Option<String>,
 }
 
+/// A single imported bank or card transaction.
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
 pub struct BankTransaction {
+    /// Unique identifier (composite of account + external_id when available).
     pub id: String,
+    /// Owning bank account.
     pub bank_account_id: String,
+    /// Institution-assigned transaction ID (used for dedup).
     pub external_id: Option<String>,
+    /// Settlement date (unix epoch seconds).
     pub posted_date: i64,
+    /// Initiation date if different from posted_date.
     pub transaction_date: Option<i64>,
+    /// Signed amount as a decimal string.
     pub amount: String,
+    /// ISO 4217 currency code.
     pub currency: String,
+    /// Payee or merchant name.
     pub payee: Option<String>,
+    /// Free-text memo from the statement.
     pub memo: Option<String>,
+    /// Check number or reference.
     pub reference_number: Option<String>,
+    /// Transaction type code from the source file.
     pub tx_type: Option<String>,
+    /// Running balance after this transaction.
     pub running_balance: Option<String>,
+    /// Classification status (unclassified, classified, skipped).
     pub classification_status: String,
+    /// Human note attached during classification.
     pub classification_note: Option<String>,
+    /// Original row data preserved as JSON.
     pub raw_data: Option<String>,
+    /// ID of the import batch that created this row.
     pub import_batch_id: Option<String>,
+    /// Row creation timestamp (unix epoch seconds).
     pub created_at: i64,
+    /// Row last-update timestamp (unix epoch seconds).
     pub updated_at: i64,
 }
 
+/// Input payload for creating bank transactions.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BankTransactionInput {
+    /// Owning bank account.
     pub bank_account_id: String,
+    /// Institution-assigned transaction ID (used for dedup).
     pub external_id: Option<String>,
+    /// Settlement date (unix epoch seconds).
     pub posted_date: i64,
+    /// Initiation date if different from posted_date.
     pub transaction_date: Option<i64>,
+    /// Signed amount as a decimal string.
     pub amount: String,
+    /// ISO 4217 currency code.
     pub currency: String,
+    /// Payee or merchant name.
     pub payee: Option<String>,
+    /// Free-text memo from the statement.
     pub memo: Option<String>,
+    /// Check number or reference.
     pub reference_number: Option<String>,
+    /// Transaction type code from the source file.
     pub tx_type: Option<String>,
+    /// Running balance after this transaction.
     pub running_balance: Option<String>,
+    /// Classification status (defaults to "unclassified").
     pub classification_status: Option<String>,
+    /// Human note attached during classification.
     pub classification_note: Option<String>,
+    /// Original row data preserved as JSON.
     pub raw_data: Option<String>,
+    /// ID of the import batch that created this row.
     pub import_batch_id: Option<String>,
 }
 
+/// Metadata for a single file-import operation.
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
 pub struct ImportBatch {
+    /// Unique identifier.
     pub id: String,
+    /// Bank account the transactions belong to.
     pub bank_account_id: String,
+    /// Original filename.
     pub filename: Option<String>,
+    /// File format (ofx, csv, qfx, qbo).
     pub format: Option<String>,
+    /// Import timestamp (unix epoch seconds).
     pub imported_at: i64,
+    /// Number of rows parsed from the file.
     pub row_count: Option<i64>,
+    /// Number of duplicate rows detected.
     pub duplicate_count: Option<i64>,
+    /// Batch status (staged, committed, rolled_back).
     pub status: String,
 }
 
+/// Input payload for creating an import batch.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ImportBatchInput {
+    /// Bank account the transactions belong to.
     pub bank_account_id: String,
+    /// Original filename.
     pub filename: Option<String>,
+    /// File format (ofx, csv, qfx, qbo).
     pub format: Option<String>,
+    /// Number of rows parsed.
     pub row_count: Option<i64>,
+    /// Number of duplicate rows detected.
     pub duplicate_count: Option<i64>,
+    /// Batch status (defaults to "staged").
     pub status: Option<String>,
 }
 
+/// Saved CSV column-mapping profile for a particular institution.
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
 pub struct StatementProfile {
+    /// Unique identifier.
     pub id: String,
+    /// User-assigned profile name.
     pub name: String,
+    /// Institution this profile was created for.
     pub institution_name: Option<String>,
+    /// JSON-serialized column mapping.
     pub column_map: Option<String>,
+    /// Date format string (e.g. "MM/DD/YYYY").
     pub date_format: Option<String>,
+    /// How the source file represents debits/credits.
     pub amount_sign_convention: Option<String>,
+    /// Default currency when the file omits it.
     pub currency_default: Option<String>,
+    /// Row creation timestamp (unix epoch seconds).
     pub created_at: i64,
+    /// Row last-update timestamp (unix epoch seconds).
     pub updated_at: i64,
 }
 
+/// Input payload for creating a statement profile.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct StatementProfileInput {
+    /// User-assigned profile name.
     pub name: String,
+    /// Institution this profile is for.
     pub institution_name: Option<String>,
+    /// JSON-serialized column mapping.
     pub column_map: Option<String>,
+    /// Date format string.
     pub date_format: Option<String>,
+    /// How the source file represents debits/credits.
     pub amount_sign_convention: Option<String>,
+    /// Default currency when the file omits it.
     pub currency_default: Option<String>,
 }
 
@@ -133,6 +229,7 @@ pub struct StatementProfileInput {
 // Bank Account Commands
 // ============================================================================
 
+/// Returns all bank accounts ordered by creation date (newest first).
 #[tauri::command]
 pub async fn get_bank_accounts(
     state: State<'_, DatabaseState>,
@@ -143,6 +240,7 @@ pub async fn get_bank_accounts(
         .map_err(|e| e.to_string())
 }
 
+/// Creates a new bank account and returns the persisted row.
 #[tauri::command]
 pub async fn save_bank_account(
     state: State<'_, DatabaseState>,
@@ -188,6 +286,7 @@ pub async fn save_bank_account(
 // Bank Transaction Commands
 // ============================================================================
 
+/// Queries bank transactions for an account with optional filters and pagination.
 #[tauri::command]
 pub async fn get_bank_transactions(
     state: State<'_, DatabaseState>,
@@ -238,6 +337,7 @@ pub async fn get_bank_transactions(
         .map_err(|e| e.to_string())
 }
 
+/// Upserts bank transactions (dedup on composite ID). Returns the inserted count.
 #[tauri::command]
 pub async fn save_bank_transactions(
     state: State<'_, DatabaseState>,
@@ -309,6 +409,7 @@ pub async fn save_bank_transactions(
 // Import Batch Commands
 // ============================================================================
 
+/// Returns import batches, optionally filtered by bank account.
 #[tauri::command]
 pub async fn get_import_batches(
     state: State<'_, DatabaseState>,
@@ -330,6 +431,7 @@ pub async fn get_import_batches(
     }
 }
 
+/// Creates a new import batch record and returns the persisted row.
 #[tauri::command]
 pub async fn save_import_batch(
     state: State<'_, DatabaseState>,
@@ -369,6 +471,7 @@ pub async fn save_import_batch(
 // Statement Profile Commands
 // ============================================================================
 
+/// Returns all saved statement profiles ordered by name.
 #[tauri::command]
 pub async fn get_statement_profiles(
     state: State<'_, DatabaseState>,
@@ -379,6 +482,7 @@ pub async fn get_statement_profiles(
         .map_err(|e| e.to_string())
 }
 
+/// Creates a new statement profile and returns the persisted row.
 #[tauri::command]
 pub async fn save_statement_profile(
     state: State<'_, DatabaseState>,

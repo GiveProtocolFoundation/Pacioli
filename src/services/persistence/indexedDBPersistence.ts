@@ -1207,6 +1207,7 @@ class IndexedDBPersistenceService implements PersistenceService {
   // Bank Account Operations (GIV-825)
   // ============================================================================
 
+  /** Returns all bank accounts. */
   async getBankAccounts(): Promise<BankAccount[]> {
     const db = await this.ensureDB()
     return new Promise((resolve, reject) => {
@@ -1218,6 +1219,7 @@ class IndexedDBPersistenceService implements PersistenceService {
     })
   }
 
+  /** Creates a new bank account and returns the persisted record. */
   async saveBankAccount(input: BankAccountInput): Promise<BankAccount> {
     const db = await this.ensureDB()
     const now = Math.floor(Date.now() / 1000)
@@ -1252,6 +1254,7 @@ class IndexedDBPersistenceService implements PersistenceService {
   // Bank Transaction Operations (GIV-825)
   // ============================================================================
 
+  /** Queries bank transactions for an account with optional filters and pagination. */
   async getBankTransactions(
     bankAccountId: string,
     filter?: BankTransactionFilter
@@ -1265,10 +1268,12 @@ class IndexedDBPersistenceService implements PersistenceService {
       request.onsuccess = () => {
         let rows: BankTransaction[] = request.result
         if (filter?.from_date != null) {
-          rows = rows.filter(r => r.posted_date >= filter.from_date!)
+          const fromDate = filter.from_date
+          rows = rows.filter(r => r.posted_date >= fromDate)
         }
         if (filter?.to_date != null) {
-          rows = rows.filter(r => r.posted_date <= filter.to_date!)
+          const toDate = filter.to_date
+          rows = rows.filter(r => r.posted_date <= toDate)
         }
         if (filter?.classification_status) {
           rows = rows.filter(
@@ -1287,6 +1292,7 @@ class IndexedDBPersistenceService implements PersistenceService {
     })
   }
 
+  /** Upserts bank transactions (dedup on composite ID). Returns inserted count. */
   async saveBankTransactions(rows: BankTransactionInput[]): Promise<number> {
     const db = await this.ensureDB()
     const now = Math.floor(Date.now() / 1000)
@@ -1331,6 +1337,7 @@ class IndexedDBPersistenceService implements PersistenceService {
   // Import Batch Operations (GIV-825)
   // ============================================================================
 
+  /** Returns import batches, optionally filtered by bank account. */
   async getImportBatches(bankAccountId?: string): Promise<ImportBatch[]> {
     const db = await this.ensureDB()
     return new Promise((resolve, reject) => {
@@ -1349,6 +1356,7 @@ class IndexedDBPersistenceService implements PersistenceService {
     })
   }
 
+  /** Creates a new import batch record and returns it. */
   async saveImportBatch(input: ImportBatchInput): Promise<ImportBatch> {
     const db = await this.ensureDB()
     const now = Math.floor(Date.now() / 1000)
@@ -1376,6 +1384,7 @@ class IndexedDBPersistenceService implements PersistenceService {
   // Statement Profile Operations (GIV-825)
   // ============================================================================
 
+  /** Returns all saved statement profiles. */
   async getStatementProfiles(): Promise<StatementProfile[]> {
     const db = await this.ensureDB()
     return new Promise((resolve, reject) => {
@@ -1387,6 +1396,7 @@ class IndexedDBPersistenceService implements PersistenceService {
     })
   }
 
+  /** Creates a new statement profile and returns it. */
   async saveStatementProfile(
     input: StatementProfileInput
   ): Promise<StatementProfile> {
