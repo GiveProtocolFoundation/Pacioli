@@ -34,6 +34,17 @@ export type {
   AddressMatch,
   PostalAddress,
   TaxDocumentationStatus,
+  // Bank types (GIV-825)
+  BankAccount,
+  BankAccountInput,
+  BankAccountType,
+  BankTransaction,
+  BankTransactionInput,
+  BankTransactionFilter,
+  ImportBatch,
+  ImportBatchInput,
+  StatementProfile,
+  StatementProfileInput,
 } from './types'
 
 /**
