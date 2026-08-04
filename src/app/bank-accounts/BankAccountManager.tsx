@@ -16,6 +16,7 @@ import {
   type BankAccount,
   type BankAccountInput,
   type BankAccountType,
+  type BankTransaction,
   type ImportBatchInput,
   type BankTransactionInput,
   type StatementProfile,
@@ -88,6 +89,89 @@ function formatAmount(amount: string): string {
   if (Number.isNaN(n)) return amount
   const abs = Math.abs(n).toFixed(2)
   return n < 0 ? `-$${abs}` : `$${abs}`
+}
+
+function resolveCsvColumnMap(
+  content: string,
+  profiles: StatementProfile[],
+  selectedProfileId: string
+): { colMap: CsvColumnMap; profile: StatementProfile | undefined } | { error: string } {
+  const profile = profiles.find(p => p.id === selectedProfileId)
+  const inferred = profile
+    ? columnMapFromProfile(profile)
+    : inferColumnMap(content.split('\n')[0]?.split(',') ?? [])
+
+  const valid =
+    inferred &&
+    'date' in inferred &&
+    'amount' in inferred &&
+    inferred.date &&
+    inferred.amount
+
+  if (!valid) {
+    return {
+      error:
+        'Could not infer CSV columns. Please select a statement profile or ensure your CSV has Date and Amount columns.',
+    }
+  }
+
+  return { colMap: inferred as CsvColumnMap, profile }
+}
+
+function buildParseOptions(
+  format: string,
+  bankAccountId: string,
+  content: string,
+  profiles: StatementProfile[],
+  selectedProfileId: string,
+  currency: string,
+  existingIds: Set<string>
+):
+  | { options: Parameters<typeof parseStatement>[2] }
+  | { error: string } {
+  if (format !== 'csv') {
+    return {
+      options: { bankAccountId, existingExternalIds: existingIds },
+    }
+  }
+
+  const resolved = resolveCsvColumnMap(content, profiles, selectedProfileId)
+  if ('error' in resolved) return resolved
+
+  const { colMap, profile } = resolved
+  return {
+    options: {
+      bankAccountId,
+      columnMap: colMap,
+      dateFormat: profile?.date_format ?? 'MM/DD/YYYY',
+      amountSignConvention:
+        (profile?.amount_sign_convention as
+          | 'signed'
+          | 'debit_positive'
+          | 'debit_negative') ?? 'signed',
+      currencyDefault: profile?.currency_default ?? currency,
+      existingExternalIds: existingIds,
+    },
+  }
+}
+
+function buildPreviewState(
+  result: ParseResult,
+  existing: BankTransaction[]
+): { parseResult: ParseResult; previewRows: PreviewRow[] } {
+  const dedupResult = dedup(result.transactions, existing)
+  const allTx = [...dedupResult.unique, ...dedupResult.duplicates]
+  return {
+    parseResult: {
+      ...result,
+      transactions: allTx,
+      duplicateCount: dedupResult.duplicateCount,
+    },
+    previewRows: allTx.map(tx => ({
+      ...tx,
+      _selected: !tx._isDuplicate,
+    })),
+  }
 }
 
 /** @returns BankAccountManager page component */
@@ -236,62 +320,24 @@ export default function BankAccountManager() {
         const existing = await persistence.getBankTransactions(uploadAccount.id)
         const existingIds = buildExternalIdSet(existing)
 
-        let result: ParseResult
-        if (format === 'csv') {
-          const profile = profiles.find(p => p.id === selectedProfileId)
-          const inferred = profile
-            ? columnMapFromProfile(profile)
-            : inferColumnMap(content.split('\n')[0]?.split(',') ?? [])
-
-          const colMap: CsvColumnMap | null =
-            inferred &&
-            'date' in inferred &&
-            'amount' in inferred &&
-            inferred.date &&
-            inferred.amount
-              ? (inferred as CsvColumnMap)
-              : null
-
-          if (!colMap) {
-            setError(
-              'Could not infer CSV columns. Please select a statement profile or ensure your CSV has Date and Amount columns.'
-            )
-            return
-          }
-
-          result = parseStatement(content, format, {
-            bankAccountId: uploadAccount.id,
-            columnMap: colMap,
-            dateFormat: profile?.date_format ?? 'MM/DD/YYYY',
-            amountSignConvention:
-              (profile?.amount_sign_convention as
-                | 'signed'
-                | 'debit_positive'
-                | 'debit_negative') ?? 'signed',
-            currencyDefault:
-              profile?.currency_default ?? uploadAccount.currency,
-            existingExternalIds: existingIds,
-          })
-        } else {
-          result = parseStatement(content, format, {
-            bankAccountId: uploadAccount.id,
-            existingExternalIds: existingIds,
-          })
+        const opts = buildParseOptions(
+          format,
+          uploadAccount.id,
+          content,
+          profiles,
+          selectedProfileId,
+          uploadAccount.currency,
+          existingIds
+        )
+        if ('error' in opts) {
+          setError(opts.error)
+          return
         }
 
-        const dedupResult = dedup(result.transactions, existing)
-        const allTx = [...dedupResult.unique, ...dedupResult.duplicates]
-        const rows: PreviewRow[] = allTx.map(tx => ({
-          ...tx,
-          _selected: !tx._isDuplicate,
-        }))
-
-        setParseResult({
-          ...result,
-          transactions: allTx,
-          duplicateCount: dedupResult.duplicateCount,
-        })
-        setPreviewRows(rows)
+        const result = parseStatement(content, format, opts.options)
+        const preview = buildPreviewState(result, existing)
+        setParseResult(preview.parseResult)
+        setPreviewRows(preview.previewRows)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to parse file')
       }
