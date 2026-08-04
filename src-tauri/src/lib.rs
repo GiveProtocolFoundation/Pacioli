@@ -491,7 +491,16 @@ pub fn run() {
             api::rules::install_starter_rules,
             // Chart-of-accounts template importer (GIV-757)
             api::accounting::import_chart_of_accounts_template,
-            api::accounting::hide_profile_template_accounts
+            api::accounting::hide_profile_template_accounts,
+            // Bank & card transaction capture (GIV-825)
+            api::bank::get_bank_accounts,
+            api::bank::save_bank_account,
+            api::bank::get_bank_transactions,
+            api::bank::save_bank_transactions,
+            api::bank::get_import_batches,
+            api::bank::save_import_batch,
+            api::bank::get_statement_profiles,
+            api::bank::save_statement_profile
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -251,6 +251,139 @@ export interface EntityFilter {
   is_active?: boolean
 }
 
+// ============================================================================
+// Bank & Card Transaction Types (GIV-825)
+// ============================================================================
+
+export type BankAccountType =
+  | 'checking'
+  | 'savings'
+  | 'credit_card'
+  | 'money_market'
+  | 'line_of_credit'
+  | 'other'
+
+export interface BankAccount {
+  id: string
+  institution_name: string
+  account_nickname: string
+  account_type: BankAccountType
+  currency: string
+  gl_account_number: string
+  external_source?: string | null
+  external_account_id?: string | null
+  masked_account_number?: string | null
+  opening_balance?: string | null
+  opening_balance_date?: number | null
+  entity_id?: string | null
+  active: boolean
+  created_at: number
+  updated_at: number
+}
+
+export interface BankAccountInput {
+  institution_name: string
+  account_nickname: string
+  account_type: BankAccountType
+  currency: string
+  gl_account_number?: string
+  external_source?: string
+  external_account_id?: string
+  masked_account_number?: string
+  opening_balance?: string
+  opening_balance_date?: number
+  entity_id?: string
+}
+
+export interface BankTransaction {
+  id: string
+  bank_account_id: string
+  external_id?: string | null
+  posted_date: number
+  transaction_date?: number | null
+  amount: string
+  currency: string
+  payee?: string | null
+  memo?: string | null
+  reference_number?: string | null
+  tx_type?: string | null
+  running_balance?: string | null
+  classification_status: string
+  classification_note?: string | null
+  raw_data?: string | null
+  import_batch_id?: string | null
+  created_at: number
+  updated_at: number
+}
+
+export interface BankTransactionInput {
+  bank_account_id: string
+  external_id?: string
+  posted_date: number
+  transaction_date?: number
+  amount: string
+  currency: string
+  payee?: string
+  memo?: string
+  reference_number?: string
+  tx_type?: string
+  running_balance?: string
+  classification_status?: string
+  classification_note?: string
+  raw_data?: string
+  import_batch_id?: string
+}
+
+export interface BankTransactionFilter {
+  from_date?: number
+  to_date?: number
+  classification_status?: string
+  import_batch_id?: string
+  limit?: number
+  offset?: number
+}
+
+export interface ImportBatch {
+  id: string
+  bank_account_id: string
+  filename?: string | null
+  format?: string | null
+  imported_at: number
+  row_count?: number | null
+  duplicate_count?: number | null
+  status: string
+}
+
+export interface ImportBatchInput {
+  bank_account_id: string
+  filename?: string
+  format?: string
+  row_count?: number
+  duplicate_count?: number
+  status?: string
+}
+
+export interface StatementProfile {
+  id: string
+  name: string
+  institution_name?: string | null
+  column_map?: string | null
+  date_format?: string | null
+  amount_sign_convention?: string | null
+  currency_default?: string | null
+  created_at: number
+  updated_at: number
+}
+
+export interface StatementProfileInput {
+  name: string
+  institution_name?: string
+  column_map?: string
+  date_format?: string
+  amount_sign_convention?: string
+  currency_default?: string
+}
+
 export interface PersistenceService {
   // Profile operations
   createProfile(name: string): Promise<Profile>
@@ -325,6 +458,27 @@ export interface PersistenceService {
   // Connected wallet operations (browser wallet extension state)
   saveConnectedWallets(wallets: ConnectedWallet[]): Promise<void>
   loadConnectedWallets(): Promise<ConnectedWallet[]>
+
+  // Bank account operations (GIV-825)
+  getBankAccounts(): Promise<BankAccount[]>
+  saveBankAccount(account: BankAccountInput): Promise<BankAccount>
+
+  // Bank transaction operations (GIV-825)
+  getBankTransactions(
+    bankAccountId: string,
+    filter?: BankTransactionFilter
+  ): Promise<BankTransaction[]>
+  saveBankTransactions(rows: BankTransactionInput[]): Promise<number>
+
+  // Import batch operations (GIV-825)
+  getImportBatches(bankAccountId?: string): Promise<ImportBatch[]>
+  saveImportBatch(batch: ImportBatchInput): Promise<ImportBatch>
+
+  // Statement profile operations (GIV-825)
+  getStatementProfiles(): Promise<StatementProfile[]>
+  saveStatementProfile(
+    profile: StatementProfileInput
+  ): Promise<StatementProfile>
 
   // Address detection operations
   lookupAddress(
