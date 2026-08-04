@@ -340,6 +340,7 @@ interface SourceTabsProps {
   onSwitchToBank: () => void
 }
 
+/** @returns Tab bar for switching between crypto and bank classification queues. */
 const SourceTabs: React.FC<SourceTabsProps> = ({
   sourceKind,
   cryptoCount,
@@ -394,6 +395,7 @@ interface CryptoFilterMenuProps {
   onSelectByType: (event: React.MouseEvent<HTMLButtonElement>) => void
 }
 
+/** @returns Dropdown menu for selecting transactions by chain or type. */
 const CryptoFilterMenu: React.FC<CryptoFilterMenuProps> = ({
   open,
   chains,
@@ -462,6 +464,53 @@ interface BatchProgressBarProps {
   total: number
 }
 
+interface QueueHeaderProps {
+  sourceKind: SourceKind
+  hasUnpriced: boolean
+  enriching: boolean
+  onEnrichPrices: () => void
+  onRefresh: () => void
+}
+
+/** @returns Page header with optional price-enrichment button and refresh. */
+const QueueHeader: React.FC<QueueHeaderProps> = ({
+  sourceKind,
+  hasUnpriced,
+  enriching,
+  onEnrichPrices,
+  onRefresh,
+}) => (
+  <div className="mb-6 flex items-center justify-between">
+    <div>
+      <p className="eyebrow">Accounting</p>
+      <h1>Classification Queue</h1>
+      <p className="text-[#294050] dark:text-[#9FB4BE] mt-1">
+        Classify transactions into draft journal entries
+      </p>
+    </div>
+    <div className="flex items-center gap-2">
+      {sourceKind === 'crypto' && hasUnpriced && (
+        <button
+          onClick={onEnrichPrices}
+          disabled={enriching}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#5FE3C0]/10 text-[#294050] dark:text-[#5FE3C0] hover:bg-[#5FE3C0]/20 disabled:opacity-50 transition-colors"
+        >
+          <DollarSign className="w-4 h-4" />
+          {enriching ? 'Fetching prices...' : 'Enrich Prices'}
+        </button>
+      )}
+      <button
+        onClick={onRefresh}
+        className="flex items-center gap-2 px-4 py-2 border border-[rgba(95,227,192,0.15)] rounded-lg bg-[#F7FAFA] dark:bg-[#11202B] hover:bg-[#EAF3F2] dark:hover:bg-[#16242F] text-[#294050] dark:text-[#9FB4BE]"
+      >
+        <RefreshCw className="w-4 h-4" />
+        Refresh
+      </button>
+    </div>
+  </div>
+)
+
+/** @returns Horizontal progress bar for batch classification operations. */
 const BatchProgressBar: React.FC<BatchProgressBarProps> = ({ done, total }) => (
   <div className="mb-4">
     <div className="flex items-center justify-between mb-1">
@@ -750,6 +799,11 @@ const ClassificationQueue: React.FC = () => {
     activeItems.some(tx => selectedIds.has(tx.id)) && !allFilteredSelected
 
   const selectedCount = activeItems.filter(tx => selectedIds.has(tx.id)).length
+
+  const searchPlaceholder =
+    sourceKind === 'crypto'
+      ? 'Search by hash, chain, type, address...'
+      : 'Search by payee, memo, account...'
 
   const handleToggleAll = useCallback(() => {
     setSelectedIds(prev => {
@@ -1147,35 +1201,13 @@ const ClassificationQueue: React.FC = () => {
   return (
     <div className="p-6 min-h-screen ledger-background">
       {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <p className="eyebrow">Accounting</p>
-          <h1>Classification Queue</h1>
-          <p className="text-[#294050] dark:text-[#9FB4BE] mt-1">
-            Classify transactions into draft journal entries
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          {sourceKind === 'crypto' &&
-            transactions.some(tx => tx.valuationStatus === 'unpriced') && (
-              <button
-                onClick={handleEnrichPrices}
-                disabled={enriching}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#5FE3C0]/10 text-[#294050] dark:text-[#5FE3C0] hover:bg-[#5FE3C0]/20 disabled:opacity-50 transition-colors"
-              >
-                <DollarSign className="w-4 h-4" />
-                {enriching ? 'Fetching prices...' : 'Enrich Prices'}
-              </button>
-            )}
-          <button
-            onClick={handleRefresh}
-            className="flex items-center gap-2 px-4 py-2 border border-[rgba(95,227,192,0.15)] rounded-lg bg-[#F7FAFA] dark:bg-[#11202B] hover:bg-[#EAF3F2] dark:hover:bg-[#16242F] text-[#294050] dark:text-[#9FB4BE]"
-          >
-            <RefreshCw className="w-4 h-4" />
-            Refresh
-          </button>
-        </div>
-      </div>
+      <QueueHeader
+        sourceKind={sourceKind}
+        hasUnpriced={transactions.some(tx => tx.valuationStatus === 'unpriced')}
+        enriching={enriching}
+        onEnrichPrices={handleEnrichPrices}
+        onRefresh={handleRefresh}
+      />
 
       {/* Source tabs */}
       <SourceTabs
@@ -1215,11 +1247,7 @@ const ClassificationQueue: React.FC = () => {
           <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#647D8B]" />
           <input
             type="text"
-            placeholder={
-              sourceKind === 'crypto'
-                ? 'Search by hash, chain, type, address...'
-                : 'Search by payee, memo, account...'
-            }
+            placeholder={searchPlaceholder}
             value={searchQuery}
             onChange={handleSearchChange}
             className="w-full pl-4 pr-10 py-2 border border-[rgba(95,227,192,0.15)] rounded-lg bg-[#F7FAFA] dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] placeholder-[#647D8B] dark:placeholder-[#294050] focus:outline-none focus:ring-2 focus:ring-[#5FE3C0] focus:border-[#5FE3C0]"
