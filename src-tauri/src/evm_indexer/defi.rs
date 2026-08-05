@@ -150,9 +150,7 @@ impl DeFiProtocolScanner {
             .ok_or_else(|| anyhow::anyhow!("Unknown protocol"))?;
 
         match config.protocol_type {
-            ProtocolType::Dex => {
-                self.scan_dex_positions(client, config, user_address).await
-            }
+            ProtocolType::Dex => self.scan_dex_positions(client, config, user_address).await,
             ProtocolType::Lending => {
                 self.scan_lending_positions(client, config, user_address)
                     .await

@@ -65,10 +65,7 @@ impl RpcClient {
 
     async fn get_balance(&self, address: Address) -> Result<U256> {
         let v = self
-            .call_raw(
-                "eth_getBalance",
-                json!([format!("{address:#x}"), "latest"]),
-            )
+            .call_raw("eth_getBalance", json!([format!("{address:#x}"), "latest"]))
             .await?;
         let hex = v.as_str().unwrap_or("0x0");
         Ok(parse_hex_u256(hex))
@@ -121,8 +118,7 @@ fn parse_hex_u256(s: &str) -> U256 {
 }
 
 fn parse_address(v: &Value) -> Option<Address> {
-    v.as_str()
-        .and_then(|s| s.parse::<Address>().ok())
+    v.as_str().and_then(|s| s.parse::<Address>().ok())
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -181,9 +177,7 @@ impl EVMIndexer {
                     chain: "moonbeam".to_string(),
                     contract_address: None,
                 },
-                multicall_address: Some(
-                    "0x83e3b61886770de2F64AAcaD2724ED4f08F7f36B".to_string(),
-                ),
+                multicall_address: Some("0x83e3b61886770de2F64AAcaD2724ED4f08F7f36B".to_string()),
                 substrate_features: true,
             },
         );
@@ -202,9 +196,7 @@ impl EVMIndexer {
                     chain: "moonriver".to_string(),
                     contract_address: None,
                 },
-                multicall_address: Some(
-                    "0x6477204E12A7236b9619385ea453F370aD897bb2".to_string(),
-                ),
+                multicall_address: Some("0x6477204E12A7236b9619385ea453F370aD897bb2".to_string()),
                 substrate_features: true,
             },
         );
@@ -223,9 +215,7 @@ impl EVMIndexer {
                     chain: "astar".to_string(),
                     contract_address: None,
                 },
-                multicall_address: Some(
-                    "0xd11dfc2ab34abd3e1abfba80b99aefbd6255c4b8".to_string(),
-                ),
+                multicall_address: Some("0xd11dfc2ab34abd3e1abfba80b99aefbd6255c4b8".to_string()),
                 substrate_features: true,
             },
         );
@@ -420,10 +410,7 @@ impl EVMIndexer {
         let gas_str = tx["gas"].as_str().unwrap_or("0x0");
         let nonce_str = tx["nonce"].as_str().unwrap_or("0x0");
         let input = tx["input"].as_str().unwrap_or("0x").to_string();
-        let block_number = tx["blockNumber"]
-            .as_str()
-            .map(parse_hex_u64)
-            .unwrap_or(0);
+        let block_number = tx["blockNumber"].as_str().map(parse_hex_u64).unwrap_or(0);
 
         let gas_price = parse_hex_u64(gas_price_str) as u128;
         let gas = parse_hex_u64(gas_str);

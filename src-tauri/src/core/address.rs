@@ -1,5 +1,5 @@
-use anyhow::Result;
 use alloy_primitives::Address as H160Address;
+use anyhow::Result;
 
 #[allow(dead_code)]
 /// A unified representation of blockchain addresses across Substrate (SS58)
