@@ -6,7 +6,7 @@ use uuid::Uuid;
 use super::persistence::DatabaseState;
 
 /// A classification rule stored in the database.
-#[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize, FromRow)]
 #[serde(rename_all = "camelCase")]
 pub struct ClassificationRule {
     /// Unique identifier.
@@ -1074,26 +1074,13 @@ mod tests {
     #[test]
     fn bank_rule_matches_sign_filter() {
         let rule = ClassificationRule {
-            id: String::new(),
-            name: String::new(),
-            description: String::new(),
-            match_tx_types: String::new(),
-            match_chains: String::new(),
             match_self_transfer: "any".to_string(),
-            debit_account: String::new(),
-            credit_account: String::new(),
-            debit_line_desc: String::new(),
-            credit_line_desc: String::new(),
-            je_description: String::new(),
-            use_fee_amount: false,
-            priority: 0,
             enabled: true,
             source: "user".to_string(),
             source_kind: "bank".to_string(),
             match_payee_pattern: "gusto".to_string(),
             match_amount_sign: "negative".to_string(),
-            created_at: String::new(),
-            updated_at: String::new(),
+            ..Default::default()
         };
         assert!(bank_rule_matches(&rule, "GUSTO INC", true));
         assert!(!bank_rule_matches(&rule, "GUSTO INC", false));
