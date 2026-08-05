@@ -11,7 +11,6 @@ use crate::core::auth_helpers::{
 use crate::core::auth_state::AuthState;
 use chrono::{DateTime, Duration, Utc};
 use serde::{Deserialize, Serialize};
-use sp_core::Pair;
 use sqlx::FromRow;
 use tauri::State;
 use uuid::Uuid;
@@ -652,40 +651,61 @@ fn verify_signature(
 
 /// Verify a Substrate sr25519 signature
 fn verify_substrate_signature(address: &str, message: &str, signature: &str) -> Result<(), String> {
-    use sp_core::{crypto::Ss58Codec, sr25519};
+    use blake2::{Blake2b512, Digest};
+    use schnorrkel::{signing_context, PublicKey, Signature};
 
-    // Decode the SS58 address to get the public key
-    let public_key = sr25519::Public::from_ss58check(address)
-        .map_err(|e| format!("Invalid Substrate address: {:?}", e))?;
+    // Decode SS58 address
+    let decoded = bs58::decode(address)
+        .into_vec()
+        .map_err(|e| format!("Invalid SS58 address: {}", e))?;
 
-    // Decode the hex signature
+    // SS58 layout: [prefix (1 or 2 bytes)] [32-byte pubkey] [2-byte checksum]
+    let (prefix_len, key_bytes) = if decoded.len() == 35 {
+        (1usize, &decoded[1..33])
+    } else if decoded.len() == 36 {
+        (2usize, &decoded[2..34])
+    } else {
+        return Err(format!("Invalid SS58 length: {}", decoded.len()));
+    };
+    let checksum_start = prefix_len + 32;
+
+    // Verify SS58 checksum (blake2b_512 of "SS58PRE" + payload)
+    let mut hasher = Blake2b512::new();
+    hasher.update(b"SS58PRE");
+    hasher.update(&decoded[..checksum_start]);
+    let hash = hasher.finalize();
+    if hash[0] != decoded[checksum_start] || hash[1] != decoded[checksum_start + 1] {
+        return Err("Invalid SS58 checksum".to_string());
+    }
+
+    let key_array: [u8; 32] = key_bytes
+        .try_into()
+        .map_err(|_| "Key length error".to_string())?;
+
+    let public = PublicKey::from_bytes(&key_array)
+        .map_err(|e| format!("Invalid public key: {}", e))?;
+
+    // Decode hex signature
     let sig_bytes = hex::decode(signature.trim_start_matches("0x"))
         .map_err(|e| format!("Invalid signature hex: {}", e))?;
-
     if sig_bytes.len() != 64 {
         return Err("Invalid signature length for sr25519".to_string());
     }
+    let sig = Signature::from_bytes(&sig_bytes)
+        .map_err(|e| format!("Invalid signature: {}", e))?;
 
-    let signature = sr25519::Signature::from_raw(
-        sig_bytes
-            .try_into()
-            .map_err(|_| "Failed to convert signature bytes")?,
-    );
+    let ctx = signing_context(b"substrate");
 
-    // Substrate wraps messages with a prefix
-    let wrapped_message = format!("<Bytes>{}</Bytes>", message);
-
-    // Verify signature
-    if sp_core::sr25519::Pair::verify(&signature, wrapped_message.as_bytes(), &public_key) {
-        Ok(())
-    } else {
-        // Also try without wrapping (some wallets don't wrap)
-        if sp_core::sr25519::Pair::verify(&signature, message.as_bytes(), &public_key) {
-            Ok(())
-        } else {
-            Err("Invalid signature".to_string())
-        }
+    // Try Substrate's wrapped message format first
+    let wrapped = format!("<Bytes>{}</Bytes>", message);
+    if public.verify(ctx.bytes(wrapped.as_bytes()), &sig).is_ok() {
+        return Ok(());
     }
+    // Fall back to unwrapped
+    if public.verify(ctx.bytes(message.as_bytes()), &sig).is_ok() {
+        return Ok(());
+    }
+    Err("Invalid substrate signature".to_string())
 }
 
 /// Verify an EVM secp256k1 signature

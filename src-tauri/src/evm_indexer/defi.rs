@@ -1,7 +1,8 @@
 #![allow(dead_code)]
 
+use super::RpcClient;
+use alloy_primitives::Address;
 use anyhow::Result;
-use ethers::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -118,7 +119,7 @@ impl DeFiProtocolScanner {
                 name: "Acala Swap".to_string(),
                 chain: "acala-evm".to_string(),
                 protocol_type: ProtocolType::Dex,
-                contracts: HashMap::new(), // Acala uses substrate-native DEX
+                contracts: HashMap::new(),
             },
         );
 
@@ -129,7 +130,7 @@ impl DeFiProtocolScanner {
     ///
     /// # Parameters
     ///
-    /// * `provider` - An `Arc<Provider<Ws>>` used to query the blockchain.
+    /// * `client` - An `Arc<RpcClient>` used to query the blockchain.
     /// * `protocol` - A string slice identifying the protocol to scan.
     /// * `user_address` - The Ethereum address of the user.
     ///
@@ -139,7 +140,7 @@ impl DeFiProtocolScanner {
     /// the protocol is unknown or scanning fails.
     pub async fn scan_defi_positions(
         &self,
-        provider: Arc<Provider<Ws>>,
+        client: Arc<RpcClient>,
         protocol: &str,
         user_address: Address,
     ) -> Result<Vec<DeFiPosition>> {
@@ -150,15 +151,14 @@ impl DeFiProtocolScanner {
 
         match config.protocol_type {
             ProtocolType::Dex => {
-                self.scan_dex_positions(provider, config, user_address)
-                    .await
+                self.scan_dex_positions(client, config, user_address).await
             }
             ProtocolType::Lending => {
-                self.scan_lending_positions(provider, config, user_address)
+                self.scan_lending_positions(client, config, user_address)
                     .await
             }
             ProtocolType::Staking => {
-                self.scan_staking_positions(provider, config, user_address)
+                self.scan_staking_positions(client, config, user_address)
                     .await
             }
             _ => Ok(Vec::new()),
@@ -167,38 +167,33 @@ impl DeFiProtocolScanner {
 
     async fn scan_dex_positions(
         &self,
-        _provider: Arc<Provider<Ws>>,
+        _client: Arc<RpcClient>,
         _config: &ProtocolConfig,
         _user_address: Address,
     ) -> Result<Vec<DeFiPosition>> {
-        // Scan for liquidity positions
-        // This would involve querying LP token balances and calculating underlying assets
         Ok(Vec::new())
     }
 
     async fn scan_lending_positions(
         &self,
-        _provider: Arc<Provider<Ws>>,
+        _client: Arc<RpcClient>,
         _config: &ProtocolConfig,
         _user_address: Address,
     ) -> Result<Vec<DeFiPosition>> {
-        // Scan for lending/borrowing positions
-        // Query cToken balances, borrow balances, etc.
         Ok(Vec::new())
     }
 
     async fn scan_staking_positions(
         &self,
-        _provider: Arc<Provider<Ws>>,
+        _client: Arc<RpcClient>,
         _config: &ProtocolConfig,
         _user_address: Address,
     ) -> Result<Vec<DeFiPosition>> {
-        // Scan for staking positions
         Ok(Vec::new())
     }
 }
 
-/// A position in a decentralized finance (DeFi) protocol, including supplied assets, debts, and earned rewards.
+/// A position in a decentralized finance (DeFi) protocol.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeFiPosition {
     /// The name of the DeFi protocol (e.g., Compound, Aave).
@@ -209,21 +204,21 @@ pub struct DeFiPosition {
     pub assets: Vec<AssetAmount>,
     /// Assets borrowed by the user.
     pub debt: Vec<AssetAmount>,
-    /// Rewards earned by the user (e.g., liquidity mining rewards).
+    /// Rewards earned by the user.
     pub rewards: Vec<AssetAmount>,
     /// The total USD value of the position, if available.
     pub value_usd: Option<f64>,
 }
 
-/// Represents an amount of a specific token, identified by its address or symbol.
+/// Represents an amount of a specific token.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AssetAmount {
     /// The blockchain address of the token contract, if available.
-    pub token_address: Option<Address>,
+    pub token_address: Option<String>,
     /// The symbol of the token (e.g., "ETH", "DAI").
     pub token_symbol: String,
-    /// The raw token amount in the smallest units.
-    pub amount: U256,
+    /// The raw token amount as a decimal string.
+    pub amount: String,
     /// Number of decimal places used by the token.
     pub decimals: u8,
 }
