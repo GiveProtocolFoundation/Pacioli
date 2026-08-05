@@ -195,7 +195,9 @@ const RuleForm: React.FC<RuleFormProps> = ({
             data-field="name"
             value={data.name}
             onChange={handleFieldChange}
-            placeholder={isBankRule ? 'e.g. Payroll — Gusto' : 'e.g. Staking Reward'}
+            placeholder={
+              isBankRule ? 'e.g. Payroll — Gusto' : 'e.g. Staking Reward'
+            }
           />
         </div>
         <div>
@@ -258,9 +260,7 @@ const RuleForm: React.FC<RuleFormProps> = ({
             </select>
           </div>
           <div>
-            <label className={LABEL_CLASS}>
-              JE Description ({'{payee}'})
-            </label>
+            <label className={LABEL_CLASS}>JE Description ({'{payee}'})</label>
             <input
               className={INPUT_CLASS}
               data-field="jeDescription"
@@ -489,23 +489,34 @@ const RuleDisplayRow: React.FC<RuleDisplayRowProps> = ({
         <p className="text-xs text-[#647D8B] mb-2">{rule.description}</p>
       )}
       <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-[#294050] dark:text-[#9FB4BE]">
-        <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium ${
-          rule.sourceKind === 'bank'
-            ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
+        <span
+          className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium ${
+            rule.sourceKind === 'bank'
+              ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
+              : rule.sourceKind === 'any'
+                ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300'
+                : 'bg-[#5FE3C0]/15 text-[#294050] dark:text-[#5FE3C0]'
+          }`}
+        >
+          {rule.sourceKind === 'bank'
+            ? 'Bank'
             : rule.sourceKind === 'any'
-              ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300'
-              : 'bg-[#5FE3C0]/15 text-[#294050] dark:text-[#5FE3C0]'
-        }`}>
-          {rule.sourceKind === 'bank' ? 'Bank' : rule.sourceKind === 'any' ? 'Both' : 'Crypto'}
+              ? 'Both'
+              : 'Crypto'}
         </span>
         {rule.sourceKind === 'bank' || rule.sourceKind === 'any' ? (
           <>
             {Boolean(rule.matchPayeePattern) && (
-              <span className="font-semibold">Payee: {rule.matchPayeePattern}</span>
+              <span className="font-semibold">
+                Payee: {rule.matchPayeePattern}
+              </span>
             )}
             {rule.matchAmountSign !== 'any' && (
               <span className="font-semibold">
-                Sign: {rule.matchAmountSign === 'negative' ? '− withdrawal' : '+ deposit'}
+                Sign:{' '}
+                {rule.matchAmountSign === 'negative'
+                  ? '− withdrawal'
+                  : '+ deposit'}
               </span>
             )}
           </>
@@ -529,7 +540,8 @@ const RuleDisplayRow: React.FC<RuleDisplayRowProps> = ({
           </>
         )}
         <span className="font-semibold">
-          DR {rule.debitAccount || '(bank)'} / CR {rule.creditAccount || '(bank)'}
+          DR {rule.debitAccount || '(bank)'} / CR{' '}
+          {rule.creditAccount || '(bank)'}
         </span>
         {Boolean(rule.useFeeAmount) && (
           <span className="text-amber-600 dark:text-amber-400">Fee amount</span>
@@ -849,16 +861,25 @@ const ClassificationRules: React.FC = () => {
 
   const builtinCount = rules.filter(r => r.source === 'builtin').length
   const enabledCount = rules.filter(r => r.enabled).length
-  const cryptoCount = rules.filter(r => r.sourceKind === 'crypto' || r.sourceKind === 'any').length
-  const bankCount = rules.filter(r => r.sourceKind === 'bank' || r.sourceKind === 'any').length
+  const cryptoCount = rules.filter(
+    r => r.sourceKind === 'crypto' || r.sourceKind === 'any'
+  ).length
+  const bankCount = rules.filter(
+    r => r.sourceKind === 'bank' || r.sourceKind === 'any'
+  ).length
 
-  const filteredRules = sourceFilter === 'all'
-    ? rules
-    : rules.filter(r => r.sourceKind === sourceFilter || r.sourceKind === 'any')
+  const filteredRules =
+    sourceFilter === 'all'
+      ? rules
+      : rules.filter(
+          r => r.sourceKind === sourceFilter || r.sourceKind === 'any'
+        )
 
   const handleSourceFilterClick = useCallback(
     (event: React.MouseEvent<HTMLButtonElement>) => {
-      const kind = event.currentTarget.dataset.kind as SourceKindFilter | undefined
+      const kind = event.currentTarget.dataset.kind as
+        | SourceKindFilter
+        | undefined
       if (kind) setSourceFilter(kind)
     },
     []
@@ -918,11 +939,11 @@ const ClassificationRules: React.FC = () => {
       {/* Source filter tabs */}
       <div className="mb-4 flex items-center gap-4">
         <div className="flex rounded-lg border border-[rgba(95,227,192,0.15)] overflow-hidden">
-          {([
+          {[
             { kind: 'all' as const, label: 'All', count: rules.length },
             { kind: 'crypto' as const, label: 'Crypto', count: cryptoCount },
             { kind: 'bank' as const, label: 'Bank', count: bankCount },
-          ]).map(tab => (
+          ].map(tab => (
             <button
               key={tab.kind}
               data-kind={tab.kind}

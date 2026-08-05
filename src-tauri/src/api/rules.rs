@@ -791,7 +791,8 @@ fn starter_rules() -> Vec<StarterRule> {
             use_fee_amount: false,
             priority: 1070,
             source_kind: "bank",
-            match_payee_pattern: "google|microsoft|amazon web|aws|slack|zoom|dropbox|adobe|github|atlassian",
+            match_payee_pattern:
+                "google|microsoft|amazon web|aws|slack|zoom|dropbox|adobe|github|atlassian",
             match_amount_sign: "negative",
         },
     ]
@@ -809,11 +810,7 @@ pub fn payee_pattern_matches(pattern: &str, payee: &str) -> bool {
 }
 
 /// Checks whether a bank classification rule matches a bank transaction.
-pub fn bank_rule_matches(
-    rule: &ClassificationRule,
-    payee: &str,
-    amount_is_negative: bool,
-) -> bool {
+pub fn bank_rule_matches(rule: &ClassificationRule, payee: &str, amount_is_negative: bool) -> bool {
     if rule.source_kind != "bank" && rule.source_kind != "any" {
         return false;
     }
@@ -948,7 +945,12 @@ pub async fn update_payee_gl_map(
          gl_account_number = ?, description = ?, enabled = ?, \
          updated_at = datetime('now') WHERE id = ?",
     )
-    .bind(input.payee_pattern.as_deref().unwrap_or(&existing.payee_pattern))
+    .bind(
+        input
+            .payee_pattern
+            .as_deref()
+            .unwrap_or(&existing.payee_pattern),
+    )
     .bind(input.match_mode.as_deref().unwrap_or(&existing.match_mode))
     .bind(
         input
@@ -956,7 +958,12 @@ pub async fn update_payee_gl_map(
             .as_deref()
             .unwrap_or(&existing.gl_account_number),
     )
-    .bind(input.description.as_deref().unwrap_or(&existing.description))
+    .bind(
+        input
+            .description
+            .as_deref()
+            .unwrap_or(&existing.description),
+    )
     .bind(input.enabled.unwrap_or(existing.enabled))
     .bind(&id)
     .execute(&state.pool)

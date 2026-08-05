@@ -38,7 +38,9 @@ export function findMatchingRule(
 export function payeePatternMatches(pattern: string, payee: string): boolean {
   if (!pattern) return true
   const lower = payee.toLowerCase()
-  return pattern.split('|').some(sub => sub !== '' && lower.includes(sub.toLowerCase()))
+  return pattern
+    .split('|')
+    .some(sub => sub !== '' && lower.includes(sub.toLowerCase()))
 }
 
 /** Finds the first enabled bank rule matching a payee and amount sign. */
