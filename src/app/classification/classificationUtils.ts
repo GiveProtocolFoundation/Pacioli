@@ -49,12 +49,13 @@ export function findMatchingBankRule(
   payee: string,
   isNegative: boolean
 ): ClassificationRuleMatch | undefined {
-  return rules.find(rule =>
-    rule.enabled &&
-    (rule.sourceKind === 'bank' || rule.sourceKind === 'any') &&
-    payeePatternMatches(rule.matchPayeePattern, payee) &&
-    !(rule.matchAmountSign === 'positive' && isNegative) &&
-    !(rule.matchAmountSign === 'negative' && !isNegative)
+  return rules.find(
+    rule =>
+      rule.enabled &&
+      (rule.sourceKind === 'bank' || rule.sourceKind === 'any') &&
+      payeePatternMatches(rule.matchPayeePattern, payee) &&
+      !(rule.matchAmountSign === 'positive' && isNegative) &&
+      !(rule.matchAmountSign === 'negative' && !isNegative)
   )
 }
 
