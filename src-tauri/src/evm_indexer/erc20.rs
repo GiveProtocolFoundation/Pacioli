@@ -56,10 +56,7 @@ impl ERC20Scanner {
             .unwrap_or(18);
 
         let total_supply = self
-            .eth_call_decode::<IERC20::totalSupplyCall>(
-                token_address,
-                IERC20::totalSupplyCall {},
-            )
+            .eth_call_decode::<IERC20::totalSupplyCall>(token_address, IERC20::totalSupplyCall {})
             .await
             .map(|r| r._0)
             .unwrap_or_default();
@@ -118,14 +115,10 @@ impl ERC20Scanner {
                 .collect();
 
             let data_hex = log["data"].as_str().unwrap_or("0x");
-            let data_bytes =
-                hex::decode(data_hex.trim_start_matches("0x")).unwrap_or_default();
+            let data_bytes = hex::decode(data_hex.trim_start_matches("0x")).unwrap_or_default();
 
-            let primitive_log = alloy_primitives::Log::new_unchecked(
-                token_address,
-                topics,
-                data_bytes.into(),
-            );
+            let primitive_log =
+                alloy_primitives::Log::new_unchecked(token_address, topics, data_bytes.into());
 
             if let Ok(decoded) = IERC20::Transfer::decode_log(&primitive_log, true) {
                 if decoded.from == wallet_address || decoded.to == wallet_address {
@@ -154,11 +147,7 @@ impl ERC20Scanner {
         Ok(transfers)
     }
 
-    async fn eth_call_decode<C: SolCall>(
-        &self,
-        to: Address,
-        call: C,
-    ) -> Result<C::Return> {
+    async fn eth_call_decode<C: SolCall>(&self, to: Address, call: C) -> Result<C::Return> {
         let data = call.abi_encode();
         let ret_bytes = self.client.eth_call(to, data).await?;
         Ok(C::abi_decode_returns(&ret_bytes, false)?)

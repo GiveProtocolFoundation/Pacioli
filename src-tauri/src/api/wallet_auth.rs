@@ -682,8 +682,8 @@ fn verify_substrate_signature(address: &str, message: &str, signature: &str) -> 
         .try_into()
         .map_err(|_| "Key length error".to_string())?;
 
-    let public = PublicKey::from_bytes(&key_array)
-        .map_err(|e| format!("Invalid public key: {}", e))?;
+    let public =
+        PublicKey::from_bytes(&key_array).map_err(|e| format!("Invalid public key: {}", e))?;
 
     // Decode hex signature
     let sig_bytes = hex::decode(signature.trim_start_matches("0x"))
@@ -691,8 +691,7 @@ fn verify_substrate_signature(address: &str, message: &str, signature: &str) -> 
     if sig_bytes.len() != 64 {
         return Err("Invalid signature length for sr25519".to_string());
     }
-    let sig = Signature::from_bytes(&sig_bytes)
-        .map_err(|e| format!("Invalid signature: {}", e))?;
+    let sig = Signature::from_bytes(&sig_bytes).map_err(|e| format!("Invalid signature: {}", e))?;
 
     let ctx = signing_context(b"substrate");
 
