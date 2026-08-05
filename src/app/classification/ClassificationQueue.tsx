@@ -286,7 +286,10 @@ const BankQueueRow: React.FC<BankQueueRowProps> = ({
       <td className="px-4 py-3 text-sm text-[#11202B] dark:text-[#EAF3F2] max-w-[200px] truncate">
         <div>{tx.payee ?? '—'}</div>
         {matchedRuleName !== null && (
-          <div className="text-[10px] text-[#5FE3C0] mt-0.5 truncate" title={matchedRuleName}>
+          <div
+            className="text-[10px] text-[#5FE3C0] mt-0.5 truncate"
+            title={matchedRuleName}
+          >
             → {matchedRuleName}
           </div>
         )}
@@ -309,7 +312,11 @@ const BankQueueRow: React.FC<BankQueueRowProps> = ({
             onClick={onAutoClassify}
             disabled={busy}
             className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded bg-[#5FE3C0]/10 text-[#294050] dark:text-[#5FE3C0] hover:bg-[#5FE3C0]/20 disabled:opacity-50 transition-colors"
-            title={matchedRuleName !== null ? `Auto-classify via rule: ${matchedRuleName}` : 'Auto-classify using amount sign heuristic'}
+            title={
+              matchedRuleName !== null
+                ? `Auto-classify via rule: ${matchedRuleName}`
+                : 'Auto-classify using amount sign heuristic'
+            }
           >
             <Zap className="w-3 h-3" />
             Auto

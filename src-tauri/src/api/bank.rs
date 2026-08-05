@@ -675,7 +675,10 @@ pub async fn auto_classify_bank_transaction(
                 rule.credit_line_desc.replace("{payee}", payee_display)
             };
             let je = if rule.je_description.is_empty() {
-                format!("{payee_display} — {} ({})", tx.institution_name, tx.account_nickname)
+                format!(
+                    "{payee_display} — {} ({})",
+                    tx.institution_name, tx.account_nickname
+                )
             } else {
                 rule.je_description.replace("{payee}", payee_display)
             };
@@ -721,8 +724,7 @@ pub async fn auto_classify_bank_transaction(
                     )
                 }
             } else {
-                let uncategorized_id =
-                    get_uncategorized_account(&state.pool, &tx.amount).await?;
+                let uncategorized_id = get_uncategorized_account(&state.pool, &tx.amount).await?;
                 if is_debit {
                     (
                         uncategorized_id,
