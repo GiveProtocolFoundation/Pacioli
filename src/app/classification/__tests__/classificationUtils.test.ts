@@ -7,8 +7,16 @@ import {
   txTypeLabels,
   rulePreview,
   findMatchingRule,
+  findMatchingBankRule,
+  payeePatternMatches,
 } from '../classificationUtils'
 import type { ClassificationRuleMatch } from '../classificationUtils'
+
+const cryptoDefaults = {
+  sourceKind: 'crypto',
+  matchPayeePattern: '',
+  matchAmountSign: 'any',
+} as const
 
 describe('formatTimestamp', () => {
   it('should format a Unix timestamp to a date string', () => {
@@ -123,6 +131,7 @@ describe('findMatchingRule', () => {
       matchChains: '',
       matchSelfTransfer: 'any',
       enabled: true,
+      ...cryptoDefaults,
     },
     {
       id: 'r2',
@@ -131,6 +140,7 @@ describe('findMatchingRule', () => {
       matchChains: 'polkadot,kusama',
       matchSelfTransfer: 'any',
       enabled: true,
+      ...cryptoDefaults,
     },
     {
       id: 'r3',
@@ -139,6 +149,7 @@ describe('findMatchingRule', () => {
       matchChains: '',
       matchSelfTransfer: 'any',
       enabled: false,
+      ...cryptoDefaults,
     },
     {
       id: 'r4',
@@ -147,6 +158,7 @@ describe('findMatchingRule', () => {
       matchChains: '',
       matchSelfTransfer: 'any',
       enabled: true,
+      ...cryptoDefaults,
     },
   ]
 
@@ -189,6 +201,7 @@ describe('findMatchingRule', () => {
         matchChains: '',
         matchSelfTransfer: 'true',
         enabled: true,
+        ...cryptoDefaults,
       },
       {
         id: 'st2',
@@ -197,6 +210,7 @@ describe('findMatchingRule', () => {
         matchChains: '',
         matchSelfTransfer: 'false',
         enabled: true,
+        ...cryptoDefaults,
       },
     ]
     const match = findMatchingRule(
@@ -217,6 +231,7 @@ describe('findMatchingRule', () => {
         matchChains: '',
         matchSelfTransfer: 'true',
         enabled: true,
+        ...cryptoDefaults,
       },
       {
         id: 'st2',
@@ -225,6 +240,7 @@ describe('findMatchingRule', () => {
         matchChains: '',
         matchSelfTransfer: 'false',
         enabled: true,
+        ...cryptoDefaults,
       },
     ]
     const match = findMatchingRule(
@@ -239,5 +255,114 @@ describe('findMatchingRule', () => {
   it('should match "any" self-transfer mode regardless of flag', () => {
     const match = findMatchingRule(rules, 'claim', 'polkadot', true)
     expect(match?.name).toBe('Staking Reward')
+  })
+
+  it('should not match bank rules in crypto search', () => {
+    const mixed: ClassificationRuleMatch[] = [
+      {
+        id: 'b1',
+        name: 'Bank Gusto',
+        matchTxTypes: '',
+        matchChains: '',
+        matchSelfTransfer: 'any',
+        enabled: true,
+        sourceKind: 'bank',
+        matchPayeePattern: 'gusto',
+        matchAmountSign: 'negative',
+      },
+      {
+        id: 'c1',
+        name: 'Crypto Claim',
+        matchTxTypes: 'claim',
+        matchChains: '',
+        matchSelfTransfer: 'any',
+        enabled: true,
+        ...cryptoDefaults,
+      },
+    ]
+    const match = findMatchingRule(mixed, 'claim', 'polkadot', false)
+    expect(match?.name).toBe('Crypto Claim')
+  })
+})
+
+describe('payeePatternMatches', () => {
+  it('should match case-insensitive substring', () => {
+    expect(payeePatternMatches('gusto', 'GUSTO INC')).toBe(true)
+    expect(payeePatternMatches('gusto', 'Payment to Gusto')).toBe(true)
+    expect(payeePatternMatches('gusto', 'ADP Payroll')).toBe(false)
+  })
+
+  it('should match pipe-separated alternatives', () => {
+    expect(payeePatternMatches('google|microsoft', 'Google Cloud')).toBe(true)
+    expect(payeePatternMatches('google|microsoft', 'Microsoft 365')).toBe(true)
+    expect(payeePatternMatches('google|microsoft', 'Amazon AWS')).toBe(false)
+  })
+
+  it('should match everything when pattern is empty', () => {
+    expect(payeePatternMatches('', 'anything')).toBe(true)
+    expect(payeePatternMatches('', '')).toBe(true)
+  })
+})
+
+describe('findMatchingBankRule', () => {
+  const bankRules: ClassificationRuleMatch[] = [
+    {
+      id: 'b1',
+      name: 'Payroll — Gusto',
+      matchTxTypes: '',
+      matchChains: '',
+      matchSelfTransfer: 'any',
+      enabled: true,
+      sourceKind: 'bank',
+      matchPayeePattern: 'gusto',
+      matchAmountSign: 'negative',
+    },
+    {
+      id: 'b2',
+      name: 'Stripe Income',
+      matchTxTypes: '',
+      matchChains: '',
+      matchSelfTransfer: 'any',
+      enabled: true,
+      sourceKind: 'bank',
+      matchPayeePattern: 'stripe',
+      matchAmountSign: 'positive',
+    },
+    {
+      id: 'b3',
+      name: 'Disabled Bank Rule',
+      matchTxTypes: '',
+      matchChains: '',
+      matchSelfTransfer: 'any',
+      enabled: false,
+      sourceKind: 'bank',
+      matchPayeePattern: 'adp',
+      matchAmountSign: 'negative',
+    },
+  ]
+
+  it('should match payee + sign', () => {
+    const match = findMatchingBankRule(bankRules, 'GUSTO INC', true)
+    expect(match?.name).toBe('Payroll — Gusto')
+  })
+
+  it('should not match wrong sign', () => {
+    const match = findMatchingBankRule(bankRules, 'GUSTO INC', false)
+    expect(match).toBeUndefined()
+  })
+
+  it('should match positive sign rules', () => {
+    const match = findMatchingBankRule(bankRules, 'Stripe Payout', false)
+    expect(match?.name).toBe('Stripe Income')
+  })
+
+  it('should skip disabled rules', () => {
+    const match = findMatchingBankRule(bankRules, 'ADP PAYROLL', true)
+    expect(match).toBeUndefined()
+  })
+
+  it('should return undefined for unknown payee', () => {
+    const match = findMatchingBankRule(bankRules, 'Unknown Vendor', true)
+    expect(match).toBeUndefined()
   })
 })

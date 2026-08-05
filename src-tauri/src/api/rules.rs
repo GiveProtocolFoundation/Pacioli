@@ -6,7 +6,7 @@ use uuid::Uuid;
 use super::persistence::DatabaseState;
 
 /// A classification rule stored in the database.
-#[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize, FromRow)]
 #[serde(rename_all = "camelCase")]
 pub struct ClassificationRule {
     /// Unique identifier.
@@ -39,6 +39,12 @@ pub struct ClassificationRule {
     pub enabled: bool,
     /// Origin: "builtin" or "user".
     pub source: String,
+    /// Transaction source kind: "crypto", "bank", or "any".
+    pub source_kind: String,
+    /// Substring pattern to match against bank transaction payee field.
+    pub match_payee_pattern: String,
+    /// Amount sign filter: "positive", "negative", or "any".
+    pub match_amount_sign: String,
     /// ISO 8601 creation timestamp.
     pub created_at: String,
     /// ISO 8601 last-update timestamp.
@@ -73,6 +79,12 @@ pub struct NewRuleInput {
     pub use_fee_amount: Option<bool>,
     /// Evaluation priority (lower = higher priority).
     pub priority: Option<i64>,
+    /// Transaction source kind: "crypto", "bank", or "any".
+    pub source_kind: Option<String>,
+    /// Substring pattern to match against bank transaction payee.
+    pub match_payee_pattern: Option<String>,
+    /// Amount sign filter: "positive", "negative", or "any".
+    pub match_amount_sign: Option<String>,
 }
 
 /// Input for updating an existing classification rule (all fields optional).
@@ -105,6 +117,12 @@ pub struct UpdateRuleInput {
     pub priority: Option<i64>,
     /// Whether this rule is active.
     pub enabled: Option<bool>,
+    /// Transaction source kind: "crypto", "bank", or "any".
+    pub source_kind: Option<String>,
+    /// Substring pattern to match against bank transaction payee.
+    pub match_payee_pattern: Option<String>,
+    /// Amount sign filter: "positive", "negative", or "any".
+    pub match_amount_sign: Option<String>,
 }
 
 /// List all classification rules ordered by priority.
@@ -115,7 +133,8 @@ pub async fn list_classification_rules(
     sqlx::query_as::<_, ClassificationRule>(
         "SELECT id, name, description, match_tx_types, match_chains, match_self_transfer, \
          debit_account, credit_account, debit_line_desc, credit_line_desc, je_description, \
-         use_fee_amount, priority, enabled, source, created_at, updated_at \
+         use_fee_amount, priority, enabled, source, source_kind, match_payee_pattern, \
+         match_amount_sign, created_at, updated_at \
          FROM classification_rules ORDER BY priority ASC, created_at ASC",
     )
     .fetch_all(&state.pool)
@@ -136,8 +155,9 @@ pub async fn create_classification_rule(
         "INSERT INTO classification_rules \
          (id, name, description, match_tx_types, match_chains, match_self_transfer, \
           debit_account, credit_account, debit_line_desc, credit_line_desc, je_description, \
-          use_fee_amount, priority, enabled, source) \
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 'user')",
+          use_fee_amount, priority, enabled, source, source_kind, match_payee_pattern, \
+          match_amount_sign) \
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 'user', ?, ?, ?)",
     )
     .bind(&id)
     .bind(input.name)
@@ -152,6 +172,9 @@ pub async fn create_classification_rule(
     .bind(input.je_description.as_deref().unwrap_or(""))
     .bind(input.use_fee_amount.unwrap_or(false))
     .bind(priority)
+    .bind(input.source_kind.as_deref().unwrap_or("crypto"))
+    .bind(input.match_payee_pattern.as_deref().unwrap_or(""))
+    .bind(input.match_amount_sign.as_deref().unwrap_or("any"))
     .execute(&state.pool)
     .await
     .map_err(|e| e.to_string())?;
@@ -159,7 +182,8 @@ pub async fn create_classification_rule(
     sqlx::query_as::<_, ClassificationRule>(
         "SELECT id, name, description, match_tx_types, match_chains, match_self_transfer, \
          debit_account, credit_account, debit_line_desc, credit_line_desc, je_description, \
-         use_fee_amount, priority, enabled, source, created_at, updated_at \
+         use_fee_amount, priority, enabled, source, source_kind, match_payee_pattern, \
+         match_amount_sign, created_at, updated_at \
          FROM classification_rules WHERE id = ?",
     )
     .bind(id)
@@ -178,7 +202,8 @@ pub async fn update_classification_rule(
     let existing = sqlx::query_as::<_, ClassificationRule>(
         "SELECT id, name, description, match_tx_types, match_chains, match_self_transfer, \
          debit_account, credit_account, debit_line_desc, credit_line_desc, je_description, \
-         use_fee_amount, priority, enabled, source, created_at, updated_at \
+         use_fee_amount, priority, enabled, source, source_kind, match_payee_pattern, \
+         match_amount_sign, created_at, updated_at \
          FROM classification_rules WHERE id = ?",
     )
     .bind(&id)
@@ -192,7 +217,9 @@ pub async fn update_classification_rule(
          name = ?, description = ?, match_tx_types = ?, match_chains = ?, \
          match_self_transfer = ?, debit_account = ?, credit_account = ?, \
          debit_line_desc = ?, credit_line_desc = ?, je_description = ?, \
-         use_fee_amount = ?, priority = ?, enabled = ?, updated_at = datetime('now') \
+         use_fee_amount = ?, priority = ?, enabled = ?, source_kind = ?, \
+         match_payee_pattern = ?, match_amount_sign = ?, \
+         updated_at = datetime('now') \
          WHERE id = ?",
     )
     .bind(input.name.as_deref().unwrap_or(&existing.name))
@@ -253,6 +280,24 @@ pub async fn update_classification_rule(
     .bind(input.use_fee_amount.unwrap_or(existing.use_fee_amount))
     .bind(input.priority.unwrap_or(existing.priority))
     .bind(input.enabled.unwrap_or(existing.enabled))
+    .bind(
+        input
+            .source_kind
+            .as_deref()
+            .unwrap_or(&existing.source_kind),
+    )
+    .bind(
+        input
+            .match_payee_pattern
+            .as_deref()
+            .unwrap_or(&existing.match_payee_pattern),
+    )
+    .bind(
+        input
+            .match_amount_sign
+            .as_deref()
+            .unwrap_or(&existing.match_amount_sign),
+    )
     .bind(&id)
     .execute(&state.pool)
     .await
@@ -261,7 +306,8 @@ pub async fn update_classification_rule(
     sqlx::query_as::<_, ClassificationRule>(
         "SELECT id, name, description, match_tx_types, match_chains, match_self_transfer, \
          debit_account, credit_account, debit_line_desc, credit_line_desc, je_description, \
-         use_fee_amount, priority, enabled, source, created_at, updated_at \
+         use_fee_amount, priority, enabled, source, source_kind, match_payee_pattern, \
+         match_amount_sign, created_at, updated_at \
          FROM classification_rules WHERE id = ?",
     )
     .bind(id)
@@ -354,8 +400,9 @@ pub async fn install_starter_rules(state: State<'_, DatabaseState>) -> Result<i6
             "INSERT INTO classification_rules \
              (id, name, description, match_tx_types, match_chains, match_self_transfer, \
               debit_account, credit_account, debit_line_desc, credit_line_desc, je_description, \
-              use_fee_amount, priority, enabled, source) \
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 'builtin')",
+              use_fee_amount, priority, enabled, source, source_kind, match_payee_pattern, \
+              match_amount_sign) \
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 'builtin', ?, ?, ?)",
         )
         .bind(r.id)
         .bind(r.name)
@@ -370,6 +417,9 @@ pub async fn install_starter_rules(state: State<'_, DatabaseState>) -> Result<i6
         .bind(r.je_description)
         .bind(r.use_fee_amount)
         .bind(r.priority)
+        .bind(r.source_kind)
+        .bind(r.match_payee_pattern)
+        .bind(r.match_amount_sign)
         .execute(&state.pool)
         .await
         .map_err(|e| e.to_string())?;
@@ -393,11 +443,14 @@ struct StarterRule {
     je_description: &'static str,
     use_fee_amount: bool,
     priority: i64,
+    source_kind: &'static str,
+    match_payee_pattern: &'static str,
+    match_amount_sign: &'static str,
 }
 
 fn starter_rules() -> Vec<StarterRule> {
     vec![
-        // --- Self-transfer detection (highest priority — must run before generic transfer) ---
+        // =================== CRYPTO RULES ===================
         StarterRule {
             id: "builtin-self-transfer",
             name: "Self-Transfer (Own Wallets)",
@@ -412,8 +465,10 @@ fn starter_rules() -> Vec<StarterRule> {
             je_description: "Self-transfer on {chain}",
             use_fee_amount: false,
             priority: 10,
+            source_kind: "crypto",
+            match_payee_pattern: "",
+            match_amount_sign: "any",
         },
-        // --- Staking rewards ---
         StarterRule {
             id: "builtin-staking-reward-claim",
             name: "Staking Reward (Claim)",
@@ -428,6 +483,9 @@ fn starter_rules() -> Vec<StarterRule> {
             je_description: "Staking reward on {chain}",
             use_fee_amount: false,
             priority: 20,
+            source_kind: "crypto",
+            match_payee_pattern: "",
+            match_amount_sign: "any",
         },
         StarterRule {
             id: "builtin-staking-reward-stake",
@@ -443,8 +501,10 @@ fn starter_rules() -> Vec<StarterRule> {
             je_description: "Staking reward on {chain}",
             use_fee_amount: false,
             priority: 30,
+            source_kind: "crypto",
+            match_payee_pattern: "",
+            match_amount_sign: "any",
         },
-        // --- Unstaking (return of principal) ---
         StarterRule {
             id: "builtin-unstake",
             name: "Unstake (Principal Return)",
@@ -459,8 +519,10 @@ fn starter_rules() -> Vec<StarterRule> {
             je_description: "Unstake on {chain}",
             use_fee_amount: false,
             priority: 40,
+            source_kind: "crypto",
+            match_payee_pattern: "",
+            match_amount_sign: "any",
         },
-        // --- External transfer (inbound) ---
         StarterRule {
             id: "builtin-transfer-in",
             name: "Transfer Received (External)",
@@ -475,8 +537,10 @@ fn starter_rules() -> Vec<StarterRule> {
             je_description: "Transfer on {chain} ({hash})",
             use_fee_amount: false,
             priority: 50,
+            source_kind: "crypto",
+            match_payee_pattern: "",
+            match_amount_sign: "any",
         },
-        // --- Swap ---
         StarterRule {
             id: "builtin-swap",
             name: "Token Swap",
@@ -491,8 +555,10 @@ fn starter_rules() -> Vec<StarterRule> {
             je_description: "Swap on {chain} ({hash})",
             use_fee_amount: false,
             priority: 60,
+            source_kind: "crypto",
+            match_payee_pattern: "",
+            match_amount_sign: "any",
         },
-        // --- Bridge ---
         StarterRule {
             id: "builtin-bridge",
             name: "Bridge Transfer",
@@ -507,8 +573,10 @@ fn starter_rules() -> Vec<StarterRule> {
             je_description: "Bridge on {chain} ({hash})",
             use_fee_amount: false,
             priority: 70,
+            source_kind: "crypto",
+            match_payee_pattern: "",
+            match_amount_sign: "any",
         },
-        // --- Mint ---
         StarterRule {
             id: "builtin-mint",
             name: "Token Mint",
@@ -523,8 +591,10 @@ fn starter_rules() -> Vec<StarterRule> {
             je_description: "Mint on {chain} ({hash})",
             use_fee_amount: false,
             priority: 80,
+            source_kind: "crypto",
+            match_payee_pattern: "",
+            match_amount_sign: "any",
         },
-        // --- Burn ---
         StarterRule {
             id: "builtin-burn",
             name: "Token Burn",
@@ -539,8 +609,10 @@ fn starter_rules() -> Vec<StarterRule> {
             je_description: "Burn on {chain} ({hash})",
             use_fee_amount: false,
             priority: 90,
+            source_kind: "crypto",
+            match_payee_pattern: "",
+            match_amount_sign: "any",
         },
-        // --- Fee-only transactions (approve, contract_call) ---
         StarterRule {
             id: "builtin-fee-approve",
             name: "Contract Approval (Fee Only)",
@@ -555,6 +627,9 @@ fn starter_rules() -> Vec<StarterRule> {
             je_description: "Approval fee on {chain} ({hash})",
             use_fee_amount: true,
             priority: 100,
+            source_kind: "crypto",
+            match_payee_pattern: "",
+            match_amount_sign: "any",
         },
         StarterRule {
             id: "builtin-fee-contract-call",
@@ -570,8 +645,10 @@ fn starter_rules() -> Vec<StarterRule> {
             je_description: "Contract call fee on {chain} ({hash})",
             use_fee_amount: true,
             priority: 110,
+            source_kind: "crypto",
+            match_payee_pattern: "",
+            match_amount_sign: "any",
         },
-        // --- Catch-all: unknown tx with fee ---
         StarterRule {
             id: "builtin-unknown-fee",
             name: "Unknown Transaction (Fee Only)",
@@ -586,8 +663,350 @@ fn starter_rules() -> Vec<StarterRule> {
             je_description: "{type} on {chain} ({hash})",
             use_fee_amount: true,
             priority: 900,
+            source_kind: "crypto",
+            match_payee_pattern: "",
+            match_amount_sign: "any",
+        },
+        // =================== BANK RULES (NGO patterns) ===================
+        StarterRule {
+            id: "builtin-bank-payroll-gusto",
+            name: "Payroll — Gusto",
+            description: "Gusto payroll processor withdrawal",
+            match_tx_types: "",
+            match_chains: "",
+            match_self_transfer: "any",
+            debit_account: "6100",
+            credit_account: "",
+            debit_line_desc: "Payroll expense — Gusto",
+            credit_line_desc: "Bank withdrawal — payroll",
+            je_description: "Payroll via Gusto",
+            use_fee_amount: false,
+            priority: 1010,
+            source_kind: "bank",
+            match_payee_pattern: "gusto",
+            match_amount_sign: "negative",
+        },
+        StarterRule {
+            id: "builtin-bank-payroll-adp",
+            name: "Payroll — ADP",
+            description: "ADP payroll processor withdrawal",
+            match_tx_types: "",
+            match_chains: "",
+            match_self_transfer: "any",
+            debit_account: "6100",
+            credit_account: "",
+            debit_line_desc: "Payroll expense — ADP",
+            credit_line_desc: "Bank withdrawal — payroll",
+            je_description: "Payroll via ADP",
+            use_fee_amount: false,
+            priority: 1020,
+            source_kind: "bank",
+            match_payee_pattern: "adp",
+            match_amount_sign: "negative",
+        },
+        StarterRule {
+            id: "builtin-bank-payroll-rippling",
+            name: "Payroll — Rippling",
+            description: "Rippling payroll processor withdrawal",
+            match_tx_types: "",
+            match_chains: "",
+            match_self_transfer: "any",
+            debit_account: "6100",
+            credit_account: "",
+            debit_line_desc: "Payroll expense — Rippling",
+            credit_line_desc: "Bank withdrawal — payroll",
+            je_description: "Payroll via Rippling",
+            use_fee_amount: false,
+            priority: 1030,
+            source_kind: "bank",
+            match_payee_pattern: "rippling",
+            match_amount_sign: "negative",
+        },
+        StarterRule {
+            id: "builtin-bank-stripe-payout",
+            name: "Donation Payout — Stripe",
+            description: "Stripe payout deposit (donation platform income)",
+            match_tx_types: "",
+            match_chains: "",
+            match_self_transfer: "any",
+            debit_account: "",
+            credit_account: "4300",
+            debit_line_desc: "Bank deposit — Stripe payout",
+            credit_line_desc: "Donation income — Stripe",
+            je_description: "Stripe payout deposit",
+            use_fee_amount: false,
+            priority: 1040,
+            source_kind: "bank",
+            match_payee_pattern: "stripe",
+            match_amount_sign: "positive",
+        },
+        StarterRule {
+            id: "builtin-bank-paypal-payout",
+            name: "Donation Payout — PayPal",
+            description: "PayPal payout deposit (donation platform income)",
+            match_tx_types: "",
+            match_chains: "",
+            match_self_transfer: "any",
+            debit_account: "",
+            credit_account: "4300",
+            debit_line_desc: "Bank deposit — PayPal payout",
+            credit_line_desc: "Donation income — PayPal",
+            je_description: "PayPal payout deposit",
+            use_fee_amount: false,
+            priority: 1050,
+            source_kind: "bank",
+            match_payee_pattern: "paypal",
+            match_amount_sign: "positive",
+        },
+        StarterRule {
+            id: "builtin-bank-utility",
+            name: "Utilities Expense",
+            description: "Common utility company payments",
+            match_tx_types: "",
+            match_chains: "",
+            match_self_transfer: "any",
+            debit_account: "6300",
+            credit_account: "",
+            debit_line_desc: "Utilities expense",
+            credit_line_desc: "Bank withdrawal — utilities",
+            je_description: "Utility payment — {payee}",
+            use_fee_amount: false,
+            priority: 1060,
+            source_kind: "bank",
+            match_payee_pattern: "electric bill|water bill|gas bill|utility|utilities",
+            match_amount_sign: "negative",
+        },
+        StarterRule {
+            id: "builtin-bank-saas",
+            name: "SaaS / Software Subscription",
+            description: "Common SaaS vendor payments (Google, Microsoft, AWS, etc.)",
+            match_tx_types: "",
+            match_chains: "",
+            match_self_transfer: "any",
+            debit_account: "6200",
+            credit_account: "",
+            debit_line_desc: "Software subscription",
+            credit_line_desc: "Bank withdrawal — SaaS",
+            je_description: "Software subscription — {payee}",
+            use_fee_amount: false,
+            priority: 1070,
+            source_kind: "bank",
+            match_payee_pattern:
+                "google|microsoft|amazon web|aws|slack|zoom|dropbox|adobe|github|atlassian",
+            match_amount_sign: "negative",
         },
     ]
+}
+
+/// Checks whether a payee pattern (pipe-separated substrings) matches a payee string.
+pub fn payee_pattern_matches(pattern: &str, payee: &str) -> bool {
+    if pattern.is_empty() {
+        return true;
+    }
+    let payee_lower = payee.to_lowercase();
+    pattern
+        .split('|')
+        .any(|sub| !sub.is_empty() && payee_lower.contains(&sub.to_lowercase()))
+}
+
+/// Checks whether a bank classification rule matches a bank transaction.
+pub fn bank_rule_matches(rule: &ClassificationRule, payee: &str, amount_is_negative: bool) -> bool {
+    if rule.source_kind != "bank" && rule.source_kind != "any" {
+        return false;
+    }
+    if !payee_pattern_matches(&rule.match_payee_pattern, payee) {
+        return false;
+    }
+    match rule.match_amount_sign.as_str() {
+        "positive" => !amount_is_negative,
+        "negative" => amount_is_negative,
+        _ => true,
+    }
+}
+
+// ========================== PAYEE → GL MAP ==========================
+
+/// A payee-to-GL-account quick-mapping entry.
+#[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
+#[serde(rename_all = "camelCase")]
+pub struct PayeeGlMap {
+    /// Unique identifier.
+    pub id: String,
+    /// Pattern to match against bank transaction payee.
+    pub payee_pattern: String,
+    /// Match mode: "contains", "exact", or "starts_with".
+    pub match_mode: String,
+    /// GL account number to map to.
+    pub gl_account_number: String,
+    /// Optional description for this mapping.
+    pub description: String,
+    /// Whether this mapping is active.
+    pub enabled: bool,
+    /// ISO 8601 creation timestamp.
+    pub created_at: String,
+    /// ISO 8601 last-update timestamp.
+    pub updated_at: String,
+}
+
+/// Input for creating a payee → GL mapping.
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NewPayeeGlMapInput {
+    /// Pattern to match against payee.
+    pub payee_pattern: String,
+    /// Match mode: "contains", "exact", or "starts_with".
+    pub match_mode: Option<String>,
+    /// GL account number.
+    pub gl_account_number: String,
+    /// Optional description.
+    pub description: Option<String>,
+}
+
+/// Input for updating a payee → GL mapping.
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UpdatePayeeGlMapInput {
+    /// Pattern to match against payee.
+    pub payee_pattern: Option<String>,
+    /// Match mode.
+    pub match_mode: Option<String>,
+    /// GL account number.
+    pub gl_account_number: Option<String>,
+    /// Description.
+    pub description: Option<String>,
+    /// Whether this mapping is active.
+    pub enabled: Option<bool>,
+}
+
+/// Lists all payee → GL mappings.
+#[tauri::command]
+pub async fn list_payee_gl_maps(
+    state: State<'_, DatabaseState>,
+) -> Result<Vec<PayeeGlMap>, String> {
+    sqlx::query_as::<_, PayeeGlMap>(
+        "SELECT id, payee_pattern, match_mode, gl_account_number, description, \
+         enabled, created_at, updated_at \
+         FROM payee_gl_map ORDER BY payee_pattern ASC",
+    )
+    .fetch_all(&state.pool)
+    .await
+    .map_err(|e| e.to_string())
+}
+
+/// Creates a new payee → GL mapping.
+#[tauri::command]
+pub async fn create_payee_gl_map(
+    state: State<'_, DatabaseState>,
+    input: NewPayeeGlMapInput,
+) -> Result<PayeeGlMap, String> {
+    let id = Uuid::new_v4().to_string();
+    sqlx::query(
+        "INSERT INTO payee_gl_map (id, payee_pattern, match_mode, gl_account_number, description) \
+         VALUES (?, ?, ?, ?, ?)",
+    )
+    .bind(&id)
+    .bind(&input.payee_pattern)
+    .bind(input.match_mode.as_deref().unwrap_or("contains"))
+    .bind(&input.gl_account_number)
+    .bind(input.description.as_deref().unwrap_or(""))
+    .execute(&state.pool)
+    .await
+    .map_err(|e| e.to_string())?;
+
+    sqlx::query_as::<_, PayeeGlMap>(
+        "SELECT id, payee_pattern, match_mode, gl_account_number, description, \
+         enabled, created_at, updated_at FROM payee_gl_map WHERE id = ?",
+    )
+    .bind(id)
+    .fetch_one(&state.pool)
+    .await
+    .map_err(|e| e.to_string())
+}
+
+/// Updates a payee → GL mapping.
+#[tauri::command]
+pub async fn update_payee_gl_map(
+    state: State<'_, DatabaseState>,
+    id: String,
+    input: UpdatePayeeGlMapInput,
+) -> Result<PayeeGlMap, String> {
+    let existing = sqlx::query_as::<_, PayeeGlMap>(
+        "SELECT id, payee_pattern, match_mode, gl_account_number, description, \
+         enabled, created_at, updated_at FROM payee_gl_map WHERE id = ?",
+    )
+    .bind(&id)
+    .fetch_optional(&state.pool)
+    .await
+    .map_err(|e| e.to_string())?
+    .ok_or_else(|| format!("Payee mapping {id} not found"))?;
+
+    sqlx::query(
+        "UPDATE payee_gl_map SET payee_pattern = ?, match_mode = ?, \
+         gl_account_number = ?, description = ?, enabled = ?, \
+         updated_at = datetime('now') WHERE id = ?",
+    )
+    .bind(
+        input
+            .payee_pattern
+            .as_deref()
+            .unwrap_or(&existing.payee_pattern),
+    )
+    .bind(input.match_mode.as_deref().unwrap_or(&existing.match_mode))
+    .bind(
+        input
+            .gl_account_number
+            .as_deref()
+            .unwrap_or(&existing.gl_account_number),
+    )
+    .bind(
+        input
+            .description
+            .as_deref()
+            .unwrap_or(&existing.description),
+    )
+    .bind(input.enabled.unwrap_or(existing.enabled))
+    .bind(&id)
+    .execute(&state.pool)
+    .await
+    .map_err(|e| e.to_string())?;
+
+    sqlx::query_as::<_, PayeeGlMap>(
+        "SELECT id, payee_pattern, match_mode, gl_account_number, description, \
+         enabled, created_at, updated_at FROM payee_gl_map WHERE id = ?",
+    )
+    .bind(id)
+    .fetch_one(&state.pool)
+    .await
+    .map_err(|e| e.to_string())
+}
+
+/// Deletes a payee → GL mapping.
+#[tauri::command]
+pub async fn delete_payee_gl_map(
+    state: State<'_, DatabaseState>,
+    id: String,
+) -> Result<(), String> {
+    let result = sqlx::query("DELETE FROM payee_gl_map WHERE id = ?")
+        .bind(&id)
+        .execute(&state.pool)
+        .await
+        .map_err(|e| e.to_string())?;
+
+    if result.rows_affected() == 0 {
+        return Err(format!("Payee mapping {id} not found"));
+    }
+    Ok(())
+}
+
+/// Checks whether a payee → GL map entry matches a payee string.
+pub fn payee_gl_map_matches(entry: &PayeeGlMap, payee: &str) -> bool {
+    let payee_lower = payee.to_lowercase();
+    let pattern_lower = entry.payee_pattern.to_lowercase();
+    match entry.match_mode.as_str() {
+        "exact" => payee_lower == pattern_lower,
+        "starts_with" => payee_lower.starts_with(&pattern_lower),
+        _ => payee_lower.contains(&pattern_lower),
+    }
 }
 
 #[cfg(test)]
@@ -630,5 +1049,41 @@ mod tests {
             .find(|r| r.id == "builtin-transfer-in")
             .unwrap();
         assert!(st.priority < external.priority);
+    }
+
+    #[test]
+    fn payee_pattern_matches_case_insensitive() {
+        assert!(payee_pattern_matches("gusto", "GUSTO INC"));
+        assert!(payee_pattern_matches("gusto", "Payment to Gusto"));
+        assert!(!payee_pattern_matches("gusto", "ADP Payroll"));
+    }
+
+    #[test]
+    fn payee_pattern_matches_pipe_alternatives() {
+        assert!(payee_pattern_matches("google|microsoft", "Google Cloud"));
+        assert!(payee_pattern_matches("google|microsoft", "Microsoft 365"));
+        assert!(!payee_pattern_matches("google|microsoft", "Amazon AWS"));
+    }
+
+    #[test]
+    fn payee_pattern_empty_matches_all() {
+        assert!(payee_pattern_matches("", "any payee"));
+        assert!(payee_pattern_matches("", ""));
+    }
+
+    #[test]
+    fn bank_rule_matches_sign_filter() {
+        let rule = ClassificationRule {
+            match_self_transfer: "any".to_string(),
+            enabled: true,
+            source: "user".to_string(),
+            source_kind: "bank".to_string(),
+            match_payee_pattern: "gusto".to_string(),
+            match_amount_sign: "negative".to_string(),
+            ..Default::default()
+        };
+        assert!(bank_rule_matches(&rule, "GUSTO INC", true));
+        assert!(!bank_rule_matches(&rule, "GUSTO INC", false));
+        assert!(!bank_rule_matches(&rule, "ADP", true));
     }
 }

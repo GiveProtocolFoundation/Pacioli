@@ -1627,13 +1627,16 @@ async fn apply_fallback_heuristics(
     Ok((lines, description))
 }
 
-/// Checks whether a classification rule matches a given transaction.
+/// Checks whether a classification rule matches a given crypto transaction.
 fn rule_matches(
     rule: &super::rules::ClassificationRule,
     tx_type: &str,
     chain_id: &str,
     self_xfer: bool,
 ) -> bool {
+    if rule.source_kind != "crypto" && rule.source_kind != "any" {
+        return false;
+    }
     let types: Vec<&str> = rule.match_tx_types.split(',').map(|s| s.trim()).collect();
     if !types.contains(&tx_type) {
         return false;
@@ -1722,7 +1725,8 @@ pub async fn auto_classify_transaction(
     let rules = sqlx::query_as::<_, super::rules::ClassificationRule>(
         "SELECT id, name, description, match_tx_types, match_chains, match_self_transfer, \
          debit_account, credit_account, debit_line_desc, credit_line_desc, je_description, \
-         use_fee_amount, priority, enabled, source, created_at, updated_at \
+         use_fee_amount, priority, enabled, source, source_kind, match_payee_pattern, \
+         match_amount_sign, created_at, updated_at \
          FROM classification_rules WHERE enabled = 1 ORDER BY priority ASC",
     )
     .fetch_all(&state.pool)
