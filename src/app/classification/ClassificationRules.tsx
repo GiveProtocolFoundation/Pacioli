@@ -32,9 +32,14 @@ interface ClassificationRule {
   priority: number
   enabled: boolean
   source: string
+  sourceKind: string
+  matchPayeePattern: string
+  matchAmountSign: string
   createdAt: string
   updatedAt: string
 }
+
+type SourceKindFilter = 'all' | 'crypto' | 'bank'
 
 interface RuleFormData {
   name: string
@@ -48,6 +53,9 @@ interface RuleFormData {
   creditLineDesc: string
   jeDescription: string
   useFeeAmount: boolean
+  sourceKind: string
+  matchPayeePattern: string
+  matchAmountSign: string
 }
 
 const TX_TYPES = [
@@ -70,6 +78,18 @@ const SELF_TRANSFER_OPTIONS = [
   { value: 'false', label: 'External only' },
 ]
 
+const AMOUNT_SIGN_OPTIONS = [
+  { value: 'any', label: 'Any' },
+  { value: 'negative', label: 'Withdrawals (negative)' },
+  { value: 'positive', label: 'Deposits (positive)' },
+]
+
+const SOURCE_KIND_OPTIONS = [
+  { value: 'crypto', label: 'Crypto' },
+  { value: 'bank', label: 'Bank' },
+  { value: 'any', label: 'Both' },
+]
+
 const INPUT_CLASS =
   'w-full px-3 py-2 border border-[rgba(95,227,192,0.15)] rounded-lg bg-white dark:bg-[#0C141B] text-[#11202B] dark:text-[#EAF3F2] placeholder-[#647D8B] focus:outline-none focus:ring-2 focus:ring-[#5FE3C0] focus:border-[#5FE3C0] text-sm'
 
@@ -88,6 +108,15 @@ const emptyForm: RuleFormData = {
   creditLineDesc: '',
   jeDescription: '',
   useFeeAmount: false,
+  sourceKind: 'crypto',
+  matchPayeePattern: '',
+  matchAmountSign: 'any',
+}
+
+const emptyBankForm: RuleFormData = {
+  ...emptyForm,
+  sourceKind: 'bank',
+  matchTxTypes: '',
 }
 
 interface RuleFormProps {
@@ -148,15 +177,17 @@ const RuleForm: React.FC<RuleFormProps> = ({
     [data, onChange]
   )
 
+  const isBankRule = data.sourceKind === 'bank'
   const valid =
     data.name.trim() !== '' &&
-    data.matchTxTypes.trim() !== '' &&
-    data.debitAccount.trim() !== '' &&
-    data.creditAccount.trim() !== ''
+    (isBankRule
+      ? data.matchPayeePattern.trim() !== ''
+      : data.matchTxTypes.trim() !== '') &&
+    (data.debitAccount.trim() !== '' || data.creditAccount.trim() !== '')
 
   return (
     <div className="space-y-3">
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-3 gap-3">
         <div>
           <label className={LABEL_CLASS}>Name *</label>
           <input
@@ -164,7 +195,9 @@ const RuleForm: React.FC<RuleFormProps> = ({
             data-field="name"
             value={data.name}
             onChange={handleFieldChange}
-            placeholder="e.g. Staking Reward"
+            placeholder={
+              isBankRule ? 'e.g. Payroll — Gusto' : 'e.g. Staking Reward'
+            }
           />
         </div>
         <div>
@@ -177,59 +210,15 @@ const RuleForm: React.FC<RuleFormProps> = ({
             placeholder="Optional description"
           />
         </div>
-      </div>
-      <div className="grid grid-cols-3 gap-3">
         <div>
-          <label className={LABEL_CLASS}>
-            Match Tx Types * (comma-separated)
-          </label>
-          <input
-            className={INPUT_CLASS}
-            data-field="matchTxTypes"
-            value={data.matchTxTypes}
-            onChange={handleFieldChange}
-            placeholder="e.g. claim,stake"
-          />
-          <div className="mt-1 flex flex-wrap gap-1">
-            {TX_TYPES.map(txTypeOption => (
-              <button
-                key={txTypeOption}
-                type="button"
-                data-txtype={txTypeOption}
-                onClick={handleToggleTxType}
-                className={`px-1.5 py-0.5 text-[10px] rounded border transition-colors ${
-                  data.matchTxTypes
-                    .split(',')
-                    .map(s => s.trim())
-                    .includes(txTypeOption)
-                    ? 'bg-[#5FE3C0]/20 border-[#5FE3C0]/40 text-[#294050] dark:text-[#5FE3C0]'
-                    : 'border-[rgba(95,227,192,0.15)] text-[#647D8B] hover:bg-[#294050]/5'
-                }`}
-              >
-                {txTypeOption}
-              </button>
-            ))}
-          </div>
-        </div>
-        <div>
-          <label className={LABEL_CLASS}>Match Chains (empty = all)</label>
-          <input
-            className={INPUT_CLASS}
-            data-field="matchChains"
-            value={data.matchChains}
-            onChange={handleFieldChange}
-            placeholder="e.g. polkadot,kusama"
-          />
-        </div>
-        <div>
-          <label className={LABEL_CLASS}>Self-Transfer Filter</label>
+          <label className={LABEL_CLASS}>Source Kind</label>
           <select
             className={INPUT_CLASS}
-            data-field="matchSelfTransfer"
-            value={data.matchSelfTransfer}
+            data-field="sourceKind"
+            value={data.sourceKind}
             onChange={handleFieldChange}
           >
-            {SELF_TRANSFER_OPTIONS.map(o => (
+            {SOURCE_KIND_OPTIONS.map(o => (
               <option key={o.value} value={o.value}>
                 {o.label}
               </option>
@@ -237,25 +226,134 @@ const RuleForm: React.FC<RuleFormProps> = ({
           </select>
         </div>
       </div>
+
+      {isBankRule ? (
+        <div className="grid grid-cols-3 gap-3">
+          <div>
+            <label className={LABEL_CLASS}>
+              Payee Pattern * (pipe-separated)
+            </label>
+            <input
+              className={INPUT_CLASS}
+              data-field="matchPayeePattern"
+              value={data.matchPayeePattern}
+              onChange={handleFieldChange}
+              placeholder="e.g. gusto|rippling|adp"
+            />
+            <p className="mt-0.5 text-[10px] text-[#647D8B]">
+              Case-insensitive substring match. Use | for alternatives.
+            </p>
+          </div>
+          <div>
+            <label className={LABEL_CLASS}>Amount Sign</label>
+            <select
+              className={INPUT_CLASS}
+              data-field="matchAmountSign"
+              value={data.matchAmountSign}
+              onChange={handleFieldChange}
+            >
+              {AMOUNT_SIGN_OPTIONS.map(o => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className={LABEL_CLASS}>JE Description ({'{payee}'})</label>
+            <input
+              className={INPUT_CLASS}
+              data-field="jeDescription"
+              value={data.jeDescription}
+              onChange={handleFieldChange}
+              placeholder="e.g. Payroll via {payee}"
+            />
+          </div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-3 gap-3">
+          <div>
+            <label className={LABEL_CLASS}>
+              Match Tx Types * (comma-separated)
+            </label>
+            <input
+              className={INPUT_CLASS}
+              data-field="matchTxTypes"
+              value={data.matchTxTypes}
+              onChange={handleFieldChange}
+              placeholder="e.g. claim,stake"
+            />
+            <div className="mt-1 flex flex-wrap gap-1">
+              {TX_TYPES.map(txTypeOption => (
+                <button
+                  key={txTypeOption}
+                  type="button"
+                  data-txtype={txTypeOption}
+                  onClick={handleToggleTxType}
+                  className={`px-1.5 py-0.5 text-[10px] rounded border transition-colors ${
+                    data.matchTxTypes
+                      .split(',')
+                      .map(s => s.trim())
+                      .includes(txTypeOption)
+                      ? 'bg-[#5FE3C0]/20 border-[#5FE3C0]/40 text-[#294050] dark:text-[#5FE3C0]'
+                      : 'border-[rgba(95,227,192,0.15)] text-[#647D8B] hover:bg-[#294050]/5'
+                  }`}
+                >
+                  {txTypeOption}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className={LABEL_CLASS}>Match Chains (empty = all)</label>
+            <input
+              className={INPUT_CLASS}
+              data-field="matchChains"
+              value={data.matchChains}
+              onChange={handleFieldChange}
+              placeholder="e.g. polkadot,kusama"
+            />
+          </div>
+          <div>
+            <label className={LABEL_CLASS}>Self-Transfer Filter</label>
+            <select
+              className={INPUT_CLASS}
+              data-field="matchSelfTransfer"
+              value={data.matchSelfTransfer}
+              onChange={handleFieldChange}
+            >
+              {SELF_TRANSFER_OPTIONS.map(o => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      )}
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className={LABEL_CLASS}>Debit Account # *</label>
+          <label className={LABEL_CLASS}>
+            Debit Account #{isBankRule ? ' (empty = bank acct)' : ' *'}
+          </label>
           <input
             className={INPUT_CLASS}
             data-field="debitAccount"
             value={data.debitAccount}
             onChange={handleFieldChange}
-            placeholder="e.g. 1200"
+            placeholder={isBankRule ? 'e.g. 6100 (empty = bank)' : 'e.g. 1200'}
           />
         </div>
         <div>
-          <label className={LABEL_CLASS}>Credit Account # *</label>
+          <label className={LABEL_CLASS}>
+            Credit Account #{isBankRule ? ' (empty = bank acct)' : ' *'}
+          </label>
           <input
             className={INPUT_CLASS}
             data-field="creditAccount"
             value={data.creditAccount}
             onChange={handleFieldChange}
-            placeholder="e.g. 4100"
+            placeholder={isBankRule ? 'e.g. 4000 (empty = bank)' : 'e.g. 4100'}
           />
         </div>
       </div>
@@ -281,32 +379,34 @@ const RuleForm: React.FC<RuleFormProps> = ({
           />
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className={LABEL_CLASS}>
-            JE Description Template ({'{chain}'}, {'{hash}'}, {'{type}'})
-          </label>
-          <input
-            className={INPUT_CLASS}
-            data-field="jeDescription"
-            value={data.jeDescription}
-            onChange={handleFieldChange}
-            placeholder="e.g. Staking reward on {chain}"
-          />
-        </div>
-        <div className="flex items-end pb-2">
-          <label className="flex items-center gap-2 text-sm text-[#294050] dark:text-[#9FB4BE] cursor-pointer">
+      {!isBankRule && (
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className={LABEL_CLASS}>
+              JE Description Template ({'{chain}'}, {'{hash}'}, {'{type}'})
+            </label>
             <input
-              type="checkbox"
-              data-field="useFeeAmount"
-              checked={data.useFeeAmount}
-              onChange={handleCheckboxChange}
-              className="rounded border-[rgba(95,227,192,0.3)] text-[#5FE3C0] focus:ring-[#5FE3C0]"
+              className={INPUT_CLASS}
+              data-field="jeDescription"
+              value={data.jeDescription}
+              onChange={handleFieldChange}
+              placeholder="e.g. Staking reward on {chain}"
             />
-            Use fee amount (instead of transfer value)
-          </label>
+          </div>
+          <div className="flex items-end pb-2">
+            <label className="flex items-center gap-2 text-sm text-[#294050] dark:text-[#9FB4BE] cursor-pointer">
+              <input
+                type="checkbox"
+                data-field="useFeeAmount"
+                checked={data.useFeeAmount}
+                onChange={handleCheckboxChange}
+                className="rounded border-[rgba(95,227,192,0.3)] text-[#5FE3C0] focus:ring-[#5FE3C0]"
+              />
+              Use fee amount (instead of transfer value)
+            </label>
+          </div>
         </div>
-      </div>
+      )}
       <div className="flex justify-end gap-2 pt-1">
         <button
           onClick={onCancel}
@@ -389,23 +489,59 @@ const RuleDisplayRow: React.FC<RuleDisplayRowProps> = ({
         <p className="text-xs text-[#647D8B] mb-2">{rule.description}</p>
       )}
       <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-[#294050] dark:text-[#9FB4BE]">
-        <span className="font-semibold">
-          Match:{' '}
-          {rule.matchTxTypes
-            .split(',')
-            .map(typeStr => typeStr.trim())
-            .join(', ')}
+        <span
+          className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium ${
+            rule.sourceKind === 'bank'
+              ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
+              : rule.sourceKind === 'any'
+                ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300'
+                : 'bg-[#5FE3C0]/15 text-[#294050] dark:text-[#5FE3C0]'
+          }`}
+        >
+          {rule.sourceKind === 'bank'
+            ? 'Bank'
+            : rule.sourceKind === 'any'
+              ? 'Both'
+              : 'Crypto'}
         </span>
-        {Boolean(rule.matchChains) && (
-          <span className="font-semibold">Chains: {rule.matchChains}</span>
-        )}
-        {rule.matchSelfTransfer !== 'any' && (
-          <span className="font-semibold">
-            Self-xfer: {rule.matchSelfTransfer}
-          </span>
+        {rule.sourceKind === 'bank' || rule.sourceKind === 'any' ? (
+          <>
+            {Boolean(rule.matchPayeePattern) && (
+              <span className="font-semibold">
+                Payee: {rule.matchPayeePattern}
+              </span>
+            )}
+            {rule.matchAmountSign !== 'any' && (
+              <span className="font-semibold">
+                Sign:{' '}
+                {rule.matchAmountSign === 'negative'
+                  ? '− withdrawal'
+                  : '+ deposit'}
+              </span>
+            )}
+          </>
+        ) : (
+          <>
+            <span className="font-semibold">
+              Match:{' '}
+              {rule.matchTxTypes
+                .split(',')
+                .map(typeStr => typeStr.trim())
+                .join(', ')}
+            </span>
+            {Boolean(rule.matchChains) && (
+              <span className="font-semibold">Chains: {rule.matchChains}</span>
+            )}
+            {rule.matchSelfTransfer !== 'any' && (
+              <span className="font-semibold">
+                Self-xfer: {rule.matchSelfTransfer}
+              </span>
+            )}
+          </>
         )}
         <span className="font-semibold">
-          DR {rule.debitAccount} / CR {rule.creditAccount}
+          DR {rule.debitAccount || '(bank)'} / CR{' '}
+          {rule.creditAccount || '(bank)'}
         </span>
         {Boolean(rule.useFeeAmount) && (
           <span className="text-amber-600 dark:text-amber-400">Fee amount</span>
@@ -459,6 +595,7 @@ const ClassificationRules: React.FC = () => {
   const [saving, setSaving] = useState(false)
   const [dragIndex, setDragIndex] = useState<number | null>(null)
   const [installingPack, setInstallingPack] = useState(false)
+  const [sourceFilter, setSourceFilter] = useState<SourceKindFilter>('all')
 
   const fetchRules = useCallback(async () => {
     setLoading(true)
@@ -566,6 +703,9 @@ const ClassificationRules: React.FC = () => {
         creditLineDesc: rule.creditLineDesc,
         jeDescription: rule.jeDescription,
         useFeeAmount: rule.useFeeAmount,
+        sourceKind: rule.sourceKind,
+        matchPayeePattern: rule.matchPayeePattern,
+        matchAmountSign: rule.matchAmountSign,
       })
     },
     [rules]
@@ -574,8 +714,8 @@ const ClassificationRules: React.FC = () => {
   const handleNewRule = useCallback(() => {
     setShowNewForm(true)
     setEditingId(null)
-    setFormData(emptyForm)
-  }, [])
+    setFormData(sourceFilter === 'bank' ? emptyBankForm : emptyForm)
+  }, [sourceFilter])
 
   const handleCancelEdit = useCallback(() => {
     setEditingId(null)
@@ -602,6 +742,9 @@ const ClassificationRules: React.FC = () => {
             creditLineDesc: formData.creditLineDesc,
             jeDescription: formData.jeDescription,
             useFeeAmount: formData.useFeeAmount,
+            sourceKind: formData.sourceKind,
+            matchPayeePattern: formData.matchPayeePattern,
+            matchAmountSign: formData.matchAmountSign,
           },
         })
       } else {
@@ -609,7 +752,7 @@ const ClassificationRules: React.FC = () => {
           input: {
             name: formData.name,
             description: formData.description || null,
-            matchTxTypes: formData.matchTxTypes,
+            matchTxTypes: formData.matchTxTypes || '',
             matchChains: formData.matchChains || null,
             matchSelfTransfer: formData.matchSelfTransfer || null,
             debitAccount: formData.debitAccount,
@@ -618,6 +761,9 @@ const ClassificationRules: React.FC = () => {
             creditLineDesc: formData.creditLineDesc || null,
             jeDescription: formData.jeDescription || null,
             useFeeAmount: formData.useFeeAmount,
+            sourceKind: formData.sourceKind,
+            matchPayeePattern: formData.matchPayeePattern || null,
+            matchAmountSign: formData.matchAmountSign || null,
           },
         })
       }
@@ -715,6 +861,29 @@ const ClassificationRules: React.FC = () => {
 
   const builtinCount = rules.filter(r => r.source === 'builtin').length
   const enabledCount = rules.filter(r => r.enabled).length
+  const cryptoCount = rules.filter(
+    r => r.sourceKind === 'crypto' || r.sourceKind === 'any'
+  ).length
+  const bankCount = rules.filter(
+    r => r.sourceKind === 'bank' || r.sourceKind === 'any'
+  ).length
+
+  const filteredRules =
+    sourceFilter === 'all'
+      ? rules
+      : rules.filter(
+          r => r.sourceKind === sourceFilter || r.sourceKind === 'any'
+        )
+
+  const handleSourceFilterClick = useCallback(
+    (event: React.MouseEvent<HTMLButtonElement>) => {
+      const kind = event.currentTarget.dataset.kind as
+        | SourceKindFilter
+        | undefined
+      if (kind) setSourceFilter(kind)
+    },
+    []
+  )
 
   if (loading) {
     return (
@@ -767,10 +936,31 @@ const ClassificationRules: React.FC = () => {
         </div>
       )}
 
-      {/* Stats bar */}
-      <div className="mb-4 text-sm text-[#294050] dark:text-[#9FB4BE]">
-        {rules.length} rule{rules.length !== 1 ? 's' : ''} ({enabledCount}{' '}
-        enabled, {builtinCount} built-in)
+      {/* Source filter tabs */}
+      <div className="mb-4 flex items-center gap-4">
+        <div className="flex rounded-lg border border-[rgba(95,227,192,0.15)] overflow-hidden">
+          {[
+            { kind: 'all' as const, label: 'All', count: rules.length },
+            { kind: 'crypto' as const, label: 'Crypto', count: cryptoCount },
+            { kind: 'bank' as const, label: 'Bank', count: bankCount },
+          ].map(tab => (
+            <button
+              key={tab.kind}
+              data-kind={tab.kind}
+              onClick={handleSourceFilterClick}
+              className={`px-3 py-1.5 text-sm font-medium transition-colors ${
+                sourceFilter === tab.kind
+                  ? 'bg-[#294050] text-white'
+                  : 'text-[#294050] dark:text-[#9FB4BE] hover:bg-[#EAF3F2] dark:hover:bg-[#16242F]'
+              }`}
+            >
+              {tab.label} ({tab.count})
+            </button>
+          ))}
+        </div>
+        <span className="text-sm text-[#294050] dark:text-[#9FB4BE]">
+          {enabledCount} enabled, {builtinCount} built-in
+        </span>
       </div>
 
       {/* New rule form */}
@@ -790,9 +980,9 @@ const ClassificationRules: React.FC = () => {
       )}
 
       {/* Rules list */}
-      {rules.length > 0 ? (
+      {filteredRules.length > 0 ? (
         <div className="space-y-2">
-          {rules.map((rule, index) => (
+          {filteredRules.map((rule, index) => (
             <div
               key={rule.id}
               data-index={index}
@@ -820,7 +1010,7 @@ const ClassificationRules: React.FC = () => {
                 <RuleDisplayRow
                   rule={rule}
                   index={index}
-                  rulesCount={rules.length}
+                  rulesCount={filteredRules.length}
                   onToggle={handleToggle}
                   onEdit={handleEdit}
                   onDelete={handleDelete}

@@ -34,6 +34,7 @@ import {
   displayTxType,
   rulePreview,
   findMatchingRule,
+  findMatchingBankRule,
 } from './classificationUtils'
 import type { ClassificationRuleMatch } from './classificationUtils'
 
@@ -242,6 +243,7 @@ interface BankQueueRowProps {
   tx: BankQueueItem
   selected: boolean
   busy: boolean
+  matchedRuleName: string | null
   onToggleSelect: (event: React.MouseEvent<HTMLButtonElement>) => void
   onAutoClassify: (event: React.MouseEvent<HTMLButtonElement>) => void
   onManualClassify: (event: React.MouseEvent<HTMLButtonElement>) => void
@@ -253,6 +255,7 @@ const BankQueueRow: React.FC<BankQueueRowProps> = ({
   tx,
   selected,
   busy,
+  matchedRuleName,
   onToggleSelect,
   onAutoClassify,
   onManualClassify,
@@ -281,7 +284,15 @@ const BankQueueRow: React.FC<BankQueueRowProps> = ({
         <span title={tx.institutionName}>{tx.accountNickname}</span>
       </td>
       <td className="px-4 py-3 text-sm text-[#11202B] dark:text-[#EAF3F2] max-w-[200px] truncate">
-        {tx.payee ?? '—'}
+        <div>{tx.payee ?? '—'}</div>
+        {matchedRuleName !== null && (
+          <div
+            className="text-[10px] text-[#5FE3C0] mt-0.5 truncate"
+            title={matchedRuleName}
+          >
+            → {matchedRuleName}
+          </div>
+        )}
       </td>
       <td className="px-4 py-3 text-sm text-[#647D8B] max-w-[200px] truncate">
         {tx.memo ?? '—'}
@@ -301,7 +312,11 @@ const BankQueueRow: React.FC<BankQueueRowProps> = ({
             onClick={onAutoClassify}
             disabled={busy}
             className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded bg-[#5FE3C0]/10 text-[#294050] dark:text-[#5FE3C0] hover:bg-[#5FE3C0]/20 disabled:opacity-50 transition-colors"
-            title="Auto-classify using amount sign heuristic"
+            title={
+              matchedRuleName !== null
+                ? `Auto-classify via rule: ${matchedRuleName}`
+                : 'Auto-classify using amount sign heuristic'
+            }
           >
             <Zap className="w-3 h-3" />
             Auto
@@ -1404,18 +1419,27 @@ const ClassificationQueue: React.FC = () => {
                   />
                 </thead>
                 <tbody className="divide-y divide-[rgba(95,227,192,0.1)]">
-                  {filteredBank.map(tx => (
-                    <BankQueueRow
-                      key={tx.id}
-                      tx={tx}
-                      selected={selectedIds.has(tx.id)}
-                      busy={processingId === tx.id || batchProcessing}
-                      onToggleSelect={handleToggleSelect}
-                      onAutoClassify={handleAutoClassify}
-                      onManualClassify={handleManualClassify}
-                      onIgnore={handleIgnoreClick}
-                    />
-                  ))}
+                  {filteredBank.map(tx => {
+                    const isNeg = parseFloat(tx.amount) < 0
+                    const matched = findMatchingBankRule(
+                      classificationRules,
+                      tx.payee ?? '',
+                      isNeg
+                    )
+                    return (
+                      <BankQueueRow
+                        key={tx.id}
+                        tx={tx}
+                        selected={selectedIds.has(tx.id)}
+                        busy={processingId === tx.id || batchProcessing}
+                        matchedRuleName={matched?.name ?? null}
+                        onToggleSelect={handleToggleSelect}
+                        onAutoClassify={handleAutoClassify}
+                        onManualClassify={handleManualClassify}
+                        onIgnore={handleIgnoreClick}
+                      />
+                    )
+                  })}
                 </tbody>
               </table>
             </div>
