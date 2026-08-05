@@ -49,14 +49,13 @@ export function findMatchingBankRule(
   payee: string,
   isNegative: boolean
 ): ClassificationRuleMatch | undefined {
-  return rules.find(rule => {
-    if (!rule.enabled) return false
-    if (rule.sourceKind !== 'bank' && rule.sourceKind !== 'any') return false
-    if (!payeePatternMatches(rule.matchPayeePattern, payee)) return false
-    if (rule.matchAmountSign === 'positive' && isNegative) return false
-    if (rule.matchAmountSign === 'negative' && !isNegative) return false
-    return true
-  })
+  return rules.find(rule =>
+    rule.enabled &&
+    (rule.sourceKind === 'bank' || rule.sourceKind === 'any') &&
+    payeePatternMatches(rule.matchPayeePattern, payee) &&
+    !(rule.matchAmountSign === 'positive' && isNegative) &&
+    !(rule.matchAmountSign === 'negative' && !isNegative)
+  )
 }
 
 /** Formats a Unix timestamp to a localized date string. */
