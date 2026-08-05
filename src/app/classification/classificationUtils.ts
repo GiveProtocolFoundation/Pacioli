@@ -4,10 +4,13 @@ export interface ClassificationRuleMatch {
   matchTxTypes: string
   matchChains: string
   matchSelfTransfer: string
+  sourceKind: string
+  matchPayeePattern: string
+  matchAmountSign: string
   enabled: boolean
 }
 
-/** Finds the first enabled rule matching a transaction's type, chain, and self-transfer status. */
+/** Finds the first enabled rule matching a crypto transaction's type, chain, and self-transfer status. */
 export function findMatchingRule(
   rules: ClassificationRuleMatch[],
   txType: string,
@@ -15,6 +18,7 @@ export function findMatchingRule(
   isSelfTransfer: boolean
 ): ClassificationRuleMatch | undefined {
   return rules.find(rule => {
+    if (rule.sourceKind !== 'crypto' && rule.sourceKind !== 'any') return false
     const types = rule.matchTxTypes.split(',').map(s => s.trim())
     const chains = rule.matchChains
       ? rule.matchChains.split(',').map(s => s.trim().toLowerCase())
@@ -27,6 +31,29 @@ export function findMatchingRule(
       (mode !== 'true' || isSelfTransfer) &&
       (mode !== 'false' || !isSelfTransfer)
     )
+  })
+}
+
+/** Checks whether a pipe-separated payee pattern matches a payee string (case-insensitive). */
+export function payeePatternMatches(pattern: string, payee: string): boolean {
+  if (!pattern) return true
+  const lower = payee.toLowerCase()
+  return pattern.split('|').some(sub => sub !== '' && lower.includes(sub.toLowerCase()))
+}
+
+/** Finds the first enabled bank rule matching a payee and amount sign. */
+export function findMatchingBankRule(
+  rules: ClassificationRuleMatch[],
+  payee: string,
+  isNegative: boolean
+): ClassificationRuleMatch | undefined {
+  return rules.find(rule => {
+    if (!rule.enabled) return false
+    if (rule.sourceKind !== 'bank' && rule.sourceKind !== 'any') return false
+    if (!payeePatternMatches(rule.matchPayeePattern, payee)) return false
+    if (rule.matchAmountSign === 'positive' && isNegative) return false
+    if (rule.matchAmountSign === 'negative' && !isNegative) return false
+    return true
   })
 }
 
