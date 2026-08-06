@@ -16,6 +16,7 @@ import { useOrganization } from '../../contexts/OrganizationContext'
 import { useProfile } from '../../contexts/ProfileContext'
 import { persistence } from '../../services/persistence'
 import { StorageService } from '../../services/database/storageService'
+import { COUNTRIES } from '../../constants/countries'
 
 interface OrganizationSettings {
   name: string
@@ -320,13 +321,21 @@ const OrgInfoFields: React.FC<OrgInfoFieldsProps> = ({
         >
           Country
         </label>
-        <input
+        <select
           id="country"
-          type="text"
           value={organizationSettings.country}
-          onChange={createTextHandler('country')}
+          onChange={e => {
+            onOrganizationChange('country', e.target.value)
+            persistence.setSetting('country', e.target.value)
+          }}
           className="w-full px-3 py-2 border border-[rgba(95,227,192,0.15)] rounded-lg bg-[#F7FAFA] dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] focus:outline-none focus:ring-2 focus:ring-[#5FE3C0]"
-        />
+        >
+          {COUNTRIES.map(c => (
+            <option key={c.value} value={c.value}>
+              {c.label}
+            </option>
+          ))}
+        </select>
       </div>
     </>
   )
@@ -1029,7 +1038,7 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({
       city: 'San Francisco',
       state: 'CA',
       zipCode: '94102',
-      country: 'United States',
+      country: '',
       logo: organizationLogo,
     })
 
@@ -1056,6 +1065,11 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({
   useEffect(() => {
     persistence.getSetting('jurisdiction').then(val => {
       if (val) setJurisdiction(val)
+    })
+    persistence.getSetting('country').then(val => {
+      if (val) {
+        setOrganizationSettings(prev => ({ ...prev, country: val }))
+      }
     })
     persistence.getSetting('accountType').then(val => {
       if (
