@@ -6,8 +6,60 @@ import {
   searchAccounts,
   getAccountsByType,
   groupAccountsByType,
+  defaultFrameworkForCountry,
 } from '../chartOfAccounts'
 import type { ChartOfAccountsTemplate } from '../../types/chartOfAccounts'
+
+describe('defaultFrameworkForCountry', () => {
+  it('returns us-gaap for US', () => {
+    expect(defaultFrameworkForCountry('US')).toBe('us-gaap')
+  })
+
+  it('is case-insensitive for US', () => {
+    expect(defaultFrameworkForCountry('us')).toBe('us-gaap')
+    expect(defaultFrameworkForCountry('Us')).toBe('us-gaap')
+  })
+
+  it('returns ifrs for United Kingdom', () => {
+    expect(defaultFrameworkForCountry('GB')).toBe('ifrs')
+  })
+
+  it('returns ifrs for Canada', () => {
+    expect(defaultFrameworkForCountry('CA')).toBe('ifrs')
+  })
+
+  it('returns ifrs for Australia', () => {
+    expect(defaultFrameworkForCountry('AU')).toBe('ifrs')
+  })
+
+  it('returns ifrs for Singapore', () => {
+    expect(defaultFrameworkForCountry('SG')).toBe('ifrs')
+  })
+
+  it('returns ifrs for Germany', () => {
+    expect(defaultFrameworkForCountry('DE')).toBe('ifrs')
+  })
+
+  it('returns null for empty string', () => {
+    expect(defaultFrameworkForCountry('')).toBeNull()
+  })
+
+  it('returns null for whitespace-only string', () => {
+    expect(defaultFrameworkForCountry('   ')).toBeNull()
+  })
+
+  it('trims whitespace before matching', () => {
+    expect(defaultFrameworkForCountry(' US ')).toBe('us-gaap')
+    expect(defaultFrameworkForCountry(' GB ')).toBe('ifrs')
+  })
+
+  it('returns ifrs for any non-US country code', () => {
+    expect(defaultFrameworkForCountry('JP')).toBe('ifrs')
+    expect(defaultFrameworkForCountry('BR')).toBe('ifrs')
+    expect(defaultFrameworkForCountry('IN')).toBe('ifrs')
+    expect(defaultFrameworkForCountry('ZW')).toBe('ifrs')
+  })
+})
 
 describe('chartOfAccounts', () => {
   describe('getChartOfAccountsTemplate', () => {

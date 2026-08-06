@@ -1,12 +1,14 @@
 import React, { useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { invoke } from '@tauri-apps/api/core'
-import { Globe, Building2, User, Check } from 'lucide-react'
+import { Building2, User, Check } from 'lucide-react'
 import PacioliBlackLogo from '../../assets/pacioli_logo_black.svg'
 import { GridSelectionButton } from '../../components/GridSelectionButton'
 import { persistence } from '../../services/persistence'
 import { useAuth } from '../../contexts/AuthContext'
 import { useProfile } from '../../contexts/ProfileContext'
+import { COUNTRIES } from '../../constants/countries'
+import { defaultFrameworkForCountry } from '../../utils/chartOfAccounts'
 
 type Step = 'jurisdiction' | 'account-type' | 'complete'
 type Jurisdiction = 'us-gaap' | 'ifrs'
@@ -75,6 +77,16 @@ const ProgressConnector: React.FC<ProgressConnectorProps> = ({
 )
 
 /**
+ * Looks up the human-readable country name from the COUNTRIES list.
+ * @param code - ISO alpha-2 country code.
+ * @returns The country label, or the code itself if not found.
+ */
+function countryNameForCode(code: string): string {
+  const entry = COUNTRIES.find(c => c.value === code)
+  return entry?.label ?? code
+}
+
+/**
  * Main onboarding component to guide users through setup steps.
  * @returns JSX.Element representing the onboarding flow.
  */
@@ -83,26 +95,43 @@ const Onboarding: React.FC = () => {
   const { completeOnboarding } = useAuth()
   const { currentProfile } = useProfile()
   const [currentStep, setCurrentStep] = useState<Step>('jurisdiction')
+  const [country, setCountry] = useState<string>('')
   const [jurisdiction, setJurisdiction] = useState<Jurisdiction | null>(null)
   const [accountType, setAccountType] = useState<AccountType | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const handleJurisdictionSelect = useCallback((selected: Jurisdiction) => {
-    setJurisdiction(selected)
-  }, [])
+  const handleCountryChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      const code = e.target.value
+      setCountry(code)
+      const framework = defaultFrameworkForCountry(code)
+      if (framework) {
+        setJurisdiction(framework)
+      }
+    },
+    []
+  )
+
+  const handleFrameworkChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setJurisdiction(e.target.value as Jurisdiction)
+    },
+    []
+  )
 
   const handleAccountTypeSelect = useCallback((selected: AccountType) => {
     setAccountType(selected)
   }, [])
 
   const handleContinue = useCallback(async () => {
-    if (currentStep === 'jurisdiction' && jurisdiction) {
+    if (currentStep === 'jurisdiction' && jurisdiction && country) {
       setCurrentStep('account-type')
     } else if (currentStep === 'account-type' && accountType && jurisdiction) {
       setError(null)
       setIsSubmitting(true)
       try {
+        await persistence.setSetting('country', country)
         await persistence.setSetting('accountType', accountType)
         await persistence.setSetting('jurisdiction', jurisdiction)
 
@@ -126,6 +155,7 @@ const Onboarding: React.FC = () => {
     currentStep,
     jurisdiction,
     accountType,
+    country,
     currentProfile,
     navigate,
     completeOnboarding,
@@ -136,13 +166,6 @@ const Onboarding: React.FC = () => {
       setCurrentStep('jurisdiction')
     }
   }, [currentStep])
-
-  const handleSelectUSGAAP = useCallback(() => {
-    handleJurisdictionSelect('us-gaap')
-  }, [handleJurisdictionSelect])
-  const handleSelectIFRS = useCallback(() => {
-    handleJurisdictionSelect('ifrs')
-  }, [handleJurisdictionSelect])
 
   const handleSelectIndividual = useCallback(() => {
     handleAccountTypeSelect('individual')
@@ -158,11 +181,21 @@ const Onboarding: React.FC = () => {
 
   const canContinue =
     !isSubmitting &&
-    ((currentStep === 'jurisdiction' && jurisdiction) ||
+    ((currentStep === 'jurisdiction' && jurisdiction && country) ||
       (currentStep === 'account-type' && accountType))
 
   const isJurisdictionStep = currentStep === 'jurisdiction'
   const isAccountTypeStep = currentStep === 'account-type'
+
+  const usGaapLabel =
+    country && country !== 'US'
+      ? 'US GAAP — for entities reporting to US parents/investors'
+      : 'US GAAP — Recommended for United States'
+
+  const ifrsLabel =
+    country && country !== 'US'
+      ? `IFRS / Local Standard — Recommended for ${countryNameForCode(country)}`
+      : 'IFRS / Local Standard'
 
   /**
    * Returns the class name for the back button based on the current step state.
@@ -215,12 +248,14 @@ const Onboarding: React.FC = () => {
         <div className="mb-8">
           <div className="flex items-center justify-center space-x-4">
             <ProgressStep
-              label="Jurisdiction"
+              label="Location"
               isActive={isJurisdictionStep}
-              isCompleted={Boolean(jurisdiction)}
+              isCompleted={Boolean(jurisdiction) && Boolean(country)}
               stepNumber={1}
             />
-            <ProgressConnector isCompleted={Boolean(jurisdiction)} />
+            <ProgressConnector
+              isCompleted={Boolean(jurisdiction) && Boolean(country)}
+            />
             <ProgressStep
               label="Account Type"
               isActive={isAccountTypeStep}
@@ -231,38 +266,77 @@ const Onboarding: React.FC = () => {
         </div>
 
         {/* Main Content Card */}
-        <div className="bg-white rounded-xl shadow-xl p-8">
-          {/* Jurisdiction Step */}
+        <div className="onboarding-card bg-white rounded-xl shadow-xl p-8">
+          {/* Location Step */}
           {isJurisdictionStep && (
             <div>
               <h2 className="text-2xl font-bold text-[#0C141B] mb-2">
-                Select Your Jurisdiction
+                Where is your organization registered?
               </h2>
               <p className="text-gray-600 mb-8">
-                Choose the accounting standard that applies to your organization
+                Select your country and the accounting framework your
+                organization follows
               </p>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <GridSelectionButton
-                  icon={Globe}
-                  title="United States"
-                  description="US GAAP (Generally Accepted Accounting Principles)"
-                  subtitle="For organizations operating in the United States"
-                  isSelected={jurisdiction === 'us-gaap'}
-                  onClick={handleSelectUSGAAP}
-                  value="us-gaap"
-                  gridLayout
-                />
-                <GridSelectionButton
-                  icon={Globe}
-                  title="International"
-                  description="IFRS (International Financial Reporting Standards)"
-                  subtitle="For organizations operating internationally"
-                  isSelected={jurisdiction === 'ifrs'}
-                  onClick={handleSelectIFRS}
-                  value="ifrs"
-                  gridLayout
-                />
+              <div className="space-y-6">
+                {/* Country select */}
+                <div>
+                  <label
+                    htmlFor="onboarding-country"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Country
+                  </label>
+                  <select
+                    id="onboarding-country"
+                    value={country}
+                    onChange={handleCountryChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#8b4e52] focus:border-transparent"
+                  >
+                    {COUNTRIES.map(c => (
+                      <option key={c.value} value={c.value}>
+                        {c.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Accounting Framework radio group */}
+                {country && (
+                  <fieldset>
+                    <legend className="block text-sm font-medium text-gray-700 mb-3">
+                      Accounting Framework
+                    </legend>
+                    <div className="space-y-3">
+                      <label className="flex items-center gap-3 p-4 rounded-lg border border-gray-200 cursor-pointer hover:border-gray-300 has-[:checked]:border-[#8b4e52] has-[:checked]:bg-[#8b4e52]/5">
+                        <input
+                          type="radio"
+                          name="framework"
+                          value="us-gaap"
+                          checked={jurisdiction === 'us-gaap'}
+                          onChange={handleFrameworkChange}
+                          className="w-4 h-4 text-[#8b4e52] focus:ring-[#8b4e52]"
+                        />
+                        <span className="text-sm text-gray-900">
+                          {usGaapLabel}
+                        </span>
+                      </label>
+                      <label className="flex items-center gap-3 p-4 rounded-lg border border-gray-200 cursor-pointer hover:border-gray-300 has-[:checked]:border-[#8b4e52] has-[:checked]:bg-[#8b4e52]/5">
+                        <input
+                          type="radio"
+                          name="framework"
+                          value="ifrs"
+                          checked={jurisdiction === 'ifrs'}
+                          onChange={handleFrameworkChange}
+                          className="w-4 h-4 text-[#8b4e52] focus:ring-[#8b4e52]"
+                        />
+                        <span className="text-sm text-gray-900">
+                          {ifrsLabel}
+                        </span>
+                      </label>
+                    </div>
+                  </fieldset>
+                )}
               </div>
             </div>
           )}
@@ -286,6 +360,7 @@ const Onboarding: React.FC = () => {
                   isSelected={accountType === 'individual'}
                   onClick={handleSelectIndividual}
                   value="individual"
+                  forceLight
                 />
                 <GridSelectionButton
                   icon={Building2}
@@ -295,6 +370,7 @@ const Onboarding: React.FC = () => {
                   isSelected={accountType === 'for-profit-enterprise'}
                   onClick={handleSelectSME}
                   value="for-profit-enterprise"
+                  forceLight
                 />
                 <GridSelectionButton
                   icon={Building2}
@@ -304,6 +380,7 @@ const Onboarding: React.FC = () => {
                   isSelected={accountType === 'not-for-profit'}
                   onClick={handleSelectNonProfit}
                   value="not-for-profit"
+                  forceLight
                 />
               </div>
             </div>

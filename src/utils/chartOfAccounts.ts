@@ -78,6 +78,19 @@ export function getAccountsByType(
 }
 
 /**
+ * Returns the default accounting framework for a given ISO 3166-1 alpha-2 country code.
+ * @param code - ISO alpha-2 country code (e.g. 'US', 'GB'). Empty string returns null.
+ * @returns 'us-gaap' for the United States, 'ifrs' for all other valid codes, or null for empty/blank input.
+ */
+export function defaultFrameworkForCountry(
+  code: string
+): 'us-gaap' | 'ifrs' | null {
+  const trimmed = code.trim()
+  if (!trimmed) return null
+  return trimmed.toUpperCase() === 'US' ? 'us-gaap' : 'ifrs'
+}
+
+/**
  * Group accounts by their type
  */
 export function groupAccountsByType(

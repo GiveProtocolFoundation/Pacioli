@@ -10,6 +10,8 @@ interface GridSelectionButtonProps {
   onClick: () => void
   value: string
   gridLayout?: boolean
+  /** When true, suppress dark-mode variants (for light-only contexts like onboarding). */
+  forceLight?: boolean
 }
 
 /**
@@ -20,6 +22,7 @@ interface GridSelectionButtonProps {
  * @param subtitle - Optional subtitle text displayed below the title.
  * @param isSelected - Flag indicating if the button is selected.
  * @param onClick - Callback invoked when the button is clicked.
+ * @param forceLight - Suppress dark-mode variants for light-only host pages.
  * @returns The rendered GridSelectionButton component.
  */
 export const GridSelectionButton: React.FC<GridSelectionButtonProps> = ({
@@ -29,51 +32,62 @@ export const GridSelectionButton: React.FC<GridSelectionButtonProps> = ({
   subtitle,
   isSelected,
   onClick,
+  forceLight = false,
 }) => {
+  const containerClass = isSelected
+    ? forceLight
+      ? 'border-[#294050] bg-[#294050]/10'
+      : 'border-[#294050] bg-[#294050]/10 dark:bg-[#294050]/20'
+    : forceLight
+      ? 'border-gray-200 hover:border-gray-300 bg-white'
+      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 bg-white dark:bg-gray-800'
+
+  const iconBgClass = isSelected
+    ? forceLight
+      ? 'bg-[#294050]/20'
+      : 'bg-[#294050]/20 dark:bg-[#294050]/30'
+    : forceLight
+      ? 'bg-gray-100'
+      : 'bg-gray-100 dark:bg-gray-700'
+
+  const iconColorClass = isSelected
+    ? forceLight
+      ? 'text-[#294050]'
+      : 'text-[#294050] dark:text-[#F09988]'
+    : forceLight
+      ? 'text-gray-600'
+      : 'text-gray-600 dark:text-gray-400'
+
+  const titleClass = isSelected
+    ? forceLight
+      ? 'text-[#294050]'
+      : 'text-[#294050] dark:text-[#9CF1DC]'
+    : forceLight
+      ? 'text-gray-900'
+      : 'text-gray-900 dark:text-white'
+
+  const descClass = forceLight
+    ? 'text-sm text-gray-600 mt-1'
+    : 'text-sm text-gray-600 dark:text-gray-400 mt-1'
+
+  const subClass = forceLight
+    ? 'text-xs text-gray-500 mt-2'
+    : 'text-xs text-gray-500 dark:text-gray-500 mt-2'
+
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`w-full p-6 rounded-xl border-2 text-left transition-all duration-200 ${
-        isSelected
-          ? 'border-[#294050] bg-[#294050]/10 dark:bg-[#294050]/20'
-          : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 bg-white dark:bg-gray-800'
-      }`}
+      className={`w-full p-6 rounded-xl border-2 text-left transition-all duration-200 ${containerClass}`}
     >
       <div className="flex items-start gap-4">
-        <div
-          className={`p-3 rounded-lg ${
-            isSelected
-              ? 'bg-[#294050]/20 dark:bg-[#294050]/30'
-              : 'bg-gray-100 dark:bg-gray-700'
-          }`}
-        >
-          <Icon
-            className={`w-6 h-6 ${
-              isSelected
-                ? 'text-[#294050] dark:text-[#F09988]'
-                : 'text-gray-600 dark:text-gray-400'
-            }`}
-          />
+        <div className={`p-3 rounded-lg ${iconBgClass}`}>
+          <Icon className={`w-6 h-6 ${iconColorClass}`} />
         </div>
         <div className="flex-1">
-          <h3
-            className={`font-semibold ${
-              isSelected
-                ? 'text-[#294050] dark:text-[#9CF1DC]'
-                : 'text-gray-900 dark:text-white'
-            }`}
-          >
-            {title}
-          </h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-            {description}
-          </p>
-          {subtitle && (
-            <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">
-              {subtitle}
-            </p>
-          )}
+          <h3 className={`font-semibold ${titleClass}`}>{title}</h3>
+          <p className={descClass}>{description}</p>
+          {subtitle && <p className={subClass}>{subtitle}</p>}
         </div>
         {isSelected && (
           <div className="flex-shrink-0">

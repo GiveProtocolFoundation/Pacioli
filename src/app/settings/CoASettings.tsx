@@ -12,6 +12,7 @@ import {
 import { persistence } from '../../services/persistence'
 import { useProfile } from '../../contexts/ProfileContext'
 import { isTauriAvailable } from '../../utils/tauri'
+import { COUNTRIES } from '../../constants/countries'
 import type { GLAccount } from '../../types/database'
 
 const JURISDICTION_LABELS: Record<string, string> = {
@@ -111,13 +112,15 @@ function summariseAccounts(accounts: GLAccount[]): {
 interface SetupSummaryProps {
   jurisdiction: string | null
   accountType: string | null
+  country: string | null
   onChange: () => void
 }
 
-/** Card summarising the currently configured jurisdiction and entity type. */
+/** Card summarising the currently configured framework, country, and entity type. */
 const SetupSummarySection: React.FC<SetupSummaryProps> = ({
   jurisdiction,
   accountType,
+  country,
   onChange,
 }) => (
   <section className="rounded-lg border border-[rgba(95,227,192,0.15)] bg-[#EAF3F2]/30 dark:bg-[#16242F]/40 p-5">
@@ -133,9 +136,19 @@ const SetupSummarySection: React.FC<SetupSummaryProps> = ({
         Change
       </button>
     </div>
-    <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+    <dl className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
       <div>
-        <dt className="text-[#647D8B] dark:text-[#647D8B]">Jurisdiction</dt>
+        <dt className="text-[#647D8B] dark:text-[#647D8B]">Country</dt>
+        <dd className="mt-0.5 font-medium text-[#11202B] dark:text-[#EAF3F2]">
+          {country
+            ? (COUNTRIES.find(c => c.value === country)?.label ?? country)
+            : '—'}
+        </dd>
+      </div>
+      <div>
+        <dt className="text-[#647D8B] dark:text-[#647D8B]">
+          Accounting Framework
+        </dt>
         <dd className="mt-0.5 font-medium text-[#11202B] dark:text-[#EAF3F2]">
           {JURISDICTION_LABELS[jurisdiction ?? ''] ?? jurisdiction ?? '—'}
         </dd>
@@ -291,6 +304,7 @@ const CoASettings: React.FC = () => {
 
   const [jurisdiction, setJurisdiction] = useState<string | null>(null)
   const [accountType, setAccountType] = useState<string | null>(null)
+  const [country, setCountry] = useState<string | null>(null)
   const [accounts, setAccounts] = useState<GLAccount[]>([])
   const [loading, setLoading] = useState(true)
   const [importing, setImporting] = useState(false)
@@ -299,12 +313,15 @@ const CoASettings: React.FC = () => {
   const loadData = useCallback(async () => {
     setLoading(true)
     try {
-      const [savedJurisdiction, savedAccountType] = await Promise.all([
-        persistence.getSetting('jurisdiction'),
-        persistence.getSetting('accountType'),
-      ])
+      const [savedJurisdiction, savedAccountType, savedCountry] =
+        await Promise.all([
+          persistence.getSetting('jurisdiction'),
+          persistence.getSetting('accountType'),
+          persistence.getSetting('country'),
+        ])
       setJurisdiction(savedJurisdiction ?? 'us-gaap')
       setAccountType(savedAccountType ?? 'not-for-profit')
+      setCountry(savedCountry ?? null)
 
       if (isTauri) {
         const result = await invoke<GLAccount[]>('get_chart_of_accounts')
@@ -369,6 +386,7 @@ const CoASettings: React.FC = () => {
       <SetupSummarySection
         jurisdiction={jurisdiction}
         accountType={accountType}
+        country={country}
         onChange={() => navigate('/settings/general')}
       />
 
