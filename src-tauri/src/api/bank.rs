@@ -592,9 +592,9 @@ pub async fn get_unclassified_bank_transactions(
     .map_err(|e| e.to_string())
 }
 
-/// Auto-classifies a bank transaction by creating a journal entry from its
-/// fiat amount. Bank amounts are already in the functional currency, so no
-/// price enrichment is needed.
+/// Auto-classifies a bank transaction by creating a journal entry.
+/// First checks classification rules (ordered by priority); falls back to
+/// the payee → GL map; finally uses the sign-based heuristic.
 #[tauri::command]
 pub async fn auto_classify_bank_transaction(
     state: State<'_, DatabaseState>,
@@ -624,8 +624,7 @@ pub async fn auto_classify_bank_transaction(
             .await
             .map_err(|e| format!("Bank account not found: {e}"))?;
 
-    let bank_account_id = get_account_id_by_number(&state.pool, &gl_account_number.0).await?;
-    let uncategorized_id = get_uncategorized_account(&state.pool, &tx.amount).await?;
+    let bank_gl_id = get_account_id_by_number(&state.pool, &gl_account_number.0).await?;
 
     let amount = Decimal::from_str(&tx.amount)
         .map_err(|e| format!("Cannot parse amount '{}': {e}", tx.amount))?;
@@ -634,60 +633,146 @@ pub async fn auto_classify_bank_transaction(
         .ok_or_else(|| format!("Amount out of range: {abs_amount}"))?;
 
     let is_debit = amount < Decimal::ZERO;
-
     let payee_display = tx.payee.as_deref().unwrap_or("Unknown payee");
-    let description = format!(
-        "{} — {} ({})",
-        payee_display, tx.institution_name, tx.account_nickname
-    );
 
-    let lines = if is_debit {
-        vec![
-            JournalEntryLineInput {
-                gl_account_id: uncategorized_id,
-                token_id: None,
-                debit_minor: amount_minor,
-                credit_minor: 0,
-                quantity: None,
-                asset_id: Some(tx.currency.clone()),
-                description: Some(format!("{payee_display} (debit)")),
-                functional_classification: None,
-            },
-            JournalEntryLineInput {
-                gl_account_id: bank_account_id,
-                token_id: None,
-                debit_minor: 0,
-                credit_minor: amount_minor,
-                quantity: None,
-                asset_id: Some(tx.currency.clone()),
-                description: Some(format!("Bank withdrawal — {payee_display}")),
-                functional_classification: None,
-            },
-        ]
-    } else {
-        vec![
-            JournalEntryLineInput {
-                gl_account_id: bank_account_id,
-                token_id: None,
-                debit_minor: amount_minor,
-                credit_minor: 0,
-                quantity: None,
-                asset_id: Some(tx.currency.clone()),
-                description: Some(format!("Bank deposit — {payee_display}")),
-                functional_classification: None,
-            },
-            JournalEntryLineInput {
-                gl_account_id: uncategorized_id,
-                token_id: None,
-                debit_minor: 0,
-                credit_minor: amount_minor,
-                quantity: None,
-                asset_id: Some(tx.currency.clone()),
-                description: Some(format!("{payee_display} (credit)")),
-                functional_classification: None,
-            },
-        ]
-    };
+    let rules = sqlx::query_as::<_, super::rules::ClassificationRule>(
+        "SELECT id, name, description, match_tx_types, match_chains, match_self_transfer, \
+         debit_account, credit_account, debit_line_desc, credit_line_desc, je_description, \
+         use_fee_amount, priority, enabled, source, source_kind, match_payee_pattern, \
+         match_amount_sign, created_at, updated_at \
+         FROM classification_rules WHERE enabled = 1 \
+         AND source_kind IN ('bank', 'any') \
+         ORDER BY priority ASC",
+    )
+    .fetch_all(&state.pool)
+    .await
+    .map_err(|e| e.to_string())?;
+
+    let matched_rule = rules
+        .iter()
+        .find(|r| super::rules::bank_rule_matches(r, payee_display, is_debit));
+
+    let (debit_gl_id, credit_gl_id, debit_desc, credit_desc, je_desc) =
+        if let Some(rule) = matched_rule {
+            let debit_id = if rule.debit_account.is_empty() {
+                bank_gl_id
+            } else {
+                get_account_id_by_number(&state.pool, &rule.debit_account).await?
+            };
+            let credit_id = if rule.credit_account.is_empty() {
+                bank_gl_id
+            } else {
+                get_account_id_by_number(&state.pool, &rule.credit_account).await?
+            };
+            let d_desc = if rule.debit_line_desc.is_empty() {
+                format!("{payee_display} (debit)")
+            } else {
+                rule.debit_line_desc.replace("{payee}", payee_display)
+            };
+            let c_desc = if rule.credit_line_desc.is_empty() {
+                format!("{payee_display} (credit)")
+            } else {
+                rule.credit_line_desc.replace("{payee}", payee_display)
+            };
+            let je = if rule.je_description.is_empty() {
+                format!(
+                    "{payee_display} — {} ({})",
+                    tx.institution_name, tx.account_nickname
+                )
+            } else {
+                rule.je_description.replace("{payee}", payee_display)
+            };
+            (debit_id, credit_id, d_desc, c_desc, je)
+        } else {
+            let payee_maps = sqlx::query_as::<_, super::rules::PayeeGlMap>(
+                "SELECT id, payee_pattern, match_mode, gl_account_number, description, \
+                 enabled, created_at, updated_at \
+                 FROM payee_gl_map WHERE enabled = 1 ORDER BY payee_pattern ASC",
+            )
+            .fetch_all(&state.pool)
+            .await
+            .map_err(|e| e.to_string())?;
+
+            let matched_map = payee_maps
+                .iter()
+                .find(|m| super::rules::payee_gl_map_matches(m, payee_display));
+
+            if let Some(mapping) = matched_map {
+                let target_id =
+                    get_account_id_by_number(&state.pool, &mapping.gl_account_number).await?;
+                if is_debit {
+                    (
+                        target_id,
+                        bank_gl_id,
+                        format!("{payee_display} (debit)"),
+                        format!("Bank withdrawal — {payee_display}"),
+                        format!(
+                            "{} — {} ({})",
+                            payee_display, tx.institution_name, tx.account_nickname
+                        ),
+                    )
+                } else {
+                    (
+                        bank_gl_id,
+                        target_id,
+                        format!("Bank deposit — {payee_display}"),
+                        format!("{payee_display} (credit)"),
+                        format!(
+                            "{} — {} ({})",
+                            payee_display, tx.institution_name, tx.account_nickname
+                        ),
+                    )
+                }
+            } else {
+                let uncategorized_id = get_uncategorized_account(&state.pool, &tx.amount).await?;
+                if is_debit {
+                    (
+                        uncategorized_id,
+                        bank_gl_id,
+                        format!("{payee_display} (debit)"),
+                        format!("Bank withdrawal — {payee_display}"),
+                        format!(
+                            "{} — {} ({})",
+                            payee_display, tx.institution_name, tx.account_nickname
+                        ),
+                    )
+                } else {
+                    (
+                        bank_gl_id,
+                        uncategorized_id,
+                        format!("Bank deposit — {payee_display}"),
+                        format!("{payee_display} (credit)"),
+                        format!(
+                            "{} — {} ({})",
+                            payee_display, tx.institution_name, tx.account_nickname
+                        ),
+                    )
+                }
+            }
+        };
+
+    let lines = vec![
+        JournalEntryLineInput {
+            gl_account_id: debit_gl_id,
+            token_id: None,
+            debit_minor: amount_minor,
+            credit_minor: 0,
+            quantity: None,
+            asset_id: Some(tx.currency.clone()),
+            description: Some(debit_desc),
+            functional_classification: None,
+        },
+        JournalEntryLineInput {
+            gl_account_id: credit_gl_id,
+            token_id: None,
+            debit_minor: 0,
+            credit_minor: amount_minor,
+            quantity: None,
+            asset_id: Some(tx.currency.clone()),
+            description: Some(credit_desc),
+            functional_classification: None,
+        },
+    ];
 
     let entry_date = chrono::DateTime::from_timestamp(tx.posted_date, 0).map_or_else(
         || chrono::Utc::now().format("%Y-%m-%d").to_string(),
@@ -696,7 +781,7 @@ pub async fn auto_classify_bank_transaction(
 
     let input = NewJournalEntryInput {
         entry_date,
-        description,
+        description: je_desc,
         reference_number: tx.reference_number.clone(),
         raw_transaction_id: None,
         bank_transaction_id: Some(transaction_id),
