@@ -489,6 +489,11 @@ pub fn run() {
             api::rules::reorder_classification_rules,
             api::rules::delete_classification_rule,
             api::rules::install_starter_rules,
+            // Payee → GL map commands (GIV-829)
+            api::rules::list_payee_gl_maps,
+            api::rules::create_payee_gl_map,
+            api::rules::update_payee_gl_map,
+            api::rules::delete_payee_gl_map,
             // Chart-of-accounts template importer (GIV-757)
             api::accounting::import_chart_of_accounts_template,
             api::accounting::hide_profile_template_accounts,
