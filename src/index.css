@@ -1143,6 +1143,29 @@ select:focus {
   box-shadow: 0 0 0 3px rgba(201, 169, 97, 0.2);
 }
 
+/* Force light styling inside the onboarding card (always on a light background) */
+.dark .onboarding-card select {
+  background: #ffffff !important;
+  color: #111827 !important;
+  border-color: #d1d5db !important;
+  color-scheme: light !important;
+}
+
+.dark .onboarding-card select:focus {
+  border-color: #8b4e52 !important;
+  box-shadow: 0 0 0 2px rgba(139, 78, 82, 0.2) !important;
+}
+
+.dark .onboarding-card input[type='radio'] {
+  background: #ffffff !important;
+  color: #111827 !important;
+  border-color: #d1d5db !important;
+  color-scheme: light !important;
+  -webkit-appearance: radio !important;
+  appearance: radio !important;
+  accent-color: #8b4e52 !important;
+}
+
 /* Placeholder text */
 input::placeholder,
 textarea::placeholder {

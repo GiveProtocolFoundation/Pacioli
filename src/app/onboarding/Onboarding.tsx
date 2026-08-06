@@ -266,7 +266,7 @@ const Onboarding: React.FC = () => {
         </div>
 
         {/* Main Content Card */}
-        <div className="bg-white rounded-xl shadow-xl p-8">
+        <div className="onboarding-card bg-white rounded-xl shadow-xl p-8">
           {/* Location Step */}
           {isJurisdictionStep && (
             <div>

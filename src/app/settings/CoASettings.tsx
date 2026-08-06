@@ -12,6 +12,7 @@ import {
 import { persistence } from '../../services/persistence'
 import { useProfile } from '../../contexts/ProfileContext'
 import { isTauriAvailable } from '../../utils/tauri'
+import { COUNTRIES } from '../../constants/countries'
 import type { GLAccount } from '../../types/database'
 
 const JURISDICTION_LABELS: Record<string, string> = {
@@ -139,7 +140,9 @@ const SetupSummarySection: React.FC<SetupSummaryProps> = ({
       <div>
         <dt className="text-[#647D8B] dark:text-[#647D8B]">Country</dt>
         <dd className="mt-0.5 font-medium text-[#11202B] dark:text-[#EAF3F2]">
-          {country ?? '—'}
+          {country
+            ? (COUNTRIES.find(c => c.value === country)?.label ?? country)
+            : '—'}
         </dd>
       </div>
       <div>
