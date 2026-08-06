@@ -85,11 +85,13 @@ impl RpcClient {
         }
     }
 
+    /// Fetches event logs from the node matching `filter`.
     pub async fn get_logs(&self, filter: &Value) -> Result<Vec<Value>> {
         let v = self.call_raw("eth_getLogs", json!([filter])).await?;
         Ok(serde_json::from_value(v)?)
     }
 
+    /// Executes a read-only `eth_call` and returns the raw ABI-encoded response bytes.
     pub async fn eth_call(&self, to: Address, data: Vec<u8>) -> Result<Vec<u8>> {
         let v = self
             .call_raw(

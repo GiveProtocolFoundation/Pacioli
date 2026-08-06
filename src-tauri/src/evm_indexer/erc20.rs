@@ -52,8 +52,7 @@ impl ERC20Scanner {
         let decimals = self
             .eth_call_decode::<IERC20::decimalsCall>(token_address, IERC20::decimalsCall {})
             .await
-            .map(|r| r._0)
-            .unwrap_or(18);
+            .map_or(18, |r| r._0);
 
         let total_supply = self
             .eth_call_decode::<IERC20::totalSupplyCall>(token_address, IERC20::totalSupplyCall {})
@@ -109,10 +108,12 @@ impl ERC20Scanner {
         for log in &raw_logs {
             let topics: Vec<B256> = log["topics"]
                 .as_array()
-                .unwrap_or(&vec![])
-                .iter()
-                .filter_map(|t| t.as_str().and_then(|s| s.parse::<B256>().ok()))
-                .collect();
+                .map(|arr| {
+                    arr.iter()
+                        .filter_map(|t| t.as_str().and_then(|s| s.parse::<B256>().ok()))
+                        .collect()
+                })
+                .unwrap_or_default();
 
             let data_hex = log["data"].as_str().unwrap_or("0x");
             let data_bytes = hex::decode(data_hex.trim_start_matches("0x")).unwrap_or_default();
