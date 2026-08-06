@@ -147,7 +147,9 @@ export async function setupApp(page: Page): Promise<void> {
   // After first-launch, the OnboardingGate redirects to /onboarding because
   // accountType is null. In E2E (web build, no Tauri), we seed the required
   // settings directly into IndexedDB and reload so AuthContext picks them up.
-  const onboardingHeading = page.getByText('Select Your Jurisdiction')
+  const onboardingHeading = page.getByText(
+    'Where is your organization registered?'
+  )
   const hitOnboarding = await expect(onboardingHeading)
     .toBeVisible({ timeout: 5_000 })
     .then(
