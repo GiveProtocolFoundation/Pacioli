@@ -25,13 +25,9 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 
 # Ethereum/EVM dependencies
-ethers = { version = "2.0", features = ["ws", "rustls"] }
-web3 = "0.19"
-ethabi = "18.0"
+alloy-primitives = { version = "0.8", features = ["serde"] }
+alloy-sol-types = "0.8"
 hex = "0.4"
-rlp = "0.5"
-ethereum-types = "0.14"
-keccak-hash = "0.10"
 sha3 = "0.10"
 sha2 = "0.10"
 secp256k1 = { version = "0.29", features = ["recovery", "rand"] }
@@ -45,8 +41,9 @@ uuid = { version = "1.10", features = ["v4", "serde"] }
 ulid = { version = "1.1", features = ["serde"] }
 
 # Substrate dependencies
-sp-core = { version = "21.0", default-features = false, features = ["std"] }
 subxt = "0.38"
+schnorrkel = "0.11"
+blake2 = "0.10"
 
 # Database dependencies
 sqlx = { version = "0.8", features = ["runtime-tokio-rustls", "sqlite", "chrono", "uuid", "migrate", "json"] }
@@ -70,7 +67,6 @@ dotenvy = "0.15"            # Environment variable loading
 # Chain adapter dependencies
 async-trait = "0.1"         # Async trait support
 thiserror = "1.0"           # Error derive macros
-alloy-primitives = "0.5"    # EVM address validation and primitives
 tauri-plugin-dialog = "2.6.0"
 
 # Resilient fetcher dependencies (Phase 1)

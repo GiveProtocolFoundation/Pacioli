@@ -1,5 +1,5 @@
+use alloy_primitives::Address as H160Address;
 use anyhow::Result;
-use ethers::types::Address as H160Address;
 
 #[allow(dead_code)]
 /// A unified representation of blockchain addresses across Substrate (SS58)
