@@ -195,8 +195,8 @@ export class EVMService {
    * @param chain The identifier of the EVM chain to connect to.
    * @returns A Promise that resolves when the connection is established.
    */
-  static connectToChain(chain: string): Promise<void> {
-    return invoke<void>('connect_evm_chain', { chain })
+  static connectToChain(chain: string): Promise<undefined> {
+    return invoke<undefined>('connect_evm_chain', { chain })
   }
 
   /**
