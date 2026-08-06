@@ -114,6 +114,12 @@ button {
     color: #ffffff;
     background-color: #0f0f0f98;
   }
+  .onboarding-card input,
+  .onboarding-card select {
+    color: #111827 !important;
+    background-color: #ffffff !important;
+    color-scheme: light !important;
+  }
   button:active {
     background-color: #0f0f0f69;
   }
