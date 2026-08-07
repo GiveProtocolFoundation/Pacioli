@@ -231,8 +231,7 @@ class SubscanService {
           fee: transfer.fee,
           status: transfer.success ? 'success' : 'failed',
           network,
-          tokenSymbol:
-            transfer.asset_symbol || NETWORK_TOKEN_SYMBOLS[network],
+          tokenSymbol: transfer.asset_symbol || NETWORK_TOKEN_SYMBOLS[network],
           type: actionInfo.type,
           method: actionInfo.method,
           section: actionInfo.section,
