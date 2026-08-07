@@ -114,13 +114,12 @@ const convertToNetworkFormat = (
 
   try {
     // Get SS58 prefix for each network
-    const ss58Formats: Record<NetworkType, number> = {
+    const ss58Formats: Partial<Record<NetworkType, number>> = {
       polkadot: 0, // Polkadot addresses start with '1'
       kusama: 2, // Kusama addresses start with various letters
-      moonbeam: 1284, // Moonbeam
-      moonriver: 1285, // Moonriver
       astar: 5, // Astar
       acala: 10, // Acala
+      // Moonbeam (1284) and Moonriver (1285) are sunset — no longer included
     }
 
     const ss58Prefix = ss58Formats[network]
@@ -300,9 +299,8 @@ const NETWORK_DECIMALS: Record<string, number> = {
   polkadot: 10,
   acala: 10,
   kusama: 12,
-  moonbeam: 18,
-  moonriver: 18,
   astar: 18,
+  // Moonbeam and Moonriver are sunset (2026-07-31) — no longer supported
 }
 
 /**
@@ -1136,8 +1134,6 @@ const WalletManager: React.FC = () => {
                   >
                     <option value={NetworkType.POLKADOT}>Polkadot</option>
                     <option value={NetworkType.KUSAMA}>Kusama</option>
-                    <option value={NetworkType.MOONBEAM}>Moonbeam</option>
-                    <option value={NetworkType.MOONRIVER}>Moonriver</option>
                     <option value={NetworkType.ASTAR}>Astar</option>
                     <option value={NetworkType.ACALA}>Acala</option>
                   </select>
