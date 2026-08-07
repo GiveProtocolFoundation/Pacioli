@@ -27,9 +27,7 @@ function toExternalIdSet(
 // ─── OFX Fixtures ────────────────────────────────────────────────────────────
 
 describe('canary: OFX fixtures', () => {
-  const fixtures = [
-    { file: 'sample-checking.ofx', expectedCount: 10 },
-  ]
+  const fixtures = [{ file: 'sample-checking.ofx', expectedCount: 10 }]
 
   for (const { file, expectedCount } of fixtures) {
     describe(file, () => {
@@ -82,7 +80,10 @@ describe('canary: OFX fixtures', () => {
 
 // ─── CSV Fixtures ─────────────────────────────────────────────────────────────
 
-const csvDefaultOpts: Omit<CsvParseOptions, 'bankAccountId' | 'existingExternalIds'> = {
+const csvDefaultOpts: Omit<
+  CsvParseOptions,
+  'bankAccountId' | 'existingExternalIds'
+> = {
   columnMap: { date: 'Date', amount: 'Amount', payee: 'Description' },
   dateFormat: 'YYYY-MM-DD',
   amountSignConvention: 'signed',
@@ -90,9 +91,7 @@ const csvDefaultOpts: Omit<CsvParseOptions, 'bankAccountId' | 'existingExternalI
 }
 
 describe('canary: CSV fixtures', () => {
-  const fixtures = [
-    { file: 'sample-credit.csv', expectedCount: 14 },
-  ]
+  const fixtures = [{ file: 'sample-credit.csv', expectedCount: 14 }]
 
   for (const { file, expectedCount } of fixtures) {
     describe(file, () => {

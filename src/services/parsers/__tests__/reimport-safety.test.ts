@@ -97,7 +97,9 @@ describe('property: dedup invariant on synthetic OFX overlap', () => {
       }))
 
       // First import (statement A = shared transactions)
-      const resultA = parseOfx(makeOfx(sharedTxs), { bankAccountId: 'acct-test' })
+      const resultA = parseOfx(makeOfx(sharedTxs), {
+        bankAccountId: 'acct-test',
+      })
       const existingIds = toExternalIdSet(resultA.transactions)
 
       // Second import (statement B = shared + unique)
@@ -144,7 +146,10 @@ describe('property: dedup invariant on synthetic CSV overlap', () => {
       expect(r1.duplicateCount).toBe(0)
       const existingIds = toExternalIdSet(r1.transactions)
 
-      const r2 = parseCsv(content, { ...csvOpts, existingExternalIds: existingIds })
+      const r2 = parseCsv(content, {
+        ...csvOpts,
+        existingExternalIds: existingIds,
+      })
       expect(r2.duplicateCount).toBe(n)
       expect(r2.transactions.every(t => t._isDuplicate)).toBe(true)
     })
@@ -190,7 +195,10 @@ describe('re-import same statement 3× → row count invariant', () => {
     const existingIds = toExternalIdSet(r1.transactions)
 
     for (let pass = 2; pass <= 4; pass++) {
-      const r = parseCsv(content, { ...csvOpts, existingExternalIds: existingIds })
+      const r = parseCsv(content, {
+        ...csvOpts,
+        existingExternalIds: existingIds,
+      })
       expect(r.duplicateCount).toBe(10)
       expect(r.transactions.filter(t => !t._isDuplicate)).toHaveLength(0)
     }
@@ -271,102 +279,111 @@ describe('overlapping-but-not-identical statements → correct incremental', () 
 // ─── Amend/edit an already-imported row → dedup still fires on re-parse ──────
 
 describe('amend/edit an already-imported row', () => {
-  it(
-    'OFX: editing a stored rows payee/memo does not defeat dedup on re-parse of original file',
-    () => {
-      const content = makeOfx([
-        { fitid: 'TX-1', date: '20260701', amount: '-50.00', name: 'COFFEE SHOP' },
-        { fitid: 'TX-2', date: '20260702', amount: '-100.00', name: 'GROCERY' },
-        { fitid: 'TX-3', date: '20260703', amount: '-25.00', name: 'PHARMACY' },
-      ])
+  it('OFX: editing a stored rows payee/memo does not defeat dedup on re-parse of original file', () => {
+    const content = makeOfx([
+      {
+        fitid: 'TX-1',
+        date: '20260701',
+        amount: '-50.00',
+        name: 'COFFEE SHOP',
+      },
+      { fitid: 'TX-2', date: '20260702', amount: '-100.00', name: 'GROCERY' },
+      { fitid: 'TX-3', date: '20260703', amount: '-25.00', name: 'PHARMACY' },
+    ])
 
-      // Initial import
-      const r1 = parseOfx(content, { bankAccountId: 'acct-test' })
-      const existingIds = toExternalIdSet(r1.transactions)
-      expect(existingIds.size).toBe(3)
+    // Initial import
+    const r1 = parseOfx(content, { bankAccountId: 'acct-test' })
+    const existingIds = toExternalIdSet(r1.transactions)
+    expect(existingIds.size).toBe(3)
 
-      // Simulate user editing the stored rows: the BankTransaction in DB has its
-      // payee/memo/classification changed, but external_id is immutable.
-      // Re-parsing the SAME original file must still detect all 3 as duplicates.
-      const r2 = parseOfx(content, {
-        bankAccountId: 'acct-test',
-        existingExternalIds: existingIds,
-      })
+    // Simulate user editing the stored rows: the BankTransaction in DB has its
+    // payee/memo/classification changed, but external_id is immutable.
+    // Re-parsing the SAME original file must still detect all 3 as duplicates.
+    const r2 = parseOfx(content, {
+      bankAccountId: 'acct-test',
+      existingExternalIds: existingIds,
+    })
 
-      expect(r2.duplicateCount).toBe(3)
-      expect(r2.transactions.every(t => t._isDuplicate)).toBe(true)
-    }
-  )
+    expect(r2.duplicateCount).toBe(3)
+    expect(r2.transactions.every(t => t._isDuplicate)).toBe(true)
+  })
 
-  it(
-    'CSV: editing a stored row in DB does not break hash-based dedup on re-parse',
-    () => {
-      const rows: CsvRow[] = [
-        { date: '2026-07-01', payee: 'COFFEE SHOP', amount: '-4.50' },
-        { date: '2026-07-01', payee: 'GROCERY STORE', amount: '-89.20' },
-      ]
-      const content = makeCsv(rows)
+  it('CSV: editing a stored row in DB does not break hash-based dedup on re-parse', () => {
+    const rows: CsvRow[] = [
+      { date: '2026-07-01', payee: 'COFFEE SHOP', amount: '-4.50' },
+      { date: '2026-07-01', payee: 'GROCERY STORE', amount: '-89.20' },
+    ]
+    const content = makeCsv(rows)
 
-      // First import
-      const r1 = parseCsv(content, csvOpts)
-      const existingIds = toExternalIdSet(r1.transactions)
-      expect(existingIds.size).toBe(2)
+    // First import
+    const r1 = parseCsv(content, csvOpts)
+    const existingIds = toExternalIdSet(r1.transactions)
+    expect(existingIds.size).toBe(2)
 
-      // Re-parse original file after simulated edit → hashes still match
-      const r2 = parseCsv(content, { ...csvOpts, existingExternalIds: existingIds })
-      expect(r2.duplicateCount).toBe(2)
-      expect(r2.transactions.every(t => t._isDuplicate)).toBe(true)
-    }
-  )
+    // Re-parse original file after simulated edit → hashes still match
+    const r2 = parseCsv(content, {
+      ...csvOpts,
+      existingExternalIds: existingIds,
+    })
+    expect(r2.duplicateCount).toBe(2)
+    expect(r2.transactions.every(t => t._isDuplicate)).toBe(true)
+  })
 })
 
 // ─── Negative test: two genuinely-different rows, same date+amount+payee ──────
 
 describe('negative test: two identical-looking rows that are genuinely different', () => {
-  it(
-    'CSV: two coffee purchases same date+amount+payee get distinct external_ids (line-number salt)',
-    () => {
-      // Two genuinely-separate transactions that look identical in the data
-      const content = makeCsv([
-        { date: '2026-07-01', payee: 'COFFEE SHOP', amount: '-4.50' },
-        { date: '2026-07-01', payee: 'COFFEE SHOP', amount: '-4.50' },
-      ])
+  it('CSV: two coffee purchases same date+amount+payee get distinct external_ids (line-number salt)', () => {
+    // Two genuinely-separate transactions that look identical in the data
+    const content = makeCsv([
+      { date: '2026-07-01', payee: 'COFFEE SHOP', amount: '-4.50' },
+      { date: '2026-07-01', payee: 'COFFEE SHOP', amount: '-4.50' },
+    ])
 
-      // First parse: no existing IDs → both must pass as unique (zero false duplicates)
-      const r1 = parseCsv(content, csvOpts)
-      expect(r1.transactions).toHaveLength(2)
-      expect(r1.duplicateCount).toBe(0)
+    // First parse: no existing IDs → both must pass as unique (zero false duplicates)
+    const r1 = parseCsv(content, csvOpts)
+    expect(r1.transactions).toHaveLength(2)
+    expect(r1.duplicateCount).toBe(0)
 
-      // Both external_ids must be distinct (line number differentiates them)
-      const [id1, id2] = r1.transactions.map(t => t.external_id)
-      expect(id1).toBeDefined()
-      expect(id2).toBeDefined()
-      expect(id1).not.toBe(id2)
-      expect(id1).toMatch(/^csv_/)
-      expect(id2).toMatch(/^csv_/)
+    // Both external_ids must be distinct (line number differentiates them)
+    const [id1, id2] = r1.transactions.map(t => t.external_id)
+    expect(id1).toBeDefined()
+    expect(id2).toBeDefined()
+    expect(id1).not.toBe(id2)
+    expect(id1).toMatch(/^csv_/)
+    expect(id2).toMatch(/^csv_/)
 
-      // After storing both: re-import correctly marks both as duplicates (not lost)
-      const existingIds = toExternalIdSet(r1.transactions)
-      const r2 = parseCsv(content, { ...csvOpts, existingExternalIds: existingIds })
-      expect(r2.duplicateCount).toBe(2)
-    }
-  )
+    // After storing both: re-import correctly marks both as duplicates (not lost)
+    const existingIds = toExternalIdSet(r1.transactions)
+    const r2 = parseCsv(content, {
+      ...csvOpts,
+      existingExternalIds: existingIds,
+    })
+    expect(r2.duplicateCount).toBe(2)
+  })
 
-  it(
-    'OFX: two same-amount transactions from same merchant have different FITIDs → both unique',
-    () => {
-      const content = makeOfx([
-        { fitid: 'COFFEE-001', date: '20260701', amount: '-4.50', name: 'COFFEE SHOP' },
-        { fitid: 'COFFEE-002', date: '20260701', amount: '-4.50', name: 'COFFEE SHOP' },
-      ])
+  it('OFX: two same-amount transactions from same merchant have different FITIDs → both unique', () => {
+    const content = makeOfx([
+      {
+        fitid: 'COFFEE-001',
+        date: '20260701',
+        amount: '-4.50',
+        name: 'COFFEE SHOP',
+      },
+      {
+        fitid: 'COFFEE-002',
+        date: '20260701',
+        amount: '-4.50',
+        name: 'COFFEE SHOP',
+      },
+    ])
 
-      const r1 = parseOfx(content, { bankAccountId: 'acct-test' })
-      expect(r1.transactions).toHaveLength(2)
-      expect(r1.duplicateCount).toBe(0)
-      expect(r1.transactions[0].external_id).toBe('COFFEE-001')
-      expect(r1.transactions[1].external_id).toBe('COFFEE-002')
-    }
-  )
+    const r1 = parseOfx(content, { bankAccountId: 'acct-test' })
+    expect(r1.transactions).toHaveLength(2)
+    expect(r1.duplicateCount).toBe(0)
+    expect(r1.transactions[0].external_id).toBe('COFFEE-001')
+    expect(r1.transactions[1].external_id).toBe('COFFEE-002')
+  })
 })
 
 // ─── Anti-metric: duplicate posting rate < 0.1% on large re-import ───────────
@@ -426,7 +443,10 @@ describe('anti-metric: false duplicate rate < 0.1% on large statement re-import'
     const existingIds = toExternalIdSet(r1.transactions)
 
     // Re-import same file: all 100 must be duplicates
-    const r2 = parseCsv(makeCsv(existingRows), { ...csvOpts, existingExternalIds: existingIds })
+    const r2 = parseCsv(makeCsv(existingRows), {
+      ...csvOpts,
+      existingExternalIds: existingIds,
+    })
     expect(r2.duplicateCount).toBe(100)
 
     // Import a completely new set of 100 rows — none should be false-duped
@@ -435,7 +455,10 @@ describe('anti-metric: false duplicate rate < 0.1% on large statement re-import'
       payee: `NEW VENDOR ${i + 1}`,
       amount: `-${(i + 1) * 4}.25`,
     }))
-    const r3 = parseCsv(makeCsv(newRows), { ...csvOpts, existingExternalIds: existingIds })
+    const r3 = parseCsv(makeCsv(newRows), {
+      ...csvOpts,
+      existingExternalIds: existingIds,
+    })
     expect(r3.duplicateCount).toBe(0)
     expect(r3.transactions.every(t => !t._isDuplicate)).toBe(true)
   })

@@ -54,10 +54,7 @@ export default defineConfig(async () => ({
           ],
 
           // Blockchain - Ethereum and wallet providers
-          blockchain: [
-            'ethers',
-            '@metamask/detect-provider',
-          ],
+          blockchain: ['ethers', '@metamask/detect-provider'],
 
           // Wallet connection libraries
           'wallet-connect': ['@talismn/connect-ui', '@talismn/connect-wallets'],
