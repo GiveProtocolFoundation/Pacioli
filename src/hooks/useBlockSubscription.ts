@@ -16,20 +16,21 @@ import { NetworkType } from '../services/wallet/types'
 import { encodeAddress, decodeAddress } from '@polkadot/util-crypto'
 
 /** SS58 prefix map for address conversion */
-const SS58_FORMATS: Record<NetworkType, number> = {
+const SS58_FORMATS: Partial<Record<NetworkType, number>> = {
   [NetworkType.POLKADOT]: 0,
   [NetworkType.KUSAMA]: 2,
-  [NetworkType.MOONBEAM]: 1284,
-  [NetworkType.MOONRIVER]: 1285,
   [NetworkType.ASTAR]: 5,
   [NetworkType.ACALA]: 10,
+  // Moonbeam (1284) and Moonriver (1285) are sunset — omitted
 }
 
 /** Convert an address to network-specific SS58 format */
 function toNetworkAddress(address: string, network: NetworkType): string {
   if (address.startsWith('0x')) return address
+  const prefix = SS58_FORMATS[network]
+  if (prefix === undefined) return address
   try {
-    return encodeAddress(decodeAddress(address), SS58_FORMATS[network])
+    return encodeAddress(decodeAddress(address), prefix)
   } catch {
     return address
   }

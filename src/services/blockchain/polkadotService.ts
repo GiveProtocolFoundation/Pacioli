@@ -357,9 +357,13 @@ class PolkadotService {
   ): Promise<SubstrateTransaction[]> {
     const { address, startBlock = 1, limit = 100, onProgress } = filter
     const allTransactions: SubstrateTransaction[] = []
-    // Scan last 1000 blocks via RPC for recent transactions
-    // Older transactions are fetched instantly from Subscan API
-    const RECENT_BLOCKS_CUTOFF = 1000 // ~1.7 hours on Polkadot at 6s/block
+    // Default RPC scan window: last 1000 blocks (~1.7 hours at 6s/block).
+    // When startBlock is provided (incremental refresh) and the gap since last
+    // sync is ≤ MAX_INCREMENTAL_BLOCKS, extend the scan to cover the full gap
+    // so transactions between syncs are never silently missed when Subscan is
+    // unavailable (rate-limited or blocked).
+    const RECENT_BLOCKS_CUTOFF = 1000
+    const MAX_INCREMENTAL_BLOCKS = 10_000 // ~16.7 hours; beyond this fall back to Subscan
 
     // Check if this is an EVM address on an EVM-compatible chain (Moonbeam, Moonriver)
     const isEVMChain = network === 'moonbeam' || network === 'moonriver'
@@ -506,10 +510,19 @@ class PolkadotService {
         // Get current block height
         const currentBlockHeader = await api.rpc.chain.getHeader()
         currentBlock = currentBlockHeader.number.toNumber()
-        recentBlockStart = Math.max(
-          currentBlock - RECENT_BLOCKS_CUTOFF,
-          startBlock
-        )
+
+        // For incremental refreshes (startBlock > 1) where the gap since the
+        // last sync is within MAX_INCREMENTAL_BLOCKS, scan the full gap so
+        // transactions are never missed when Subscan is unavailable.
+        const gapSinceLastSync = currentBlock - startBlock
+        if (startBlock > 1 && gapSinceLastSync <= MAX_INCREMENTAL_BLOCKS) {
+          recentBlockStart = startBlock
+        } else {
+          recentBlockStart = Math.max(
+            currentBlock - RECENT_BLOCKS_CUTOFF,
+            startBlock
+          )
+        }
       } catch (rpcError) {
         console.warn(
           'RPC connection failed, skipping recent block scan:',
