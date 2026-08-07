@@ -205,36 +205,39 @@ class SubscanService {
         throw err
       })
 
-      if (response.code === 0) {
-        // Subscan might return data.transfers or data.list
-        const transfers = response.data.transfers || response.data.list || []
+      if (response.code !== 0) {
+        throw new Error(
+          `Subscan API error ${response.code}: ${response.message}`
+        )
+      }
 
-        onProgress?.(transfers.length, response.data.count || 0)
+      // Subscan might return data.transfers or data.list
+      const transfers = response.data.transfers || response.data.list || []
 
-        for (const transfer of transfers) {
-          // Extract detailed action information
-          const actionInfo = SubscanService.extractActionFromTransfer(transfer)
+      onProgress?.(transfers.length, response.data.count || 0)
 
-          transactions.push({
-            id: `${transfer.block_num}-${transfer.extrinsic_index}`,
-            hash: transfer.hash,
-            blockNumber: transfer.block_num,
-            timestamp: new Date(transfer.block_timestamp * 1000),
-            from: transfer.from,
-            to: transfer.to,
-            value: transfer.amount_v2, // Use raw planck value
-            fee: transfer.fee,
-            status: transfer.success ? 'success' : 'failed',
-            network,
-            tokenSymbol:
-              transfer.asset_symbol || NETWORK_TOKEN_SYMBOLS[network],
-            type: actionInfo.type,
-            method: actionInfo.method,
-            section: actionInfo.section,
-            events: [],
-            isSigned: true,
-          })
-        }
+      for (const transfer of transfers) {
+        // Extract detailed action information
+        const actionInfo = SubscanService.extractActionFromTransfer(transfer)
+
+        transactions.push({
+          id: `${transfer.block_num}-${transfer.extrinsic_index}`,
+          hash: transfer.hash,
+          blockNumber: transfer.block_num,
+          timestamp: new Date(transfer.block_timestamp * 1000),
+          from: transfer.from,
+          to: transfer.to,
+          value: transfer.amount_v2, // Use raw planck value
+          fee: transfer.fee,
+          status: transfer.success ? 'success' : 'failed',
+          network,
+          tokenSymbol: transfer.asset_symbol || NETWORK_TOKEN_SYMBOLS[network],
+          type: actionInfo.type,
+          method: actionInfo.method,
+          section: actionInfo.section,
+          events: [],
+          isSigned: true,
+        })
       }
 
       return transactions
@@ -273,7 +276,13 @@ class SubscanService {
         is_stash: true,
       })
 
-      if (response.code === 0 && response.data.list) {
+      if (response.code !== 0) {
+        throw new Error(
+          `Subscan API error ${response.code}: ${response.message}`
+        )
+      }
+
+      if (response.data.list) {
         for (const reward of response.data.list) {
           transactions.push({
             id: `${reward.block_num}-${reward.event_index}`,
