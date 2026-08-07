@@ -13,11 +13,11 @@ import type { CsvParseOptions } from '../types'
 function toExternalIdSet(
   txs: Array<{ external_id?: string | null }>
 ): Set<string> {
-  const s = new Set<string>()
+  const ids = new Set<string>()
   for (const tx of txs) {
-    if (tx.external_id) s.add(tx.external_id)
+    if (tx.external_id) ids.add(tx.external_id)
   }
-  return s
+  return ids
 }
 
 interface OfxTx {
@@ -174,12 +174,12 @@ describe('re-import same statement 3× → row count invariant', () => {
     const existingIds = toExternalIdSet(r1.transactions)
 
     for (let pass = 2; pass <= 4; pass++) {
-      const r = parseOfx(content, {
+      const result = parseOfx(content, {
         bankAccountId: 'acct-test',
         existingExternalIds: existingIds,
       })
-      expect(r.duplicateCount).toBe(10)
-      expect(r.transactions.filter(t => !t._isDuplicate)).toHaveLength(0)
+      expect(result.duplicateCount).toBe(10)
+      expect(result.transactions.filter(t => !t._isDuplicate)).toHaveLength(0)
     }
   })
 
@@ -195,12 +195,12 @@ describe('re-import same statement 3× → row count invariant', () => {
     const existingIds = toExternalIdSet(r1.transactions)
 
     for (let pass = 2; pass <= 4; pass++) {
-      const r = parseCsv(content, {
+      const result = parseCsv(content, {
         ...csvOpts,
         existingExternalIds: existingIds,
       })
-      expect(r.duplicateCount).toBe(10)
-      expect(r.transactions.filter(t => !t._isDuplicate)).toHaveLength(0)
+      expect(result.duplicateCount).toBe(10)
+      expect(result.transactions.filter(t => !t._isDuplicate)).toHaveLength(0)
     }
   })
 })

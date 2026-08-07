@@ -17,11 +17,11 @@ const FIXTURES_DIR = join(import.meta.dirname, 'fixtures')
 function toExternalIdSet(
   txs: Array<{ external_id?: string | null }>
 ): Set<string> {
-  const s = new Set<string>()
+  const ids = new Set<string>()
   for (const tx of txs) {
-    if (tx.external_id) s.add(tx.external_id)
+    if (tx.external_id) ids.add(tx.external_id)
   }
-  return s
+  return ids
 }
 
 // ─── OFX Fixtures ────────────────────────────────────────────────────────────
@@ -33,11 +33,12 @@ describe('canary: OFX fixtures', () => {
     describe(file, () => {
       it('parses without errors and returns expected row count', () => {
         const content = readFileSync(join(FIXTURES_DIR, file), 'utf-8')
-        const r = parseOfx(content, { bankAccountId: `canary-${file}` })
-        expect(r.transactions.length).toBeGreaterThanOrEqual(1)
-        if (expectedCount) expect(r.transactions).toHaveLength(expectedCount)
-        expect(r.duplicateCount).toBe(0)
-        for (const tx of r.transactions) {
+        const result = parseOfx(content, { bankAccountId: `canary-${file}` })
+        expect(result.transactions.length).toBeGreaterThanOrEqual(1)
+        if (expectedCount)
+          expect(result.transactions).toHaveLength(expectedCount)
+        expect(result.duplicateCount).toBe(0)
+        for (const tx of result.transactions) {
           expect(tx.external_id).toBeTruthy()
           expect(tx.amount).not.toBe('0')
           expect(tx.posted_date).toBeGreaterThan(0)
@@ -66,12 +67,14 @@ describe('canary: OFX fixtures', () => {
         const totalCount = r1.transactions.length
 
         for (let i = 0; i < 3; i++) {
-          const r = parseOfx(content, {
+          const result = parseOfx(content, {
             bankAccountId: `canary-${file}`,
             existingExternalIds: existingIds,
           })
-          expect(r.duplicateCount).toBe(totalCount)
-          expect(r.transactions.filter(t => !t._isDuplicate)).toHaveLength(0)
+          expect(result.duplicateCount).toBe(totalCount)
+          expect(result.transactions.filter(t => !t._isDuplicate)).toHaveLength(
+            0
+          )
         }
       })
     })
@@ -97,14 +100,15 @@ describe('canary: CSV fixtures', () => {
     describe(file, () => {
       it('parses without errors and returns expected row count', () => {
         const content = readFileSync(join(FIXTURES_DIR, file), 'utf-8')
-        const r = parseCsv(content, {
+        const result = parseCsv(content, {
           ...csvDefaultOpts,
           bankAccountId: `canary-${file}`,
         })
-        expect(r.transactions.length).toBeGreaterThanOrEqual(1)
-        if (expectedCount) expect(r.transactions).toHaveLength(expectedCount)
-        expect(r.duplicateCount).toBe(0)
-        for (const tx of r.transactions) {
+        expect(result.transactions.length).toBeGreaterThanOrEqual(1)
+        if (expectedCount)
+          expect(result.transactions).toHaveLength(expectedCount)
+        expect(result.duplicateCount).toBe(0)
+        for (const tx of result.transactions) {
           expect(tx.external_id).toMatch(/^csv_/)
           expect(tx.posted_date).toBeGreaterThan(0)
         }
@@ -112,11 +116,11 @@ describe('canary: CSV fixtures', () => {
 
       it('all rows get unique external_ids', () => {
         const content = readFileSync(join(FIXTURES_DIR, file), 'utf-8')
-        const r = parseCsv(content, {
+        const result = parseCsv(content, {
           ...csvDefaultOpts,
           bankAccountId: `canary-${file}`,
         })
-        const ids = r.transactions.map(t => t.external_id)
+        const ids = result.transactions.map(t => t.external_id)
         expect(new Set(ids).size).toBe(ids.length)
       })
 
@@ -148,13 +152,15 @@ describe('canary: CSV fixtures', () => {
         const totalCount = r1.transactions.length
 
         for (let i = 0; i < 3; i++) {
-          const r = parseCsv(content, {
+          const result = parseCsv(content, {
             ...csvDefaultOpts,
             bankAccountId: `canary-${file}`,
             existingExternalIds: existingIds,
           })
-          expect(r.duplicateCount).toBe(totalCount)
-          expect(r.transactions.filter(t => !t._isDuplicate)).toHaveLength(0)
+          expect(result.duplicateCount).toBe(totalCount)
+          expect(result.transactions.filter(t => !t._isDuplicate)).toHaveLength(
+            0
+          )
         }
       })
     })
