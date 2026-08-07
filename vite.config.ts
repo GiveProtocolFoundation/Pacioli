@@ -5,8 +5,12 @@ import react from '@vitejs/plugin-react'
 const host = process.env.TAURI_DEV_HOST
 
 // https://vite.dev/config/
-export default defineConfig(async () => ({
+export default defineConfig(() => ({
   plugins: [react()],
+
+  test: {
+    exclude: ['e2e/**', 'node_modules/**'],
+  },
 
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
   //
@@ -50,10 +54,7 @@ export default defineConfig(async () => ({
           ],
 
           // Blockchain - Ethereum and wallet providers
-          blockchain: [
-            'ethers',
-            '@metamask/detect-provider',
-          ],
+          blockchain: ['ethers', '@metamask/detect-provider'],
 
           // Wallet connection libraries
           'wallet-connect': ['@talismn/connect-ui', '@talismn/connect-wallets'],
