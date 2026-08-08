@@ -56,6 +56,48 @@ export const EVM_CHAINS: Record<string, EVMChain> = {
     nativeToken: { symbol: 'PAS', decimals: 18 },
     explorer: 'https://blockscout-passet-hub.parity-testnet.parity.io',
   },
+  ethereum: {
+    name: 'Ethereum',
+    chainId: 1,
+    rpcUrl: 'https://cloudflare-eth.com',
+    nativeToken: { symbol: 'ETH', decimals: 18 },
+    explorer: 'https://etherscan.io',
+  },
+  arbitrum: {
+    name: 'Arbitrum One',
+    chainId: 42161,
+    rpcUrl: 'https://arb1.arbitrum.io/rpc',
+    nativeToken: { symbol: 'ETH', decimals: 18 },
+    explorer: 'https://arbiscan.io',
+  },
+  base: {
+    name: 'Base',
+    chainId: 8453,
+    rpcUrl: 'https://mainnet.base.org',
+    nativeToken: { symbol: 'ETH', decimals: 18 },
+    explorer: 'https://basescan.org',
+  },
+  optimism: {
+    name: 'Optimism',
+    chainId: 10,
+    rpcUrl: 'https://mainnet.optimism.io',
+    nativeToken: { symbol: 'ETH', decimals: 18 },
+    explorer: 'https://optimistic.etherscan.io',
+  },
+  polygon: {
+    name: 'Polygon',
+    chainId: 137,
+    rpcUrl: 'https://polygon-rpc.com',
+    nativeToken: { symbol: 'POL', decimals: 18 },
+    explorer: 'https://polygonscan.com',
+  },
+  bsc: {
+    name: 'BNB Smart Chain',
+    chainId: 56,
+    rpcUrl: 'https://bsc-dataseed.binance.org',
+    nativeToken: { symbol: 'BNB', decimals: 18 },
+    explorer: 'https://bscscan.com',
+  },
 }
 /**
  * Service for interacting with EVM-compatible blockchain providers.

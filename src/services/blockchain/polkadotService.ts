@@ -27,8 +27,8 @@ import {
   correlateXcmTransactions,
 } from './xcmCorrelationService'
 
-/** Map of network type to native token symbol */
-const NETWORK_TOKEN_SYMBOLS: Record<NetworkType, string> = {
+/** Map of Substrate network type to native token symbol */
+const NETWORK_TOKEN_SYMBOLS: Partial<Record<NetworkType, string>> = {
   polkadot: 'DOT',
   kusama: 'KSM',
   moonbeam: 'GLMR',
@@ -68,7 +68,7 @@ class PolkadotService {
   private wsProviders: Map<NetworkType, WsProvider> = new Map()
 
   // Polkadot Relay Chain endpoints
-  private readonly RPC_ENDPOINTS: Record<NetworkType, string[]> = {
+  private readonly RPC_ENDPOINTS: Partial<Record<NetworkType, string[]>> = {
     polkadot: [
       'wss://rpc.polkadot.io',
       'wss://polkadot-rpc.dwellir.com',

@@ -13,6 +13,12 @@ export const EVM_NETWORK_MAP: Record<string, NetworkType> = {
   moonriver: 'moonriver' as NetworkType,
   astar: 'astar' as NetworkType,
   acala: 'acala' as NetworkType,
+  ethereum: 'ethereum' as NetworkType,
+  arbitrum: 'arbitrum' as NetworkType,
+  base: 'base' as NetworkType,
+  optimism: 'optimism' as NetworkType,
+  polygon: 'polygon' as NetworkType,
+  bsc: 'bsc' as NetworkType,
 }
 
 // Block explorer API configurations
@@ -41,6 +47,36 @@ const BLOCK_EXPLORER_APIS: Record<string, BlockExplorerConfig> = {
   acala: {
     apiUrl: 'https://blockscout.acala.network/api',
     rateLimit: 250,
+  },
+  ethereum: {
+    apiUrl: 'https://api.etherscan.io/v2/api',
+    chainId: 1,
+    rateLimit: 200,
+  },
+  arbitrum: {
+    apiUrl: 'https://api.etherscan.io/v2/api',
+    chainId: 42161,
+    rateLimit: 200,
+  },
+  base: {
+    apiUrl: 'https://api.etherscan.io/v2/api',
+    chainId: 8453,
+    rateLimit: 200,
+  },
+  optimism: {
+    apiUrl: 'https://api.etherscan.io/v2/api',
+    chainId: 10,
+    rateLimit: 200,
+  },
+  polygon: {
+    apiUrl: 'https://api.etherscan.io/v2/api',
+    chainId: 137,
+    rateLimit: 200,
+  },
+  bsc: {
+    apiUrl: 'https://api.etherscan.io/v2/api',
+    chainId: 56,
+    rateLimit: 200,
   },
 }
 
