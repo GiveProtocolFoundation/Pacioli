@@ -20,6 +20,7 @@ import {
   correlateXcmTransactions,
   type SyncProgress,
 } from '../../services/blockchain/polkadotService'
+import { evmTransactionService } from '../../services/blockchain/evmTransactionService'
 import { persistence, type TransactionInput } from '../../services/persistence'
 import { MigrationService } from '../../services/database/migrationService'
 import {
@@ -294,14 +295,29 @@ const SyncProgressDisplay: React.FC<SyncProgressDisplayProps> = ({
   )
 }
 
-/** Network decimals for planck→human-readable conversion (same as enrichTransactionsWithUsdValues). */
+/** Network decimals for planck/wei→human-readable conversion. */
 const NETWORK_DECIMALS: Record<string, number> = {
   polkadot: 10,
   acala: 10,
   kusama: 12,
   astar: 18,
-  // Moonbeam and Moonriver are sunset (2026-07-31) — no longer supported
+  ethereum: 18,
+  arbitrum: 18,
+  base: 18,
+  optimism: 18,
+  polygon: 18,
+  bsc: 18,
 }
+
+/** EVM networks that use evmTransactionService instead of polkadotService. */
+const PURE_EVM_NETWORKS = new Set<NetworkType>([
+  NetworkType.ETHEREUM,
+  NetworkType.ARBITRUM,
+  NetworkType.BASE,
+  NetworkType.OPTIMISM,
+  NetworkType.POLYGON,
+  NetworkType.BSC,
+])
 
 /**
  * Convert synced chain transactions to accounting TransactionInput objects.
@@ -806,23 +822,48 @@ const WalletManager: React.FC = () => {
     }, 300000) // 5 minute timeout
 
     try {
-      // Fetch transactions using HYBRID approach (Subscan + RPC)
-      // This is MUCH faster: ~2-3 seconds instead of minutes/hours
-      // Note: RPC connection is now optional - if it fails, we still get Subscan data
       let lastProgressMessage = ''
-      const txs = await polkadotService.fetchTransactionHistoryHybrid(
-        selectedNetwork,
-        {
-          address: networkAddress,
-          limit: 100, // Increased limit since hybrid is much faster
-          onProgress: progress => {
-            setSyncProgress(progress)
-            if (progress.stage === 'complete') {
-              lastProgressMessage = progress.message
-            }
-          },
-        }
-      )
+      let txs: Transaction[]
+
+      if (PURE_EVM_NETWORKS.has(selectedNetwork)) {
+        // EVM chain: fetch via block explorer API
+        const evmTxs = await evmTransactionService.fetchTransactionHistory(
+          selectedNetwork,
+          networkAddress,
+          {
+            limit: 100,
+            onProgress: progress => {
+              setSyncProgress({
+                stage: progress.stage,
+                currentBlock: progress.currentBlock,
+                totalBlocks: progress.totalBlocks,
+                blocksScanned: progress.blocksScanned,
+                transactionsFound: progress.transactionsFound,
+                message: progress.message,
+              })
+              if (progress.stage === 'complete') {
+                lastProgressMessage = progress.message
+              }
+            },
+          }
+        )
+        txs = evmTxs
+      } else {
+        // Substrate chain: fetch via hybrid Subscan + RPC approach
+        txs = await polkadotService.fetchTransactionHistoryHybrid(
+          selectedNetwork,
+          {
+            address: networkAddress,
+            limit: 100,
+            onProgress: progress => {
+              setSyncProgress(progress)
+              if (progress.stage === 'complete') {
+                lastProgressMessage = progress.message
+              }
+            },
+          }
+        )
+      }
 
       // Report saving stage
       setSyncProgress({
@@ -1132,10 +1173,20 @@ const WalletManager: React.FC = () => {
                     onChange={handleNetworkChange}
                     className="w-full px-3 py-2 border border-[rgba(95,227,192,0.15)] dark:border-[rgba(95,227,192,0.25)] rounded bg-[#F7FAFA] dark:bg-[#11202B] text-[#11202B] dark:text-[#EAF3F2] focus:ring-2 focus:ring-[#5FE3C0] dark:focus:ring-[#5FE3C0] focus:border-transparent"
                   >
-                    <option value={NetworkType.POLKADOT}>Polkadot</option>
-                    <option value={NetworkType.KUSAMA}>Kusama</option>
-                    <option value={NetworkType.ASTAR}>Astar</option>
-                    <option value={NetworkType.ACALA}>Acala</option>
+                    <optgroup label="Polkadot Ecosystem">
+                      <option value={NetworkType.POLKADOT}>Polkadot</option>
+                      <option value={NetworkType.KUSAMA}>Kusama</option>
+                      <option value={NetworkType.ASTAR}>Astar</option>
+                      <option value={NetworkType.ACALA}>Acala</option>
+                    </optgroup>
+                    <optgroup label="Ethereum &amp; ERC-20 Chains">
+                      <option value={NetworkType.ETHEREUM}>Ethereum</option>
+                      <option value={NetworkType.ARBITRUM}>Arbitrum One</option>
+                      <option value={NetworkType.BASE}>Base</option>
+                      <option value={NetworkType.OPTIMISM}>Optimism</option>
+                      <option value={NetworkType.POLYGON}>Polygon</option>
+                      <option value={NetworkType.BSC}>BNB Smart Chain</option>
+                    </optgroup>
                   </select>
                 </div>
 
