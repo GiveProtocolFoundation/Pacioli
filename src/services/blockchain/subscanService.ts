@@ -7,8 +7,8 @@
 import { invoke } from '@tauri-apps/api/core'
 import type { NetworkType, SubstrateTransaction } from '../wallet/types'
 
-/** Map of network type to native token symbol */
-const NETWORK_TOKEN_SYMBOLS: Record<NetworkType, string> = {
+/** Map of Substrate network type to native token symbol */
+const NETWORK_TOKEN_SYMBOLS: Partial<Record<NetworkType, string>> = {
   polkadot: 'DOT',
   kusama: 'KSM',
   moonbeam: 'GLMR',
@@ -130,7 +130,7 @@ export interface SubscanXcmMessage {
  * Provides fast transaction retrieval using Subscan's indexed blockchain data.
  */
 class SubscanService {
-  private readonly NETWORK_CONFIGS: Record<NetworkType, SubscanConfig> = {
+  private readonly NETWORK_CONFIGS: Partial<Record<NetworkType, SubscanConfig>> = {
     polkadot: { baseUrl: 'https://polkadot.api.subscan.io' },
     kusama: { baseUrl: 'https://kusama.api.subscan.io' },
     moonbeam: { baseUrl: 'https://moonbeam.api.subscan.io' },

@@ -24,6 +24,12 @@ export enum NetworkType {
   MOONRIVER = 'moonriver',
   ASTAR = 'astar',
   ACALA = 'acala',
+  ETHEREUM = 'ethereum',
+  ARBITRUM = 'arbitrum',
+  OPTIMISM = 'optimism',
+  BASE = 'base',
+  POLYGON = 'polygon',
+  BSC = 'bsc',
 }
 
 export interface WalletAccount {
