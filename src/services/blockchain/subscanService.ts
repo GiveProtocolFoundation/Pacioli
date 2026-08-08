@@ -130,7 +130,9 @@ export interface SubscanXcmMessage {
  * Provides fast transaction retrieval using Subscan's indexed blockchain data.
  */
 class SubscanService {
-  private readonly NETWORK_CONFIGS: Partial<Record<NetworkType, SubscanConfig>> = {
+  private readonly NETWORK_CONFIGS: Partial<
+    Record<NetworkType, SubscanConfig>
+  > = {
     polkadot: { baseUrl: 'https://polkadot.api.subscan.io' },
     kusama: { baseUrl: 'https://kusama.api.subscan.io' },
     moonbeam: { baseUrl: 'https://moonbeam.api.subscan.io' },
@@ -231,8 +233,7 @@ class SubscanService {
           fee: transfer.fee,
           status: transfer.success ? 'success' : 'failed',
           network,
-          tokenSymbol:
-            transfer.asset_symbol || NETWORK_TOKEN_SYMBOLS[network],
+          tokenSymbol: transfer.asset_symbol || NETWORK_TOKEN_SYMBOLS[network],
           type: actionInfo.type,
           method: actionInfo.method,
           section: actionInfo.section,
