@@ -307,6 +307,7 @@ const NETWORK_DECIMALS: Record<string, number> = {
   optimism: 18,
   polygon: 18,
   bsc: 18,
+  // Moonbeam and Moonriver are sunset (2026-07-31) — no longer supported
 }
 
 /** EVM networks that use evmTransactionService instead of polkadotService. */
