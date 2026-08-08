@@ -184,7 +184,7 @@ export function useBlockSubscription(
     if (!enabled || !address || !dbReady) {
       setIsLive(false)
       setLatestBlock(null)
-      return
+      return undefined
     }
 
     let cancelled = false
