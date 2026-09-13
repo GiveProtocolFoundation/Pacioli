@@ -1376,7 +1376,7 @@ WHERE status='approved'` (the M5 state machine explicitly allows
   - **Finding #4 (blocker, open):** the supplied Etherscan V2 key is valid
     (`chainid=1` → `status:1 OK`) but is on the **free plan**, which serves
     Ethereum/Arbitrum/Polygon only. Base/Optimism/BNB return `NOTOK "Free API
-    access is not supported for this chain"` yet remain selectable in the
+access is not supported for this chain"` yet remain selectable in the
     wallet dropdown (`WalletManager.tsx:313-322`). Needs a decision: gate the
     dropdown to key coverage, label paid-only chains, or upgrade the plan.
   - **Finding #5 (blocker, user action):** Subscan disabled unauthenticated
@@ -1446,7 +1446,7 @@ WHERE status='approved'` (the M5 state machine explicitly allows
   - **Finding #6 superseded** — the original EVM address remains in the
     package as an unsolicited-airdrop/dust adversarial fixture.
   - **Finding #4 unchanged** — Base/Optimism/BNB still return `NOTOK "Free
-    API access is not supported for this chain"` on the free Etherscan plan.
+API access is not supported for this chain"` on the free Etherscan plan.
     The verified rehearsal wallet has no activity there, so this does not
     block the rehearsal, but it remains a product-truthfulness issue.
   - **Docs changed:** `docs/gate1-report.md` (prereq table updated; new
@@ -1470,7 +1470,7 @@ WHERE status='approved'` (the M5 state machine explicitly allows
   - **Finding #9 (blocker, fixed):** that fallback was dangerous for
     accounting — it scanned only the last ~1,000 blocks and returned a short
     list that looked complete (message: "0 from Subscan, N from blockchain"),
-    and if Subscan *and* RPC both failed it returned `[]`, indistinguishable
+    and if Subscan _and_ RPC both failed it returned `[]`, indistinguishable
     from an empty wallet. Fixed in `polkadotService.ts`: (a) throw a
     user-facing "Could not import transaction history" error when both sources
     produce nothing; (b) append an explicit "Subscan is unavailable … older
@@ -1492,11 +1492,11 @@ WHERE status='approved'` (the M5 state machine explicitly allows
     signer: `total_txs: 73392`).
   - **But it is not a Subscan replacement for the ledger.** Per-account
     coverage is `explorer/account/{address}/summary` (counts, first/last seen,
-    top pallets — no amounts), `explorer/recent-extrinsics?address=` (*recent*
+    top pallets — no amounts), `explorer/recent-extrinsics?address=` (_recent_
     only, no history pagination), `daily-staking-rewards` (date-ranged),
     `xcm-transfers` (paginated, date-ranged), and `explorer/extrinsic/{hash}`.
     There is **no** per-account ordinary-transfer history endpoint. It is a
-    useful *complement* (staking rewards, XCM) behind a provider trait, not a
+    useful _complement_ (staking rewards, XCM) behind a provider trait, not a
     substitute.
   - **The supplied Polkadot address is inactive.** `5HizHVyq…NSDwp` has
     **nonce 0** on Polkadot mainnet (public RPC, block 32,983,624), and
@@ -1523,7 +1523,7 @@ WHERE status='approved'` (the M5 state machine explicitly allows
     Moonbeam / Bifrost / HydraDX / Astar spanning 2024-01 → 2026-07.
   - **`GIV-888` removed Moonbeam/Moonriver on 2026-07-31 (sunset), but
     Etherscan V2 still serves chainid 1284** (`status:1 OK`). The sunset
-    affects *live tracking*, not *historical accounting* — and historical
+    affects _live tracking_, not _historical accounting_ — and historical
     accounting is exactly what Gate 1 needs. As shipped, the app cannot import
     the product owner's real EVM history, so the gate's "your own real
     wallets" premise is not satisfiable without either restoring Moonbeam
