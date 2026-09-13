@@ -365,18 +365,40 @@ class PolkadotService {
     const RECENT_BLOCKS_CUTOFF = 1000
     const MAX_INCREMENTAL_BLOCKS = 10_000 // ~16.7 hours; beyond this fall back to Subscan
 
-    // Check if this is an EVM address on an EVM-compatible chain (Moonbeam, Moonriver)
     const isEVMChain = network === 'moonbeam' || network === 'moonriver'
     const isEVMAddress = address.startsWith('0x')
 
-    if (isEVMChain && isEVMAddress) {
-      // Use Moonscan for EVM addresses on Moonbeam/Moonriver
-      if (!moonscanService.isAvailable(network)) {
-        throw new Error(`Moonscan not available for ${network}`)
-      }
+    const fetchStrategies: Record<string, () => Promise<SubstrateTransaction[]>> = {
+      evm: async () => {
+        if (!moonscanService.isAvailable(network)) {
+          throw new Error(`Moonscan not available for ${network}`)
+        }
 
-      try {
-        onProgress?.({
+        try {
+          onProgress?.({
+            stage: 'complete',
+            currentBlock: Math.max(currentBlock, startBlock),
+            totalBlocks,
+            blocksScanned,
+            transactionsFound: transactions.length,
+            message: `Sync complete: ${transactions.length} transaction${transactions.length !== 1 ? 's' : ''} found`,
+          })
+
+          return transactions
+        } catch (error) {
+          console.error(`Error fetching transactions for ${address}:`, error)
+          throw error
+        }
+      },
+      default: async () => {
+        // original non-EVM hybrid logic goes here
+        return allTransactions
+      }
+    }
+
+    const strategyKey = isEVMChain && isEVMAddress ? 'evm' : 'default'
+    return fetchStrategies[strategyKey]()
+  }
           stage: 'fetching',
           currentBlock: 0,
           totalBlocks: 0,
