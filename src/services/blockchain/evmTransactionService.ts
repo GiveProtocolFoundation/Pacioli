@@ -4,6 +4,7 @@
  */
 
 import { ethers } from 'ethers'
+import { invoke } from '@tauri-apps/api/core'
 import { EVM_CHAINS, type EVMChain } from '../evmService'
 import type { EVMTransaction, NetworkType } from '../wallet/types'
 
@@ -145,6 +146,18 @@ function parseExplorerResult<T>(
       ? data.result
       : data.message || 'unexpected response from the block explorer'
   throw new EVMExplorerError(chain, action, reason)
+}
+
+/**
+ * True when the explorer rejected the request because of the API key.
+ * Etherscan V2 requires a key for every chain, so a keyless request lands here.
+ */
+function isKeyRejection(data: { status?: string; result?: unknown }): boolean {
+  return (
+    data.status !== '1' &&
+    typeof data.result === 'string' &&
+    data.result.toLowerCase().includes('api key')
+  )
 }
 
 interface BlockExplorerTx {
@@ -330,6 +343,83 @@ class EVMTransactionService {
   }
 
   /**
+   * Configured Etherscan V2 API keys in preference order: Tauri keychain →
+   * localStorage → build-time env.
+   *
+   * Etherscan V2 requires a key for every chain, including the free-tier
+   * Ethereum/Arbitrum/Polygon set, so the explorer fetch must send one.
+   */
+  private static async getApiKeyCandidates(): Promise<string[]> {
+    const candidates: string[] = []
+
+    try {
+      const key = await invoke<string | null>('get_api_key', {
+        provider: 'etherscan',
+      })
+      if (key) candidates.push(key)
+    } catch {
+      // Tauri unavailable (web/dev) — fall through to browser fallbacks
+    }
+
+    try {
+      const stored = localStorage.getItem('pacioli_api_key_etherscan')
+      if (stored) candidates.push(stored)
+    } catch {
+      // localStorage unavailable
+    }
+
+    if (
+      typeof import.meta !== 'undefined' &&
+      import.meta.env?.VITE_ETHERSCAN_API_KEY
+    ) {
+      candidates.push(import.meta.env.VITE_ETHERSCAN_API_KEY)
+    }
+
+    return [...new Set(candidates)]
+  }
+
+  /**
+   * Query the block explorer, trying each configured API key until one is
+   * accepted. An empty candidate list is still attempted once so the provider's
+   * own message ("Missing/Invalid API Key") can be surfaced.
+   */
+  private static async fetchExplorer<T>(
+    chain: string,
+    action: string,
+    apiUrl: string,
+    params: URLSearchParams
+  ): Promise<T[]> {
+    const candidates = await EVMTransactionService.getApiKeyCandidates()
+    const attempts = candidates.length > 0 ? candidates : ['']
+    let lastRejection = ''
+
+    for (const key of attempts) {
+      const attempt = new URLSearchParams(params)
+      if (key) attempt.set('apikey', key)
+
+      const response = await fetch(`${apiUrl}?${attempt.toString()}`)
+      if (!response.ok) {
+        lastRejection = `HTTP ${response.status}`
+        continue
+      }
+
+      const data = await response.json()
+      if (isKeyRejection(data)) {
+        lastRejection = String(data.result)
+        continue
+      }
+
+      return parseExplorerResult<T>(chain, action, data)
+    }
+
+    throw new EVMExplorerError(
+      chain,
+      action,
+      lastRejection || 'no configured API key was accepted'
+    )
+  }
+
+  /**
    * Fetch normal (ETH) transactions from block explorer
    */
   private static async fetchNormalTransactions(
@@ -357,13 +447,12 @@ class EVMTransactionService {
         params.set('chainid', explorerConfig.chainId.toString())
       }
 
-      const response = await fetch(`${explorerConfig.apiUrl}?${params}`)
-      if (!response.ok) {
-        throw new EVMExplorerError(chain, 'txlist', `HTTP ${response.status}`)
-      }
-      const data = await response.json()
-
-      return parseExplorerResult<BlockExplorerTx>(chain, 'txlist', data)
+      return await EVMTransactionService.fetchExplorer<BlockExplorerTx>(
+        chain,
+        'txlist',
+        explorerConfig.apiUrl,
+        params
+      )
     } catch (error) {
       console.warn(`Failed to fetch normal transactions for ${chain}:`, error)
       throw error
@@ -403,13 +492,12 @@ class EVMTransactionService {
         params.set('chainid', explorerConfig.chainId.toString())
       }
 
-      const response = await fetch(`${explorerConfig.apiUrl}?${params}`)
-      if (!response.ok) {
-        throw new EVMExplorerError(chain, 'tokentx', `HTTP ${response.status}`)
-      }
-      const data = await response.json()
-
-      return parseExplorerResult<TokenTransferTx>(chain, 'tokentx', data)
+      return await EVMTransactionService.fetchExplorer<TokenTransferTx>(
+        chain,
+        'tokentx',
+        explorerConfig.apiUrl,
+        params
+      )
     } catch (error) {
       console.warn(`Failed to fetch token transfers for ${chain}:`, error)
       throw error
