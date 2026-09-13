@@ -307,7 +307,8 @@ const NETWORK_DECIMALS: Record<string, number> = {
   optimism: 18,
   polygon: 18,
   bsc: 18,
-  // Moonbeam and Moonriver are sunset (2026-07-31) — no longer supported
+  // Moonbeam is sunset (2026-07-31) and kept for historical import only.
+  moonbeam: 18,
 }
 
 /** EVM networks that use evmTransactionService instead of polkadotService. */
@@ -318,6 +319,9 @@ const PURE_EVM_NETWORKS = new Set<NetworkType>([
   NetworkType.OPTIMISM,
   NetworkType.POLYGON,
   NetworkType.BSC,
+  // Sunset chain: routed through the Etherscan V2 path for historical import
+  // (the Moonscan service hard-blocks after the sunset date).
+  NetworkType.MOONBEAM,
 ])
 
 /**
@@ -1187,6 +1191,11 @@ const WalletManager: React.FC = () => {
                       <option value={NetworkType.OPTIMISM}>Optimism</option>
                       <option value={NetworkType.POLYGON}>Polygon</option>
                       <option value={NetworkType.BSC}>BNB Smart Chain</option>
+                    </optgroup>
+                    <optgroup label="Historical — sunset chains (import only)">
+                      <option value={NetworkType.MOONBEAM}>
+                        Moonbeam (historical import)
+                      </option>
                     </optgroup>
                   </select>
                 </div>
