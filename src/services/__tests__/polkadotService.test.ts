@@ -367,6 +367,61 @@ describe('polkadotService', () => {
   })
 
   // =========================================================================
+  // Behavior 1c: Subscan-unavailable guardrails (gate1-report finding #9)
+  // =========================================================================
+
+  describe('fetchTransactionHistoryHybrid — Subscan-unavailable guardrails', () => {
+    it('warns that older history is excluded when Subscan contributes nothing', async () => {
+      const { subscanService } = await import('../blockchain/subscanService')
+      vi.mocked(subscanService.isAvailable).mockReturnValue(false)
+
+      // RPC only, with an empty chain — Subscan contributes zero transactions.
+      injectConnection(buildMockApi(2, new Map<number, BlockSpec>()))
+
+      const messages: string[] = []
+      await polkadotService.fetchTransactionHistoryHybrid(
+        NetworkType.POLKADOT,
+        {
+          address: TEST_ADDRESS,
+          startBlock: 1,
+          limit: 10,
+          onProgress: p => messages.push(p.message),
+        }
+      )
+
+      expect(
+        messages.some(m =>
+          /Subscan is unavailable.*older history is NOT included/i.test(m)
+        )
+      ).toBe(true)
+    })
+
+    it('throws instead of returning an empty list when Subscan and RPC both fail', async () => {
+      const { subscanService } = await import('../blockchain/subscanService')
+      vi.mocked(subscanService.isAvailable).mockReturnValue(false)
+
+      const connectSpy = vi
+        .spyOn(
+          polkadotService as unknown as {
+            connect: (network: NetworkType) => Promise<unknown>
+          },
+          'connect'
+        )
+        .mockRejectedValue(new Error('RPC down'))
+
+      await expect(
+        polkadotService.fetchTransactionHistoryHybrid(NetworkType.POLKADOT, {
+          address: TEST_ADDRESS,
+          startBlock: 1,
+          limit: 10,
+        })
+      ).rejects.toThrow(/Could not import transaction history/)
+
+      connectSpy.mockRestore()
+    })
+  })
+
+  // =========================================================================
   // Behavior 2: Fee extraction from transactionPayment.TransactionFeePaid
   // =========================================================================
 

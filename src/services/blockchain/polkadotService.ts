@@ -529,6 +529,18 @@ class PolkadotService {
           rpcError
         )
 
+        // If Subscan also produced nothing we cannot tell an empty wallet from a
+        // failed import. Never return [] silently — the caller would otherwise
+        // persist an incomplete history as if it were complete.
+        if (allTransactions.length === 0) {
+          throw new Error(
+            'Could not import transaction history: the indexer (Subscan) is ' +
+              'unavailable and the Polkadot RPC scan failed. Add a valid ' +
+              'Subscan API key in Settings → Data Providers, check your ' +
+              'network connection, and retry.'
+          )
+        }
+
         // Skip Phase 2 if RPC fails - we already have historical data from Subscan
         // Deduplicate and return what we have
         const seen = new Set<string>()
@@ -656,13 +668,22 @@ class PolkadotService {
         onProgress
       )
 
+      const subscanCount = allTransactions.length - recentTxs.length
+      // When Subscan contributes nothing we have only scanned a recent RPC
+      // window. Say so explicitly: a short list must never look like a complete
+      // history (import-resilience mandate).
+      const completenessNote =
+        subscanCount === 0
+          ? ` — Subscan is unavailable, so only the last ${blocksScanned.toLocaleString()} blocks were scanned and older history is NOT included`
+          : ''
+
       onProgress?.({
         stage: 'complete',
         currentBlock,
         totalBlocks: RECENT_BLOCKS_CUTOFF,
         blocksScanned,
         transactionsFound: final.length,
-        message: `Found ${final.length} transaction${final.length !== 1 ? 's' : ''} (${allTransactions.length - recentTxs.length} from Subscan, ${recentTxs.length} from blockchain)`,
+        message: `Found ${final.length} transaction${final.length !== 1 ? 's' : ''} (${subscanCount} from Subscan, ${recentTxs.length} from blockchain)${completenessNote}`,
       })
 
       return final
@@ -672,6 +693,11 @@ class PolkadotService {
       // Provide more helpful error messages
       const errorMessage =
         error instanceof Error ? error.message : String(error)
+
+      // Errors already phrased for the user pass through unchanged.
+      if (errorMessage.startsWith('Could not import transaction history')) {
+        throw error
+      }
 
       if (errorMessage.includes('Failed to connect')) {
         throw new Error(
