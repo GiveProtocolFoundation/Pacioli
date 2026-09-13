@@ -1424,3 +1424,31 @@ WHERE status='approved'` (the M5 state machine explicitly allows
   - **Still open:** findings #4 (free-tier chain coverage vs. the advertised
     dropdown — needs a decision), #5 (Subscan API key — user action),
     #6 (no legitimate EVM rehearsal data — user action).
+- **Session 29 (2026-09-13, CTO — Gate 1 key/address verification):** Product
+  owner supplied a replacement Subscan key and EVM address; both probed live.
+  - **EVM address verified good (prereq P2 now met).**
+    `0x47bC8683b0D86296Cd596BfD2c670C0eD6D2De81` has **6 real Ethereum
+    transactions, all 2026-09-12**: an acquisition (0.0103007883 ETH in), a
+    disposal/swap (0.005 ETH to the MetaSwap router), a self-transfer
+    (0.001 ETH to self), a second disposal (0.001 ETH out), and two token
+    receipts (12.500709 mUSD; 5.0 ECX). Current balance
+    0.003702026213901276 ETH. This satisfies the checklist §3 step 5
+    acquisition / disposal / transfer requirement on Ethereum. No activity on
+    Arbitrum, Polygon, Base, Optimism, or BNB.
+  - **Subscan key rejected (finding #8, blocker, open).** The supplied key
+    returns HTTP 403 `{"code":20009,"message":"API key invalid"}` on the
+    `X-API-Key` header — the exact form `subscanService.makeRequest` uses.
+    `x-api-key`, body-`key`, and `Authorization: Bearer` were all rejected
+    too, so it is not a header-name problem. The app will surface this as a
+    thrown error (the `8fd0ded` fix), not silently, but **Polkadot sync is
+    blocked** until a working key is saved. Original finding #5 resolved to
+    "key required"; #8 is the key being invalid.
+  - **Finding #6 superseded** — the original EVM address remains in the
+    package as an unsolicited-airdrop/dust adversarial fixture.
+  - **Finding #4 unchanged** — Base/Optimism/BNB still return `NOTOK "Free
+    API access is not supported for this chain"` on the free Etherscan plan.
+    The verified rehearsal wallet has no activity there, so this does not
+    block the rehearsal, but it remains a product-truthfulness issue.
+  - **Docs changed:** `docs/gate1-report.md` (prereq table updated; new
+    "Rehearsal data inventory"; finding #6 superseded; finding #8 added).
+    No code changed this session.
