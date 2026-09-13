@@ -1452,3 +1452,34 @@ WHERE status='approved'` (the M5 state machine explicitly allows
   - **Docs changed:** `docs/gate1-report.md` (prereq table updated; new
     "Rehearsal data inventory"; finding #6 superseded; finding #8 added).
     No code changed this session.
+- **Session 30 (2026-09-13, CTO — Substrate workaround + finding #9):** The
+  product owner asked why the Subscan key fails and whether a workaround is
+  available while the Substrate path is built out.
+  - **Diagnosis:** the key is genuinely rejected — Subscan returns
+    `code 20009 "API key invalid"` on **both** Polkadot and Kusama, and on
+    every auth form (`X-API-Key` as the app sends it, `x-api-key`,
+    `Authorization: Bearer`, and key-in-body). `api.subscan.io` (unified) is
+    not the right host for these endpoints (404). The
+    `pf_sk_v1_production_` prefix does not match Subscan's key format, so it
+    may belong to a different service or to an unactivated Subscan account.
+    Nothing in the app's request is wrong.
+  - **The workaround exists and was already in the code:** with Subscan
+    unavailable, `polkadotService.fetchTransactionHistoryHybrid` falls back to
+    an RPC block scan automatically. It is sufficient to keep building and
+    testing the Substrate path, but it only scans a recent window.
+  - **Finding #9 (blocker, fixed):** that fallback was dangerous for
+    accounting — it scanned only the last ~1,000 blocks and returned a short
+    list that looked complete (message: "0 from Subscan, N from blockchain"),
+    and if Subscan *and* RPC both failed it returned `[]`, indistinguishable
+    from an empty wallet. Fixed in `polkadotService.ts`: (a) throw a
+    user-facing "Could not import transaction history" error when both sources
+    produce nothing; (b) append an explicit "Subscan is unavailable … older
+    history is NOT included" warning to the completion message whenever
+    Subscan contributed zero transactions. 2 regression tests added.
+    **481/481 Vitest green, `tsc --noEmit` clean, eslint + prettier clean.**
+  - **Options recorded in `docs/gate1-report.md` §3:** (1) run Gate 1 on
+    Ethereum only and treat Polkadot as a documented limitation; (2) RPC-only
+    Substrate sync for development; (3) obtain a valid Subscan key (free tier
+    suffices). Key-free alternatives for Gate 3/beta: self-hosted
+    SubQuery/Subsquid indexer, or Parity's Dotlake API (metrics + per-account
+    staking rewards only, not general transfers).
