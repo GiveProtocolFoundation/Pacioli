@@ -36,7 +36,10 @@ vi.mock('ethers', () => {
 // Import the service AFTER mocks are registered
 // ---------------------------------------------------------------------------
 
-import { evmTransactionService } from '../blockchain/evmTransactionService'
+import {
+  evmTransactionService,
+  EVMExplorerError,
+} from '../blockchain/evmTransactionService'
 
 // ---------------------------------------------------------------------------
 // Block-explorer response factory
@@ -238,6 +241,133 @@ describe('evmTransactionService', () => {
       expect(firstBatchArgs).toHaveLength(20)
 
       promiseAllSpy.mockRestore()
+    })
+  })
+
+  // =========================================================================
+  // Behavior 5: Provider errors are surfaced, never silently swallowed
+  // (gate1-report finding #7 — the "0 transactions found" failure class)
+  // =========================================================================
+
+  describe('fetchTransactionHistory — provider error surfacing', () => {
+    it('throws an EVMExplorerError (not an empty list) when the plan does not cover the chain', async () => {
+      const fetchMock = vi.fn().mockResolvedValue({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            status: '0',
+            message: 'NOTOK',
+            result:
+              'Free API access is not supported for this chain. Please upgrade your api plan for full chain coverage.',
+          }),
+      })
+      vi.stubGlobal('fetch', fetchMock)
+
+      await expect(
+        evmTransactionService.fetchTransactionHistory('base', TEST_ADDRESS, {
+          limit: 10,
+        })
+      ).rejects.toBeInstanceOf(EVMExplorerError)
+
+      // A capability error must not be masked by the RPC fallback
+      expect(fetchMock).toHaveBeenCalledTimes(1)
+
+      vi.unstubAllGlobals()
+    })
+
+    it('includes the provider reason and chain in the surfaced message', async () => {
+      const fetchMock = vi.fn().mockResolvedValue({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            status: '0',
+            message: 'NOTOK',
+            result: 'Free API access is not supported for this chain.',
+          }),
+      })
+      vi.stubGlobal('fetch', fetchMock)
+
+      await expect(
+        evmTransactionService.fetchTransactionHistory(
+          'optimism',
+          TEST_ADDRESS,
+          {
+            limit: 10,
+          }
+        )
+      ).rejects.toThrow(/optimism.*Free API access is not supported/s)
+
+      vi.unstubAllGlobals()
+    })
+
+    it('treats an empty result array as a legitimate empty history', async () => {
+      const fetchMock = vi.fn().mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ status: '0', result: [] }),
+      })
+      vi.stubGlobal('fetch', fetchMock)
+
+      await expect(
+        evmTransactionService.fetchTransactionHistory(
+          'ethereum',
+          TEST_ADDRESS,
+          {
+            limit: 10,
+          }
+        )
+      ).resolves.toEqual([])
+
+      vi.unstubAllGlobals()
+    })
+
+    it('treats an explicit "No transactions found" message as empty', async () => {
+      const fetchMock = vi.fn().mockResolvedValue({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            status: '0',
+            message: 'No transactions found',
+            result: [],
+          }),
+      })
+      vi.stubGlobal('fetch', fetchMock)
+
+      await expect(
+        evmTransactionService.fetchTransactionHistory('polygon', TEST_ADDRESS, {
+          limit: 10,
+        })
+      ).resolves.toEqual([])
+
+      vi.unstubAllGlobals()
+    })
+
+    it('still falls back to RPC on a transient (non-capability) network failure', async () => {
+      const fetchMock = vi.fn().mockRejectedValue(new Error('network down'))
+      vi.stubGlobal('fetch', fetchMock)
+
+      // Inject an RPC provider that scans no blocks, isolating the fallback path
+      // (the ethers mock's JsonRpcProvider is not constructible).
+      ;(
+        evmTransactionService as unknown as { providers: Map<string, unknown> }
+      ).providers.set('ethereum', {
+        getBlockNumber: vi.fn().mockResolvedValue(0),
+        getBlock: vi.fn().mockResolvedValue(null),
+        getTransactionReceipt: vi.fn().mockResolvedValue(null),
+      })
+
+      await expect(
+        evmTransactionService.fetchTransactionHistory(
+          'ethereum',
+          TEST_ADDRESS,
+          {
+            limit: 10,
+          }
+        )
+      ).resolves.toEqual([])
+
+      expect(fetchMock).toHaveBeenCalled()
+
+      vi.unstubAllGlobals()
     })
   })
 })

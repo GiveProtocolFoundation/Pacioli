@@ -89,6 +89,64 @@ export interface EVMSyncProgress {
   message: string
 }
 
+/**
+ * Raised when a block explorer rejects a request for a reason the app cannot
+ * retry away — an unsupported chain on the configured plan, an invalid API
+ * key, or a malformed response.
+ *
+ * These must reach the user. Converting them into an empty transaction list
+ * makes a failed import look like a wallet with no history, which is the
+ * silently-incomplete-history failure class the import-resilience mandate
+ * forbids (see `docs/gate1-report.md` finding #7).
+ */
+export class EVMExplorerError extends Error {
+  readonly chain: string
+  readonly action: string
+  readonly reason: string
+
+  constructor(chain: string, action: string, reason: string) {
+    super(
+      `Could not load transaction history for ${chain} from the block ` +
+        `explorer (${action}): ${reason}. Check Settings → Data Providers for ` +
+        'a valid API key, or that your provider plan covers this chain.'
+    )
+    this.name = 'EVMExplorerError'
+    this.chain = chain
+    this.action = action
+    this.reason = reason
+  }
+}
+
+/**
+ * Normalise a block-explorer JSON response.
+ *
+ * - `result` as an array is the data (an empty array is a legitimate "this
+ *   address has no transactions", including Etherscan's `status: '0'` shape).
+ * - A "no transactions found" message is likewise benign.
+ * - Anything else (`NOTOK`, a string error in `result`, a missing result) is a
+ *   provider failure and throws so the caller can surface it.
+ */
+function parseExplorerResult<T>(
+  chain: string,
+  action: string,
+  data: { status?: string; message?: string; result?: unknown }
+): T[] {
+  if (Array.isArray(data.result)) {
+    return data.result as T[]
+  }
+  if (
+    typeof data.message === 'string' &&
+    /no transactions found/i.test(data.message)
+  ) {
+    return []
+  }
+  const reason =
+    typeof data.result === 'string' && data.result.length > 0
+      ? data.result
+      : data.message || 'unexpected response from the block explorer'
+  throw new EVMExplorerError(chain, action, reason)
+}
+
 interface BlockExplorerTx {
   hash: string
   blockNumber: string
@@ -259,6 +317,13 @@ class EVMTransactionService {
     } catch (error) {
       console.error('Error fetching EVM transactions:', error)
 
+      // Provider-capability errors (chain not covered by the configured plan,
+      // invalid key, malformed response) are not transient. Surface them
+      // rather than masking them behind a partial RPC block scan.
+      if (error instanceof EVMExplorerError) {
+        throw error
+      }
+
       // Fallback to RPC-based fetching if explorer API fails
       return this.fetchTransactionsViaRPC(chain, address, limit, onProgress)
     }
@@ -293,16 +358,15 @@ class EVMTransactionService {
       }
 
       const response = await fetch(`${explorerConfig.apiUrl}?${params}`)
+      if (!response.ok) {
+        throw new EVMExplorerError(chain, 'txlist', `HTTP ${response.status}`)
+      }
       const data = await response.json()
 
-      if (data.status === '1' && Array.isArray(data.result)) {
-        return data.result as BlockExplorerTx[]
-      }
-
-      return []
+      return parseExplorerResult<BlockExplorerTx>(chain, 'txlist', data)
     } catch (error) {
       console.warn(`Failed to fetch normal transactions for ${chain}:`, error)
-      return []
+      throw error
     }
   }
 
@@ -340,16 +404,15 @@ class EVMTransactionService {
       }
 
       const response = await fetch(`${explorerConfig.apiUrl}?${params}`)
+      if (!response.ok) {
+        throw new EVMExplorerError(chain, 'tokentx', `HTTP ${response.status}`)
+      }
       const data = await response.json()
 
-      if (data.status === '1' && Array.isArray(data.result)) {
-        return data.result as TokenTransferTx[]
-      }
-
-      return []
+      return parseExplorerResult<TokenTransferTx>(chain, 'tokentx', data)
     } catch (error) {
       console.warn(`Failed to fetch token transfers for ${chain}:`, error)
-      return []
+      throw error
     }
   }
 
