@@ -1507,3 +1507,31 @@ WHERE status='approved'` (the M5 state machine explicitly allows
     Phase 4a/Stage 2 addition for staking rewards and XCM, not for transfers.
   - **Docs changed:** `docs/gate1-report.md` (P2 status; Dotlake evaluation and
     conclusion). No code changed this session.
+- **Session 32 (2026-09-13, CTO — corrected Polkadot address; MAJOR finding):**
+  The product owner supplied the correct Polkadot address
+  `13zaY4pS2WSvYSSFUNUnzFVX7d6VkKy2qXGE2art3Ke6TAcF`. Verified: **active** —
+  287 txs, 2022-12-17 → 2025-10-24, top pallets nominationPools / xcmPallet /
+  convictionVoting (Dotlake). (`recent-extrinsics` is empty because the last
+  activity predates the recent window; the relay-chain `system_accountNextIndex`
+  reads 0, which is unexplained but the account is clearly active.)
+  - **Finding #10 (blocker, gate scope): the user's real EVM history is on
+    Moonbeam, which the app removed.** Dotlake's XCM records link
+    `13zaY…TAcF` to the originally supplied EVM address `0x537f…aa75` as an
+    XCM destination. That address is active on **Moonbeam (chainid 1284)**:
+    1000+ native txs (2023-02 → 2024-11) and 1000+ ERC-20 transfers (STELLA,
+    WGLMR, xcDOT, xcUSDC, xcPEN, xcMANTA), plus **39 XCM transfers** to
+    Moonbeam / Bifrost / HydraDX / Astar spanning 2024-01 → 2026-07.
+  - **`GIV-888` removed Moonbeam/Moonriver on 2026-07-31 (sunset), but
+    Etherscan V2 still serves chainid 1284** (`status:1 OK`). The sunset
+    affects *live tracking*, not *historical accounting* — and historical
+    accounting is exactly what Gate 1 needs. As shipped, the app cannot import
+    the product owner's real EVM history, so the gate's "your own real
+    wallets" premise is not satisfiable without either restoring Moonbeam
+    read-only, obtaining a valid Subscan key for the Polkadot side, or
+    accepting the fresh Ethereum fixture with disclosure.
+  - **Scale note for the rehearsal:** 1000+ Moonbeam transactions is not
+    practical for manual Stage 1 classification. Any real-data run must be
+    scoped to a bounded period using the GIV-716 import-selection filter.
+  - **Options recorded in `docs/gate1-report.md` finding #10.** Needs a
+    product decision (restore Moonbeam read-only vs. Polkadot-via-Subscan vs.
+    disclosed Ethereum fixture).
