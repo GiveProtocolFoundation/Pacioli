@@ -1535,3 +1535,30 @@ WHERE status='approved'` (the M5 state machine explicitly allows
   - **Options recorded in `docs/gate1-report.md` finding #10.** Needs a
     product decision (restore Moonbeam read-only vs. Polkadot-via-Subscan vs.
     disclosed Ethereum fixture).
+- **Session 33 (2026-09-13, CTO — Moonbeam read-only restore):** Product owner
+  chose option (a): restore Moonbeam for historical import.
+  - **Finding #11 (blocker, fixed): the EVM explorer path never sent an API
+    key.** `evmTransactionService` declared `BlockExplorerConfig.apiKey` but
+    never read or sent it, so `fetchNormalTransactions`/`fetchTokenTransfers`
+    called Etherscan V2 keyless — which V2 rejects. Every EVM chain including
+    Ethereum was affected. Fixed with `getApiKeyCandidates()` (Tauri keychain →
+    localStorage → env, mirroring `moonscanService`) and a shared
+    `fetchExplorer()` that sets `apikey` and retries each configured key, so a
+    stale key cannot shadow a valid one.
+  - **Moonbeam restore (read-only historical import):** routed through the
+    Etherscan V2 path (`evmTransactionService`, chainid 1284) instead of the
+    sunset-blocked `moonscanService`; added to `PURE_EVM_NETWORKS` and
+    `NETWORK_DECIMALS`; restored to the network dropdown under
+    "Historical — sunset chains (import only)"; `useBlockSubscription` now
+    skips sunset chains (no new blocks). Moonriver not restored.
+  - **Scale:** the Moonbeam history is [redacted] txs
+    (2023-02 → 2026-05) — impractical for manual classification. Recommended
+    rehearsal window **2026-01** (19 txs), alternative 2023-12 (27), imported
+    via the GIV-716 selection filter.
+  - **Verification:** 482/482 Vitest green (1 new key-plumbing test, 24
+    files), `tsc --noEmit` clean, eslint + prettier clean. Rust still not
+    built (no toolchain).
+  - **Files:** `src/services/blockchain/evmTransactionService.ts`,
+    `src/services/__tests__/evmTransactionService.test.ts`,
+    `src/app/wallets/WalletManager.tsx`,
+    `src/hooks/useBlockSubscription.ts`, `docs/gate1-report.md`.

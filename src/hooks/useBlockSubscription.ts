@@ -24,6 +24,12 @@ const SS58_FORMATS: Partial<Record<NetworkType, number>> = {
   // Moonbeam (1284) and Moonriver (1285) are sunset — omitted
 }
 
+/** Sunset chains are historical-import only: there are no new blocks to watch. */
+const HISTORICAL_ONLY_NETWORKS = new Set<NetworkType>([
+  NetworkType.MOONBEAM,
+  NetworkType.MOONRIVER,
+])
+
 /** Convert an address to network-specific SS58 format */
 function toNetworkAddress(address: string, network: NetworkType): string {
   if (address.startsWith('0x')) return address
@@ -195,6 +201,9 @@ export function useBlockSubscription(
      * @returns {Promise<Function>} A promise that resolves to the unsubscribe function.
      */
     const subscribe = async () => {
+      // Sunset chains are historical-import only; there is nothing to subscribe to.
+      if (HISTORICAL_ONLY_NETWORKS.has(network)) return
+
       try {
         const unsub = await polkadotService.subscribeNewBlocks(
           network,

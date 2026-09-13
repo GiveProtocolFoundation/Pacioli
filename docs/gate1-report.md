@@ -186,6 +186,25 @@ Longer term, the Phase 4a Substrate registry (Dwellir RPC fallback) is scaffolde
 
 **Conclusion: Dotlake does not resolve the Subscan gap.** Gate 1 should run on Ethereum (verified data), with Polkadot treated as a documented limitation until an active address and a valid Subscan key exist.
 
+**Decision taken 2026-09-13 — restore Moonbeam read-only for historical import.**
+
+The product owner chose option (a) from finding #10. Implemented as:
+
+- **Routing:** Moonbeam (`chainid` 1284) now goes through the Etherscan V2 explorer path (`evmTransactionService`) rather than `moonscanService`, which hard-throws after the sunset date. Etherscan V2 still serves 1284 correctly.
+- **Availability:** added to `PURE_EVM_NETWORKS` and `NETWORK_DECIMALS`, and restored to the network dropdown under a clearly labelled **"Historical — sunset chains (import only)"** group.
+- **No live sync:** `useBlockSubscription` skips sunset chains — there are no new blocks; this is a read-only historical import.
+- **Moonriver is not restored** (no rehearsal data for it).
+- **Prerequisite:** finding #11's key plumbing, without which the EVM path cannot authenticate at all.
+
+**Recommended rehearsal window:** the account's Moonbeam history is [redacted] transactions (2023-02 → 2026-05) — far too many for manual Stage 1 classification. Two workable, real windows:
+
+| Window | Volume | Notes |
+| ------ | ------ | ----- |
+| **2026-01** | 6 native + 13 ERC-20 = **19** | Recent, light, includes swaps and transfers. **Recommended.** |
+| 2023-12 | 18 native + 9 ERC-20 = **27** | First month with ERC-20 activity. |
+
+Use the GIV-716 import-selection filter to import only the chosen window.
+
 **Free-tier chain coverage (important).** The supplied Etherscan V2 key is on the
 free plan. A live probe on 2026-09-11 showed the free plan serves **Ethereum,
 Arbitrum, and Polygon** but returns `NOTOK — "Free API access is not supported
@@ -276,6 +295,7 @@ plan, or the dropdown should mark them as unavailable for the configured key.
 | 8   | §3 step 2 (import history) | **Supplied Subscan API key is rejected.** A live probe on 2026-09-13 against `polkadot.api.subscan.io` with the key on the `X-API-Key` header (exactly what `subscanService.makeRequest` sends) returns HTTP 403 `{"code":20009,"message":"API key invalid"}`. Alternative auth forms were also rejected (`x-api-key` → 20009; key in the JSON body → 403 "strictly requires an API key"; `Authorization: Bearer` → 403). So the key reaches Subscan's auth layer and is refused — it is not a missing-header problem. | blocker | **Open — user action.** Verify or regenerate the key at <https://support.subscan.io> (confirm it is a Subscan *API* key for the correct environment and that the account's API access is active). The app surfaces this as a thrown error (the `8fd0ded` fix), so it will not be silent — but Polkadot sync cannot run until a working key is saved. |
 | 9   | §3 steps 2-3 (Substrate import) | When Subscan is unavailable the hybrid sync silently degrades to an RPC scan of only the **last ~1,000 blocks**, and returned a short list that looked complete — the completion message said only "0 from Subscan, N from blockchain". A Polkadot wallet with months of history could be recorded as a handful of recent transactions. Worse, if Subscan *and* RPC both failed the method returned `[]`, indistinguishable from a genuinely empty wallet. | blocker (accounting correctness) | **Fixed 2026-09-13.** `polkadotService.fetchTransactionHistoryHybrid` now (a) throws a user-facing "Could not import transaction history" error when both Subscan and RPC produce nothing, instead of returning `[]`; and (b) appends an explicit *"Subscan is unavailable… older history is NOT included"* warning to the completion message whenever Subscan contributed zero transactions. 2 regression tests added. 481/481 Vitest green, tsc/eslint/prettier clean. |
 | 10  | §3 steps 2-3 (import) | **The product owner's real EVM history is on Moonbeam — the chain the app removed.** Dotlake's XCM records link the corrected Polkadot address `[redacted]` ([redacted], 2022-12-17 → 2025-10-24; top pallets nominationPools / xcmPallet / convictionVoting) to the originally supplied EVM address `[redacted]`, which is active on **Moonbeam (chainid 1284)**: 1000+ native txs (2023-02 → 2024-11) and 1000+ ERC-20 transfers (STELLA, WGLMR, xcDOT, xcUSDC, xcPEN, xcMANTA), plus [redacted] to Moonbeam / Bifrost / HydraDX / Astar across 2024-01 → 2026-07. `GIV-888` removed Moonbeam/Moonriver (sunset 2026-07-31), but **Etherscan V2 still serves chainid 1284 historical data** (`status:1 OK`). Gate 1 requires importing *your own* real wallets; as shipped, the app cannot import this user's real EVM history. | blocker (gate scope) | **Open — product decision.** (a) restore Moonbeam **read-only for historical import** — the sunset affects live tracking, not historical accounting; (b) rehearse the Polkadot side via a valid Subscan key; (c) use the fresh Ethereum wallet `[redacted]` as a *disclosed* fixture rather than "real history". Scale note: 1000+ Moonbeam txs is impractical for manual Stage 1 classification — scope the rehearsal to a bounded period using the GIV-716 import-selection filter. |
+| 11  | §3 steps 2-3 (EVM import) | **The EVM explorer path never sent an API key.** `evmTransactionService` declared an `apiKey` field on `BlockExplorerConfig` but never read or sent it, so `fetchNormalTransactions` / `fetchTokenTransfers` called Etherscan V2 **keyless** — and V2 rejects keyless requests with "Missing/Invalid API Key". Every EVM chain, Ethereum included, therefore either fell through to a recent-blocks RPC scan or (after finding #7's fix) surfaced a key error. Moonscan/subscan read the keychain correctly; the EVM path never did. | blocker | **Fixed 2026-09-13.** Added `getApiKeyCandidates()` (Tauri keychain → localStorage → build-time env, mirroring `moonscanService`) and a shared `fetchExplorer()` that sets `apikey` and retries each configured key until one is accepted, so a stale key cannot shadow a valid one. 1 regression test added; **482/482 Vitest green**, tsc/eslint/prettier clean. |
 
 ## 6. Outcome
 
