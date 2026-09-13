@@ -245,7 +245,38 @@ describe('evmTransactionService', () => {
   })
 
   // =========================================================================
-  // Behavior 5: Provider errors are surfaced, never silently swallowed
+  // Behavior 5: API key plumbing — Etherscan V2 requires a key per request
+  // =========================================================================
+
+  describe('fetchTransactionHistory — API key plumbing', () => {
+    it('sends the configured Etherscan API key on every explorer request', async () => {
+      vi.stubGlobal('localStorage', {
+        getItem: (k: string) =>
+          k === 'pacioli_api_key_etherscan' ? 'TESTKEY' : null,
+      })
+
+      const fetchMock = vi.fn().mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ status: '0', result: [] }),
+      })
+      vi.stubGlobal('fetch', fetchMock)
+
+      await evmTransactionService.fetchTransactionHistory(
+        'ethereum',
+        TEST_ADDRESS,
+        { limit: 10 }
+      )
+
+      const urls = fetchMock.mock.calls.map(call => String(call[0]))
+      expect(urls.length).toBeGreaterThan(0)
+      expect(urls.every(url => url.includes('apikey=TESTKEY'))).toBe(true)
+
+      vi.unstubAllGlobals()
+    })
+  })
+
+  // =========================================================================
+  // Behavior 6: Provider errors are surfaced, never silently swallowed
   // (gate1-report finding #7 — the "0 transactions found" failure class)
   // =========================================================================
 
