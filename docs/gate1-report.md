@@ -6,6 +6,21 @@ during the live run with real data. Companion document:
 `docs/accounting-model.md` (the conventions we hand the CPA alongside the
 statements).
 
+> **Revision 2026-09-11 (pre-rehearsal reconciliation).** This package was
+> authored 2026-07-17, when the EVM rehearsal path ran through Moonbeam. Moonbeam
+> and Moonriver were **sunset on 2026-07-31** and removed from the sync network
+> dropdown (`GIV-888`); the live EVM set is now **Ethereum and the L2s
+> (Arbitrum One, Base, Optimism, Polygon, BNB Smart Chain)**, plus Substrate,
+> Bitcoin, and Solana. The checklist in §3 below has been updated accordingly.
+> Findings #1–#3 in §5 remain accurate as history (they document the Moonbeam
+> path) and their lesson — single-provider fragility — was the direct
+> justification for Phase 4a (provider fallback + resumable cursors). Two
+> limitations in §2 have also been corrected: a deterministic rules engine and
+> heuristic auto-classification now exist (still no AI/model drafting), and a
+> nonprofit slice (Statement of Activities, functional classification) plus
+> manual bank-statement import have landed since Stage 1 closed. See
+> `docs/v1-readiness-plan.md` for the current stage picture.
+
 Gate 1 (per `SCOPE.md`): CPA-reviewed financial statements produced from real
 imported transactions, manually classified through the approval queue. The gate
 verdict belongs to the reviewing CPA, not to us.
@@ -26,7 +41,9 @@ Concretely, the review package demonstrates:
    journal entries reference them via an explicit linkage table
    (many-to-one and one-to-many supported).
 2. **Journal entries with full provenance.** Every entry records its origin
-   (`manual` only in Stage 1), who approved it, and approval/posting
+   (`manual` for hand-entered entries; `rule` for deterministic rules-engine or
+   heuristic auto-classification; no `model` origin exists yet), who approved
+   it, and approval/posting
    timestamps. Entries follow a strict lifecycle: draft → approved → posted,
    enforced at the database layer by triggers and in Rust by a `PostedEntry`
    type constructible only from balanced lines.
@@ -94,10 +111,13 @@ weaken the invariants above; they bound what Stage 1 claims to do.
 - **Single entity, US GAAP, functional currency USD.** No multi-entity
   consolidation, no IFRS/parallel books, no nonprofit fund accounting
   (restricted funds, functional expenses) — the nonprofit layer is Stage 3.
-- **Manual classification only.** No rules engine and no AI drafting in
-  Stage 1; every entry is classified and approved by a human. (A pre-existing
-  auto-classification heuristic is parked/disabled; provenance fields already
-  distinguish `manual`/`rule`/`model` origins for later stages.)
+- **Deterministic classification only; no AI/model drafting.** A deterministic
+  rules engine (CRUD, starter packs, payee→GL maps) and heuristic
+  auto-classification are implemented and available in the classification
+  queue; **no model/AI provider is wired** and no entry is ever produced with
+  `origin='model'`. Every auto-classified entry is written as `origin='rule'`
+  and still passes through the same approval gate. Provenance fields already
+  distinguish `manual`/`rule`/`model` origins for Stage 2.
 - **Manual period-end sequencing.** Remeasure → approve → post → close is
   driven step by step by the user; there is no orchestrated close workflow
   yet.
@@ -129,13 +149,37 @@ against this checklist. Every friction point, surprise, or defect is captured
 in `docs/stage1-progress.md` (Phase 10 findings) — we fix blockers only;
 polish is logged, not chased.
 
+### Pre-run requirements (all external to the code)
+
+| # | Requirement | Owner | Status |
+| - | ----------- | ----- | ------ |
+| P1 | **Etherscan V2 API key** (<https://etherscan.io/myapikey>), saved in Settings → Data Providers → **Etherscan**. Legacy moonscan.io keys do **not** work on V2. | Product owner | ✅ **Supplied and validated 2026-09-11** (see finding #4) |
+| P1b | **Subscan API key** (<https://support.subscan.io>), saved under **Subscan**. Subscan disabled unauthenticated access; without this, Polkadot sync returns HTTP 403. | Product owner | ❌ **Outstanding** (finding #5) |
+| P2 | **Real wallet addresses with legitimate history** — at least one chain carrying an acquisition, a disposal, and ideally an own-wallet transfer. | Product owner | ⚠️ **EVM address supplied has only spam-dust; Polkadot unverified** (finding #6) |
+| P3 | A reviewing CPA willing to spend ~30 minutes and return written observations | Board | ❌ Outstanding |
+
+**Free-tier chain coverage (important).** The supplied Etherscan V2 key is on the
+free plan. A live probe on 2026-09-11 showed the free plan serves **Ethereum,
+Arbitrum, and Polygon** but returns `NOTOK — "Free API access is not supported
+for this chain"` for **Base, Optimism, and BNB Smart Chain** — all of which the
+wallet network dropdown currently offers. Those chains need a paid Etherscan
+plan, or the dropdown should mark them as unavailable for the configured key.
+
+### Checklist
+
 1. **Setup.** Fresh desktop build from current `main`
-   (`pnpm install --frozen-lockfile && pnpm tauri build` or `tauri dev`).
-   Confirm the default chart of accounts is seeded.
+   (`pnpm install --frozen-lockfile` with pnpm 10, then `pnpm tauri build` or
+   `pnpm tauri:dev`). Confirm the default chart of accounts is seeded.
 2. **Connect wallets (read-only).** Add real wallet addresses. Confirm no
-   signing capability is requested anywhere.
+   signing capability is requested anywhere. **Use the current network set:
+   EVM (Ethereum / Arbitrum / Base / Optimism / Polygon / BNB) via Etherscan V2,
+   plus Substrate, Bitcoin, Solana. Moonbeam/Moonriver are sunset and are no
+   longer selectable — do not spend rehearsal time on them.**
 3. **Import history.** Sync raw transactions. Spot-check a handful against a
-   block explorer (hash, direction, amount, timestamp).
+   block explorer (hash, direction, amount, timestamp). If a provider is
+   unavailable, confirm the UI shows a graceful "provider temporarily
+   unavailable" state rather than a raw API error (Phase 4a behavior), and
+   confirm a re-sync resumes without duplicating rows.
 4. **Create the period.** Create the monthly accounting period(s) covering
    the data under review.
 5. **Classify.** Work the unclassified-transaction worklist for the chosen
@@ -197,6 +241,10 @@ polish is logged, not chased.
 | 1a  | §3 step 2 (import history) | Accompanying "Not connected to moonbeam" error — separate WS-RPC connection path (balances / recent-block scan), distinct from the Moonscan HTTP fix above. Watch on retest: if it persists, report as its own finding.                                                                                                                                                                                                                                                                                                                                  | note                                 | Monitoring — retest after finding #1 fix.                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | 2   | §3 step 2 (import history) | Retest after finding #1: Moonbeam sync failed with "Moonscan API error: You are using a deprecated V1 endpoint, switch to Etherscan API V2" — Moonscan has since deprecated its per-chain V1 endpoints entirely; the platform's own error directs callers to the V2 unified endpoint.                                                                                                                                                                                                                                                                    | blocker                              | **Fixed** — PR #228: migrated back to the Etherscan V2 unified endpoint (`api.etherscan.io/v2/api`) with `chainid=1284`/`1285`, matching every other EVM chain; `moonscan` key namespace retained for keychain lookup. Rebuild and retest Moonbeam sync from checklist §3 step 2.                                                                                                                                                                                               |
 | 3   | §3 step 2 (import history) | Retest after finding #2 (and after PR #230's etherscan-key fallback): sync failed with "Moonscan API error: Invalid API Key (#err2)". Live API probe: keyless requests return "Missing/Invalid API Key", while a rejected key returns exactly "Invalid API Key (#err2)" — so a key IS being sent and rejected. Root cause: the key saved under the Moonscan provider during finding #1 (valid, at most, on retired Moonscan V1) is invalid on Etherscan V2, and its presence shadowed PR #230's fallback, which only fired when no moonscan key existed. | blocker                              | **Fixed (code) + user action required** — key-candidate retry in `moonscanService`: every configured key (keychain moonscan → etherscan → localStorage → env) is tried in order, skipping any the server rejects; when all candidates fail the error now carries remediation steps. User action: create a free key at <https://etherscan.io/myapikey> and save it in Settings → Data Providers under "Etherscan" (legacy moonscan.io keys do not work on V2). Retest §3 step 2. |
+| 4   | §3 step 2 (import history) | **Pre-run probe 2026-09-11.** Supplied Etherscan V2 key validated: `chainid=1` returns `status:1, OK`. But the free plan serves only **Ethereum, Arbitrum, Polygon**; **Base, Optimism, BNB Smart Chain** return `status:0, NOTOK, "Free API access is not supported for this chain. Please upgrade your api plan"` — yet all three remain selectable in the wallet network dropdown (`WalletManager.tsx:313-322`). | blocker | **Open — needs decision/remediation.** Options: (a) gate the dropdown to chains the configured key actually serves, (b) label paid-only chains clearly, (c) upgrade the Etherscan plan. Until then a user picking Base/Optimism/BNB gets a failed or empty sync. |
+| 5   | §3 step 2 (import history) | **Subscan now requires an API key.** A live probe of `polkadot.api.subscan.io` on 2026-09-11 returns HTTP 403: *"Subscan API strictly requires an API key. Unauthenticated access is disabled."* The app supports a Subscan key (`subscanService.ts:148,496-503`) and lists it in Data Providers, but none is configured. | blocker | **Open — user action.** Add a Subscan API key under Settings → Data Providers → **Subscan** (P1b), or Polkadot sync cannot run. This is the same single-provider-fragility class as findings #1-#3. |
+| 6   | §3 step 3 (import history) | **Supplied EVM address carries no legitimate history.** `0x537f…aa75` has zero native transactions on Ethereum and Arbitrum; its only activity is **50 inbound ERC-20 transfers on Polygon and 1 on Arbitrum, all unsolicited scam airdrops** (token names like "ACCESS [DOTFI.ORG] TO CLAIM", "stETH Visit www.weth.top to claim reward") sent from a single dusting address `0x3a58a54c…`, 2024-04-14 → 2025-06-15. No acquisition, disposal, or own-wallet transfer exists to rehearse. | blocker (for the planned walkthrough) | **Open — user action.** Supply an address with genuine activity, **or** deliberately use this one as an unsolicited-airdrop case. Note: unsolicited spam tokens are a real nonprofit accounting problem (they must not be booked as revenue), so this address is valuable as an adversarial fixture even though it cannot satisfy checklist step 5's acquisition/disposal/transfer requirement. |
+| 7   | §3 step 2 (import history) | **The EVM TypeScript sync path silently swallows provider errors into "0 transactions found."** `evmTransactionService.fetchNormalTransactions` and `fetchTokenTransfers` return `[]` both when the request throws and when `data.status !== '1'` (`evmTransactionService.ts:283-303`, `:338-350`). A free-tier `NOTOK`, a 403, or a rate-limit therefore renders as an empty wallet rather than a visible failure — the exact "silently incomplete history" class the Phase 4a mandate forbids. The Subscan path was fixed to throw on non-zero codes (`8fd0ded`); the EVM TS path was not. | blocker | **Fixed 2026-09-11.** Added `EVMExplorerError` + `parseExplorerResult` to `evmTransactionService.ts`: an array `result` (including an empty one) is data; `"No transactions found"` is empty; anything else (`NOTOK`, string error, missing result, non-2xx HTTP) throws. `fetchTransactionHistory` re-raises capability errors instead of masking them with the RPC fallback, while transient/network errors still fall back to RPC as before. Five regression tests added (unsupported-chain surfaced, reason/chain in message, empty array benign, "No transactions found" benign, transient error still falls back). Suite: 479/479 Vitest green, `tsc --noEmit` clean, eslint + prettier clean. |
 
 ## 6. Outcome
 
