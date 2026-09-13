@@ -1,5 +1,4 @@
-/**
- * Unit tests for polkadotService blockchain behaviors:
+**/***** Unit tests for polkadotService blockchain behaviors:
  *   1. Progressive loading — fetchTransactionHistory / fetchTransactionHistoryHybrid
  *      return transactions in descending blockNumber order.
  *   2. Fee extraction — fetchBlockTransactions extracts actualFee from
@@ -21,7 +20,11 @@ import { NetworkType } from '../wallet/types'
 vi.mock('../blockchain/xcmCorrelationService', () => ({
   annotateXcmTransactions: vi.fn(),
   correlateXcmTransactions: vi.fn(),
-  filterForAccounting: vi.fn(),
+}))
+vi.mock('../blockchain/polkadotService', () => ({
+  polkadotService: {
+    filterForAccounting: vi.fn(),
+  },
 }))
 
 vi.mock('../blockchain/priceService', () => ({
@@ -46,7 +49,7 @@ vi.mock('../blockchain/moonscanService', () => ({
 // Import the service AFTER mocks are registered
 // ---------------------------------------------------------------------------
 
-import { polkadotService } from '../blockchain/polkadotService'
+import polkadotService from '../blockchain/polkadotService'
 
 // ---------------------------------------------------------------------------
 // Test constants
@@ -363,6 +366,61 @@ describe('polkadotService', () => {
           txs[i].blockNumber
         )
       }
+    })
+  })
+
+  // =========================================================================
+  // Behavior 1c: Subscan-unavailable guardrails (gate1-report finding #9)
+  // =========================================================================
+
+  describe('fetchTransactionHistoryHybrid — Subscan-unavailable guardrails', () => {
+    it('warns that older history is excluded when Subscan contributes nothing', async () => {
+      const { subscanService } = await import('../blockchain/subscanService')
+      vi.mocked(subscanService.isAvailable).mockReturnValue(false)
+
+      // RPC only, with an empty chain — Subscan contributes zero transactions.
+      injectConnection(buildMockApi(2, new Map<number, BlockSpec>()))
+
+      const messages: string[] = []
+      await polkadotService.fetchTransactionHistoryHybrid(
+        NetworkType.POLKADOT,
+        {
+          address: TEST_ADDRESS,
+          startBlock: 1,
+          limit: 10,
+          onProgress: p => messages.push(p.message),
+        }
+      )
+
+      expect(
+        messages.some(m =>
+          /Subscan is unavailable.*older history is NOT included/i.test(m)
+        )
+      ).toBe(true)
+    })
+
+    it('throws instead of returning an empty list when Subscan and RPC both fail', async () => {
+      const { subscanService } = await import('../blockchain/subscanService')
+      vi.mocked(subscanService.isAvailable).mockReturnValue(false)
+
+      const connectSpy = vi
+        .spyOn(
+          polkadotService as unknown as {
+            connect: (network: NetworkType) => Promise<unknown>
+          },
+          'connect'
+        )
+        .mockRejectedValue(new Error('RPC down'))
+
+      await expect(
+        polkadotService.fetchTransactionHistoryHybrid(NetworkType.POLKADOT, {
+          address: TEST_ADDRESS,
+          startBlock: 1,
+          limit: 10,
+        })
+      ).rejects.toThrow(/Could not import transaction history/)
+
+      connectSpy.mockRestore()
     })
   })
 

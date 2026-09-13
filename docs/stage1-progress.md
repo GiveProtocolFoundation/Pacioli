@@ -1330,3 +1330,235 @@ WHERE status='approved'` (the M5 state machine explicitly allows
     end-to-end; findings + blocker-only fixes follow.
   - **No code changed this session** — docs-only tracker closeout. Main
     is CI-green (every Phase 4a part merged through required checks).
+- **Session 27 (2026-09-11, assessment + board direction):**
+  - **Full v1 readiness assessment completed** at `main` @ `db5db44` — output
+    is `docs/v1-readiness-plan.md`. Evidence-based survey of Rust engine,
+    frontend surfaces, nonprofit features, release/launch infrastructure, and
+    the Stage 2 intelligence layer. Build was **not** re-run (no Rust toolchain
+    in the assessment environment; pnpm 11 rejects the lockfile because
+    `pnpm.overrides` moved — CI pins pnpm 10, where it is valid). Confirming a
+    green build is Step 0 of the plan.
+  - **Findings that change this tracker's standing claims:**
+    - **This tracker went stale after Session 26 (2026-07-24).** Between then
+      and 2026-08-20, `main` gained bank/card capture (`GIV-825…829`,
+      board PRD `GIV-821`), the CoA template importer / entity types /
+      functional classification / Statement of Activities (`GIV-757/758/759`),
+      entities and auth surfaces, country-first onboarding (`GIV-862`),
+      Ethereum + L2 support and the Moonbeam/Moonriver sunset removal
+      (`GIV-888`), and security dependency remediation. None of it was
+      recorded here. Governance remedy in the plan §7.
+    - **Phase 10 is still the only open Stage 1 item**, but the rehearsal
+      checklist in `docs/gate1-report.md` has been reconciled for the current
+      network set (Moonbeam/Moonriver are sunset; EVM now means Ethereum/L2s).
+    - **Stage 2 is not started** — `intelligence/mod.rs` is a compile-checked
+      skeleton with a stub provider and is not registered; no AI call exists.
+      The deterministic rules engine is real and wired.
+    - **Bank feeds are on the SCOPE.md NOT-DO list** but have been partially
+      built under board-approved `GIV-821`. Needs an explicit ADR — open
+      decision in the plan.
+  - **Board direction taken:** Option B — build the **nonprofit core before
+    the AI layer** (fund/restriction dimension, noncash digital-asset gifts
+    with donor substantiation, Statement of Functional Expenses, Statement of
+    Cash Flows), with the provider abstraction wired to two real providers as
+    an early carve-out. This reorders the operating plan's Stage 2/Stage 3
+    sequence and must be reflected in `SCOPE.md` (pending).
+  - **Immediate priority chosen:** close the Gate 1 rehearsal — obtain the
+    Etherscan V2 key, run the §3 checklist on real wallets, deliver the
+    statements to a CPA. Pre-run requirements are now listed in
+    `docs/gate1-report.md` §3.
+  - **Docs changed this session:** `docs/v1-readiness-plan.md` (new),
+    `docs/gate1-report.md` (reconciliation + pre-run requirements),
+    this tracker entry. No code changed.
+- **Session 28 (2026-09-11, CTO — Gate 1 pre-run verification):** Product
+  owner supplied the Etherscan V2 key and wallet addresses; live probes run
+  against the real providers before the desktop rehearsal. Findings #4–#7
+  logged in `docs/gate1-report.md` §5 (all pre-run, no app run yet):
+  - **Finding #4 (blocker, open):** the supplied Etherscan V2 key is valid
+    (`chainid=1` → `status:1 OK`) but is on the **free plan**, which serves
+    Ethereum/Arbitrum/Polygon only. Base/Optimism/BNB return `NOTOK "Free API
+access is not supported for this chain"` yet remain selectable in the
+    wallet dropdown (`WalletManager.tsx:313-322`). Needs a decision: gate the
+    dropdown to key coverage, label paid-only chains, or upgrade the plan.
+  - **Finding #5 (blocker, user action):** Subscan disabled unauthenticated
+    access — `polkadot.api.subscan.io` returns **HTTP 403** without a key.
+    Polkadot sync cannot run until a Subscan key is saved (new prereq P1b).
+  - **Finding #6 (blocker for the walkthrough):** the supplied EVM address
+    `0x537f…aa75` has **no legitimate history** — only 50 inbound Polygon and
+    1 Arbitrum ERC-20 transfers, all unsolicited scam airdrops from a single
+    dusting address (2024-04-14 → 2025-06-15). No acquisition, disposal, or
+    own-wallet transfer to rehearse. Useful as an adversarial spam fixture.
+  - **Finding #7 (blocker, code):** the EVM TypeScript sync path **swallows
+    provider errors into "0 transactions found"** —
+    `evmTransactionService.fetchNormalTransactions`/`fetchTokenTransfers`
+    return `[]` on both exception and `data.status !== '1'`
+    (`evmTransactionService.ts:283-303`, `:338-350`). This is the
+    silently-incomplete-history class Phase 4a exists to prevent; Subscan was
+    fixed (`8fd0ded`), the EVM TS path was not. Proposed surgical fix:
+    separate the benign "No transactions found" case from a real provider
+    error and surface an actionable message, plus a regression test.
+  - **No code changed** — findings and prereqs only. `docs/gate1-report.md`
+    prereq table updated (P1 validated, P1b Subscan outstanding, P2 flagged).
+- **Session 28 addendum (2026-09-11, CTO — finding #7 fixed and verified):**
+  Toolchain unblocked for the frontend: `pnpm` 11 rejects the lockfile because
+  `pnpm.overrides` moved, so the checks were run with **pnpm 10** (the version
+  CI pins) via `npx pnpm@10` with a workspace-local store. Baseline before the
+  change: `tsc --noEmit` clean, **474/474 Vitest tests green**.
+  - **Finding #7 fix (`evmTransactionService.ts`):** added `EVMExplorerError`
+    and `parseExplorerResult`. An array `result` (empty included) is data;
+    `"No transactions found"` is benign empty; anything else (`NOTOK`, a
+    string error, a missing result, a non-2xx HTTP response) throws.
+    `fetchTransactionHistory` now re-raises `EVMExplorerError` instead of
+    masking it with the RPC block-scan fallback; transient/network errors
+    still fall back to RPC exactly as before. An unsupported chain on the
+    configured plan now shows the user an actionable message naming the chain
+    and the provider reason, instead of a silent "0 transactions found".
+  - **Tests:** 5 regression tests added to
+    `src/services/__tests__/evmTransactionService.test.ts` (capability error
+    surfaced not swallowed; reason + chain in message; empty array benign;
+    "No transactions found" benign; transient error still falls back to RPC).
+    After: **479/479 Vitest green**, `tsc --noEmit` clean, eslint clean,
+    prettier clean.
+  - **Not verified:** the Rust side was not built or tested — no Rust
+    toolchain in this environment. `cargo test/clippy/fmt` on `main` remains
+    Step 0 of the readiness plan.
+  - **Still open:** findings #4 (free-tier chain coverage vs. the advertised
+    dropdown — needs a decision), #5 (Subscan API key — user action),
+    #6 (no legitimate EVM rehearsal data — user action).
+- **Session 29 (2026-09-13, CTO — Gate 1 key/address verification):** Product
+  owner supplied a replacement Subscan key and EVM address; both probed live.
+  - **EVM address verified good (prereq P2 now met).**
+    `0x47bC8683b0D86296Cd596BfD2c670C0eD6D2De81` has **6 real Ethereum
+    transactions, all 2026-09-12**: an acquisition (0.0103007883 ETH in), a
+    disposal/swap (0.005 ETH to the MetaSwap router), a self-transfer
+    (0.001 ETH to self), a second disposal (0.001 ETH out), and two token
+    receipts (12.500709 mUSD; 5.0 ECX). Current balance
+    0.003702026213901276 ETH. This satisfies the checklist §3 step 5
+    acquisition / disposal / transfer requirement on Ethereum. No activity on
+    Arbitrum, Polygon, Base, Optimism, or BNB.
+  - **Subscan key rejected (finding #8, blocker, open).** The supplied key
+    returns HTTP 403 `{"code":20009,"message":"API key invalid"}` on the
+    `X-API-Key` header — the exact form `subscanService.makeRequest` uses.
+    `x-api-key`, body-`key`, and `Authorization: Bearer` were all rejected
+    too, so it is not a header-name problem. The app will surface this as a
+    thrown error (the `8fd0ded` fix), not silently, but **Polkadot sync is
+    blocked** until a working key is saved. Original finding #5 resolved to
+    "key required"; #8 is the key being invalid.
+  - **Finding #6 superseded** — the original EVM address remains in the
+    package as an unsolicited-airdrop/dust adversarial fixture.
+  - **Finding #4 unchanged** — Base/Optimism/BNB still return `NOTOK "Free
+API access is not supported for this chain"` on the free Etherscan plan.
+    The verified rehearsal wallet has no activity there, so this does not
+    block the rehearsal, but it remains a product-truthfulness issue.
+  - **Docs changed:** `docs/gate1-report.md` (prereq table updated; new
+    "Rehearsal data inventory"; finding #6 superseded; finding #8 added).
+    No code changed this session.
+- **Session 30 (2026-09-13, CTO — Substrate workaround + finding #9):** The
+  product owner asked why the Subscan key fails and whether a workaround is
+  available while the Substrate path is built out.
+  - **Diagnosis:** the key is genuinely rejected — Subscan returns
+    `code 20009 "API key invalid"` on **both** Polkadot and Kusama, and on
+    every auth form (`X-API-Key` as the app sends it, `x-api-key`,
+    `Authorization: Bearer`, and key-in-body). `api.subscan.io` (unified) is
+    not the right host for these endpoints (404). The
+    `pf_sk_v1_production_` prefix does not match Subscan's key format, so it
+    may belong to a different service or to an unactivated Subscan account.
+    Nothing in the app's request is wrong.
+  - **The workaround exists and was already in the code:** with Subscan
+    unavailable, `polkadotService.fetchTransactionHistoryHybrid` falls back to
+    an RPC block scan automatically. It is sufficient to keep building and
+    testing the Substrate path, but it only scans a recent window.
+  - **Finding #9 (blocker, fixed):** that fallback was dangerous for
+    accounting — it scanned only the last ~1,000 blocks and returned a short
+    list that looked complete (message: "0 from Subscan, N from blockchain"),
+    and if Subscan _and_ RPC both failed it returned `[]`, indistinguishable
+    from an empty wallet. Fixed in `polkadotService.ts`: (a) throw a
+    user-facing "Could not import transaction history" error when both sources
+    produce nothing; (b) append an explicit "Subscan is unavailable … older
+    history is NOT included" warning to the completion message whenever
+    Subscan contributed zero transactions. 2 regression tests added.
+    **481/481 Vitest green, `tsc --noEmit` clean, eslint + prettier clean.**
+  - **Options recorded in `docs/gate1-report.md` §3:** (1) run Gate 1 on
+    Ethereum only and treat Polkadot as a documented limitation; (2) RPC-only
+    Substrate sync for development; (3) obtain a valid Subscan key (free tier
+    suffices). Key-free alternatives for Gate 3/beta: self-hosted
+    SubQuery/Subsquid indexer, or Parity's Dotlake API (metrics + per-account
+    staking rewards only, not general transfers).
+- **Session 31 (2026-09-13, CTO — Dotlake evaluated):** The product owner
+  supplied a Dotlake API key (`api.data.parity.io`) and asked whether it is a
+  viable Subscan alternative. Tested against the live API and OpenAPI spec
+  (50 endpoints).
+  - **Key is valid and works** — aggregate `/api/daily-summary` and
+    per-account endpoints return real data (verified against a live Polkadot
+    signer: `total_txs: 73392`).
+  - **But it is not a Subscan replacement for the ledger.** Per-account
+    coverage is `explorer/account/{address}/summary` (counts, first/last seen,
+    top pallets — no amounts), `explorer/recent-extrinsics?address=` (_recent_
+    only, no history pagination), `daily-staking-rewards` (date-ranged),
+    `xcm-transfers` (paginated, date-ranged), and `explorer/extrinsic/{hash}`.
+    There is **no** per-account ordinary-transfer history endpoint. It is a
+    useful _complement_ (staking rewards, XCM) behind a provider trait, not a
+    substitute.
+  - **The supplied Polkadot address is inactive.** `5HizHVyq…NSDwp` has
+    **nonce 0** on Polkadot mainnet (public RPC, block 32,983,624), and
+    Dotlake reports the account as not found. Polkadot therefore cannot supply
+    rehearsal data regardless of provider — an active address is needed.
+  - **Conclusion recorded:** run Gate 1 on Ethereum (verified data); Polkadot
+    is a documented limitation. A Dotlake-backed Substrate adapter is a good
+    Phase 4a/Stage 2 addition for staking rewards and XCM, not for transfers.
+  - **Docs changed:** `docs/gate1-report.md` (P2 status; Dotlake evaluation and
+    conclusion). No code changed this session.
+- **Session 32 (2026-09-13, CTO — corrected Polkadot address; MAJOR finding):**
+  The product owner supplied the correct Polkadot address
+  `13zaY4pS2WSvYSSFUNUnzFVX7d6VkKy2qXGE2art3Ke6TAcF`. Verified: **active** —
+  287 txs, 2022-12-17 → 2025-10-24, top pallets nominationPools / xcmPallet /
+  convictionVoting (Dotlake). (`recent-extrinsics` is empty because the last
+  activity predates the recent window; the relay-chain `system_accountNextIndex`
+  reads 0, which is unexplained but the account is clearly active.)
+  - **Finding #10 (blocker, gate scope): the user's real EVM history is on
+    Moonbeam, which the app removed.** Dotlake's XCM records link
+    `13zaY…TAcF` to the originally supplied EVM address `0x537f…aa75` as an
+    XCM destination. That address is active on **Moonbeam (chainid 1284)**:
+    1000+ native txs (2023-02 → 2024-11) and 1000+ ERC-20 transfers (STELLA,
+    WGLMR, xcDOT, xcUSDC, xcPEN, xcMANTA), plus **39 XCM transfers** to
+    Moonbeam / Bifrost / HydraDX / Astar spanning 2024-01 → 2026-07.
+  - **`GIV-888` removed Moonbeam/Moonriver on 2026-07-31 (sunset), but
+    Etherscan V2 still serves chainid 1284** (`status:1 OK`). The sunset
+    affects _live tracking_, not _historical accounting_ — and historical
+    accounting is exactly what Gate 1 needs. As shipped, the app cannot import
+    the product owner's real EVM history, so the gate's "your own real
+    wallets" premise is not satisfiable without either restoring Moonbeam
+    read-only, obtaining a valid Subscan key for the Polkadot side, or
+    accepting the fresh Ethereum fixture with disclosure.
+  - **Scale note for the rehearsal:** 1000+ Moonbeam transactions is not
+    practical for manual Stage 1 classification. Any real-data run must be
+    scoped to a bounded period using the GIV-716 import-selection filter.
+  - **Options recorded in `docs/gate1-report.md` finding #10.** Needs a
+    product decision (restore Moonbeam read-only vs. Polkadot-via-Subscan vs.
+    disclosed Ethereum fixture).
+- **Session 33 (2026-09-13, CTO — Moonbeam read-only restore):** Product owner
+  chose option (a): restore Moonbeam for historical import.
+  - **Finding #11 (blocker, fixed): the EVM explorer path never sent an API
+    key.** `evmTransactionService` declared `BlockExplorerConfig.apiKey` but
+    never read or sent it, so `fetchNormalTransactions`/`fetchTokenTransfers`
+    called Etherscan V2 keyless — which V2 rejects. Every EVM chain including
+    Ethereum was affected. Fixed with `getApiKeyCandidates()` (Tauri keychain →
+    localStorage → env, mirroring `moonscanService`) and a shared
+    `fetchExplorer()` that sets `apikey` and retries each configured key, so a
+    stale key cannot shadow a valid one.
+  - **Moonbeam restore (read-only historical import):** routed through the
+    Etherscan V2 path (`evmTransactionService`, chainid 1284) instead of the
+    sunset-blocked `moonscanService`; added to `PURE_EVM_NETWORKS` and
+    `NETWORK_DECIMALS`; restored to the network dropdown under
+    "Historical — sunset chains (import only)"; `useBlockSubscription` now
+    skips sunset chains (no new blocks). Moonriver not restored.
+  - **Scale:** the Moonbeam history is 2168 native + 4622 ERC-20 txs
+    (2023-02 → 2026-05) — impractical for manual classification. Recommended
+    rehearsal window **2026-01** (19 txs), alternative 2023-12 (27), imported
+    via the GIV-716 selection filter.
+  - **Verification:** 482/482 Vitest green (1 new key-plumbing test, 24
+    files), `tsc --noEmit` clean, eslint + prettier clean. Rust still not
+    built (no toolchain).
+  - **Files:** `src/services/blockchain/evmTransactionService.ts`,
+    `src/services/__tests__/evmTransactionService.test.ts`,
+    `src/app/wallets/WalletManager.tsx`,
+    `src/hooks/useBlockSubscription.ts`, `docs/gate1-report.md`.
