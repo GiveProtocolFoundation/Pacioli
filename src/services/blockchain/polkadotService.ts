@@ -374,6 +374,13 @@ export async function correlateXcmTransactions(
             onProgress: (stage, current, total) => {
               onProgress?.({
                 stage: 'fetching',
+      evm: async (network, address, {
+        onProgress,
+        limit,
+        fullArchive,
+        startBlock,
+        totalBlocks,
+      }) => {
       evm: async (network, address, { limit = 0, fullArchive = false, onProgress, totalBlocks }) => {
         try {
           onProgress?.({

@@ -21,7 +21,10 @@ import { NetworkType } from '../wallet/types'
 vi.mock('../blockchain/xcmCorrelationService', () => ({
   annotateXcmTransactions: vi.fn(),
   correlateXcmTransactions: vi.fn(),
-  filterForAccounting: vi.fn(),
+vi.mock('../blockchain/polkadotService', () => ({
+  polkadotService: {
+    filterForAccounting: vi.fn(),
+  },
 }))
 
 vi.mock('../blockchain/priceService', () => ({
