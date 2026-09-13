@@ -7,10 +7,7 @@
  */
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import {
-  polkadotService,
-  type SyncProgress,
-} from '../services/blockchain/polkadotService'
+import { subscribeNewBlocks } from '../services/blockchain/polkadotService'
 import { indexedDBService } from '../services/database/indexedDBService'
 import { NetworkType } from '../services/wallet/types'
 import { encodeAddress, decodeAddress } from '@polkadot/util-crypto'
@@ -23,6 +20,12 @@ const SS58_FORMATS: Partial<Record<NetworkType, number>> = {
   [NetworkType.ACALA]: 10,
   // Moonbeam (1284) and Moonriver (1285) are sunset — omitted
 }
+
+/** Sunset chains are historical-import only: there are no new blocks to watch. */
+const HISTORICAL_ONLY_NETWORKS = new Set<NetworkType>([
+  NetworkType.MOONBEAM,
+  NetworkType.MOONRIVER,
+])
 
 /** Convert an address to network-specific SS58 format */
 function toNetworkAddress(address: string, network: NetworkType): string {
@@ -195,6 +198,9 @@ export function useBlockSubscription(
      * @returns {Promise<Function>} A promise that resolves to the unsubscribe function.
      */
     const subscribe = async () => {
+      // Sunset chains are historical-import only; there is nothing to subscribe to.
+      if (HISTORICAL_ONLY_NETWORKS.has(network)) return null
+
       try {
         const unsub = await polkadotService.subscribeNewBlocks(
           network,
