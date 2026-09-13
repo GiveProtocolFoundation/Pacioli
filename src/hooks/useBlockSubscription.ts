@@ -202,7 +202,7 @@ export function useBlockSubscription(
      */
     const subscribe = async () => {
       // Sunset chains are historical-import only; there is nothing to subscribe to.
-      if (HISTORICAL_ONLY_NETWORKS.has(network)) return
+      if (HISTORICAL_ONLY_NETWORKS.has(network)) return null
 
       try {
         const unsub = await polkadotService.subscribeNewBlocks(
