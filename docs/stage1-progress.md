@@ -1330,3 +1330,97 @@ WHERE status='approved'` (the M5 state machine explicitly allows
     end-to-end; findings + blocker-only fixes follow.
   - **No code changed this session** — docs-only tracker closeout. Main
     is CI-green (every Phase 4a part merged through required checks).
+- **Session 27 (2026-09-11, assessment + board direction):**
+  - **Full v1 readiness assessment completed** at `main` @ `db5db44` — output
+    is `docs/v1-readiness-plan.md`. Evidence-based survey of Rust engine,
+    frontend surfaces, nonprofit features, release/launch infrastructure, and
+    the Stage 2 intelligence layer. Build was **not** re-run (no Rust toolchain
+    in the assessment environment; pnpm 11 rejects the lockfile because
+    `pnpm.overrides` moved — CI pins pnpm 10, where it is valid). Confirming a
+    green build is Step 0 of the plan.
+  - **Findings that change this tracker's standing claims:**
+    - **This tracker went stale after Session 26 (2026-07-24).** Between then
+      and 2026-08-20, `main` gained bank/card capture (`GIV-825…829`,
+      board PRD `GIV-821`), the CoA template importer / entity types /
+      functional classification / Statement of Activities (`GIV-757/758/759`),
+      entities and auth surfaces, country-first onboarding (`GIV-862`),
+      Ethereum + L2 support and the Moonbeam/Moonriver sunset removal
+      (`GIV-888`), and security dependency remediation. None of it was
+      recorded here. Governance remedy in the plan §7.
+    - **Phase 10 is still the only open Stage 1 item**, but the rehearsal
+      checklist in `docs/gate1-report.md` has been reconciled for the current
+      network set (Moonbeam/Moonriver are sunset; EVM now means Ethereum/L2s).
+    - **Stage 2 is not started** — `intelligence/mod.rs` is a compile-checked
+      skeleton with a stub provider and is not registered; no AI call exists.
+      The deterministic rules engine is real and wired.
+    - **Bank feeds are on the SCOPE.md NOT-DO list** but have been partially
+      built under board-approved `GIV-821`. Needs an explicit ADR — open
+      decision in the plan.
+  - **Board direction taken:** Option B — build the **nonprofit core before
+    the AI layer** (fund/restriction dimension, noncash digital-asset gifts
+    with donor substantiation, Statement of Functional Expenses, Statement of
+    Cash Flows), with the provider abstraction wired to two real providers as
+    an early carve-out. This reorders the operating plan's Stage 2/Stage 3
+    sequence and must be reflected in `SCOPE.md` (pending).
+  - **Immediate priority chosen:** close the Gate 1 rehearsal — obtain the
+    Etherscan V2 key, run the §3 checklist on real wallets, deliver the
+    statements to a CPA. Pre-run requirements are now listed in
+    `docs/gate1-report.md` §3.
+  - **Docs changed this session:** `docs/v1-readiness-plan.md` (new),
+    `docs/gate1-report.md` (reconciliation + pre-run requirements),
+    this tracker entry. No code changed.
+- **Session 28 (2026-09-11, CTO — Gate 1 pre-run verification):** Product
+  owner supplied the Etherscan V2 key and wallet addresses; live probes run
+  against the real providers before the desktop rehearsal. Findings #4–#7
+  logged in `docs/gate1-report.md` §5 (all pre-run, no app run yet):
+  - **Finding #4 (blocker, open):** the supplied Etherscan V2 key is valid
+    (`chainid=1` → `status:1 OK`) but is on the **free plan**, which serves
+    Ethereum/Arbitrum/Polygon only. Base/Optimism/BNB return `NOTOK "Free API
+    access is not supported for this chain"` yet remain selectable in the
+    wallet dropdown (`WalletManager.tsx:313-322`). Needs a decision: gate the
+    dropdown to key coverage, label paid-only chains, or upgrade the plan.
+  - **Finding #5 (blocker, user action):** Subscan disabled unauthenticated
+    access — `polkadot.api.subscan.io` returns **HTTP 403** without a key.
+    Polkadot sync cannot run until a Subscan key is saved (new prereq P1b).
+  - **Finding #6 (blocker for the walkthrough):** the supplied EVM address
+    `[redacted]` has **no legitimate history** — only [redacted] Polygon and
+    1 Arbitrum ERC-20 transfers, all unsolicited scam airdrops from a single
+    dusting address (2024-04-14 → 2025-06-15). No acquisition, disposal, or
+    own-wallet transfer to rehearse. Useful as an adversarial spam fixture.
+  - **Finding #7 (blocker, code):** the EVM TypeScript sync path **swallows
+    provider errors into "0 transactions found"** —
+    `evmTransactionService.fetchNormalTransactions`/`fetchTokenTransfers`
+    return `[]` on both exception and `data.status !== '1'`
+    (`evmTransactionService.ts:283-303`, `:338-350`). This is the
+    silently-incomplete-history class Phase 4a exists to prevent; Subscan was
+    fixed (`8fd0ded`), the EVM TS path was not. Proposed surgical fix:
+    separate the benign "No transactions found" case from a real provider
+    error and surface an actionable message, plus a regression test.
+  - **No code changed** — findings and prereqs only. `docs/gate1-report.md`
+    prereq table updated (P1 validated, P1b Subscan outstanding, P2 flagged).
+- **Session 28 addendum (2026-09-11, CTO — finding #7 fixed and verified):**
+  Toolchain unblocked for the frontend: `pnpm` 11 rejects the lockfile because
+  `pnpm.overrides` moved, so the checks were run with **pnpm 10** (the version
+  CI pins) via `npx pnpm@10` with a workspace-local store. Baseline before the
+  change: `tsc --noEmit` clean, **474/474 Vitest tests green**.
+  - **Finding #7 fix (`evmTransactionService.ts`):** added `EVMExplorerError`
+    and `parseExplorerResult`. An array `result` (empty included) is data;
+    `"No transactions found"` is benign empty; anything else (`NOTOK`, a
+    string error, a missing result, a non-2xx HTTP response) throws.
+    `fetchTransactionHistory` now re-raises `EVMExplorerError` instead of
+    masking it with the RPC block-scan fallback; transient/network errors
+    still fall back to RPC exactly as before. An unsupported chain on the
+    configured plan now shows the user an actionable message naming the chain
+    and the provider reason, instead of a silent "0 transactions found".
+  - **Tests:** 5 regression tests added to
+    `src/services/__tests__/evmTransactionService.test.ts` (capability error
+    surfaced not swallowed; reason + chain in message; empty array benign;
+    "No transactions found" benign; transient error still falls back to RPC).
+    After: **479/479 Vitest green**, `tsc --noEmit` clean, eslint clean,
+    prettier clean.
+  - **Not verified:** the Rust side was not built or tested — no Rust
+    toolchain in this environment. `cargo test/clippy/fmt` on `main` remains
+    Step 0 of the readiness plan.
+  - **Still open:** findings #4 (free-tier chain coverage vs. the advertised
+    dropdown — needs a decision), #5 (Subscan API key — user action),
+    #6 (no legitimate EVM rehearsal data — user action).
