@@ -1483,3 +1483,27 @@ WHERE status='approved'` (the M5 state machine explicitly allows
     suffices). Key-free alternatives for Gate 3/beta: self-hosted
     SubQuery/Subsquid indexer, or Parity's Dotlake API (metrics + per-account
     staking rewards only, not general transfers).
+- **Session 31 (2026-09-13, CTO — Dotlake evaluated):** The product owner
+  supplied a Dotlake API key (`api.data.parity.io`) and asked whether it is a
+  viable Subscan alternative. Tested against the live API and OpenAPI spec
+  (50 endpoints).
+  - **Key is valid and works** — aggregate `/api/daily-summary` and
+    per-account endpoints return real data (verified against a live Polkadot
+    signer: `total_txs: 73392`).
+  - **But it is not a Subscan replacement for the ledger.** Per-account
+    coverage is `explorer/account/{address}/summary` (counts, first/last seen,
+    top pallets — no amounts), `explorer/recent-extrinsics?address=` (*recent*
+    only, no history pagination), `daily-staking-rewards` (date-ranged),
+    `xcm-transfers` (paginated, date-ranged), and `explorer/extrinsic/{hash}`.
+    There is **no** per-account ordinary-transfer history endpoint. It is a
+    useful *complement* (staking rewards, XCM) behind a provider trait, not a
+    substitute.
+  - **The supplied Polkadot address is inactive.** `5HizHVyq…NSDwp` has
+    **nonce 0** on Polkadot mainnet (public RPC, block 32,983,624), and
+    Dotlake reports the account as not found. Polkadot therefore cannot supply
+    rehearsal data regardless of provider — an active address is needed.
+  - **Conclusion recorded:** run Gate 1 on Ethereum (verified data); Polkadot
+    is a documented limitation. A Dotlake-backed Substrate adapter is a good
+    Phase 4a/Stage 2 addition for staking rewards and XCM, not for transfers.
+  - **Docs changed:** `docs/gate1-report.md` (P2 status; Dotlake evaluation and
+    conclusion). No code changed this session.

@@ -155,7 +155,7 @@ polish is logged, not chased.
 | - | ----------- | ----- | ------ |
 | P1 | **Etherscan V2 API key** (<https://etherscan.io/myapikey>), saved in Settings → Data Providers → **Etherscan**. Legacy moonscan.io keys do **not** work on V2. | Product owner | ✅ **Supplied and validated 2026-09-11** (see finding #4) |
 | P1b | **Subscan API key** (<https://support.subscan.io>), saved under **Subscan**. Subscan disabled unauthenticated access; without this, Polkadot sync returns HTTP 403. | Product owner | ❌ **Supplied 2026-09-13 but rejected** — Subscan returns `code 20009 "API key invalid"` on the `X-API-Key` header (finding #8). Polkadot is blocked until a valid key is saved. |
-| P2 | **Real wallet addresses with legitimate history** — at least one chain carrying an acquisition, a disposal, and ideally an own-wallet transfer. | Product owner | ✅ **EVM supplied and verified** — see the data inventory below. ⚠️ Polkadot address unverified pending P1b. |
+| P2 | **Real wallet addresses with legitimate history** — at least one chain carrying an acquisition, a disposal, and ideally an own-wallet transfer. | Product owner | ✅ **EVM supplied and verified** — see the data inventory below. ❌ **Polkadot address has no activity** — nonce 0 on Polkadot mainnet (checked at block 32,983,624) and Dotlake reports the account as not found. An active Polkadot/Kusama/parachain address is needed if Polkadot is to be rehearsed. |
 | P3 | A reviewing CPA willing to spend ~30 minutes and return written observations | Board | ❌ Outstanding |
 
 **Rehearsal data inventory (verified by live probe 2026-09-13).**
@@ -179,7 +179,12 @@ Current ETH balance 0.003702026213901276. This satisfies checklist §3 step 5's 
 2. **RPC-only Substrate sync — already implemented, no Subscan needed.** The app scans a recent window (last 1,000 blocks; up to 10,000 on an incremental refresh) and falls back automatically. Good enough to keep building and testing the Substrate path; **not** good enough for a real historical import. Finding #9's fix now makes the app say so explicitly instead of presenting partial history as complete.
 3. **A valid Subscan key — the real fix.** Subscan's free tier is sufficient for this volume. Verify or regenerate at <https://support.subscan.io>; unauthenticated access is permanently disabled.
 
-Longer term, the Phase 4a Substrate registry (Dwellir RPC fallback) is scaffolded but its history adapter is still a placeholder. Key-free alternatives worth evaluating before Gate 3/beta: a self-hosted indexer (SubQuery / Subsquid), or Parity's **Dotlake API** — free, wallet-authenticated, but limited to pre-aggregated metrics including per-account *staking rewards*, not general transfers.
+Longer term, the Phase 4a Substrate registry (Dwellir RPC fallback) is scaffolded but its history adapter is still a placeholder. The key-free alternatives were evaluated on 2026-09-13:
+
+- **Dotlake API** (Parity, <https://api.data.parity.io>) — the supplied key was **validated and works**; it is **not a Subscan replacement for general transaction history**. Per-account coverage is: `explorer/account/{address}/summary` (total_txs, first/last seen, top pallets — no amounts), `explorer/recent-extrinsics?address=` (*recent* only, no pagination into history), `daily-staking-rewards` (full date range), `xcm-transfers` (paginated, date-ranged), and `explorer/extrinsic/{hash}` lookup. It exposes **no** per-account list of ordinary `balances.transfer` history. It is therefore a useful **complement** behind a provider trait — staking rewards and XCM transfers, both of which Pacioli needs — but not a substitute for the transfer history the ledger imports.
+- **Self-hosted indexer** (SubQuery / Subsquid) — the only key-free route to full transfer history; real work, and the "own indexing" option the board already deferred.
+
+**Conclusion: Dotlake does not resolve the Subscan gap.** Gate 1 should run on Ethereum (verified data), with Polkadot treated as a documented limitation until an active address and a valid Subscan key exist.
 
 **Free-tier chain coverage (important).** The supplied Etherscan V2 key is on the
 free plan. A live probe on 2026-09-11 showed the free plan serves **Ethereum,
