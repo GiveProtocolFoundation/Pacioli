@@ -7,7 +7,10 @@
  */
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { subscribeNewBlocks } from '../services/blockchain/polkadotService'
+import {
+  polkadotService,
+  type SyncProgress,
+} from '../services/blockchain/polkadotService'
 import { indexedDBService } from '../services/database/indexedDBService'
 import { NetworkType } from '../services/wallet/types'
 import { encodeAddress, decodeAddress } from '@polkadot/util-crypto'
@@ -199,7 +202,7 @@ export function useBlockSubscription(
      */
     const subscribe = async () => {
       // Sunset chains are historical-import only; there is nothing to subscribe to.
-      if (HISTORICAL_ONLY_NETWORKS.has(network)) return null
+      if (HISTORICAL_ONLY_NETWORKS.has(network)) return
 
       try {
         const unsub = await polkadotService.subscribeNewBlocks(
