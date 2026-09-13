@@ -7,9 +7,7 @@
  */
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import polkadotService, {
-  type SyncProgress,
-} from '../services/blockchain/polkadotService'
+import { subscribeNewBlocks } from '../services/blockchain/polkadotService'
 import { indexedDBService } from '../services/database/indexedDBService'
 import { NetworkType } from '../services/wallet/types'
 import { encodeAddress, decodeAddress } from '@polkadot/util-crypto'

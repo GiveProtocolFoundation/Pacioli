@@ -1,11 +1,11 @@
-// File: src/services/blockchain/polkadotService.ts
-
-// --- existing imports ---
 import { ApiPromise, WsProvider } from '@polkadot/api'
 import { decodeAddress, encodeAddress } from '@polkadot/util-crypto'
 
-// --- export the SyncProgress type ---
-export interface SyncProgress {
+export type SyncProgress = {
+  processed: number
+  total: number
+}
+
   syncedBlocks: number
   totalBlocks: number
   percent: number
@@ -21,10 +21,10 @@ export const polkadotService = {
 }
 
 // --- export the correlateXcmTransactions function ---
-export async function correlateXcmTransactions(
+export const correlateXcmTransactions = async (
   transactions: any[],
   lookup: Record<string, any>
-): Promise<any[]> {
+): Promise<any[]> => {
   // existing implementation...
   return []
 }
@@ -57,23 +57,6 @@ export async function correlateXcmTransactions(
     }
 
     const endpoints = this.RPC_ENDPOINTS[network]
-    if (!endpoints || endpoints.length === 0) {
-      throw new Error(`No RPC endpoints configured for ${network}`)
-    }
-
-    // Try each endpoint until one connects
-    let lastError: Error | null = null
-    for (const endpoint of endpoints) {
-      try {
-        const wsProvider = new WsProvider(endpoint, 5000) // 5 second timeout
-        const api = await ApiPromise.create({ provider: wsProvider })
-
-        // Add timeout to isReady
-        await Promise.race([
-          api.isReady,
-          new Promise((_, reject) =>
-            setTimeout(
-              () => reject(new Error('Connection timeout after 10 seconds')),
               10000
             )
           ),
