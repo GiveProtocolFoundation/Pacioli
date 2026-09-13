@@ -46,7 +46,7 @@ vi.mock('../blockchain/moonscanService', () => ({
 // Import the service AFTER mocks are registered
 // ---------------------------------------------------------------------------
 
-import { polkadotService } from '../blockchain/polkadotService'
+import polkadotService from '../blockchain/polkadotService'
 
 // ---------------------------------------------------------------------------
 // Test constants

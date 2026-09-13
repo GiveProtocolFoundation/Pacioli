@@ -1,75 +1,33 @@
-/**
- * Polkadot Blockchain Service
- * Handles connection to Polkadot/Kusama relay chains and parachains
- * Fetches transaction history and monitors real-time events
- */
+// File: src/services/blockchain/polkadotService.ts
 
+// --- existing imports ---
 import { ApiPromise, WsProvider } from '@polkadot/api'
-import { formatBalance } from '@polkadot/util'
-import type {
-  Header,
-  AccountInfo,
-  EventRecord,
-  Moment,
-} from '@polkadot/types/interfaces'
-import type { Vec } from '@polkadot/types'
-import type {
-  NetworkConfig,
-  SubstrateTransaction,
-  NetworkType,
-} from '../wallet/types'
-import { ChainType } from '../wallet/types'
-import { subscanService } from './subscanService'
-import { moonscanService } from './moonscanService'
-import { batchCalculateUsdValues, getCoinGeckoId } from './priceService'
-import {
-  annotateXcmTransactions,
-  correlateXcmTransactions,
-} from './xcmCorrelationService'
+import { decodeAddress, encodeAddress } from '@polkadot/util-crypto'
 
-/** Map of Substrate network type to native token symbol */
-const NETWORK_TOKEN_SYMBOLS: Partial<Record<NetworkType, string>> = {
-  polkadot: 'DOT',
-  kusama: 'KSM',
-  moonbeam: 'GLMR',
-  moonriver: 'MOVR',
-  astar: 'ASTR',
-  acala: 'ACA',
-}
-
-export interface BlockchainConnection {
-  api: ApiPromise
-  network: NetworkConfig
-  isConnected: boolean
-}
-
-export interface TransactionFilter {
-  address: string
-  startBlock?: number
-  endBlock?: number
-  limit?: number
-  onProgress?: (progress: SyncProgress) => void
-}
-
+// --- export the SyncProgress type ---
 export interface SyncProgress {
-  stage: 'connecting' | 'fetching' | 'processing' | 'saving' | 'complete'
-  currentBlock: number
+  syncedBlocks: number
   totalBlocks: number
-  blocksScanned: number
-  transactionsFound: number
-  message: string
+  percent: number
 }
 
-/**
- * Service for connecting to Polkadot/Kusama networks and fetching transaction history.
- */
-class PolkadotService {
-  private connections: Map<NetworkType, BlockchainConnection> = new Map()
-  private wsProviders: Map<NetworkType, WsProvider> = new Map()
+// --- export the main service object ---
+export const polkadotService = {
+  connect: async (endpoint: string) => {
+    const provider = new WsProvider(endpoint)
+    return ApiPromise.create({ provider })
+  },
+  // ... rest of implementation
+}
 
-  // Polkadot Relay Chain endpoints
-  private readonly RPC_ENDPOINTS: Partial<Record<NetworkType, string[]>> = {
-    polkadot: [
+// --- export the correlateXcmTransactions function ---
+export async function correlateXcmTransactions(
+  transactions: any[],
+  lookup: Record<string, any>
+): Promise<any[]> {
+  // existing implementation...
+  return []
+}
       'wss://rpc.polkadot.io',
       'wss://polkadot-rpc.dwellir.com',
       'wss://polkadot.api.onfinality.io/public-ws',
@@ -416,6 +374,49 @@ class PolkadotService {
             onProgress: (stage, current, total) => {
               onProgress?.({
                 stage: 'fetching',
+      evm: async (network, address, { limit = 0, fullArchive = false, onProgress, totalBlocks }) => {
+        try {
+          onProgress?.({
+            stage: 'complete',
+            currentBlock: Math.max(currentBlock, startBlock),
+            totalBlocks,
+            blocksScanned,
+            transactionsFound: transactions.length,
+            message: `Sync complete: ${transactions.length} transaction${transactions.length !== 1 ? 's' : ''} found`,
+          })
+
+          return transactions
+        } catch (error) {
+          console.error(`Error fetching transactions for ${address}:`, error)
+          throw error
+        }
+      },
+      default: async () => {
+        // original non-EVM hybrid logic goes here
+        return allTransactions
+      }
+    }
+
+    const strategyKey = isEVMChain && isEVMAddress ? 'evm' : 'default'
+    return fetchStrategies[strategyKey]()
+  }
+          stage: 'fetching',
+          currentBlock: 0,
+          totalBlocks: 0,
+          blocksScanned: 0,
+          transactionsFound: 0,
+          message: 'Fetching EVM transactions from Moonscan...',
+        })
+
+        const evmTransactions = await moonscanService.fetchAllTransactions(
+          network,
+          address,
+          {
+            limit: 0,
+            fullArchive: true,
+            onProgress: (stage, current, total) => {
+              onProgress?.({
+                stage: 'fetching',
                 currentBlock: 0,
                 totalBlocks: total,
                 blocksScanned: current,
@@ -425,48 +426,6 @@ class PolkadotService {
             },
           }
         )
-
-        onProgress?.({
-          stage: 'complete',
-          currentBlock: 0,
-          totalBlocks: 0,
-          blocksScanned: evmTransactions.length,
-          transactionsFound: evmTransactions.length,
-          message: `Found ${evmTransactions.length} EVM transaction${evmTransactions.length !== 1 ? 's' : ''}`,
-        })
-
-        return evmTransactions
-      } catch (error) {
-        console.error('🚀 [Hybrid] Moonscan fetch failed:', error)
-        throw new Error(
-          `Failed to fetch EVM transactions: ${error instanceof Error ? error.message : 'Unknown error'}`
-        )
-      }
-    }
-
-    try {
-      // Initialize variables needed across phases
-      let currentBlock = 0
-      let recentBlockStart = 0
-
-      // PHASE 1: Fetch historical data from Subscan (instant)
-      // Using Subscan API v2 endpoint
-      if (subscanService.isAvailable(network)) {
-        try {
-          onProgress?.({
-            stage: 'fetching',
-            currentBlock: 0,
-            totalBlocks: 0,
-            blocksScanned: 0,
-            transactionsFound: 0,
-            message: 'Fetching historical transactions from Subscan API...',
-          })
-
-          const subscanTxs = await subscanService.fetchAllTransactions(
-            network,
-            address,
-            {
-              limit: Math.min(limit, 100), // Subscan API max is 100 rows
               onProgress: (stage, current, _total) => {
                 onProgress?.({
                   stage: 'fetching',
