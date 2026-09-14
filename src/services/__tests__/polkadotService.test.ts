@@ -1,4 +1,5 @@
-**/***** Unit tests for polkadotService blockchain behaviors:
+/**
+ * Unit tests for polkadotService blockchain behaviors:
  *   1. Progressive loading — fetchTransactionHistory / fetchTransactionHistoryHybrid
  *      return transactions in descending blockNumber order.
  *   2. Fee extraction — fetchBlockTransactions extracts actualFee from
@@ -20,11 +21,7 @@ import { NetworkType } from '../wallet/types'
 vi.mock('../blockchain/xcmCorrelationService', () => ({
   annotateXcmTransactions: vi.fn(),
   correlateXcmTransactions: vi.fn(),
-}))
-vi.mock('../blockchain/polkadotService', () => ({
-  polkadotService: {
-    filterForAccounting: vi.fn(),
-  },
+  filterForAccounting: vi.fn(),
 }))
 
 vi.mock('../blockchain/priceService', () => ({
@@ -49,7 +46,7 @@ vi.mock('../blockchain/moonscanService', () => ({
 // Import the service AFTER mocks are registered
 // ---------------------------------------------------------------------------
 
-import polkadotService from '../blockchain/polkadotService'
+import { polkadotService } from '../blockchain/polkadotService'
 
 // ---------------------------------------------------------------------------
 // Test constants
