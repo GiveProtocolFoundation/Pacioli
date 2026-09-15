@@ -1606,3 +1606,22 @@ API access is not supported for this chain"` on the free Etherscan plan.
     `bank.rs` (519 lines), three migrations, a classification queue and rules
     UI, and 320 lines of persistence tests, merged across GIV-825/828/829/856
     while it was on the NOT-DO list.
+  - **`cargo test` immediately found a real failure** — which is exactly why it
+    was added. Job result: **400 tests, 393 passed, 1 failed, 6 ignored.**
+    `api::accounting::tests::existing_views_return_rows_after_migration`
+    asserted 21 global seed accounts and found **24**.
+    - Root cause: the bank expense seed migration
+      (`20260805000002_seed_bank_expense_accounts.sql`, 3 rows —
+      6100 Payroll / 6200 Software / 6300 Utilities) landed *after* the
+      original 21-row seed (`20260326000001_add_classification_and_seed_accounts.sql`)
+      and the test expectation was never updated. 21 + 3 = 24 exactly.
+    - The **migration is correct**: GIV-856 added those accounts because the
+      starter bank rules debit them and they were missing from the original
+      seed (starter rules pointing at non-existent accounts is the real bug it
+      fixed). The **test expectation was stale**.
+    - Fixed by updating the assertion to 24 with the composition documented,
+      plus an explicit guard that 6100/6200/6300 are seeded, so the total
+      cannot drift silently by trading one account for another.
+    - This failure had been latent since GIV-856 and was invisible because
+      `cargo test` never ran in CI. It is the first concrete instance of the
+      §2.3/§3.6 drift the readiness assessment warned about.
