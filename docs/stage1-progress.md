@@ -1625,3 +1625,27 @@ API access is not supported for this chain"` on the free Etherscan plan.
     - This failure had been latent since GIV-856 and was invisible because
       `cargo test` never ran in CI. It is the first concrete instance of the
       §2.3/§3.6 drift the readiness assessment warned about.
+- **Session 35 (2026-09-14, CTO — Step 0 merged; ADR 0001 ratified):** PR #305
+  merged to `main` (`7677141`) with a code-owner approval from `@civicmastery`.
+  Main CI green in 10m45s, now including `cargo test` and `cargo build
+  --release`. This was also the first PR to run under the new branch
+  protection, which correctly refused to let its author self-merge.
+  - **ADR 0001 decided: Option A — bank feeds ratified.** The board chose to
+    correct the constitution rather than excuse the code: a nonprofit's books
+    are predominantly fiat, so a crypto-only ledger cannot close a real month,
+    which is what Gate 3 requires. The NOT-DO entry was wrong when written.
+  - **`SCOPE.md` §5 amended** — bank feeds removed from the NOT-DO list, with a
+    note recording why and carrying the guardrail. `SCOPE.md` and the ADR
+    changed in the same PR, per the ADR convention.
+  - **Guardrail recorded:** no further breadth may be added to bank feeds until
+    Gate 1 closes and a CPA has reviewed statements. This is one named,
+    retroactively ratified exception, not a general licence to build ahead of
+    the gates.
+  - **Operating plan §9.3 closed** (1 of 7 board decisions now decided). Two
+    follow-ups remain open and are *not* technical: bank feeds need an owner and
+    an explicit place in the Gate 1–3 sequence.
+  - **Drift tripwire (§7.3) now has its first entry.** A capability was built,
+    merged and tested while on the NOT-DO list and was ratified after the fact.
+    The ADR instructs that this be reported at the next monthly gate review as a
+    process failure, independent of the feature's merit — the feature is
+    defensible on the persona; the process was not.

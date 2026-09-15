@@ -21,4 +21,4 @@ without guesswork.
 
 | ADR | Title | Status |
 |-----|-------|--------|
-| [0001](0001-bank-feed-exception.md) | Bank feeds ahead of Gate 4 (exception to the NOT-DO list) | Proposed |
+| [0001](0001-bank-feed-exception.md) | Bank feeds ahead of Gate 4 (exception to the NOT-DO list) | **Accepted** (Option A, 2026-09-14) |
