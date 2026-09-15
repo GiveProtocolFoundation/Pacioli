@@ -1562,3 +1562,47 @@ API access is not supported for this chain"` on the free Etherscan plan.
     `src/services/__tests__/evmTransactionService.test.ts`,
     `src/app/wallets/WalletManager.tsx`,
     `src/hooks/useBlockSubscription.ts`, `docs/gate1-report.md`.
+- **Session 34 (2026-09-14, CTO — main was red in three ways; governance
+  hardened):** The merged #302 squash left `main` with all six Node CI jobs
+  failing at **Install dependencies**. Three independent regressions, from two
+  different bots, none caught because CI was already failing on install:
+  - **Dependabot #301 (`2f84a38`) committed a `pnpm-lock.yaml` with its entire
+    `overrides:` block removed** while `package.json` still declared 23, so
+    every `pnpm install --frozen-lockfile` aborted with
+    `ERR_PNPM_LOCKFILE_CONFIG_MISMATCH`. `f0d3dbc` was 23/23; `2f84a38` was
+    23/0. The same regeneration silently dropped the security pins, taking the
+    audit from **44 vulnerabilities (18 high)** back to **16 (9 high)**.
+  - **AI "autofix" commits squashed into #302 had replaced
+    `src/services/blockchain/polkadotService.ts` with a hallucinated stub**
+    (literal `// ... rest of implementation`, `// existing implementation…
+    return []`), orphaning the real class body, duplicating the export, and
+    producing 29 `tsc` syntax errors. `polkadotService.test.ts` and
+    `useBlockSubscription.ts` followed the stub (broken header comment; import
+    of a non-existent named export).
+  - **Fixed in PR #304** (`7b815b0`): restored the three files from `377c5fe`
+    and regenerated the lockfile so the overrides actually apply. Verified
+    frozen install exit 0, `tsc` clean, 482/482 tests, eslint clean, build OK,
+    audit 44 → 16, and main CI 7/7 green.
+  - **`.prettierignore` fixed.** It listed `*.lock`, which never matched
+    `pnpm-lock.yaml`; the DeepSource transformer used that gap to reformat
+    7,075 lines of lockfile on the PR branch. Lockfiles are now named
+    explicitly (`*lock*` was rejected — it also matches "blockchain").
+  - **Governance:** `main` branch protection enabled — required checks (the 7
+    CI jobs + CodeQL), 1 approving code-owner review, stale reviews dismissed,
+    conversation resolution, force-push and deletion blocked, **enforced for
+    admins**. `main` had been completely unprotected, which is why a
+    six-job-red merge landed. The DeepSource Autofix app was uninstalled by the
+    product owner — it was the **third-highest contributor to the repo (163
+    commits)** and the direct cause of the corruption.
+  - **Step 0 residuals closed:** `cargo test` added to `ci.yml` (it had never
+    run in CI — `build-rust` only did check/clippy/fmt/build, so the ledger's
+    Rust suite was verified by nothing); `SCOPE.md` current-stage line
+    corrected from the stale "Stage 0" to Stage 1 with both open gates and
+    Gate 1's definition of done; README overclaims corrected (stale network
+    table, Moonriver removal, Substrate placeholder, dead `docs.pacioli.io` /
+    `community.pacioli.io` DNS, unshipped installers, version
+    `0.1.0-alpha.1`); **ADR 0001** filed (`Proposed`) recording the unratified
+    bank-feed exception — the feature is far larger than "partly merged":
+    `bank.rs` (519 lines), three migrations, a classification queue and rules
+    UI, and 320 lines of persistence tests, merged across GIV-825/828/829/856
+    while it was on the NOT-DO list.
