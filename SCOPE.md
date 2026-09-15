@@ -38,7 +38,30 @@ spine needs an explicit justification tied to a stage gate.
 
 ## 4. Stage Sequence and Gates
 
-**Current stage: Stage 0.**
+**Current stage: Stage 1 — the accounting engine is built; Gate 0 and Gate 1 are
+both open.**
+
+The Stage 1 engine (raw transactions → journal entries → general ledger →
+statements, with period locks, FIFO lots, ASU 2023-08 remeasurement through an
+approval queue, and a property-based invariant suite) is substantively
+complete. It has never been validated externally, because **Gate 1 has never
+been run end to end**: no CPA has reviewed statements produced from real
+imported transactions. Gate 0 is also unmet — installers exist only as an
+unpublished draft GitHub Release, and the waitlist source is not in version
+control.
+
+Until a gate closes, the current gate's definition of done is Gate 1's: *a
+reviewing CPA's written verdict on statements generated from real imported
+transactions, recorded in `docs/gate1-report.md`.* Nothing else counts. Gate 0
+may be closed in parallel (it is small and unblocks distribution); work
+belonging to Gate 2 and later may not be started.
+
+**The sequence is knowingly inverted.** Stage 1 and one slice of Stage 3
+(Statement of Activities, functional classification) were built while Gate 0
+remained open. Section 5 below still governs: work beyond the current gate
+requires an explicit justification tied to a gate, recorded as an ADR in
+`docs/adr/`. See `docs/v1-readiness-plan.md` for the assessment and the
+operating plan.
 
 - **Gate 0** — a stranger can download an installer from GitHub Releases and join
   a waitlist at pacioli.io. (Downloadable installer + live waitlist.)
@@ -60,7 +83,8 @@ Until Gate 4, the following are out of scope. Do not build them, scaffold them, 
 - no new chain integrations beyond the four existing families
 - no DeFi position depth
 - no IFRS/parallel-book delivery
-- no bank feeds
+- no bank feeds (partly merged ahead of this list — exception **not yet
+  ratified**; see `docs/adr/0001-bank-feed-exception.md`)
 - no Pacioli Cloud development
 - no multi-entity consolidation
 - no proprietary model training or Pacioli-operated inference
