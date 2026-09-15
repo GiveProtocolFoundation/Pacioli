@@ -1,9 +1,9 @@
 # ADR 0001 — Bank feeds ahead of Gate 4 (exception to the NOT-DO list)
 
-- **Status:** Proposed — **pending board ratification**
+- **Status:** **Accepted** — Option A, ratified by the board 2026-09-14
 - **Date:** 2026-09-14
 - **Deciders:** board (Pacioli founders)
-- **Supersedes:** nothing. **Would amend:** `SCOPE.md` §5 NOT-DO list.
+- **Supersedes:** nothing. **Amends:** `SCOPE.md` §5 NOT-DO list.
 
 ## Context
 
@@ -83,25 +83,37 @@ deletion itself is a large, risky change made for symbolic reasons.
 
 ## Decision
 
-**Not yet made.** This ADR is filed as `Proposed` so that the exception is on the
-record and cannot be mistaken for an oversight. Until the board answers, the
-status quo is: the feature exists and is reachable, and `SCOPE.md` §5 carries a
-cross-reference to this document marking the item unratified.
+**Option A — the exception is ratified.** Bank feeds are in scope for the
+Gate 1–3 window, and `SCOPE.md` §5 no longer lists them as forbidden.
 
-The recommendation is **Option A with Option B's discipline**: ratify the
-capability, but require that no further breadth be added to it until Gate 1
-closes and a CPA has reviewed statements.
+**Rationale.** The beachhead persona is small nonprofits receiving digital-asset
+gifts, and their books are overwhelmingly fiat: payroll, rent, grant
+disbursements, card spend. A ledger that can only ingest crypto cannot close a
+month for the persona it exists to serve — and closing a real month is exactly
+what Gate 3 requires. On that reading the NOT-DO entry was wrong when it was
+written, so this ADR corrects the constitution rather than excusing the code.
+
+**Guardrail, adopted with the ratification.** No further breadth may be added to
+bank feeds until Gate 1 closes and a CPA has reviewed statements. This is not a
+general licence to build ahead of the gates. It is a single, named,
+retroactively-ratified exception, and it carries a cost that the drift tripwire
+(§7.3) must record at the next monthly gate review.
+
+The alternatives were **Option B** (park the UI until Gate 1 closes) and
+**Option C** (revert). Both are set out above; both were rejected.
 
 ## Consequences
 
-- **If A:** `SCOPE.md` §5 loses the bank-feed line; the operating plan's §9.3
-  decision closes; bank feeds need an owner and a place in the Gate 1–3
-  sequence; the drift tripwire (§7.3) records one retroactively-ratified
-  exception, which should itself be reported at the next monthly gate review.
-- **If B:** a small PR removes the navigation entry and screen; the data layer
-  stays; the NOT-DO entry is reworded to name the UI specifically.
-- **If C:** a larger revert PR, plus a check that no released build depends on
-  the dropped migrations.
-- **In every case:** the precedent matters more than the feature. If this is
-  ratified without a stated cost, the next out-of-scope feature will also be
-  merged first and justified afterwards.
+- **`SCOPE.md` §5** no longer forbids bank feeds, and carries a note recording
+  why the line was removed and what the guardrail is.
+- **The operating plan's §9.3 decision closes.** Bank feeds still need an owner
+  and an explicit place in the Gate 1–3 sequence; until they have both, the
+  feature exists but is not on a plan.
+- **The drift tripwire (§7.3) now has one entry.** A capability was built,
+  merged and tested while on the NOT-DO list, and was later ratified. It must be
+  reported at the next monthly gate review as a process failure — independent of
+  whether the feature itself is desirable.
+- **The precedent is the risk.** The feature is defensible on the persona; the
+  *process* was not. If this ratification is remembered only as "bank feeds are
+  fine now", the next out-of-scope feature will also be merged first and
+  justified afterwards.
