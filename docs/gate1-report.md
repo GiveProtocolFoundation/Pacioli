@@ -197,12 +197,24 @@ The product owner chose option (a) from finding #10. Implemented as:
 - **Moonriver is not restored** (no rehearsal data for it).
 - **Prerequisite:** finding #11's key plumbing, without which the EVM path cannot authenticate at all.
 
-**Recommended rehearsal window:** the account's Moonbeam history is 2168 native + 4622 ERC-20 transactions (2023-02 → 2026-05) — far too many for manual Stage 1 classification. Two workable, real windows:
+**Recommended rehearsal window:** the account's Moonbeam history is far too large
+for manual Stage 1 classification — Etherscan V2 returns 1,000+ native and
+1,000+ ERC-20 rows *per 1,000-row page*, spanning 2023-02 → 2026-07. Two bounded,
+real months were therefore examined transaction by transaction:
 
-| Window      | Volume                        | Notes                                                         |
-| ----------- | ----------------------------- | ------------------------------------------------------------- |
-| **2026-01** | 6 native + 13 ERC-20 = **19** | Recent, light, includes swaps and transfers. **Recommended.** |
-| 2023-12     | 18 native + 9 ERC-20 = **27** | First month with ERC-20 activity.                             |
+| Window  | Volume                        | What is actually in it                                                                                                                                                                                                                                        | Verdict                                                                                                                                                                          |
+| ------- | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2023-12 | 18 native + 9 ERC-20 = **27** | IN 307.16 GLMR (12-13), IN 4 + 112 GLMR (12-25); OUT 45.89 GLMR (12-24), OUT 50 and 60 GLMR (12-25); a GLMR→WGLMR wrap; a d2O position opened and partly closed; an xcUSDT→xcASTR swap; STELLA / WGLMR / d2O yield (12-29)                                    | **Recommended.** Covers an acquisition, two disposals, a cross-asset measurement line, a swap, and yield — i.e. everything the statements need to exercise cost basis and realized gain/loss |
+| 2026-01 | 6 native + 13 ERC-20 = **19** | All 6 native rows are **zero-value** contract calls (token approvals; two to the `0x…0808` precompile). All 13 ERC-20 rows are **inbound** receipts — STELLA, xcDOT, stDOT — with no consideration paid and nothing leaving the wallet                              | **Not sufficient on its own.** Exercising neither acquisition nor disposal, it cannot rehearse the FIFO / realized-gain path the gate exists to test. Useful as a yield fixture only |
+
+> **Correction (2026-09-14).** This section previously recommended **2026-01** on
+> the grounds that it was "recent, light, includes swaps and transfers", with
+> 2023-12 as the alternative. That was wrong on **content**, not on volume. A
+> transaction-by-transaction probe of 2026-01 found no swaps and no value
+> transfers at all: every native row is zero-value and every token row is an
+> inbound receipt. The window had been chosen on transaction count alone, and
+> the "includes swaps and transfers" claim was asserted rather than checked.
+> Use **2023-12**.
 
 Use the GIV-716 import-selection filter to import only the chosen window.
 

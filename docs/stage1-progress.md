@@ -1680,3 +1680,38 @@ API access is not supported for this chain"` on the free Etherscan plan.
     exports that cannot exist yet.
   - **Files:** `docs/gate1-cpa-brief.md` (new), `docs/gate1-report.md`,
     `docs/v1-readiness-plan.md` (§9.6).
+- **Session 37 (2026-09-14, CTO — the recommended rehearsal window was wrong;
+  corrected):** The product owner asked what "the 2026-01 window" meant. Checking
+  it against the chain rather than restating it from the record found that the
+  recommendation was unsound, and the check itself had a trap in it.
+  - **The trap first.** Etherscan V2 caps a response at **1,000 rows per
+    action**. An ascending query therefore returns 2023-02 → 2024-11 and stops;
+    a descending query returns 2024-12 → 2026-07. My first probe used ascending
+    order, saw **zero** rows for 2026-01, and briefly concluded the month was
+    empty. It is not — that was truncation, not data. The near-miss is worth
+    recording: a capped result set looks exactly like a complete one. Both
+    views are needed, and even together they do not cover the middle.
+  - **The real defect was in the recommended window, not the count.** 2026-01
+    does contain 19 rows, matching the record. But transaction-by-transaction:
+    all **6 native rows are zero-value** (token approvals, two to the `0x…0808`
+    precompile) and all **13 ERC-20 rows are inbound** receipts (STELLA, xcDOT,
+    stDOT). Nothing was paid and nothing disposed — so the month exercises
+    neither acquisition nor disposal, and therefore cannot rehearse the FIFO /
+    realized-gain path Gate 1 exists to test. The gate report had justified it
+    as "recent, light, includes swaps and transfers"; the first two are true,
+    the third was asserted without being checked.
+  - **2023-12 is the correct window** and was already listed as the
+    alternative: 307.16 GLMR in (12-13), 4 + 112 GLMR in (12-25), 45.89 / 50 /
+    60 GLMR out, a GLMR→WGLMR wrap, a d2O position opened and partly closed, an
+    xcUSDT→xcASTR swap, and STELLA / WGLMR / d2O yield. More rows (27 vs 19),
+    materially richer economics.
+  - **Corrected in `docs/gate1-report.md`** with a dated correction block
+    recording what the old recommendation said and why it was wrong. The
+    "2168 native + 4622 ERC-20" totals from Session 33 could not be reproduced
+    under the current 1,000-row cap, so that unverifiable figure was replaced
+    with what the probe actually shows.
+  - **The generalisable lesson, consistent with finding #7 and finding #9:** a
+    number that comes from a truncated or conveniently-shaped query is not
+    evidence. This is the third instance in this gate of a plausible-looking
+    figure that had never been checked against the underlying data — and the
+    first one where the query's own limits produced a false reading mid-check.
