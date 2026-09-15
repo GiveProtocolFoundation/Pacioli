@@ -230,6 +230,10 @@ jobs:
         working-directory: src-tauri
         run: cargo fmt -- --check
 
+      - name: Run cargo test
+        working-directory: src-tauri
+        run: cargo test
+
       - name: Build Rust backend
         working-directory: src-tauri
         run: cargo build --release

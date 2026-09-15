@@ -6,9 +6,9 @@
 
 A multi-chain blockchain and fiat accounting application built with Tauri, React, TypeScript, and Rust. Pacioli runs as a local-first desktop app and as a web app, with the same core code powering both.
 
-**Website**: [pacioli.io](https://pacioli.io) (coming soon)
-**Documentation**: [docs.pacioli.io](https://docs.pacioli.io)
-**Community**: [community.pacioli.io](https://community.pacioli.io)
+**Website**: [pacioli.io](https://pacioli.io)
+**Documentation**: in this repo under [`docs/`](docs/) — `docs.pacioli.io` is not live yet
+**Status**: pre-alpha. **Gate 0 and Gate 1 are both open** — see [SCOPE.md](SCOPE.md)
 
 ---
 
@@ -22,11 +22,12 @@ A multi-chain blockchain and fiat accounting application built with Tauri, React
 - **Import / Export** — Round-trip CSV/JSON for transactions and ledger data
 
 ### Blockchain Integration
-- **EVM Indexer (Rust)** — High-throughput indexer for Moonbeam, Moonriver, and Astar, with dedicated ERC-20 and DeFi modules
-- **Substrate / Polkadot** — Native Polkadot.js integration plus Subscan data
-- **Bitcoin & Solana** — First-class services for both ecosystems
-- **XCM Correlation** — Cross-chain message correlation for accurate multi-chain bookkeeping
-- **Real-Time Sync** — `subscribeNewBlocks()` for live transaction and balance updates
+- **EVM** — Transaction and ERC-20 import via Etherscan V2. *The free tier does not serve Base, Optimism, or BNB Smart Chain; those need a paid plan.*
+- **EVM indexer (Rust)** — Desktop-side block and ERC-20 indexing (`src-tauri/src/evm_indexer/`)
+- **Substrate / Polkadot** — Polkadot.js RPC scan plus optional Subscan history. *Without a Subscan API key only recent blocks are scanned, and the Rust Substrate adapter is still a placeholder.*
+- **Bitcoin** — Address/portfolio import
+- **XCM Correlation** — Cross-chain message correlation for multi-chain bookkeeping
+- **Real-Time Sync** — `subscribeNewBlocks()` for live updates on active chains (skipped for historical-only chains)
 - **Smart Contracts** — Hardhat + PolkaVM toolchain targeting the Paseo TestNet
 
 ### Wallets
@@ -53,7 +54,7 @@ Pacioli is split across the following repositories:
 |------------|---------|--------|
 | **[Pacioli](https://github.com/GiveProtocolFoundation/Pacioli)** (this repo) | Core application (desktop + web frontend, Rust backend, contracts) | Active |
 | **[pacioli-web](https://github.com/GiveProtocolFoundation/pacioli-web)** | Web deployment of the Pacioli app | Active |
-| **[pacioli-docs](https://github.com/GiveProtocolFoundation/pacioli-docs)** | Documentation site | Active |
+| **[pacioli-docs](https://github.com/GiveProtocolFoundation/pacioli-docs)** | Documentation site | Source only — not deployed |
 
 ---
 
@@ -114,14 +115,28 @@ The web dev server runs at `http://localhost:1420`. The Tauri command launches t
 
 ## Supported Networks
 
-| Network | Chain ID | Type | Native Token |
-|---------|----------|------|--------------|
-| Moonbeam | 1284 | EVM Parachain | GLMR |
-| Moonriver | 1285 | EVM Parachain | MOVR |
-| Astar | 592 | EVM Parachain | ASTR |
-| Paseo TestNet | 420420422 | Test Network | PAS |
-| Bitcoin | — | UTXO | BTC |
-| Solana | — | SVM | SOL |
+These are the networks offered by the importer today. "Verified" means the free
+Etherscan V2 tier actually serves the chain; the others are selectable but return
+a provider error until a paid plan is configured.
+
+| Network | Chain ID | Type | Import status |
+|---------|----------|------|---------------|
+| Ethereum | 1 | EVM | Verified |
+| Arbitrum One | 42161 | EVM | Verified |
+| Polygon | 137 | EVM | Verified |
+| Base | 8453 | EVM | Needs a paid Etherscan V2 plan |
+| Optimism | 10 | EVM | Needs a paid Etherscan V2 plan |
+| BNB Smart Chain | 56 | EVM | Needs a paid Etherscan V2 plan |
+| Moonbeam | 1284 | EVM parachain | **Historical import only** (sunset chain; no live sync) |
+| Polkadot | — | Substrate | RPC scan; full history needs a Subscan API key |
+| Kusama | — | Substrate | RPC scan; full history needs a Subscan API key |
+| Astar | 592 | Substrate / EVM parachain | RPC scan |
+| Acala | — | Substrate | RPC scan |
+| Bitcoin | — | UTXO | Address/portfolio import |
+| Solana | — | SVM | Service module exists; not yet wired to the UI |
+
+Moonriver is no longer supported. It was retired with the Moonbeam sunset and has
+not been restored.
 
 ---
 
@@ -165,30 +180,38 @@ npx hardhat ignition deploy ignition/modules/<module>.ts
 
 ## Project Status
 
-### Shipped
-- Multi-chain transaction tracking (EVM, Substrate, Bitcoin, Solana)
-- Rust EVM indexer with ERC-20 and DeFi modules
-- XCM correlation for cross-chain transactions
-- Real-time block subscription and balance sync
-- Cost Basis Report (FIFO / LIFO / HIFO / Specific-ID)
-- Unified `PersistenceService` (SQLite on desktop, IndexedDB on web)
-- Configurable price source with persisted API key
+**Pre-alpha (`0.1.0-alpha.1`).** Pacioli is at **Stage 1**: the accounting engine
+is built, but **neither Gate 0 nor Gate 1 has been met**. The authoritative
+current stage is [SCOPE.md](SCOPE.md); the full assessment and operating plan is
+[`docs/v1-readiness-plan.md`](docs/v1-readiness-plan.md).
+
+### Built and tested
+- Four-layer model: raw transactions → journal entries → general ledger → reports
+- Double-entry ledger with exact arithmetic (no floats), period locks, append-only entries
+- Approval queue for drafted entries with `origin` provenance (`manual` / `rule` / `model`)
+- FIFO lots, ASU 2023-08 remeasurement, and a property-based invariant suite
+- Nonprofit slice: Statement of Activities with functional classification
+- Cost basis reporting (FIFO / LIFO / HIFO / Specific-ID) — service and report exist, and the route `/reports/cost-basis` resolves, but it is **not linked from the navigation** yet
+- Unified `PersistenceService` — SQLite on desktop, IndexedDB on web
+- Multi-chain import (see Supported Networks) and XCM correlation
+- Real-time block subscription and balance sync on active chains
 - Conditional router for Tauri vs. web runtimes
-- Web SPA deployment via [pacioli-web](https://github.com/GiveProtocolFoundation/pacioli-web)
-- Playwright E2E suite wired into CI
+- Vitest unit suite and Playwright E2E suite, both wired into CI
 
-### In Progress
-- Lot-selection UI for Specific-ID cost basis
-- Expanded reporting and analytics
-- Documentation site build-out
+### Not yet done — the open gates
+- **Gate 0:** no downloadable installer is published. Builds exist only as an
+  unpublished *draft* GitHub Release, so a stranger cannot download one.
+- **Gate 1:** no CPA has reviewed statements generated from real imported
+  transactions. This has never been run end to end.
+- **Gate 2:** the AI layer does not exist. There is no provider integration and
+  no draft-acceptance instrumentation.
+- Known limitations: Substrate history without a Subscan key, the Rust Substrate
+  adapter (placeholder), the Solana service (unwired), and bank feeds (partly
+  merged ahead of the scope list).
 
-### Planned
-- Plugin system
-- Tax calculation helpers
-- Multi-entity support
-- Cloud sync (optional)
-- ERP integrations
-- AI-assisted categorization
+### Out of scope until Gate 4
+See the NOT-DO list in [SCOPE.md](SCOPE.md). The README does not maintain a
+separate roadmap, because a second roadmap is how the last one drifted.
 
 ---
 
@@ -241,7 +264,6 @@ Named after **Luca Pacioli**, the father of double-entry bookkeeping, the projec
 
 - **Issues** — [github.com/GiveProtocolFoundation/Pacioli/issues](https://github.com/GiveProtocolFoundation/Pacioli/issues)
 - **Discussions** — [github.com/GiveProtocolFoundation/Pacioli/discussions](https://github.com/GiveProtocolFoundation/Pacioli/discussions)
-- **Forum** — [community.pacioli.io](https://community.pacioli.io)
 - **Email** — support@pacioli.io
 
 ---
@@ -257,5 +279,4 @@ Built on top of [Tauri](https://tauri.app/), [React](https://react.dev/), [Rust]
 ![GitHub Issues](https://img.shields.io/github/issues/GiveProtocolFoundation/Pacioli)
 ![GitHub Pull Requests](https://img.shields.io/github/issues-pr/GiveProtocolFoundation/Pacioli)
 
-**Current Version**: 0.1.0
-**Status**: Active Development
+**Current Version**: 0.1.0-alpha.1 (pre-alpha)

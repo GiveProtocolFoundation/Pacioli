@@ -5468,12 +5468,32 @@ mod tests {
     async fn existing_views_return_rows_after_migration() {
         let pool = setup_test_db().await;
 
+        // The global (profile-less) chart of accounts is the sum of the seed
+        // migrations, and this assertion is deliberately exact so that any
+        // change to it is noticed:
+        //   21 rows - 20260326000001_add_classification_and_seed_accounts.sql
+        //    3 rows - 20260805000002_seed_bank_expense_accounts.sql (GIV-856),
+        //             which added 6100/6200/6300 because the bank starter rules
+        //             debit them and they were missing from the original seed.
         let seed_count: (i64,) =
             sqlx::query_as("SELECT COUNT(*) FROM gl_accounts WHERE profile_id IS NULL")
                 .fetch_one(&pool)
                 .await
                 .unwrap();
-        assert_eq!(seed_count.0, 21, "21 seed rows must survive migration");
+        assert_eq!(seed_count.0, 24, "24 seed rows must survive migration");
+
+        // Guard the GIV-856 fix specifically, so the count above cannot drift
+        // silently by trading one account for another.
+        let bank_seed_accounts: (i64,) = sqlx::query_as(
+            "SELECT COUNT(*) FROM gl_accounts WHERE profile_id IS NULL AND account_number IN ('6100', '6200', '6300')",
+        )
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+        assert_eq!(
+            bank_seed_accounts.0, 3,
+            "the three bank expense accounts from GIV-856 must be seeded"
+        );
 
         let bs_result =
             sqlx::query_as::<_, (String,)>("SELECT account_type FROM v_balance_sheet LIMIT 1")
