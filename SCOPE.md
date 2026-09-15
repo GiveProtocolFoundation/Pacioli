@@ -83,13 +83,20 @@ Until Gate 4, the following are out of scope. Do not build them, scaffold them, 
 - no new chain integrations beyond the four existing families
 - no DeFi position depth
 - no IFRS/parallel-book delivery
-- no bank feeds (partly merged ahead of this list — exception **not yet
-  ratified**; see `docs/adr/0001-bank-feed-exception.md`)
 - no Pacioli Cloud development
 - no multi-entity consolidation
 - no proprietary model training or Pacioli-operated inference
 - no autonomous posting mode ever, even as an experiment
 - no feature work motivated by competitor announcements
+
+**Ratified exception — bank feeds.** Bank feeds were removed from this list by
+[ADR 0001](docs/adr/0001-bank-feed-exception.md), accepted 2026-09-14. A
+nonprofit's books are predominantly fiat — payroll, rent, grant disbursements,
+card spend — so a crypto-only ledger cannot close a real month, which is what
+Gate 3 requires. **No further breadth may be added to bank feeds until Gate 1
+closes and a CPA has reviewed statements.** This is one named, retroactively
+ratified exception, not a general licence to build ahead of the gates; the ADR
+records the process cost.
 
 ## 6. Standing Instruction to AI Coding Sessions
 
