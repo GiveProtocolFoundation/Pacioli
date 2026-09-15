@@ -2,9 +2,10 @@
 
 Status: **rehearsal pending** — this document is prepared ahead of the Gate 1
 rehearsal (Phase 10). The rehearsal findings section at the end is filled in
-during the live run with real data. Companion document:
+during the live run with real data. Companion documents:
 `docs/accounting-model.md` (the conventions we hand the CPA alongside the
-statements).
+statements) and `docs/gate1-cpa-brief.md` (the reviewer brief and review
+programme — the cover document of the delivered bundle).
 
 > **Revision 2026-09-11 (pre-rehearsal reconciliation).** This package was
 > authored 2026-07-17, when the EVM rehearsal path ran through Moonbeam. Moonbeam
@@ -78,8 +79,8 @@ Concretely, the review package demonstrates:
    nothing writes to the ledger silently. Prices come from a configurable
    source (CoinGecko provider) with a manual, logged override always
    available.
-9. **Verification depth.** 300+ automated tests, including a property-based
-   suite (`proptest`, 27 properties) pinning the seven Stage-1 invariants
+9. **Verification depth.** 482 TypeScript tests and 394 Rust tests, including a
+   property-based suite (`proptest`) pinning the seven Stage-1 invariants
    against the production engine: generated entry streams always yield
    balanced trial balances, statements always tie, posting is idempotent,
    period locks hold, and FIFO lot consumption never goes negative and
@@ -218,10 +219,14 @@ plan, or the dropdown should mark them as unavailable for the configured key.
    (`pnpm install --frozen-lockfile` with pnpm 10, then `pnpm tauri build` or
    `pnpm tauri:dev`). Confirm the default chart of accounts is seeded.
 2. **Connect wallets (read-only).** Add real wallet addresses. Confirm no
-   signing capability is requested anywhere. **Use the current network set:
-   EVM (Ethereum / Arbitrum / Base / Optimism / Polygon / BNB) via Etherscan V2,
-   plus Substrate, Bitcoin, Solana. Moonbeam/Moonriver are sunset and are no
-   longer selectable — do not spend rehearsal time on them.**
+   signing capability is requested anywhere. **Current network set, corrected
+   for findings #4 and #10: EVM (Ethereum / Arbitrum One / Polygon on the free
+   Etherscan V2 plan) via Etherscan V2, plus Substrate, Bitcoin, Solana.
+   Base, Optimism and BNB Smart Chain are selectable but require a paid
+   Etherscan V2 plan (finding #4) — do not rehearse on them with the current
+   key. Moonbeam is selectable under "Historical — sunset chains (import
+   only)" for read-only historical import (finding #10 decision); Moonriver is
+   not restored.**
 3. **Import history.** Sync raw transactions. Spot-check a handful against a
    block explorer (hash, direction, amount, timestamp). If a provider is
    unavailable, confirm the UI shows a graceful "provider temporarily
@@ -256,7 +261,10 @@ plan, or the dropdown should mark them as unavailable for the configured key.
     account → posted entries → approval trail → source raw transaction(s).
     This is the demo the CPA will care about most.
 12. **Package.** Export the three statements to CSV; bundle with
-    `docs/accounting-model.md` and this report; deliver to the reviewing CPA.
+    `docs/accounting-model.md`, this report, and `docs/gate1-cpa-brief.md` (the
+    cover brief and review programme); deliver to the reviewing CPA. The bundle
+    manifest is `docs/gate1-cpa-brief.md` §3 — replace its "attached only after
+    the rehearsal" placeholder with the real exports before sending.
 
 ## 4. Demo script for the CPA review session (~30 minutes)
 
@@ -297,7 +305,35 @@ plan, or the dropdown should mark them as unavailable for the configured key.
 | 10  | §3 steps 2-3 (import)           | **The product owner's real EVM history is on Moonbeam — the chain the app removed.** Dotlake's XCM records link the corrected Polkadot address `13zaY…TAcF` (287 txs, 2022-12-17 → 2025-10-24; top pallets nominationPools / xcmPallet / convictionVoting) to the originally supplied EVM address `0x537f…aa75`, which is active on **Moonbeam (chainid 1284)**: 1000+ native txs (2023-02 → 2024-11) and 1000+ ERC-20 transfers (STELLA, WGLMR, xcDOT, xcUSDC, xcPEN, xcMANTA), plus 39 XCM transfers to Moonbeam / Bifrost / HydraDX / Astar across 2024-01 → 2026-07. `GIV-888` removed Moonbeam/Moonriver (sunset 2026-07-31), but **Etherscan V2 still serves chainid 1284 historical data** (`status:1 OK`). Gate 1 requires importing _your own_ real wallets; as shipped, the app cannot import this user's real EVM history. | blocker (gate scope)                  | **Open — product decision.** (a) restore Moonbeam **read-only for historical import** — the sunset affects live tracking, not historical accounting; (b) rehearse the Polkadot side via a valid Subscan key; (c) use the fresh Ethereum wallet `0x47bC…` as a _disclosed_ fixture rather than "real history". Scale note: 1000+ Moonbeam txs is impractical for manual Stage 1 classification — scope the rehearsal to a bounded period using the GIV-716 import-selection filter.                                                                                                                                                                                                                   |
 | 11  | §3 steps 2-3 (EVM import)       | **The EVM explorer path never sent an API key.** `evmTransactionService` declared an `apiKey` field on `BlockExplorerConfig` but never read or sent it, so `fetchNormalTransactions` / `fetchTokenTransfers` called Etherscan V2 **keyless** — and V2 rejects keyless requests with "Missing/Invalid API Key". Every EVM chain, Ethereum included, therefore either fell through to a recent-blocks RPC scan or (after finding #7's fix) surfaced a key error. Moonscan/subscan read the keychain correctly; the EVM path never did.                                                                                                                                                                                                                                                                                                  | blocker                               | **Fixed 2026-09-13.** Added `getApiKeyCandidates()` (Tauri keychain → localStorage → build-time env, mirroring `moonscanService`) and a shared `fetchExplorer()` that sets `apikey` and retries each configured key until one is accepted, so a stale key cannot shadow a valid one. 1 regression test added; **482/482 Vitest green**, tsc/eslint/prettier clean.                                                                                                                                                                                                                                                                                                                                   |
 
-## 6. Outcome
+## 6. Outcome — the reviewer's written verdict
 
-_Pending — the statements are in the CPA's hands when steps 1–12 complete.
-The gate verdict is theirs._
+_Pending. The statements reach the reviewer when checklist steps 1–12 complete.
+This section is the reviewer's to fill, not ours. Record their response verbatim
+— do not summarise, soften, or selectively quote it._
+
+**Reviewer:** _name / firm, or "anonymous"_
+**Date:** _yyyy-mm-dd_
+**Basis:** informal practitioner feedback, not an engagement under any
+professional standard — see `docs/gate1-cpa-brief.md` §1. If the board
+commissions a formal engagement instead, record the standard and scope here.
+
+### Response
+
+> _The reviewer's written response, verbatim._
+
+### Our disposition
+
+| Point raised | Blocker / friction / note | Disposition |
+| ------------ | ------------------------- | ----------- |
+| _…_          | _…_                       | _…_         |
+
+If we disagree with any point, the disagreement is recorded separately and
+substantively — not by editing the response above.
+
+### Gate 1 status
+
+- [ ] Reviewer's written verdict returned
+- [ ] Every blocker either fixed, or explicitly accepted with the acceptance recorded
+- [ ] Statements and findings archived alongside the exact bundle that was reviewed
+
+**Gate 1: OPEN.**

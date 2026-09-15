@@ -1649,3 +1649,34 @@ API access is not supported for this chain"` on the free Etherscan plan.
     The ADR instructs that this be reported at the next monthly gate review as a
     process failure, independent of the feature's merit — the feature is
     defensible on the persona; the process was not.
+- **Session 36 (2026-09-14, CTO — Gate 1 CPA delivery package assembled):**
+  Drafted the artefact a reviewing accountant actually receives, which did not
+  exist: `docs/gate1-report.md` described the system *to us*, but nothing
+  addressed the reviewer or said what we were asking them to do.
+  - **New `docs/gate1-cpa-brief.md`** — the cover document of the bundle: the
+    ask (30–45 minutes, written response), the system in one page, the bundle
+    manifest, a 14-point review programme grouped as *do the statements agree*,
+    *can a figure be traced to evidence*, *is the treatment defensible*, and
+    *are the controls real* — each with its evidence path — plus the
+    limitations stated up front and a structured response template.
+  - **An honesty problem surfaced while writing it, and was recorded rather
+    than smoothed over.** The gate is defined as "CPA-reviewed financial
+    statements", but the ~30-minute informal read the gate report envisages is
+    *not* an engagement under any professional standard. Only a formal
+    engagement would support describing the statements publicly as
+    "CPA-reviewed". The brief states this plainly to the reviewer and commits
+    us not to claim more than happened; the choice is now board decision §9.6.
+  - **Stale content corrected in `docs/gate1-report.md`:** §3 step 2 still told
+    the operator that Moonbeam/Moonriver were unselectable and to avoid them,
+    which the finding #10 decision reversed — it now names the actual current
+    network set and flags the paid-only Etherscan chains. Test counts updated
+    from the unverifiable "300+" to the real 482 TS / 394 Rust. §6 replaced the
+    one-line placeholder with a structured verdict section (reviewer, basis,
+    verbatim response, our disposition table, gate status).
+  - **Not yet deliverable, and deliberately so:** the three statements
+    themselves. They require the rehearsal, which requires the desktop build on
+    the product owner's machine. The brief carries an explicit placeholder
+    rather than inventing figures, and the package is complete apart from the
+    exports that cannot exist yet.
+  - **Files:** `docs/gate1-cpa-brief.md` (new), `docs/gate1-report.md`,
+    `docs/v1-readiness-plan.md` (§9.6).

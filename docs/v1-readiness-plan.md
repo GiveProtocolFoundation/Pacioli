@@ -284,7 +284,7 @@ One of these is now closed (item 3); the rest remain open.
 3. ~~**Bank feeds:** ratify the exception with an ADR, or park the feature until after launch?~~ **DECIDED 2026-09-14 — ratified by ADR 0001** ([`docs/adr/0001-bank-feed-exception.md`](adr/0001-bank-feed-exception.md)). `SCOPE.md` §5 no longer forbids bank feeds. The guardrail: no further breadth until Gate 1 closes and a CPA has reviewed statements. Bank feeds still need an owner and an explicit place in the Gate 1–3 sequence, and the ratification itself is an entry for the drift tripwire (§7.3).
 4. **Chains:** ratify Ethereum/L2 addition and Moonbeam/Moonriver removal; decide Substrate — implement or retract the support claim.
 5. **Signing budget:** approve Apple Developer Program + Windows signing now (a real, modest line item, needed by Gate 4).
-6. **Gate 1 CPA:** who is the reviewing accountant, and by when?
+6. **Gate 1 CPA:** who is the reviewing accountant, and by when? **Also decide the *nature* of the review** — informal practitioner feedback (what `docs/gate1-cpa-brief.md` currently asks for, ~30–45 minutes) or a formal engagement under a professional standard. Only the latter would support describing the statements publicly as "CPA-reviewed". The brief states plainly that we will not claim more than actually happened, so this decides what the gate can legitimately be said to have established.
 7. **Tracker ownership:** who owns keeping `docs/stage1-progress.md` current from now on?
 
 ---
