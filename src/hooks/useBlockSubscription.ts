@@ -198,7 +198,10 @@ export function useBlockSubscription(
     /**
      * Subscribes to new block headers from the polkadot service and updates state.
      *
-     * @returns {Promise<Function>} A promise that resolves to the unsubscribe function.
+     * The unsubscribe handle is stored in `unsubscribeRef`; this function
+     * intentionally returns no value.
+     *
+     * @returns {Promise<void>} Resolves once the subscription attempt settles.
      */
     const subscribe = async () => {
       // Sunset chains are historical-import only; there is nothing to subscribe to.
@@ -229,7 +232,7 @@ export function useBlockSubscription(
         if (cancelled) {
           // Race: effect cleaned up before subscribe resolved
           unsub()
-          return null
+          return
         }
 
         unsubscribeRef.current = unsub
@@ -246,7 +249,6 @@ export function useBlockSubscription(
           )
         }
       }
-      return null
     }
 
     subscribe()
