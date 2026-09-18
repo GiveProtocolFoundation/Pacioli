@@ -49,7 +49,10 @@ describe('useBlockSubscription — service contracts', () => {
     vi.clearAllMocks()
     mockSubscribeNewBlocks.mockResolvedValue(mockUnsubscribe)
     mockLoadSyncStatus.mockResolvedValue(null)
-    mockFetchTransactionHistoryHybrid.mockResolvedValue([])
+    mockFetchTransactionHistoryHybrid.mockResolvedValue({
+      transactions: [],
+      isComplete: true,
+    })
     mockSaveTransactions.mockImplementation(() => Promise.resolve())
     mockSaveSyncStatus.mockImplementation(() => Promise.resolve())
   })

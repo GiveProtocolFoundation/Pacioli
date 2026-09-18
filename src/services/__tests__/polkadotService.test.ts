@@ -47,6 +47,7 @@ vi.mock('../blockchain/moonscanService', () => ({
 // ---------------------------------------------------------------------------
 
 import { polkadotService } from '../blockchain/polkadotService'
+import { nextSyncStatus } from '../blockchain/syncStatusPolicy'
 
 // ---------------------------------------------------------------------------
 // Test constants
@@ -351,11 +352,13 @@ describe('polkadotService', () => {
       ])
       injectConnection(buildMockApi(3, emptySpecs))
 
-      const txs = await polkadotService.fetchTransactionHistoryHybrid(
+      const result = await polkadotService.fetchTransactionHistoryHybrid(
         NetworkType.POLKADOT,
         { address: TEST_ADDRESS, startBlock: 1, limit: 10 }
       )
+      const txs = result.transactions
 
+      expect(result.isComplete).toBe(true)
       expect(txs.length).toBeGreaterThan(0)
 
       for (let i = 1; i < txs.length; i++) {
@@ -418,6 +421,110 @@ describe('polkadotService', () => {
       ).rejects.toThrow(/Could not import transaction history/)
 
       connectSpy.mockRestore()
+    })
+  })
+
+  // =========================================================================
+  // Behavior 1d: Completeness metadata + sync-point safety
+  // =========================================================================
+
+  describe('fetchTransactionHistoryHybrid — completeness metadata', () => {
+    it('flags an RPC-only result as incomplete but still returns its transactions', async () => {
+      const { subscanService } = await import('../blockchain/subscanService')
+      vi.mocked(subscanService.isAvailable).mockReturnValue(false)
+
+      // RPC head at block 3, with a matching transfer in block 3.
+      const specs = new Map<number, BlockSpec>([
+        [
+          3,
+          {
+            extrinsics: [
+              makeExtrinsic(
+                'balances',
+                'transferAllowDeath',
+                TEST_ADDRESS,
+                '0xhash3'
+              ),
+            ],
+            events: transferEvents(),
+          },
+        ],
+      ])
+      injectConnection(buildMockApi(3, specs))
+
+      const result = await polkadotService.fetchTransactionHistoryHybrid(
+        NetworkType.POLKADOT,
+        { address: TEST_ADDRESS, startBlock: 1, limit: 10 }
+      )
+
+      expect(result.isComplete).toBe(false)
+      expect(result.transactions.length).toBeGreaterThan(0)
+    })
+
+    it('does not advance the sync point for a non-empty RPC-only result', async () => {
+      const { subscanService } = await import('../blockchain/subscanService')
+      vi.mocked(subscanService.isAvailable).mockReturnValue(false)
+
+      const specs = new Map<number, BlockSpec>([
+        [
+          3,
+          {
+            extrinsics: [
+              makeExtrinsic(
+                'balances',
+                'transferAllowDeath',
+                TEST_ADDRESS,
+                '0xhash3'
+              ),
+            ],
+            events: transferEvents(),
+          },
+        ],
+      ])
+      injectConnection(buildMockApi(3, specs))
+
+      const result = await polkadotService.fetchTransactionHistoryHybrid(
+        NetworkType.POLKADOT,
+        { address: TEST_ADDRESS, startBlock: 1, limit: 10 }
+      )
+
+      expect(result.transactions.length).toBeGreaterThan(0)
+
+      // Cross-module guarantee: a non-empty but incomplete result must not move
+      // the persisted sync point, or the skipped range would never be imported.
+      expect(
+        nextSyncStatus(
+          result.transactions,
+          result.isComplete,
+          'polkadot',
+          TEST_ADDRESS
+        )
+      ).toBeNull()
+    })
+
+    it('marks the result complete when Subscan answered, even with zero rows', async () => {
+      const { subscanService } = await import('../blockchain/subscanService')
+      vi.mocked(subscanService.isAvailable).mockReturnValue(true)
+      vi.mocked(subscanService.fetchAllTransactions).mockResolvedValue([])
+
+      // RPC connected but the chain window is empty.
+      injectConnection(buildMockApi(3, new Map<number, BlockSpec>()))
+
+      const messages: string[] = []
+      const result = await polkadotService.fetchTransactionHistoryHybrid(
+        NetworkType.POLKADOT,
+        {
+          address: TEST_ADDRESS,
+          startBlock: 1,
+          limit: 10,
+          onProgress: p => messages.push(p.message),
+        }
+      )
+
+      expect(result.isComplete).toBe(true)
+      // Availability is explicit, not inferred from the row count: an available
+      // Subscan that returns zero rows must not be reported as unavailable.
+      expect(messages.some(m => /Subscan is unavailable/i.test(m))).toBe(false)
     })
   })
 

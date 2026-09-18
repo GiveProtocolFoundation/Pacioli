@@ -21,6 +21,7 @@ import {
   type SyncProgress,
 } from '../../services/blockchain/polkadotService'
 import { evmTransactionService } from '../../services/blockchain/evmTransactionService'
+import { nextSyncStatus } from '../../services/blockchain/syncStatusPolicy'
 import { persistence, type TransactionInput } from '../../services/persistence'
 import { MigrationService } from '../../services/database/migrationService'
 import {
@@ -829,6 +830,9 @@ const WalletManager: React.FC = () => {
     try {
       let lastProgressMessage = ''
       let txs: Transaction[]
+      // EVM explorer history is paginated in full; only the Substrate hybrid
+      // path can fall back to an incomplete recent-block RPC window.
+      let historyComplete = true
 
       if (PURE_EVM_NETWORKS.has(selectedNetwork)) {
         // EVM chain: fetch via block explorer API
@@ -855,7 +859,7 @@ const WalletManager: React.FC = () => {
         txs = evmTxs
       } else {
         // Substrate chain: fetch via hybrid Subscan + RPC approach
-        txs = await polkadotService.fetchTransactionHistoryHybrid(
+        const result = await polkadotService.fetchTransactionHistoryHybrid(
           selectedNetwork,
           {
             address: networkAddress,
@@ -868,6 +872,8 @@ const WalletManager: React.FC = () => {
             },
           }
         )
+        txs = result.transactions
+        historyComplete = result.isComplete
       }
 
       // Report saving stage
@@ -920,16 +926,17 @@ const WalletManager: React.FC = () => {
         }
       }
 
-      // Update sync status
-      if (txs.length > 0) {
-        const lastBlock = Math.max(...txs.map(tx => tx.blockNumber))
-        await persistence.saveChainSyncStatus({
-          network: selectedNetwork,
-          address: networkAddress,
-          lastSyncedBlock: lastBlock,
-          lastSyncTime: new Date(),
-          isSyncing: false,
-        })
+      // Update sync status only for a complete import. An RPC-only fallback
+      // covers a bounded recent window; advancing the sync point here would
+      // mark the skipped range as synced and it would never be re-imported.
+      const syncStatusUpdate = nextSyncStatus(
+        txs,
+        historyComplete,
+        selectedNetwork,
+        networkAddress
+      )
+      if (syncStatusUpdate) {
+        await persistence.saveChainSyncStatus(syncStatusUpdate)
       }
 
       // Cross-chain XCM correlation: merge all networks' transactions for this
