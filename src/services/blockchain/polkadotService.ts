@@ -368,17 +368,22 @@ class PolkadotService {
 
     // EVM addresses on EVM-compatible chains (Moonbeam, Moonriver) use Moonscan.
     if (PolkadotService.isHybridEvmRequest(network, address)) {
-      return this.fetchHybridEvmTransactions(network, address, onProgress)
+      return PolkadotService.fetchHybridEvmTransactions(
+        network,
+        address,
+        onProgress
+      )
     }
 
     try {
       // PHASE 1: Fetch historical data from Subscan (instant)
-      const subscanTransactions = await this.fetchHybridIndexedTransactions(
-        network,
-        address,
-        limit,
-        onProgress
-      )
+      const subscanTransactions =
+        await PolkadotService.fetchHybridIndexedTransactions(
+          network,
+          address,
+          limit,
+          onProgress
+        )
 
       // PHASE 2-4: Scan recent blocks over RPC and merge with the indexed set
       return await this.fetchHybridOnChainTransactions(
@@ -408,7 +413,7 @@ class PolkadotService {
   /**
    * Fetch history for an EVM address on Moonbeam/Moonriver via Moonscan.
    */
-  private async fetchHybridEvmTransactions(
+  private static async fetchHybridEvmTransactions(
     network: NetworkType,
     address: string,
     onProgress?: (progress: SyncProgress) => void
@@ -470,7 +475,7 @@ class PolkadotService {
    * Never throws: returns an empty list when Subscan is unavailable or fails so
    * the caller can fall back to scanning recent blocks over RPC.
    */
-  private async fetchHybridIndexedTransactions(
+  private static async fetchHybridIndexedTransactions(
     network: NetworkType,
     address: string,
     limit: number,
@@ -558,7 +563,7 @@ class PolkadotService {
     try {
       range = await this.resolveHybridRecentBlockRange(network, startBlock)
     } catch (rpcError) {
-      return await this.handleHybridRpcFailure(
+      return await PolkadotService.handleHybridRpcFailure(
         network,
         limit,
         allTransactions,
@@ -633,7 +638,7 @@ class PolkadotService {
    * Fallback when the RPC scan cannot run: return the indexed (Subscan) history
    * if we have any, otherwise fail loudly rather than pretend the wallet is empty.
    */
-  private async handleHybridRpcFailure(
+  private static async handleHybridRpcFailure(
     network: NetworkType,
     limit: number,
     allTransactions: SubstrateTransaction[],
