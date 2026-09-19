@@ -37,6 +37,15 @@ const NETWORK_TOKEN_SYMBOLS: Partial<Record<NetworkType, string>> = {
   acala: 'ACA',
 }
 
+/**
+ * Default RPC scan window for hybrid history: last 1000 blocks
+ * (~1.7 hours at 6s/block) unless an incremental gap extends it.
+ */
+const HYBRID_RECENT_BLOCKS_CUTOFF = 1000
+
+/** ~16.7 hours; incremental gaps beyond this fall back to the Subscan window. */
+const HYBRID_MAX_INCREMENTAL_BLOCKS = 10_000
+
 export interface BlockchainConnection {
   api: ApiPromise
   network: NetworkConfig
@@ -58,6 +67,35 @@ export interface SyncProgress {
   blocksScanned: number
   transactionsFound: number
   message: string
+}
+
+/**
+ * Result of a hybrid history fetch.
+ *
+ * `isComplete` is false when the indexed (Subscan) history was unavailable and
+ * only the bounded recent-block RPC window could be scanned. Callers must not
+ * advance a sync point for an incomplete result: the range that was skipped
+ * would otherwise never be re-imported.
+ */
+export interface HybridHistoryResult {
+  transactions: SubstrateTransaction[]
+  isComplete: boolean
+}
+
+/** RPC connection plus the block window to scan for recent history. */
+interface HybridBlockRange {
+  api: ApiPromise
+  currentBlock: number
+  recentBlockStart: number
+}
+
+/**
+ * Indexed (Subscan) phase result. Availability is explicit rather than inferred
+ * from the row count: a healthy Subscan query can legitimately return zero rows.
+ */
+interface IndexedHistoryResult {
+  transactions: SubstrateTransaction[]
+  subscanAvailable: boolean
 }
 
 /**
@@ -354,262 +392,407 @@ class PolkadotService {
   async fetchTransactionHistoryHybrid(
     network: NetworkType,
     filter: TransactionFilter
-  ): Promise<SubstrateTransaction[]> {
+  ): Promise<HybridHistoryResult> {
     const { address, startBlock = 1, limit = 100, onProgress } = filter
-    const allTransactions: SubstrateTransaction[] = []
-    // Default RPC scan window: last 1000 blocks (~1.7 hours at 6s/block).
-    // When startBlock is provided (incremental refresh) and the gap since last
-    // sync is ≤ MAX_INCREMENTAL_BLOCKS, extend the scan to cover the full gap
-    // so transactions between syncs are never silently missed when Subscan is
-    // unavailable (rate-limited or blocked).
-    const RECENT_BLOCKS_CUTOFF = 1000
-    const MAX_INCREMENTAL_BLOCKS = 10_000 // ~16.7 hours; beyond this fall back to Subscan
 
-    // Check if this is an EVM address on an EVM-compatible chain (Moonbeam, Moonriver)
-    const isEVMChain = network === 'moonbeam' || network === 'moonriver'
-    const isEVMAddress = address.startsWith('0x')
-
-    if (isEVMChain && isEVMAddress) {
-      // Use Moonscan for EVM addresses on Moonbeam/Moonriver
-      if (!moonscanService.isAvailable(network)) {
-        throw new Error(`Moonscan not available for ${network}`)
-      }
-
-      try {
-        onProgress?.({
-          stage: 'fetching',
-          currentBlock: 0,
-          totalBlocks: 0,
-          blocksScanned: 0,
-          transactionsFound: 0,
-          message: 'Fetching EVM transactions from Moonscan...',
-        })
-
-        const evmTransactions = await moonscanService.fetchAllTransactions(
-          network,
-          address,
-          {
-            limit: 0,
-            fullArchive: true,
-            onProgress: (stage, current, total) => {
-              onProgress?.({
-                stage: 'fetching',
-                currentBlock: 0,
-                totalBlocks: total,
-                blocksScanned: current,
-                transactionsFound: current,
-                message: stage,
-              })
-            },
-          }
-        )
-
-        onProgress?.({
-          stage: 'complete',
-          currentBlock: 0,
-          totalBlocks: 0,
-          blocksScanned: evmTransactions.length,
-          transactionsFound: evmTransactions.length,
-          message: `Found ${evmTransactions.length} EVM transaction${evmTransactions.length !== 1 ? 's' : ''}`,
-        })
-
-        return evmTransactions
-      } catch (error) {
-        console.error('🚀 [Hybrid] Moonscan fetch failed:', error)
-        throw new Error(
-          `Failed to fetch EVM transactions: ${error instanceof Error ? error.message : 'Unknown error'}`
-        )
-      }
+    // EVM addresses on EVM-compatible chains (Moonbeam, Moonriver) use Moonscan.
+    if (PolkadotService.isHybridEvmRequest(network, address)) {
+      return PolkadotService.fetchHybridEvmTransactions(
+        network,
+        address,
+        onProgress
+      )
     }
 
     try {
-      // Initialize variables needed across phases
-      let currentBlock = 0
-      let recentBlockStart = 0
-
       // PHASE 1: Fetch historical data from Subscan (instant)
-      // Using Subscan API v2 endpoint
-      if (subscanService.isAvailable(network)) {
-        try {
-          onProgress?.({
-            stage: 'fetching',
-            currentBlock: 0,
-            totalBlocks: 0,
-            blocksScanned: 0,
-            transactionsFound: 0,
-            message: 'Fetching historical transactions from Subscan API...',
-          })
+      const indexed = await PolkadotService.fetchHybridIndexedTransactions(
+        network,
+        address,
+        limit,
+        onProgress
+      )
 
-          const subscanTxs = await subscanService.fetchAllTransactions(
-            network,
-            address,
-            {
-              limit: Math.min(limit, 100), // Subscan API max is 100 rows
-              onProgress: (stage, current, _total) => {
-                onProgress?.({
-                  stage: 'fetching',
-                  currentBlock: 0,
-                  totalBlocks: 0,
-                  blocksScanned: 0,
-                  transactionsFound: current,
-                  message: stage,
-                })
-              },
-            }
-          )
+      // PHASE 2-4: Scan recent blocks over RPC and merge with the indexed set
+      return await this.fetchHybridOnChainTransactions(
+        network,
+        address,
+        startBlock,
+        limit,
+        indexed,
+        onProgress
+      )
+    } catch (error) {
+      throw PolkadotService.toHybridFetchError(address, error)
+    }
+  }
 
-          // DON'T filter yet - we don't know the current block until RPC connects
-          // Just add all Subscan transactions for now
-          allTransactions.push(...subscanTxs)
+  /**
+   * Whether the request targets an EVM address on an EVM-compatible chain.
+   */
+  private static isHybridEvmRequest(
+    network: NetworkType,
+    address: string
+  ): boolean {
+    const isEvmChain = network === 'moonbeam' || network === 'moonriver'
+    return isEvmChain && address.startsWith('0x')
+  }
 
-          onProgress?.({
-            stage: 'processing',
-            currentBlock: 0,
-            totalBlocks: 0,
-            blocksScanned: 0,
-            transactionsFound: allTransactions.length,
-            message: `Loaded ${allTransactions.length} transactions from Subscan`,
-          })
-        } catch (error) {
-          console.error('Subscan fetch failed, will use RPC only:', error)
+  /**
+   * Fetch history for an EVM address on Moonbeam/Moonriver via Moonscan.
+   *
+   * Moonscan serves the full archive, so the result is always complete.
+   */
+  private static async fetchHybridEvmTransactions(
+    network: NetworkType,
+    address: string,
+    onProgress?: (progress: SyncProgress) => void
+  ): Promise<HybridHistoryResult> {
+    if (!moonscanService.isAvailable(network)) {
+      throw new Error(`Moonscan not available for ${network}`)
+    }
 
-          onProgress?.({
-            stage: 'fetching',
-            currentBlock: 0,
-            totalBlocks: 0,
-            blocksScanned: 0,
-            transactionsFound: 0,
-            message:
-              'Subscan blocked - using slow blockchain scan (may take several minutes)...',
-          })
+    try {
+      onProgress?.({
+        stage: 'fetching',
+        currentBlock: 0,
+        totalBlocks: 0,
+        blocksScanned: 0,
+        transactionsFound: 0,
+        message: 'Fetching EVM transactions from Moonscan...',
+      })
+
+      const evmTransactions = await moonscanService.fetchAllTransactions(
+        network,
+        address,
+        {
+          limit: 0,
+          fullArchive: true,
+          onProgress: (stage, current, total) => {
+            onProgress?.({
+              stage: 'fetching',
+              currentBlock: 0,
+              totalBlocks: total,
+              blocksScanned: current,
+              transactionsFound: current,
+              message: stage,
+            })
+          },
         }
-      }
+      )
 
-      // PHASE 2: Fetch recent blocks via RPC (for live data)
-      // This phase is optional - if it fails, we still have Subscan data
-      let api: ApiPromise | null = null
+      onProgress?.({
+        stage: 'complete',
+        currentBlock: 0,
+        totalBlocks: 0,
+        blocksScanned: evmTransactions.length,
+        transactionsFound: evmTransactions.length,
+        message: `Found ${evmTransactions.length} EVM transaction${evmTransactions.length !== 1 ? 's' : ''}`,
+      })
 
-      try {
-        // Try to connect to RPC (with short timeout)
-        const connection = this.connections.get(network)
-        if (!connection || !connection.isConnected) {
-          // Set a timeout for RPC connection
-          const connectPromise = this.connect(network)
-          const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('RPC connection timeout')), 10000)
-          )
+      return { transactions: evmTransactions, isComplete: true }
+    } catch (error) {
+      console.error('🚀 [Hybrid] Moonscan fetch failed:', error)
+      throw new Error(
+        `Failed to fetch EVM transactions: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
+    }
+  }
 
-          await Promise.race([connectPromise, timeoutPromise])
+  /**
+   * PHASE 1: Pull historical transactions from the Subscan indexer.
+   *
+   * Never throws: reports `subscanAvailable: false` (with no transactions) when
+   * Subscan is unavailable or fails, so the caller can fall back to scanning
+   * recent blocks over RPC.
+   */
+  private static async fetchHybridIndexedTransactions(
+    network: NetworkType,
+    address: string,
+    limit: number,
+    onProgress?: (progress: SyncProgress) => void
+  ): Promise<IndexedHistoryResult> {
+    if (!subscanService.isAvailable(network)) {
+      return { transactions: [], subscanAvailable: false }
+    }
+
+    try {
+      onProgress?.({
+        stage: 'fetching',
+        currentBlock: 0,
+        totalBlocks: 0,
+        blocksScanned: 0,
+        transactionsFound: 0,
+        message: 'Fetching historical transactions from Subscan API...',
+      })
+
+      const subscanTxs = await subscanService.fetchAllTransactions(
+        network,
+        address,
+        {
+          limit: Math.min(limit, 100), // Subscan API max is 100 rows
+          onProgress: (stage, current, _total) => {
+            onProgress?.({
+              stage: 'fetching',
+              currentBlock: 0,
+              totalBlocks: 0,
+              blocksScanned: 0,
+              transactionsFound: current,
+              message: stage,
+            })
+          },
         }
+      )
 
-        api = this.getApi(network)
-        if (!api) {
-          throw new Error('Failed to get API connection')
-        }
+      // DON'T filter yet - we don't know the current block until RPC connects
+      onProgress?.({
+        stage: 'processing',
+        currentBlock: 0,
+        totalBlocks: 0,
+        blocksScanned: 0,
+        transactionsFound: subscanTxs.length,
+        message: `Loaded ${subscanTxs.length} transactions from Subscan`,
+      })
 
-        // Get current block height
-        const currentBlockHeader = await api.rpc.chain.getHeader()
-        currentBlock = currentBlockHeader.number.toNumber()
-
-        // For incremental refreshes (startBlock > 1) where the gap since the
-        // last sync is within MAX_INCREMENTAL_BLOCKS, scan the full gap so
-        // transactions are never missed when Subscan is unavailable.
-        const gapSinceLastSync = currentBlock - startBlock
-        if (startBlock > 1 && gapSinceLastSync <= MAX_INCREMENTAL_BLOCKS) {
-          recentBlockStart = startBlock
-        } else {
-          recentBlockStart = Math.max(
-            currentBlock - RECENT_BLOCKS_CUTOFF,
-            startBlock
-          )
-        }
-      } catch (rpcError) {
-        console.warn(
-          'RPC connection failed, skipping recent block scan:',
-          rpcError
-        )
-
-        // If Subscan also produced nothing we cannot tell an empty wallet from a
-        // failed import. Never return [] silently — the caller would otherwise
-        // persist an incomplete history as if it were complete.
-        if (allTransactions.length === 0) {
-          throw new Error(
-            'Could not import transaction history: the indexer (Subscan) is ' +
-              'unavailable and the Polkadot RPC scan failed. Add a valid ' +
-              'Subscan API key in Settings → Data Providers, check your ' +
-              'network connection, and retry.'
-          )
-        }
-
-        // Skip Phase 2 if RPC fails - we already have historical data from Subscan
-        // Deduplicate and return what we have
-        const seen = new Set<string>()
-        const deduplicated = allTransactions.filter(tx => {
-          if (seen.has(tx.id)) return false
-          seen.add(tx.id)
-          return true
-        })
-
-        const final = deduplicated.slice(0, limit)
-
-        // Annotate Subscan XCM transactions and correlate within this single-chain fetch.
-        // Cross-chain correlation happens when the caller merges multiple networks.
-        annotateXcmTransactions(final)
-        correlateXcmTransactions(final)
-
-        // Still enrich with USD values
-        await PolkadotService.enrichTransactionsWithUsdValues(
-          final,
-          network,
-          onProgress
-        )
-
-        onProgress?.({
-          stage: 'complete',
-          currentBlock: 0,
-          totalBlocks: 0,
-          blocksScanned: 0,
-          transactionsFound: final.length,
-          message: `Found ${final.length} transactions from Subscan (RPC unavailable)`,
-        })
-
-        return final
-      }
+      return { transactions: [...subscanTxs], subscanAvailable: true }
+    } catch (error) {
+      console.error('Subscan fetch failed, will use RPC only:', error)
 
       onProgress?.({
         stage: 'fetching',
-        currentBlock,
-        totalBlocks: RECENT_BLOCKS_CUTOFF,
+        currentBlock: 0,
+        totalBlocks: 0,
         blocksScanned: 0,
-        transactionsFound: allTransactions.length,
-        message: `Scanning recent blocks (${recentBlockStart.toLocaleString()} - ${currentBlock.toLocaleString()})...`,
+        transactionsFound: 0,
+        message:
+          'Subscan blocked - using slow blockchain scan (may take several minutes)...',
       })
 
-      const batchSize = 20
-      let scanBlock = currentBlock
-      let blocksScanned = 0
-      const recentTxs: SubstrateTransaction[] = []
+      return { transactions: [], subscanAvailable: false }
+    }
+  }
 
-      while (scanBlock >= recentBlockStart && recentTxs.length < limit) {
-        const startBatch = Math.max(scanBlock - batchSize + 1, recentBlockStart)
-        const blocksToFetch = []
+  /**
+   * PHASE 2-4: Scan recent blocks over RPC and merge them with the indexed
+   * transactions. If RPC is unreachable, falls back to the indexed set alone
+   * (never silently returning an empty list).
+   *
+   * The result is only complete when the indexed (Subscan) phase was available;
+   * an RPC-only scan covers a bounded window and must not advance the sync point.
+   */
+  private async fetchHybridOnChainTransactions(
+    network: NetworkType,
+    address: string,
+    startBlock: number,
+    limit: number,
+    indexed: IndexedHistoryResult,
+    onProgress?: (progress: SyncProgress) => void
+  ): Promise<HybridHistoryResult> {
+    const allTransactions = [...indexed.transactions]
 
-        for (let blockNum = scanBlock; blockNum >= startBatch; blockNum--) {
-          blocksToFetch.push(blockNum)
-        }
+    let range: HybridBlockRange
 
-        // Report progress
-        onProgress?.({
-          stage: 'fetching',
-          currentBlock: scanBlock,
-          totalBlocks: RECENT_BLOCKS_CUTOFF,
-          blocksScanned,
-          transactionsFound: allTransactions.length + recentTxs.length,
-          message: `Scanning recent blocks ${startBatch.toLocaleString()} - ${scanBlock.toLocaleString()}`,
-        })
+    try {
+      range = await this.resolveHybridRecentBlockRange(network, startBlock)
+    } catch (rpcError) {
+      return await PolkadotService.handleHybridRpcFailure(
+        network,
+        limit,
+        allTransactions,
+        indexed.subscanAvailable,
+        rpcError,
+        onProgress
+      )
+    }
 
-        // Parallel block fetching
-        const blockDataPromises = blocksToFetch.map(blockNum =>
+    onProgress?.({
+      stage: 'fetching',
+      currentBlock: range.currentBlock,
+      totalBlocks: HYBRID_RECENT_BLOCKS_CUTOFF,
+      blocksScanned: 0,
+      transactionsFound: allTransactions.length,
+      message: `Scanning recent blocks (${range.recentBlockStart.toLocaleString()} - ${range.currentBlock.toLocaleString()})...`,
+    })
+
+    const { recentTxs, blocksScanned } =
+      await PolkadotService.scanHybridRecentBlocks(
+        range.api,
+        network,
+        address,
+        range.recentBlockStart,
+        range.currentBlock,
+        limit,
+        allTransactions.length,
+        onProgress
+      )
+
+    // PHASE 3: Merge and deduplicate
+    allTransactions.push(...recentTxs)
+
+    onProgress?.({
+      stage: 'processing',
+      currentBlock: range.currentBlock,
+      totalBlocks: HYBRID_RECENT_BLOCKS_CUTOFF,
+      blocksScanned,
+      transactionsFound: allTransactions.length,
+      message: 'Merging and deduplicating transactions...',
+    })
+
+    // PHASE 4: Enrich with USD values
+    const final = await PolkadotService.finalizeHybridTransactions(
+      allTransactions,
+      network,
+      limit,
+      onProgress
+    )
+
+    const subscanCount = allTransactions.length - recentTxs.length
+    // Only a successful Subscan query makes the result complete. Do not infer
+    // availability from the row count: a healthy query can return zero rows.
+    const completenessNote = indexed.subscanAvailable
+      ? ''
+      : ` — Subscan is unavailable, so only the last ${blocksScanned.toLocaleString()} blocks were scanned and older history is NOT included`
+
+    onProgress?.({
+      stage: 'complete',
+      currentBlock: range.currentBlock,
+      totalBlocks: HYBRID_RECENT_BLOCKS_CUTOFF,
+      blocksScanned,
+      transactionsFound: final.length,
+      message: `Found ${final.length} transaction${final.length !== 1 ? 's' : ''} (${subscanCount} from Subscan, ${recentTxs.length} from blockchain)${completenessNote}`,
+    })
+
+    return { transactions: final, isComplete: indexed.subscanAvailable }
+  }
+
+  /**
+   * Fallback when the RPC scan cannot run: return the indexed (Subscan) history
+   * if we have any, otherwise fail loudly rather than pretend the wallet is empty.
+   */
+  private static async handleHybridRpcFailure(
+    network: NetworkType,
+    limit: number,
+    allTransactions: SubstrateTransaction[],
+    subscanAvailable: boolean,
+    rpcError: unknown,
+    onProgress?: (progress: SyncProgress) => void
+  ): Promise<HybridHistoryResult> {
+    console.warn('RPC connection failed, skipping recent block scan:', rpcError)
+
+    // If Subscan never answered we cannot tell an empty wallet from a failed
+    // import. Never return [] silently — the caller would otherwise persist an
+    // incomplete history as if it were complete.
+    if (!subscanAvailable) {
+      throw new Error(
+        'Could not import transaction history: the indexer (Subscan) is ' +
+          'unavailable and the Polkadot RPC scan failed. Add a valid ' +
+          'Subscan API key in Settings → Data Providers, check your ' +
+          'network connection, and retry.'
+      )
+    }
+
+    // Skip the RPC scan - we already have historical data from Subscan
+    const final = await PolkadotService.finalizeHybridTransactions(
+      allTransactions,
+      network,
+      limit,
+      onProgress
+    )
+
+    onProgress?.({
+      stage: 'complete',
+      currentBlock: 0,
+      totalBlocks: 0,
+      blocksScanned: 0,
+      transactionsFound: final.length,
+      message: `Found ${final.length} transactions from Subscan (RPC unavailable)`,
+    })
+
+    return { transactions: final, isComplete: subscanAvailable }
+  }
+
+  /**
+   * Connect over RPC if needed and resolve the block range to scan.
+   * Throws when the endpoint cannot be reached within the timeout.
+   */
+  private async resolveHybridRecentBlockRange(
+    network: NetworkType,
+    startBlock: number
+  ): Promise<HybridBlockRange> {
+    const connection = this.connections.get(network)
+    if (!connection || !connection.isConnected) {
+      // Set a timeout for RPC connection
+      const connectPromise = this.connect(network)
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('RPC connection timeout')), 10000)
+      )
+
+      await Promise.race([connectPromise, timeoutPromise])
+    }
+
+    const api = this.getApi(network)
+    if (!api) {
+      throw new Error('Failed to get API connection')
+    }
+
+    // Get current block height
+    const currentBlockHeader = await api.rpc.chain.getHeader()
+    const currentBlock = currentBlockHeader.number.toNumber()
+
+    // For incremental refreshes (startBlock > 1) where the gap since the last
+    // sync is within MAX_INCREMENTAL_BLOCKS, scan the full gap so transactions
+    // are never missed when Subscan is unavailable.
+    const gapSinceLastSync = currentBlock - startBlock
+    const useFullIncrementalGap =
+      startBlock > 1 && gapSinceLastSync <= HYBRID_MAX_INCREMENTAL_BLOCKS
+
+    const recentBlockStart = useFullIncrementalGap
+      ? startBlock
+      : Math.max(currentBlock - HYBRID_RECENT_BLOCKS_CUTOFF, startBlock)
+
+    return { api, currentBlock, recentBlockStart }
+  }
+
+  /**
+   * Scan blocks from newest to `recentBlockStart` in batches of 20, stopping
+   * once `limit` recent transactions have been collected.
+   */
+  private static async scanHybridRecentBlocks(
+    api: ApiPromise,
+    network: NetworkType,
+    address: string,
+    recentBlockStart: number,
+    currentBlock: number,
+    limit: number,
+    indexedCount: number,
+    onProgress?: (progress: SyncProgress) => void
+  ): Promise<{ recentTxs: SubstrateTransaction[]; blocksScanned: number }> {
+    const batchSize = 20
+    const recentTxs: SubstrateTransaction[] = []
+    let scanBlock = currentBlock
+    let blocksScanned = 0
+
+    while (scanBlock >= recentBlockStart && recentTxs.length < limit) {
+      const startBatch = Math.max(scanBlock - batchSize + 1, recentBlockStart)
+      const blocksToFetch: number[] = []
+
+      for (let blockNum = scanBlock; blockNum >= startBatch; blockNum--) {
+        blocksToFetch.push(blockNum)
+      }
+
+      // Report progress
+      onProgress?.({
+        stage: 'fetching',
+        currentBlock: scanBlock,
+        totalBlocks: HYBRID_RECENT_BLOCKS_CUTOFF,
+        blocksScanned,
+        transactionsFound: indexedCount + recentTxs.length,
+        message: `Scanning recent blocks ${startBatch.toLocaleString()} - ${scanBlock.toLocaleString()}`,
+      })
+
+      // Parallel block fetching
+      const blockDataResults = await Promise.all(
+        blocksToFetch.map(blockNum =>
           PolkadotService.fetchBlockTransactions(
             api,
             blockNum,
@@ -617,104 +800,87 @@ class PolkadotService {
             network
           )
         )
-
-        const blockDataResults = await Promise.all(blockDataPromises)
-
-        // Collect results
-        for (const blockTxs of blockDataResults) {
-          recentTxs.push(...blockTxs)
-        }
-
-        blocksScanned += blocksToFetch.length
-        scanBlock = startBatch - 1
-      }
-
-      // PHASE 3: Merge and deduplicate
-      allTransactions.push(...recentTxs)
-
-      onProgress?.({
-        stage: 'processing',
-        currentBlock,
-        totalBlocks: RECENT_BLOCKS_CUTOFF,
-        blocksScanned,
-        transactionsFound: allTransactions.length,
-        message: 'Merging and deduplicating transactions...',
-      })
-
-      // Deduplicate by transaction ID
-      const seen = new Set<string>()
-      const deduplicated = allTransactions.filter(tx => {
-        if (seen.has(tx.id)) return false
-        seen.add(tx.id)
-        return true
-      })
-
-      // Sort by block number descending (newest first)
-      deduplicated.sort((a, b) => b.blockNumber - a.blockNumber)
-
-      // Limit results
-      const final = deduplicated.slice(0, limit)
-
-      // Annotate Subscan-sourced XCM transactions and correlate within this single-chain
-      // result set. Cross-chain correlation (relay↔parachain) is performed by the caller
-      // after merging transaction lists from multiple networks.
-      annotateXcmTransactions(final)
-      correlateXcmTransactions(final)
-
-      // PHASE 4: Enrich with USD values
-      await PolkadotService.enrichTransactionsWithUsdValues(
-        final,
-        network,
-        onProgress
       )
 
-      const subscanCount = allTransactions.length - recentTxs.length
-      // When Subscan contributes nothing we have only scanned a recent RPC
-      // window. Say so explicitly: a short list must never look like a complete
-      // history (import-resilience mandate).
-      const completenessNote =
-        subscanCount === 0
-          ? ` — Subscan is unavailable, so only the last ${blocksScanned.toLocaleString()} blocks were scanned and older history is NOT included`
-          : ''
-
-      onProgress?.({
-        stage: 'complete',
-        currentBlock,
-        totalBlocks: RECENT_BLOCKS_CUTOFF,
-        blocksScanned,
-        transactionsFound: final.length,
-        message: `Found ${final.length} transaction${final.length !== 1 ? 's' : ''} (${subscanCount} from Subscan, ${recentTxs.length} from blockchain)${completenessNote}`,
-      })
-
-      return final
-    } catch (error) {
-      console.error(`Hybrid fetch failed for ${address}:`, error)
-
-      // Provide more helpful error messages
-      const errorMessage =
-        error instanceof Error ? error.message : String(error)
-
-      // Errors already phrased for the user pass through unchanged.
-      if (errorMessage.startsWith('Could not import transaction history')) {
-        throw error
+      // Collect results
+      for (const blockTxs of blockDataResults) {
+        recentTxs.push(...blockTxs)
       }
 
-      if (errorMessage.includes('Failed to connect')) {
-        throw new Error(
-          'Unable to connect to Polkadot network. Please check your internet connection and try again. ' +
-            'If the problem persists, the RPC nodes may be temporarily unavailable.'
-        )
-      }
-
-      if (errorMessage.includes('Subscan')) {
-        throw new Error(
-          'Subscan API is currently unavailable. The sync will take longer as it scans the blockchain directly. ' +
-            'Please be patient or try again later.'
-        )
-      }
-
-      throw error
+      blocksScanned += blocksToFetch.length
+      scanBlock = startBatch - 1
     }
+
+    return { recentTxs, blocksScanned }
+  }
+
+  /**
+   * Deduplicate by id, sort newest-first, annotate/correlate XCM, then enrich
+   * with historical USD values.
+   */
+  private static async finalizeHybridTransactions(
+    transactions: SubstrateTransaction[],
+    network: NetworkType,
+    limit: number,
+    onProgress?: (progress: SyncProgress) => void
+  ): Promise<SubstrateTransaction[]> {
+    const seen = new Set<string>()
+    const deduplicated = transactions.filter(tx => {
+      if (seen.has(tx.id)) return false
+      seen.add(tx.id)
+      return true
+    })
+
+    // Sort by block number descending (newest first)
+    deduplicated.sort((a, b) => b.blockNumber - a.blockNumber)
+
+    // Limit results
+    const final = deduplicated.slice(0, limit)
+
+    // Annotate Subscan-sourced XCM transactions and correlate within this single-chain
+    // result set. Cross-chain correlation (relay↔parachain) is performed by the caller
+    // after merging transaction lists from multiple networks.
+    annotateXcmTransactions(final)
+    correlateXcmTransactions(final)
+
+    await PolkadotService.enrichTransactionsWithUsdValues(
+      final,
+      network,
+      onProgress
+    )
+
+    return final
+  }
+
+  /**
+   * Map a hybrid-fetch failure to a user-facing error.
+   */
+  private static toHybridFetchError(address: string, error: unknown): Error {
+    console.error(`Hybrid fetch failed for ${address}:`, error)
+
+    // Provide more helpful error messages
+    const errorMessage = error instanceof Error ? error.message : String(error)
+
+    // Errors already phrased for the user pass through unchanged.
+    if (errorMessage.startsWith('Could not import transaction history')) {
+      return error instanceof Error ? error : new Error(errorMessage)
+    }
+
+    if (errorMessage.includes('Failed to connect')) {
+      return new Error(
+        'Unable to connect to Polkadot network. Please check your internet connection and try again. ' +
+          'If the problem persists, the RPC nodes may be temporarily unavailable.'
+      )
+    }
+
+    if (errorMessage.includes('Subscan')) {
+      return new Error(
+        'Subscan API is currently unavailable. The sync will take longer as it scans the blockchain directly. ' +
+          'Please be patient or try again later.'
+      )
+    }
+
+    return error instanceof Error ? error : new Error(errorMessage)
   }
 
   /**

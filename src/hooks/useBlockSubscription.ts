@@ -12,6 +12,7 @@ import {
   type SyncProgress,
 } from '../services/blockchain/polkadotService'
 import { indexedDBService } from '../services/database/indexedDBService'
+import { nextSyncStatus } from '../services/blockchain/syncStatusPolicy'
 import { NetworkType } from '../services/wallet/types'
 import { encodeAddress, decodeAddress } from '@polkadot/util-crypto'
 
@@ -131,30 +132,38 @@ export function useBlockSubscription(
           : undefined
 
         // Fetch only new transactions (limit 50 for incremental)
-        const txs = await polkadotService.fetchTransactionHistoryHybrid(net, {
-          address: networkAddr,
-          startBlock,
-          limit: 50,
-          onProgress: p => {
-            if (isMountedRef.current) setRefreshProgress(p)
-          },
-        })
+        const result = await polkadotService.fetchTransactionHistoryHybrid(
+          net,
+          {
+            address: networkAddr,
+            startBlock,
+            limit: 50,
+            onProgress: p => {
+              if (isMountedRef.current) setRefreshProgress(p)
+            },
+          }
+        )
 
         if (!isMountedRef.current) return
+
+        const txs = result.transactions
 
         if (txs.length > 0) {
           // Save new transactions
           await indexedDBService.saveTransactions(net, networkAddr, txs)
+        }
 
-          // Update sync status
-          const lastBlock = Math.max(...txs.map(tx => tx.blockNumber))
-          await indexedDBService.saveSyncStatus({
-            network: net,
-            address: networkAddr,
-            lastSyncedBlock: lastBlock,
-            lastSyncTime: new Date(),
-            isSyncing: false,
-          })
+        // Advance the sync point only for a complete import. An RPC-only
+        // fallback covers a bounded recent window; advancing here would mark
+        // the skipped range as synced and it would never be re-imported.
+        const syncStatusUpdate = nextSyncStatus(
+          txs,
+          result.isComplete,
+          net,
+          networkAddr
+        )
+        if (syncStatusUpdate) {
+          await indexedDBService.saveSyncStatus(syncStatusUpdate)
         }
 
         if (isMountedRef.current) {
@@ -198,7 +207,10 @@ export function useBlockSubscription(
     /**
      * Subscribes to new block headers from the polkadot service and updates state.
      *
-     * @returns {Promise<Function>} A promise that resolves to the unsubscribe function.
+     * The unsubscribe handle is stored in `unsubscribeRef`; this function
+     * intentionally returns no value.
+     *
+     * @returns {Promise<void>} Resolves once the subscription attempt settles.
      */
     const subscribe = async () => {
       // Sunset chains are historical-import only; there is nothing to subscribe to.
@@ -229,7 +241,7 @@ export function useBlockSubscription(
         if (cancelled) {
           // Race: effect cleaned up before subscribe resolved
           unsub()
-          return null
+          return
         }
 
         unsubscribeRef.current = unsub
@@ -246,7 +258,6 @@ export function useBlockSubscription(
           )
         }
       }
-      return null
     }
 
     subscribe()
