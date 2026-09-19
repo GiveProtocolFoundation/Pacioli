@@ -2,9 +2,10 @@
 
 Status: **rehearsal pending** — this document is prepared ahead of the Gate 1
 rehearsal (Phase 10). The rehearsal findings section at the end is filled in
-during the live run with real data. Companion document:
+during the live run with real data. Companion documents:
 `docs/accounting-model.md` (the conventions we hand the CPA alongside the
-statements).
+statements) and `docs/gate1-cpa-brief.md` (the reviewer brief and review
+programme — the cover document of the delivered bundle).
 
 > **Revision 2026-09-11 (pre-rehearsal reconciliation).** This package was
 > authored 2026-07-17, when the EVM rehearsal path ran through Moonbeam. Moonbeam
@@ -78,8 +79,8 @@ Concretely, the review package demonstrates:
    nothing writes to the ledger silently. Prices come from a configurable
    source (CoinGecko provider) with a manual, logged override always
    available.
-9. **Verification depth.** 300+ automated tests, including a property-based
-   suite (`proptest`, 27 properties) pinning the seven Stage-1 invariants
+9. **Verification depth.** 482 TypeScript tests and 394 Rust tests, including a
+   property-based suite (`proptest`) pinning the seven Stage-1 invariants
    against the production engine: generated entry streams always yield
    balanced trial balances, statements always tie, posting is idempotent,
    period locks hold, and FIFO lot consumption never goes negative and
@@ -196,12 +197,24 @@ The product owner chose option (a) from finding #10. Implemented as:
 - **Moonriver is not restored** (no rehearsal data for it).
 - **Prerequisite:** finding #11's key plumbing, without which the EVM path cannot authenticate at all.
 
-**Recommended rehearsal window:** the account's Moonbeam history is [redacted] transactions (2023-02 → 2026-05) — far too many for manual Stage 1 classification. Two workable, real windows:
+**Recommended rehearsal window:** the account's Moonbeam history is far too large
+for manual Stage 1 classification — Etherscan V2 returns 1,000+ native and
+1,000+ ERC-20 rows *per 1,000-row page*, spanning 2023-02 → 2026-07. Two bounded,
+real months were therefore examined transaction by transaction:
 
-| Window      | Volume                        | Notes                                                         |
-| ----------- | ----------------------------- | ------------------------------------------------------------- |
-| **2026-01** | 6 native + 13 ERC-20 = **19** | Recent, light, includes swaps and transfers. **Recommended.** |
-| 2023-12     | 18 native + 9 ERC-20 = **27** | First month with ERC-20 activity.                             |
+| Window  | Volume                        | What is actually in it                                                                                                                                                                                                                                        | Verdict                                                                                                                                                                          |
+| ------- | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2023-12 | 18 native + 9 ERC-20 = **27** | IN [redacted] (12-13), IN 4 + [redacted] (12-25); OUT [redacted] (12-24), OUT [redacted] (12-25); a GLMR→WGLMR wrap; a d2O position opened and partly closed; an xcUSDT→xcASTR swap; STELLA / WGLMR / d2O yield (12-29)                                    | **Recommended.** Covers an acquisition, two disposals, a cross-asset measurement line, a swap, and yield — i.e. everything the statements need to exercise cost basis and realized gain/loss |
+| 2026-01 | 6 native + 13 ERC-20 = **19** | All 6 native rows are **zero-value** contract calls (token approvals; two to the `0x…0808` precompile). All 13 ERC-20 rows are **inbound** receipts — STELLA, xcDOT, stDOT — with no consideration paid and nothing leaving the wallet                              | **Not sufficient on its own.** Exercising neither acquisition nor disposal, it cannot rehearse the FIFO / realized-gain path the gate exists to test. Useful as a yield fixture only |
+
+> **Correction (2026-09-14).** This section previously recommended **2026-01** on
+> the grounds that it was "recent, light, includes swaps and transfers", with
+> 2023-12 as the alternative. That was wrong on **content**, not on volume. A
+> transaction-by-transaction probe of 2026-01 found no swaps and no value
+> transfers at all: every native row is zero-value and every token row is an
+> inbound receipt. The window had been chosen on transaction count alone, and
+> the "includes swaps and transfers" claim was asserted rather than checked.
+> Use **2023-12**.
 
 Use the GIV-716 import-selection filter to import only the chosen window.
 
@@ -218,10 +231,14 @@ plan, or the dropdown should mark them as unavailable for the configured key.
    (`pnpm install --frozen-lockfile` with pnpm 10, then `pnpm tauri build` or
    `pnpm tauri:dev`). Confirm the default chart of accounts is seeded.
 2. **Connect wallets (read-only).** Add real wallet addresses. Confirm no
-   signing capability is requested anywhere. **Use the current network set:
-   EVM (Ethereum / Arbitrum / Base / Optimism / Polygon / BNB) via Etherscan V2,
-   plus Substrate, Bitcoin, Solana. Moonbeam/Moonriver are sunset and are no
-   longer selectable — do not spend rehearsal time on them.**
+   signing capability is requested anywhere. **Current network set, corrected
+   for findings #4 and #10: EVM (Ethereum / Arbitrum One / Polygon on the free
+   Etherscan V2 plan) via Etherscan V2, plus Substrate, Bitcoin, Solana.
+   Base, Optimism and BNB Smart Chain are selectable but require a paid
+   Etherscan V2 plan (finding #4) — do not rehearse on them with the current
+   key. Moonbeam is selectable under "Historical — sunset chains (import
+   only)" for read-only historical import (finding #10 decision); Moonriver is
+   not restored.**
 3. **Import history.** Sync raw transactions. Spot-check a handful against a
    block explorer (hash, direction, amount, timestamp). If a provider is
    unavailable, confirm the UI shows a graceful "provider temporarily
@@ -256,7 +273,10 @@ plan, or the dropdown should mark them as unavailable for the configured key.
     account → posted entries → approval trail → source raw transaction(s).
     This is the demo the CPA will care about most.
 12. **Package.** Export the three statements to CSV; bundle with
-    `docs/accounting-model.md` and this report; deliver to the reviewing CPA.
+    `docs/accounting-model.md`, this report, and `docs/gate1-cpa-brief.md` (the
+    cover brief and review programme); deliver to the reviewing CPA. The bundle
+    manifest is `docs/gate1-cpa-brief.md` §3 — replace its "attached only after
+    the rehearsal" placeholder with the real exports before sending.
 
 ## 4. Demo script for the CPA review session (~30 minutes)
 
@@ -297,7 +317,149 @@ plan, or the dropdown should mark them as unavailable for the configured key.
 | 10  | §3 steps 2-3 (import)           | **The product owner's real EVM history is on Moonbeam — the chain the app removed.** Dotlake's XCM records link the corrected Polkadot address `[redacted]` ([redacted], 2022-12-17 → 2025-10-24; top pallets nominationPools / xcmPallet / convictionVoting) to the originally supplied EVM address `[redacted]`, which is active on **Moonbeam (chainid 1284)**: 1000+ native txs (2023-02 → 2024-11) and 1000+ ERC-20 transfers (STELLA, WGLMR, xcDOT, xcUSDC, xcPEN, xcMANTA), plus [redacted] to Moonbeam / Bifrost / HydraDX / Astar across 2024-01 → 2026-07. `GIV-888` removed Moonbeam/Moonriver (sunset 2026-07-31), but **Etherscan V2 still serves chainid 1284 historical data** (`status:1 OK`). Gate 1 requires importing _your own_ real wallets; as shipped, the app cannot import this user's real EVM history. | blocker (gate scope)                  | **Open — product decision.** (a) restore Moonbeam **read-only for historical import** — the sunset affects live tracking, not historical accounting; (b) rehearse the Polkadot side via a valid Subscan key; (c) use the fresh Ethereum wallet `[redacted]` as a _disclosed_ fixture rather than "real history". Scale note: 1000+ Moonbeam txs is impractical for manual Stage 1 classification — scope the rehearsal to a bounded period using the GIV-716 import-selection filter.                                                                                                                                                                                                                   |
 | 11  | §3 steps 2-3 (EVM import)       | **The EVM explorer path never sent an API key.** `evmTransactionService` declared an `apiKey` field on `BlockExplorerConfig` but never read or sent it, so `fetchNormalTransactions` / `fetchTokenTransfers` called Etherscan V2 **keyless** — and V2 rejects keyless requests with "Missing/Invalid API Key". Every EVM chain, Ethereum included, therefore either fell through to a recent-blocks RPC scan or (after finding #7's fix) surfaced a key error. Moonscan/subscan read the keychain correctly; the EVM path never did.                                                                                                                                                                                                                                                                                                  | blocker                               | **Fixed 2026-09-13.** Added `getApiKeyCandidates()` (Tauri keychain → localStorage → build-time env, mirroring `moonscanService`) and a shared `fetchExplorer()` that sets `apikey` and retries each configured key until one is accepted, so a stale key cannot shadow a valid one. 1 regression test added; **482/482 Vitest green**, tsc/eslint/prettier clean.                                                                                                                                                                                                                                                                                                                                   |
 
-## 6. Outcome
+## 6. Outcome — the reviewer's written verdict
 
-_Pending — the statements are in the CPA's hands when steps 1–12 complete.
-The gate verdict is theirs._
+_Pending. The statements reach the reviewer when checklist steps 1–12 complete.
+This section is the reviewer's to fill, not ours. Record their response verbatim
+— do not summarise, soften, or selectively quote it._
+
+**Reviewer:** the product owner (drigobl) — crypto-native CPA. Note: a founder
+reviewing their own product's output is **not an independent review**, and Gate
+1 must not be described as independent CPA review on this basis. Whether the
+review is informal feedback or a formal engagement remains board decision §9.6.
+**Date:** 2026-09-18
+**Basis:** informal practitioner feedback, not an engagement under any
+professional standard — see `docs/gate1-cpa-brief.md` §1.
+
+### Response
+
+Recorded verbatim:
+
+> As a crypto-native CPA, dealing with these specific friction points requires
+> balancing strict adherence to standard-setting bodies (FASB/IASB) with the
+> practical realities of on-chain mechanics.
+>
+> Here is the technical breakdown of the direct questions, followed by the
+> architectural requirements for a global ERP system to handle these nuances
+> across jurisdictions.
+>
+> **Technical Assessment: US GAAP Baseline**
+>
+> **1. Is par measurement of redeemable stablecoins, outside the fair value model
+> and not cash equivalents, acceptable?**
+>
+> Yes, but via the **receivables/financial instrument** framework, not by
+> ignoring standard accounting. Under US GAAP, fiat-backed stablecoins (like
+> USDC or USDT) generally fail the definition of "cash or cash equivalents"
+> because they are not backed by the US government and carry counterparty/credit
+> risk with the issuer. Furthermore, because they provide an enforceable claim
+> to fiat, they are excluded from the new crypto fair value standard (ASC
+> 350-60). Therefore, they are typically classified as financial instruments
+> (receivables). Receivables are measured at amortized cost—which functionally
+> equates to "par" (1:1 with USD)—subject to an assessment for credit losses
+> under CECL (Current Expected Credit Losses).
+>
+> **2. Are redeemable wrappers in or out of ASC 350-60 scope?**
+>
+> Strictly speaking, they are **out of scope**. ASU 2023-08 explicitly excludes
+> assets that provide the holder with "enforceable rights to, or claims on,
+> underlying goods, services, or other assets." The FASB noted during
+> deliberations that if a wrapped token (e.g., wBTC) gives the holder an
+> enforceable legal claim to the native asset (BTC) held by a custodian or smart
+> contract, it fails the scoping criteria. This creates a frustrating accounting
+> mismatch where native ETH is measured at fair value, but wETH may revert to the
+> legacy cost-less-impairment intangible model, unless the entity can argue the
+> wrapper is merely a technological format rather than a legal claim.
+>
+> **3. Is expensing network fees in book, with basis adjustment in tax lots,
+> acceptable, and what functional class should the default be?**
+>
+> Yes, this bifurcation is standard practice.
+>
+> - **Book:** Network (gas) fees are typically expensed as incurred. The default
+>   functional classification should be **General & Administrative (G&A)
+>   expenses** or **Cost of Revenues/Transaction Costs**, depending on whether
+>   the entity's core business involves transacting on-chain (e.g., a market
+>   maker or staking provider) versus a standard corporate treasury.
+> - **Tax:** For tax purposes (IRS), acquisition costs must be capitalized into
+>   the cost basis of the acquired asset, and disposition costs reduce the total
+>   proceeds.
+>
+> **4. Is proceeds-by-asset-received the right measure for a swap?**
+>
+> Not as a default for book accounting, though it is standard for tax.
+>
+> - **Book (US GAAP — ASC 845 Nonmonetary Transactions):** A swap is measured at
+>   the fair value of the asset *relinquished*, unless the fair value of the
+>   asset *received* is "more clearly evident."
+> - **Tax:** The amount realized (proceeds) is based on the fair market value of
+>   the property *received*.
+>
+> Practically, many crypto sub-ledgers default to the most liquid asset in the
+> pair to determine the fiat value of the transaction, but a strictly compliant
+> book system must attempt to price the relinquished asset first.
+>
+> **5. Is a UTC cutoff acceptable if disclosed, and what materiality threshold
+> applies to unpriced holdings?**
+>
+> Yes, a **00:00 UTC cutoff** is the de facto industry standard for daily pricing
+> snapshots, given the 24/7 nature of crypto markets. The key is consistent
+> application and explicit disclosure in the financial footnotes. For unpriced
+> holdings (illiquid tokens, airdrops, long-tail assets), standard audit
+> materiality thresholds apply (e.g., SAB 99 guidelines in the US, typically
+> assessed as a percentage of total assets or net income). If an unpriced asset
+> is immaterial, carrying it at zero or nominal cost is generally accepted until
+> a principal market is established.
+>
+> **Global ERP Architecture: Accounting for Multi-Jurisdictional Variance**
+>
+> A global ERP system cannot hard-code a single accounting treatment for on-chain
+> assets. Because IFRS, US GAAP, and various local tax codes conflict, the system
+> requires a **multi-ledger, double-entry architecture** driven by a highly
+> configurable rules engine.
+>
+> | Core Friction | ERP Design & Treatment Mechanics |
+> | --- | --- |
+> | **Stablecoin Classification** | Separate *Asset Identity* from *Accounting Classification*. Map stablecoins dynamically by jurisdiction: US GAAP → Financial Asset/Receivable (trigger a CECL module); IFRS → possibly Financial Asset at FVTPL. Never hard-code 1:1 par; ingest an oracle price and flag peg-variance beyond a threshold (>0.5%) for credit-loss review. |
+> | **Wrapped Token Scope** | A **Token Taxonomy Matrix**: native and wrapped share a ticker link for position monitoring but have divergent treatment toggles. Where a wrapper is forced out of fair-value scope, fork it into a cost-less-impairment sub-ledger, isolated from the native token's mark-to-market entries. |
+> | **Fee Bifurcation (Book vs. Tax)** | Simultaneous divergent dual-posting. One swap triggers two rule sets: Book ledger debits Asset Received (FV), debits Network Fee Expense, credits Asset Relinquished, and posts Realized Gain/Loss; Tax ledger debits Asset Received (FV + fee) and credits Asset Relinquished for the taxable gain/loss. |
+> | **Swap Pricing Hierarchy** | An **Oracle Waterfall**: check the principal market of the *relinquished* asset first; fail over to the *received* asset if volume/liquidity is below a configurable threshold. Log *which* asset drove the valuation so the methodology can be defended in audit. |
+> | **Timezone & Materiality Config** | UTC by default, but support per-legal-entity timezone snapshots (e.g., JST) pulling the block height closest to the cutoff. An "Unverified/Illiquid Asset" quarantine bucket carries unpriced holdings at $0 against a user-defined materiality threshold (e.g., 1% of AUM). |
+>
+> The ultimate goal is to store the raw on-chain data (the immutable truth)
+> centrally, and apply the accounting treatments (the subjective rules) as a
+> configurable translation layer on top, so a single wallet's activity can
+> populate IFRS, US GAAP, and statutory tax ledgers simultaneously without data
+> duplication.
+
+### Our disposition
+
+Every point is accepted. The board decision is **fix before rehearsal**: the
+three measurement gaps below are blockers and will be closed before the Gate 1
+rehearsal runs. Detail and design are in
+[`docs/design/taxonomy-measurement-mapping.md`](design/taxonomy-measurement-mapping.md).
+
+| Point | Severity | Disposition |
+| ----- | -------- | ----------- |
+| Stablecoin = receivables at par, excluded from fair value | **Blocker** | Fix before rehearsal — design note §4.1 |
+| Wrapped/bridged tokens out of 350-60 scope | **Blocker** (judgment call — requires an entity election) | Fix before rehearsal — design note §4.2 |
+| Fee bifurcation: book = expense, tax = capitalize into basis | Book side already true (GL 5100); **tax deferred** | Defer — no tax ledger pre-launch |
+| Swap proceeds = relinquished-first (ASC 845) | **Blocker** | Fix before rehearsal — design note §4.4 |
+| UTC cutoff + materiality threshold for unpriced holdings | Friction | Fix before rehearsal — design note §4.5 |
+
+The multi-ledger, multi-jurisdiction architecture in the response is
+acknowledged but **out of scope before launch** (`SCOPE.md` §5: no
+IFRS/parallel-book delivery). The single-ledger pieces it implies — taxonomy →
+measurement, the oracle waterfall, the unpriced quarantine — are in scope and
+are the subject of the design note.
+
+If we disagree with any point, the disagreement is recorded separately and
+substantively — not by editing the response above.
+
+### Gate 1 status
+
+- [x] Reviewer's written verdict returned (product owner, 2026-09-18 — informal)
+- [ ] Every blocker either fixed, or explicitly accepted with the acceptance recorded — **3 blockers open: stablecoin carve-out, wrapper fork, swap-proceeds waterfall**
+- [ ] Statements and findings archived alongside the exact bundle that was reviewed
+
+**Gate 1: OPEN — blocked on the measurement fixes, decided fix-before-rehearsal.**

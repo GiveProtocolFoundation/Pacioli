@@ -1649,3 +1649,42 @@ API access is not supported for this chain"` on the free Etherscan plan.
     The ADR instructs that this be reported at the next monthly gate review as a
     process failure, independent of the feature's merit — the feature is
     defensible on the persona; the process was not.
+- **Session 36 (2026-09-18, CTO — CPA measurement review; fix-before-rehearsal
+  decision):** The product owner (a crypto-native CPA) returned the written
+  technical assessment the review programme asked for. It is recorded verbatim
+  in `docs/gate1-report.md` §6. Two process notes up front, both stated in the
+  record: a founder reviewing their own product is **not independent**, and this
+  is **informal** feedback, not an engagement — §9.6 remains open on whether a
+  formal engagement is ever commissioned.
+  - **The assessment was checked against the engine before being accepted, and
+    three of the five answers contradicted current behaviour rather than
+    confirming it** (see `docs/design/taxonomy-measurement-mapping.md`):
+    1. **Stablecoins** are marked-to-market today; US GAAP treats fiat-backed
+       stablecoins as receivables at par, excluded from ASC 350-60. The
+       `digitalAssetType = 'stablecoins'` taxonomy exists as seed data and a GL
+       account column, but the remeasurement path never branches on it.
+    2. **Wrapped/bridged tokens** are fair-valued identically to native; a
+       strict reading pushes them to cost-less-impairment (judgment call — needs
+       an entity election).
+    3. **Swap proceeds** are "echoed from input" (`cost_basis.rs:188-189`) with
+       no relinquished-first waterfall and no `valuation_source` audit trail.
+    4. (Friction) no stablecoin peg-variance check; (friction) no unpriced
+       quarantine and no UTC-cutoff disclosure.
+  - **Fee bifurcation is the one that already matched on the book side**: fees
+    are expensed to GL 5100. The tax side is deferred (no tax ledger pre-launch).
+  - **These are not hypothetical** — the 2023-12 rehearsal window contains
+    xcUSDT (bridged stablecoin), WGLMR (wrapper) and xcDOT/xcASTR (bridged), so
+    the statements the rehearsal would produce would mis-measure exactly these.
+  - **Board decision: fix before rehearsal.** Three blockers (stablecoin
+    carve-out, wrapper fork, swap-proceeds waterfall) and two frictions will be
+    closed before Gate 1 runs. A scoped design note was written:
+    `docs/design/taxonomy-measurement-mapping.md`.
+  - **Branch history note:** the earlier CPA-package branch (PR #307) was closed
+    unmerged by the product owner on 2026-09-15 and its branch deleted; the
+    brief and the gate-report corrections (window → 2023-12, Moonbeam step 2,
+    §6 verdict template, test counts) survived only as unreachable objects and
+    are re-landed here.
+  - **Files:** `docs/gate1-report.md` (§6 verdict + disposition),
+    `docs/gate1-cpa-brief.md` (re-landed),
+    `docs/design/taxonomy-measurement-mapping.md` (new),
+    `docs/v1-readiness-plan.md` (§9.6).
