@@ -1,5 +1,10 @@
 # Stage 1 Progress Tracker — Double-Entry Accounting Engine
 
+> **Privacy note (2026-09-18).** Wallet addresses, exact balances and precise
+> transaction figures are **redacted** in this public tracker and kept only in
+> private records. `[redacted …]` placeholders mark where a real address or
+> exact figure appears in the private copy.
+
 Session constitution: `SCOPE.md` (repo root). Stage 1 mandate: GIV-668.
 Gate 1: CPA-reviewed statements from real imported transactions, manually
 classified through the approval queue.
@@ -1383,9 +1388,9 @@ access is not supported for this chain"` yet remain selectable in the
     access — `polkadot.api.subscan.io` returns **HTTP 403** without a key.
     Polkadot sync cannot run until a Subscan key is saved (new prereq P1b).
   - **Finding #6 (blocker for the walkthrough):** the supplied EVM address
-    `[redacted]` has **no legitimate history** — only [redacted] Polygon and
+    `[redacted EVM address]` has **no legitimate history** — only dozens of inbound Polygon and
     1 Arbitrum ERC-20 transfers, all unsolicited scam airdrops from a single
-    dusting address (2024-04-14 → 2025-06-15). No acquisition, disposal, or
+    dusting address (2024 → 2025). No acquisition, disposal, or
     own-wallet transfer to rehearse. Useful as an adversarial spam fixture.
   - **Finding #7 (blocker, code):** the EVM TypeScript sync path **swallows
     provider errors into "0 transactions found"** —
@@ -1427,12 +1432,12 @@ access is not supported for this chain"` yet remain selectable in the
 - **Session 29 (2026-09-13, CTO — Gate 1 key/address verification):** Product
   owner supplied a replacement Subscan key and EVM address; both probed live.
   - **EVM address verified good (prereq P2 now met).**
-    `[redacted]` has **6 real Ethereum
-    transactions, all 2026-09-12**: an acquisition ([redacted] ETH in), a
-    disposal/swap (0.005 ETH to the MetaSwap router), a self-transfer
-    (0.001 ETH to self), a second disposal (0.001 ETH out), and two token
-    receipts ([redacted] mUSD; 5.0 ECX). Current balance
-    [redacted] ETH. This satisfies the checklist §3 step 5
+    `[redacted EVM address]` has **a handful of real Ethereum
+    transactions, all recent**: an acquisition (a small ETH deposit), a
+    disposal/swap (ETH to a DEX router), a self-transfer
+    (a small self-transfer), a second disposal (a small transfer out), and two token
+    receipts (a stablecoin and a token). Current balance
+    [redacted]. This satisfies the checklist §3 step 5
     acquisition / disposal / transfer requirement on Ethereum. No activity on
     Arbitrum, Polygon, Base, Optimism, or BNB.
   - **Subscan key rejected (finding #8, blocker, open).** The supplied key
@@ -1498,7 +1503,7 @@ API access is not supported for this chain"` on the free Etherscan plan.
     There is **no** per-account ordinary-transfer history endpoint. It is a
     useful _complement_ (staking rewards, XCM) behind a provider trait, not a
     substitute.
-  - **The supplied Polkadot address is inactive.** `[redacted]` has
+  - **The supplied Polkadot address is inactive.** `[redacted Polkadot address]` has
     **nonce 0** on Polkadot mainnet (public RPC, block 32,983,624), and
     Dotlake reports the account as not found. Polkadot therefore cannot supply
     rehearsal data regardless of provider — an active address is needed.
@@ -1509,18 +1514,18 @@ API access is not supported for this chain"` on the free Etherscan plan.
     conclusion). No code changed this session.
 - **Session 32 (2026-09-13, CTO — corrected Polkadot address; MAJOR finding):**
   The product owner supplied the correct Polkadot address
-  `[redacted]`. Verified: **active** —
-  [redacted], 2022-12-17 → 2025-10-24, top pallets nominationPools / xcmPallet /
+  `[redacted Polkadot address]`. Verified: **active** —
+  several hundred txs (2022 → 2025), top pallets nominationPools / xcmPallet /
   convictionVoting (Dotlake). (`recent-extrinsics` is empty because the last
   activity predates the recent window; the relay-chain `system_accountNextIndex`
   reads 0, which is unexplained but the account is clearly active.)
   - **Finding #10 (blocker, gate scope): the user's real EVM history is on
     Moonbeam, which the app removed.** Dotlake's XCM records link
-    `[redacted]` to the originally supplied EVM address `[redacted]` as an
+    `[redacted Polkadot address]` to the originally supplied EVM address `[redacted EVM address]` as an
     XCM destination. That address is active on **Moonbeam (chainid 1284)**:
-    1000+ native txs (2023-02 → 2024-11) and 1000+ ERC-20 transfers (STELLA,
-    WGLMR, xcDOT, xcUSDC, xcPEN, xcMANTA), plus **[redacted]** to
-    Moonbeam / Bifrost / HydraDX / Astar spanning 2024-01 → 2026-07.
+    1000+ native txs (2023 → 2024) and 1000+ ERC-20 transfers across many
+    tokens, plus **dozens of XCM transfers** to
+    Moonbeam / Bifrost / HydraDX / Astar spanning 2024 → 2026.
   - **`GIV-888` removed Moonbeam/Moonriver on 2026-07-31 (sunset), but
     Etherscan V2 still serves chainid 1284** (`status:1 OK`). The sunset
     affects _live tracking_, not _historical accounting_ — and historical
@@ -1551,7 +1556,7 @@ API access is not supported for this chain"` on the free Etherscan plan.
     `NETWORK_DECIMALS`; restored to the network dropdown under
     "Historical — sunset chains (import only)"; `useBlockSubscription` now
     skips sunset chains (no new blocks). Moonriver not restored.
-  - **Scale:** the Moonbeam history is [redacted] txs
+  - **Scale:** the Moonbeam history is well over a thousand native and ERC-20 txs
     (2023-02 → 2026-05) — impractical for manual classification. Recommended
     rehearsal window **2026-01** (19 txs), alternative 2023-12 (27), imported
     via the GIV-716 selection filter.
@@ -1673,8 +1678,8 @@ API access is not supported for this chain"` on the free Etherscan plan.
   - **Fee bifurcation is the one that already matched on the book side**: fees
     are expensed to GL 5100. The tax side is deferred (no tax ledger pre-launch).
   - **These are not hypothetical** — the 2023-12 rehearsal window contains
-    xcUSDT (bridged stablecoin), WGLMR (wrapper) and xcDOT/xcASTR (bridged), so
-    the statements the rehearsal would produce would mis-measure exactly these.
+    bridged stablecoins, wrappers and bridged tokens, so the statements the
+    rehearsal would produce would mis-measure exactly these asset classes.
   - **Board decision: fix before rehearsal.** Three blockers (stablecoin
     carve-out, wrapper fork, swap-proceeds waterfall) and two frictions will be
     closed before Gate 1 runs. A scoped design note was written:
