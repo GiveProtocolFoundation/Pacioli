@@ -1688,3 +1688,29 @@ API access is not supported for this chain"` on the free Etherscan plan.
     `docs/gate1-cpa-brief.md` (re-landed),
     `docs/design/taxonomy-measurement-mapping.md` (new),
     `docs/v1-readiness-plan.md` (§9.6).
+- **Session 37 (2026-09-18, CTO — the four measurement-model decisions):** The
+  product owner resolved the four open decisions in
+  `docs/design/taxonomy-measurement-mapping.md` §7, each with a rationale, not
+  just a value:
+  1. **Wrapper default = `technological-format`** (fair value, economic
+     substance over form). `legal-claim` is a manual per-asset override reserved
+     for exploited / de-pegged bridges — not a default, not an automatic fork.
+     Defaulting to cost-less-impairment would put native ETH at fair value while
+     wETH sits at historical cost, an asymmetry that distorts any DeFi-active
+     treasury.
+  2. **Peg-variance = 0.5%, time-weighted.** Flag only a deviation sustained
+     over 24 hours (TWAP, or a point-in-time deviation persisting ≥24 h), so a
+     momentary DEX drain or oracle lag — closed by arbitrage in minutes — does
+     not raise a false CECL flag. Point-in-time pricing alone was rejected as
+     dangerous.
+  3. **Unpriced materiality = warn if >1% of total assets OR >5% of net
+     income.** The secondary P&L check exists because a large asset base can
+     make a 0.8% unpriced holding look immaterial to the balance sheet while a
+     sudden liquidation swings net income materially.
+  4. **Fee default = G&A (GL 5100).** Cost of Revenue is a configurable,
+     ledger-level toggle for operators whose core revenue is on-chain
+     transacting (market maker, HFT, liquid staking, rollup sequencer).
+  - The design note §4.1/§4.2/§4.3/§4.5, §5 (code changes) and §8 (tests) were
+    updated to encode the decisions, and `docs/gate1-report.md` §6 notes that
+    the decisions are recorded. **The measurement implementation is unblocked**:
+    stablecoin carve-out first, then wrapper override and swap waterfall.

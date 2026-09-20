@@ -453,6 +453,9 @@ IFRS/parallel-book delivery). The single-ledger pieces it implies — taxonomy �
 measurement, the oracle waterfall, the unpriced quarantine — are in scope and
 are the subject of the design note.
 
+The four design-note decisions (wrapper default, peg threshold, materiality,
+fee class) were made on 2026-09-18 and are recorded in the design note §7.
+
 If we disagree with any point, the disagreement is recorded separately and
 substantively — not by editing the response above.
 
