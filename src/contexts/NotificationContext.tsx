@@ -147,14 +147,14 @@ export const NotificationProvider: React.FC<{
 
   // Query methods
   const getNotifications = useCallback(
-    async (query?: NotificationQuery): Promise<NotificationPage> => {
+    (query?: NotificationQuery): Promise<NotificationPage> => {
       return notificationService.getAll(query)
     },
     []
   )
 
   const getNotification = useCallback(
-    async (id: string): Promise<Notification | null> => {
+    (id: string): Promise<Notification | null> => {
       return notificationService.get(id)
     },
     []

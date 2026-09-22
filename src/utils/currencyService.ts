@@ -26,10 +26,7 @@ export class CurrencyService {
   /**
    * Initialize the currency service with currencies and settings
    */
-  async initialize(
-    currencies: Currency[],
-    settings: AccountSettings
-  ): Promise<void> {
+  initialize(currencies: Currency[], settings: AccountSettings): void {
     this.currencies = new Map(currencies.map(c => [c.code, c]))
     this.settings = settings
   }
@@ -83,7 +80,7 @@ export class CurrencyService {
    * Convert amount from one currency to another
    * This would typically call a Tauri command to get the rate from the backend
    */
-  async convert(request: ConversionRequest): Promise<ConversionResponse> {
+  convert(request: ConversionRequest): ConversionResponse {
     const { fromCurrency, toCurrency, amount, timestamp, method } = request
 
     // If same currency, no conversion needed

@@ -358,14 +358,14 @@ class WalletService {
   /**
    * Disconnect wallet
    */
-  async disconnectWallet(walletType: WalletType): Promise<void> {
+  disconnectWallet(walletType: WalletType): void {
     this.connectedWallets.delete(walletType)
   }
 
   /**
    * Disconnect all wallets
    */
-  async disconnectAll(): Promise<void> {
+  disconnectAll(): void {
     this.connectedWallets.clear()
     this.enabledExtensions = []
   }
