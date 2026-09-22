@@ -210,9 +210,10 @@ export function getWalletExtensionsByType(
  * Detect installed wallet extensions
  * Returns list of detected extensions with id and name
  */
-export async function detectWalletExtensions(): Promise<
-  Array<{ id: string; name: string }>
-> {
+export function detectWalletExtensions(): Array<{
+  id: string
+  name: string
+}> {
   const detected: Array<{ id: string; name: string }> = []
 
   // Check Substrate wallets
@@ -245,7 +246,7 @@ export async function detectWalletExtensions(): Promise<
 /**
  * Get accounts from a specific wallet extension
  */
-export async function getAccountsFromExtension(
+export function getAccountsFromExtension(
   provider: WalletProvider
 ): Promise<WalletAccount[]> {
   switch (provider) {
@@ -257,7 +258,7 @@ export async function getAccountsFromExtension(
     case 'metamask':
       return getMetaMaskAccounts()
     default:
-      return []
+      return Promise.resolve([])
   }
 }
 
@@ -413,7 +414,7 @@ export async function signMetaMaskMessage(
 /**
  * Get accounts from any supported wallet
  */
-export async function getWalletAccounts(
+export function getWalletAccounts(
   provider: WalletProvider
 ): Promise<WalletAccount[]> {
   switch (provider) {
@@ -435,7 +436,7 @@ export async function getWalletAccounts(
 /**
  * Sign a message with any supported wallet
  */
-export async function signMessage(
+export function signMessage(
   provider: WalletProvider,
   address: string,
   message: string
@@ -466,7 +467,7 @@ export const walletAuthService = {
   /**
    * Generate a challenge for wallet sign-in
    */
-  async generateChallenge(request: ChallengeRequest): Promise<WalletChallenge> {
+  generateChallenge(request: ChallengeRequest): Promise<WalletChallenge> {
     return invoke<WalletChallenge>('generate_wallet_challenge', { request })
   },
 
@@ -491,14 +492,14 @@ export const walletAuthService = {
   /**
    * Link a wallet to an existing authenticated account
    */
-  async linkWallet(request: LinkWalletRequest): Promise<UserWallet> {
+  linkWallet(request: LinkWalletRequest): Promise<UserWallet> {
     return invoke<UserWallet>('link_wallet_to_account', { request })
   },
 
   /**
    * Get all wallets linked to the current user
    */
-  async getUserWallets(token: string): Promise<UserWallet[]> {
+  getUserWallets(token: string): Promise<UserWallet[]> {
     return invoke<UserWallet[]>('get_user_wallets', { token })
   },
 
@@ -506,13 +507,13 @@ export const walletAuthService = {
    * Unlink a wallet from the current user
    */
   async unlinkWallet(token: string, walletId: string): Promise<void> {
-    return invoke('unlink_wallet', { token, walletId })
+    await invoke('unlink_wallet', { token, walletId })
   },
 
   /**
    * Clean up expired challenges (maintenance)
    */
-  async cleanupExpiredChallenges(): Promise<number> {
+  cleanupExpiredChallenges(): Promise<number> {
     return invoke<number>('cleanup_expired_challenges')
   },
 }
