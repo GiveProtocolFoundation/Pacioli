@@ -50,7 +50,7 @@ interface NotificationContextType {
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(
-  undefined
+  undefined // skipcq: JS-W1042 — React createContext requires explicit default argument
 )
 
 const defaultStats: NotificationStats = {
