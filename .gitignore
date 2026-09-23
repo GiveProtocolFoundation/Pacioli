@@ -79,6 +79,12 @@ typings/
 # Yarn Integrity file
 .yarn-integrity
 
+# Agent and working scratch (transcripts, HTML captures, throwaway worktrees).
+# Keep these out of history; see AGENTS.md.
+.scratch/
+.worktrees/
+.agent-tmp/
+
 # dotenv environment variable files
 .env
 .env.*

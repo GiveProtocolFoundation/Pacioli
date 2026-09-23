@@ -1,0 +1,59 @@
+#!/bin/sh
+# Pacioli pre-commit guard: block secrets before they enter history.
+#
+# Install once (per clone):
+#   git config core.hooksPath .githooks
+#
+# This runs in addition to CI's Gitleaks job, not instead of it. CI is
+# best-effort and does not block the build; this hook does.
+
+set -e
+
+fail=0
+
+# 1. Never stage a real .env. .env.example is the tracked template.
+staged_env=$(git diff --cached --name-only --diff-filter=ACM -- '.env' '.env.*' \
+  | grep -v '\.env\.example$' || true)
+if [ -n "$staged_env" ]; then
+  echo "pre-commit: refusing to commit environment file(s):" >&2
+  echo "$staged_env" | sed 's/^/  /' >&2
+  echo "  Keep secrets in the untracked .env and document names in .env.example." >&2
+  echo "  To override once: git commit --no-verify" >&2
+  fail=1
+fi
+
+# 2. Gitleaks, when available, is authoritative.
+if command -v gitleaks >/dev/null 2>&1; then
+  if gitleaks git --staged --redact --config .gitleaks.toml >/dev/null 2>&1; then
+    :
+  elif gitleaks protect --staged --redact --config .gitleaks.toml >/dev/null 2>&1; then
+    :
+  else
+    echo "pre-commit: gitleaks flagged a staged secret." >&2
+    echo "  Review with: gitleaks git --staged --redact --config .gitleaks.toml" >&2
+    fail=1
+  fi
+else
+  # 3. Fallback scan so the guard still works on machines without gitleaks.
+  added=$(git diff --cached -U0 --diff-filter=ACM | grep '^+' | grep -v '^+++' || true)
+  if [ -n "$added" ]; then
+    hits=$(printf '%s\n' "$added" | grep -nE \
+      -e 're_[A-Za-z0-9]{20,}' \
+      -e 'AKIA[0-9A-Z]{16}' \
+      -e '(ghp|gho|ghs|github_pat)_[A-Za-z0-9_]{20,}' \
+      -e '-----BEGIN [A-Z ]*PRIVATE KEY-----' \
+      -e 'eyJ[A-Za-z0-9_-]{10,}\.eyJ[A-Za-z0-9_-]{10,}\.' \
+      -e '(api[_-]?key|api[_-]?secret|secret|token|password|passwd)["'"'"']?[[:space:]]*[:=][[:space:]]*["'"'"']?[A-Za-z0-9_/+=.-]{20,}' \
+      2>/dev/null | grep -viE 'example|sample|dummy|placeholder|your[_-]|change[_-]?me|\*\*\*|process\.env|import\.meta\.env' || true)
+    if [ -n "$hits" ]; then
+      echo "pre-commit: possible secret(s) in staged changes:" >&2
+      printf '%s\n' "$hits" | cut -c1-160 | sed 's/^/  /' >&2
+      echo "  Install gitleaks for an authoritative scan." >&2
+      echo "  To override once: git commit --no-verify" >&2
+      fail=1
+    fi
+  fi
+fi
+
+[ "$fail" -eq 0 ] || exit 1
+exit 0
