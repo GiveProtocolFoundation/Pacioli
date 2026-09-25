@@ -119,6 +119,12 @@ regexes = [
 ]
 
 [[rules]]
+id = "resend-api-key"
+description = "Resend API key"
+regex = '''\bre_[A-Za-z0-9]{24,}\b'''
+tags = ["resend", "api", "key"]
+
+[[rules]]
 id = "coingecko-api-key"
 description = "CoinGecko API Key"
 regex = '''(?i)coingecko[_-]?api[_-]?key['\"]?\s*[:=]\s*['\"]?CG-[a-zA-Z0-9]{20,}['\"]?'''
