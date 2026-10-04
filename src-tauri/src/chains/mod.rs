@@ -309,6 +309,10 @@ pub enum ChainError {
 pub type ChainResult<T> = Result<T, ChainError>;
 
 /// Chain adapter trait - implement this for each blockchain type
+// async_trait generates a `#[must_use]` on functions whose return type is
+// already `#[must_use]` (a pinned boxed future). clippy 1.99 reports that
+// duplicate as double_must_use; the inner attribute is redundant, not wrong.
+#[allow(clippy::double_must_use)]
 #[async_trait]
 pub trait ChainAdapter: Send + Sync {
     /// Get the chain identifier
