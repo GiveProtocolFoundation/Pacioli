@@ -36,6 +36,10 @@ use super::price_feeds::CoinGeckoClient;
 /// Implementors fetch the price of a given asset on a given date in the
 /// functional currency (USD). The returned price is a decimal string that
 /// the caller converts to minor units at the accounting boundary.
+// async_trait generates a `#[must_use]` on functions whose return type is
+// already `#[must_use]` (a pinned boxed future). clippy 1.99 reports that
+// duplicate as double_must_use; the inner attribute is redundant, not wrong.
+#[allow(clippy::double_must_use)]
 #[async_trait::async_trait]
 pub trait PriceSource: Send + Sync {
     /// Returns the price per unit as a decimal string (e.g. "42350.50")
