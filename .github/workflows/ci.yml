@@ -87,6 +87,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
 
+      - name: Check lockfile overrides
+        run: node scripts/check-lockfile-overrides.mjs
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
