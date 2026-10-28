@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * Verify that the `overrides` block in pnpm-lock.yaml still matches
  * `pnpm.overrides` in package.json.
@@ -61,16 +60,35 @@ function readLockfileOverrides(lockfile) {
   return overrides
 }
 
-function main() {
-  let manifestOverrides
-  let lockfile
+/**
+ * Read package.json and pnpm-lock.yaml, returning `null` when either cannot be
+ * read or parsed so the caller can set the appropriate exit code.
+ *
+ * @returns {{ manifestOverrides: Record<string, string>, lockfile: string } | null}
+ */
+function readInputs() {
   try {
-    manifestOverrides = readManifestOverrides()
-    lockfile = readFileSync(resolve(projectDir, 'pnpm-lock.yaml'), 'utf8')
+    return {
+      manifestOverrides: readManifestOverrides(),
+      lockfile: readFileSync(resolve(projectDir, 'pnpm-lock.yaml'), 'utf8'),
+    }
   } catch (error) {
     console.error(`[lockfile-overrides] cannot read inputs: ${error.message}`)
-    process.exit(2)
+    return null
   }
+}
+
+/**
+ * Compare the lockfile's `overrides` block against package.json, report any
+ * drift on stderr, and set a non-zero exit code when they disagree.
+ */
+function main() {
+  const inputs = readInputs()
+  if (inputs === null) {
+    process.exitCode = 2
+    return
+  }
+  const { manifestOverrides, lockfile } = inputs
 
   const declared = Object.keys(manifestOverrides).sort()
   if (declared.length === 0) {
@@ -134,7 +152,7 @@ function main() {
       '\n' +
       '  then commit pnpm-lock.yaml. Do not hand-edit the block.\n'
   )
-  process.exit(1)
+  process.exitCode = 1
 }
 
 main()
