@@ -15,6 +15,7 @@
     "tauri:build": "tauri build",
     "lint": "eslint .",
     "type-check": "tsc --noEmit",
+    "check:lockfile": "node scripts/check-lockfile-overrides.mjs",
     "format": "prettier --write 'src/**/*.{ts,tsx,css}'",
     "format:check": "prettier --check 'src/**/*.{ts,tsx,css}'",
     "test": "vitest",

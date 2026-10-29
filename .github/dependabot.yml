@@ -1,0 +1,25 @@
+# Dependabot configuration.
+#
+# Security updates are grouped into a single PR. Without this, one advisory
+# batch opens a PR per package (eight at once on 2026-10-25), and every one of
+# them arrives with a lockfile that has lost the `pnpm.overrides` block — see
+# `scripts/check-lockfile-overrides.mjs` and `AGENTS.md` section 9.
+#
+# Version updates are intentionally not enabled here: the transitive security
+# work is what matters, and `pnpm.overrides` in package.json is the mechanism
+# for pinning it.
+version: 2
+updates:
+  - package-ecosystem: 'npm'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: 'build(deps)'
+      prefix-development: 'build(deps-dev)'
+    groups:
+      npm-security-updates:
+        applies-to: 'security-updates'
+        patterns:
+          - '*'
