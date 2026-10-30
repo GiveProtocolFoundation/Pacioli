@@ -1,0 +1,16 @@
+# Pin the Rust toolchain so CI and local builds agree on a version.
+#
+# CI previously floated on the `stable` channel. When Rust 1.99 promoted the
+# clippy::double_must_use lint, the Rust Backend job started failing on every
+# fresh run, including pull requests whose branches changed no Rust code.
+#
+# To move to a newer toolchain: update `channel` here, then update the
+# dtolnay/rust-toolchain @rev in .github/workflows/ci.yml and release.yml to
+# match. The two must agree; the action does not read this file.
+#
+# Why 1.99.0 rather than the previous 1.98.1: the allow attribute added for
+# clippy::double_must_use is an unknown lint before 1.99, and the workflow
+# runs clippy with `-D warnings`, so pinning backwards would fail instead.
+[toolchain]
+channel = "1.99.0"
+components = ["clippy", "rustfmt"]
