@@ -435,11 +435,13 @@ impl ChainManager {
 
     /// Ensure a provider fallback registry exists for the given chain.
     async fn ensure_provider_registry(&self, chain_id: &str) {
-        let registries = self.provider_registries.read().await;
-        if registries.contains_key(chain_id) {
-            return;
+        // Scope the read guard so it is released before the write lock below.
+        {
+            let registries = self.provider_registries.read().await;
+            if registries.contains_key(chain_id) {
+                return;
+            }
         }
-        drop(registries);
 
         let rpc_override = {
             let overrides = self.rpc_overrides.read().await;
@@ -737,31 +739,34 @@ impl ChainManager {
         address: &str,
         from_block: Option<u64>,
     ) -> ChainResult<Vec<ChainTransaction>> {
-        let registries = self.provider_registries.read().await;
-        if let Some(registry) = registries.get(chain_id) {
-            let addr = address.to_string();
-            let cfg = base_config.clone();
-            registry
-                .execute_with_fallback(|provider_url| {
-                    let mut config = cfg.clone();
-                    config.api_url = provider_url;
-                    let address = addr.clone();
-                    async move {
-                        let adapter = bitcoin::BitcoinAdapter::with_config(config)?;
-                        adapter.get_transactions(&address, from_block, None).await
-                    }
-                })
-                .await
-        } else {
-            // No registry — use standard adapter (should not happen after
-            // get_adapter). Drop the registries guard BEFORE calling
-            // get_adapter: it may take a write lock on provider_registries
-            // (ensure_provider_registry), which would deadlock otherwise.
-            drop(registries);
-            let adapter = self.get_adapter(chain_id).await?;
-            let adapter = adapter.read().await;
-            adapter.get_transactions(address, from_block, None).await
+        // Hold the registry read guard only for the lookup. The fallback path
+        // below calls get_adapter, which may take a write lock on
+        // provider_registries (ensure_provider_registry) and would deadlock if
+        // the read guard were still held.
+        {
+            let registries = self.provider_registries.read().await;
+            if let Some(registry) = registries.get(chain_id) {
+                let addr = address.to_string();
+                let cfg = base_config.clone();
+                return registry
+                    .execute_with_fallback(|provider_url| {
+                        let mut config = cfg.clone();
+                        config.api_url = provider_url;
+                        let address = addr.clone();
+                        async move {
+                            let adapter = bitcoin::BitcoinAdapter::with_config(config)?;
+                            adapter.get_transactions(&address, from_block, None).await
+                        }
+                    })
+                    .await;
+            }
         }
+
+        // No registry — use standard adapter (should not happen after
+        // get_adapter).
+        let adapter = self.get_adapter(chain_id).await?;
+        let adapter = adapter.read().await;
+        adapter.get_transactions(address, from_block, None).await
     }
 
     /// Solana fallback: all providers use the standard Solana JSON-RPC
@@ -781,33 +786,34 @@ impl ChainManager {
             keys.get(chain_id).cloned()
         };
 
-        let registries = self.provider_registries.read().await;
-        if let Some(registry) = registries.get(chain_id) {
-            let addr = address.to_string();
-            let cfg = base_config.clone();
-            registry
-                .execute_with_fallback(|provider_url| {
-                    let mut config = cfg.clone();
-                    config.rpc_url = provider_url;
-                    let address = addr.clone();
-                    let key = helius_key.clone();
-                    async move {
-                        let mut adapter = solana::SolanaAdapter::new(config)?;
-                        if let Some(key) = key {
-                            adapter = adapter.with_helius_api_key(key);
+        // See bitcoin fallback: release the guard before get_adapter to avoid
+        // a read/write deadlock on provider_registries.
+        {
+            let registries = self.provider_registries.read().await;
+            if let Some(registry) = registries.get(chain_id) {
+                let addr = address.to_string();
+                let cfg = base_config.clone();
+                return registry
+                    .execute_with_fallback(|provider_url| {
+                        let mut config = cfg.clone();
+                        config.rpc_url = provider_url;
+                        let address = addr.clone();
+                        let key = helius_key.clone();
+                        async move {
+                            let mut adapter = solana::SolanaAdapter::new(config)?;
+                            if let Some(key) = key {
+                                adapter = adapter.with_helius_api_key(key);
+                            }
+                            adapter.get_transactions(&address, from_block, None).await
                         }
-                        adapter.get_transactions(&address, from_block, None).await
-                    }
-                })
-                .await
-        } else {
-            // See bitcoin fallback: drop the guard before get_adapter to
-            // avoid a read/write deadlock on provider_registries.
-            drop(registries);
-            let adapter = self.get_adapter(chain_id).await?;
-            let adapter = adapter.read().await;
-            adapter.get_transactions(address, from_block, None).await
+                    })
+                    .await;
+            }
         }
+
+        let adapter = self.get_adapter(chain_id).await?;
+        let adapter = adapter.read().await;
+        adapter.get_transactions(address, from_block, None).await
     }
 
     /// Get balances for an address on a specific chain

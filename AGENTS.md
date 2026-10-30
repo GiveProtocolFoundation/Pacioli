@@ -51,6 +51,7 @@ pnpm dev                         # Vite dev server
 pnpm format:check                # prettier check
 pnpm lint                        # eslint
 pnpm type-check                  # tsc --noEmit
+pnpm check:lockfile              # pnpm.overrides still in pnpm-lock.yaml
 pnpm test --run                  # Vitest, single pass (no watch)
 pnpm test:e2e                    # Playwright
 pnpm build                       # production frontend build
@@ -154,6 +155,12 @@ the commit SHA in the run header before treating a report as current.
 - **`gate1-measurement-findings`**: diverged from `main` and holds a duplicate JS-0116
   fix. Decide to retire it or rebase it.
 - **Branch clutter**: ~155 remote branches, ~48 `deepsource-autofix-*`. Prune periodically.
+- **Dependabot drops `pnpm.overrides`**: every Dependabot lockfile regeneration arrives
+  without the `overrides` block, so every security floor in `package.json` vanishes from
+  the lockfile and all Node CI jobs die on `ERR_PNPM_LOCKFILE_CONFIG_MISMATCH`. It is not
+  a pnpm-version problem and no Dependabot setting prevents it. `pnpm check:lockfile`
+  names exactly which overrides were lost; repair a branch with
+  `pnpm install --no-frozen-lockfile` and commit the lockfile.
 
 ## 10. Session hygiene
 
