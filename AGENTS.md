@@ -142,6 +142,7 @@ the commit SHA in the run header before treating a report as current.
 | JS-0045 | Function with inconsistent returns | Make all paths return |
 | JS-R1005 | Function too complex | Split into single-purpose helpers |
 | RS-D1001 | Missing Rust doc comments | `///` on public items, variants and fields |
+| RS-E1011 | `drop()` on a value the analyzer sees as `Copy` (a no-op) | Scope the guard / early-return so it drops naturally instead of an explicit `drop` |
 
 ## 9. Open items (update as they close)
 
