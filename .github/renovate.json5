@@ -1,0 +1,65 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+
+  "extends": ["config:recommended", ":semanticCommits"],
+
+  // Dependabot used to own these updates. It rewrites pnpm-lock.yaml without
+  // the `pnpm.overrides` block, which silently drops every security floor in
+  // package.json and fails all Node CI jobs. Renovate drives pnpm itself, so
+  // the overrides survive. Background and rollout: docs/dependency-automation.md
+  "enabledManagers": ["npm"],
+
+  "timezone": "America/New_York",
+
+  // Match the weekly cadence the Dependabot config used.
+  "schedule": ["before 6am on monday"],
+
+  // Move declared ranges forward instead of widening them, so an override
+  // floor actually moves to the patched version.
+  "rangeStrategy": "bump",
+
+  // Dependency changes land through review; nothing auto-merges.
+  "automerge": false,
+
+  "dependencyDashboard": true,
+  "prConcurrentLimit": 5,
+  "prHourlyLimit": 2,
+  "rebaseWhen": "behind-base-branch",
+
+  // Security PRs are created as soon as an advisory is published and grouped
+  // into one PR, matching the old `npm-security-updates` Dependabot group.
+  // GitHub Dependabot alerts stay enabled; only its PR creation is retired.
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "groupName": "security updates",
+    "labels": ["security"],
+  },
+
+  // Refresh the lockfile monthly so override floors resolve to current patched
+  // versions even when no manifest range changes.
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["before 5am on the first day of the month"],
+  },
+
+  "packageRules": [
+    {
+      // Majors need a deliberate decision in this repo (see the Solana 1 -> 3
+      // proposal in #328). Renovate surfaces them on the dashboard instead of
+      // opening PRs.
+      "matchUpdateTypes": ["major"],
+      "dependencyDashboardApproval": true,
+    },
+    {
+      // One PR for routine minor/patch bumps instead of one per package.
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "non-major dependencies",
+    },
+    {
+      // The entries in pnpm.overrides are security floors, not application
+      // dependencies. Keep their bumps together.
+      "matchDepTypes": ["pnpm.overrides"],
+      "groupName": "pnpm overrides (security floors)",
+    },
+  ],
+}

@@ -1,0 +1,35 @@
+name: Renovate Config
+
+# Config errors in renovate.json5 are otherwise only visible in the Renovate
+# app's logs, so validate the file whenever it changes.
+on:
+  pull_request:
+    paths:
+      - '.github/renovate.json5'
+      - '.github/workflows/renovate-validate.yml'
+  push:
+    branches: ['main']
+    paths:
+      - '.github/renovate.json5'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate Renovate Config
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          # Renovate 44 uses RegExp.escape, which is Node 24 and later.
+          node-version: '24'
+
+      - name: Validate renovate.json5
+        run: npx --yes --package renovate@44.199.0 renovate-config-validator .github/renovate.json5
