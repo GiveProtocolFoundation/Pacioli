@@ -156,12 +156,14 @@ the commit SHA in the run header before treating a report as current.
 - **`gate1-measurement-findings`**: diverged from `main` and holds a duplicate JS-0116
   fix. Decide to retire it or rebase it.
 - **Branch clutter**: ~155 remote branches, ~48 `deepsource-autofix-*`. Prune periodically.
-- **Dependabot drops `pnpm.overrides`**: every Dependabot lockfile regeneration arrives
-  without the `overrides` block, so every security floor in `package.json` vanishes from
-  the lockfile and all Node CI jobs die on `ERR_PNPM_LOCKFILE_CONFIG_MISMATCH`. It is not
-  a pnpm-version problem and no Dependabot setting prevents it. `pnpm check:lockfile`
-  names exactly which overrides were lost; repair a branch with
-  `pnpm install --no-frozen-lockfile` and commit the lockfile.
+- **Renovate migration**: `.github/renovate.json5` is in place, but the Mend Renovate
+  app is not installed and Dependabot is still the active bot, so Dependabot PRs can
+  still arrive with a lockfile that has lost the `overrides` block. Finish the cutover
+  checklist in `docs/dependency-automation.md` (install the app, disable Dependabot
+  security updates, delete `.github/dependabot.yml`), then close this item. Until then,
+  `pnpm check:lockfile` names the lost overrides; repair a branch with
+  `pnpm install --no-frozen-lockfile` and commit the lockfile. This is not a pnpm-version
+  problem, and no Dependabot setting prevents it.
 
 ## 10. Session hygiene
 
