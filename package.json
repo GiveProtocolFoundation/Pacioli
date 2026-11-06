@@ -67,7 +67,7 @@
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
     "@parity/hardhat-polkadot": "^0.1.7",
     "@playwright/test": "^1.52.0",
-    "@tailwindcss/postcss": "^4.1.14",
+    "@tailwindcss/postcss": "^4.3.3",
     "@tauri-apps/cli": "^2",
     "@types/node": "^24.7.1",
     "@types/react": "^19.1.8",
